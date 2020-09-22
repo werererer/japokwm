@@ -1,6 +1,6 @@
 #ifndef CLIENT
 #define CLIENT
-#include "coreUtils.c"
+#include "coreUtils.h"
 
 typedef struct {
     struct wl_list link;

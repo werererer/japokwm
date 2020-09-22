@@ -1,6 +1,6 @@
 #ifndef TILE
 #define TILE
-#include "../kernel/coreUtils.c"
+#include "coreUtils.h"
 #include "client.h"
 #include <wayland-util.h>
 

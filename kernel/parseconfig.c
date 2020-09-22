@@ -1,7 +1,5 @@
 #include "parseconfig.h"
-#include <coreUtils.c>
 #include <string.h>
-#include <julia.h>
 
 int
 getLen(const char *name) {
@@ -167,9 +165,8 @@ getConfigLayouts(Layout *layouts, const char *name)
         strcat(execStrFunc, "[2]");
 
         //save value and function pointer
-        t = jl_eval_string(execStr);
-        hotkeys[i].symbol = (const char *)jl_string_ptr(t);
-        hotkeys[i].func = jl_get_function(jl_base_module, execStrFunc);
+        layouts[i].symbol = getConfigArr_str(&layouts[i].symbol, execStr);
+        layouts[i].arrange = jl_get_function(jl_base_module, execStrFunc);
     }
 }
 
@@ -193,7 +190,7 @@ void getConfigMonRules(MonitorRule *monrules, const char *name)
 
         //save value and function pointer
         t = jl_eval_string(execStr);
-        hotkeys[i].symbol = (const char *)jl_string_ptr(t);
-        hotkeys[i].func = jl_get_function(jl_base_module, execStrFunc);
+        monrules[i].lt = (const char *)jl_string_ptr(t);
+        monrules[i]. = jl_get_function(jl_base_module, execStrFunc);
     }
 }
