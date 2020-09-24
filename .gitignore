@@ -5,3 +5,4 @@ dwl
 .ccls-cache
 .vimspector.json
 tags
+*.pdf
