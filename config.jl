@@ -32,6 +32,7 @@ repeat_rate = 25
 repeat_delay = 600
 termcmd = `alacritty`
 
+mod = mod2
 #maps (between 1 and 4)
 keys = [
     [mod*shift*"Return",      ()->  `$termcmd`             ],

@@ -1,6 +1,7 @@
 #ifndef PARSECONFIG
 #define PARSECONFIG
 #include "coreUtils.h"
+#include <string.h>
 
 void initConfig(const char *path);
 //basic

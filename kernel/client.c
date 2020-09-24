@@ -23,6 +23,7 @@ applyrules(Client *c)
 {
     const char *appid, *title;
     unsigned int i, newtags = 0;
+    const Rule *r;
     Monitor *mon = selmon, *m;
 
     /* rule matching */
@@ -39,9 +40,9 @@ applyrules(Client *c)
         title = c->surface.xdg->toplevel->title;
     }
     if (!appid)
-        appid = broken;
+        appid = "broken";
     if (!title)
-        title = broken;
+        title = "broken";
 
     for (r = rules; r < END(rules); r++) {
         if ((!r->title || strstr(title, r->title))
@@ -57,3 +58,12 @@ applyrules(Client *c)
     setmon(c, mon, newtags);
 }
 
+
+Client *
+selclient(void)
+{
+    Client *c = wl_container_of(fstack.next, c, flink);
+    if (wl_list_empty(&fstack) || !VISIBLEON(c, selmon))
+        return NULL;
+    return c;
+}

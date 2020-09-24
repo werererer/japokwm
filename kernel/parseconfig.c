@@ -1,6 +1,4 @@
 #include "parseconfig.h"
-#include <cstdio>
-#include <string.h>
 
 int
 getLen(const char *name) {
@@ -124,33 +122,35 @@ getConfigLayouts(Layout *layouts, const char *name)
         array2DPosToStr(execStrFunc, name, i, 2);
 
         getConfig_str(layouts[i].symbol, execStr);
-        getConfig_func(layouts[i].arrange, execStrFunc)
+        getConfig_func(&layouts[i].arrange, execStrFunc);
     }
 }
 
 void getConfigMonRules(MonitorRule *monrules, const char *name)
 {
     int len = getLen(name);
-    char execStr[10];
-    char execStrFunc[10];
+    char execStr0[10];
+    char execStr1[10];
+    char execStr2[10];
+    char execStr3[10];
+    char execStr4[10];
+    char execStr5[10];
     jl_value_t *t;
     char d[2];
     for (int i = 0; i < len; i++) {
-        // setup strings
-        sprintf(d, "%d", i + 1);
-        memset(execStr, 0, strlen(execStr));
-        strcpy(execStr, "arr[");
-        strcat(execStr, d);
-        strcat(execStr, "]");
-        char execStrFunc[10];
-        strcpy(execStrFunc, execStr);
-        strcat(execStr, "[1]");
-        strcat(execStrFunc, "[2]");
+        array2DPosToStr(execStr0, name, i, 0);
+        array2DPosToStr(execStr1, name, i, 1);
+        array2DPosToStr(execStr2, name, i, 2);
+        array2DPosToStr(execStr3, name, i, 3);
+        array2DPosToStr(execStr4, name, i, 4);
+        array2DPosToStr(execStr5, name, i, 5);
 
-        //save value and function pointer
-        t = jl_eval_string(execStr);
-        monrules[i].lt = (const char *)jl_string_ptr(t);
-        monrules[i]. = jl_get_function(jl_base_module, execStrFunc);
+        getConfig_str((char*)monrules->name, execStr0);
+        getConfig_float(&monrules->mfact, execStr1);
+        getConfigArr_int(&monrules->nmaster, execStr2);
+        getConfigArr_float(&monrules->scale, execStr3);
+        getConfigLayouts(monrules->lt, execStr4);
+        getConfigArr_int((int*)&monrules->rr, execStr5);
     }
 }
 

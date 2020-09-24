@@ -30,7 +30,6 @@
 #include <wlr/types/wlr_primary_selection.h>
 #include <wlr/types/wlr_primary_selection_v1.h>
 #include <wlr/types/wlr_screencopy_v1.h>
-#include <wlr/types/wlr_seat.h>
 #include <wlr/types/wlr_viewporter.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/types/wlr_xdg_decoration_v1.h>
@@ -46,7 +45,6 @@
 // TODO: good comment
 #include "tile.h"
 #include "client.h"
-#include "config.h"
 
 /* enums */
 enum { CurNormal, CurMove, CurResize }; /* cursor */
@@ -70,7 +68,6 @@ struct render_data {
 };
 
 /* function declarations */
-static void arrange(Monitor *m);
 static void axisnotify(struct wl_listener *listener, void *data);
 static void buttonpress(struct wl_listener *listener, void *data);
 static void chvt(const Arg *arg);
@@ -88,10 +85,8 @@ static void cursorframe(struct wl_listener *listener, void *data);
 static void destroynotify(struct wl_listener *listener, void *data);
 static void destroyxdeco(struct wl_listener *listener, void *data);
 static Monitor *dirtomon(int dir);
-static void focusclient(Client *old, Client *c, int lift);
 static void focusmon(int i);
 static void focusstack(int i);
-static Client *focustop(Monitor *m);
 static void getxdecomode(struct wl_listener *listener, void *data);
 static void incnmaster(int i);
 static void inputdevice(struct wl_listener *listener, void *data);
@@ -112,14 +107,12 @@ static void renderclients(Monitor *m, struct timespec *now);
 static void rendermon(struct wl_listener *listener, void *data);
 static void run(char *startup_cmd);
 static void scalebox(struct wlr_box *box, float scale);
-static Client *selclient(void);
 static void setcursor(struct wl_listener *listener, void *data);
 static void setpsel(struct wl_listener *listener, void *data);
 static void setsel(struct wl_listener *listener, void *data);
 static void setfloating(Client *c, int floating);
 static void setlayout(void* v);
 static void setmfact(float factor);
-static void setmon(Client *c, Monitor *m, unsigned int newtags);
 static void setup(void);
 static void sigchld(int unused);
 static void tag(unsigned int ui);
@@ -147,7 +140,6 @@ static struct wlr_xdg_decoration_manager_v1 *xdeco_mgr;
 static struct wlr_cursor *cursor;
 static struct wlr_xcursor_manager *cursor_mgr;
 
-static struct wlr_seat *seat;
 static struct wl_list keyboards;
 static unsigned int cursor_mode;
 static Client *grabc;
@@ -167,6 +159,7 @@ static struct wl_listener request_cursor = {.notify = setcursor};
 static struct wl_listener request_set_psel = {.notify = setpsel};
 static struct wl_listener request_set_sel = {.notify = setsel};
 
+//TODO: put into an own file
 #ifdef XWAYLAND
 static void activatex11(struct wl_listener *listener, void *data);
 static void createnotifyx11(struct wl_listener *listener, void *data);
@@ -183,17 +176,6 @@ static Atom netatom[NetLast];
 
 /* compile-time check if all tags fit into an unsigned int bit array. */
 struct NumTags { char limitexceeded[LENGTH(tags) > 32 ? -1 : 1]; };
-
-void
-arrange(Monitor *m)
-{
-    /* Get effective monitor geometry to use for window area */
-    m->m = *wlr_output_layout_get_box(output_layout, m->wlr_output);
-    m->w = m->m;
-    if (m->lt[m->sellt]->arrange)
-        m->lt[m->sellt]->arrange(m);
-    /* XXX recheck pointer focus here... or in resize()? */
-}
 
 void
 axisnotify(struct wl_listener *listener, void *data)
@@ -510,56 +492,6 @@ dirtomon(int dir)
 }
 
 void
-focusclient(Client *old, Client *c, int lift)
-{
-    struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat);
-
-    /* Raise client in stacking order if requested */
-    if (c && lift) {
-        wl_list_remove(&c->slink);
-        wl_list_insert(&stack, &c->slink);
-    }
-
-    /* Nothing else to do? */
-    if (c == old)
-        return;
-
-    /* Deactivate old client if focus is changing */
-    if (c != old && old) {
-#ifdef XWAYLAND
-        if (old->type != XDGShell)
-            wlr_xwayland_surface_activate(old->surface.xwayland, 0);
-        else
-#endif
-            wlr_xdg_toplevel_set_activated(old->surface.xdg, 0);
-    }
-
-    /* Update wlroots' keyboard focus */
-    if (!c) {
-        /* With no client, all we have left is to clear focus */
-        wlr_seat_keyboard_notify_clear_focus(seat);
-        return;
-    }
-
-    /* Have a client, so focus its top-level wlr_surface */
-    wlr_seat_keyboard_notify_enter(seat, WLR_SURFACE(c),
-            kb->keycodes, kb->num_keycodes, &kb->modifiers);
-
-    /* Put the new client atop the focus stack and select its monitor */
-    wl_list_remove(&c->flink);
-    wl_list_insert(&fstack, &c->flink);
-    selmon = c->mon;
-
-    /* Activate the new client */
-#ifdef XWAYLAND
-    if (c->type != XDGShell)
-        wlr_xwayland_surface_activate(c->surface.xwayland, 1);
-    else
-#endif
-        wlr_xdg_toplevel_set_activated(c->surface.xdg, 1);
-}
-
-void
 focusmon(int i)
 {
     Client *sel = selclient();
@@ -592,16 +524,6 @@ focusstack(int i)
     }
     /* If only one client is visible on selmon, then c == sel */
     focusclient(sel, c, 1);
-}
-
-Client*
-focustop(Monitor *m)
-{
-    Client *c;
-    wl_list_for_each(c, &fstack, flink)
-        if (VISIBLEON(c, m))
-            return c;
-    return NULL;
 }
 
 void
@@ -1142,15 +1064,6 @@ scalebox(struct wlr_box *box, float scale)
     box->height *= scale;
 }
 
-Client *
-selclient(void)
-{
-    Client *c = wl_container_of(fstack.next, c, flink);
-    if (wl_list_empty(&fstack) || !VISIBLEON(c, selmon))
-        return NULL;
-    return c;
-}
-
 void
 setcursor(struct wl_listener *listener, void *data)
 {
@@ -1201,31 +1114,6 @@ void setmfact(float factor) {
     return;
   selmon->mfact = f;
   arrange(selmon);
-}
-
-void
-setmon(Client *c, Monitor *m, unsigned int newtags)
-{
-    Monitor *oldmon = c->mon;
-    Client *oldsel = selclient();
-
-    if (oldmon == m)
-        return;
-    c->mon = m;
-
-    /* XXX leave/enter is not optimal but works */
-    if (oldmon) {
-        wlr_surface_send_leave(WLR_SURFACE(c), oldmon->wlr_output);
-        arrange(oldmon);
-    }
-    if (m) {
-        /* Make sure window actually overlaps with the monitor */
-        applybounds(c, &m->m);
-        wlr_surface_send_enter(WLR_SURFACE(c), m->wlr_output);
-        c->tags = newtags ? newtags : m->tagset[m->seltags]; /* assign tags of target monitor */
-        arrange(m);
-    }
-    focusclient(oldsel, focustop(selmon), 1);
 }
 
 void

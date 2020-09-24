@@ -1,7 +1,4 @@
 #include "tile.h"
-#include "coreUtils.h"
-#include <wlr/backend.h>
-#include <wlr/types/wlr_xdg_shell.h>
 
 void
 tile(Monitor *m)

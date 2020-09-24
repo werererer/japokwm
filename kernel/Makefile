@@ -1,6 +1,6 @@
 include config.mk
 
-CFLAGS += -I. -fPIC -DWLR_USE_UNSTABLE
+CFLAGS += -g3 -I. -fPIC -DWLR_USE_UNSTABLE
 
 WAYLAND_PROTOCOLS=$(shell pkg-config --variable=pkgdatadir wayland-protocols)
 WAYLAND_SCANNER=$(shell pkg-config --variable=wayland_scanner wayland-scanner)
@@ -8,8 +8,8 @@ WAYLAND_SCANNER=$(shell pkg-config --variable=wayland_scanner wayland-scanner)
 PKGS = wlroots wayland-server xcb xkbcommon
 CFLAGS += $(foreach p,$(PKGS),$(shell pkg-config --cflags $(p)))
 CFLAGS += -ljulia
-LDLIBS += $(foreach p,$(PKGS),$(shell pkg-config --libs $(p)))
 LDLIBS += -ljulia
+LDLIBS += $(foreach p,$(PKGS),$(shell pkg-config --libs $(p)))
 CFiles = $(wildcard *.c)
 
 
@@ -27,11 +27,8 @@ xdg-shell-protocol.c:
 
 xdg-shell-protocol.o: xdg-shell-protocol.h
 
-config.h: | config.def.h
-	cp config.def.h $@
-
 dwl: xdg-shell-protocol.o
-	$(CC) $(CFLAGS) $(CFiles) $(wildcard *.o) -o dwl
+	$(CC) $(CFLAGS) $(LDLIBS) $(CFiles) $(wildcard *.o) -o dwl
 
 clean:
 	rm -f dwl *.o xdg-shell-protocol.h xdg-shell-protocol.c

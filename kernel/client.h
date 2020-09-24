@@ -1,6 +1,8 @@
 #ifndef CLIENT
 #define CLIENT
 #include "coreUtils.h"
+#include "config.h"
+#include "client.h"
 
 typedef struct {
     struct wl_list link;
@@ -32,6 +34,7 @@ typedef struct {
 
 void applybounds(Client *c, struct wlr_box *bbox);
 void applyrules(Client *c);
+Client *selclient(void);
 
 static struct wl_list clients; /* tiling order */
 static struct wl_list fstack;  /* focus order */
