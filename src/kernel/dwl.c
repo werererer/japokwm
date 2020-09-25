@@ -201,7 +201,7 @@ void buttonpress(struct wl_listener *listener, void *data)
     /* case WLR_BUTTON_PRESSED:; */
     /*     /1* Change focus if the button was _pressed_ over a client *1/ */
     /*     if ((c = xytoclient(cursor->x, cursor->y))) */
-    /*         focusclient(selclient(), c, 1); */
+    /*         focusclient(selClient(), c, 1); */
 
     /*     keyboard = wlr_seat_get_keyboard(seat); */
     /*     mods = wlr_keyboard_get_modifiers(keyboard); */
@@ -476,7 +476,7 @@ Monitor * dirtomon(int dir)
 
 void focusmon(int i)
 {
-    Client *sel = selclient();
+    Client *sel = selClient();
 
     selmon = dirtomon(i);
     focusclient(sel, focustop(selmon), 1);
@@ -485,7 +485,7 @@ void focusmon(int i)
 void focusstack(int i)
 {
     /* Focus the next or previous client (in tiling order) on selmon */
-    Client *c, *sel = selclient();
+    Client *c, *sel = selClient();
     if (!sel)
         return;
     if (i > 0) {
@@ -615,7 +615,7 @@ void keypressmod(struct wl_listener *listener, void *data)
 
 void killclient()
 {
-    Client *sel = selclient();
+    Client *sel = selClient();
     if (!sel)
         return;
 
@@ -642,7 +642,7 @@ void maprequest(struct wl_listener *listener, void *data)
 
     /* Insert this client into client lists. */
     wl_list_insert(&clients, &c->link);
-    wl_list_insert(&fstack, &c->flink);
+    wl_list_insert(&focus_stack, &c->flink);
     wl_list_insert(&stack, &c->slink);
 
 #ifdef XWAYLAND
@@ -801,7 +801,7 @@ pointerfocus(Client *c, struct wlr_surface *surface, double sx, double sy, uint3
 #endif
 
     if (sloppyfocus)
-        focusclient(selclient(), c, 0);
+        focusclient(selClient(), c, 0);
 }
 
 void quit()
@@ -868,7 +868,8 @@ void render(struct wlr_surface *surface, int sx, int sy, void *data)
 
 void renderclients(Monitor *m, struct timespec *now)
 {
-    Client *c, *sel = selclient();
+    //TODO: segmentation fault
+    Client *c, *sel = selClient();
     const float *color;
     double ox, oy;
     int i, w, h;
@@ -1152,7 +1153,7 @@ void setup(void)
      * https://drewdevault.com/2018/07/29/Wayland-shells.html
      */
     wl_list_init(&clients);
-    wl_list_init(&fstack);
+    wl_list_init(&focus_stack);
     wl_list_init(&stack);
     wl_list_init(&independents);
     xdg_shell = wlr_xdg_shell_create(dpy);
@@ -1236,7 +1237,7 @@ void sigchld(int unused)
 
 void tag(unsigned int ui)
 {
-    Client *sel = selclient();
+    Client *sel = selClient();
     if (sel && ui & TAGMASK) {
         sel->tags = ui & TAGMASK;
         focusclient(sel, focustop(selmon), 1);
@@ -1246,7 +1247,7 @@ void tag(unsigned int ui)
 
 void tagmon(int i)
 {
-    Client *sel = selclient();
+    Client *sel = selClient();
     if (!sel)
         return;
     setmon(sel, dirtomon(i), 0);
@@ -1254,7 +1255,7 @@ void tagmon(int i)
 
 void togglefloating()
 {
-    Client *sel = selclient();
+    Client *sel = selClient();
     if (!sel)
         return;
     /* return if fullscreen */
@@ -1264,7 +1265,7 @@ void togglefloating()
 void toggletag(const Arg *arg)
 {
     unsigned int newtags;
-    Client *sel = selclient();
+    Client *sel = selClient();
     if (!sel)
         return;
     newtags = sel->tags ^ (arg->ui & TAGMASK);
@@ -1277,7 +1278,7 @@ void toggletag(const Arg *arg)
 
 void toggleview(const Arg *arg)
 {
-    Client *sel = selclient();
+    Client *sel = selClient();
     unsigned int newtagset = selmon->tagset[selmon->seltags] ^ (arg->ui & TAGMASK);
 
     if (newtagset) {
@@ -1303,7 +1304,7 @@ void unmapnotify(struct wl_listener *listener, void *data)
 
 void view(unsigned ui)
 {
-    Client *sel = selclient();
+    Client *sel = selClient();
     if ((ui & TAGMASK) == selmon->tagset[selmon->seltags])
         return;
     selmon->seltags ^= 1; /* toggle sel tagset */
@@ -1332,7 +1333,7 @@ Monitor * xytomon(double x, double y)
 
 void zoom()
 {
-    Client *c, *sel = selclient(), *oldsel = sel;
+    Client *c, *sel = selClient(), *oldsel = sel;
 
     if (!sel || !selmon->lt[selmon->sellt]->arrange || sel->isfloating)
         return;
@@ -1506,6 +1507,7 @@ int main(int argc, char *argv[])
     // socket
     if (!getenv("XDG_RUNTIME_DIR"))
         BARF("XDG_RUNTIME_DIR must be set");
+    //TODO: fix bug in setup -> segfault
     setup();
     run(startup_cmd);
     cleanup();

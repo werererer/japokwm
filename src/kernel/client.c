@@ -57,11 +57,12 @@ void applyrules(Client *c)
     setmon(c, mon, newtags);
 }
 
-
-Client *selclient()
+Client *selClient()
 {
-    Client *c = wl_container_of(fstack.next, c, flink);
-    if (wl_list_empty(&fstack) || !VISIBLEON(c, selmon))
+    struct wl_list f = focus_stack;
+    Client *c = wl_container_of(focus_stack.next, c, flink);
+    //TODO fix segmentation fault here
+    if (wl_list_empty(&focus_stack) || !VISIBLEON(c, selmon))
         return NULL;
     return c;
 }

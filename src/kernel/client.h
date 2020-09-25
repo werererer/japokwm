@@ -34,10 +34,10 @@ typedef struct {
 
 void applybounds(Client *c, struct wlr_box *bbox);
 void applyrules(Client *c);
-Client *selclient();
+Client *selClient();
 
 static struct wl_list clients; /* tiling order */
-static struct wl_list fstack;  /* focus order */
+static struct wl_list focus_stack;  /* focus order */
 static struct wl_list stack;   /* stacking z-order */
 static struct wlr_output_layout *output_layout;
 static struct wlr_box sgeom;

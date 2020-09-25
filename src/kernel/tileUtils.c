@@ -48,7 +48,7 @@ void focusclient(Client *old, Client *c, int lift)
 
     /* Put the new client atop the focus stack and select its monitor */
     wl_list_remove(&c->flink);
-    wl_list_insert(&fstack, &c->flink);
+    wl_list_insert(&focus_stack, &c->flink);
     selmon = c->mon;
 
     /* Activate the new client */
@@ -63,7 +63,7 @@ void focusclient(Client *old, Client *c, int lift)
 Client* focustop(Monitor *m)
 {
     Client *c;
-    wl_list_for_each(c, &fstack, flink)
+    wl_list_for_each(c, &focus_stack, flink)
         if (VISIBLEON(c, m))
             return c;
     return NULL;
@@ -72,7 +72,7 @@ Client* focustop(Monitor *m)
 void setmon(Client *c, Monitor *m, unsigned int newtags)
 {
     Monitor *oldmon = c->mon;
-    Client *oldsel = selclient();
+    Client *oldsel = selClient();
 
     if (oldmon == m)
         return;
