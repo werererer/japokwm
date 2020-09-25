@@ -36,12 +36,12 @@ void applybounds(Client *c, struct wlr_box *bbox);
 void applyrules(Client *c);
 Client *selClient();
 
-static struct wl_list clients; /* tiling order */
-static struct wl_list focus_stack;  /* focus order */
-static struct wl_list stack;   /* stacking z-order */
-static struct wlr_output_layout *output_layout;
-static struct wlr_box sgeom;
-static struct wl_list mons;
-static Monitor *selmon;
+extern struct wl_list clients; /* tiling order */
+extern struct wl_list focus_stack;  /* focus order */
+extern struct wl_list stack;   /* stacking z-order */
+extern struct wlr_output_layout *output_layout;
+extern struct wlr_box sgeom;
+extern struct wl_list mons;
+extern Monitor *selmon;
 
 #endif

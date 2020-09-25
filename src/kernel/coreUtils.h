@@ -91,6 +91,5 @@ typedef struct {
 } MonitorRule;
 
 //global variables
-typedef struct wlr_seat wlr_seat;
-extern wlr_seat *seat;
+extern struct wlr_seat *seat;
 #endif /* COREUTILS_H */

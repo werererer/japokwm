@@ -311,8 +311,10 @@ void createkeyboard(struct wlr_input_device *device)
     wl_list_insert(&keyboards, &kb->link);
 }
 
+//TODO: this function produces segfault
 void createmon(struct wl_listener *listener, void *data)
 {
+    
     /* This event is raised by the backend when a new output (aka a display or
      * monitor) becomes available. */
     struct wlr_output *wlr_output = data;
@@ -1011,6 +1013,8 @@ void run(char *startup_cmd)
      * compositor. Starting the backend rigged up all of the necessary event
      * loop configuration to listen to libinput events, DRM events, generate
      * frame events at the refresh rate, and so on. */
+    //TODO: fix bug in setup -> segfault
+    //this calls eventlistener therefore rendermon()
     wl_display_run(dpy);
 
     if (startup_cmd) {
@@ -1507,8 +1511,8 @@ int main(int argc, char *argv[])
     // socket
     if (!getenv("XDG_RUNTIME_DIR"))
         BARF("XDG_RUNTIME_DIR must be set");
-    //TODO: fix bug in setup -> segfault
     setup();
+    //TODO: fix bug in setup -> segfault
     run(startup_cmd);
     cleanup();
 
