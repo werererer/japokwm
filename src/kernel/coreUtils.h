@@ -1,5 +1,5 @@
-#ifndef COREUTILS
-#define COREUTILS
+#ifndef COREUTILS_H
+#define COREUTILS_H
 
 #include <wayland-server-core.h>
 #include <wayland-util.h>
@@ -93,4 +93,4 @@ typedef struct {
 //global variables
 typedef struct wlr_seat wlr_seat;
 extern wlr_seat *seat;
-#endif
+#endif /* COREUTILS_H */

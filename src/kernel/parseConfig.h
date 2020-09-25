@@ -1,7 +1,7 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef PARSE_CONFIG_H
+#define PARSE_CONFIG_H
 
-#include "parseconfig.h"
+#include "parseConfigUtils.h"
 
 /*
  * This file uses parseconfig to parse the config files
@@ -15,21 +15,19 @@ extern float bordercolor[4];
 extern float focuscolor[4];
 
 #define MAXLEN 15
-/* tagging */
-char *tags[MAXLEN];
-Rule rules[MAXLEN];
-/* layout(s) */
-Layout layouts[MAXLEN];
-/* monitors */
-MonitorRule monrules[MAXLEN];
-/* keyboard */
-int repeat_rate = 25;
-int repeat_delay = 600;
+extern char *tags[MAXLEN];
+extern Rule rules[MAXLEN];
+
+extern Layout layouts[MAXLEN];
+extern MonitorRule monrules[MAXLEN];
+
+extern int repeat_rate;
+extern int repeat_delay;
 
 /* commands */
-char *termcmd;
-Hotkey keys[MAXLEN] = {};
-Hotkey buttons[MAXLEN] = {};
+extern char *termcmd;
+extern Hotkey keys[MAXLEN];
+extern Hotkey buttons[MAXLEN];
 
 void updateConfig();
-#endif
+#endif /* PARSE_CONFIG_H */

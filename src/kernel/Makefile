@@ -10,7 +10,8 @@ CFLAGS += $(foreach p,$(PKGS),$(shell pkg-config --cflags $(p)))
 CFLAGS += -ljulia
 LDLIBS += -ljulia
 LDLIBS += $(foreach p,$(PKGS),$(shell pkg-config --libs $(p)))
-CFiles = $(wildcard *.c)
+CFiles = $(filter-out xdg-shell-protocol.c, $(wildcard *.c))
+OUTFILE = juliawm
 
 # wayland-scanner is a tool which generates C headers and rigging for Wayland
 # protocols, which are specified in XML. wlroots requires you to rig these up
@@ -26,11 +27,14 @@ xdg-shell-protocol.c:
 
 xdg-shell-protocol.o: xdg-shell-protocol.h
 
-dwl: xdg-shell-protocol.o
-	$(CC) $(CFLAGS) $(LDLIBS) $(CFiles) $(wildcard *.o) -o dwl
+$(OUTFILE): xdg-shell-protocol.o
+	$(CC) $(CFLAGS) $(LDLIBS) $(CFiles) $(wildcard *.o) -o $(OUTFILE)
+
+recompile: clean $(OUTFILE)
 
 clean:
-	rm -f dwl *.o xdg-shell-protocol.h xdg-shell-protocol.c
+	rm -f $(OUTFILE) *.o xdg-shell-protocol.h xdg-shell-protocol.c
 
-.DEFAULT_GOAL=dwl
+.DEFAULT_GOAL=recompile
+# .DEFAULT_GOAL=$(OUTFILE)
 .PHONY: clean

@@ -1,4 +1,23 @@
-#include "config.h"
+#include "parseConfig.h"
+
+int sloppyfocus;
+int borderpx;
+float rootcolor[4];
+float bordercolor[4];
+float focuscolor[4];
+
+char *tags[MAXLEN];
+Rule rules[MAXLEN];
+
+Layout layouts[MAXLEN];
+MonitorRule monrules[MAXLEN];
+
+int repeat_rate;
+int repeat_delay;
+
+char *termcmd;
+Hotkey keys[MAXLEN];
+Hotkey buttons[MAXLEN];
 
 void updateConfig()
 {
@@ -26,6 +45,6 @@ void updateConfig()
 
     /* commands */
     getConfigArr_str(&termcmd, "termcmd");
-    getConfigHotKeys(keys, "keys");
-    getConfigHotKeys(buttons, "buttons");
+    getConfigHotkeys(keys, "keys");
+    getConfigHotkeys(buttons, "buttons");
 }

@@ -1,4 +1,4 @@
-#include "parseconfig.h"
+#include "parseConfigUtils.h"
 
 int getLen(const char *name) {
     jl_value_t *arr = jl_eval_string("arr");
@@ -99,6 +99,13 @@ void getConfigHotkeys(Hotkey *hotkeys, const char *name)
     }
 }
 
+void getConfigRules(Rule *rules, const char *name)
+{
+    int len = getLen(name);
+    char execStr[10];
+    //TODO: define rules
+}
+
 void getConfigLayouts(Layout *layouts, const char *name)
 {
     int len = getLen(name);
@@ -147,7 +154,7 @@ void getConfigMonRules(MonitorRule *monrules, const char *name)
  * convert an integer to a char* with brackets.
  * Example 1 -> "[1]"
  * */
-static void appendIndex(char *resStr, int i)
+void appendIndex(char *resStr, int i)
 {
     char d[5];
     //add one since julia's arrays are 1 based

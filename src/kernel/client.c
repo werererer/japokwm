@@ -1,4 +1,5 @@
 #include "client.h"
+#include "tile.h"
 
 /* function implementations */
 void applybounds(Client *c, struct wlr_box *bbox)
@@ -57,7 +58,7 @@ void applyrules(Client *c)
 }
 
 
-Client * selclient(void)
+Client *selclient()
 {
     Client *c = wl_container_of(fstack.next, c, flink);
     if (wl_list_empty(&fstack) || !VISIBLEON(c, selmon))
