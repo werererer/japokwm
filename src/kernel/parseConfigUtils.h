@@ -10,23 +10,22 @@
 
 void initConfig(char *path);
 //basic
-void getConfigStr(char *value, char *name);
-void getConfigFloat(float *f, char *name);
-void getConfigInt(int *i, char *name);
-void getConfigFunc(jl_function_t **func, char *name);
+char* getConfigStr(char *name);
+float getConfigFloat(char *name);
+int getConfigInt(char *name);
 
 //array
-void getConfigStrArr(char **resArr, char *name);
-void getConfigFloatArr(float *resArr, char *name);
-void getConfigIntArr(int *resArr, char *name);
+char** getConfigStrArr(char *name);
+float* getConfigFloatArr(char *name);
+int* getConfigIntArr(char *name);
 
 //special
-void getConfigHotkeys(Hotkey *hotkeys, char *name);
-void getConfigRules(Rule *rules, char *name);
-void getConfigLayouts(Layout *layouts, char *name);
-void getConfigMonRules(MonitorRule *monrules, char *name);
+Hotkey getConfigHotkeys(char *name);
+Rule getConfigRules(char *name);
+Layout getConfigLayouts(char *name);
+MonitorRule getConfigMonRules(char *name);
 
 //utils
-void arrayPosToStr(char *resStr, char *varName, int i);
-void array2DPosToStr(char *resStr, char *varName, int i, int j);
+char* arrayPosToStr(char *resStr, char *varName, int i);
+char* array2DPosToStr(char *resStr, char *varName, int i, int j);
 #endif /* PARSE_CONFIG_UTILS_H */
