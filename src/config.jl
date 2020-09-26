@@ -23,13 +23,13 @@ layouts = [
 
 monrules = [
     # name mfact nmaster scale layout transform
-    [ "", 0.55, 1, 1, layouts[1], NORMAL ],
+    [ "rule", 0.55, 1, 1, layouts[1], NORMAL ],
 ]
 
 
 xkb_rules = []
-repeat_rate = 25
-repeat_delay = 600
+repeatRate = 25
+repeatDelay = 600
 termcmd = `alacritty`
 
 mod = mod2

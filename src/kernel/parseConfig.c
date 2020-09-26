@@ -1,4 +1,5 @@
 #include "parseConfig.h"
+#include <parseConfigUtils.h>
 
 char* configFile = "../config.jl";
 
@@ -34,18 +35,18 @@ void updateConfig()
 
     /* tagging */
     getConfigStrArr(tags, "tags");
-    getConfigRules(rules, "rules");
-    getConfigLayouts(layouts, "layouts");
+    getConfigRuleArr(rules, "rules");
+    getConfigLayoutArr(layouts, "layouts");
 
     /* monitors */
-    getConfigMonRules(monrules, "monrules");
+    getConfigMonRuleArr(monrules, "monrules");
 
     /* keyboard */
-    getConfigIntArr(&repeatRate, "repeatRate");
-    getConfigIntArr(&repeatDelay, "repeatDelay");
+    repeatRate = getConfigInt("repeatRate");
+    repeatDelay = getConfigInt("repeatDelay");
 
     /* commands */
     getConfigStrArr(&termcmd, "termcmd");
-    getConfigHotkeys(keys, "keys");
-    getConfigHotkeys(buttons, "buttons");
+    getConfigHotkeyArr(keys, "keys");
+    // getConfigHotkeyArr(buttons, "buttons");
 }

@@ -4,8 +4,7 @@
 #include <string.h>
 
 #define NUM_DIGITS 9
-#define ARR1D_STRING_LENGTH(X) strlen(X) + strlen("[]") + NUM_DIGITS
-#define ARR2D_STRING_LENGTH(X) strlen(X) + 2*(strlen("[]") + NUM_DIGITS)
+#define ARR_STRING_LENGTH(X) strlen(X) + 2*(strlen("[]") + NUM_DIGITS)
 //TODO: define foreach julia
 
 void initConfig(char *path);
@@ -13,17 +12,20 @@ void initConfig(char *path);
 char* getConfigStr(char *name);
 float getConfigFloat(char *name);
 int getConfigInt(char *name);
+jl_function_t* getConfigFunc(char *name);
+Layout getConfigLayout(char *name);
+Hotkey getConfigHotkey(char *name);
+Rule getConfigRule(char *name);
+MonitorRule getConfigMonRule(char *name);
 
 //array
 void getConfigStrArr(char **resArr, char *name);
 void getConfigFloatArr(float *resArr, char *name);
 void getConfigIntArr(int *resArr, char *name);
-
-//special
-void getConfigHotkeys(Hotkey *hotkeys, char *name);
-void getConfigRules(Rule *rules, char *name);
-void getConfigLayouts(Layout *layouts, char *name);
-void getConfigMonRules(MonitorRule *monrules, char *name);
+void getConfigLayoutArr(Layout *layouts, char *name);
+void getConfigHotkeyArr(Hotkey *hotkeys, char *name);
+void getConfigRuleArr(Rule *rules, char *name);
+void getConfigMonRuleArr(MonitorRule *monrules, char *name);
 
 //utils
 void arrayPosToStr(char *resStr, char *varName, int i);
