@@ -28,12 +28,12 @@ void updateConfig()
     getConfigInt(&borderpx, "borderpx");
 
     /* appearance */
-    getConfigArrFloat(rootcolor, "rootcolor");
-    getConfigArrFloat(bordercolor, "bordercolor");
-    getConfigArrFloat(focuscolor, "focuscolor");
+    getConfigFloatArr(rootcolor, "rootcolor");
+    getConfigFloatArr(bordercolor, "bordercolor");
+    getConfigFloatArr(focuscolor, "focuscolor");
 
     /* tagging */
-    getConfigArrStr(tags, "tags");
+    getConfigStrArr(tags, "tags");
     getConfigRules(rules, "rules");
     getConfigLayouts(layouts, "layouts");
 
@@ -41,11 +41,11 @@ void updateConfig()
     getConfigMonRules(monrules, "monrules");
 
     /* keyboard */
-    getConfigArrInt(&repeatRate, "repeatRate");
-    getConfigArrInt(&repeatDelay, "repeatDelay");
+    getConfigIntArr(&repeatRate, "repeatRate");
+    getConfigIntArr(&repeatDelay, "repeatDelay");
 
     /* commands */
-    getConfigArrStr(&termcmd, "termcmd");
+    getConfigStrArr(&termcmd, "termcmd");
     getConfigHotkeys(keys, "keys");
     getConfigHotkeys(buttons, "buttons");
 }

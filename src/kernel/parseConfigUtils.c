@@ -1,4 +1,5 @@
 #include "parseConfigUtils.h"
+#include <stdlib.h>
 #include <string.h>
 
 static int jlArrLen(char *name) {
@@ -23,7 +24,8 @@ void initConfig(char *path)
 void getConfigStr(char *value, char *name)
 {
     jl_value_t* v = jl_eval_string(name);
-    strcpy(value, jl_string_ptr(v));
+    char *res = (char *)jl_string_ptr(v);
+    strcpy(value, res);
 }
 
 void getConfigFloat(float *f, char *name)
@@ -43,18 +45,19 @@ void getConfigFunc(jl_function_t **func, char *name)
     *func = jl_get_function(jl_base_module, name);
 }
 
-void getConfigArrStr(char *resArr[], char *name)
+void getConfigStrArr(char **resArr, char *name)
 {
     char execStr[ARR1D_STRING_LENGTH(name)];
     int len = jlArrLen(name);
 
     for (int i = 1; i <= len; i++) {
         arrayPosToStr(execStr, name, i);
-        getConfigStr(resArr[i], execStr);
+        jl_value_t* v = jl_eval_string(execStr);
+        resArr[i-1] = (char *)jl_string_ptr(v);
     }
 }
 
-void getConfigArrFloat(float resArr[], char *name)
+void getConfigFloatArr(float resArr[], char *name)
 {
     int len = jlArrLen(name);
     char execStr[ARR1D_STRING_LENGTH(name)];
@@ -65,7 +68,7 @@ void getConfigArrFloat(float resArr[], char *name)
     }
 }
 
-void getConfigArrInt(int *resArr, char *name)
+void getConfigIntArr(int *resArr, char *name)
 {
     int len = jlArrLen(name);
     char execStr[ARR1D_STRING_LENGTH(name)];

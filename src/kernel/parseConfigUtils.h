@@ -13,12 +13,12 @@ void initConfig(char *path);
 void getConfigStr(char *value, char *name);
 void getConfigFloat(float *f, char *name);
 void getConfigInt(int *i, char *name);
+void getConfigFunc(jl_function_t **func, char *name);
 
 //array
-void getConfigArrStr(char *resArr[], char *name);
-void getConfigArrFloat(float *resArr, char *name);
-void getConfigArrInt(int *resArr, char *name);
-void getConfigFunc(jl_function_t **func, char *name);
+void getConfigStrArr(char **resArr, char *name);
+void getConfigFloatArr(float *resArr, char *name);
+void getConfigIntArr(int *resArr, char *name);
 
 //special
 void getConfigHotkeys(Hotkey *hotkeys, char *name);
