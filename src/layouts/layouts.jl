@@ -1,7 +1,7 @@
-module layouts
+module Layouts
 
 # Monitor is an integer 
-function tile(monitor)
+function tile()
 
 end
 
@@ -9,7 +9,7 @@ function monocle()
 
 end
 
-function tile()
-end
+function floating()
 
+end
 end

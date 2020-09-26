@@ -1,5 +1,7 @@
 #include "parseConfig.h"
 
+char* configFile = "../config.jl";
+
 int sloppyfocus;
 int borderpx;
 float rootcolor[4];
@@ -21,7 +23,7 @@ Hotkey buttons[MAXLEN];
 
 void updateConfig()
 {
-    initConfig("../config.jl");
+    initConfig(configFile);
     getConfig_int(&sloppyfocus, "sloppyfocus");
     getConfig_int(&borderpx, "borderpx");
 

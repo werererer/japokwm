@@ -1,6 +1,7 @@
 #include "tile.h"
 
-void tile(Monitor *m)
+void
+tile(Monitor *m)
 {
     unsigned int i, n = 0, h, mw, my, ty;
     Client *c;
@@ -32,7 +33,8 @@ void tile(Monitor *m)
     }
 }
 
-void monocle(Monitor *m)
+void
+monocle(Monitor *m)
 {
     Client *c;
 
@@ -43,7 +45,8 @@ void monocle(Monitor *m)
     }
 }
 
-void resize(Client *c, int x, int y, int w, int h, int interact)
+void
+resize(Client *c, int x, int y, int w, int h, int interact)
 {
     /*
      * Note that I took some shortcuts here. In a more fleshed-out

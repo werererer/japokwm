@@ -7,7 +7,6 @@ WAYLAND_SCANNER=$(shell pkg-config --variable=wayland_scanner wayland-scanner)
 
 PKGS = wlroots wayland-server xcb xkbcommon
 CFLAGS += $(foreach p,$(PKGS),$(shell pkg-config --cflags $(p)))
-CFLAGS += -ljulia
 LDLIBS += -ljulia
 LDLIBS += $(foreach p,$(PKGS),$(shell pkg-config --libs $(p)))
 CFiles = $(filter-out xdg-shell-protocol.c, $(wildcard *.c))

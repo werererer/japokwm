@@ -1,6 +1,6 @@
 include("defaultConfig.jl")
 include("layouts/layouts.jl")
-import layouts
+import Main.Layouts
 
 sloppyfocus = 1
 borderpx = 1
@@ -16,15 +16,15 @@ rules = [
 ]
 
 layouts = [
-    [ "[]=", layouts.tile ],
-    [ "><>", nothing ],
-    [ "[M]", layouts.monocle ],
+    [ "[]=", ()-> Layouts.tile() ],
+    [ "><>", ()-> Layouts.floating() ],
+    [ "[M]", ()-> Layouts.monocle() ],
 ]
 
-monrules = {
-	# name mfact nmaster scale layout transform
-    { "", 0.55, 1, 1, layouts[0], NORMAL},
-};
+monrules = [
+    # name mfact nmaster scale layout transform
+    [ "", 0.55, 1, 1, layouts[1], NORMAL ],
+]
 
 
 xkb_rules = []

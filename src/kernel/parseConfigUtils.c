@@ -1,4 +1,5 @@
 #include "parseConfigUtils.h"
+#include <string.h>
 
 int getLen(const char *name) {
     jl_value_t *arr = jl_eval_string("arr");
@@ -7,7 +8,15 @@ int getLen(const char *name) {
 
 void initConfig(const char *path)
 {
-    jl_eval_string(strcat(strcat("include\"", path),"\")"));
+    char *prefix = "include(\"";
+    char *postfix = "\")";
+    //pluse one for the null char after string
+    int charPtrlen = strlen(path) + strlen(prefix) + strlen(postfix) + 1;
+    char res[charPtrlen];
+    strcpy(res, prefix);
+    strcat(res, path);
+    strcat(res, postfix);
+    jl_eval_string(res);
 }
 
 // get variable

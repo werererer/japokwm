@@ -1,6 +1,7 @@
 /*
  * See LICENSE file for copyright and license details.
  */
+#include <parseConfig.h>
 #define _POSIX_C_SOURCE 200809L
 #include <getopt.h>
 #include <linux/input-event-codes.h>
@@ -311,7 +312,6 @@ void createkeyboard(struct wlr_input_device *device)
     wl_list_insert(&keyboards, &kb->link);
 }
 
-//TODO: this function produces segfault
 void createmon(struct wl_listener *listener, void *data)
 {
     
@@ -560,11 +560,10 @@ int keybinding(uint32_t mods, xkb_keysym_t sym)
     int handled = 0;
     const Hotkey *h;
     for (h = keys; h < END(keys); h++) {
-        /* if (CLEANMASK(mods) == CLEANMASK(h->mod) && sym == h->keysym && h->func) { */
-            //call function in julia of hotkey
-            jl_call0(h->func);
-            handled = 1;
-        /* } */
+        //call function in julia of hotkey
+        printf("%s", h->symbol);
+        /* jl_value_t* retVal = jl_call0(h->func); */
+        /* handled = jl_unbox_int32(retVal); */
     }
     return handled;
 }
@@ -870,7 +869,6 @@ void render(struct wlr_surface *surface, int sx, int sy, void *data)
 
 void renderclients(Monitor *m, struct timespec *now)
 {
-    //TODO: segmentation fault
     Client *c, *sel = selClient();
     const float *color;
     double ox, oy;
@@ -1013,8 +1011,6 @@ void run(char *startup_cmd)
      * compositor. Starting the backend rigged up all of the necessary event
      * loop configuration to listen to libinput events, DRM events, generate
      * frame events at the refresh rate, and so on. */
-    //TODO: fix bug in setup -> segfault
-    //this calls eventlistener therefore rendermon()
     wl_display_run(dpy);
 
     if (startup_cmd) {
@@ -1497,6 +1493,7 @@ int main(int argc, char *argv[])
     int c;
 
     jl_init();
+    updateConfig();
 
     while ((c = getopt(argc, argv, "s:h")) != -1) {
         if (c == 's')
@@ -1512,7 +1509,6 @@ int main(int argc, char *argv[])
     if (!getenv("XDG_RUNTIME_DIR"))
         BARF("XDG_RUNTIME_DIR must be set");
     setup();
-    //TODO: fix bug in setup -> segfault
     run(startup_cmd);
     cleanup();
 
