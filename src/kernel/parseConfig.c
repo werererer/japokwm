@@ -14,8 +14,8 @@ Rule rules[MAXLEN];
 Layout layouts[MAXLEN];
 MonitorRule monrules[MAXLEN];
 
-int repeat_rate;
-int repeat_delay;
+int repeatRate;
+int repeatDelay;
 
 char *termcmd;
 Hotkey keys[MAXLEN];
@@ -24,17 +24,16 @@ Hotkey buttons[MAXLEN];
 void updateConfig()
 {
     initConfig(configFile);
-    getConfig_int(&sloppyfocus, "sloppyfocus");
-    getConfig_int(&borderpx, "borderpx");
+    getConfigInt(&sloppyfocus, "sloppyfocus");
+    getConfigInt(&borderpx, "borderpx");
 
     /* appearance */
-    getConfigArr_float(rootcolor, "rootcolor");
-    getConfigArr_float(bordercolor, "bordercolor");
-    getConfigArr_float(focuscolor, "focuscolor");
+    getConfigArrFloat(rootcolor, "rootcolor");
+    getConfigArrFloat(bordercolor, "bordercolor");
+    getConfigArrFloat(focuscolor, "focuscolor");
 
-    //TODO: style?
     /* tagging */
-    getConfigArr_str(tags, "tags");
+    getConfigArrStr(tags, "tags");
     getConfigRules(rules, "rules");
     getConfigLayouts(layouts, "layouts");
 
@@ -42,11 +41,11 @@ void updateConfig()
     getConfigMonRules(monrules, "monrules");
 
     /* keyboard */
-    getConfigArr_int(&repeat_rate, "repeat_rate");
-    getConfigArr_int(&repeat_delay, "repeat_delay");
+    getConfigArrInt(&repeatRate, "repeatRate");
+    getConfigArrInt(&repeatDelay, "repeatDelay");
 
     /* commands */
-    getConfigArr_str(&termcmd, "termcmd");
+    getConfigArrStr(&termcmd, "termcmd");
     getConfigHotkeys(keys, "keys");
     getConfigHotkeys(buttons, "buttons");
 }

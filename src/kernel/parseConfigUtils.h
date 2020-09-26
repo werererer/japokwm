@@ -3,25 +3,30 @@
 #include "coreUtils.h"
 #include <string.h>
 
-void initConfig(const char *path);
+#define NUM_DIGITS 9
+#define ARR1D_STRING_LENGTH(X) strlen(X) + strlen("[]") + NUM_DIGITS
+#define ARR2D_STRING_LENGTH(X) strlen(X) + 2*(strlen("[]") + NUM_DIGITS)
+//TODO: define foreach julia
+
+void initConfig(char *path);
 //basic
-void getConfig_str(char *value, const char *name);
-void getConfig_float(float *f, const char *name);
-void getConfig_int(int *i, const char *name);
+void getConfigStr(char *value, char *name);
+void getConfigFloat(float *f, char *name);
+void getConfigInt(int *i, char *name);
 
 //array
-void getConfigArr_str(char *resArr[], const char *name);
-void getConfigArr_float(float *resArr, const char *name);
-void getConfigArr_int(int *resArr, const char *name);
-void getConfig_func(jl_function_t **func, const char *name);
+void getConfigArrStr(char *resArr[], char *name);
+void getConfigArrFloat(float *resArr, char *name);
+void getConfigArrInt(int *resArr, char *name);
+void getConfigFunc(jl_function_t **func, char *name);
 
 //special
-void getConfigHotkeys(Hotkey *hotkeys, const char *name);
-void getConfigRules(Rule *rules, const char *name);
-void getConfigLayouts(Layout *layouts, const char *name);
-void getConfigMonRules(MonitorRule *monrules, const char *name);
+void getConfigHotkeys(Hotkey *hotkeys, char *name);
+void getConfigRules(Rule *rules, char *name);
+void getConfigLayouts(Layout *layouts, char *name);
+void getConfigMonRules(MonitorRule *monrules, char *name);
 
 //utils
-void arrayPosToStr(char *resStr, const char *varName, int i);
-void array2DPosToStr(char *resStr, const char *varName, int i, int j);
+void arrayPosToStr(char *resStr, char *varName, int i);
+void array2DPosToStr(char *resStr, char *varName, int i, int j);
 #endif /* PARSE_CONFIG_UTILS_H */

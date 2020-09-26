@@ -23,8 +23,8 @@ extern Rule rules[MAXLEN];
 extern Layout layouts[MAXLEN];
 extern MonitorRule monrules[MAXLEN];
 
-extern int repeat_rate;
-extern int repeat_delay;
+extern int repeatRate;
+extern int repeatDelay;
 
 /* commands */
 extern char *termcmd;
