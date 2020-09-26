@@ -15,17 +15,17 @@ float getConfigFloat(char *name);
 int getConfigInt(char *name);
 
 //array
-char** getConfigStrArr(char *name);
-float* getConfigFloatArr(char *name);
-int* getConfigIntArr(char *name);
+void getConfigStrArr(char **resArr, char *name);
+void getConfigFloatArr(float *resArr, char *name);
+void getConfigIntArr(int *resArr, char *name);
 
 //special
-Hotkey getConfigHotkeys(char *name);
-Rule getConfigRules(char *name);
-Layout getConfigLayouts(char *name);
-MonitorRule getConfigMonRules(char *name);
+void getConfigHotkeys(Hotkey *hotkeys, char *name);
+void getConfigRules(Rule *rules, char *name);
+void getConfigLayouts(Layout *layouts, char *name);
+void getConfigMonRules(MonitorRule *monrules, char *name);
 
 //utils
-char* arrayPosToStr(char *resStr, char *varName, int i);
-char* array2DPosToStr(char *resStr, char *varName, int i, int j);
+void arrayPosToStr(char *resStr, char *varName, int i);
+void array2DPosToStr(char *resStr, char *varName, int i, int j);
 #endif /* PARSE_CONFIG_UTILS_H */

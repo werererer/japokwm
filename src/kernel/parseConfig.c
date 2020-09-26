@@ -24,8 +24,8 @@ Hotkey buttons[MAXLEN];
 void updateConfig()
 {
     initConfig(configFile);
-    getConfigInt(&sloppyfocus, "sloppyfocus");
-    getConfigInt(&borderpx, "borderpx");
+    sloppyfocus = getConfigInt("sloppyfocus");
+    borderpx = getConfigInt("borderpx");
 
     /* appearance */
     getConfigFloatArr(rootcolor, "rootcolor");

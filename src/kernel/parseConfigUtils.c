@@ -43,66 +43,64 @@ jl_function_t* getConfigFunc(char *name)
     return jl_eval_string(name);
 }
 
-
-char** getConfigStrArr(char *name)
+void getConfigStrArr(char **resArr, char *name)
 {
     char execStr[ARR1D_STRING_LENGTH(name)];
     int len = jlArrLen(name);
 
     for (int i = 1; i <= len; i++) {
         arrayPosToStr(execStr, name, i);
-        resArr[i-1] = getConfigArrStr(execStr);
+        resArr[i-1] = getConfigStr(execStr);
     }
-    return resArr;
 }
 
-int* getConfigIntArr(int *resArr, char *name)
+void getConfigIntArr(int resArr[], char *name)
 {
     int len = jlArrLen(name);
     char execStr[ARR1D_STRING_LENGTH(name)];
 
     for (int i = 1; i <= len; i++) {
         arrayPosToStr(execStr, name, i);
-        getConfigInt(&resArr[i], execStr);
+        resArr[i-1] = getConfigInt(execStr);
     }
 }
 
-float* getConfigFloatArr(float resArr[], char *name)
+void getConfigFloatArr(float resArr[], char *name)
 {
     int len = jlArrLen(name);
     char execStr[ARR1D_STRING_LENGTH(name)];
 
     for (int i = 1; i <= len; i++) {
         arrayPosToStr(execStr, name, i);
-        getConfigFloat(&resArr[i], execStr);
+        resArr[i] = getConfigFloat(execStr);
     }
 }
 
-Hotkey getConfigHotkeys(char *name)
+void getConfigHotkeys(Hotkey *hotkeys, char *name)
 {
-  int len = jlArrLen(name);
-  char execStr[10];
-  char execStrFunc[10];
-  jl_value_t *t;
-  char d[2];
+    int len = jlArrLen(name);
+    char execStr[10];
+    char execStrFunc[10];
+    jl_value_t *t;
+    char d[2];
 
-  for (int i = 1; i <= len; i++) {
-    array2DPosToStr(execStr, name, i, 1);
-    array2DPosToStr(execStrFunc, name, i, 2);
+    for (int i = 1; i <= len; i++) {
+        array2DPosToStr(execStr, name, i, 1);
+        array2DPosToStr(execStrFunc, name, i, 2);
 
-    getConfigStr((char *)hotkeys[i].symbol, execStr);
-    hotkeys[i].func = getConfigArrFunc(execStrFunc);
+        hotkeys[i-1].symbol = getConfigStr(execStr);
+        hotkeys[i-1].func = getConfigFunc(execStrFunc);
     }
 }
 
-Rule getConfigRules(char *name)
+void getConfigRules(Rule *rules, char *name)
 {
-  int len = jlArrLen(name);
-  char execStr[10];
-  // TODO: define rules
+    int len = jlArrLen(name);
+    char execStr[10];
+    // TODO: define rules
 }
 
-Layout getConfigLayouts(char *name)
+void getConfigLayouts(Layout *layouts, char *name)
 {
     int len = jlArrLen(name);
     char execStr[ARR2D_STRING_LENGTH(name)];
@@ -112,12 +110,12 @@ Layout getConfigLayouts(char *name)
         array2DPosToStr(execStr, name, i, 1);
         array2DPosToStr(execStrFunc, name, i, 2);
 
-        layouts[i-1].symbol = getConfigArrStr(execStr);
-        layouts[i-1].arrange = getConfigArrFunc(execStrFunc);
+        layouts[i-1].symbol = getConfigStr(execStr);
+        layouts[i-1].arrange = getConfigFunc(execStrFunc);
     }
 }
 
-MonitorRule getConfigMonRules( *monrules, char *name)
+void getConfigMonRules(MonitorRule *monrules, char *name)
 {
     int len = jlArrLen(name);
     char execStr0[ARR2D_STRING_LENGTH(name)];
@@ -136,9 +134,9 @@ MonitorRule getConfigMonRules( *monrules, char *name)
         array2DPosToStr(execStr4, name, i, 5);
         array2DPosToStr(execStr5, name, i, 6);
 
-        monrules->name = getConfigArrStr(execStr0);
-        getConfigFloat(&monrules->mfact, execStr1);
-        getConfigIntArr(&monrules->nmaster, execStr2);
+        monrules->name = getConfigStr(execStr0);
+        monrules->mfact = getConfigFloat(execStr1);
+        monrules->nmaster = getConfigInt(execStr2);
         getConfigFloatArr(&monrules->scale, execStr3);
         getConfigLayouts(monrules->lt, execStr4);
         getConfigIntArr((int *)&monrules->rr, execStr5);
