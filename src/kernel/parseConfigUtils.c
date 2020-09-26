@@ -52,6 +52,7 @@ void getConfigStrArr(char **resArr, char *name)
 
     for (int i = 1; i <= len; i++) {
         arrayPosToStr(execStr, name, i);
+        //evaluate julia
         jl_value_t* v = jl_eval_string(execStr);
         resArr[i-1] = (char *)jl_string_ptr(v);
     }
@@ -170,12 +171,18 @@ static void append2DIndex(char *resStr, int i, int j)
     appendIndex(resStr, j);
 }
 
+/*
+ * convert varname and integer i to string: "varname[i]"
+ * */
 void arrayPosToStr(char *resStr, char *varName, int i)
 {
     strcpy(resStr, (char *)varName);
     appendIndex(resStr, i);
 }
 
+/*
+ * convert varname, integer i and integer j to string: "varname[i][j]"
+ * */
 void array2DPosToStr(char *resStr, char *varName, int i, int j)
 {
     strcpy(resStr, varName);
