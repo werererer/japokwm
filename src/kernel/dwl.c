@@ -560,10 +560,12 @@ int keybinding(uint32_t mods, xkb_keysym_t sym)
     int handled = 0;
     const Hotkey *h;
     for (h = keys; h < END(keys); h++) {
-        //call function in julia of hotkey
-        printf("%s", h->symbol);
-        /* jl_value_t* retVal = jl_call0(h->func); */
-        /* handled = jl_unbox_int32(retVal); */
+        if (!strcmp(h->symbol, "Super_LShift_LReturn"))
+        {
+            printf("%s\n", h->symbol);
+            /* jl_value_t* v = jl_call0(h->func); */
+            /* handled = jl_unbox_int32(retVal); */
+        }
     }
     return handled;
 }
@@ -582,6 +584,7 @@ void keypress(struct wl_listener *listener, void *data)
     int nsyms = xkb_state_key_get_syms(
             kb->device->keyboard->xkb_state, keycode, &syms);
 
+    //TODO: export wlr keyboard modifiers to parseWlroots.jl
     int handled = 0;
     uint32_t mods = wlr_keyboard_get_modifiers(kb->device->keyboard);
     /* On _press_, attempt to process a compositor keybinding. */
