@@ -4,12 +4,17 @@ include("keysym.jl")
 #TODO: config files must print error messages
 
 #you can find names in keysym.jl
-const mod1 = "Alt_L"
+const mods = ["Shift_L", "Caps_Lock", "Control_L", "Alt_L", "", "", "Super_L", "ISO_Level3_Shift"]
+const mod1 = mods[4]
+#TODO what position in mods array?
 const mod2 = "Num_Lock"
-const mod3 = "Caps_Lock"
-const mod4 = "Super_L"
+const mod3 = mods[2]
+const mod4 = mods[7]
 #also known as Alt Gr
-const mod5 = "ISO_Level3_Shift"
+const mod5 = mods[8]
+const shift = mods[1]
+const ctrl = mods[3]
+#
 
 @enum Screentransform begin
     NORMAL
@@ -17,4 +22,3 @@ end
 
 #default
 mod = mod1
-shift = "Shift_L"

@@ -1,6 +1,6 @@
 include config.mk
 
-CFLAGS += -shared -fPIC -DWLR_USE_UNSTABLE
+CFLAGS += -shared -g3 -fPIC -DWLR_USE_UNSTABLE
 
 WAYLAND_PROTOCOLS=$(shell pkg-config --variable=pkgdatadir wayland-protocols)
 WAYLAND_SCANNER=$(shell pkg-config --variable=wayland_scanner wayland-scanner)

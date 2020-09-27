@@ -2,7 +2,11 @@
 #=
 # This file wrapps c functions to julia
 =#
-const corePath = "../kernel/dwl.so"
+const corePath = "./juliawm.so"
+
+function run(cmd::String)
+    ccall((:run, corePath), Cvoid, (Cstring,), cmd)
+end
 
 function focusstack(i)
     ccall((:focusstack, corePath), Cvoid, (Cint,), i)
