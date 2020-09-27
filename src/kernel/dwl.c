@@ -2,6 +2,7 @@
  * See LICENSE file for copyright and license details.
  */
 #include <parseConfig.h>
+#include <parseConfigUtils.h>
 #define _POSIX_C_SOURCE 200809L
 #include <getopt.h>
 #include <linux/input-event-codes.h>
@@ -548,31 +549,6 @@ void inputdevice(struct wl_listener *listener, void *data)
     wlr_seat_set_capabilities(seat, caps);
 }
 
-int keybinding(uint32_t mods, xkb_keysym_t sym)
-{
-    //todo mods 
-    /*
-     * Here we handle compositor keybindings. This is when the compositor is
-     * processing keys, rather than passing them on to the client for its own
-     * processing.
-     */
-    int handled = 0;
-    const Hotkey *h;
-    for (h = keys; h < END(keys); h++) {
-        if (!strcmp(h->symbol, "Super_LShift_LReturn"))
-        {
-            //TODO: fix keybination
-            printf("%s\n", h->symbol);
-            printf("%i\n", mods);
-            printf("%i\n", sym);
-            jl_call0(h->func);
-            /* jl_value_t* v = jl_call0(h->func); */
-            /* handled = jl_unbox_int32(retVal); */
-        }
-    }
-    return handled;
-}
-
 void keypress(struct wl_listener *listener, void *data)
 {
     /* This event is raised when a key is pressed or released. */
@@ -593,6 +569,9 @@ void keypress(struct wl_listener *listener, void *data)
     /* On _press_, attempt to process a compositor keybinding. */
     if (event->state == WLR_KEY_PRESSED)
         for (i = 0; i < nsyms; i++)
+            jl_eval_string("include(\"../keybinding.jl\")");
+            jl_function_t* f = jl_eval_string("toKeybind");
+            jl_call2(f, jl_value_t *a, jl_value_t *b)
             handled = keybinding(mods, syms[i]) || handled;
 
     if (!handled) {
