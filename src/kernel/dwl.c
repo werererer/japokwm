@@ -43,7 +43,6 @@
 #endif
 #include <julia.h>
 
-// TODO: good comment
 #include "tile.h"
 #include "client.h"
 
@@ -562,7 +561,11 @@ int keybinding(uint32_t mods, xkb_keysym_t sym)
     for (h = keys; h < END(keys); h++) {
         if (!strcmp(h->symbol, "Super_LShift_LReturn"))
         {
+            //TODO: fix keybination
             printf("%s\n", h->symbol);
+            printf("%i\n", mods);
+            printf("%i\n", sym);
+            jl_call0(h->func);
             /* jl_value_t* v = jl_call0(h->func); */
             /* handled = jl_unbox_int32(retVal); */
         }
@@ -1490,6 +1493,7 @@ Client * xytoindependent(double x, double y)
 }
 #endif
 
+JULIA_DEFINE_FAST_TLS()
 int main(int argc, char *argv[])
 {
     char *startup_cmd = NULL;
@@ -1515,7 +1519,7 @@ int main(int argc, char *argv[])
     run(startup_cmd);
     cleanup();
 
-    jl_exit(0);
+    jl_atexit_hook(0);
     return EXIT_SUCCESS;
 
 usage:
