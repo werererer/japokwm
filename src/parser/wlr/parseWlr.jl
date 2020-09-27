@@ -5,7 +5,7 @@ wlr = "/usr/include/wlr"
 for (root, dirs, files) in walkdir(wlr)
     for file in files
         outFile = replace("$root/$file", ".h" => ".jl") |> x -> replace(x, wlr => ".")
-        outFile = joinpath("out", outFile) |> normpath
+        outFile = joinpath("$outDir", outFile) |> normpath
         mkpath(dirname(outFile))
 
         println("original: $root/$file")
