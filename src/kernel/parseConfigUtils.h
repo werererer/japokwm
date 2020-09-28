@@ -14,7 +14,7 @@ float getConfigFloat(char *name);
 int getConfigInt(char *name);
 jl_function_t* getConfigFunc(char *name);
 Layout getConfigLayout(char *name);
-Hotkey getConfigHotkey(char *name);
+Key getConfigKey(char *name);
 Rule getConfigRule(char *name);
 MonitorRule getConfigMonRule(char *name);
 
@@ -23,7 +23,7 @@ void getConfigStrArr(char **resArr, char *name);
 void getConfigFloatArr(float *resArr, char *name);
 void getConfigIntArr(int *resArr, char *name);
 void getConfigLayoutArr(Layout *layouts, char *name);
-void getConfigHotkeyArr(Hotkey *hotkeys, char *name);
+void getConfigKeyArr(Key *keys, char *name);
 void getConfigRuleArr(Rule *rules, char *name);
 void getConfigMonRuleArr(MonitorRule *monrules, char *name);
 

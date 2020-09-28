@@ -1,5 +1,3 @@
-module Layouts
-
 # Monitor is an integer 
 function tile()
 
@@ -11,5 +9,4 @@ end
 
 function floating()
 
-end
 end

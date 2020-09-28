@@ -1,8 +1,10 @@
 #include "tile.h"
+#include <stdio.h>
 
 void
 tile(Monitor *m)
 {
+    printf("tile\n");
     unsigned int i, n = 0, h, mw, my, ty;
     Client *c;
 

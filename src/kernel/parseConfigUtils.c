@@ -58,9 +58,9 @@ Layout getConfigLayout(char *name)
     return layout;
 }
 
-Hotkey getConfigHotkey(char *name)
+Key getConfigKey(char *name)
 {
-    Hotkey hotkey;
+    Key key;
     int len = ARR_STRING_LENGTH(name);
     char execStr1[len];
     char execStr2[len];
@@ -68,9 +68,9 @@ Hotkey getConfigHotkey(char *name)
     arrayPosToStr(execStr1, name, 1);
     arrayPosToStr(execStr2, name, 2);
 
-    hotkey.symbol = getConfigStr(execStr1);
-    hotkey.func = getConfigFunc(execStr2);
-    return hotkey;
+    key.symbol = getConfigStr(execStr1);
+    key.func = getConfigFunc(execStr2);
+    return key;
 }
 
 Rule getConfigRule(char *name)
@@ -157,14 +157,14 @@ void getConfigFloatArr(float resArr[], char *name)
     }
 }
 
-void getConfigHotkeyArr(Hotkey *hotkeys, char *name)
+void getConfigKeyArr(Key *keys, char *name)
 {
     int len = jlArrLen(name);
     char execStr[ARR_STRING_LENGTH(name)];
 
     for (int i = 0; i < len; i++) {
         arrayPosToStr(execStr, name, i+1);
-        hotkeys[i] = getConfigHotkey(execStr);
+        keys[i] = getConfigKey(execStr);
     }
 }
 

@@ -1,5 +1,4 @@
 include("keybinding.jl");
-include("button.jl");
 
 const CLIB = "./juliawm.so"
 

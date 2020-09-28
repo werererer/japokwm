@@ -1,6 +1,6 @@
 include config.mk
 
-CFLAGS += -shared -g3 -fPIC -DWLR_USE_UNSTABLE
+CFLAGS += -g3 -fPIC -DWLR_USE_UNSTABLE
 
 WAYLAND_PROTOCOLS=$(shell pkg-config --variable=pkgdatadir wayland-protocols)
 WAYLAND_SCANNER=$(shell pkg-config --variable=wayland_scanner wayland-scanner)
@@ -26,8 +26,11 @@ xdg-shell-protocol.c:
 
 xdg-shell-protocol.o: xdg-shell-protocol.h
 
-$(OUTFILE): xdg-shell-protocol.o
-	$(CC) $(CFLAGS) $(LDLIBS) $(CFiles) $(wildcard *.o) -o $(OUTFILE)
+juliawm: $(CFiles)
+	$(CC) $(CFLAGS) $(LDLIBS) $(CFiles) $(wildcard *.o) -o $@
+
+$(OUTFILE): xdg-shell-protocol.o juliawm
+	$(CC) -shared $(CFLAGS) $(LDLIBS) $(CFiles) $(wildcard *.o) -o $(OUTFILE)
 
 recompile: clean $(OUTFILE)
 
@@ -37,6 +40,6 @@ wayland-util.so: wayland-util.c
 clean:
 	rm -f $(OUTFILE) *.o xdg-shell-protocol.h xdg-shell-protocol.c
 
-.DEFAULT_GOAL=recompile
-# .DEFAULT_GOAL=$(OUTFILE)
+# .DEFAULT_GOAL=recompile
+.DEFAULT_GOAL=$(OUTFILE)
 .PHONY: clean

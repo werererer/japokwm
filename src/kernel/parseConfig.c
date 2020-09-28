@@ -1,7 +1,7 @@
 #include "parseConfig.h"
 #include <parseConfigUtils.h>
 
-char* configFile = "../config.jl";
+char* configFile = "keybinding.jl";
 
 int sloppyfocus;
 int borderpx;
@@ -13,17 +13,18 @@ char *tags[MAXLEN];
 Rule rules[MAXLEN];
 
 Layout layouts[MAXLEN];
-MonitorRule monrules[MAXLEN];
+//MonitorRule monrules[MAXLEN];
 
 int repeatRate;
 int repeatDelay;
 
 char *termcmd;
-Hotkey keys[MAXLEN];
-Hotkey buttons[MAXLEN];
+Key keys[MAXLEN];
+Key buttons[MAXLEN];
 
 void updateConfig()
 {
+    jl_init();
     initConfig(configFile);
     sloppyfocus = getConfigInt("sloppyfocus");
     borderpx = getConfigInt("borderpx");
@@ -39,14 +40,14 @@ void updateConfig()
     getConfigLayoutArr(layouts, "layouts");
 
     /* monitors */
-    getConfigMonRuleArr(monrules, "monrules");
+    //getConfigMonRuleArr(monrules, "monrules");
 
     /* keyboard */
     repeatRate = getConfigInt("repeatRate");
     repeatDelay = getConfigInt("repeatDelay");
 
     /* commands */
-    getConfigStrArr(&termcmd, "termcmd");
-    getConfigHotkeyArr(keys, "keys");
-    // getConfigHotkeyArr(buttons, "buttons");
+    termcmd = getConfigStr("termcmd");
+    getConfigKeyArr(keys, "keys");
+    // getConfigkeyArr(buttons, "buttons");
 }

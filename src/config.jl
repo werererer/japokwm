@@ -1,6 +1,5 @@
 include("defaultConfig.jl")
 include("layouts/layouts.jl")
-import Main.Layouts
 
 sloppyfocus = 1
 borderpx = 1
@@ -43,7 +42,7 @@ keys = [
         ["$mod i",           ()->  incnmaster(+1)         ],
         ["$mod d",           ()->  incnmaster(-1)         ],
         ["$mod C",           ()->  killclient()           ],
-        ["$mod Q",           ()->  quit(0)                ],
+        ["$mod q",           ()->  quit()                 ],
         ["$mod space",       ()->  setlayout()            ],
         ["$mod t",           ()->  setlayout(layouts[0])  ],
         ["$mod f",           ()->  setlayout(layouts[1])  ],

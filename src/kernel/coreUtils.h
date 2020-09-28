@@ -1,5 +1,5 @@
-#ifndef COREUTILS_H
-#define COREUTILS_H
+#ifndef COREUTILS
+#define COREUTILS
 
 #include <wayland-server-core.h>
 #include <wayland-util.h>
@@ -23,7 +23,6 @@
 #define WLR_SURFACE(C)          ((C)->surface.xdg->surface)
 #endif
 
-/* typedefs */
 typedef struct Monitor Monitor;
 
 typedef union {
@@ -68,7 +67,7 @@ typedef struct {
 typedef struct {
     const char *symbol;
     jl_function_t *func;
-} Hotkey;
+} Key;
 
 typedef uint32_t xkb_keysym_t;
 
@@ -89,7 +88,4 @@ typedef struct {
     Layout *lt;
     enum wl_output_transform rr;
 } MonitorRule;
-
-//global variables
-extern struct wlr_seat *seat;
-#endif /* COREUTILS_H */
+#endif

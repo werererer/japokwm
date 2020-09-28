@@ -2,9 +2,10 @@
 
 void arrange(Monitor *m)
 {
-    /* Get effective monitor geometry to use for window area */
+    Get effective monitor geometry to use for window area
     m->m = *wlr_output_layout_get_box(output_layout, m->wlr_output);
     m->w = m->m;
+    printf("arrange\n");
     if (m->lt[m->sellt]->arrange)
         jl_call(m->lt[m->sellt]->arrange, 
                 m->lt[m->sellt]->args,

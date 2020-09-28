@@ -21,15 +21,15 @@ extern char *tags[MAXLEN];
 extern Rule rules[MAXLEN];
 
 extern Layout layouts[MAXLEN];
-extern MonitorRule monrules[MAXLEN];
+//extern MonitorRule monrules[MAXLEN];
 
 extern int repeatRate;
 extern int repeatDelay;
 
 /* commands */
 extern char *termcmd;
-extern Hotkey keys[MAXLEN];
-extern Hotkey buttons[MAXLEN];
+extern Key keys[MAXLEN];
+extern Key buttons[MAXLEN];
 
 void updateConfig();
 #endif /* PARSE_CONFIG_H */
