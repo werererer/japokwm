@@ -52,7 +52,6 @@
 /* macros */
 #define BARF(fmt, ...)      do { fprintf(stderr, fmt "\n", ##__VA_ARGS__); exit(EXIT_FAILURE); } while (0)
 #define EBARF(fmt, ...)     BARF(fmt ": %s", ##__VA_ARGS__, strerror(errno))
-#define CLEANMASK(mask)         (mask & ~WLR_MODIFIER_CAPS)
 #define VISIBLEON(C, M)         ((C)->mon == (M) && ((C)->tags & (M)->tagset[(M)->seltags]))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define END(A)                  ((A) + LENGTH(A))
@@ -106,7 +105,6 @@ void createkeyboard(struct wlr_input_device *device);
 void createmon(struct wl_listener *listener, void *data);
 void createnotify(struct wl_listener *listener, void *data);
 void createpointer(struct wlr_input_device *device);
-uint32_t cleanmask(uint32_t mask);
 void createxdeco(struct wl_listener *listener, void *data);
 void cursorframe(struct wl_listener *listener, void *data);
 void destroynotify(struct wl_listener *listener, void *data);
@@ -167,7 +165,6 @@ static struct wlr_cursor *cursor;
 static struct wlr_xcursor_manager *cursor_mgr;
 
 static struct wl_list keyboards;
-static struct wlr_seat *seat;
 static unsigned int cursor_mode;
 static Client *grabc;
 static int grabcx, grabcy; /* client-relative */
@@ -430,11 +427,6 @@ void createpointer(struct wlr_input_device *device)
     wlr_cursor_attach_input_device(cursor, device);
 }
 
-uint32_t cleanmask(uint32_t mask)
-{
-    return mask & ~WLR_MODIFIER_CAPS;
-}
-
 void createxdeco(struct wl_listener *listener, void *data)
 {
     struct wlr_xdg_toplevel_decoration_v1 *wlr_deco = data;
@@ -594,7 +586,7 @@ void keypress(struct wl_listener *listener, void *data)
         for (i = 0; i < nsyms; i++) {
             jl_function_t* f = jl_eval_string("keybinding");
             jl_value_t *arg1 = jl_box_uint32(mods);
-            jl_value_t *arg2 = jl_box_uint32(cleanmask(syms[i]));
+            jl_value_t *arg2 = jl_box_uint32(syms[i]);
             jl_value_t *res = jl_call2(f, arg1, arg2);
             handled = jl_unbox_uint32(res);
         }
@@ -981,6 +973,11 @@ void rendermon(struct wl_listener *listener, void *data)
     wlr_output_commit(m->wlr_output);
 }
 
+void execute(char *startup_cmd)
+{
+    execl("/bin/sh", "/bin/sh", "-c", startup_cmd, (void *)NULL);
+}
+
 void run(char *startup_cmd)
 {
     pid_t startup_pid = -1;
@@ -1015,7 +1012,7 @@ void run(char *startup_cmd)
         if (startup_pid < 0)
             EBARF("startup: fork");
         if (startup_pid == 0) {
-            execl("/bin/sh", "/bin/sh", "-c", startup_cmd, (void *)NULL);
+            execute("termite");
             EBARF("startup: execl");
         }
     }
@@ -1521,7 +1518,7 @@ main(int argc, char *argv[])
 		BARF("XDG_RUNTIME_DIR must be set");
 	updateConfig();
 	setup();
-	run(startup_cmd);
+	run("termite");
 	cleanup();
 	return EXIT_SUCCESS;
 

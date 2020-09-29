@@ -88,5 +88,5 @@ typedef struct {
     Layout *lt;
     enum wl_output_transform rr;
 } MonitorRule;
-static struct wlr_seat *seat;
+extern struct wlr_seat *seat;
 #endif

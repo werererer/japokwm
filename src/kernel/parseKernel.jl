@@ -5,7 +5,7 @@
 const corePath = "./juliawm.so"
 
 function run(cmd::String)
-    ccall((:run, corePath), Cvoid, (Cstring,), cmd)
+    ccall((:execute, corePath), Cvoid, (Cstring,), cmd)
 end
 
 function focusstack(i)
