@@ -108,11 +108,7 @@ bool visibleon(Client *c, Monitor *m)
 
 void updateLayout()
 {
-    printf("%i selmon: %i\n", __LINE__, selmon == NULL);
-    if (selmon) {
-        selmon->lt = getConfigLayout("layout");
-    } else {
-        printf("empty \n");
-    }
+    selmon->lt = getConfigLayout("layout");
+    arrange(selmon);
 }
 

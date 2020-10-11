@@ -28,8 +28,8 @@ xdg-shell-protocol.o: xdg-shell-protocol.h
 debug: debug.c
 	$(CC) $(CFLAGS) $(LDLIBS) $^ $(wildcard *.o) -o $@
 
-juliawm.so: xdg-shell-protocol.o
-	$(CC) -shared $(CFLAGS) $(LDLIBS) $(CFiles) $(wildcard *.o) -o $@
+juliawm.so: $(wildcard *.o) $(CFiles)
+	$(CC) -shared $(CFLAGS) $(LDLIBS) $^ -o $@
 
 recompile: clean all
 
