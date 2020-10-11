@@ -13,7 +13,6 @@
 /* macros */
 #define BARF(fmt, ...)      do { fprintf(stderr, fmt "\n", ##__VA_ARGS__); exit(EXIT_FAILURE); } while (0)
 #define EBARF(fmt, ...)     BARF(fmt ": %s", ##__VA_ARGS__, strerror(errno))
-#define VISIBLEON(C, M)         ((C)->mon == (M) && ((C)->tags & (M)->tagset[(M)->seltags]))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define END(A)                  ((A) + LENGTH(A))
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
@@ -36,7 +35,6 @@ typedef union {
 typedef struct {
     char *symbol;
     jl_function_t *arrange;
-    jl_value_t **args;
 } Layout;
 
 struct Monitor {
@@ -46,9 +44,8 @@ struct Monitor {
     struct wl_listener destroy;
     struct wlr_box m;      /* monitor area, layout-relative */
     struct wlr_box w;      /* window area, layout-relative */
-    const Layout *lt[2];
+    Layout lt;
     unsigned int seltags;
-    unsigned int sellt;
     unsigned int tagset[2];
     double mfact;
     int nmaster;

@@ -9,14 +9,15 @@
 
 void initConfig(char *path);
 //basic
+Key getConfigKey(char *name);
+Layout getConfigLayout(char *name);
+MonitorRule getConfigMonRule(char *name);
+Rule getConfigRule(char *name);
 char* getConfigStr(char *name);
 float getConfigFloat(char *name);
 int getConfigInt(char *name);
 jl_function_t* getConfigFunc(char *name);
-Layout getConfigLayout(char *name);
-Key getConfigKey(char *name);
-Rule getConfigRule(char *name);
-MonitorRule getConfigMonRule(char *name);
+jl_value_t* toJlMonitor(char *name, Monitor *m);
 
 //array
 void getConfigStrArr(char **resArr, char *name);
@@ -30,4 +31,6 @@ void getConfigMonRuleArr(MonitorRule *monrules, char *name);
 //utils
 void arrayPosToStr(char *resStr, char *varName, int i);
 void array2DPosToStr(char *resStr, char *varName, int i, int j);
+
+
 #endif /* PARSE_CONFIG_UTILS_H */

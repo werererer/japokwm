@@ -1,5 +1,4 @@
 include("defaultConfig.jl")
-include("layouts/layouts.jl")
 
 sloppyfocus = 1
 borderpx = 1
@@ -15,10 +14,12 @@ rules = [
 ]
 
 layouts = [
-    [ "[]=", ()-> Layouts.tile() ],
-    [ "><>", ()-> Layouts.floating() ],
-    [ "[M]", ()-> Layouts.monocle() ],
+    [ "[M]", (m)-> Layouts.monocle(m) ],
+    [ "><>", (m)-> Layouts.floating(m) ],
+    [ "[]=", (m)-> Layouts.tile(m) ],
 ]
+
+layout = layouts[1]
 
 monrules = [
     # name mfact nmaster scale layout transform
@@ -29,7 +30,7 @@ monrules = [
 xkb_rules = []
 repeatRate = 25
 repeatDelay = 600
-termcmd = "/usr/bin/termite"
+termcmd = "/usr/bin/alacritty"
 
 mod = mod1
 #maps (between 1 and 4)
@@ -43,10 +44,10 @@ keys = [
         ["$mod d",           ()->  incnmaster(-1)         ],
         ["$mod C",           ()->  killclient()           ],
         ["$mod q",           ()->  quit()                 ],
-        ["$mod space",       ()->  setlayout()            ],
-        ["$mod t",           ()->  setlayout(layouts[0])  ],
-        ["$mod f",           ()->  setlayout(layouts[1])  ],
-        ["$mod m",           ()->  setlayout(layouts[2])  ],
+        ["$mod space",       ()->  setLayout()            ],
+        ["$mod t",           ()->  setLayout(layouts[1])  ],
+        ["$mod f",           ()->  setLayout(layouts[2])  ],
+        ["$mod m",           ()->  setLayout(layouts[3])  ],
         ["$mod l",           ()->  setmfact(+0.05)        ],
         ["$mod h",           ()->  setmfact(-0.05)        ],
         ["$mod parenright",  ()->  tag(~0)                ],

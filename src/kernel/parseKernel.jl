@@ -32,8 +32,8 @@ function killclient()
     ccall((:killclient, corePath), Cvoid, ())
 end
 
-function setlayout(v)
-    ccall((:setlayout, corePath), Cvoid, (Ref{Cvoid},), v)
+function updateLayout()
+    ccall((:updateLayout, corePath), Cvoid, ())
 end
 
 function togglefloating()

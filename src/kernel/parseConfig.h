@@ -20,7 +20,7 @@ extern float focuscolor[4];
 extern char *tags[MAXLEN];
 extern Rule rules[MAXLEN];
 
-extern Layout layouts[MAXLEN];
+extern Layout defaultLayout;
 //extern MonitorRule monrules[MAXLEN];
 
 extern int repeatRate;
@@ -32,4 +32,5 @@ extern Key keys[MAXLEN];
 extern Key buttons[MAXLEN];
 
 void updateConfig();
+void updateLayout();
 #endif /* PARSE_CONFIG_H */

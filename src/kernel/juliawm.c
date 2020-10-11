@@ -52,7 +52,6 @@
 /* macros */
 #define BARF(fmt, ...)      do { fprintf(stderr, fmt "\n", ##__VA_ARGS__); exit(EXIT_FAILURE); } while (0)
 #define EBARF(fmt, ...)     BARF(fmt ": %s", ##__VA_ARGS__, strerror(errno))
-#define VISIBLEON(C, M)         ((C)->mon == (M) && ((C)->tags & (M)->tagset[(M)->seltags]))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define END(A)                  ((A) + LENGTH(A))
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
@@ -72,12 +71,12 @@ enum { XDGShell, X11Managed, X11Unmanaged }; /* client types */
 
 /* monitors */
 static const MonitorRule monrules[] = {
-	/* name       mfact nmaster scale layout       rotate/reflect */
-	/* example of a HiDPI laptop monitor:
-	{ "eDP-1",    0.5,  1,      2,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL },
-	*/
-	/* defaults */
-	{ NULL,       0.55, 1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL },
+    /* name       mfact nmaster scale layout       rotate/reflect */
+    /* example of a HiDPI laptop monitor:
+    { "eDP-1",    0.5,  1,      2,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL },
+    */
+    /* defaults */
+    { NULL,       0.55, 1,      1,    &defaultLayout, WL_OUTPUT_TRANSFORM_NORMAL },
 };
 
 typedef struct {
@@ -244,6 +243,7 @@ void buttonpress(struct wl_listener *listener, void *data)
             /* Drop the window off on its new monitor */
             selmon = xytomon(cursor->x, cursor->y);
             setmon(grabc, selmon, 0);
+            printf("%i selmon: %i\n", __LINE__, selmon == NULL);
             return;
         }
         break;
@@ -358,7 +358,7 @@ void createmon(struct wl_listener *listener, void *data)
             m->nmaster = r->nmaster;
             wlr_output_set_scale(wlr_output, r->scale);
             wlr_xcursor_manager_load(cursor_mgr, r->scale);
-            m->lt[0] = m->lt[1] = r->lt;
+            m->lt = *r->lt;
             wlr_output_set_transform(wlr_output, r->rr);
             break;
         }
@@ -477,7 +477,7 @@ void destroyxdeco(struct wl_listener *listener, void *data)
     free(d);
 }
 
-Monitor * dirtomon(int dir)
+Monitor *dirtomon(int dir)
 {
     Monitor *m;
 
@@ -497,6 +497,7 @@ void focusmon(int i)
     Client *sel = selClient();
 
     selmon = dirtomon(i);
+    printf("%i selmon: %i\n", __LINE__, selmon == NULL);
     focusclient(sel, focustop(selmon), 1);
 }
 
@@ -510,14 +511,14 @@ void focusstack(int i)
         wl_list_for_each(c, &sel->link, link) {
             if (&c->link == &clients)
                 continue;  /* wrap past the sentinel node */
-            if (VISIBLEON(c, selmon))
+            if (visibleon(c, selmon))
                 break;  /* found it */
         }
     } else {
         wl_list_for_each_reverse(c, &sel->link, link) {
             if (&c->link == &clients)
                 continue;  /* wrap past the sentinel node */
-            if (VISIBLEON(c, selmon))
+            if (visibleon(c, selmon))
                 break;  /* found it */
         }
     }
@@ -746,7 +747,6 @@ void motionrelative(struct wl_listener *listener, void *data)
      * the cursor around without any input. */
     wlr_cursor_move(cursor, event->device,
             event->delta_x, event->delta_y);
-    printf("relative Motion\n");
     motionnotify(event->time_msec);
 }
 
@@ -883,7 +883,7 @@ void renderclients(Monitor *m, struct timespec *now)
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each_reverse(c, &stack, slink) {
         /* Only render visible clients which show on this monitor */
-        if (!VISIBLEON(c, c->mon) || !wlr_output_layout_intersects(
+        if (!visibleon(c, c->mon) || !wlr_output_layout_intersects(
                     output_layout, m->wlr_output, &c->geom))
             continue;
 
@@ -973,9 +973,13 @@ void rendermon(struct wl_listener *listener, void *data)
     wlr_output_commit(m->wlr_output);
 }
 
-void execute(char *startup_cmd)
+void spawn(char *cmd)
 {
-    execl("/bin/sh", "/bin/sh", "-c", startup_cmd, (void *)NULL);
+    if (fork() == 0) {
+        setsid();
+        execl("/bin/sh", "/bin/sh", "-c", cmd, (void *)NULL);
+        EBARF("dwl: execvp %s failed", cmd);
+    }
 }
 
 void run(char *startup_cmd)
@@ -996,6 +1000,7 @@ void run(char *startup_cmd)
     /* Now that outputs are initialized, choose initial selmon based on
      * cursor position, and set default cursor image */
     selmon = xytomon(cursor->x, cursor->y);
+    printf("%i selmon: %i\n", __LINE__, selmon == NULL);
 
     /* XXX hack to get cursor to display in its initial location (100, 100)
      * instead of (0, 0) and then jumping.  still may not be fully
@@ -1012,7 +1017,8 @@ void run(char *startup_cmd)
         if (startup_pid < 0)
             EBARF("startup: fork");
         if (startup_pid == 0) {
-            execute("termite");
+            printf("exec: %s\n", startup_cmd);
+            execl("/bin/sh", "/bin/sh", "-c", startup_cmd, (void *)NULL);
             EBARF("startup: execl");
         }
     }
@@ -1063,21 +1069,11 @@ void setfloating(Client *c, int floating)
     arrange(c->mon);
 }
 
-void setlayout(void* v)
-{
-    if (!v || v != selmon->lt[selmon->sellt])
-        selmon->sellt ^= 1;
-    if (v)
-        selmon->lt[selmon->sellt] = (Layout *)v;
-    /* XXX change layout symbol? */
-    arrange(selmon);
-}
-
 /* arg > 1.0 will set mfact absolutely */
 void setmfact(float factor) {
   float f;
 
-  if (!selmon->lt[selmon->sellt]->arrange)
+  if (!selmon->lt.arrange)
     return;
   factor = factor < 1.0 ? factor + selmon->mfact : factor - 1.0;
   if (f < 0.1 || f > 0.9)
@@ -1307,7 +1303,6 @@ void unmapnotify(struct wl_listener *listener, void *data)
     if (c->type == X11Unmanaged)
         return;
 #endif
-    setmon(c, NULL, 0);
     wl_list_remove(&c->flink);
     wl_list_remove(&c->slink);
 }
@@ -1317,6 +1312,7 @@ void view(unsigned ui)
     Client *sel = selClient();
     if ((ui & TAGMASK) == selmon->tagset[selmon->seltags])
         return;
+
     selmon->seltags ^= 1; /* toggle sel tagset */
     if (ui & TAGMASK)
         selmon->tagset[selmon->seltags] = ui & TAGMASK;
@@ -1330,12 +1326,12 @@ Client * xytoclient(double x, double y)
      * borders. This relies on stack being ordered from top to bottom. */
     Client *c;
     wl_list_for_each(c, &stack, slink)
-        if (VISIBLEON(c, c->mon) && wlr_box_contains_point(&c->geom, x, y))
+        if (visibleon(c, c->mon) && wlr_box_contains_point(&c->geom, x, y))
             return c;
     return NULL;
 }
 
-Monitor * xytomon(double x, double y)
+Monitor* xytomon(double x, double y)
 {
     struct wlr_output *o = wlr_output_layout_output_at(output_layout, x, y);
     return o ? o->data : NULL;
@@ -1345,13 +1341,13 @@ void zoom()
 {
     Client *c, *sel = selClient(), *oldsel = sel;
 
-    if (!sel || !selmon->lt[selmon->sellt]->arrange || sel->isfloating)
+    if (!sel || !selmon->lt.arrange || sel->isfloating)
         return;
 
     /* Search for the first tiled window that is not sel, marking sel as
      * NULL if we pass it along the way */
     wl_list_for_each(c, &clients, link)
-        if (VISIBLEON(c, selmon) && !c->isfloating) {
+        if (visibleon(c, selmon) && !c->isfloating) {
             if (c != sel)
                 break;
             sel = NULL;
@@ -1497,31 +1493,33 @@ Client * xytoindependent(double x, double y)
 }
 #endif
 
+/*
 int
 main(int argc, char *argv[])
 {
-	char *startup_cmd = NULL;
-	int c;
+    char *startup_cmd = NULL;
+    int c;
 
-	while ((c = getopt(argc, argv, "s:h")) != -1) {
-		if (c == 's')
-			startup_cmd = optarg;
-		else
-			goto usage;
-	}
-	if (optind < argc)
-		goto usage;
+    while ((c = getopt(argc, argv, "s:h")) != -1) {
+        if (c == 's')
+            startup_cmd = optarg;
+        else
+            goto usage;
+    }
+    if (optind < argc)
+        goto usage;
 
-	// Wayland requires XDG_RUNTIME_DIR for creating its communications
-	// socket
-	if (!getenv("XDG_RUNTIME_DIR"))
-		BARF("XDG_RUNTIME_DIR must be set");
-	updateConfig();
-	setup();
-	run("termite");
-	cleanup();
-	return EXIT_SUCCESS;
+    // Wayland requires XDG_RUNTIME_DIR for creating its communications
+    // socket
+    if (!getenv("XDG_RUNTIME_DIR"))
+        BARF("XDG_RUNTIME_DIR must be set");
+    updateConfig();
+    setup();
+    run("/usr/bin/alacritty");
+    cleanup();
+    return EXIT_SUCCESS;
 
 usage:
-	BARF("Usage: %s [-s startup command]", argv[0]);
+    BARF("Usage: %s [-s startup command]", argv[0]);
 }
+*/

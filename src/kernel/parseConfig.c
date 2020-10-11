@@ -1,5 +1,5 @@
 #include "parseConfig.h"
-#include <parseConfigUtils.h>
+#include "parseConfigUtils.h"
 
 char* configFile = "keybinding.jl";
 
@@ -11,8 +11,8 @@ float focuscolor[4];
 
 char *tags[MAXLEN];
 Rule rules[MAXLEN];
+Layout defaultLayout;
 
-Layout layouts[MAXLEN];
 //MonitorRule monrules[MAXLEN];
 
 int repeatRate;
@@ -34,10 +34,10 @@ void updateConfig()
     getConfigFloatArr(bordercolor, "bordercolor");
     getConfigFloatArr(focuscolor, "focuscolor");
 
+
     /* tagging */
     getConfigStrArr(tags, "tags");
     getConfigRuleArr(rules, "rules");
-    getConfigLayoutArr(layouts, "layouts");
 
     /* monitors */
     //getConfigMonRuleArr(monrules, "monrules");
@@ -45,6 +45,7 @@ void updateConfig()
     /* keyboard */
     repeatRate = getConfigInt("repeatRate");
     repeatDelay = getConfigInt("repeatDelay");
+    defaultLayout = getConfigLayout("layout");
 
     /* commands */
     termcmd = getConfigStr("termcmd");

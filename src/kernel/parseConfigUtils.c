@@ -12,8 +12,8 @@ void initConfig(char *path)
     char *prefix = "include(\"";
     char *postfix = "\")";
     //pluse one for the null char after string
-    int charPtrlen = strlen(path) + strlen(prefix) + strlen(postfix) + 1;
-    char res[charPtrlen];
+    // int charPtrlen = strlen(path) + strlen(prefix) + strlen(postfix) + 1;
+    char res[30];
     strcpy(res, prefix);
     strcat(res, path);
     strcat(res, postfix);
@@ -58,19 +58,16 @@ Layout getConfigLayout(char *name)
     return layout;
 }
 
-Key getConfigKey(char *name)
+static jl_value_t* getWlrBox(struct wlr_box w)
 {
-    Key key;
-    int len = ARR_STRING_LENGTH(name);
-    char execStr1[len];
-    char execStr2[len];
 
-    arrayPosToStr(execStr1, name, 1);
-    arrayPosToStr(execStr2, name, 2);
-
-    key.symbol = getConfigStr(execStr1);
-    key.func = getConfigFunc(execStr2);
-    return key;
+    jl_datatype_t *wlrBox = (jl_datatype_t *)jl_eval_string("Layouts.wlr_box");
+    jl_value_t *sX = jl_box_int32(w.x);
+    jl_value_t *sY = jl_box_int32(8);
+    jl_value_t *sWidth = jl_box_int32(w.width);
+    jl_value_t *sHeight = jl_box_int32(w.height);
+    jl_value_t *str = jl_new_struct(wlrBox, sX, sY, sWidth, sHeight);
+    return str;
 }
 
 Rule getConfigRule(char *name)
@@ -122,6 +119,33 @@ MonitorRule getConfigMonRule(char *name)
     getConfigLayoutArr(monrule.lt, execStr5);
     monrule.rr = getConfigInt(execStr6);
     return monrule;
+}
+
+Key getConfigKey(char *name)
+{
+    Key key;
+    int len = ARR_STRING_LENGTH(name);
+    char execStr1[len];
+    char execStr2[len];
+
+    arrayPosToStr(execStr1, name, 1);
+    arrayPosToStr(execStr2, name, 2);
+
+    key.symbol = getConfigStr(execStr1);
+    key.func = getConfigFunc(execStr2);
+    return key;
+}
+
+jl_value_t* toJlMonitor(char *name, Monitor *m)
+{
+    jl_datatype_t *t = (jl_datatype_t *)jl_eval_string(name);
+    jl_value_t *sM = getWlrBox(m->m);
+    jl_value_t *sW = getWlrBox(m->w);
+    jl_value_t *sTagset = jl_box_uint64(m->seltags);
+    jl_value_t *sMfact = jl_box_float64(m->mfact);
+    jl_value_t *sNmaster = jl_box_uint64(m->nmaster);
+    jl_value_t *res = jl_new_struct(t, sM, sW, sTagset, sMfact, sNmaster);
+    return res;
 }
 
 void getConfigStrArr(char **resArr, char *name)
