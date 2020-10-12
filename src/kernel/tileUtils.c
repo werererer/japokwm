@@ -1,21 +1,43 @@
 #include "tileUtils.h"
+#include <coreUtils.h>
 #include <julia.h>
 #include <parseConfigUtils.h>
 
-Layout layout;
+struct cLayoutArr {
+  struct wlr_fbox *layout;
+  size_t size;
+};
 
 // TODO: move to parseConfigUtils.c
-void
-arrange(Monitor *m)
+void arrange(Monitor *m)
 {
     /* Get effective monitor geometry to use for window area */
     m->m = *wlr_output_layout_get_box(output_layout, m->wlr_output);
     m->w = m->m;
     if (m->lt.arrange) {
-        jl_value_t *arg1 = toJlMonitor("Layouts.Monitor", selmon);
-        jl_call1(m->lt.arrange, arg1);
+        Client *c;
+
+        // init i index
+        int n = 0;
+        wl_list_for_each(c, &clients, link)
+            if (visibleon(c, m) || !c->isfloating)
+                n++;
+        jl_value_t *arg1 = jl_box_int64(n);
+
+        jl_value_t *v = jl_call1(m->lt.arrange, arg1);
+        struct cLayoutArr *layoutArr = jl_unbox_voidpointer(v);
+        int i = 0;
+        wl_list_for_each(c, &clients, link) {
+            if (!visibleon(c, m) || c->isfloating)
+                continue;
+
+            resize(c, layoutArr->layout[0].x*m->w.x, layoutArr->layout[0].y*m->w.y, layoutArr->layout[0].width*m->w.width, layoutArr->layout[0].height*m->w.height, 0);
+            i++;
+            if (i > layoutArr->size)
+                break;
+        }
     }
-    /* XXX recheck pointer focus here... or in resize()? */
+
 }
 
 void focusclient(Client *old, Client *c, int lift)
@@ -57,7 +79,6 @@ void focusclient(Client *old, Client *c, int lift)
     wl_list_remove(&c->flink);
     wl_list_insert(&focus_stack, &c->flink);
     selmon = c->mon;
-    printf("%i selmon: %i\n", __LINE__, selmon == NULL);
 
     /* Activate the new client */
 #ifdef XWAYLAND
@@ -99,6 +120,32 @@ void setmon(Client *c, Monitor *m, unsigned int newtags)
         arrange(m);
     }
     focusclient(oldsel, focustop(selmon), 1);
+}
+
+void
+resize(Client *c, int x, int y, int w, int h, int interact)
+{
+    /*
+     * Note that I took some shortcuts here. In a more fleshed-out
+     * compositor, you'd wait for the client to prepare a buffer at
+     * the new size, then commit any movement that was prepared.
+     */
+    struct wlr_box bbox = interact ? sgeom : c->mon->w;
+    c->geom.x = x;
+    c->geom.y = y;
+    c->geom.width = w;
+    c->geom.height = h;
+    applybounds(c, bbox);
+    /* wlroots makes this a no-op if size hasn't changed */
+#ifdef XWAYLAND
+    if (c->type != XDGShell)
+        wlr_xwayland_surface_configure(c->surface.xwayland,
+                c->geom.x, c->geom.y,
+                c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
+    else
+#endif
+        c->resize = wlr_xdg_toplevel_set_size(c->surface.xdg,
+                c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
 }
 
 bool visibleon(Client *c, Monitor *m)

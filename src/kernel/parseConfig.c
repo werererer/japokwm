@@ -1,8 +1,6 @@
 #include "parseConfig.h"
 #include "parseConfigUtils.h"
 
-char* configFile = "keybinding.jl";
-
 int sloppyfocus;
 int borderpx;
 float rootcolor[4];
@@ -25,7 +23,6 @@ Key buttons[MAXLEN];
 void updateConfig()
 {
     jl_init();
-    initConfig(configFile);
     sloppyfocus = getConfigInt("sloppyfocus");
     borderpx = getConfigInt("borderpx");
 

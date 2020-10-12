@@ -12,7 +12,6 @@
 //relative position
 extern struct wlr_list *containers;
 
-void resize(Client *c, int x, int y, int w, int h, int interact);
 void create(Monitor *m);
 void tile(Monitor *m);
 void addClient(Client *c, int x1, int y1, int x2, int y2, Monitor *m);

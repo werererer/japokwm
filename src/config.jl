@@ -26,7 +26,6 @@ monrules = [
     [ "rule", 0.55, 1, 1, layouts[1], NORMAL ],
 ]
 
-
 xkb_rules = []
 repeatRate = 25
 repeatDelay = 600
@@ -45,9 +44,9 @@ keys = [
         ["$mod C",           ()->  killclient()           ],
         ["$mod q",           ()->  quit()                 ],
         ["$mod space",       ()->  setLayout()            ],
-        ["$mod t",           ()->  setLayout(layouts[1])  ],
-        ["$mod f",           ()->  setLayout(layouts[2])  ],
-        ["$mod m",           ()->  setLayout(layouts[3])  ],
+        ["$mod f",           ()->  setLayout(layouts[1])  ],
+        ["$mod m",           ()->  setLayout(layouts[2])  ],
+        ["$mod t",           ()->  setLayout(layouts[3])  ],
         ["$mod l",           ()->  setmfact(+0.05)        ],
         ["$mod h",           ()->  setmfact(-0.05)        ],
         ["$mod parenright",  ()->  tag(~0)                ],

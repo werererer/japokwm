@@ -42,30 +42,3 @@ void addBox(int x, int y, int w, int h)
     box.height = h;
     push(&box);
 }
-
-void
-resize(Client *c, int x, int y, int w, int h, int interact)
-{
-    /*
-     * Note that I took some shortcuts here. In a more fleshed-out
-     * compositor, you'd wait for the client to prepare a buffer at
-     * the new size, then commit any movement that was prepared.
-     */
-    struct wlr_box bbox = interact ? sgeom : c->mon->w;
-    c->geom.x = x;
-    c->geom.y = y;
-    c->geom.width = w;
-    c->geom.height = h;
-    applybounds(c, bbox);
-    /* wlroots makes this a no-op if size hasn't changed */
-#ifdef XWAYLAND
-    if (c->type != XDGShell)
-        wlr_xwayland_surface_configure(c->surface.xwayland,
-                c->geom.x, c->geom.y,
-                c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
-    else
-#endif
-        c->resize = wlr_xdg_toplevel_set_size(c->surface.xdg,
-                c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
-}
-

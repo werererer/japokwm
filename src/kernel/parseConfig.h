@@ -7,8 +7,6 @@
  * This file uses parseconfig to parse the config files
 */
 
-extern char* configFile;
-
 /* appearance */
 extern int sloppyfocus;
 extern int borderpx;

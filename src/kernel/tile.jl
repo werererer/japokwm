@@ -2,27 +2,27 @@ module Layouts
 import Statistics
 
 # from 0-1
-mutable struct wlr_box
-    x :: Int
-    y :: Int
-    width :: Int
-    height :: Int
+struct wlr_fbox
+    x :: Cdouble
+    y :: Cdouble
+    width :: Cdouble
+    height :: Cdouble
 end
-g = wlr_box(0, 0, 0, 0)
 
 mutable struct Monitor
-    m :: wlr_box # monitor area
-    w :: wlr_box # window area
+    m :: wlr_fbox # monitor area
+    w :: wlr_fbox # window area
     tagset :: Int
     mfact :: Float64
     nmaster :: Int
 end
 
-function arrange()
-    ccall((:arrange, "juliawm.so"), Cvoid, ())
+struct cLayoutArr
+    layout :: Ptr{wlr_fbox}
+    size :: Cint
 end
 
-function add(box :: wlr_box)
+function add(box :: wlr_fbox)
     ccall((:addBox, "juliawm.so"), Cvoid, (Cint, Cint, Cint, Cint), 3, 3, 4, 5)
 end
 
@@ -37,7 +37,6 @@ end
 # set: which window conf set
 # client: current window
 function split(arr, set :: Int, client :: Int, ratio :: Float64)
-    println("works")
     arrange = arr[set]
     space = arr[set][client]
     w = space[4]
@@ -63,61 +62,43 @@ function vsplit(arr, set :: Int, client :: Int, ratio :: Float64)
     push!(arrange, newSpace)
 end
 
-function tile(m :: Monitor)
-    box = [
+function tile(n) :: Ptr{cLayoutArr}
+    println("tile")
+    layout = [
            [
-            [0, 0, 1, 1]
+            wlr_fbox(0, 0, 1, 1),
+            wlr_fbox(2, 2, 1, 1),
            ],
            [
-            [0, 0, 1/2, 1],
-            [1/2, 0, 1/2, 1]
+            wlr_fbox(0, 0, 1/2, 1),
+            wlr_fbox(1/2, 0, 1/2, 1),
            ],
            [
-            [0, 0, 1/2, 1],
-            [0, 0, 1/2, 1],
-            [1/2, 0, 1/2, 1]
+            wlr_fbox(0, 0, 1/2, 1),
+            wlr_fbox(0, 0, 1/2, 1),
+            wlr_fbox(1/2, 0, 1/2, 1),
            ],
            [
-            [0, 0, 1/2, 1],
-            [0, 0, 1/2, 1],
-            [1/2, 0, 1/2, 1]
-           ],
-           [
-            [0, 0, 1/2, 1],
-            [0, 0, 1/2, 1],
-            [1/2, 0, 1/2, 1]
-           ],
-           [
-            [0, 0, 1/2, 1],
-            [0, 0, 1/2, 1],
-            [1/2, 0, 1/2, 1]
-           ],
-           [
-            [0, 0, 1/2, 1],
-            [0, 0, 1/2, 1],
-            [1/2, 0, 1/2, 1]
-           ],
-           [
-            [0, 0, 1/2, 1],
-            [0, 0, 1/2, 1],
-            [1/2, 0, 1/2, 1]
-           ],
-           [
-            [0, 0, 1/2, 1],
-            [0, 0, 1/2, 1],
-            [1/2, 0, 1/2, 1]
-           ],
-           [
-            [0, 0, 1/2, 1],
-            [0, 0, 1/2, 1],
-            [1/2, 0, 1/2, 1]
+            wlr_fbox(0, 0, 1/2, 1),
+            wlr_fbox(0, 0, 1/2, 1),
+            wlr_fbox(1/2, 0, 1/2, 1),
            ],
           ]
+
+    res = cLayoutArr(pointer(layout[1]), length(layout[1]))
+    res = pointer([res])
+    return res
 end
 
-function monocle(m :: Monitor)
-    println("works")
-    box = [[[0, 0, 1, 1]]]
+function monocle(n) :: Ptr{cLayoutArr}
+    println("monocle")
+    layout = [[
+            wlr_fbox(1/3, 1/2, 1/3, 1/2)
+           ]]
+
+    res = cLayoutArr(pointer(layout[1]), length(layout[1]))
+    res = pointer([res])
+    return res
 end
 
 end

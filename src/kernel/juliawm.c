@@ -243,7 +243,6 @@ void buttonpress(struct wl_listener *listener, void *data)
             /* Drop the window off on its new monitor */
             selmon = xytomon(cursor->x, cursor->y);
             setmon(grabc, selmon, 0);
-            printf("%i selmon: %i\n", __LINE__, selmon == NULL);
             return;
         }
         break;
@@ -497,10 +496,10 @@ void focusmon(int i)
     Client *sel = selClient();
 
     selmon = dirtomon(i);
-    printf("%i selmon: %i\n", __LINE__, selmon == NULL);
     focusclient(sel, focustop(selmon), 1);
 }
 
+//TODO: EXPORT
 void focusstack(int i)
 {
     /* Focus the next or previous client (in tiling order) on selmon */
@@ -632,6 +631,7 @@ void killclient()
         wlr_xdg_toplevel_send_close(sel->surface.xdg);
 }
 
+//TODO: export
 void maprequest(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is mapped, or ready to display on-screen. */
@@ -1000,7 +1000,6 @@ void run(char *startup_cmd)
     /* Now that outputs are initialized, choose initial selmon based on
      * cursor position, and set default cursor image */
     selmon = xytomon(cursor->x, cursor->y);
-    printf("%i selmon: %i\n", __LINE__, selmon == NULL);
 
     /* XXX hack to get cursor to display in its initial location (100, 100)
      * instead of (0, 0) and then jumping.  still may not be fully

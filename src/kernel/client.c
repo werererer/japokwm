@@ -60,7 +60,6 @@ void applyrules(Client *c)
             wl_list_for_each(m, &mons, link)
                 if (r->monitor == i++)
                     selmon = m;
-            printf("%i selmon: %i\n", __LINE__, selmon == NULL);
         }
     }
     setmon(c, selmon, newtags);

@@ -61,7 +61,7 @@ Layout getConfigLayout(char *name)
 static jl_value_t* getWlrBox(struct wlr_box w)
 {
 
-    jl_datatype_t *wlrBox = (jl_datatype_t *)jl_eval_string("Layouts.wlr_box");
+    jl_datatype_t *wlrBox = (jl_datatype_t *)jl_eval_string("Layouts.wlr_fbox");
     jl_value_t *sX = jl_box_int32(w.x);
     jl_value_t *sY = jl_box_int32(8);
     jl_value_t *sWidth = jl_box_int32(w.width);
