@@ -21,7 +21,7 @@ void arrange(Monitor *m)
         // get layout
         int n = 0;
         wl_list_for_each(c, &clients, link)
-            if (visibleon(c, m) || !c->isfloating)
+            if (visibleon(c, m) && !c->isfloating)
                 n++;
         jl_value_t *arg1 = jl_box_int64(n);
         jl_value_t *v = jl_call1(m->lt.arrange, arg1);

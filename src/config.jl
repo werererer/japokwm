@@ -34,7 +34,7 @@ termcmd = "/usr/bin/alacritty"
 mod = mod1
 #maps (between 1 and 4)
 keys = [
-        ["$mod u",           ()->  run(termcmd)        ],
+        ["$mod u",           ()->  spawn(termcmd)        ],
         ["$mod period",      ()->  focusmon(+1)           ],
         ["$mod comma",       ()->  focusmon(-1)           ],
         ["$mod k",           ()->  focusstack(-1)         ],

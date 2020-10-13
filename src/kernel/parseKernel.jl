@@ -5,8 +5,8 @@
 include("global.jl")
 const corePath = "./juliawm.so"
 
-function run(cmd::String)
-    ccall((:execute, corePath), Cvoid, (Cstring,), cmd)
+function spawn(cmd::String)
+    ccall((:spawn, corePath), Cvoid, (Cstring,), cmd)
 end
 
 function focusstack(i)

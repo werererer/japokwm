@@ -27,19 +27,19 @@ function symToBinding(mod, sym) :: String
     return "$(mods)$(key)"
 end
 
-function keyPressed(mod, sym)
+function keyPressed(mod, sym) :: Bool
     bind = symToBinding(mod, sym)
     println("bind: $bind")
     return processBinding(bind, keys)
 end
 
-function buttonPressed(mod, sym)
+function buttonPressed(mod, sym) :: Bool
     bind = symToBinding(mod, sym)
     println("bind: $bind")
     return processBinding(bind, buttons)
 end
 
-function processBinding(bind :: String, arr)
+function processBinding(bind :: String, arr) :: Bool
     handled = false
     for elem in arr
         if (bind == elem[1])

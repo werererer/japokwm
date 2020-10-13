@@ -990,10 +990,11 @@ void rendermon(struct wl_listener *listener, void *data)
 
 void spawn(char *cmd)
 {
+    printf("spawn %s\n", cmd);
+    char *c[] = {"", NULL};
     if (fork() == 0) {
         setsid();
         execl("/bin/sh", "/bin/sh", "-c", cmd, (void *)NULL);
-        EBARF("dwl: execvp %s failed", cmd);
     }
 }
 
@@ -1275,7 +1276,6 @@ void tagmon(int i)
 
 void toggleFloating()
 {
-    printf("dontfloat\n");
     Client *sel = selClient();
     if (!sel)
         return;
