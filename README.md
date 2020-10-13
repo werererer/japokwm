@@ -15,14 +15,15 @@ Some properties that will be inherited from wlroots and the original dwl:
 - Basic yes/no damage tracking to avoid needless redraws (if it can be done simply and has an impact on power consumption)
 
 ## Building dwl
-coming soon
+go to src/kernel and run:
+(Will be changed in the near future) `make`
 
 ## Configuration
 Configuration will be done in config.jl (not working yet).
 
 ## Running dwl
-coming soon
-
+go to src/kernel and run `julia main.jl` if you haven't yet install julia
+(Will be changed in the near future)
 ## Known limitations and issues
 juliawm is in its very early stage and is not yet usable.
 
