@@ -56,4 +56,16 @@ keys = [
         ["$mod Tab",         ()->  view()                 ],
         ["$mod 0",           ()->  view(~0)               ],
         ["$mod Return",      ()->  zoom()                 ],
-]
+       ]
+
+buttons = [
+           ["$mod Pointer_Button1", () -> printf("mouseaction")],
+           ["$mod Pointer_Button2", () -> printf("mouseaction")],
+           ["$mod Pointer_Button3", () -> printf("mouseaction")],
+          ]
+
+static const Button buttons[] = {
+	{ MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },
+	{ MODKEY, BTN_MIDDLE, togglefloating, {0} },
+	{ MODKEY, BTN_RIGHT,  moveresize,     {.ui = CurResize} },
+};

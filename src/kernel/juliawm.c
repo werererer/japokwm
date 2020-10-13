@@ -93,6 +93,12 @@ struct render_data {
     int x, y; /* layout-relative */
 };
 
+/* static const Button buttons[] = { */
+/* 	{ MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} }, */
+/* 	{ MODKEY, BTN_MIDDLE, togglefloating, {0} }, */
+/* 	{ MODKEY, BTN_RIGHT,  moveresize,     {.ui = CurResize} }, */
+/* }; */
+
 /* function declarations */
 void axisnotify(struct wl_listener *listener, void *data);
 void buttonpress(struct wl_listener *listener, void *data);
@@ -215,6 +221,7 @@ void axisnotify(struct wl_listener *listener, void *data)
 //TODO: rewrite
 void buttonpress(struct wl_listener *listener, void *data)
 {
+    printf("button\n");
     struct wlr_event_pointer_button *event = data;
     struct wlr_keyboard *keyboard;
     uint32_t mods;
