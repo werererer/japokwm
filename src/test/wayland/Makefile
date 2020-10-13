@@ -1,0 +1,2 @@
+outfile: outfile.jl
+	julia $<
