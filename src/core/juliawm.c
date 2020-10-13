@@ -1462,7 +1462,7 @@ void updatewindowtype(Client *c)
                 c->surface.xwayland->window_type[i] == netatom[NetWMWindowTypeSplash] ||
                 c->surface.xwayland->window_type[i] == netatom[NetWMWindowTypeToolbar] ||
                 c->surface.xwayland->window_type[i] == netatom[NetWMWindowTypeUtility])
-            c->isfloating = 1;
+            c->isfloating = true;
 }
 
 void xwaylandready(struct wl_listener *listener, void *data)

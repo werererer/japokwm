@@ -1,5 +1,6 @@
 #include "client.h"
 #include "tile.h"
+#include <wayland-util.h>
 
 //global variables
 struct wl_list clients; /* tiling order */
@@ -34,7 +35,7 @@ void applyrules(Client *c)
     const Rule *r;
     Monitor *m; 
     /* rule matching */
-    c->isfloating = 0;
+    c->isfloating = false;
 #ifdef XWAYLAND
     if (c->type != XDGShell) {
         updatewindowtype(c);

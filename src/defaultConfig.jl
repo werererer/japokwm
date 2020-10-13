@@ -1,6 +1,6 @@
-include("core/translationLayer.jl")
 include("keysym.jl")
 include("core/tile.jl")
+include("core/translationLayer.jl")
 
 #TODO: config files must print error messages
 #you can find names in keysym.jl

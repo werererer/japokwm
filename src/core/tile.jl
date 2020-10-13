@@ -1,5 +1,6 @@
 module Layouts
 import Statistics
+include("translationLayer.jl")
 
 # from 0-1
 struct Container
@@ -51,7 +52,6 @@ function splitContainer(i :: Int, j :: Int, ratio :: Float64)
     prevHeight = container.height
     container = Container(container.x, container.y, container.width,
                           container.height * ratio)
-    println(prevHeight * (1-ratio))
     newContainer = Container(container.x, container.y + container.height,
                              container.width, prevHeight * (1-ratio))
     layoutData[i][j] = container
@@ -59,6 +59,12 @@ function splitContainer(i :: Int, j :: Int, ratio :: Float64)
     insert!(layoutData, i+1, layoutData[i])
     push!(layoutData[i+1], newContainer)
     arrangeThis(false)
+end
+
+function splitThisContainer(ratio :: Float64)
+    i = max(min(thisTiledClientCount(), length(layoutData)), 1)
+    j = min(clientPos(), length(layoutData[i]))
+    splitContainer(i, j, ratio)
 end
 
 # set: which window conf set
@@ -79,6 +85,12 @@ function vsplitContainer(i :: Int, j :: Int, ratio :: Float64)
     insert!(layoutData, i+1, layoutData[i])
     push!(layoutData[i+1], newContainer)
     arrangeThis(false)
+end
+
+function vsplitThisContainer(ratio :: Float64)
+    i = max(min(thisTiledClientCount(), length(layoutData)), 1)
+    j = min(clientPos(), length(layoutData[i]))
+    vsplitContainer(i, j, ratio)
 end
 
 function mergeContainer(i :: Int, j1 :: Int, j2 :: Int)
@@ -111,7 +123,6 @@ function mergeContainer(i :: Int, j1 :: Int, j2 :: Int)
 end
 
 function tile(n :: Int) :: Ptr{cContainerArr}
-    println("tile")
     global layoutData
 
     layoutData = [
@@ -149,7 +160,6 @@ function monocle(n :: Int) :: Ptr{cContainerArr}
             Container(1/3, 1/2, 2/3, 1/2)
            ]]
 
-    println("monocle")
     return update(n)
 end
 

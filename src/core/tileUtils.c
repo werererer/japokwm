@@ -1,5 +1,6 @@
 #include "tileUtils.h"
-#include <coreUtils.h>
+#include "coreUtils.h"
+#include <client.h>
 #include <julia.h>
 #include <string.h>
 #include <sys/param.h>
@@ -21,12 +22,7 @@ void arrange(Monitor *m, bool reset)
         Client *c;
         jl_value_t *v = NULL;
 
-        // client count
-        int n = 0;
-        wl_list_for_each(c, &clients, link)
-            if (visibleon(c, m) && !c->isfloating)
-                n++;
-
+        int n = tiledClientCount(m);
         // call arrange function
         // if previous layout is different or reset -> reset layout
         if (strcmp(prevLayout.symbol, selMon->lt.symbol) != 0 || reset) {
@@ -186,4 +182,36 @@ void updateLayout()
 {
     selMon->lt = getConfigLayout("layout");
     arrange(selMon, true);
+}
+
+int thisTiledClientCount()
+{
+    return tiledClientCount(selMon);
+}
+
+int tiledClientCount(Monitor *m)
+{
+    Client *c;
+    int n = 0;
+
+    wl_list_for_each(c, &clients, link)
+        if (visibleon(c, m) && !c->isfloating)
+            n++;
+    return n;
+}
+
+int clientPos()
+{
+    Monitor *m = selMon;
+    Client *c;
+    int n = 0;
+
+    wl_list_for_each(c, &clients, link) {
+        if (visibleon(c, m) && !c->isfloating) {
+            if (c == selClient())
+                return n;
+            n++;
+        }
+    }
+    return 0;
 }

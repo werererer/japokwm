@@ -25,6 +25,16 @@ function zoom()
     ccall((:zoom, corePath), Cvoid, ())
 end
 
+function thisTiledClientCount() :: Int
+    return ccall((:thisTiledClientCount, corePath), Cint, ())
+    return i
+end
+
+function clientPos() :: Int
+    # julia is 1 based, c 0
+    return ccall((:clientPos, corePath), Cint, ()) + 1
+end
+
 function view(ui)
     ccall((:view, corePath), Cvoid, (Cint,), ui)
 end

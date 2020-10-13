@@ -13,4 +13,7 @@ void focusclient(Client *old, Client *c, int lift);
 void setmon(Client *c, Monitor *m, unsigned int newtags);
 void resize(Client *c, int x, int y, int w, int h, int interact);
 void updateLayout();
+int thisTiledClientCount();
+int tiledClientCount(Monitor *m);
+int clientPos();
 #endif
