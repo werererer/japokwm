@@ -83,14 +83,20 @@ end
 
 function mergeContainer(i :: Int, j1 :: Int, j2 :: Int)
     global layoutData
-    println(i)
+
+    if i > length(layoutData)
+        return
+    end
+    if max(j1, j2) > length(layoutData[i])
+        return
+    end
+
     i = min(i, length(layoutData))
     j1 = min(j1, length(layoutData[i]))
     j2 = min(j2, length(layoutData[i]))
     container1 = layoutData[i][j1]
     container2 = layoutData[i][j2]
 
-    println("works")
     x = min(container1.x, container2.x)
     y = min(container1.y, container2.y)
     width = max(container1.x + container1.width,
@@ -99,8 +105,8 @@ function mergeContainer(i :: Int, j1 :: Int, j2 :: Int)
                 container2.y + container2.height) - y
     newContainer = Container(x, y, width, height)
 
-    replace!(layoutData[i], j1, newContainer)
-    delete!(layoutData[i], j2)
+    layoutData[i][min(j1, j2)] = newContainer
+    deleteat!(layoutData[i], max(j1, j2))
     arrangeThis(false)
 end
 
