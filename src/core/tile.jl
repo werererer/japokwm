@@ -51,6 +51,7 @@ function splitContainer(i :: Int, j :: Int, ratio :: Float64)
     prevHeight = container.height
     container = Container(container.x, container.y, container.width,
                           container.height * ratio)
+    println(prevHeight * (1-ratio))
     newContainer = Container(container.x, container.y + container.height,
                              container.width, prevHeight * (1-ratio))
     layoutData[i][j] = container
@@ -72,11 +73,34 @@ function vsplitContainer(i :: Int, j :: Int, ratio :: Float64)
     container = Container(container.x, container.y, container.width * ratio,
                           container.height)
     newContainer = Container(container.x + container.width, container.y,
-                             container.width * (1-ratio), container.height)
+                             prevWidth * (1-ratio), container.height)
     layoutData[i][j] = container
 
     insert!(layoutData, i+1, layoutData[i])
     push!(layoutData[i+1], newContainer)
+    arrangeThis(false)
+end
+
+function mergeContainer(i :: Int, j1 :: Int, j2 :: Int)
+    global layoutData
+    println(i)
+    i = min(i, length(layoutData))
+    j1 = min(j1, length(layoutData[i]))
+    j2 = min(j2, length(layoutData[i]))
+    container1 = layoutData[i][j1]
+    container2 = layoutData[i][j2]
+
+    println("works")
+    x = min(container1.x, container2.x)
+    y = min(container1.y, container2.y)
+    width = max(container1.x + container1.width,
+                container2.x + container2.width) - x
+    height = max(container1.y + container1.height,
+                container2.y + container2.height) - y
+    newContainer = Container(x, y, width, height)
+
+    replace!(layoutData[i], j1, newContainer)
+    delete!(layoutData[i], j2)
     arrangeThis(false)
 end
 

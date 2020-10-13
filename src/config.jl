@@ -29,7 +29,7 @@ monrules = [
 xkb_rules = []
 repeatRate = 25
 repeatDelay = 600
-termcmd = "/usr/bin/termite"
+termcmd = "/usr/bin/alacritty"
 
 mod = mod1
 #maps (between 1 and 4)
@@ -39,12 +39,12 @@ keys = [
         ["$mod comma",       ()->  focusmon(-1)           ],
         ["$mod k",           ()->  focusstack(-1)         ],
         ["$mod j",           ()->  focusstack(1)          ],
-        ["$mod i",           ()->  incnmaster(+1)         ],
         ["$mod d",           ()->  incnmaster(-1)         ],
         ["$mod c",           ()->  killclient()           ],
         ["$mod q",           ()->  quit()                 ],
         ["$mod p",           ()->  Layouts.splitContainer(1, 1, 1/2)                 ],
         ["$mod o",           ()->  Layouts.vsplitContainer(1, 1, 1/2)                 ],
+        ["$mod i",           ()->  Layouts.mergeContainer(1, 1, 2)                 ],
         #["$mod space",       ()->  setLayout()            ],
         ["$mod m",           ()->  setLayout(layouts[1])  ],
         ["$mod t",           ()->  setLayout(layouts[2])  ],
