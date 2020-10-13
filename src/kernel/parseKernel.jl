@@ -52,6 +52,10 @@ function tagmon(i)
     ccall((:tagmon, corePath), Cvoid, (Cint,), i)
 end
 
+function moveResize(ui :: Int)
+    ccall((:moveResize, corePath), Cvoid, (Cuint,), convert(Cuint, ui))
+end
+
 function quit()
     ccall((:quit, corePath), Cvoid, ())
 end

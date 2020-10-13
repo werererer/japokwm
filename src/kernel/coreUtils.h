@@ -66,6 +66,12 @@ typedef struct {
     jl_function_t *func;
 } Key;
 
+/* datastructures for parsing julia */
+typedef struct {
+    const char *symbol;
+    jl_function_t *func;
+} Button;
+
 typedef uint32_t xkb_keysym_t;
 
 /* rules */

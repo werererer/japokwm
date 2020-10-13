@@ -1,16 +1,16 @@
 include("../config.jl")
 const ULIB = "./wayland-util.so"
 
-function XStringToKeysym(str::String)
+function XStringToKeysym(str :: String)
     return ccall((:XStringToKeysym, ULIB), Cint, (Cstring,), str)
 end
 
-function XKeysymToString(sym)
+function XKeysymToString(sym) :: String
     res = ccall((:XKeysymToString, ULIB), Cstring, (Cint,), sym)
     return unsafe_string(res)
 end
 
-function modToString(mod)
+function modToString(mod) :: String
     res = ""
     mask = x->2^(x-1)
     for i in 1:8
@@ -21,29 +21,32 @@ function modToString(mod)
     return res
 end
 
-function keybinding(mod, sym)
+function symToBinding(mod, sym) :: String
     mods = modToString(mod)
     key = XKeysymToString(sym)
-    bind = "$(mods)$(key)"
-    println("BIND: $bind")
-    return keybinding(bind)
+    return "$(mods)$(key)"
 end
 
-function keybinding(bind::String)
+function keyPressed(mod, sym)
+    bind = symToBinding(mod, sym)
+    println("bind: $bind")
+    return processBinding(bind, keys)
+end
+
+function buttonPressed(mod, sym)
+    bind = symToBinding(mod, sym)
+    println("bind: $bind")
+    return processBinding(bind, buttons)
+end
+
+function processBinding(bind :: String, arr)
     handled = false
-    for key in keys
-        if (bind == key[1])
+    for elem in arr
+        if (bind == elem[1])
             #call function saved in key[2]
-            key[2]()
+            elem[2]()
             handled = true
         end
     end
     return handled
-end
-
-function buttonPress(mods, btn)
-    for hotkey in hotkeys
-        if modToString(mod) == hotkey->mod
-        end
-    end
 end

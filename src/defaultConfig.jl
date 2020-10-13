@@ -12,6 +12,9 @@ const mod3 = mods[2]
 const mod4 = mods[7]
 #also known as Alt Gr
 const mod5 = mods[8]
+const btnLeft = "Pointer_Button1"
+const btnMiddle = "Pointer_Button2"
+const btnRight = "Pointer_Button3"
 const shift = mods[1]
 const ctrl = mods[3]
 #

@@ -47,5 +47,6 @@ void updateConfig()
     /* commands */
     termcmd = getConfigStr("termcmd");
     getConfigKeyArr(keys, "keys");
+    getConfigKeyArr(buttons, "buttons");
     // getConfigkeyArr(buttons, "buttons");
 }

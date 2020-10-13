@@ -93,12 +93,6 @@ struct render_data {
     int x, y; /* layout-relative */
 };
 
-/* static const Button buttons[] = { */
-/* 	{ MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} }, */
-/* 	{ MODKEY, BTN_MIDDLE, togglefloating, {0} }, */
-/* 	{ MODKEY, BTN_RIGHT,  moveresize,     {.ui = CurResize} }, */
-/* }; */
-
 /* function declarations */
 void axisnotify(struct wl_listener *listener, void *data);
 void buttonpress(struct wl_listener *listener, void *data);
@@ -128,7 +122,7 @@ void maprequest(struct wl_listener *listener, void *data);
 void motionabsolute(struct wl_listener *listener, void *data);
 void motionnotify(uint32_t time);
 void motionrelative(struct wl_listener *listener, void *data);
-void moveresize(const Arg *arg);
+void moveResize(unsigned int ui);
 void pointerfocus(Client *c, struct wlr_surface *surface,
  double sx, double sy, uint32_t time);
 void quit();
@@ -221,7 +215,6 @@ void axisnotify(struct wl_listener *listener, void *data)
 //TODO: rewrite
 void buttonpress(struct wl_listener *listener, void *data)
 {
-    printf("button\n");
     struct wlr_event_pointer_button *event = data;
     struct wlr_keyboard *keyboard;
     uint32_t mods;
@@ -233,12 +226,17 @@ void buttonpress(struct wl_listener *listener, void *data)
         if ((c = xytoclient(cursor->x, cursor->y)))
             focusclient(selClient(), c, 1);
 
+        /* Translate libinput to xkbcommon code */
+        unsigned sym = event->button + 64985;
+
+        /* get modifiers */
         keyboard = wlr_seat_get_keyboard(seat);
         mods = wlr_keyboard_get_modifiers(keyboard);
 
-        jl_function_t *f = jl_eval_string("buttonPress");
+        /* process */
+        jl_function_t *f = jl_eval_string("buttonPressed");
         jl_value_t *arg1 = jl_box_uint32(mods);
-        jl_value_t *arg2 = jl_box_uint32(event->button);
+        jl_value_t *arg2 = jl_box_uint32(sym);
         jl_value_t *res = jl_call2(f, arg1, arg2);
         break;
     case WLR_BUTTON_RELEASED:
@@ -592,7 +590,7 @@ void keypress(struct wl_listener *listener, void *data)
     /* On _press_, attempt to process a compositor keybinding. */
     if (event->state == WLR_KEY_PRESSED) {
         for (i = 0; i < nsyms; i++) {
-            jl_function_t* f = jl_eval_string("keybinding");
+            jl_function_t* f = jl_eval_string("keyPressed");
             jl_value_t *arg1 = jl_box_uint32(mods);
             jl_value_t *arg2 = jl_box_uint32(syms[i]);
             jl_value_t *res = jl_call2(f, arg1, arg2);
@@ -758,7 +756,7 @@ void motionrelative(struct wl_listener *listener, void *data)
     motionnotify(event->time_msec);
 }
 
-void moveresize(const Arg *arg)
+void moveResize(unsigned int ui)
 {
     grabc = xytoclient(cursor->x, cursor->y);
     if (!grabc)
@@ -766,7 +764,7 @@ void moveresize(const Arg *arg)
 
     /* Float the window and tell motionnotify to grab it */
     setfloating(grabc, 1);
-    switch (cursor_mode = arg->ui) {
+    switch (cursor_mode = ui) {
     case CurMove:
         grabcx = cursor->x - grabc->geom.x;
         grabcy = cursor->y - grabc->geom.y;

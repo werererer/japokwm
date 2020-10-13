@@ -59,13 +59,13 @@ keys = [
        ]
 
 buttons = [
-           ["$mod Pointer_Button1", () -> printf("mouseaction")],
-           ["$mod Pointer_Button2", () -> printf("mouseaction")],
-           ["$mod Pointer_Button3", () -> printf("mouseaction")],
+           ["$mod $btnLeft",    ()  ->  moveResize(1)      ],
+           ["$mod $btnMiddle",  ()  ->  toggleFloating(4)  ],
+           ["$mod $btnRight",   ()  ->  moveResize(0)      ],
           ]
 
-static const Button buttons[] = {
-	{ MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },
-	{ MODKEY, BTN_MIDDLE, togglefloating, {0} },
-	{ MODKEY, BTN_RIGHT,  moveresize,     {.ui = CurResize} },
-};
+# static const Button buttons[] = {
+# 	{ MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },
+# 	{ MODKEY, BTN_MIDDLE, togglefloating, {0} },
+# 	{ MODKEY, BTN_RIGHT,  moveresize,     {.ui = CurResize} },
+# };
