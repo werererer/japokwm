@@ -19,6 +19,7 @@ extern char *tags[MAXLEN];
 extern Rule rules[MAXLEN];
 
 extern Layout defaultLayout;
+extern Layout prevLayout;
 //extern MonitorRule monrules[MAXLEN];
 
 extern int repeatRate;

@@ -10,6 +10,7 @@ float focuscolor[4];
 char *tags[MAXLEN];
 Rule rules[MAXLEN];
 Layout defaultLayout;
+Layout prevLayout;
 
 //MonitorRule monrules[MAXLEN];
 
@@ -43,6 +44,7 @@ void updateConfig()
     repeatRate = getConfigInt("repeatRate");
     repeatDelay = getConfigInt("repeatDelay");
     defaultLayout = getConfigLayout("layout");
+    prevLayout = (Layout){.symbol = "", .arrange = NULL};
 
     /* commands */
     termcmd = getConfigStr("termcmd");

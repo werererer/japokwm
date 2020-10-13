@@ -1,8 +1,10 @@
 #include "tileUtils.h"
 #include <coreUtils.h>
 #include <julia.h>
-#include <parseConfigUtils.h>
+#include <string.h>
 #include <sys/param.h>
+
+#include "parseConfig.h"
 
 struct cLayoutArr {
   struct wlr_fbox *layout;
@@ -10,21 +12,33 @@ struct cLayoutArr {
 };
 
 // TODO: move to parseConfigUtils.c
-void arrange(Monitor *m)
+void arrange(Monitor *m, bool reset)
 {
     /* Get effective monitor geometry to use for window area */
     m->m = *wlr_output_layout_get_box(output_layout, m->wlr_output);
     m->w = m->m;
     if (m->lt.arrange) {
         Client *c;
+        jl_value_t *v = NULL;
 
-        // get layout
+        // client count
         int n = 0;
         wl_list_for_each(c, &clients, link)
             if (visibleon(c, m) && !c->isfloating)
                 n++;
-        jl_value_t *arg1 = jl_box_int64(n);
-        jl_value_t *v = jl_call1(m->lt.arrange, arg1);
+
+        // call arrange function
+        // if previous layout is different or reset -> reset layout
+        if (strcmp(prevLayout.symbol, selMon->lt.symbol) != 0 || reset) {
+            prevLayout = selMon->lt;
+            jl_value_t *arg1 = jl_box_int64(n);
+            v = jl_call1(m->lt.arrange, arg1);
+        } else {
+            jl_function_t *f = jl_eval_string("Layouts.update");
+            jl_value_t *arg1 = jl_box_int64(n);
+            v = jl_call1(f, arg1);
+        }
+
         struct cLayoutArr *layoutArr = NULL;
         if (v) {
             layoutArr = jl_unbox_voidpointer(v);
@@ -47,6 +61,12 @@ void arrange(Monitor *m)
             printf("Empty function with symbol: %s\n", m->lt.symbol);
         }
     }
+}
+
+
+void arrangeThis(bool reset)
+{
+    arrange(selMon, reset);
 }
 
 void focusclient(Client *old, Client *c, int lift)
@@ -119,14 +139,14 @@ void setmon(Client *c, Monitor *m, unsigned int newtags)
     /* XXX leave/enter is not optimal but works */
     if (oldmon) {
         wlr_surface_send_leave(WLR_SURFACE(c), oldmon->wlr_output);
-        arrange(oldmon);
+        arrange(oldmon, false);
     }
     if (m) {
         /* Make sure window actually overlaps with the monitor */
         applybounds(c, m->m);
         wlr_surface_send_enter(WLR_SURFACE(c), m->wlr_output);
         c->tags = newtags ? newtags : m->tagset[m->seltags]; /* assign tags of target monitor */
-        arrange(m);
+        arrange(m, false);
     }
     focusclient(oldsel, focustop(selMon), 1);
 }
@@ -164,8 +184,6 @@ bool visibleon(Client *c, Monitor *m)
 
 void updateLayout()
 {
-    printf("updateLayout()\n");
     selMon->lt = getConfigLayout("layout");
-    arrange(selMon);
+    arrange(selMon, true);
 }
-

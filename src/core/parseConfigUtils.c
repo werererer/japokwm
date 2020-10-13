@@ -1,4 +1,5 @@
 #include "parseConfigUtils.h"
+#include <julia.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -56,6 +57,17 @@ Layout getConfigLayout(char *name)
     layout.symbol = getConfigStr(execStr1);
     layout.arrange = getConfigFunc(execStr2);
     return layout;
+}
+
+void setConfigLayoutSymbol(char *name, Layout l)
+{
+    // add 4 for chars: ' = ' and \0
+    int len = strlen(name) + strlen(l.symbol) + 4;
+    char execStr[len];
+    strcpy(execStr, name);
+    strcat(execStr, " = ");
+    strcat(execStr, l.symbol);
+    jl_eval_string(execStr);
 }
 
 static jl_value_t* getWlrBox(struct wlr_box w)

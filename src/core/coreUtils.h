@@ -23,6 +23,7 @@
 #endif
 
 typedef struct Monitor Monitor;
+typedef struct wlr_fbox Container;
 
 typedef union {
     int i;

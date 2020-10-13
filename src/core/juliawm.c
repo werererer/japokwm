@@ -541,7 +541,7 @@ void getxdecomode(struct wl_listener *listener, void *data)
 void incnmaster(int i)
 {
     selMon->nmaster = MAX(selMon->nmaster + i, 0);
-    arrange(selMon);
+    arrange(selMon, false);
 }
 
 void inputdevice(struct wl_listener *listener, void *data)
@@ -945,8 +945,7 @@ void rendermon(struct wl_listener *listener, void *data)
         struct wlr_box b = selMon->m;
         selMon->m = *wlr_output_layout_get_box(output_layout, selMon->wlr_output);
         if (selMon->m.width != b.width || selMon->m.height != b.height) {
-            printf("test\n");
-            arrange(selMon);
+            arrange(selMon, false);
         }
     }
 
@@ -1081,7 +1080,7 @@ void setfloating(Client *c, int floating)
     if (c->isfloating == floating)
         return;
     c->isfloating = floating;
-    arrange(c->mon);
+    arrange(c->mon, false);
 }
 
 /* arg > 1.0 will set mfact absolutely */
@@ -1094,7 +1093,7 @@ void setmfact(float factor) {
   if (f < 0.1 || f > 0.9)
     return;
   selMon->mfact = f;
-  arrange(selMon);
+  arrange(selMon, false);
 }
 
 void setpsel(struct wl_listener *listener, void *data)
@@ -1262,7 +1261,7 @@ void tag(unsigned int ui)
     if (sel && ui & TAGMASK) {
         sel->tags = ui & TAGMASK;
         focusclient(sel, focustop(selMon), 1);
-        arrange(selMon);
+        arrange(selMon, false);
     }
 }
 
@@ -1293,7 +1292,7 @@ void toggletag(const Arg *arg)
     if (newtags) {
         sel->tags = newtags;
         focusclient(sel, focustop(selMon), 1);
-        arrange(selMon);
+        arrange(selMon, false);
     }
 }
 
@@ -1305,7 +1304,7 @@ void toggleview(const Arg *arg)
     if (newtagset) {
         selMon->tagset[selMon->seltags] = newtagset;
         focusclient(sel, focustop(selMon), 1);
-        arrange(selMon);
+        arrange(selMon, false);
     }
 }
 
@@ -1333,7 +1332,7 @@ void view(unsigned ui)
     if (ui & TAGMASK)
         selMon->tagset[selMon->seltags] = ui & TAGMASK;
     focusclient(sel, focustop(selMon), 1);
-    arrange(selMon);
+    arrange(selMon, false);
 }
 
 Client * xytoclient(double x, double y)
@@ -1381,7 +1380,7 @@ void zoom()
     wl_list_insert(&clients, &sel->link);
 
     focusclient(oldsel, sel, 1);
-    arrange(selMon);
+    arrange(selMon, false);
 }
 
 #ifdef XWAYLAND

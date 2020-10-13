@@ -5,10 +5,11 @@
 
 #define NUM_DIGITS 9
 #define ARR_STRING_LENGTH(X) strlen(X) + 2*(strlen("[]") + NUM_DIGITS)
-//TODO: define foreach julia
+// TODO: define foreach julia
 
 void initConfig(char *path);
-//basic
+// basic
+// get
 Key getConfigKey(char *name);
 Layout getConfigLayout(char *name);
 MonitorRule getConfigMonRule(char *name);
@@ -18,8 +19,10 @@ float getConfigFloat(char *name);
 int getConfigInt(char *name);
 jl_function_t* getConfigFunc(char *name);
 jl_value_t* toJlMonitor(char *name, Monitor *m);
+// set
+void setConfigLayoutSymbol(char *name, Layout l);
 
-//array
+// array
 void getConfigStrArr(char **resArr, char *name);
 void getConfigFloatArr(float *resArr, char *name);
 void getConfigIntArr(int *resArr, char *name);

@@ -22,6 +22,9 @@ go to src/kernel and run: `make`
 go to src/kernel and run `julia main.jl` if you haven't already install julia
 (Will be changed in the near future)
 
+## Goals
+- create your own tiling layouts easily
+
 ## Known limitations and issues
 juliawm is in its very early stage and is not yet usable.
 
