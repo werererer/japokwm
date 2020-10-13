@@ -2,7 +2,7 @@ module Layouts
 import Statistics
 
 # from 0-1
-struct wlr_fbox
+struct LayoutElement
     x :: Cdouble
     y :: Cdouble
     width :: Cdouble
@@ -10,19 +10,19 @@ struct wlr_fbox
 end
 
 mutable struct Monitor
-    m :: wlr_fbox # monitor area
-    w :: wlr_fbox # window area
+    m :: LayoutElement # monitor area
+    w :: LayoutElement # window area
     tagset :: Int
     mfact :: Float64
     nmaster :: Int
 end
 
 struct cLayoutArr
-    layout :: Ptr{wlr_fbox}
+    layout :: Ptr{LayoutElement}
     size :: Cint
 end
 
-function add(box :: wlr_fbox)
+function add(box :: LayoutElement)
     ccall((:addBox, "juliawm.so"), Cvoid, (Cint, Cint, Cint, Cint), 3, 3, 4, 5)
 end
 
@@ -65,38 +65,47 @@ end
 function tile(n) :: Ptr{cLayoutArr}
     println("tile")
     layout = [
-           [
-            wlr_fbox(0, 0, 1, 1),
-            wlr_fbox(2, 2, 1, 1),
-           ],
-           [
-            wlr_fbox(0, 0, 1/2, 1),
-            wlr_fbox(1/2, 0, 1/2, 1),
-           ],
-           [
-            wlr_fbox(0, 0, 1/2, 1),
-            wlr_fbox(0, 0, 1/2, 1),
-            wlr_fbox(1/2, 0, 1/2, 1),
-           ],
-           [
-            wlr_fbox(0, 0, 1/2, 1),
-            wlr_fbox(0, 0, 1/2, 1),
-            wlr_fbox(1/2, 0, 1/2, 1),
-           ],
-          ]
+              [
+               LayoutElement(0, 0, 1, 1);
+              ],
+              [
+               LayoutElement(0, 0, 1/2, 1),
+               LayoutElement(1/2, 0, 1/2, 1),
+              ],
+              [
+               LayoutElement(0, 0, 1/2, 1),
+               LayoutElement(1/2, 0, 1/2, 1/2),
+               LayoutElement(1/2, 1/2, 1/2, 1/2),
+              ],
+              [
+               LayoutElement(0, 0, 1/2, 1),
+               LayoutElement(1/2, 0, 1/2, 1/3),
+               LayoutElement(1/2, 1/3, 1/2, 1/3),
+               LayoutElement(1/2, 2/3, 1/2, 1/3),
+              ],
+              [
+               LayoutElement(0  , 0  , 1/2, 1  ),
+               LayoutElement(1/2, 0  , 1/2, 1/4),
+               LayoutElement(1/2, 1/4, 1/2, 1/4),
+               LayoutElement(1/2, 2/4, 1/2, 1/4),
+               LayoutElement(1/2, 3/4, 1/2, 1/4),
+              ],
+             ]
 
-    res = cLayoutArr(pointer(layout[1]), length(layout[1]))
+    n = max(1, min(n, length(layout)))
+    res = cLayoutArr(pointer(layout[n]), length(layout[n]))
     res = pointer([res])
     return res
 end
 
-function monocle(n) :: Ptr{cLayoutArr}
-    println("monocle")
+function monocle(n :: Int) :: Ptr{cLayoutArr}
     layout = [[
-            wlr_fbox(1/3, 1/2, 1/3, 1/2)
+            LayoutElement(1/3, 1/2, 1/3, 1/2)
            ]]
 
-    res = cLayoutArr(pointer(layout[1]), length(layout[1]))
+    println("monocle")
+    n = max(1, min(n, length(layout)))
+    res = cLayoutArr(pointer(layout[n]), length(layout[n]))
     res = pointer([res])
     return res
 end

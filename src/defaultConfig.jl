@@ -20,8 +20,6 @@ const ctrl = mods[3]
 end
 
 function setLayout(l)
-    println("NEWLAYOUT")
-    println(l)
     global layout = l
     updateLayout()
 end

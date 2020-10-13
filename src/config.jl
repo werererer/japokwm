@@ -14,9 +14,9 @@ rules = [
 ]
 
 layouts = [
-    [ "[M]", (m)-> Layouts.monocle(m) ],
-    [ "><>", (m)-> Layouts.floating(m) ],
-    [ "[]=", (m)-> Layouts.tile(m) ],
+    [ "[M]", (n)-> Layouts.monocle(n) ],
+    [ "[]=", (n)-> Layouts.tile(n) ],
+    [ "><>", (n)-> Layouts.floating(n) ],
 ]
 
 layout = layouts[1]
@@ -43,10 +43,10 @@ keys = [
         ["$mod d",           ()->  incnmaster(-1)         ],
         ["$mod C",           ()->  killclient()           ],
         ["$mod q",           ()->  quit()                 ],
-        ["$mod space",       ()->  setLayout()            ],
-        ["$mod f",           ()->  setLayout(layouts[1])  ],
-        ["$mod m",           ()->  setLayout(layouts[2])  ],
-        ["$mod t",           ()->  setLayout(layouts[3])  ],
+        #["$mod space",       ()->  setLayout()            ],
+        ["$mod m",           ()->  setLayout(layouts[1])  ],
+        ["$mod t",           ()->  setLayout(layouts[2])  ],
+        ["$mod f",           ()->  setLayout(layouts[3])  ],
         ["$mod l",           ()->  setmfact(+0.05)        ],
         ["$mod h",           ()->  setmfact(-0.05)        ],
         ["$mod parenright",  ()->  tag(~0)                ],

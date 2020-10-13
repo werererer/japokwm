@@ -2,10 +2,11 @@
 #include <coreUtils.h>
 #include <julia.h>
 #include <parseConfigUtils.h>
+#include <sys/param.h>
 
 struct cLayoutArr {
   struct wlr_fbox *layout;
-  size_t size;
+  int size;
 };
 
 // TODO: move to parseConfigUtils.c
@@ -17,27 +18,35 @@ void arrange(Monitor *m)
     if (m->lt.arrange) {
         Client *c;
 
-        // init i index
+        // get layout
         int n = 0;
         wl_list_for_each(c, &clients, link)
             if (visibleon(c, m) || !c->isfloating)
                 n++;
         jl_value_t *arg1 = jl_box_int64(n);
-
         jl_value_t *v = jl_call1(m->lt.arrange, arg1);
-        struct cLayoutArr *layoutArr = jl_unbox_voidpointer(v);
-        int i = 0;
-        wl_list_for_each(c, &clients, link) {
-            if (!visibleon(c, m) || c->isfloating)
-                continue;
+        struct cLayoutArr *layoutArr = NULL;
+        if (v) {
+            layoutArr = jl_unbox_voidpointer(v);
 
-            resize(c, layoutArr->layout[0].x*m->w.x, layoutArr->layout[0].y*m->w.y, layoutArr->layout[0].width*m->w.width, layoutArr->layout[0].height*m->w.height, 0);
-            i++;
-            if (i > layoutArr->size)
-                break;
+            //place clients
+            int i = 0;
+            wl_list_for_each(c, &clients, link) {
+                if (!visibleon(c, m) || c->isfloating)
+                    continue;
+
+                resize(c,
+                        layoutArr->layout[i].x*m->w.width,
+                        layoutArr->layout[i].y*m->w.height,
+                        layoutArr->layout[i].width*m->w.width,
+                        layoutArr->layout[i].height*m->w.height, 
+                        0);
+                i = MIN(i + 1, layoutArr->size-1);
+            }
+        } else {
+            printf("Empty function with symbol: %s\n", m->lt.symbol);
         }
     }
-
 }
 
 void focusclient(Client *old, Client *c, int lift)
@@ -78,7 +87,7 @@ void focusclient(Client *old, Client *c, int lift)
     /* Put the new client atop the focus stack and select its monitor */
     wl_list_remove(&c->flink);
     wl_list_insert(&focus_stack, &c->flink);
-    selmon = c->mon;
+    selMon = c->mon;
 
     /* Activate the new client */
 #ifdef XWAYLAND
@@ -119,7 +128,7 @@ void setmon(Client *c, Monitor *m, unsigned int newtags)
         c->tags = newtags ? newtags : m->tagset[m->seltags]; /* assign tags of target monitor */
         arrange(m);
     }
-    focusclient(oldsel, focustop(selmon), 1);
+    focusclient(oldsel, focustop(selMon), 1);
 }
 
 void
@@ -155,7 +164,8 @@ bool visibleon(Client *c, Monitor *m)
 
 void updateLayout()
 {
-    selmon->lt = getConfigLayout("layout");
-    arrange(selmon);
+    printf("updateLayout()\n");
+    selMon->lt = getConfigLayout("layout");
+    arrange(selMon);
 }
 

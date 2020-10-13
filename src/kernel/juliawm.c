@@ -4,6 +4,7 @@
 #include <parseConfig.h>
 #include <parseConfigUtils.h>
 #include <string.h>
+#include <tileUtils.h>
 #define _POSIX_C_SOURCE 200809L
 #include <getopt.h>
 #include <linux/input-event-codes.h>
@@ -241,8 +242,8 @@ void buttonpress(struct wl_listener *listener, void *data)
                     "left_ptr", cursor);
             cursor_mode = CurNormal;
             /* Drop the window off on its new monitor */
-            selmon = xytomon(cursor->x, cursor->y);
-            setmon(grabc, selmon, 0);
+            selMon = xytomon(cursor->x, cursor->y);
+            setmon(grabc, selMon, 0);
             return;
         }
         break;
@@ -481,13 +482,13 @@ Monitor *dirtomon(int dir)
     Monitor *m;
 
     if (dir > 0) {
-        if (selmon->link.next == &mons)
+        if (selMon->link.next == &mons)
             return wl_container_of(mons.next, m, link);
-        return wl_container_of(selmon->link.next, m, link);
+        return wl_container_of(selMon->link.next, m, link);
     } else {
-        if (selmon->link.prev == &mons)
+        if (selMon->link.prev == &mons)
             return wl_container_of(mons.prev, m, link);
-        return wl_container_of(selmon->link.prev, m, link);
+        return wl_container_of(selMon->link.prev, m, link);
     }
 }
 
@@ -495,14 +496,14 @@ void focusmon(int i)
 {
     Client *sel = selClient();
 
-    selmon = dirtomon(i);
-    focusclient(sel, focustop(selmon), 1);
+    selMon = dirtomon(i);
+    focusclient(sel, focustop(selMon), 1);
 }
 
 //TODO: EXPORT
 void focusstack(int i)
 {
-    /* Focus the next or previous client (in tiling order) on selmon */
+    /* Focus the next or previous client (in tiling order) on selMon */
     Client *c, *sel = selClient();
     if (!sel)
         return;
@@ -510,18 +511,18 @@ void focusstack(int i)
         wl_list_for_each(c, &sel->link, link) {
             if (&c->link == &clients)
                 continue;  /* wrap past the sentinel node */
-            if (visibleon(c, selmon))
+            if (visibleon(c, selMon))
                 break;  /* found it */
         }
     } else {
         wl_list_for_each_reverse(c, &sel->link, link) {
             if (&c->link == &clients)
                 continue;  /* wrap past the sentinel node */
-            if (visibleon(c, selmon))
+            if (visibleon(c, selMon))
                 break;  /* found it */
         }
     }
-    /* If only one client is visible on selmon, then c == sel */
+    /* If only one client is visible on selMon, then c == sel */
     focusclient(sel, c, 1);
 }
 
@@ -534,8 +535,8 @@ void getxdecomode(struct wl_listener *listener, void *data)
 
 void incnmaster(int i)
 {
-    selmon->nmaster = MAX(selmon->nmaster + i, 0);
-    arrange(selmon);
+    selMon->nmaster = MAX(selMon->nmaster + i, 0);
+    arrange(selMon);
 }
 
 void inputdevice(struct wl_listener *listener, void *data)
@@ -687,9 +688,9 @@ void motionnotify(uint32_t time)
     struct wlr_surface *surface = NULL;
     Client *c;
 
-    /* Update selmon (even while dragging a window) */
+    /* Update selMon (even while dragging a window) */
     if (sloppyfocus)
-        selmon = xytomon(cursor->x, cursor->y);
+        selMon = xytomon(cursor->x, cursor->y);
 
     /* If we are currently grabbing the mouse, handle and return */
     if (cursor_mode == CurMove) {
@@ -935,6 +936,15 @@ void rendermon(struct wl_listener *listener, void *data)
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
 
+    if (selMon) {
+        struct wlr_box b = selMon->m;
+        selMon->m = *wlr_output_layout_get_box(output_layout, selMon->wlr_output);
+        if (selMon->m.width != b.width || selMon->m.height != b.height) {
+            printf("test\n");
+            arrange(selMon);
+        }
+    }
+
     /* Do not render if any XDG clients have an outstanding resize. */
     wl_list_for_each(c, &stack, slink) {
         if (c->resize) {
@@ -997,9 +1007,9 @@ void run(char *startup_cmd)
         BARF("startup: backend_start");
 
     wlr_cursor_warp_absolute(cursor, NULL, 0.4, 0.3);
-    /* Now that outputs are initialized, choose initial selmon based on
+    /* Now that outputs are initialized, choose initial selMon based on
      * cursor position, and set default cursor image */
-    selmon = xytomon(cursor->x, cursor->y);
+    selMon = xytomon(cursor->x, cursor->y);
 
     /* XXX hack to get cursor to display in its initial location (100, 100)
      * instead of (0, 0) and then jumping.  still may not be fully
@@ -1072,13 +1082,13 @@ void setfloating(Client *c, int floating)
 void setmfact(float factor) {
   float f;
 
-  if (!selmon->lt.arrange)
+  if (!selMon->lt.arrange)
     return;
-  factor = factor < 1.0 ? factor + selmon->mfact : factor - 1.0;
+  factor = factor < 1.0 ? factor + selMon->mfact : factor - 1.0;
   if (f < 0.1 || f > 0.9)
     return;
-  selmon->mfact = f;
-  arrange(selmon);
+  selMon->mfact = f;
+  arrange(selMon);
 }
 
 void setpsel(struct wl_listener *listener, void *data)
@@ -1245,8 +1255,8 @@ void tag(unsigned int ui)
     Client *sel = selClient();
     if (sel && ui & TAGMASK) {
         sel->tags = ui & TAGMASK;
-        focusclient(sel, focustop(selmon), 1);
-        arrange(selmon);
+        focusclient(sel, focustop(selMon), 1);
+        arrange(selMon);
     }
 }
 
@@ -1276,20 +1286,20 @@ void toggletag(const Arg *arg)
     newtags = sel->tags ^ (arg->ui & TAGMASK);
     if (newtags) {
         sel->tags = newtags;
-        focusclient(sel, focustop(selmon), 1);
-        arrange(selmon);
+        focusclient(sel, focustop(selMon), 1);
+        arrange(selMon);
     }
 }
 
 void toggleview(const Arg *arg)
 {
     Client *sel = selClient();
-    unsigned int newtagset = selmon->tagset[selmon->seltags] ^ (arg->ui & TAGMASK);
+    unsigned int newtagset = selMon->tagset[selMon->seltags] ^ (arg->ui & TAGMASK);
 
     if (newtagset) {
-        selmon->tagset[selmon->seltags] = newtagset;
-        focusclient(sel, focustop(selmon), 1);
-        arrange(selmon);
+        selMon->tagset[selMon->seltags] = newtagset;
+        focusclient(sel, focustop(selMon), 1);
+        arrange(selMon);
     }
 }
 
@@ -1302,6 +1312,7 @@ void unmapnotify(struct wl_listener *listener, void *data)
     if (c->type == X11Unmanaged)
         return;
 #endif
+    setmon(c, NULL, 0);
     wl_list_remove(&c->flink);
     wl_list_remove(&c->slink);
 }
@@ -1309,14 +1320,14 @@ void unmapnotify(struct wl_listener *listener, void *data)
 void view(unsigned ui)
 {
     Client *sel = selClient();
-    if ((ui & TAGMASK) == selmon->tagset[selmon->seltags])
+    if ((ui & TAGMASK) == selMon->tagset[selMon->seltags])
         return;
 
-    selmon->seltags ^= 1; /* toggle sel tagset */
+    selMon->seltags ^= 1; /* toggle sel tagset */
     if (ui & TAGMASK)
-        selmon->tagset[selmon->seltags] = ui & TAGMASK;
-    focusclient(sel, focustop(selmon), 1);
-    arrange(selmon);
+        selMon->tagset[selMon->seltags] = ui & TAGMASK;
+    focusclient(sel, focustop(selMon), 1);
+    arrange(selMon);
 }
 
 Client * xytoclient(double x, double y)
@@ -1340,13 +1351,13 @@ void zoom()
 {
     Client *c, *sel = selClient(), *oldsel = sel;
 
-    if (!sel || !selmon->lt.arrange || sel->isfloating)
+    if (!sel || !selMon->lt.arrange || sel->isfloating)
         return;
 
     /* Search for the first tiled window that is not sel, marking sel as
      * NULL if we pass it along the way */
     wl_list_for_each(c, &clients, link)
-        if (visibleon(c, selmon) && !c->isfloating) {
+        if (visibleon(c, selMon) && !c->isfloating) {
             if (c != sel)
                 break;
             sel = NULL;
@@ -1364,7 +1375,7 @@ void zoom()
     wl_list_insert(&clients, &sel->link);
 
     focusclient(oldsel, sel, 1);
-    arrange(selmon);
+    arrange(selMon);
 }
 
 #ifdef XWAYLAND

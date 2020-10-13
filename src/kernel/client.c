@@ -8,7 +8,7 @@ struct wl_list stack;   /* stacking z-order */
 struct wlr_output_layout *output_layout;
 struct wlr_box sgeom;
 struct wl_list mons;
-Monitor *selmon = NULL;
+Monitor *selMon = NULL;
 
 /* function implementations */
 void applybounds(Client *c, struct wlr_box bbox)
@@ -59,17 +59,17 @@ void applyrules(Client *c)
             i = 0;
             wl_list_for_each(m, &mons, link)
                 if (r->monitor == i++)
-                    selmon = m;
+                    selMon = m;
         }
     }
-    setmon(c, selmon, newtags);
+    setmon(c, selMon, newtags);
 }
 
 Client *selClient()
 {
     struct wl_list f = focus_stack;
     Client *c = wl_container_of(focus_stack.next, c, flink);
-    if (wl_list_empty(&focus_stack) || !visibleon(c, selmon))
+    if (wl_list_empty(&focus_stack) || !visibleon(c, selMon))
         return NULL;
     return c;
 }

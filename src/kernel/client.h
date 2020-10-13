@@ -42,6 +42,6 @@ extern struct wl_list stack;   /* stacking z-order */
 extern struct wlr_output_layout *output_layout;
 extern struct wlr_box sgeom;
 extern struct wl_list mons;
-extern Monitor *selmon;
+extern Monitor *selMon;
 
 #endif
