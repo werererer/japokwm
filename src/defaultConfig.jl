@@ -1,6 +1,6 @@
-include("kernel/parseKernel.jl")
+include("core/translationLayer.jl")
 include("keysym.jl")
-include("kernel/tile.jl")
+include("core/tile.jl")
 
 #TODO: config files must print error messages
 #you can find names in keysym.jl
