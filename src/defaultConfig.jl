@@ -22,8 +22,28 @@ const ctrl = mods[3]
     NORMAL
 end
 
-function setLayout(l)
-    global layout = l
+layoutId = 1 :: Int
+
+layouts = [
+    [ "[M]", (n)-> Layouts.monocle(n) ],
+    [ "[]=", (n)-> Layouts.tile(n) ],
+    [ "><>", (n)-> Layouts.floating(n) ],
+]
+
+function setLayout()
+    global layout, layouts, layoutId
+    layoutId += 1
+    if layoutId > length(layouts)
+        layoutId = 1
+    end
+    layout = layouts[layoutId]
+    updateLayout()
+end
+
+function setLayout(i :: Int)
+    global layouts, layout, layoutId
+    layoutId = i
+    layout = layouts[i]
     updateLayout()
 end
 

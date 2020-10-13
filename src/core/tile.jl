@@ -52,6 +52,7 @@ function splitContainer(i :: Int, j :: Int, ratio :: Float64)
     prevHeight = container.height
     container = Container(container.x, container.y, container.width,
                           container.height * ratio)
+    println(prevHeight * (2-ratio))
     newContainer = Container(container.x, container.y + container.height,
                              container.width, prevHeight * (1-ratio))
     layoutData[i][j] = container
