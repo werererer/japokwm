@@ -2,6 +2,7 @@
 #=
 # This file wrapps c functions to julia
 =#
+include("global.jl")
 const corePath = "./juliawm.so"
 
 function run(cmd::String)
@@ -36,8 +37,8 @@ function updateLayout()
     ccall((:updateLayout, corePath), Cvoid, ())
 end
 
-function togglefloating()
-    ccall((:togglefloating, corePath), Cvoid, ())
+function toggleFloating()
+    ccall((:toggleFloating, corePath), Cvoid, ())
 end
 
 function tag(ui)
@@ -52,8 +53,9 @@ function tagmon(i)
     ccall((:tagmon, corePath), Cvoid, (Cint,), i)
 end
 
-function moveResize(ui :: Int)
-    ccall((:moveResize, corePath), Cvoid, (Cuint,), convert(Cuint, ui))
+function moveResize(ui :: Cursor)
+    println("works")
+    ccall((:moveResize, corePath), Cvoid, (Cuint,), convert(Cuint, Int(ui)))
 end
 
 function quit()

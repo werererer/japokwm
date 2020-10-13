@@ -59,9 +59,9 @@ keys = [
        ]
 
 buttons = [
-           ["$mod $btnLeft",    ()  ->  moveResize(1)      ],
-           ["$mod $btnMiddle",  ()  ->  toggleFloating(4)  ],
-           ["$mod $btnRight",   ()  ->  moveResize(0)      ],
+           ["$mod $btnLeft",    ()  ->  moveResize(CurMove)      ],
+           ["$mod $btnMiddle",  ()  ->  toggleFloating()  ],
+           ["$mod $btnRight",   ()  ->  moveResize(CurResize)      ],
           ]
 
 # static const Button buttons[] = {

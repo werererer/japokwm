@@ -141,7 +141,7 @@ void setup(void);
 void sigchld(int unused);
 void tag(unsigned int ui);
 void tagmon(int i);
-void togglefloating();
+void toggleFloating();
 void toggletag(const Arg *arg);
 void toggleview(const Arg *arg);
 void unmapnotify(struct wl_listener *listener, void *data);
@@ -1273,8 +1273,9 @@ void tagmon(int i)
     setmon(sel, dirtomon(i), 0);
 }
 
-void togglefloating()
+void toggleFloating()
 {
+    printf("dontfloat\n");
     Client *sel = selClient();
     if (!sel)
         return;
