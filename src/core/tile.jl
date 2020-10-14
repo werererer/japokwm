@@ -52,7 +52,6 @@ function splitContainer(i :: Int, j :: Int, ratio :: Float64)
     prevHeight = container.height
     container = Container(container.x, container.y, container.width,
                           container.height * ratio)
-    println(prevHeight * (2-ratio))
     newContainer = Container(container.x, container.y + container.height,
                              container.width, prevHeight * (1-ratio))
     layoutData[i][j] = container
@@ -124,8 +123,8 @@ function mergeContainer(i :: Int, j1 :: Int, j2 :: Int)
 end
 
 @enum Direction begin
-    UP
-    DOWN
+    TOP
+    BOTTOM
     LEFT
     RIGHT
 end
@@ -133,17 +132,15 @@ end
 function moveContainer(i :: Int, j :: Int, n :: Float64, d :: Direction)
     global layoutData
     container = layoutData[i][j]
-    if d == UP
+    if d == TOP
         layoutData[i][j] = Container(container.x, container.y - n, container.width, container.height)
-    elseif d == DOWN
+    elseif d == BOTTOM
         layoutData[i][j] = Container(container.x, container.y + n, container.width, container.height)
     elseif d == LEFT
         layoutData[i][j] = Container(container.x - n, container.y, container.width, container.height)
     elseif d == RIGHT
-        println("works")
         layoutData[i][j] = Container(container.x + n, container.y, container.width, container.height)
     end
-    println("works2")
 end
 
 function moveThisContainer(n :: Float64, d :: Direction)
@@ -156,10 +153,10 @@ end
 function resizeContainer(i :: Int, j :: Int, n :: Float64, d :: Direction)
     global layoutData
     container = layoutData[i][j]
-    if d == UP
+    if d == TOP
         layoutData[i][j] = Container(container.x, container.y - n,
                                      container.width, container.height + n)
-    elseif d == DOWN
+    elseif d == BOTTOM
         layoutData[i][j] = Container(container.x, container.y,
                                      container.width, container.height + n)
     elseif d == LEFT
@@ -183,14 +180,26 @@ function resizeAll(i :: Int, j :: Int, n :: Float64, d :: Direction)
     global layoutData
     container = layoutData[i][j]
     for j2 in 1:length(layoutData[i])
-        println("works $(length(layoutData))")
         if j == j2
             resizeContainer(i, j, n, d)
             continue
         end
-        if layoutData[i2][j2].x < container.x + container.width 
-            resizeContainer(i, j2, n, d)
-        else
+
+        #resize container[i][j]?
+        if d == TOP
+            resize =
+            layoutData[i][j2].y + layoutData[i][j2].height <= container.y
+        elseif d == BOTTOM
+            resize = layoutData[i][j2].y >= container.y + container.width
+        elseif d == LEFT
+            resize =
+            layoutData[i][j2].x + layoutData[i][j2].width <= container.x
+        elseif d == RIGHT
+            resize = layoutData[i][j2].x >= container.x + container.width
+        end
+
+        if resize
+            resizeContainer(i, j2, -n, d)
             moveContainer(i, j2, n, d)
         end
     end
@@ -201,7 +210,6 @@ function resizeThisAll(n :: Float64, d :: Direction)
     i = max(min(thisTiledClientCount(), length(layoutData)), 1)
     j = min(clientPos(), length(layoutData[i]))
     resizeAll(i, j, n, d)
-    println("done")
     arrangeThis(false)
 end
 
