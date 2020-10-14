@@ -21,6 +21,10 @@ function setmfact(factor)
     ccall((:setmfact, corePath), Cvoid, (Cfloat,), factor)
 end
 
+function updateConfig()
+    ccall((:updateConfig, corePath), Cvoid, ())
+end
+
 function zoom()
     ccall((:zoom, corePath), Cvoid, ())
 end

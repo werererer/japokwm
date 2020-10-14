@@ -1,5 +1,6 @@
 #include "parseConfig.h"
 #include "parseConfigUtils.h"
+#include <julia.h>
 
 int sloppyfocus;
 int borderpx;
@@ -23,7 +24,6 @@ Key buttons[MAXLEN];
 
 void updateConfig()
 {
-    jl_init();
     sloppyfocus = getConfigInt("sloppyfocus");
     borderpx = getConfigInt("borderpx");
 

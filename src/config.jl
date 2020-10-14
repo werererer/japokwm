@@ -49,7 +49,7 @@ keys = [
         ["$mod m",           ()->  setLayout(1)  ],
         ["$mod t",           ()->  setLayout(2)  ],
         ["$mod f",           ()->  setLayout(3)  ],
-        ["$mod l",           ()->  setmfact(+0.05)        ],
+        ["$mod l",           ()->  Layouts.moveThisContainer(1/10, Layouts.DOWN)        ],
         ["$mod h",           ()->  setmfact(-0.05)        ],
         ["$mod parenright",  ()->  tag(~0)                ],
         ["$mod greater",     ()->  tagmon(+1)             ],
@@ -57,6 +57,7 @@ keys = [
         ["$mod Tab",         ()->  view()                 ],
         ["$mod 0",           ()->  view(~0)               ],
         ["$mod Return",      ()->  zoom()                 ],
+        ["$mod r",           ()->  reloadConfig()                 ],
        ]
 
 buttons = [
@@ -64,9 +65,3 @@ buttons = [
            ["$mod $btnMiddle",  ()  ->  toggleFloating()  ],
            ["$mod $btnRight",   ()  ->  moveResize(CurResize)      ],
           ]
-
-# static const Button buttons[] = {
-# 	{ MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },
-# 	{ MODKEY, BTN_MIDDLE, togglefloating, {0} },
-# 	{ MODKEY, BTN_RIGHT,  moveresize,     {.ui = CurResize} },
-# };

@@ -1,4 +1,3 @@
-include("keysym.jl")
 include("core/tile.jl")
 include("core/translationLayer.jl")
 
@@ -45,6 +44,11 @@ function setLayout(i :: Int)
     layoutId = i
     layout = layouts[i]
     updateLayout()
+end
+
+function reloadConfig()
+    include("../config.jl")
+    updateConfig()
 end
 
 #default
