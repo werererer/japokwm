@@ -11,6 +11,10 @@ LDLIBS += -ljulia
 LDLIBS += $(foreach p,$(PKGS),$(shell pkg-config --libs $(p)))
 CFiles = $(filter-out debug.c, $(filter-out xdg-shell-protocol.c, $(wildcard *.c)))
 
+TOPLEVEL = $(shell git rev-parse --show-toplevel)
+PROTOCOL = $(TOPLEVEL)/protocols
+LAYER_SHELL_PROTOCOL = $(PROTOCOL)/wlr-layer-shell-unstable-v1.xml
+
 # wayland-scanner is a tool which generates C headers and rigging for Wayland
 # protocols, which are specified in XML. wlroots requires you to rig these up
 # to your build system yourself and provide them in the include path.
@@ -23,6 +27,14 @@ xdg-shell-protocol.c:
 	$(WAYLAND_SCANNER) private-code \
 		$(WAYLAND_PROTOCOLS)/stable/xdg-shell/xdg-shell.xml $@
 
+wlr-layer-shell-unstable-v1-protocol.h: wlr-layer-shell-unstable-v1-protocol.c
+	$(WAYLAND_SCANNER) server-header \
+		$(LAYER_SHELL_PROTOCOL) $@
+
+wlr-layer-shell-unstable-v1-protocol.c:
+	$(WAYLAND_SCANNER) private-code \
+		$(LAYER_SHELL_PROTOCOL) \$@
+
 xdg-shell-protocol.o: xdg-shell-protocol.h
 
 debug: debug.c
@@ -33,7 +45,7 @@ juliawm.so: $(wildcard *.o) $(CFiles)
 
 recompile: clean all
 
-all: juliawm.so debug
+all: juliawm.so debug wlr-layer-shell-unstable-v1-protocol.h
 
 wayland-util.so: wayland-util.c
 	$(CC) $(CFLAGS) $(LDLIBS) $(CFiles) -o $@
