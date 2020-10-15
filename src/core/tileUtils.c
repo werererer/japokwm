@@ -4,6 +4,7 @@
 #include <julia.h>
 #include <string.h>
 #include <sys/param.h>
+#include <wlr/types/wlr_foreign_toplevel_management_v1.h>
 
 #include "parseConfig.h"
 
@@ -65,7 +66,7 @@ void arrangeThis(bool reset)
     arrange(selMon, reset);
 }
 
-void focusclient(Client *old, Client *c, int lift)
+void focusclient(Client *old, Client *c, bool lift)
 {
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat);
 
@@ -86,6 +87,19 @@ void focusclient(Client *old, Client *c, int lift)
         return;
     }
 
+    /* Deactivate old client if focus is changing */
+    if (c != old && old) {
+            // only do stuff if c->type == old->type == ...Shell
+            switch (old->type) {
+                case XDGShell:
+                    wlr_xdg_toplevel_set_activated(old->surface.xdg, 0);
+                    break;
+                case LayerShell:
+                    /* nop: layershell doesn't need to activate*/
+                    break;
+            }
+    }
+
     /* Have a client, so focus its top-level wlr_surface */
     wlr_seat_keyboard_notify_enter(seat, getWlrSurface(c),
             kb->keycodes, kb->num_keycodes, &kb->modifiers);
@@ -96,12 +110,15 @@ void focusclient(Client *old, Client *c, int lift)
     selMon = c->mon;
 
     /* Activate the new client */
-#ifdef XWAYLAND
-    if (c->type != XDGShell)
-        wlr_xwayland_surface_activate(c->surface.xwayland, 1);
-#endif
-    if (c->type == XDGShell)
-        wlr_xdg_toplevel_set_activated(c->surface.xdg, 1);
+    switch (c->type) {
+        case XDGShell:
+            wlr_xdg_toplevel_set_activated(c->surface.xdg, 1);
+            break;
+        case X11Managed:
+        case X11Unmanaged:
+            wlr_xwayland_surface_activate(c->surface.xwayland, 1);
+            break;
+    }
 }
 
 Client* focustop(Monitor *m)
@@ -134,7 +151,7 @@ void setmon(Client *c, Monitor *m, unsigned int newtags)
         c->tags = newtags ? newtags : m->tagset[m->seltags]; /* assign tags of target monitor */
         arrange(m, false);
     }
-    focusclient(oldsel, focustop(selMon), 1);
+    focusclient(oldsel, focustop(selMon), true);
 }
 
 void
@@ -152,20 +169,21 @@ resize(Client *c, int x, int y, int w, int h, int interact)
     c->geom.height = h;
     applybounds(c, bbox);
     /* wlroots makes this a no-op if size hasn't changed */
-#ifdef XWAYLAND
-    if (c->type != XDGShell)
-        wlr_xwayland_surface_configure(c->surface.xwayland,
-                c->geom.x, c->geom.y,
-                c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
-    else
-#endif
-        if (c->type == LayerShell){
-            wlr_layer_surface_v1_configure(c->surface.layer, 
-                    c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
-        }
-        else if (c->type == XDGShell)
+    switch (c->type) {
+        case XDGShell:
             c->resize = wlr_xdg_toplevel_set_size(c->surface.xdg,
                     c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
+            break;
+        case LayerShell:
+            wlr_layer_surface_v1_configure(c->surface.layer, 
+                    c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
+            break;
+        case X11Managed:
+        case X11Unmanaged:
+            wlr_xwayland_surface_configure(c->surface.xwayland,
+                    c->geom.x, c->geom.y,
+                    c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
+    }
 }
 
 bool visibleon(Client *c, Monitor *m)

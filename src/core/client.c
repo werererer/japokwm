@@ -1,5 +1,6 @@
 #include "client.h"
 #include "tile.h"
+#include <coreUtils.h>
 #include <wayland-util.h>
 
 //global variables
@@ -10,6 +11,7 @@ struct wlr_output_layout *output_layout;
 struct wlr_box sgeom;
 struct wl_list mons;
 Monitor *selMon = NULL;
+Atom netatom[NetLast];
 
 /* function implementations */
 void applybounds(Client *c, struct wlr_box bbox)
@@ -28,6 +30,18 @@ void applybounds(Client *c, struct wlr_box bbox)
         c->geom.y = bbox.y;
 }
 
+void
+updatewindowtype(Client *c)
+{
+	size_t i;
+	for (i = 0; i < c->surface.xwayland->window_type_len; i++)
+		if (c->surface.xwayland->window_type[i] == netatom[NetWMWindowTypeDialog] ||
+				c->surface.xwayland->window_type[i] == netatom[NetWMWindowTypeSplash] ||
+				c->surface.xwayland->window_type[i] == netatom[NetWMWindowTypeToolbar] ||
+				c->surface.xwayland->window_type[i] == netatom[NetWMWindowTypeUtility])
+			c->isfloating = 1;
+}
+
 void applyrules(Client *c)
 {
     const char *appid, *title;
@@ -36,22 +50,21 @@ void applyrules(Client *c)
     Monitor *m; 
     /* rule matching */
     c->isfloating = false;
-#ifdef XWAYLAND
-    if (c->type != XDGShell) {
-        updatewindowtype(c);
-        appid = c->surface.xwayland->class;
-        title = c->surface.xwayland->title;
-    } else
-#endif
     switch (c->type) {
-    case XDGShell:
-        appid = c->surface.xdg->toplevel->app_id;
-        title = c->surface.xdg->toplevel->title;
-        break;
-    case LayerShell:
-        appid = "test";
-        title = "test";
-        break;
+        case XDGShell:
+            appid = c->surface.xdg->toplevel->app_id;
+            title = c->surface.xdg->toplevel->title;
+            break;
+        case LayerShell:
+            appid = "test";
+            title = "test";
+            break;
+        case X11Managed:
+        case X11Unmanaged:
+            updatewindowtype(c);
+            appid = c->surface.xwayland->class;
+            title = c->surface.xwayland->title;
+            break;
     }
     if (!appid)
         appid = "broken";
@@ -90,7 +103,11 @@ struct wlr_surface *getWlrSurface(Client *c)
         case LayerShell:
             return c->surface.layer->surface;
             break;
+        case X11Managed:
+        case X11Unmanaged:
+            return c->surface.xwayland->surface;
         default:
+            printf("wlr_surface is not supported: \n");
             return NULL;
     }
 }

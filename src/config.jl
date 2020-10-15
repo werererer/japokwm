@@ -29,7 +29,7 @@ monrules = [
 xkb_rules = []
 repeatRate = 25
 repeatDelay = 600
-termcmd = "/usr/bin/alacritty"
+termcmd = "/usr/bin/termite"
 
 mod = mod1
 #maps (between 1 and 4)

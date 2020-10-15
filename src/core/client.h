@@ -3,6 +3,8 @@
 #include "coreUtils.h"
 #include "parseConfig.h"
 #include <wlr/types/wlr_layer_shell_v1.h>
+#include <X11/Xlib.h>
+#include <wlr/xwayland.h>
 
 typedef struct {
     struct wl_list link;
@@ -11,13 +13,9 @@ typedef struct {
     union {
         struct wlr_xdg_surface *xdg;
         struct wlr_layer_surface_v1 *layer;
-#ifdef XWAYLAND
         struct wlr_xwayland_surface *xwayland;
-#endif
     } surface;
-#ifdef XWAYLAND
     struct wl_listener activate;
-#endif
     struct wl_listener commit;
     struct wl_listener map;
     struct wl_listener unmap;
@@ -42,6 +40,7 @@ extern struct wlr_output_layout *output_layout;
 extern struct wlr_box sgeom;
 extern struct wl_list mons;
 extern Monitor *selMon;
+extern Atom netatom[NetLast];
 
 struct wlr_surface *getWlrSurface(Client *c);
 #endif
