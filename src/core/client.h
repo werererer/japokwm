@@ -2,7 +2,7 @@
 #define CLIENT
 #include "coreUtils.h"
 #include "parseConfig.h"
-#include "client.h"
+#include <wlr/types/wlr_layer_shell_v1.h>
 
 typedef struct {
     struct wl_list link;
@@ -10,6 +10,7 @@ typedef struct {
     struct wl_list slink;
     union {
         struct wlr_xdg_surface *xdg;
+        struct wlr_layer_surface_v1 *layer;
 #ifdef XWAYLAND
         struct wlr_xwayland_surface *xwayland;
 #endif
@@ -23,9 +24,7 @@ typedef struct {
     struct wl_listener destroy;
     struct wlr_box geom;  /* layout-relative, includes border */
     Monitor *mon;
-#ifdef XWAYLAND
     unsigned int type;
-#endif
     int bw;
     unsigned int tags;
     int isfloating;
@@ -44,4 +43,5 @@ extern struct wlr_box sgeom;
 extern struct wl_list mons;
 extern Monitor *selMon;
 
+struct wlr_surface *getWlrSurface(Client *c);
 #endif

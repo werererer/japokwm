@@ -43,9 +43,15 @@ void applyrules(Client *c)
         title = c->surface.xwayland->title;
     } else
 #endif
-    {
+    switch (c->type) {
+    case XDGShell:
         appid = c->surface.xdg->toplevel->app_id;
         title = c->surface.xdg->toplevel->title;
+        break;
+    case LayerShell:
+        appid = "test";
+        title = "test";
+        break;
     }
     if (!appid)
         appid = "broken";
@@ -74,3 +80,18 @@ Client *selClient()
         return NULL;
     return c;
 }
+
+struct wlr_surface *getWlrSurface(Client *c)
+{
+    switch (c->type) {
+        case XDGShell:
+            return c->surface.xdg->surface;
+            break;
+        case LayerShell:
+            return c->surface.layer->surface;
+            break;
+        default:
+            return NULL;
+    }
+}
+

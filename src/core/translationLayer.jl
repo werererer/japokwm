@@ -68,7 +68,6 @@ function tagmon(i)
 end
 
 function moveResize(ui :: Cursor)
-    println("works")
     ccall((:moveResize, corePath), Cvoid, (Cuint,), convert(Cuint, Int(ui)))
 end
 

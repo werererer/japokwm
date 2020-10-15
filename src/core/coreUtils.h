@@ -16,11 +16,8 @@
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define END(A)                  ((A) + LENGTH(A))
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
-#ifdef XWAYLAND
-#define WLR_SURFACE(C)          ((C)->type != XDGShell ? (C)->surface.xwayland->surface : (C)->surface.xdg->surface)
-#else
-#define WLR_SURFACE(C)          ((C)->surface.xdg->surface)
-#endif
+
+enum { XDGShell, X11Managed, X11Unmanaged, LayerShell }; /* client types */
 
 typedef struct Monitor Monitor;
 typedef struct wlr_fbox Container;
@@ -93,4 +90,5 @@ typedef struct {
     enum wl_output_transform rr;
 } MonitorRule;
 extern struct wlr_seat *seat;
+
 #endif

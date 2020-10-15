@@ -29,13 +29,11 @@ end
 
 function keyPressed(mod, sym) :: Bool
     bind = symToBinding(mod, sym)
-    println("bind: $bind")
     return processBinding(bind, keys)
 end
 
 function buttonPressed(mod, sym) :: Bool
     bind = symToBinding(mod, sym)
-    println("bind: $bind")
     return processBinding(bind, buttons)
 end
 

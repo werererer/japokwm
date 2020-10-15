@@ -79,16 +79,6 @@ void focusclient(Client *old, Client *c, int lift)
     if (c == old)
         return;
 
-    /* Deactivate old client if focus is changing */
-    if (c != old && old) {
-#ifdef XWAYLAND
-        if (old->type != XDGShell)
-            wlr_xwayland_surface_activate(old->surface.xwayland, 0);
-        else
-#endif
-            wlr_xdg_toplevel_set_activated(old->surface.xdg, 0);
-    }
-
     /* Update wlroots' keyboard focus */
     if (!c) {
         /* With no client, all we have left is to clear focus */
@@ -97,7 +87,7 @@ void focusclient(Client *old, Client *c, int lift)
     }
 
     /* Have a client, so focus its top-level wlr_surface */
-    wlr_seat_keyboard_notify_enter(seat, WLR_SURFACE(c),
+    wlr_seat_keyboard_notify_enter(seat, getWlrSurface(c),
             kb->keycodes, kb->num_keycodes, &kb->modifiers);
 
     /* Put the new client atop the focus stack and select its monitor */
@@ -109,8 +99,8 @@ void focusclient(Client *old, Client *c, int lift)
 #ifdef XWAYLAND
     if (c->type != XDGShell)
         wlr_xwayland_surface_activate(c->surface.xwayland, 1);
-    else
 #endif
+    if (c->type == XDGShell)
         wlr_xdg_toplevel_set_activated(c->surface.xdg, 1);
 }
 
@@ -134,13 +124,13 @@ void setmon(Client *c, Monitor *m, unsigned int newtags)
 
     /* XXX leave/enter is not optimal but works */
     if (oldmon) {
-        wlr_surface_send_leave(WLR_SURFACE(c), oldmon->wlr_output);
+        wlr_surface_send_leave(getWlrSurface(c), oldmon->wlr_output);
         arrange(oldmon, false);
     }
     if (m) {
         /* Make sure window actually overlaps with the monitor */
         applybounds(c, m->m);
-        wlr_surface_send_enter(WLR_SURFACE(c), m->wlr_output);
+        wlr_surface_send_enter(getWlrSurface(c), m->wlr_output);
         c->tags = newtags ? newtags : m->tagset[m->seltags]; /* assign tags of target monitor */
         arrange(m, false);
     }
@@ -169,8 +159,13 @@ resize(Client *c, int x, int y, int w, int h, int interact)
                 c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
     else
 #endif
-        c->resize = wlr_xdg_toplevel_set_size(c->surface.xdg,
-                c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
+        if (c->type == LayerShell){
+            wlr_layer_surface_v1_configure(c->surface.layer, 
+                    c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
+        }
+        else if (c->type == XDGShell)
+            c->resize = wlr_xdg_toplevel_set_size(c->surface.xdg,
+                    c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
 }
 
 bool visibleon(Client *c, Monitor *m)

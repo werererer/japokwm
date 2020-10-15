@@ -1,6 +1,7 @@
 /*
  * See LICENSE file for copyright and license details.
  */
+#include <coreUtils.h>
 #include <parseConfig.h>
 #include <parseConfigUtils.h>
 #include <string.h>
@@ -56,19 +57,11 @@
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define END(A)                  ((A) + LENGTH(A))
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
-#ifdef XWAYLAND
-#define WLR_SURFACE(C)          ((C)->type != XDGShell ? (C)->surface.xwayland->surface : (C)->surface.xdg->surface)
-#else
-#define WLR_SURFACE(C)          ((C)->surface.xdg->surface)
-#endif
 
 /* enums */
 enum { CurNormal, CurMove, CurResize }; /* cursor */
-#ifdef XWAYLAND
 enum { NetWMWindowTypeDialog, NetWMWindowTypeSplash, NetWMWindowTypeToolbar,
     NetWMWindowTypeUtility, NetLast }; /* EWMH atoms */
-enum { XDGShell, X11Managed, X11Unmanaged }; /* client types */
-#endif
 
 /* monitors */
 static const MonitorRule monrules[] = {
@@ -104,6 +97,7 @@ void commitnotify(struct wl_listener *listener, void *data);
 void createkeyboard(struct wlr_input_device *device);
 void createmon(struct wl_listener *listener, void *data);
 void createnotify(struct wl_listener *listener, void *data);
+void createnotifyLayerShell(struct wl_listener *listener, void *data);
 void createpointer(struct wlr_input_device *device);
 void createxdeco(struct wl_listener *listener, void *data);
 void cursorframe(struct wl_listener *listener, void *data);
@@ -158,6 +152,7 @@ static struct wlr_renderer *drw;
 static struct wlr_compositor *compositor;
 
 static struct wlr_xdg_shell *xdg_shell;
+static struct wlr_layer_shell_v1 *layer_shell;
 static struct wl_list independents;
 static struct wlr_xdg_decoration_manager_v1 *xdeco_mgr;
 
@@ -179,6 +174,7 @@ static struct wl_listener new_input = {.notify = inputdevice};
 static struct wl_listener new_output = {.notify = createmon};
 static struct wl_listener new_xdeco = {.notify = createxdeco};
 static struct wl_listener new_xdg_surface = {.notify = createnotify};
+static struct wl_listener new_layer_shell_surface = {.notify = createnotifyLayerShell};
 static struct wl_listener request_cursor = {.notify = setcursor};
 static struct wl_listener request_set_psel = {.notify = setpsel};
 static struct wl_listener request_set_sel = {.notify = setsel};
@@ -300,9 +296,19 @@ void commitnotify(struct wl_listener *listener, void *data)
 {
     Client *c = wl_container_of(listener, c, commit);
 
-    /* mark a pending resize as completed */
-    if (c->resize && c->resize <= c->surface.xdg->configure_serial)
-        c->resize = 0;
+    switch (c->type) {
+        case XDGShell:
+            /* mark a pending resize as completed */
+            if (c->resize && c->resize <= c->surface.xdg->configure_serial)
+                c->resize = 0;
+            break;
+        case LayerShell:
+            /* mark a pending resize as completed */
+            if (c->resize && c->resize <= c->surface.layer->configure_serial)
+                c->resize = 0;
+            break;
+    }
+
 }
 
 void createkeyboard(struct wlr_input_device *device)
@@ -407,6 +413,7 @@ void createnotify(struct wl_listener *listener, void *data)
     c = xdg_surface->data = calloc(1, sizeof(*c));
     c->surface.xdg = xdg_surface;
     c->bw = borderpx;
+    c->type = XDGShell;
 
     /* Tell the client not to try anything fancy */
     wlr_xdg_toplevel_set_tiled(c->surface.xdg, WLR_EDGE_TOP |
@@ -421,6 +428,33 @@ void createnotify(struct wl_listener *listener, void *data)
     wl_signal_add(&xdg_surface->events.unmap, &c->unmap);
     c->destroy.notify = destroynotify;
     wl_signal_add(&xdg_surface->events.destroy, &c->destroy);
+}
+
+void createnotifyLayerShell(struct wl_listener *listener, void *data)
+{
+	/* This event is raised when wlr_xdg_shell receives a new xdg surface from a
+	 * client, either a toplevel (application window) or popup. */
+	struct wlr_layer_surface_v1 *layer_surface = data;
+	Client *c;
+
+
+	/* Allocate a Client for this surface */
+	c = layer_surface->data = calloc(1, sizeof(*c));
+	c->surface.layer = layer_surface;
+	c->bw = borderpx;
+	c->type = LayerShell;
+
+	/* Listen to the various events it can emit */
+    c->commit.notify = commitnotify;
+    wl_signal_add(&layer_surface->surface->events.commit, &c->commit);
+    c->map.notify = maprequest;
+    wl_signal_add(&layer_surface->events.map, &c->map);
+    c->unmap.notify = unmapnotify;
+    wl_signal_add(&layer_surface->events.unmap, &c->unmap);
+    c->destroy.notify = destroynotify;
+    wl_signal_add(&layer_surface->events.destroy, &c->destroy);
+    wlr_layer_surface_v1_configure(c->surface.layer,
+                    1000, 500);
 }
 
 void createpointer(struct wlr_input_device *device)
@@ -466,9 +500,8 @@ void destroynotify(struct wl_listener *listener, void *data)
 #ifdef XWAYLAND
     if (c->type == X11Managed)
         wl_list_remove(&c->activate.link);
-    else if (c->type == XDGShell)
 #endif
-        wl_list_remove(&c->commit.link);
+    wl_list_remove(&c->commit.link);
     free(c);
 }
 
@@ -634,10 +667,16 @@ void killclient()
         wlr_xwayland_surface_close(sel->surface.xwayland);
     else
 #endif
-        wlr_xdg_toplevel_send_close(sel->surface.xdg);
+    switch (sel->type) {
+        case XDGShell:
+            wlr_xdg_toplevel_send_close(sel->surface.xdg);
+            break;
+        case LayerShell:
+            wlr_layer_surface_v1_close(sel->surface.layer);
+            break;
+    }
 }
 
-//TODO: export
 void maprequest(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is mapped, or ready to display on-screen. */
@@ -662,10 +701,19 @@ void maprequest(struct wl_listener *listener, void *data)
         c->geom.y = c->surface.xwayland->y;
         c->geom.width = c->surface.xwayland->width + 2 * c->bw;
         c->geom.height = c->surface.xwayland->height + 2 * c->bw;
-    } else
+    }
 #endif
-    {
+    switch (c->type) {
+    case XDGShell:
         wlr_xdg_surface_get_geometry(c->surface.xdg, &c->geom);
+        c->geom.width += 2 * c->bw;
+        c->geom.height += 2 * c->bw;
+        break;
+    case LayerShell:
+        c->geom.x = 0;
+        c->geom.y = 0;
+        c->geom.width = c->surface.layer->current.desired_width;
+        c->geom.height = c->surface.layer->current.desired_height;
         c->geom.width += 2 * c->bw;
         c->geom.height += 2 * c->bw;
     }
@@ -710,28 +758,12 @@ void motionnotify(uint32_t time)
         return;
     }
 
-#ifdef XWAYLAND
-    /* Find an independent under the pointer and send the event along. */
-    if ((c = xytoindependent(cursor->x, cursor->y))) {
-        surface = wlr_surface_surface_at(c->surface.xwayland->surface,
-                cursor->x - c->surface.xwayland->x - c->bw,
-                cursor->y - c->surface.xwayland->y - c->bw, &sx, &sy);
-
-    /* Otherwise, find the client under the pointer and send the event along. */
-    } else
-#endif
     if ((c = xytoclient(cursor->x, cursor->y))) {
-#ifdef XWAYLAND
-        if (c->type != XDGShell)
-            surface = wlr_surface_surface_at(c->surface.xwayland->surface,
-                    cursor->x - c->geom.x - c->bw,
-                    cursor->y - c->geom.y - c->bw, &sx, &sy);
-        else
-#endif
-            surface = wlr_xdg_surface_surface_at(c->surface.xdg,
+            surface = wlr_surface_surface_at(getWlrSurface(c),
                     cursor->x - c->geom.x - c->bw,
                     cursor->y - c->geom.y - c->bw, &sx, &sy);
     }
+
     /* If there's no client surface under the cursor, set the cursor image to a
      * default. This is what makes the cursor image appear when you move it
      * off of a client or over its border. */
@@ -787,7 +819,7 @@ pointerfocus(Client *c, struct wlr_surface *surface, double sx, double sy, uint3
 {
     /* Use top level surface if nothing more specific given */
     if (c && !surface)
-        surface = WLR_SURFACE(c);
+        surface = getWlrSurface(c);
 
     /* If surface is NULL, clear pointer focus */
     if (!surface) {
@@ -893,7 +925,7 @@ void renderclients(Monitor *m, struct timespec *now)
                     output_layout, m->wlr_output, &c->geom))
             continue;
 
-        surface = WLR_SURFACE(c);
+        surface = getWlrSurface(c);
         ox = c->geom.x, oy = c->geom.y;
         wlr_output_layout_output_coords(output_layout, m->wlr_output,
                 &ox, &oy);
@@ -920,12 +952,8 @@ void renderclients(Monitor *m, struct timespec *now)
         rdata.when = now;
         rdata.x = c->geom.x + c->bw;
         rdata.y = c->geom.y + c->bw;
-#ifdef XWAYLAND
-        if (c->type != XDGShell)
-            wlr_surface_for_each_surface(c->surface.xwayland->surface, render, &rdata);
-        else
-#endif
-            wlr_xdg_surface_for_each_surface(c->surface.xdg, render, &rdata);
+
+        wlr_surface_for_each_surface(getWlrSurface(c), render, &rdata);
     }
 }
 
@@ -952,7 +980,7 @@ void rendermon(struct wl_listener *listener, void *data)
     /* Do not render if any XDG clients have an outstanding resize. */
     wl_list_for_each(c, &stack, slink) {
         if (c->resize) {
-            wlr_surface_send_frame_done(WLR_SURFACE(c), &now);
+            wlr_surface_send_frame_done(getWlrSurface(c), &now);
             render = 0;
         }
     }
@@ -1178,6 +1206,9 @@ void setup(void)
     wl_list_init(&independents);
     xdg_shell = wlr_xdg_shell_create(dpy);
     wl_signal_add(&xdg_shell->events.new_surface, &new_xdg_surface);
+	layer_shell = wlr_layer_shell_v1_create(dpy);
+	wl_signal_add(&layer_shell->events.new_surface, &new_layer_shell_surface);
+
 
     /* Use xdg_decoration protocol to negotiate server-side decorations */
     xdeco_mgr = wlr_xdg_decoration_manager_v1_create(dpy);
