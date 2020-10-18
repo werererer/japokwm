@@ -1,0 +1,11 @@
+Build started at 2020-10-18T23:24:01.765997
+Main binary: /usr/bin/python
+Build Options: -Dbackend=ninja
+Python system: Linux
+The Meson build system
+Version: 0.55.3
+Source dir: /home/jakob/git/juliawm/src/core
+Build dir: /home/jakob/git/juliawm/src/core/build
+Build type: native build
+
+ERROR: First statement must be a call to project

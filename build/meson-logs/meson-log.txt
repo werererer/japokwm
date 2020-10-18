@@ -1,0 +1,50 @@
+Build started at 2020-10-18T23:47:20.957732
+Main binary: /usr/bin/python
+Build Options: -Dbackend=ninja
+Python system: Linux
+The Meson build system
+Version: 0.55.3
+Source dir: /home/jakob/git/juliawm
+Build dir: /home/jakob/git/juliawm/build
+Build type: native build
+Using 'PKG_CONFIG_PATH' from environment with value: ':/usr/include/julia:/usr/include/julia:/usr/include/julia'
+WARNING: PKG_CONFIG_PATH environment variable has changed between configurations, meson ignores this. Use -Dpkg_config_path to change pkg-config search path instead.
+Using 'PKG_CONFIG_PATH' from environment with value: ':/usr/include/julia:/usr/include/julia:/usr/include/julia'
+WARNING: PKG_CONFIG_PATH environment variable has changed between configurations, meson ignores this. Use -Dpkg_config_path to change pkg-config search path instead.
+Project name: juliawm
+Project version: undefined
+C compiler for the build machine: cc (gcc 10.2.0 "cc (GCC) 10.2.0")
+C linker for the build machine: cc ld.bfd 2.35.1
+None of 'AR' are defined in the environment, not changing global flags.
+C compiler for the host machine: cc (gcc 10.2.0 "cc (GCC) 10.2.0")
+C linker for the host machine: cc ld.bfd 2.35.1
+None of 'AR' are defined in the environment, not changing global flags.
+Build machine cpu family: x86_64
+Build machine cpu: x86_64
+Host machine cpu family: x86_64
+Host machine cpu: x86_64
+Target machine cpu family: x86_64
+Target machine cpu: x86_64
+Dependency wlroots found: YES 0.11.0 (cached)
+Dependency xcb found: YES 1.14 (cached)
+Dependency xkbcommon found: YES 1.0.1 (cached)
+Dependency wayland-server found: YES 1.18.0 (cached)
+Dependency cairo found: YES 1.17.3 (cached)
+Build targets in project: 1
+
+Found ninja-1.10.1 at /usr/bin/ninja
+Running compile:
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpl_ycr7n6
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpl_ycr7n6/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpl_ycr7n6/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
+
+Code:
+ 
+Compiler stdout:
+ install: /usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/
+programs: =/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../x86_64-pc-linux-gnu/bin/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../x86_64-pc-linux-gnu/bin/
+libraries: =./x86_64-pc-linux-gnu/10.2.0/:./../lib/:/usr/include/julia/x86_64-pc-linux-gnu/10.2.0/:/usr/include/julia/../lib/:/usr/include/julia/x86_64-pc-linux-gnu/10.2.0/:/usr/include/julia/../lib/:/usr/include/julia/x86_64-pc-linux-gnu/10.2.0/:/usr/include/julia/../lib/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../x86_64-pc-linux-gnu/lib/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../x86_64-pc-linux-gnu/lib/../lib/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../lib/:/lib/x86_64-pc-linux-gnu/10.2.0/:/lib/../lib/:/usr/lib/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/../lib/:./:/usr/include/julia/:/usr/include/julia/:/usr/include/julia/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../x86_64-pc-linux-gnu/lib/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../:/lib/:/usr/lib/
+
+Compiler stderr:
+ 
+None of 'STRIP' are defined in the environment, not changing global flags.
+None of 'STRIP' are defined in the environment, not changing global flags.
