@@ -5,6 +5,11 @@
 struct wlr_renderer *drw;
 struct wl_list independents;
 
+static void render(struct wlr_surface *surface, int sx, int sy, void *data);
+static void renderClient(Monitor *m, Client *c, float *borderColor);
+static void renderIndependents(struct wlr_output *output);
+static void renderTexture(Monitor *m, struct wlr_texture *texture);
+
 static void render(struct wlr_surface *surface, int sx, int sy, void *data)
 {
     /* This function is called for every surface that needs to be rendered. */
@@ -62,7 +67,7 @@ static void render(struct wlr_surface *surface, int sx, int sy, void *data)
     wlr_surface_send_frame_done(surface, rdata->when);
 }
 
-void renderClients(Monitor *m)
+static void renderClients(Monitor *m)
 {
     Client *c, *sel = selClient();
     const float *color;
@@ -127,10 +132,43 @@ void renderClients(Monitor *m)
     }
 }
 
+static void renderTexture(Monitor *m, struct wlr_texture *texture)
+{
+    wlr_render_texture(drw, texture, m->wlr_output->transform_matrix, 
+                       0, 0, 1);
+}
+
+static void renderIndependents(struct wlr_output *output)
+{
+    Client *c;
+    struct render_data rdata;
+    struct wlr_box geom;
+
+    wl_list_for_each_reverse(c, &independents, link) {
+        geom.x = c->surface.xwayland->x;
+        geom.y = c->surface.xwayland->y;
+        geom.width = c->surface.xwayland->width;
+        geom.height = c->surface.xwayland->height;
+
+        /* Only render visible clients which show on this output */
+        if (!wlr_output_layout_intersects(output_layout, output, &geom))
+            continue;
+
+        struct timespec now;
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        rdata.output = output;
+        rdata.when = &now;
+        rdata.x = c->surface.xwayland->x;
+        rdata.y = c->surface.xwayland->y;
+
+        wlr_surface_for_each_surface(c->surface.xwayland->surface, render, &rdata);
+    }
+}
+
 void renderFrame(struct wl_listener *listener, void *data)
 {
     struct wlr_fbox box = {0, 0, 1, 1};
-    float color[4] = {0, 0, 1, 0.5};
+    float color[4] = {0, 1, 1, 0.5};
     struct wlr_texture *cTexture = createBox(box, color);
     Client *c;
     int render = 1;
@@ -185,43 +223,10 @@ void renderFrame(struct wl_listener *listener, void *data)
     wlr_output_commit(m->wlr_output);
 }
 
-void renderTexture(Monitor *m, struct wlr_texture *texture)
-{
-    wlr_render_texture(drw, texture, m->wlr_output->transform_matrix, 
-                       0, 0, 1);
-}
-
 void scalebox(struct wlr_box *box, float scale)
 {
     box->x *= scale;
     box->y *= scale;
     box->width *= scale;
     box->height *= scale;
-}
-
-void renderIndependents(struct wlr_output *output)
-{
-    Client *c;
-    struct render_data rdata;
-    struct wlr_box geom;
-
-    wl_list_for_each_reverse(c, &independents, link) {
-        geom.x = c->surface.xwayland->x;
-        geom.y = c->surface.xwayland->y;
-        geom.width = c->surface.xwayland->width;
-        geom.height = c->surface.xwayland->height;
-
-        /* Only render visible clients which show on this output */
-        if (!wlr_output_layout_intersects(output_layout, output, &geom))
-            continue;
-
-        struct timespec now;
-        clock_gettime(CLOCK_MONOTONIC, &now);
-        rdata.output = output;
-        rdata.when = &now;
-        rdata.x = c->surface.xwayland->x;
-        rdata.y = c->surface.xwayland->y;
-
-        wlr_surface_for_each_surface(c->surface.xwayland->surface, render, &rdata);
-    }
 }

@@ -10,10 +10,7 @@ struct render_data {
     int x, y; /* layout-relative */
 };
 
-void renderClients(Monitor *m);
 void renderFrame(struct wl_listener *listener, void *data);
-void renderIndependents(struct wlr_output *output);
-void renderTexture(Monitor *m, struct wlr_texture *texture);
 void scalebox(struct wlr_box *box, float scale);
 
 extern struct wlr_renderer *drw;

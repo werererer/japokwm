@@ -88,7 +88,7 @@ void applyrules(Client *c)
 Client *selClient()
 {
     Client *c = wl_container_of(focus_stack.next, c, flink);
-    if (wl_list_empty(&focus_stack) || !visibleon(c, selMon))
+    if (!visibleon(c, selMon))
         return NULL;
     return c;
 }
