@@ -7,6 +7,8 @@ srcs = files(
   'src/parseConfigUtils.c',
   'src/tile/tile.c',
   'src/tile/tileUtils.c',
+  'src/tile/tileTexture.c',
+  'src/render/render.c',
   )
 srcDir = 'src/'
 includeDir = 'include/'

@@ -31,6 +31,7 @@ typedef struct {
 
 void applybounds(Client *c, struct wlr_box bbox);
 void applyrules(Client *c);
+void foreachClientDo(void (*renderClients)(Monitor *m), Monitor *m);
 Client *selClient();
 
 extern struct wl_list clients; /* tiling order */
