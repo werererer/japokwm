@@ -15,13 +15,15 @@ Some properties that will be inherited from wlroots and the original dwl:
 - Basic yes/no damage tracking to avoid needless redraws (if it can be done simply and has an impact on power consumption)
 
 ## Building
-run `meson build`
-go to src/core and run: `make`
-(Will be changed in the near future)
-
+Execute:
+```
+meson build
+cd build
+meson compile
+meson install
+```
 ## Running
-go to src/core and run `julia main.jl` if you haven't already install julia
-(Will be changed in the near future)
+go to src/ and run `julia main.jl`
 
 ## Goals
 - create your own tiling layouts easily
