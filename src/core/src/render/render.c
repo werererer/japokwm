@@ -1,7 +1,6 @@
 #include "render/render.h"
 #include "tile/tileUtils.h"
 #include "tile/tileTexture.h"
-#include <cpl_time.h>
 
 struct wlr_renderer *drw;
 struct wl_list independents;
