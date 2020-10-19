@@ -10,7 +10,6 @@ struct render_data {
     int x, y; /* layout-relative */
 };
 
-void render(struct wlr_surface *surface, int sx, int sy, void *data);
 void renderClients(Monitor *m);
 void renderFrame(struct wl_listener *listener, void *data);
 void renderIndependents(struct wlr_output *output);

@@ -33,6 +33,8 @@ void applybounds(Client *c, struct wlr_box bbox);
 void applyrules(Client *c);
 void foreachClientDo(void (*renderClients)(Monitor *m), Monitor *m);
 Client *selClient();
+bool visibleon(Client *c, Monitor *m);
+bool visibleon(Client *c, Monitor *m);
 
 extern struct wl_list clients; /* tiling order */
 extern struct wl_list focus_stack;  /* focus order */

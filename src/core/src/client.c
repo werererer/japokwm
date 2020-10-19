@@ -111,3 +111,14 @@ struct wlr_surface *getWlrSurface(Client *c)
     }
 }
 
+bool visibleon(Client *c, Monitor *m)
+{
+    if (m) {
+        unsigned int tags = c->tags & m->tagset[m->seltags];
+        bool intersect = wlr_output_layout_intersects(
+                            output_layout, m->wlr_output, &c->geom);
+        return tags || !intersect;
+    }
+    return false;
+}
+

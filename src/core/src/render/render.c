@@ -5,7 +5,7 @@
 struct wlr_renderer *drw;
 struct wl_list independents;
 
-void render(struct wlr_surface *surface, int sx, int sy, void *data)
+static void render(struct wlr_surface *surface, int sx, int sy, void *data)
 {
     /* This function is called for every surface that needs to be rendered. */
     struct render_data *rdata = data;

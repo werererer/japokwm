@@ -186,11 +186,6 @@ resize(Client *c, int x, int y, int w, int h, int interact)
     }
 }
 
-bool visibleon(Client *c, Monitor *m)
-{
-    return c->mon == m && (c->tags & m->tagset[m->seltags]);
-}
-
 void updateLayout()
 {
     selMon->lt = getConfigLayout("layout");

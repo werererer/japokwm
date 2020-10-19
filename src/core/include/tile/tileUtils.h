@@ -5,7 +5,6 @@
 #include <julia.h>
 
 Client *focustop(Monitor *m);
-bool visibleon(Client *c, Monitor *m);
 jl_value_t* getWlrBox(struct wlr_box w);
 void arrange(Monitor *m, bool reset);
 void arrangeThis(bool reset);
