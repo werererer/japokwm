@@ -1,4 +1,4 @@
-dwl
+.github
 *.o
 *-protocol.c
 *-protocol.h
