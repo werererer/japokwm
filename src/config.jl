@@ -58,6 +58,7 @@ keys = [
         ["$mod 0",           ()->  view(~0)               ],
         ["$mod Return",      ()->  zoom()                 ],
         ["$mod r",           ()->  reloadConfig()                 ],
+        ["$mod s",           ()->  createOverlay()                 ],
        ]
 
 buttons = [

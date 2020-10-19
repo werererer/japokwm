@@ -74,3 +74,7 @@ end
 function quit()
     ccall((:quit, corePath), Cvoid, ())
 end
+
+function createOverlay()
+    ccall((:createOverlay, corePath), Cvoid, ())
+end

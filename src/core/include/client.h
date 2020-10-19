@@ -20,7 +20,7 @@ typedef struct {
     struct wl_listener map;
     struct wl_listener unmap;
     struct wl_listener destroy;
-    struct wlr_fbox geom;  /* layout-relative, includes border */
+    struct wlr_box geom;  /* layout-relative, includes border */
     Monitor *mon;
     unsigned int type;
     int bw;

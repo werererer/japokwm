@@ -1,19 +1,22 @@
 #include "render/render.h"
 #include "tile/tileUtils.h"
 #include "tile/tileTexture.h"
+#include <stdio.h>
+#include <wayland-util.h>
 
 struct wlr_renderer *drw;
 struct wl_list independents;
+struct renderData renderData;
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data);
-static void renderClient(Monitor *m, Client *c, float *borderColor);
+static void renderClients(Monitor *m);
 static void renderIndependents(struct wlr_output *output);
-static void renderTexture(Monitor *m, struct wlr_texture *texture);
+static void renderTexture(void *texture);
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data)
 {
     /* This function is called for every surface that needs to be rendered. */
-    struct render_data *rdata = data;
+    struct renderData *rdata = data;
     struct wlr_output *output = rdata->output;
     double ox = 0, oy = 0;
     struct wlr_box obox;
@@ -73,7 +76,7 @@ static void renderClients(Monitor *m)
     const float *color;
     double ox, oy;
     int i, w, h;
-    struct render_data rdata;
+    struct renderData rdata;
     struct wlr_box *borders;
     struct wlr_surface *surface;
     /* Each subsequent window we render is rendered on top of the last. Because
@@ -132,16 +135,17 @@ static void renderClients(Monitor *m)
     }
 }
 
-static void renderTexture(Monitor *m, struct wlr_texture *texture)
+static void renderTexture(void *texture)
 {
-    wlr_render_texture(drw, texture, m->wlr_output->transform_matrix, 
-                       0, 0, 1);
+    struct posTexture *text = texture;
+    wlr_render_texture(drw, text->texture, selMon->wlr_output->transform_matrix, 
+                       text->x, text->y, 1);
 }
 
 static void renderIndependents(struct wlr_output *output)
 {
     Client *c;
-    struct render_data rdata;
+    struct renderData rdata;
     struct wlr_box geom;
 
     wl_list_for_each_reverse(c, &independents, link) {
@@ -167,9 +171,6 @@ static void renderIndependents(struct wlr_output *output)
 
 void renderFrame(struct wl_listener *listener, void *data)
 {
-    struct wlr_fbox box = {0, 0, 1, 1};
-    float color[4] = {0, 1, 1, 0.5};
-    struct wlr_texture *cTexture = createBox(box, color);
     Client *c;
     int render = 1;
 
@@ -205,7 +206,9 @@ void renderFrame(struct wl_listener *listener, void *data)
 
         renderClients(m);
         renderIndependents(m->wlr_output);
-        renderTexture(m, cTexture);
+
+        /* render all textures in list */
+        wlr_list_for_each(&renderData.textures, renderTexture);
 
         /* Hardware cursors are rendered by the GPU on a separate plane, and can be
          * moved around without re-rendering what's beneath them - which is more
