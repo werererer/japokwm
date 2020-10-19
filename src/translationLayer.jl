@@ -5,6 +5,10 @@
 include("global.jl")
 const corePath = "./libjuliawm.so"
 
+function arrangeThis(reset :: Bool)
+    ccall((:arrangeThis, corePath), Cvoid, (Cint,), reset)
+end
+
 function spawn(cmd :: String)
     ccall((:spawn, corePath), Cvoid, (Cstring,), cmd)
 end
@@ -81,4 +85,12 @@ end
 
 function createNewOverlay()
     ccall((:createNewOverlay, corePath), Cvoid, ())
+end
+
+function setOverlay(overlay :: Bool)
+    ccall((:setOverlay, corePath), Cvoid, (Cint,), overlay)
+end
+
+function getOverlay() :: Bool
+    ccall((:getOverlay, corePath), Bool, ())
 end

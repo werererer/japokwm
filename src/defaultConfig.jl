@@ -49,6 +49,12 @@ end
 function reloadConfig()
     include("../config.jl")
     updateConfig()
+    arrangeThis()
+end
+
+function toggleOverlay()
+    setOverlay(!getOverlay())
+    arrangeThis(false);
 end
 
 #default

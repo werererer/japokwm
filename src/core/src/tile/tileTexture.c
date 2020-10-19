@@ -52,9 +52,7 @@ struct posTexture* createTextbox(struct wlr_box box, float boxColor[],
 void createNewOverlay()
 {
     // recreate list
-    wlr_list_finish(&renderData.textures);
-    wlr_list_init(&renderData.textures);
-
+    wlr_list_clear(&renderData.textures);
     createOverlay();
 }
 
@@ -65,6 +63,7 @@ void createOverlay()
     Client *c;
 
     int i = 1;
+    //TODO This number shouldn't be hard coded
     char text[6];
     /* our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each(c, &stack, slink) {

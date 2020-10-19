@@ -1,4 +1,5 @@
-add_project_arguments('-DWLR_USE_UNSTABLE', '-g3', language: 'c')
+add_project_arguments('-DWLR_USE_UNSTABLE', '-Werror', '-Wno-uninitialized',
+                      language: 'c')
 
 deps = [\
     dependency('wlroots'),

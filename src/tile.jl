@@ -37,10 +37,6 @@ end
 
 layoutData = [[Container(0, 0, 1, 1)]]
 
-function arrangeThis(reset :: Bool)
-    ccall((:arrangeThis, corePath), Cvoid, (Cint,), reset)
-end
-
 # set: which window conf set
 # client: current window
 function splitContainer(i :: Int, j :: Int, ratio :: Float64)

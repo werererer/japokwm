@@ -95,4 +95,7 @@ typedef struct {
     enum wl_output_transform rr;
 } MonitorRule;
 extern struct wlr_seat *seat;
+
+// breaking codestyle to abide by the wlroots style
+void wlr_list_clear(struct wlr_list *list);
 #endif

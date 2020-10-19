@@ -9,6 +9,8 @@
 #include "parseConfig.h"
 #include "tile/tileTexture.h"
 
+bool overlay = false;
+
 struct cLayoutArr {
   struct wlr_fbox *layout;
   int size;
@@ -40,7 +42,7 @@ void arrange(Monitor *m, bool reset)
         if (v) {
             layoutArr = jl_unbox_voidpointer(v);
 
-            //place clients
+            // place clients
             int i = 0;
             wl_list_for_each(c, &clients, link) {
                 if (!visibleon(c, m) || c->isfloating)
@@ -54,7 +56,13 @@ void arrange(Monitor *m, bool reset)
                         0);
                 i = MIN(i + 1, layoutArr->size-1);
             }
-            createNewOverlay();
+
+            // create overlay
+            if (overlay) {
+                createNewOverlay();
+            } else {
+                wlr_list_clear(&renderData.textures);
+            }
         } else {
             printf("Empty function with symbol: %s\n", m->lt.symbol);
         }
@@ -223,4 +231,14 @@ int clientPos()
         }
     }
     return 0;
+}
+
+void setOverlay(bool ol)
+{
+    overlay = ol;
+}
+
+bool getOverlay()
+{
+    return overlay;
 }

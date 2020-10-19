@@ -109,6 +109,7 @@ Rule getConfigRule(char *name)
 MonitorRule getConfigMonRule(char *name)
 {
     MonitorRule monrule;
+
     int len = ARR_STRING_LENGTH(name);
     char execStr1[len];
     char execStr2[len];
@@ -219,7 +220,6 @@ void getConfigLayoutArr(Layout *layouts, char *name)
 {
     int len = jlArrLen(name);
     char execStr[ARR_STRING_LENGTH(name)];
-    char execStrFunc[ARR_STRING_LENGTH(name)];
 
     for (int i = 1; i <= len; i++) {
         arrayPosToStr(execStr, name, i);
@@ -230,7 +230,6 @@ void getConfigLayoutArr(Layout *layouts, char *name)
 void getConfigMonRuleArr(MonitorRule *monrules, char *name)
 {
     int len = jlArrLen(name);
-    jl_value_t *t;
     char execStr[ARR_STRING_LENGTH(name)];
     for (int i = 0; i < len; i++) {
         arrayPosToStr(execStr, name, i+1);
