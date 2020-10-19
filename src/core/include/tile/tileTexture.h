@@ -11,8 +11,9 @@
 #include "render/render.h"
 
 /* should be called before wlr_begin_renderer() */
-struct posTexture* createBox(struct wlr_box box, float color[static 4]);
-struct posTexture* createTextbox(struct wlr_box box, float color[static 4],
-                                  char* text);
-void createOverlay();
+struct posTexture* createTextbox(struct wlr_box box, float boxColor[static 4], 
+                                 float textColor[static 4], char* text);
+/* same as createOverlay but clears renderData */
+void createNewOverlay(char *text);
+void createOverlay(char *text);
 #endif /* TILE_TEXTURE_H */

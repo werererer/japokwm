@@ -24,6 +24,11 @@ static void push(struct wlr_box *c)
     wlr_list_push(containers, c);
 }
 
+/* static void del(size_t i) */
+/* { */
+/*     wlr_list_del(containers, i); */
+/* } */
+
 void addBox(int x, int y, int w, int h)
 {
     struct wlr_box box;

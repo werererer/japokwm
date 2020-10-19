@@ -95,5 +95,4 @@ typedef struct {
     enum wl_output_transform rr;
 } MonitorRule;
 extern struct wlr_seat *seat;
-
 #endif

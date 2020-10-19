@@ -7,13 +7,13 @@
 #include <wlr/types/wlr_foreign_toplevel_management_v1.h>
 
 #include "parseConfig.h"
+#include "tile/tileTexture.h"
 
 struct cLayoutArr {
   struct wlr_fbox *layout;
   int size;
 };
 
-// TODO: move to parseConfigUtils.c
 void arrange(Monitor *m, bool reset)
 {
     /* Get effective monitor geometry to use for window area */
@@ -54,6 +54,7 @@ void arrange(Monitor *m, bool reset)
                         0);
                 i = MIN(i + 1, layoutArr->size-1);
             }
+            createNewOverlay("hi");
         } else {
             printf("Empty function with symbol: %s\n", m->lt.symbol);
         }

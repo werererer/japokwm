@@ -135,6 +135,7 @@ static void renderClients(Monitor *m)
     }
 }
 
+/* will be called foreach texture in renderData */
 static void renderTexture(void *texture)
 {
     struct posTexture *text = texture;
@@ -169,6 +170,7 @@ static void renderIndependents(struct wlr_output *output)
     }
 }
 
+/* called from a wl_signal in setup() */
 void renderFrame(struct wl_listener *listener, void *data)
 {
     Client *c;

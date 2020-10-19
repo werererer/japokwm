@@ -3,6 +3,7 @@
 #include "coreUtils.h"
 #include "client.h"
 #include <julia.h>
+#include "tile/tileTexture.h"
 
 Client *focustop(Monitor *m);
 jl_value_t* getWlrBox(struct wlr_box w);
