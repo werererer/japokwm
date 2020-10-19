@@ -7,3 +7,5 @@ dwl
 tags
 *.pdf
 vscjlsymserv-*
+build
+debug

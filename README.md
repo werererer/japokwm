@@ -14,11 +14,12 @@ Some properties that will be inherited from wlroots and the original dwl:
 - Zero flickering - Wayland users naturally expect that "every frame is perfect"
 - Basic yes/no damage tracking to avoid needless redraws (if it can be done simply and has an impact on power consumption)
 
-## Building dwl
+## Building
+run `meson build`
 go to src/core and run: `make`
 (Will be changed in the near future)
 
-## Running dwl
+## Running
 go to src/core and run `julia main.jl` if you haven't already install julia
 (Will be changed in the near future)
 
