@@ -37,12 +37,6 @@
   },
   {
     "directory": "/home/jakob/git/juliawm/build",
-    "command": "cc -Isrc/core/libjuliawm.so.p -Isrc/core/ -I../src/core -I../src/core/include -I/usr/include/libdrm -I/usr/include/pixman-1 -I/usr/include/cairo -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -g -DWLR_USE_UNSTABLE -fPIC -MD -MQ src/core/libjuliawm.so.p/src_debug.c.o -MF src/core/libjuliawm.so.p/src_debug.c.o.d -o src/core/libjuliawm.so.p/src_debug.c.o -c ../src/core/src/debug.c",
-    "file": "../src/core/src/debug.c",
-    "output": "src/core/libjuliawm.so.p/src_debug.c.o"
-  },
-  {
-    "directory": "/home/jakob/git/juliawm/build",
     "command": "cc -Isrc/core/libjuliawm.so.p -Isrc/core/ -I../src/core -I../src/core/include -I/usr/include/libdrm -I/usr/include/pixman-1 -I/usr/include/cairo -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -g -DWLR_USE_UNSTABLE -fPIC -MD -MQ src/core/libjuliawm.so.p/src_tile_tile.c.o -MF src/core/libjuliawm.so.p/src_tile_tile.c.o.d -o src/core/libjuliawm.so.p/src_tile_tile.c.o -c ../src/core/src/tile/tile.c",
     "file": "../src/core/src/tile/tile.c",
     "output": "src/core/libjuliawm.so.p/src_tile_tile.c.o"
@@ -52,5 +46,11 @@
     "command": "cc -Isrc/core/libjuliawm.so.p -Isrc/core/ -I../src/core -I../src/core/include -I/usr/include/libdrm -I/usr/include/pixman-1 -I/usr/include/cairo -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -g -DWLR_USE_UNSTABLE -fPIC -MD -MQ src/core/libjuliawm.so.p/src_tile_tileUtils.c.o -MF src/core/libjuliawm.so.p/src_tile_tileUtils.c.o.d -o src/core/libjuliawm.so.p/src_tile_tileUtils.c.o -c ../src/core/src/tile/tileUtils.c",
     "file": "../src/core/src/tile/tileUtils.c",
     "output": "src/core/libjuliawm.so.p/src_tile_tileUtils.c.o"
+  },
+  {
+    "directory": "/home/jakob/git/juliawm/build",
+    "command": "cc -Isrc/debug.p -Isrc -I../src -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -g -DWLR_USE_UNSTABLE -MD -MQ src/debug.p/debug.c.o -MF src/debug.p/debug.c.o.d -o src/debug.p/debug.c.o -c ../src/debug.c",
+    "file": "../src/debug.c",
+    "output": "src/debug.p/debug.c.o"
   }
 ]

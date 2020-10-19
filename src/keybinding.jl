@@ -1,12 +1,11 @@
-include("../config.jl")
-const ULIB = "./wayland-util.so"
+include("config.jl")
 
 function XStringToKeysym(str :: String)
-    return ccall((:XStringToKeysym, ULIB), Cint, (Cstring,), str)
+    return ccall((:XStringToKeysym, corePath), Cint, (Cstring,), str)
 end
 
 function XKeysymToString(sym) :: String
-    res = ccall((:XKeysymToString, ULIB), Cstring, (Cint,), sym)
+    res = ccall((:XKeysymToString, corePath), Cstring, (Cint,), sym)
     return unsafe_string(res)
 end
 
@@ -38,6 +37,7 @@ function buttonPressed(mod, sym) :: Bool
 end
 
 function processBinding(bind :: String, arr) :: Bool
+    println(bind)
     handled = false
     for elem in arr
         if (bind == elem[1])

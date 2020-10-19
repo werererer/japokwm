@@ -3,7 +3,7 @@
 # This file wrapps c functions to julia
 =#
 include("global.jl")
-const corePath = "./juliawm.so"
+const corePath = "./libjuliawm.so"
 
 function spawn(cmd::String)
     ccall((:spawn, corePath), Cvoid, (Cstring,), cmd)

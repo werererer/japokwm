@@ -71,11 +71,6 @@ build src/core/libjuliawm.so.p/src_parseConfigUtils.c.o: c_COMPILER ../src/core/
  DEPFILE_UNQUOTED = src/core/libjuliawm.so.p/src_parseConfigUtils.c.o.d
  ARGS = -Isrc/core/libjuliawm.so.p -Isrc/core/ -I../src/core -I../src/core/include -I/usr/include/libdrm -I/usr/include/pixman-1 -I/usr/include/cairo -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -g -DWLR_USE_UNSTABLE -fPIC
 
-build src/core/libjuliawm.so.p/src_debug.c.o: c_COMPILER ../src/core/src/debug.c
- DEPFILE = src/core/libjuliawm.so.p/src_debug.c.o.d
- DEPFILE_UNQUOTED = src/core/libjuliawm.so.p/src_debug.c.o.d
- ARGS = -Isrc/core/libjuliawm.so.p -Isrc/core/ -I../src/core -I../src/core/include -I/usr/include/libdrm -I/usr/include/pixman-1 -I/usr/include/cairo -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -g -DWLR_USE_UNSTABLE -fPIC
-
 build src/core/libjuliawm.so.p/src_tile_tile.c.o: c_COMPILER ../src/core/src/tile/tile.c
  DEPFILE = src/core/libjuliawm.so.p/src_tile_tile.c.o.d
  DEPFILE_UNQUOTED = src/core/libjuliawm.so.p/src_tile_tile.c.o.d
@@ -89,8 +84,16 @@ build src/core/libjuliawm.so.p/src_tile_tileUtils.c.o: c_COMPILER ../src/core/sr
 build src/core/libjuliawm.so.p/libjuliawm.so.symbols: SHSYM src/core/libjuliawm.so
  IMPLIB = src/core/libjuliawm.so
 
-build src/core/libjuliawm.so: c_LINKER src/core/libjuliawm.so.p/src_client.c.o src/core/libjuliawm.so.p/src_parseConfig.c.o src/core/libjuliawm.so.p/src_juliawm.c.o src/core/libjuliawm.so.p/src_coreUtils.c.o src/core/libjuliawm.so.p/src_xdg-shell-protocol.c.o src/core/libjuliawm.so.p/src_parseConfigUtils.c.o src/core/libjuliawm.so.p/src_debug.c.o src/core/libjuliawm.so.p/src_tile_tile.c.o src/core/libjuliawm.so.p/src_tile_tileUtils.c.o | /usr/lib/libjulia.so.1.5 /usr/lib/libwlroots.so /usr/lib/libxcb.so /usr/lib/libxkbcommon.so /usr/lib/libwayland-server.so /usr/lib/libcairo.so
+build src/core/libjuliawm.so: c_LINKER src/core/libjuliawm.so.p/src_client.c.o src/core/libjuliawm.so.p/src_parseConfig.c.o src/core/libjuliawm.so.p/src_juliawm.c.o src/core/libjuliawm.so.p/src_coreUtils.c.o src/core/libjuliawm.so.p/src_xdg-shell-protocol.c.o src/core/libjuliawm.so.p/src_parseConfigUtils.c.o src/core/libjuliawm.so.p/src_tile_tile.c.o src/core/libjuliawm.so.p/src_tile_tileUtils.c.o | /usr/lib/libjulia.so.1.5 /usr/lib/libwlroots.so /usr/lib/libxcb.so /usr/lib/libxkbcommon.so /usr/lib/libwayland-server.so /usr/lib/libcairo.so
  LINK_ARGS = -Wl,--as-needed -Wl,--no-undefined -shared -fPIC -Wl,--start-group -Wl,-soname,libjuliawm.so -ljulia /usr/lib/libwlroots.so /usr/lib/libxcb.so /usr/lib/libxkbcommon.so /usr/lib/libwayland-server.so /usr/lib/libcairo.so -Wl,--end-group
+
+build src/debug.p/debug.c.o: c_COMPILER ../src/debug.c
+ DEPFILE = src/debug.p/debug.c.o.d
+ DEPFILE_UNQUOTED = src/debug.p/debug.c.o.d
+ ARGS = -Isrc/debug.p -Isrc -I../src -fdiagnostics-color=always -pipe -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -g -DWLR_USE_UNSTABLE
+
+build src/debug: c_LINKER src/debug.p/debug.c.o | /usr/lib/libjulia.so.1.5
+ LINK_ARGS = -Wl,--as-needed -Wl,--no-undefined -Wl,--start-group -ljulia -Wl,--end-group
 
 # Test rules
 
@@ -144,7 +147,7 @@ build meson-uninstall: CUSTOM_COMMAND PHONY
 
 build uninstall: phony meson-uninstall
 
-build all: phony src/core/libjuliawm.so
+build all: phony src/core/libjuliawm.so src/debug
 
 build clean: phony meson-clean
 
@@ -152,13 +155,13 @@ build meson-clean: CUSTOM_COMMAND PHONY
  COMMAND = /usr/bin/ninja -t clean
  description = Cleaning
 
-build build.ninja: REGENERATE_BUILD ../meson.build ../src/meson.build ../src/core/meson.build meson-private/coredata.dat
+build build.ninja: REGENERATE_BUILD ../meson.build /usr/bin/pkgconf ../src/meson.build ../src/core/meson.build /usr/bin/basename ../protocols/wlr-layer-shell-unstable-v1.xml /usr/bin/[ /usr/bin/wayland-scanner /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml meson-private/coredata.dat
  pool = console
 
 build reconfigure: REGENERATE_BUILD PHONY
  pool = console
 
-build ../meson.build ../src/meson.build ../src/core/meson.build meson-private/coredata.dat: phony 
+build ../meson.build /usr/bin/pkgconf ../src/meson.build ../src/core/meson.build /usr/bin/basename ../protocols/wlr-layer-shell-unstable-v1.xml /usr/bin/[ /usr/bin/wayland-scanner /usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml meson-private/coredata.dat: phony 
 
 default all
 

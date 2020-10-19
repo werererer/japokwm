@@ -1,4 +1,4 @@
-add_global_arguments('-DWLR_USE_UNSTABLE', language: 'c')
+add_project_arguments('-DWLR_USE_UNSTABLE', language: 'c')
 
 deps = [\
     dependency('wlroots'),
@@ -9,3 +9,8 @@ deps = [\
     ]
 
 subdir('core/')
+
+executable('debug',
+              'debug.c',
+              link_args: '-ljulia',
+              )

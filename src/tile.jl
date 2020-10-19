@@ -24,11 +24,11 @@ struct cContainerArr
 end
 
 function add(box :: Container)
-    ccall((:addBox, "juliawm.so"), Cvoid, (Cint, Cint, Cint, Cint), 3, 3, 4, 5)
+    ccall((:addBox, corePath), Cvoid, (Cint, Cint, Cint, Cint), 3, 3, 4, 5)
 end
 
 function del()
-    ccall((:del, "juliawm.so"), Cvoid, (Cint,), 3)
+    ccall((:del, corePath), Cvoid, (Cint,), 3)
 end
 
 function recurse(arr :: Array{Array{Array{Int}}})
@@ -38,7 +38,7 @@ end
 layoutData = [[Container(0, 0, 1, 1)]]
 
 function arrangeThis(reset :: Bool)
-    ccall((:arrangeThis, "./juliawm.so"), Cvoid, (Cint,), reset)
+    ccall((:arrangeThis, corePath), Cvoid, (Cint,), reset)
 end
 
 # set: which window conf set

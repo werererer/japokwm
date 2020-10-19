@@ -1,4 +1,4 @@
-Build started at 2020-10-18T23:47:20.957732
+Build started at 2020-10-19T12:29:06.306960
 Main binary: /usr/bin/python
 Build Options: -Dbackend=ninja
 Python system: Linux
@@ -25,17 +25,111 @@ Host machine cpu family: x86_64
 Host machine cpu: x86_64
 Target machine cpu family: x86_64
 Target machine cpu: x86_64
+Program wayland-scanner found: YES
+Running command: /usr/bin/pkg-config --variable=pkgdatadir wayland-protocols
+--- stdout ---
+//usr/share/wayland-protocols
+
+--- stderr ---
+
+
 Dependency wlroots found: YES 0.11.0 (cached)
 Dependency xcb found: YES 1.14 (cached)
 Dependency xkbcommon found: YES 1.0.1 (cached)
 Dependency wayland-server found: YES 1.18.0 (cached)
 Dependency cairo found: YES 1.17.3 (cached)
-Build targets in project: 1
+Running command: /usr/bin/basename /home/jakob/git/juliawm/protocols/wlr-layer-shell-unstable-v1.xml .xml
+--- stdout ---
+wlr-layer-shell-unstable-v1
+
+--- stderr ---
+
+
+Running command: /usr/bin/[ -f src/wlr-layer-shell-unstable-v1.c ]
+--- stdout ---
+
+--- stderr ---
+
+
+Running command: /usr/bin/wayland-scanner private-code src/wlr-layer-shell-unstable-v1.c
+--- stdout ---
+
+--- stderr ---
+usage: wayland-scanner [OPTION] [client-header|server-header|private-code|public-code] [input_file output_file]
+
+Converts XML protocol descriptions supplied on stdin or input file to client
+headers, server headers, or protocol marshalling code.
+
+Use "public-code" only if the marshalling code will be public - aka DSO will export it while other components will be using it.
+Using "private-code" is strongly recommended.
+
+options:
+    -h,  --help                  display this help and exit.
+    -v,  --version               print the wayland library version that
+                                 the scanner was built against.
+    -c,  --include-core-only     include the core version of the headers,
+                                 that is e.g. wayland-client-core.h instead
+                                 of wayland-client.h.
+    -s,  --strict                exit immediately with an error if DTD
+                                 verification fails.
+
+
+Message: generate: src/wlr-layer-shell-unstable-v1.c
+Running command: /usr/bin/[ ! -f include/wlr-layer-shell-unstable-v1.h ]
+--- stdout ---
+
+--- stderr ---
+
+
+Running command: /usr/bin/basename //usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml .xml
+--- stdout ---
+xdg-shell
+
+--- stderr ---
+
+
+Running command: /usr/bin/[ -f src/xdg-shell.c ]
+--- stdout ---
+
+--- stderr ---
+
+
+Running command: /usr/bin/wayland-scanner private-code src/xdg-shell.c
+--- stdout ---
+
+--- stderr ---
+usage: wayland-scanner [OPTION] [client-header|server-header|private-code|public-code] [input_file output_file]
+
+Converts XML protocol descriptions supplied on stdin or input file to client
+headers, server headers, or protocol marshalling code.
+
+Use "public-code" only if the marshalling code will be public - aka DSO will export it while other components will be using it.
+Using "private-code" is strongly recommended.
+
+options:
+    -h,  --help                  display this help and exit.
+    -v,  --version               print the wayland library version that
+                                 the scanner was built against.
+    -c,  --include-core-only     include the core version of the headers,
+                                 that is e.g. wayland-client-core.h instead
+                                 of wayland-client.h.
+    -s,  --strict                exit immediately with an error if DTD
+                                 verification fails.
+
+
+Message: generate: src/xdg-shell.c
+Running command: /usr/bin/[ ! -f include/xdg-shell.h ]
+--- stdout ---
+
+--- stderr ---
+
+
+Build targets in project: 2
 
 Found ninja-1.10.1 at /usr/bin/ninja
 Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpl_ycr7n6
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpl_ycr7n6/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpl_ycr7n6/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpl7rcwine
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpl7rcwine/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpl7rcwine/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
 
 Code:
  

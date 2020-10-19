@@ -11,11 +11,12 @@
 
 struct wlr_list *containers;
 
-void swap(struct wlr_box *c1, struct wlr_box *c2) {
-    struct wlr_box *c;
-    *c = *c1;
-    *c1 = *c2;
-    *c2 = *c;
+void swap(struct wlr_box *b1, struct wlr_box *b2) {
+    struct wlr_box *b, box;
+    b = &box;
+    *b = *b1;
+    *b1 = *b2;
+    *b2 = *b;
 }
 
 static void push(struct wlr_box *c)
@@ -23,15 +24,10 @@ static void push(struct wlr_box *c)
     wlr_list_push(containers, c);
 }
 
-static void add(struct wlr_box *c, size_t i)
-{
-    wlr_list_insert(containers, i, c);
-}
-
-static void del(size_t i)
-{
-    wlr_list_del(containers, i);
-}
+/* static void del(size_t i) */
+/* { */
+/*     wlr_list_del(containers, i); */
+/* } */
 
 void addBox(int x, int y, int w, int h)
 {

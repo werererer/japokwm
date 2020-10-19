@@ -1,25 +1,23 @@
 include("keybinding.jl");
-include("../keysym.jl")
-
-const CLIB = "./juliawm.so"
+include("keysym.jl")
 
 function setup()
-    ccall((:setup, CLIB), Cvoid, ())
+    ccall((:setup, corePath), Cvoid, ())
 end
 
 function run(cmd::String)
-    return ccall((:run, CLIB), Cvoid, (Cstring,), cmd)
+    return ccall((:run, corePath), Cvoid, (Cstring,), cmd)
 end
 
 function cleanup()
-    ccall((:cleanup, CLIB), Cvoid, ())
+    ccall((:cleanup, corePath), Cvoid, ())
 end
 
 function updateConfig()
-    ccall((:updateConfig, CLIB), Cvoid, ())
+    ccall((:updateConfig, corePath), Cvoid, ())
 end
 
-function main()
+function julia_main() :: Cint
     startup_cmd = ""
     c = 0
 
@@ -36,6 +34,7 @@ function main()
     setup()
     run(startup_cmd)
     cleanup()
+    return 0
 end
 
-main()
+julia_main()

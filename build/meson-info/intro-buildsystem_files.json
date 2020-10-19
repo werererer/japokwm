@@ -1,1 +1,1 @@
-["/home/jakob/git/juliawm/meson.build", "/home/jakob/git/juliawm/src/meson.build", "/home/jakob/git/juliawm/src/core/meson.build"]
+["/home/jakob/git/juliawm/meson.build", "/usr/bin/pkgconf", "/home/jakob/git/juliawm/src/meson.build", "/home/jakob/git/juliawm/src/core/meson.build", "/usr/bin/basename", "/home/jakob/git/juliawm/protocols/wlr-layer-shell-unstable-v1.xml", "/usr/bin/[", "/usr/bin/wayland-scanner", "/usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml"]
