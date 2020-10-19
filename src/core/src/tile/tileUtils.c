@@ -54,7 +54,7 @@ void arrange(Monitor *m, bool reset)
                         0);
                 i = MIN(i + 1, layoutArr->size-1);
             }
-            createNewOverlay("hi");
+            createNewOverlay();
         } else {
             printf("Empty function with symbol: %s\n", m->lt.symbol);
         }

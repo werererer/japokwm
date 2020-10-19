@@ -75,6 +75,10 @@ function quit()
     ccall((:quit, corePath), Cvoid, ())
 end
 
-function createOverlay(text :: String)
-    ccall((:createOverlay, corePath), Cvoid, (Cstring,), text)
+function createOverlay()
+    ccall((:createOverlay, corePath), Cvoid, ())
+end
+
+function createNewOverlay()
+    ccall((:createNewOverlay, corePath), Cvoid, ())
 end

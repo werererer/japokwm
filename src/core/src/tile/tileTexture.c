@@ -49,27 +49,31 @@ struct posTexture* createTextbox(struct wlr_box box, float boxColor[],
     return posTexture;
 }
 
-void createNewOverlay(char *text)
+void createNewOverlay()
 {
     // recreate list
     wlr_list_finish(&renderData.textures);
     wlr_list_init(&renderData.textures);
 
-    createOverlay(text);
+    createOverlay();
 }
 
-void createOverlay(char *text)
+void createOverlay()
 {
     float color[4] = {1, 1, 0, 0.5};
     float color2[4] = {1, 1, 0, 0.5};
     Client *c;
 
+    int i = 1;
+    char text[6];
     /* our stacking list is ordered front-to-back, we iterate over it backwards. */
-    wl_list_for_each_reverse(c, &stack, slink) {
+    wl_list_for_each(c, &stack, slink) {
         if (!visibleon(c, c->mon))
             continue;
 
+        sprintf(text, "%i", i);
         wlr_list_push(&renderData.textures,
                 createTextbox(c->geom, color, color2, text));
+        i++;
     }
 }

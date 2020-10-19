@@ -2,8 +2,8 @@
 #define TILE_TEXTURE_H
 /*
  * This helps creating things with cairo
+ * TODO: better name?
  * */
-
 #include <cairo/cairo.h>
 #include <wlr/render/wlr_texture.h>
 #include <wlr/types/wlr_box.h>
@@ -14,6 +14,6 @@
 struct posTexture* createTextbox(struct wlr_box box, float boxColor[static 4], 
                                  float textColor[static 4], char* text);
 /* same as createOverlay but clears renderData */
-void createNewOverlay(char *text);
-void createOverlay(char *text);
+void createNewOverlay();
+void createOverlay();
 #endif /* TILE_TEXTURE_H */
