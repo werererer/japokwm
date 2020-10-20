@@ -3,7 +3,7 @@ os: linux
 services:
     - docker
 before_install:
-    pip install meson
+    pip3 install meson
 script:
     meson build
     cd meson
