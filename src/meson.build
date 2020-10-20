@@ -1,5 +1,5 @@
-add_global_arguments('-DWLR_USE_UNSTABLE', '-Werror', '-Wno-uninitialized',
-                      language: 'c')
+add_global_arguments('-DWLR_USE_UNSTABLE', '-Werror', '-Wno-uninitialized', 
+                     '-I/usr/include/julia', language: 'c')
 
 deps = [\
     dependency('wlroots'),
