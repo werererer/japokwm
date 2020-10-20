@@ -1,25 +1,24 @@
 os: linux
-
+dist: focal
 services:
 - docker
 
 archlinux:
-  repos:
-  - papyros=http://dash.papyros.io/repos/$repo/$arch
-  packages:
-  # pacman packages
-  - python
-  - perl
-  # aur packages
-  - go-git
-  # packages from papyros repo
-  - papyros-shell
-  mount:
-  - ~/.pkg-cache:/var/cache/pacman/pkg
   before_install:
-  - "sudo ln -s /dev/null /etc/pacman.d/hooks/package-cleanup.hook"
   script:
-  - "./build_script.sh"
+  - "echo works"
 
+before_install:
+    - docker pull archlinux
+    - docker run -it --rm arch archlinux
+    - docker exec build git clone "https://github.com/werererer/juliawm"
+    - docker exec cd juliawm
+    - docker exec arch sudo pacman -S --noconfirm wlroots
+    - docker exec arch sudo pacman -S --noconfirm julia
+    - docker exec arch sudo pacman -S --noconfirm wayland
+    - docker exec arch sudo pacman -S --noconfirm meson
 script:
-- "curl -s https://raw.githubusercontent.com/mikkeloscar/arch-travis/master/arch-travis.sh | bash"
+    - docker exec arch meson build
+    - docker exec arch cd build
+    - docker exec arch meson compile
+    - docker exec arch meson install
