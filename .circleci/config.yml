@@ -23,6 +23,7 @@ jobs:
             - run: meson build
             - run: ls
             - run: cd build
+            - run: pwd
             - run: meson compile
             - run: ls
             - run: meson install
