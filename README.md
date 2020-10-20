@@ -1,4 +1,5 @@
-# juliawm - for Wayland
+# juliawm - for Wayland [![Build Status](https://travis-ci.org/werererer/juliawm.svg?branch=master)](https://travis-ci.org/werererer/juliawm)
+
 juliawm tries to fill the gap of missing tiling windowmanagers that are list/stack based in wayland.
 Its goals are:
 
