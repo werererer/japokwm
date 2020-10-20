@@ -10,11 +10,11 @@ jobs:
         docker:
             - image: archlinux
         steps:
-            - run: whoami
-            - run: pacman -S meson
-            - run: pacman -S wlroots
-            - run: pacman -S meson
-            - run: pacman -S wayland
+            - run: pacman -Sy --noconfirm
+            - run: pacman -S --noconfirm meson
+            - run: pacman -S --noconfirm wlroots
+            - run: pacman -S --noconfirm meson
+            - run: pacman -S --noconfirm wayland
             - checkout
 workflows:
     one:
