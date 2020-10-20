@@ -1,0 +1,9 @@
+language: c
+os: linux
+services:
+    - docker
+script:
+    meson build
+    cd meson
+    meson compile
+    meson install
