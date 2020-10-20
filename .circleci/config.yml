@@ -15,9 +15,7 @@ jobs:
             - run: pacman -S --noconfirm wlroots
             - run: pacman -S --noconfirm meson
             - run: pacman -S --noconfirm wayland
-            - checkout
             - run: ls
-            - run: cd juliawm
             - run: meson build
             - run: cd build
             - run: meson compile
