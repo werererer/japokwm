@@ -1,17 +1,30 @@
 language: c
 os: linux
-dist: focal
+
 services:
     - docker
-before_install:
-    - pip3 install meson
-    - sudo apt-get -y install libwayland-dev
-    - sudo apt-get -y install libjulia-dev
-    - sudo apt-get -y install wlroots
-    - sudo apt-get -y install libwlroots-dev
+archlinux:
+    repos:
+        - papyros=http://dash.papyros.io/repos/$repo/$arch
+    packages:
+        - python
+        - perl
+        - go-git
+        - papyros-shell
+    mount:
+        - ~/.pkg-cache:/var/cache/pacman/pkg
+
+    before_install:
+        - "sudo ln -s /dev/null /etc/pacman.d/hooks/package-cleanup.hook"
+        - sudo pacman -S --noconfirm install meson
+        - sudo pacman -S --noconfirm install wayland
+        - sudo pacman -S --noconfirm install julia
+        - sudo pacman -S --noconfirm install wlroots
+    script:
+        - mkdir build
+        - meson build
+        - cd build
+        - meson compile
+        - meson install
 script:
-    - mkdir build
-    - meson build
-    - cd build
-    - meson compile
-    - meson install
+    - "curl -s https://raw.githubusercontent.com/mikkeloscar/arch-travis/master/arch-travis.sh | bash"
