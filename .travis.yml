@@ -6,6 +6,7 @@ before_install:
     - sudo apt-get -y install meson
     - sudo apt-get -y install libwayland-dev
     - sudo apt-get -y install julia
+    - sudo apt-get -y install wlroots
 script:
     - mkdir build
     - meson build
