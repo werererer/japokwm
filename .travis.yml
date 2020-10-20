@@ -6,7 +6,7 @@ services:
 before_install:
     - sudo apt-get -y install meson
     - sudo apt-get -y install libwayland-dev
-    - sudo apt-get -y install julia
+    - sudo apt-get -y install libjulia-dev
     - sudo apt-get -y install libwlroots-dev
 script:
     - mkdir build
