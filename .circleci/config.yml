@@ -21,8 +21,10 @@ jobs:
             - checkout
             - run: ls
             - run: meson build
+            - run: ls
             - run: cd build
             - run: meson compile
+            - run: ls
             - run: meson install
 workflows:
     one:
