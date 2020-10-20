@@ -1,4 +1,4 @@
-add_project_arguments('-DWLR_USE_UNSTABLE', '-Werror', '-Wno-uninitialized',
+add_global_arguments('-DWLR_USE_UNSTABLE', '-Werror', '-Wno-uninitialized',
                       language: 'c')
 
 deps = [\
