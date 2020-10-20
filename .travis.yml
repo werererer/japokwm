@@ -4,6 +4,7 @@ services:
     - docker
 before_install:
     - sudo apt-get -y install meson
+    - sudo apt-get -y install wayland
     - sudo apt-get -y install julia
 script:
     - mkdir build
