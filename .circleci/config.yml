@@ -1,0 +1,28 @@
+version: 2.1
+docker:
+    - image: archlinux
+updatepackage:
+    name: Update Packages
+    command: sudo pacman -Syu --noconfirm
+jobs:
+    one:
+        docker:
+            - image: archlinux
+        steps:
+            - run: pacman -Sy --noconfirm
+            - run: pacman -S --noconfirm base-devel
+            - run: pacman -S --noconfirm meson
+            - run: pacman -S --noconfirm wlroots
+            - run: pacman -S --noconfirm julia
+            - run: pacman -S --noconfirm cairo
+            - run: pacman -S --noconfirm wayland
+            - run: pacman -S --noconfirm wayland-protocols
+            - checkout
+            - run: ls
+            - run: meson build
+            - run: cd build && meson compile
+            - run: cd build && meson install
+workflows:
+    one:
+        jobs:
+            - one
