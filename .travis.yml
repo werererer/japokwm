@@ -6,6 +6,7 @@ before_install:
     - sudo apt-get -y install meson
     - sudo apt-get -y install julia
 script:
+    - mkdir build
     - meson build
     - cd build
     - meson compile
