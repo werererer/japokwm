@@ -3,9 +3,10 @@ os: linux
 services:
     - docker
 before_install:
-    pip3 install meson
+    - sudo apt-get -y install meson
+    - sudo apt-get -y install julia
 script:
-    meson build
-    cd meson
-    meson compile
-    meson install
+    - meson build
+    - cd meson
+    - meson compile
+    - meson install
