@@ -4,7 +4,7 @@ dist: focal
 services:
     - docker
 before_install:
-    - sudo apt-get -y install meson
+    - pip3 install meson
     - sudo apt-get -y install libwayland-dev
     - sudo apt-get -y install libjulia-dev
     - git clone "https://github.com/swaywm/wlroots"
