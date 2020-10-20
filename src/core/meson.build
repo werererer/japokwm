@@ -1,15 +1,3 @@
-srcs = files(
-  'src/client.c',
-  'src/parseConfig.c',
-  'src/juliawm.c',
-  'src/coreUtils.c',
-  'src/xdg-shell-protocol.c',
-  'src/parseConfigUtils.c',
-  'src/tile/tile.c',
-  'src/tile/tileUtils.c',
-  'src/tile/tileTexture.c',
-  'src/render/render.c',
-  )
 srcDir = 'src/'
 includeDir = 'include/'
 inc = include_directories(includeDir)
@@ -30,6 +18,20 @@ foreach p:protocols
     endif
 endforeach
 
+srcs = files(
+  'src/client.c',
+  'src/parseConfig.c',
+  'src/juliawm.c',
+  'src/coreUtils.c',
+  'src/xdg-shell-protocol.c',
+  'src/wlr-layer-shell-unstable-v1-protocol.c',
+  'src/xdg-shell-protocol.c',
+  'src/parseConfigUtils.c',
+  'src/tile/tile.c',
+  'src/tile/tileUtils.c',
+  'src/tile/tileTexture.c',
+  'src/render/render.c',
+  )
 libName = 'juliawm'
 root = meson.source_root()
 shared_library(libName,
