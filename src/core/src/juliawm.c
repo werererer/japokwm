@@ -385,7 +385,7 @@ void createnotify(struct wl_listener *listener, void *data)
     /* Allocate a Client for this surface */
     c = xdg_surface->data = calloc(1, sizeof(*c));
     c->surface.xdg = xdg_surface;
-    c->bw = borderpx;
+    c->bw = borderPx;
     c->type = XDGShell;
 
     /* Tell the client not to try anything fancy */
@@ -414,7 +414,7 @@ void createnotifyLayerShell(struct wl_listener *listener, void *data)
 	/* Allocate a Client for this surface */
 	c = layer_surface->data = calloc(1, sizeof(*c));
 	c->surface.layer = layer_surface;
-	c->bw = borderpx;
+	c->bw = borderPx;
 	c->type = LayerShell;
 
 	/* Listen to the various events it can emit */
@@ -707,7 +707,7 @@ void motionnotify(uint32_t time)
     Client *c;
 
     /* Update selMon (even while dragging a window) */
-    if (sloppyfocus)
+    if (sloppyFocus)
         selMon = xytomon(cursor->x, cursor->y);
 
     /* If we are currently grabbing the mouse, handle and return */
@@ -805,7 +805,7 @@ pointerfocus(Client *c, struct wlr_surface *surface, double sx, double sy, uint3
     if (c->type == X11Unmanaged)
         return;
 
-    if (sloppyfocus)
+    if (sloppyFocus)
         focusclient(selClient(), c, 0);
 }
 
@@ -1217,7 +1217,7 @@ void createnotifyx11(struct wl_listener *listener, void *data)
     c = xwayland_surface->data = calloc(1, sizeof(*c));
     c->surface.xwayland = xwayland_surface;
     c->type = xwayland_surface->override_redirect ? X11Unmanaged : X11Managed;
-    c->bw = borderpx;
+    c->bw = borderPx;
 
     /* Listen to the various events it can emit */
     c->map.notify = maprequest;

@@ -2,11 +2,15 @@
 #include "parseConfig.h"
 #include <julia.h>
 
-int sloppyfocus;
-int borderpx;
-float rootcolor[4];
-float bordercolor[4];
-float focuscolor[4];
+int sloppyFocus;
+int borderPx;
+float rootColor[4];
+float borderColor[4];
+float focusColor[4];
+float overlayColor[4];
+float textColor[4];
+float selOverlayColor[4];
+float selTextColor[4];
 
 char *tags[MAXLEN];
 Rule rules[MAXLEN];
@@ -24,14 +28,17 @@ Key buttons[MAXLEN];
 
 void updateConfig()
 {
-    sloppyfocus = getConfigInt("sloppyfocus");
-    borderpx = getConfigInt("borderpx");
+    sloppyFocus = getConfigInt("sloppyFocus");
+    borderPx = getConfigInt("borderPx");
 
     /* appearance */
-    getConfigFloatArr(rootcolor, "rootcolor");
-    getConfigFloatArr(bordercolor, "bordercolor");
-    getConfigFloatArr(focuscolor, "focuscolor");
-
+    getConfigFloatArr(rootColor, "rootColor");
+    getConfigFloatArr(borderColor, "borderColor");
+    getConfigFloatArr(focusColor, "focusColor");
+    getConfigFloatArr(overlayColor, "overlayColor");
+    getConfigFloatArr(textColor, "textColor");
+    getConfigFloatArr(selOverlayColor, "overlayColor");
+    getConfigFloatArr(selTextColor, "textColor");
 
     /* tagging */
     getConfigStrArr(tags, "tags");

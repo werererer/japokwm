@@ -102,7 +102,7 @@ static void renderClients(Monitor *m)
         };
 
         /* Draw window borders */
-        color = (c == sel) ? focuscolor : bordercolor;
+        color = (c == sel) ? focusColor : borderColor;
         for (i = 0; i < 4; i++) {
             scalebox(&borders[i], m->wlr_output->scale);
             wlr_render_rect(drw, &borders[i], color,
@@ -204,7 +204,7 @@ void renderFrame(struct wl_listener *listener, void *data)
     if (render) {
         /* Begin the renderer (calls glViewport and some other GL sanity checks) */
         wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
-        wlr_renderer_clear(drw, rootcolor);
+        wlr_renderer_clear(drw, rootColor);
 
         renderClients(m);
         renderIndependents(m->wlr_output);

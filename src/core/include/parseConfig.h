@@ -8,11 +8,15 @@
 */
 
 /* appearance */
-extern int sloppyfocus;
-extern int borderpx;
-extern float rootcolor[4];
-extern float bordercolor[4];
-extern float focuscolor[4];
+extern int sloppyFocus;
+extern int borderPx;
+extern float rootColor[4];
+extern float borderColor[4];
+extern float focusColor[4];
+extern float overlayColor[4];
+extern float textColor[4];
+extern float selOverlayColor[4];
+extern float selTextColor[4];
 
 #define MAXLEN 15
 extern char *tags[MAXLEN];

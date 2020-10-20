@@ -1,10 +1,15 @@
 include("defaultConfig.jl")
 
-sloppyfocus = 1
-borderpx = 1
-rootcolor = [0.3, 0.3, 0.3, 1.0]
-bordercolor = [0.3, 0.3, 0.3, 1.0]
-focuscolor = [1.0, 0.0, 0.0, 0.0]
+sloppyFocus = true
+borderPx = 1
+rootColor = [0.3, 0.3, 0.3, 1.0]
+borderColor = [0.3, 0.3, 0.3, 1.0]
+focusColor = [1.0, 0.0, 0.0, 0.0]
+overlayColor = [0.65, 0.65, 0.65, 0.5]
+textColor = [0.003, 0.003, 0.003, 1.0]
+selOverlayColor = []
+selTextColor = []
+
 
 tags = [ "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
 

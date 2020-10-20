@@ -3,7 +3,7 @@
 #include <wayland-util.h>
 #include <wlr/backend.h>
 
-struct posTexture* createTextbox(struct wlr_box box, float boxColor[], 
+struct posTexture* createTextbox(struct wlr_box box, float boxColor[],
                                  float textColor[], char* text)
 {
     cairo_format_t cFormat = CAIRO_FORMAT_ARGB32;
@@ -14,10 +14,11 @@ struct posTexture* createTextbox(struct wlr_box box, float boxColor[],
 
     cairo_surface_t *surface =
         cairo_image_surface_create(cFormat, width, height);
-    //draw rect
+    //draw box
     cairo_t *cr = cairo_create(surface);
     cairo_set_line_width(cr, 0.1);
-    cairo_set_source_rgba(cr, 0.0, 0.0, 1.0, 0.5);
+    cairo_set_source_rgba(cr,
+            boxColor[0], boxColor[1], boxColor[2], boxColor[3]);
     cairo_rectangle(cr, 0, 0, width, height);
     cairo_fill(cr);
     cairo_surface_flush(surface);
@@ -29,6 +30,8 @@ struct posTexture* createTextbox(struct wlr_box box, float boxColor[],
     cairo_set_font_size(cr, 32.0);
     cairo_move_to(cr, width/2, height/2);
     cairo_set_source_rgb(cr, 0, 0, 0);
+    cairo_set_source_rgba(cr,
+            textColor[0], textColor[1], textColor[2], textColor[3]);
     cairo_show_text(cr, text);
     cairo_surface_flush(surface);
 
@@ -58,8 +61,6 @@ void createNewOverlay()
 
 void createOverlay()
 {
-    float color[4] = {1, 1, 0, 0.5};
-    float color2[4] = {1, 1, 0, 0.5};
     Client *c;
 
     int i = 1;
@@ -72,7 +73,7 @@ void createOverlay()
 
         sprintf(text, "%i", i);
         wlr_list_push(&renderData.textures,
-                createTextbox(c->geom, color, color2, text));
+                createTextbox(c->geom, overlayColor, textColor, text));
         i++;
     }
 }
