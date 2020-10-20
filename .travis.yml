@@ -6,15 +6,9 @@ services:
 before_install:
     - pip3 install meson
     - sudo apt-get -y install libwayland-dev
-    - sudo apt-get -y install wayland-protocols
     - sudo apt-get -y install libjulia-dev
-    - git clone "https://github.com/swaywm/wlroots"
-    - cd wlroots
-    - meson build
-    - ninja -C build
-    - cd build
-    - sudo meson install
-    - cd ../../
+    - sudo apt-get -y install wlroots
+    - sudo apt-get -y install libwlroots-dev
 script:
     - mkdir build
     - meson build
