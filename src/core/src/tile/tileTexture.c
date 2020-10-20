@@ -65,7 +65,7 @@ void createOverlay()
 
     int i = 1;
     //TODO This number shouldn't be hard coded
-    char text[6];
+    char text[NUM_DIGITS];
     /* our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each(c, &stack, slink) {
         if (!visibleon(c, c->mon))
