@@ -32,7 +32,6 @@
 #include <wlr/types/wlr_primary_selection.h>
 #include <wlr/types/wlr_primary_selection_v1.h>
 #include <wlr/types/wlr_screencopy_v1.h>
-#include <wlr/types/wlr_viewporter.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_output_v1.h>
@@ -969,7 +968,6 @@ void setup(void)
     wlr_data_device_manager_create(dpy);
     wlr_gamma_control_manager_v1_create(dpy);
     wlr_primary_selection_v1_device_manager_create(dpy);
-    wlr_viewporter_create(dpy);
 
     /* Creates an output layout, which a wlroots utility for working with an
      * arrangement of screens in a physical layout. */
