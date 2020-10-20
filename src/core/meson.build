@@ -34,7 +34,6 @@ srcs = files(
   'src/render/render.c',
   )
 libName = 'juliawm'
-root = meson.source_root()
 shared_library(libName,
               srcs,
               dependencies: deps,

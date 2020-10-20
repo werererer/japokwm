@@ -3,6 +3,11 @@
 #include <wayland-util.h>
 #include <wlr/backend.h>
 
+static struct wlr_box getPosition(struct posTexture *pTexture)
+{
+    return NULL;
+}
+
 struct posTexture* createTextbox(struct wlr_box box, float boxColor[],
                                  float textColor[], char* text)
 {
@@ -64,9 +69,8 @@ void createOverlay()
     Client *c;
 
     int i = 1;
-    //TODO This number shouldn't be hard coded
+    // TODO This number shouldn't be hard coded
     char text[NUM_DIGITS];
-    /* our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each(c, &stack, slink) {
         if (!visibleon(c, c->mon))
             continue;
@@ -75,5 +79,15 @@ void createOverlay()
         wlr_list_push(&renderData.textures,
                 createTextbox(c->geom, overlayColor, textColor, text));
         i++;
+    }
+}
+
+void writeOverlay(char *file)
+{
+    Client *c;
+    struct wlr_list *list = &renderData.textures;
+    wlr_list_for_each(c, &stack, slink) {
+        struct wlr_box box = getPosition(wlr_list_peek(list));
+        writeArrayToFile(file, arr, 0, 0);
     }
 }

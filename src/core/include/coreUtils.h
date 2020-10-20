@@ -17,6 +17,8 @@
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define END(A)                  ((A) + LENGTH(A))
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
+#define NUM_DIGITS 9
+#define ARR_STRING_LENGTH(X) strlen(X) + 2*(strlen("[]") + NUM_DIGITS)
 
 /* enums */
 enum { CurNormal, CurMove, CurResize }; /* cursor */

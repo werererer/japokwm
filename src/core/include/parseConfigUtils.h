@@ -3,10 +3,6 @@
 #include "coreUtils.h"
 #include <string.h>
 
-#define NUM_DIGITS 9
-#define ARR_STRING_LENGTH(X) strlen(X) + 2*(strlen("[]") + NUM_DIGITS)
-// TODO: define foreach julia
-
 void initConfig(char *path);
 // basic
 // get

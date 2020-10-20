@@ -58,11 +58,7 @@ void arrange(Monitor *m, bool reset)
             }
 
             // create overlay
-            if (overlay) {
-                createNewOverlay();
-            } else {
-                wlr_list_clear(&renderData.textures);
-            }
+            createNewOverlay();
         } else {
             printf("Empty function with symbol: %s\n", m->lt.symbol);
         }
