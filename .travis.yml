@@ -7,7 +7,13 @@ before_install:
     - sudo apt-get -y install meson
     - sudo apt-get -y install libwayland-dev
     - sudo apt-get -y install libjulia-dev
-    - sudo apt-get -y install libwlroots-dev
+    - git clone "https://github.com/swaywm/wlroots"
+    - cd wlroots
+    - meson build
+    - ninja -C build
+    - cd build
+    - sudo meson install
+    - cd ../../
 script:
     - mkdir build
     - meson build
