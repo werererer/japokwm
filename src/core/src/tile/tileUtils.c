@@ -3,6 +3,7 @@
 #include <julia.h>
 #include <string.h>
 #include <sys/param.h>
+#include <wayland-util.h>
 #include <wlr/types/wlr_foreign_toplevel_management_v1.h>
 
 #include "utils/coreUtils.h"
@@ -77,26 +78,31 @@ void arrangeThis(bool reset)
     arrange(selMon, reset);
 }
 
+static void unfocusClient(Client *c)
+{
+    if (c) {
+        printf("UNFOCUS\n");
+        switch (c->type) {
+            case XDGShell:
+                wlr_xdg_toplevel_set_activated(c->surface.xdg, 0);
+                break;
+            case X11Managed:
+            case X11Unmanaged:
+                wlr_xwayland_surface_activate(c->surface.xwayland, 0);
+                break;
+        }
+    }
+}
+
 void focusclient(Client *old, Client *c, bool lift)
 {
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat);
 
+    unfocusClient(old);
     /* Raise client in stacking order if requested */
     if (c && lift) {
         wl_list_remove(&c->slink);
         wl_list_insert(&stack, &c->slink);
-    }
-
-    /* Nothing else to do? */
-    if (c == old)
-        return;
-
-    if (c != old && old) {
-        switch (c->type) {
-            case XDGShell:
-                wlr_xdg_toplevel_set_activated(old->surface.xdg, 0);
-                break;
-        }
     }
     /* Update wlroots' keyboard focus */
     if (!c) {
@@ -105,22 +111,9 @@ void focusclient(Client *old, Client *c, bool lift)
         return;
     }
 
-    /* Deactivate old client if focus is changing */
-    if (c != old && old) {
-            // only do stuff if c->type == old->type == ...Shell
-            switch (old->type) {
-                case XDGShell:
-                    wlr_xdg_toplevel_set_activated(old->surface.xdg, 0);
-                    break;
-                case LayerShell:
-                    /* nop: layershell doesn't need to activate*/
-                    break;
-            }
-    }
-
     /* Have a client, so focus its top-level wlr_surface */
-    wlr_seat_keyboard_notify_enter(seat, getWlrSurface(c),
-            kb->keycodes, kb->num_keycodes, &kb->modifiers);
+    wlr_seat_keyboard_notify_enter(seat, getWlrSurface(c), kb->keycodes, 
+            kb->num_keycodes, &kb->modifiers);
 
     /* Put the new client atop the focus stack and select its monitor */
     wl_list_remove(&c->flink);
@@ -141,6 +134,7 @@ void focusclient(Client *old, Client *c, bool lift)
 
 Client* focustop(Monitor *m)
 {
+    printf("size: %i\n", wl_list_length(&focus_stack));
     Client *c;
     wl_list_for_each(c, &focus_stack, flink)
         if (visibleon(c, m))

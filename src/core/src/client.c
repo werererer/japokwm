@@ -87,7 +87,7 @@ void applyrules(Client *c)
 Client *selClient()
 {
     Client *c = wl_container_of(focus_stack.next, c, flink);
-    if (!visibleon(c, selMon))
+	if (!visibleon(c, selMon))
         return NULL;
     return c;
 }
@@ -112,11 +112,11 @@ struct wlr_surface *getWlrSurface(Client *c)
 
 bool visibleon(Client *c, Monitor *m)
 {
-    if (m) {
-        unsigned int tags = c->tags & m->tagset[m->seltags];
-        bool intersect = wlr_output_layout_intersects(
-                            output_layout, m->wlr_output, &c->geom);
-        return tags || !intersect;
+    if (m && c) {
+        bool sameMon = c->mon == m;
+        // TODO: check if this makes sense
+        bool sameTags = c->tags & m->tagset[m->seltags];
+        return sameMon && sameTags;
     }
     return false;
 }
