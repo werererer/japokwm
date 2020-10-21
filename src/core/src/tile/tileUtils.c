@@ -81,7 +81,6 @@ void arrangeThis(bool reset)
 static void unfocusClient(Client *c)
 {
     if (c) {
-        printf("UNFOCUS\n");
         switch (c->type) {
             case XDGShell:
                 wlr_xdg_toplevel_set_activated(c->surface.xdg, 0);
@@ -134,7 +133,6 @@ void focusclient(Client *old, Client *c, bool lift)
 
 Client* focustop(Monitor *m)
 {
-    printf("size: %i\n", wl_list_length(&focus_stack));
     Client *c;
     wl_list_for_each(c, &focus_stack, flink)
         if (visibleon(c, m))

@@ -114,9 +114,8 @@ bool visibleon(Client *c, Monitor *m)
 {
     if (m && c) {
         bool sameMon = c->mon == m;
-        // TODO: check if this makes sense
-        bool sameTags = c->tags & m->tagset[m->seltags];
-        return sameMon && sameTags;
+        bool sameTag = c->tags & m->tagset[m->seltags];
+        return sameMon && sameTag;
     }
     return false;
 }

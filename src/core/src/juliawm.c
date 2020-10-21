@@ -193,7 +193,7 @@ void buttonpress(struct wl_listener *listener, void *data)
     Client *c;
 
     switch (event->state) {
-    case WLR_BUTTON_PRESSED:;
+    case WLR_BUTTON_PRESSED:
         /* Change focus if the button was _pressed_ over a client */
         if ((c = xytoclient(cursor->x, cursor->y)))
             focusclient(selClient(), c, 1);
@@ -666,6 +666,7 @@ void maprequest(struct wl_listener *listener, void *data)
     wl_list_insert(&clients, &c->link);
     wl_list_insert(&focus_stack, &c->flink);
     wl_list_insert(&stack, &c->slink);
+    Client *prev = wl_container_of(listener, prev, map);
 
     switch (c->type) {
         case XDGShell:
@@ -740,6 +741,8 @@ void motionnotify(uint32_t time)
         wlr_xcursor_manager_set_cursor_image(cursor_mgr,
                 "left_ptr", cursor);
     }
+
+    pointerfocus(c, surface, sx, sy, time);
 }
 
 void motionrelative(struct wl_listener *listener, void *data)
@@ -999,8 +1002,8 @@ void setup(void)
     wl_list_init(&independents);
     xdg_shell = wlr_xdg_shell_create(dpy);
     wl_signal_add(&xdg_shell->events.new_surface, &new_xdg_surface);
-	layer_shell = wlr_layer_shell_v1_create(dpy);
-	wl_signal_add(&layer_shell->events.new_surface, &new_layer_shell_surface);
+    layer_shell = wlr_layer_shell_v1_create(dpy);
+    wl_signal_add(&layer_shell->events.new_surface, &new_layer_shell_surface);
 
     /* Use xdg_decoration protocol to negotiate server-side decorations */
     xdeco_mgr = wlr_xdg_decoration_manager_v1_create(dpy);
@@ -1213,7 +1216,6 @@ void activatex11(struct wl_listener *listener, void *data)
 
 void createnotifyx11(struct wl_listener *listener, void *data)
 {
-    printf("x11 stuff ya\n");
     struct wlr_xwayland_surface *xwayland_surface = data;
     Client *c;
 
@@ -1250,7 +1252,6 @@ Atom getatom(xcb_connection_t *xc, const char *name)
 
 void xwaylandready(struct wl_listener *listener, void *data)
 {
-    printf("ready\n");
     xcb_connection_t *xc = xcb_connect(xwayland->display_name, NULL);
     int err = xcb_connection_has_error(xc);
     if (err) {
