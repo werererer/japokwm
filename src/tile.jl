@@ -1,27 +1,8 @@
 module Layouts
 import Statistics
 include("translationLayer.jl")
-
-# from 0-1
-struct Container
-    x :: Cdouble
-    y :: Cdouble
-    width :: Cdouble
-    height :: Cdouble
-end
-
-mutable struct Monitor
-    m :: Container # monitor area
-    w :: Container # window area
-    tagset :: Int
-    mfact :: Float64
-    nmaster :: Int
-end
-
-struct cContainerArr
-    container :: Ptr{Container}
-    size :: Cint
-end
+include("coreUtils.jl")
+include("parseLayout.jl")
 
 function add(box :: Container)
     ccall((:addBox, corePath), Cvoid, (Cint, Cint, Cint, Cint), 3, 3, 4, 5)
@@ -210,43 +191,12 @@ function resizeThisAll(n :: Float64, d :: Direction)
 end
 
 function tile(n :: Int) :: Ptr{cContainerArr}
-    global layoutData
-
-    layoutData = [
-                  [
-                   Container(0, 0, 1, 1);
-                  ],
-                  [
-                   Container(0, 0, 1/2, 1),
-                   Container(1/2, 0, 1/2, 1),
-                  ],
-                  [
-                   Container(0, 0, 1/2, 1),
-                   Container(1/2, 0, 1/2, 1/2),
-                   Container(1/2, 1/2, 1/2, 1/2),
-                  ],
-                  [
-                   Container(0, 0, 1/2, 1),
-                   Container(1/2, 0, 1/2, 1/3),
-                   Container(1/2, 1/3, 1/2, 1/3),
-                   Container(1/2, 2/3, 1/2, 1/3),
-                  ],
-                  [
-                   Container(0  , 0  , 1/2, 1  ),
-                   Container(1/2, 0  , 1/2, 1/4),
-                   Container(1/2, 1/4, 1/2, 1/4),
-                   Container(1/2, 2/4, 1/2, 1/4),
-                   Container(1/2, 3/4, 1/2, 1/4),
-                  ],
-                 ]
+    global layoutData = getLayout("tile")
     return update(n)
 end
 
 function monocle(n :: Int) :: Ptr{cContainerArr}
-    global layoutData = [[
-            Container(1/3, 1/2, 2/3, 1/2)
-           ]]
-
+    global layoutData = getLayout("monocle")
     return update(n)
 end
 
