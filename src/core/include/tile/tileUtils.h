@@ -1,6 +1,6 @@
 #ifndef TILEUTILS
 #define TILEUTILS
-#include "coreUtils.h"
+#include "utils/coreUtils.h"
 #include "client.h"
 #include <julia.h>
 #include "tile/tileTexture.h"

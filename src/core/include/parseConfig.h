@@ -1,7 +1,7 @@
 #ifndef PARSE_CONFIG_H
 #define PARSE_CONFIG_H
 
-#include "parseConfigUtils.h"
+#include "utils/parseConfigUtils.h"
 
 /*
  * This file uses parseconfig to parse the config files

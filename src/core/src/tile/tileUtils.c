@@ -1,11 +1,11 @@
 #include "tile/tileUtils.h"
-#include "coreUtils.h"
 #include <client.h>
 #include <julia.h>
 #include <string.h>
 #include <sys/param.h>
 #include <wlr/types/wlr_foreign_toplevel_management_v1.h>
 
+#include "utils/coreUtils.h"
 #include "parseConfig.h"
 #include "tile/tileTexture.h"
 

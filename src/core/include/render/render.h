@@ -1,6 +1,6 @@
 #ifndef RENDER_H
 #define RENDER_H
-#include "coreUtils.h"
+#include "utils/coreUtils.h"
 #include "client.h"
 #include <wayland-util.h>
 #include <wlr/types/wlr_matrix.h>

@@ -9,4 +9,5 @@ protocols = files(
     protocolsDir + '/wlr-layer-shell-unstable-v1.xml',
     protocolsDir + '/xdg-shell.xml',
     )
+root = meson.source_root()
 subdir('src')

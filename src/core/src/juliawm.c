@@ -47,7 +47,7 @@
 #include "tile/tile.h"
 #include "tile/tileUtils.h"
 #include "client.h"
-#include "coreUtils.h"
+#include "utils/coreUtils.h"
 #include "parseConfig.h"
 #include "parseConfigUtils.h"
 #include "render/render.h"

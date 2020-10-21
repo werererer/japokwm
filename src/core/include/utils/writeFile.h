@@ -5,9 +5,11 @@
 #include <fcntl.h>
 #include <wlr/types/wlr_box.h>
 #include "utils/stringUtils.h"
+#include "utils/coreUtils.h"
+#include "render/render.h"
 
 char *layoutBegin = "layout =";
-int writeContainerToFile(char *file, struct wlr_fbox *box);
-void writeArrayToFile(char *file, struct wlr_fbox ***arr, 
+void writeContainerToFile(char *file, struct wlr_fbox *box);
+void writeContainerArrayToFile(char *layout, Container **pTexture,
         size_t width, size_t height);
 #endif /* WRITE_FILE_H */

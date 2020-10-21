@@ -5,7 +5,12 @@
 
 static struct wlr_box getPosition(struct posTexture *pTexture)
 {
-    return NULL;
+    struct wlr_box container;
+    container.x = pTexture->x;
+    container.y = pTexture->y;
+    container.width = pTexture->texture->width;
+    container.height = pTexture->texture->height;
+    return container;
 }
 
 struct posTexture* createTextbox(struct wlr_box box, float boxColor[],
@@ -84,10 +89,10 @@ void createOverlay()
 
 void writeOverlay(char *file)
 {
-    Client *c;
-    struct wlr_list *list = &renderData.textures;
-    wlr_list_for_each(c, &stack, slink) {
-        struct wlr_box box = getPosition(wlr_list_peek(list));
-        writeArrayToFile(file, arr, 0, 0);
-    }
+    // TODO write logic
+    /* struct posTexture *pTexture; */
+    /* struct wlr_list *listPtr,list = renderData.textures; */
+    /* listPtr = &list; */
+
+    /* writeContainerArrayToFile(file, listPtr, length); */
 }

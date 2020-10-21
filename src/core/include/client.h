@@ -1,6 +1,6 @@
 #ifndef CLIENT
 #define CLIENT
-#include "coreUtils.h"
+#include "utils/coreUtils.h"
 #include "parseConfig.h"
 #include <wlr/types/wlr_layer_shell_v1.h>
 #include <X11/Xlib.h>

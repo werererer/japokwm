@@ -2,6 +2,7 @@
 #include "utils/stringUtils.h"
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
 
 static int writeToFile(char *file, char *content)
 {
@@ -20,12 +21,6 @@ static int writeToFile(char *file, char *content)
     return 0;
 }
 
-static int writeLnToFile(char *file, char *content)
-{
-    strcat(content, "\n");
-    return writeToFile(file, content);
-}
-
 static int writeDoubleToFile(char *file, double d)
 {
     int filedesc = open("test.txt", O_WRONLY);
@@ -34,44 +29,33 @@ static int writeDoubleToFile(char *file, double d)
     return writeToFile(file, content);
 }
 
-int writeContainerToFile(char *file, struct wlr_fbox *box)
+void writeContainerToFile(char *file, struct wlr_fbox *box)
 {
-    char *container = "Container";
-    writeToFile(file, container);
-    writeToFile(file, "(");
     writeDoubleToFile(file, box->x);
-    writeToFile(file, ",");
+    writeToFile(file, " ");
     writeDoubleToFile(file, box->y);
-    writeToFile(file, ",");
+    writeToFile(file, " ");
     writeDoubleToFile(file, box->width);
-    writeToFile(file, ",");
+    writeToFile(file, " ");
     writeDoubleToFile(file, box->height);
-    writeToFile(file, ")");
+    writeToFile(file, "\n");
 }
 
-static int writeIndentToFile(char *file, int indentLevel)
-{
-    char *indent = "    ";
-    repeatString(indent, 5);
-    return writeToFile(file, indent);
-}
-
-void writeArrayToFile(char *file, struct wlr_fbox ***arr, 
+void writeContainerArrayToFile(char *layout, Container **pTexture, 
         size_t width, size_t height)
 {
-    writeLnToFile(file, layoutBegin);
+    char base[64] = "layouts";
+    char file[64];
+    char c[NUM_DIGITS];
+
+    joinPath(base, layout);
     for (int i = 0; i < height; i++) {
-        writeIndentToFile(file, 1);
-        writeLnToFile(file, "[");
+        strcpy(file, base);
+        intToString(c, i);
+        joinPath(file, c);
+        mkdir(file, 755);
         for (int j = 0; j < width; j++) {
-            writeIndentToFile(file, 2);
-            writeLnToFile(file, "[");
-            writeIndentToFile(file, 3);
             writeContainerToFile(file, arr[i][j]);
-            writeIndentToFile(file, 2);
-            writeLnToFile(file, "]");
         }
-        writeIndentToFile(file, 1);
-        writeLnToFile(file, "]");
     }
 }
