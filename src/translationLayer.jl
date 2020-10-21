@@ -43,7 +43,7 @@ function clientPos() :: Int
     return ccall((:clientPos, corePath), Cint, ()) + 1
 end
 
-function view(ui)
+function view(ui :: Int)
     ccall((:view, corePath), Cvoid, (Cint,), ui)
 end
 

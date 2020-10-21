@@ -51,7 +51,7 @@ keys = [
         ["$mod o",           ()->  Layouts.vsplitThisContainer(1/2)                 ],
         ["$mod i",           ()->  Layouts.mergeContainer(1, 1, 2)                 ],
         ["$mod space",       ()->  setLayout()            ],
-        ["$mod g",           ()->  setLayout(1)  ],
+        ["$mod m",           ()->  setLayout(1)  ],
         ["$mod t",           ()->  setLayout(2)  ],
         ["$mod u",           ()->  setLayout(3)  ],
         ["$mod l",           ()->  Layouts.resizeThisAll(1/10, Layouts.RIGHT)        ],
@@ -63,6 +63,15 @@ keys = [
         ["$mod 0",           ()->  view(~0)               ],
         ["$mod Return",      ()->  zoom()                 ],
         ["$mod s",           ()->  toggleOverlay()                 ],
+        ["$mod 1",           ()->  view(1)                 ],
+        ["$mod 2",           ()->  view(2)                 ],
+        ["$mod 3",           ()->  view(4)                 ],
+        ["$mod 4",           ()->  view(8)                 ],
+        ["$mod 5",           ()->  view(16)                 ],
+        ["$mod 6",           ()->  view(32)                 ],
+        ["$mod 7",           ()->  view(64)                 ],
+        ["$mod 8",           ()->  view(128)                 ],
+        ["$mod 0",           ()->  view(255)                 ],
        ]
 
 buttons = [
