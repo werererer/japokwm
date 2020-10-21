@@ -58,7 +58,13 @@ void arrange(Monitor *m, bool reset)
             }
 
             // create overlay
-            createNewOverlay();
+
+            if (overlay) {
+                createNewOverlay();
+            } else {
+                wlr_list_clear(&renderData.textures);
+            }
+
         } else {
             printf("Empty function with symbol: %s\n", m->lt.symbol);
         }
@@ -85,6 +91,13 @@ void focusclient(Client *old, Client *c, bool lift)
     if (c == old)
         return;
 
+    if (c != old && old) {
+        switch (c->type) {
+            case XDGShell:
+                wlr_xdg_toplevel_set_activated(old->surface.xdg, 0);
+                break;
+        }
+    }
     /* Update wlroots' keyboard focus */
     if (!c) {
         /* With no client, all we have left is to clear focus */
