@@ -48,8 +48,8 @@
 #include "tile/tileUtils.h"
 #include "client.h"
 #include "utils/coreUtils.h"
+#include "utils/parseConfigUtils.h"
 #include "parseConfig.h"
-#include "parseConfigUtils.h"
 #include "render/render.h"
 
 /* macros */

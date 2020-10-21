@@ -3,15 +3,16 @@
 #include <wayland-util.h>
 #include <wlr/backend.h>
 
-static struct wlr_box getPosition(struct posTexture *pTexture)
-{
-    struct wlr_box container;
-    container.x = pTexture->x;
-    container.y = pTexture->y;
-    container.width = pTexture->texture->width;
-    container.height = pTexture->texture->height;
-    return container;
-}
+// TODO: rewrite getPosition
+/* static struct wlr_box getPosition(struct posTexture *pTexture) */
+/* { */
+/*     struct wlr_box container; */
+/*     container.x = pTexture->x; */
+/*     container.y = pTexture->y; */
+/*     container.width = pTexture->texture->width; */
+/*     container.height = pTexture->texture->height; */
+/*     return container; */
+/* } */
 
 struct posTexture* createTextbox(struct wlr_box box, float boxColor[],
                                  float textColor[], char* text)

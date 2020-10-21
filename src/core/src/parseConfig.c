@@ -1,5 +1,5 @@
-#include "parseConfigUtils.h"
 #include "parseConfig.h"
+#include "utils/parseConfigUtils.h"
 #include <julia.h>
 
 int sloppyFocus;
