@@ -59,8 +59,6 @@ keys = [
         ["$mod parenright",  ()->  tag(~0)                ],
         ["$mod greater",     ()->  tagmon(+1)             ],
         ["$mod less",        ()->  tagmon(-1)             ],
-        ["$mod Tab",         ()->  view()                 ],
-        ["$mod 0",           ()->  view(~0)               ],
         ["$mod Return",      ()->  zoom()                 ],
         ["$mod s",           ()->  toggleOverlay()                 ],
         ["$mod 1",           ()->  view(1)                 ],
