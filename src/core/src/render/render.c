@@ -9,7 +9,7 @@ struct wl_list independents;
 struct renderData renderData;
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data);
-static void renderClients(Monitor *m);
+static void renderClients(struct monitor *m);
 static void renderIndependents(struct wlr_output *output);
 static void renderTexture(void *texture);
 
@@ -70,9 +70,9 @@ static void render(struct wlr_surface *surface, int sx, int sy, void *data)
     wlr_surface_send_frame_done(surface, rdata->when);
 }
 
-static void renderClients(Monitor *m)
+static void renderClients(struct monitor *m)
 {
-    Client *c, *sel = selClient();
+    struct client *c, *sel = selClient();
     const float *color;
     double ox, oy;
     int i, w, h;
@@ -145,7 +145,7 @@ static void renderTexture(void *texture)
 
 static void renderIndependents(struct wlr_output *output)
 {
-    Client *c;
+    struct client *c;
     struct renderData rdata;
     struct wlr_box geom;
 
@@ -173,12 +173,12 @@ static void renderIndependents(struct wlr_output *output)
 /* called from a wl_signal in setup() */
 void renderFrame(struct wl_listener *listener, void *data)
 {
-    Client *c;
+    struct client *c;
     int render = 1;
 
     /* This function is called every time an output is ready to display a frame,
      * generally at the output's refresh rate (e.g. 60Hz). */
-    Monitor *m = wl_container_of(listener, m, frame);
+    struct monitor *m = wl_container_of(listener, m, frame);
 
     if (selMon) {
         struct wlr_box b = selMon->m;

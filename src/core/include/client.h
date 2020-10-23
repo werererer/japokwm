@@ -6,7 +6,7 @@
 #include <X11/Xlib.h>
 #include <wlr/xwayland.h>
 
-typedef struct {
+struct client {
     struct wl_list link;
     struct wl_list flink;
     struct wl_list slink;
@@ -21,20 +21,19 @@ typedef struct {
     struct wl_listener unmap;
     struct wl_listener destroy;
     struct wlr_box geom;  /* layout-relative, includes border */
-    Monitor *mon;
+    struct monitor *mon;
     unsigned int type;
     int bw;
     unsigned int tags;
     int isfloating;
     uint32_t resize; /* configure serial of a pending resize */
-} Client;
+};
 
-void applybounds(Client *c, struct wlr_box bbox);
-void applyrules(Client *c);
-void foreachClientDo(void (*renderClients)(Monitor *m), Monitor *m);
-Client *selClient();
-bool visibleon(Client *c, Monitor *m);
-bool visibleon(Client *c, Monitor *m);
+void applybounds(struct client *c, struct wlr_box bbox);
+void applyrules(struct client *c);
+void foreachClientDo(void (*renderClients)(struct monitor *m), struct monitor *m);
+struct client *selClient();
+bool visibleon(struct client *c, struct monitor *m);
 
 extern struct wl_list clients; /* tiling order */
 extern struct wl_list focus_stack;  /* focus order */
@@ -42,8 +41,8 @@ extern struct wl_list stack;   /* stacking z-order */
 extern struct wlr_output_layout *output_layout;
 extern struct wlr_box sgeom;
 extern struct wl_list mons;
-extern Monitor *selMon;
+extern struct monitor *selMon;
 extern Atom netatom[NetLast];
 
-struct wlr_surface *getWlrSurface(Client *c);
+struct wlr_surface *getWlrSurface(struct client *c);
 #endif

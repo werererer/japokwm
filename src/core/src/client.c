@@ -9,11 +9,11 @@ struct wl_list stack;   /* stacking z-order */
 struct wlr_output_layout *output_layout;
 struct wlr_box sgeom;
 struct wl_list mons;
-Monitor *selMon = NULL;
+struct monitor *selMon = NULL;
 Atom netatom[NetLast];
 
 /* function implementations */
-void applybounds(Client *c, struct wlr_box bbox)
+void applybounds(struct client *c, struct wlr_box bbox)
 {
     /* set minimum possible */
     c->geom.width = MAX(1, c->geom.width);
@@ -30,7 +30,7 @@ void applybounds(Client *c, struct wlr_box bbox)
 }
 
 void
-updatewindowtype(Client *c)
+updatewindowtype(struct client *c)
 {
 	size_t i;
 	for (i = 0; i < c->surface.xwayland->window_type_len; i++)
@@ -41,12 +41,12 @@ updatewindowtype(Client *c)
 			c->isfloating = 1;
 }
 
-void applyrules(Client *c)
+void applyrules(struct client *c)
 {
     const char *appid, *title;
     unsigned int i, newtags = 0;
     const Rule *r;
-    Monitor *m; 
+    struct monitor *m; 
     /* rule matching */
     c->isfloating = false;
     switch (c->type) {
@@ -84,15 +84,15 @@ void applyrules(Client *c)
     setmon(c, selMon, newtags);
 }
 
-Client *selClient()
+struct client *selClient()
 {
-    Client *c = wl_container_of(focus_stack.next, c, flink);
+    struct client *c = wl_container_of(focus_stack.next, c, flink);
 	if (!visibleon(c, selMon))
         return NULL;
     return c;
 }
 
-struct wlr_surface *getWlrSurface(Client *c)
+struct wlr_surface *getWlrSurface(struct client *c)
 {
     switch (c->type) {
         case XDGShell:
@@ -110,7 +110,7 @@ struct wlr_surface *getWlrSurface(Client *c)
     }
 }
 
-bool visibleon(Client *c, Monitor *m)
+bool visibleon(struct client *c, struct monitor *m)
 {
     if (m && c) {
         bool sameMon = c->mon == m;

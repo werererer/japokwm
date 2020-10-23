@@ -5,16 +5,16 @@
 #include <julia.h>
 #include "tile/tileTexture.h"
 
-Client *focustop(Monitor *m);
+struct client *focustop(struct monitor *m);
 jl_value_t* getWlrBox(struct wlr_box w);
-void arrange(Monitor *m, bool reset);
+void arrange(struct monitor *m, bool reset);
 void arrangeThis(bool reset);
-void focusclient(Client *old, Client *c, bool lift);
-void setmon(Client *c, Monitor *m, unsigned int newtags);
-void resize(Client *c, int x, int y, int w, int h, int interact);
+void focusclient(struct client *old, struct client *c, bool lift);
+void setmon(struct client *c, struct monitor *m, unsigned int newtags);
+void resize(struct client *c, int x, int y, int w, int h, int interact);
 void updateLayout();
 int thisTiledClientCount();
-int tiledClientCount(Monitor *m);
+int tiledClientCount(struct monitor *m);
 int clientPos();
 
 // this exposes the overlay variable to julia

@@ -42,7 +42,7 @@ typedef struct {
     jl_function_t *arrange;
 } Layout;
 
-struct Monitor {
+struct monitor {
     struct wl_list link;
     struct wlr_output *wlr_output;
     struct wl_listener frame;
@@ -56,14 +56,14 @@ struct Monitor {
     int nmaster;
 };
 
-typedef struct {
+struct keyboard {
     struct wl_list link;
     struct wlr_input_device *device;
 
     struct wl_listener modifiers;
     struct wl_listener key;
     struct wl_listener destroy;
-} Keyboard;
+};
 
 /* datastructures for parsing julia */
 typedef struct {

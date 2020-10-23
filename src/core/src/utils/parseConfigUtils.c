@@ -149,7 +149,7 @@ Key getConfigKey(char *name)
     return key;
 }
 
-jl_value_t* toJlMonitor(char *name, Monitor *m)
+jl_value_t* toJlMonitor(char *name, struct monitor *m)
 {
     jl_datatype_t *t = (jl_datatype_t *)jl_eval_string(name);
     jl_value_t *sM = getWlrBox(m->m);

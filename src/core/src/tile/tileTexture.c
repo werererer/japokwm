@@ -14,7 +14,7 @@
 /*     return container; */
 /* } */
 
-struct posTexture* createTextbox(struct wlr_box box, float boxColor[],
+struct posTexture *createTextbox(struct wlr_box box, float boxColor[],
                                  float textColor[], char* text)
 {
     cairo_format_t cFormat = CAIRO_FORMAT_ARGB32;
@@ -72,7 +72,7 @@ void createNewOverlay()
 
 void createOverlay()
 {
-    Client *c;
+    struct client *c;
 
     int i = 1;
     // TODO This number shouldn't be hard coded

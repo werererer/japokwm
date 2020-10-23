@@ -17,13 +17,13 @@ struct cLayoutArr {
   int size;
 };
 
-void arrange(Monitor *m, bool reset)
+void arrange(struct monitor *m, bool reset)
 {
     /* Get effective monitor geometry to use for window area */
     m->m = *wlr_output_layout_get_box(output_layout, m->wlr_output);
     m->w = m->m;
     if (m->lt.arrange) {
-        Client *c;
+        struct client *c;
         jl_value_t *v = NULL;
 
         int n = tiledClientCount(m);
@@ -78,7 +78,7 @@ void arrangeThis(bool reset)
     arrange(selMon, reset);
 }
 
-static void unfocusClient(Client *c)
+static void unfocusClient(struct client *c)
 {
     if (c) {
         switch (c->type) {
@@ -93,7 +93,7 @@ static void unfocusClient(Client *c)
     }
 }
 
-void focusclient(Client *old, Client *c, bool lift)
+void focusclient(struct client *old, struct client *c, bool lift)
 {
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat);
 
@@ -131,19 +131,19 @@ void focusclient(Client *old, Client *c, bool lift)
     }
 }
 
-Client* focustop(Monitor *m)
+struct client *focustop(struct monitor *m)
 {
-    Client *c;
+    struct client *c;
     wl_list_for_each(c, &focus_stack, flink)
         if (visibleon(c, m))
             return c;
     return NULL;
 }
 
-void setmon(Client *c, Monitor *m, unsigned int newtags)
+void setmon(struct client *c, struct monitor *m, unsigned int newtags)
 {
-    Monitor *oldmon = c->mon;
-    Client *oldsel = selClient();
+    struct monitor *oldmon = c->mon;
+    struct client *oldsel = selClient();
 
     if (oldmon == m)
         return;
@@ -165,7 +165,7 @@ void setmon(Client *c, Monitor *m, unsigned int newtags)
 }
 
 void
-resize(Client *c, int x, int y, int w, int h, int interact)
+resize(struct client *c, int x, int y, int w, int h, int interact)
 {
     /*
      * Note that I took some shortcuts here. In a more fleshed-out
@@ -207,9 +207,9 @@ int thisTiledClientCount()
     return tiledClientCount(selMon);
 }
 
-int tiledClientCount(Monitor *m)
+int tiledClientCount(struct monitor *m)
 {
-    Client *c;
+    struct client *c;
     int n = 0;
 
     wl_list_for_each(c, &clients, link)
@@ -220,8 +220,8 @@ int tiledClientCount(Monitor *m)
 
 int clientPos()
 {
-    Monitor *m = selMon;
-    Client *c;
+    struct monitor *m = selMon;
+    struct client *c;
     int n = 0;
 
     wl_list_for_each(c, &clients, link) {
