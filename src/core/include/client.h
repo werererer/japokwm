@@ -31,7 +31,6 @@ struct client {
 
 void applybounds(struct client *c, struct wlr_box bbox);
 void applyrules(struct client *c);
-void foreachClientDo(void (*renderClients)(struct monitor *m), struct monitor *m);
 struct client *selClient();
 bool visibleon(struct client *c, struct monitor *m);
 
@@ -42,7 +41,6 @@ extern struct wlr_output_layout *output_layout;
 extern struct wlr_box sgeom;
 extern struct wl_list mons;
 extern struct monitor *selMon;
-extern Atom netatom[NetLast];
 
 struct wlr_surface *getWlrSurface(struct client *c);
 #endif

@@ -165,7 +165,6 @@ static struct wl_listener request_set_sel = {.notify = setsel};
 
 static void activatex11(struct wl_listener *listener, void *data);
 static void createnotifyx11(struct wl_listener *listener, void *data);
-static Atom getatom(xcb_connection_t *xc, const char *name);
 static void xwaylandready(struct wl_listener *listener, void *data);
 static struct wl_listener new_xwayland_surface = {.notify = createnotifyx11};
 static struct wl_listener xwayland_ready = {.notify = xwaylandready};
@@ -607,7 +606,8 @@ void keypress(struct wl_listener *listener, void *data)
                     struct wlr_session *session =
                         wlr_backend_get_session(backend);
                     if (session) {
-                        wlr_session_change_vt(session, 1);
+                        unsigned vt = syms[i] - XKB_KEY_XF86Switch_VT_1 + 1;
+                        wlr_session_change_vt(session, vt);
                     }
                 }
             }
@@ -1248,20 +1248,6 @@ void createnotifyx11(struct wl_listener *listener, void *data)
     wl_signal_add(&xwayland_surface->events.destroy, &c->destroy);
 }
 
-Atom getatom(xcb_connection_t *xc, const char *name)
-{
-    Atom atom = 0;
-    xcb_intern_atom_cookie_t cookie;
-    xcb_intern_atom_reply_t *reply;
-
-    cookie = xcb_intern_atom(xc, 0, strlen(name), name);
-    if ((reply = xcb_intern_atom_reply(xc, cookie, NULL)))
-        atom = reply->atom;
-    free(reply);
-
-    return atom;
-}
-
 void xwaylandready(struct wl_listener *listener, void *data)
 {
     xcb_connection_t *xc = xcb_connect(xwayland->display_name, NULL);
@@ -1270,13 +1256,6 @@ void xwaylandready(struct wl_listener *listener, void *data)
         fprintf(stderr, "xcb_connect to X server failed with code %d\n. Continuing with degraded functionality.\n", err);
         return;
     }
-
-    /* Collect atoms we are interested in.  If getatom returns 0, we will
-     * not detect that window type. */
-    netatom[NetWMWindowTypeDialog] = getatom(xc, "_NET_WM_WINDOW_TYPE_DIALOG");
-    netatom[NetWMWindowTypeSplash] = getatom(xc, "_NET_WM_WINDOW_TYPE_SPLASH");
-    netatom[NetWMWindowTypeUtility] = getatom(xc, "_NET_WM_WINDOW_TYPE_TOOLBAR");
-    netatom[NetWMWindowTypeToolbar] = getatom(xc, "_NET_WM_WINDOW_TYPE_UTILITY");
 
     /* assign the one and only seat */
     wlr_xwayland_set_seat(xwayland, seat);

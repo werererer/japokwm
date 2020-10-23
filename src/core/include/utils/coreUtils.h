@@ -23,8 +23,6 @@
 /* enums */
 enum { CurNormal, CurMove, CurResize }; /* cursor */
 enum { XDGShell, X11Managed, X11Unmanaged, LayerShell }; /* client types */
-enum { NetWMWindowTypeDialog, NetWMWindowTypeSplash, NetWMWindowTypeToolbar,
-    NetWMWindowTypeUtility, NetLast }; /* EWMH atoms */
 
 typedef struct Monitor Monitor;
 typedef struct wlr_fbox Container;

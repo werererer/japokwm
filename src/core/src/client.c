@@ -10,7 +10,6 @@ struct wlr_output_layout *output_layout;
 struct wlr_box sgeom;
 struct wl_list mons;
 struct monitor *selMon = NULL;
-Atom netatom[NetLast];
 
 /* function implementations */
 void applybounds(struct client *c, struct wlr_box bbox)
@@ -27,18 +26,6 @@ void applybounds(struct client *c, struct wlr_box bbox)
         c->geom.x = bbox.x;
     if (c->geom.y + c->geom.height + 2 * c->bw <= bbox.y)
         c->geom.y = bbox.y;
-}
-
-void
-updatewindowtype(struct client *c)
-{
-	size_t i;
-	for (i = 0; i < c->surface.xwayland->window_type_len; i++)
-		if (c->surface.xwayland->window_type[i] == netatom[NetWMWindowTypeDialog] ||
-				c->surface.xwayland->window_type[i] == netatom[NetWMWindowTypeSplash] ||
-				c->surface.xwayland->window_type[i] == netatom[NetWMWindowTypeToolbar] ||
-				c->surface.xwayland->window_type[i] == netatom[NetWMWindowTypeUtility])
-			c->isfloating = 1;
 }
 
 void applyrules(struct client *c)
@@ -60,7 +47,6 @@ void applyrules(struct client *c)
             break;
         case X11Managed:
         case X11Unmanaged:
-            updatewindowtype(c);
             appid = c->surface.xwayland->class;
             title = c->surface.xwayland->title;
             break;
@@ -87,7 +73,7 @@ void applyrules(struct client *c)
 struct client *selClient()
 {
     struct client *c = wl_container_of(focus_stack.next, c, flink);
-	if (!visibleon(c, selMon))
+    if (!visibleon(c, selMon))
         return NULL;
     return c;
 }
