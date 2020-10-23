@@ -29,14 +29,6 @@ enum { NetWMWindowTypeDialog, NetWMWindowTypeSplash, NetWMWindowTypeToolbar,
 typedef struct Monitor Monitor;
 typedef struct wlr_fbox Container;
 
-typedef union {
-    int i;
-    unsigned int ui;
-    float f;
-    const void *v;
-} Arg;
-
-
 typedef struct {
     char *symbol;
     jl_function_t *arrange;
@@ -80,22 +72,22 @@ typedef struct {
 typedef uint32_t xkb_keysym_t;
 
 /* rules */
-typedef struct {
+struct rule {
     const char *id;
     const char *title;
     int tags;
     int isfloating;
     int monitor;
-} Rule;
+};
 
-typedef struct {
+struct monRule {
     const char *name;
     float mfact;
     int nmaster;
     float scale;
     Layout *lt;
     enum wl_output_transform rr;
-} MonitorRule;
+};
 extern struct wlr_seat *seat;
 
 // breaking codestyle to abide by the wlroots style

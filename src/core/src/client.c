@@ -45,7 +45,7 @@ void applyrules(struct client *c)
 {
     const char *appid, *title;
     unsigned int i, newtags = 0;
-    const Rule *r;
+    const struct rule *r;
     struct monitor *m; 
     /* rule matching */
     c->isfloating = false;

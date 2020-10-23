@@ -8,8 +8,8 @@ void initConfig(char *path);
 // get
 Key getConfigKey(char *name);
 Layout getConfigLayout(char *name);
-MonitorRule getConfigMonRule(char *name);
-Rule getConfigRule(char *name);
+struct monRule getConfigMonRule(char *name);
+struct rule getConfigRule(char *name);
 char* getConfigStr(char *name);
 float getConfigFloat(char *name);
 int getConfigInt(char *name);
@@ -24,8 +24,8 @@ void getConfigFloatArr(float *resArr, char *name);
 void getConfigIntArr(int *resArr, char *name);
 void getConfigLayoutArr(Layout *layouts, char *name);
 void getConfigKeyArr(Key *keys, char *name);
-void getConfigRuleArr(Rule *rules, char *name);
-void getConfigMonRuleArr(MonitorRule *monrules, char *name);
+void getConfigRuleArr(struct rule *rules, char *name);
+void getConfigMonRuleArr(struct monRule *monrules, char *name);
 
 //utils
 void arrayPosToStr(char *resStr, char *varName, int i);

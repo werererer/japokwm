@@ -37,7 +37,6 @@
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_output_v1.h>
 #include <wlr/types/wlr_xdg_shell.h>
-#include <wlr/types/wlr_foreign_toplevel_management_v1.h>
 #include <wlr/util/log.h>
 #include <X11/Xlib.h>
 #include <wlr/xwayland.h>
@@ -60,7 +59,7 @@
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
 
 /* monitors */
-static const MonitorRule monrules[] = {
+static const struct monRule monrules[] = {
     /* name       mfact nmaster scale layout       rotate/reflect */
     /* example of a HiDPI laptop monitor:
     { "eDP-1",    0.5,  1,      2,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL },
@@ -79,7 +78,7 @@ typedef struct {
 /* function declarations */
 void axisnotify(struct wl_listener *listener, void *data);
 void buttonpress(struct wl_listener *listener, void *data);
-void chvt(const Arg *arg);
+void chvt(unsigned int ui);
 void cleanup(void);
 void cleanupkeyboard(struct wl_listener *listener, void *data);
 void cleanupmon(struct wl_listener *listener, void *data);
@@ -122,8 +121,8 @@ void sigchld(int unused);
 void tag(unsigned int ui);
 void tagmon(int i);
 void toggleFloating();
-void toggletag(const Arg *arg);
-void toggleview(const Arg *arg);
+void toggletag(unsigned int ui);
+void toggleview(unsigned int ui);
 void unmapnotify(struct wl_listener *listener, void *data);
 void view(unsigned ui);
 struct client *xytoclient(double x, double y);
@@ -231,9 +230,9 @@ void buttonpress(struct wl_listener *listener, void *data)
             event->time_msec, event->button, event->state);
 }
 
-void chvt(const Arg *arg)
+void chvt(unsigned int ui)
 {
-    wlr_session_change_vt(wlr_backend_get_session(backend), arg->ui);
+    wlr_session_change_vt(wlr_backend_get_session(backend), ui);
 }
 
 void cleanup(void)
@@ -324,7 +323,7 @@ void createmon(struct wl_listener *listener, void *data)
      * monitor) becomes available. */
     struct wlr_output *wlr_output = data;
     struct monitor *m;
-    const MonitorRule *r;
+    const struct monRule *r;
 
     /* The mode is a tuple of (width, height, refresh rate), and each
      * monitor supports only a specific set of modes. We just pick the
@@ -1106,13 +1105,13 @@ void toggleFloating()
     setfloating(sel, !sel->isfloating /* || sel->isfixed */);
 }
 
-void toggletag(const Arg *arg)
+void toggletag(unsigned int ui)
 {
     unsigned int newtags;
     struct client *sel = selClient();
     if (!sel)
         return;
-    newtags = sel->tags ^ (arg->ui & TAGMASK);
+    newtags = sel->tags ^ (ui & TAGMASK);
     if (newtags) {
         sel->tags = newtags;
         focusclient(sel, focustop(selMon), 1);
@@ -1120,10 +1119,10 @@ void toggletag(const Arg *arg)
     }
 }
 
-void toggleview(const Arg *arg)
+void toggleview(unsigned int ui)
 {
     struct client *sel = selClient();
-    unsigned int newtagset = selMon->tagset[selMon->seltags] ^ (arg->ui & TAGMASK);
+    unsigned int newtagset = selMon->tagset[selMon->seltags] ^ (ui & TAGMASK);
 
     if (newtagset) {
         selMon->tagset[selMon->seltags] = newtagset;

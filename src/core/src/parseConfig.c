@@ -13,7 +13,7 @@ float selOverlayColor[4];
 float selTextColor[4];
 
 char *tags[MAXLEN];
-Rule rules[MAXLEN];
+struct rule rules[MAXLEN];
 Layout defaultLayout;
 Layout prevLayout;
 

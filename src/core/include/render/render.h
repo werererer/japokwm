@@ -6,15 +6,26 @@
 #include <wlr/types/wlr_matrix.h>
 #include <wlr/render/wlr_texture.h>
 
+
+typedef enum {
+    OVERLAY,
+    WORKSPACES,
+} renderDataType_t;
+
 struct renderData {
     struct wlr_output *output;
     struct timespec *when;
     int x, y; /* layout-relative */
+    /* textures that will be rendered with a new frame
+     * list should be filled with posTexture
+     * */
     struct wlr_list textures;
 };
 
 /* a texture at a given position */
 struct posTexture {
+    renderDataType_t dataType;
+    char *id;
     int x, y;
     struct wlr_texture *texture;
 };

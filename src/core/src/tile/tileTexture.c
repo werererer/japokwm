@@ -75,15 +75,16 @@ void createOverlay()
     struct client *c;
 
     int i = 1;
-    // TODO This number shouldn't be hard coded
     char text[NUM_DIGITS];
     wl_list_for_each(c, &stack, slink) {
         if (!visibleon(c, c->mon))
             continue;
 
         sprintf(text, "%i", i);
-        wlr_list_push(&renderData.textures,
-                createTextbox(c->geom, overlayColor, textColor, text));
+        struct posTexture *t = createTextbox(
+                c->geom, overlayColor, textColor, text);
+        t->dataType = OVERLAY;
+        wlr_list_push(&renderData.textures, t);
         i++;
     }
 }

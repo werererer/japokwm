@@ -20,11 +20,10 @@ extern float selTextColor[4];
 
 #define MAXLEN 15
 extern char *tags[MAXLEN];
-extern Rule rules[MAXLEN];
+extern struct rule rules[MAXLEN];
 
 extern Layout defaultLayout;
 extern Layout prevLayout;
-//extern MonitorRule monrules[MAXLEN];
 
 extern int repeatRate;
 extern int repeatDelay;

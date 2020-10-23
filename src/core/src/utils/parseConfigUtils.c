@@ -82,9 +82,9 @@ static jl_value_t* getWlrBox(struct wlr_box w)
     return str;
 }
 
-Rule getConfigRule(char *name)
+struct rule getConfigRule(char *name)
 {
-    Rule rule;
+    struct rule rule;
     int len = ARR_STRING_LENGTH(name);
     char execStr1[len];
     char execStr2[len];
@@ -106,9 +106,9 @@ Rule getConfigRule(char *name)
     return rule;
 }
 
-MonitorRule getConfigMonRule(char *name)
+struct monRule getConfigMonRule(char *name)
 {
-    MonitorRule monrule;
+    struct monRule monrule;
 
     int len = ARR_STRING_LENGTH(name);
     char execStr1[len];
@@ -205,7 +205,7 @@ void getConfigKeyArr(Key *keys, char *name)
     }
 }
 
-void getConfigRuleArr(Rule *rules, char *name)
+void getConfigRuleArr(struct rule *rules, char *name)
 {
     int len = jlArrLen(name);
     char execStr[ARR_STRING_LENGTH(name)];
@@ -227,7 +227,7 @@ void getConfigLayoutArr(Layout *layouts, char *name)
     }
 }
 
-void getConfigMonRuleArr(MonitorRule *monrules, char *name)
+void getConfigMonRuleArr(struct monRule *monrules, char *name)
 {
     int len = jlArrLen(name);
     char execStr[ARR_STRING_LENGTH(name)];
