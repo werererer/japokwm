@@ -22,8 +22,8 @@ extern float selTextColor[4];
 extern char *tags[MAXLEN];
 extern struct rule rules[MAXLEN];
 
-extern Layout defaultLayout;
-extern Layout prevLayout;
+extern struct layout defaultLayout;
+extern struct layout prevLayout;
 
 extern int repeatRate;
 extern int repeatDelay;

@@ -14,8 +14,8 @@ float selTextColor[4];
 
 char *tags[MAXLEN];
 struct rule rules[MAXLEN];
-Layout defaultLayout;
-Layout prevLayout;
+struct layout defaultLayout;
+struct layout prevLayout;
 
 //MonitorRule monrules[MAXLEN];
 
@@ -51,7 +51,7 @@ void updateConfig()
     repeatRate = getConfigInt("repeatRate");
     repeatDelay = getConfigInt("repeatDelay");
     defaultLayout = getConfigLayout("layout");
-    prevLayout = (Layout){.symbol = "", .arrange = NULL};
+    prevLayout = (struct layout){.symbol = "", .arrange = NULL};
 
     /* commands */
     termcmd = getConfigStr("termcmd");

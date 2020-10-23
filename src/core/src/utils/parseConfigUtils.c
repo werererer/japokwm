@@ -44,9 +44,9 @@ jl_function_t* getConfigFunc(char *name)
     return jl_eval_string(name);
 }
 
-Layout getConfigLayout(char *name)
+struct layout getConfigLayout(char *name)
 {
-    Layout layout;
+    struct layout layout;
     int len = ARR_STRING_LENGTH(name);
     char execStr1[len];
     char execStr2[len];
@@ -59,7 +59,7 @@ Layout getConfigLayout(char *name)
     return layout;
 }
 
-void setConfigLayoutSymbol(char *name, Layout l)
+void setConfiglayoutSymbol(char *name, struct layout l)
 {
     // add 4 for chars: ' = ' and \0
     int len = strlen(name) + strlen(l.symbol) + 4;
@@ -216,7 +216,7 @@ void getConfigRuleArr(struct rule *rules, char *name)
     }
 }
 
-void getConfigLayoutArr(Layout *layouts, char *name)
+void getConfigLayoutArr(struct layout *layouts, char *name)
 {
     int len = jlArrLen(name);
     char execStr[ARR_STRING_LENGTH(name)];

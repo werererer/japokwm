@@ -29,10 +29,10 @@ enum { NetWMWindowTypeDialog, NetWMWindowTypeSplash, NetWMWindowTypeToolbar,
 typedef struct Monitor Monitor;
 typedef struct wlr_fbox Container;
 
-typedef struct {
+struct layout {
     char *symbol;
     jl_function_t *arrange;
-} Layout;
+};
 
 struct monitor {
     struct wl_list link;
@@ -41,7 +41,7 @@ struct monitor {
     struct wl_listener destroy;
     struct wlr_box m;      /* monitor area, layout-relative */
     struct wlr_box w;      /* window area, layout-relative */
-    Layout lt;
+    struct layout lt;
     unsigned int seltags;
     unsigned int tagset[2];
     double mfact;
@@ -85,7 +85,7 @@ struct monRule {
     float mfact;
     int nmaster;
     float scale;
-    Layout *lt;
+    struct layout *lt;
     enum wl_output_transform rr;
 };
 extern struct wlr_seat *seat;
