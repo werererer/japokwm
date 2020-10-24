@@ -1,6 +1,7 @@
 /*
  * See LICENSE file for copyright and license details.
  */
+#include <assert.h>
 #include <string.h>
 #include <wayland-server-protocol.h>
 #define _POSIX_C_SOURCE 200809L
