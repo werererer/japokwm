@@ -55,9 +55,10 @@ struct posTexture *createTextbox(struct wlr_box box, float boxColor[],
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
 
-    struct posTexture *posTexture = calloc(1, sizeof(posTexture));
+    struct posTexture *posTexture = calloc(1, sizeof(*posTexture));
 
     posTexture->texture = cTexture;
+    posTexture->dataType = OVERLAY;
     posTexture->x = box.x;
     posTexture->y = box.y;
     return posTexture;
@@ -81,8 +82,7 @@ void createOverlay()
             continue;
 
         sprintf(text, "%i", i);
-        wlr_list_push(&renderData.textures, createTextbox(
-                c->geom, overlayColor, textColor, text));
+        wlr_list_push(&renderData.textures, createTextbox( c->geom, overlayColor, textColor, text));
         i++;
     }
 }
