@@ -89,6 +89,8 @@ static void unfocusClient(struct client *c)
             case X11Unmanaged:
                 wlr_xwayland_surface_activate(c->surface.xwayland, 0);
                 break;
+            default:
+                break;
         }
     }
 }
@@ -127,6 +129,8 @@ void focusclient(struct client *old, struct client *c, bool lift)
         case X11Managed:
         case X11Unmanaged:
             wlr_xwayland_surface_activate(c->surface.xwayland, 1);
+            break;
+        default:
             break;
     }
 }

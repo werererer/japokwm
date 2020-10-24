@@ -133,20 +133,20 @@ struct monitor *xytomon(double x, double y);
 void zoom();
 
 /* variables */
-static struct wl_display *dpy;
-static struct wlr_backend *backend;
-static struct wlr_compositor *compositor;
+static struct wl_display *dpy = NULL;
+static struct wlr_backend *backend = NULL;
+static struct wlr_compositor *compositor = NULL;
 
-static struct wlr_xdg_shell *xdg_shell;
-static struct wlr_layer_shell_v1 *layer_shell;
-static struct wlr_xdg_decoration_manager_v1 *xdeco_mgr;
+static struct wlr_xdg_shell *xdg_shell = NULL;
+static struct wlr_layer_shell_v1 *layer_shell = NULL;
+static struct wlr_xdg_decoration_manager_v1 *xdeco_mgr = NULL;
 
-static struct wlr_cursor *cursor;
-static struct wlr_xcursor_manager *cursor_mgr;
+static struct wlr_cursor *cursor = NULL;
+static struct wlr_xcursor_manager *cursor_mgr = NULL;
 
 static struct wl_list keyboards;
 static unsigned int cursor_mode;
-static struct client *grabc;
+static struct client *grabc = NULL;
 static int grabcx, grabcy; /* client-relative */
 
 /* global event handlers */
@@ -169,7 +169,7 @@ static void createnotifyx11(struct wl_listener *listener, void *data);
 static void xwaylandready(struct wl_listener *listener, void *data);
 static struct wl_listener new_xwayland_surface = {.notify = createnotifyx11};
 static struct wl_listener xwayland_ready = {.notify = xwaylandready};
-static struct wlr_xwayland *xwayland;
+static struct wlr_xwayland *xwayland = NULL;
 
 /* compile-time check if all tags fit into an unsigned int bit array. */
 struct NumTags { char limitexceeded[LENGTH(tags) > 32 ? -1 : 1]; };
@@ -281,6 +281,8 @@ void commitnotify(struct wl_listener *listener, void *data)
             /* mark a pending resize as completed */
             if (c->resize && c->resize <= c->surface.layer->configure_serial)
                 c->resize = 0;
+            break;
+        default:
             break;
     }
 }
@@ -406,19 +408,19 @@ void createnotify(struct wl_listener *listener, void *data)
 
 void createnotifyLayerShell(struct wl_listener *listener, void *data)
 {
-	/* This event is raised when wlr_xdg_shell receives a new xdg surface from a
-	 * client, either a toplevel (application window) or popup. */
-	struct wlr_layer_surface_v1 *layer_surface = data;
-	struct client *c;
+    /* This event is raised when wlr_xdg_shell receives a new xdg surface from a
+     * client, either a toplevel (application window) or popup. */
+    struct wlr_layer_surface_v1 *layer_surface = data;
+    struct client *c;
 
 
-	/* Allocate a Client for this surface */
-	c = layer_surface->data = calloc(1, sizeof(*c));
-	c->surface.layer = layer_surface;
-	c->bw = borderPx;
-	c->type = LayerShell;
+    /* Allocate a Client for this surface */
+    c = layer_surface->data = calloc(1, sizeof(*c));
+    c->surface.layer = layer_surface;
+    c->bw = borderPx;
+    c->type = LayerShell;
 
-	/* Listen to the various events it can emit */
+    /* Listen to the various events it can emit */
     c->commit.notify = commitnotify;
     wl_signal_add(&layer_surface->surface->events.commit, &c->commit);
     c->map.notify = maprequest;
@@ -477,6 +479,8 @@ void destroynotify(struct wl_listener *listener, void *data)
             break;
         case X11Managed:
             wl_list_remove(&c->activate.link);
+            break;
+        default:
             break;
     }
     free(c);
@@ -676,8 +680,10 @@ void maprequest(struct wl_listener *listener, void *data)
     }
 
     /* Insert this client into client lists. */
-    wl_list_insert(&clients, &c->link);
-    wl_list_insert(&focus_stack, &c->flink);
+    if (c->type != LayerShell) {
+        wl_list_insert(&clients, &c->link);
+        wl_list_insert(&focus_stack, &c->flink);
+    }
     wl_list_insert(&stack, &c->slink);
     struct client *prev = wl_container_of(listener, prev, map);
 
@@ -695,6 +701,7 @@ void maprequest(struct wl_listener *listener, void *data)
             c->geom.width += 2 * c->bw;
             c->geom.height += 2 * c->bw;
         case X11Managed:
+        case X11Unmanaged:
             c->geom.x = c->surface.xwayland->x;
             c->geom.y = c->surface.xwayland->y;
             c->geom.width = c->surface.xwayland->width + 2 * c->bw;
@@ -1149,11 +1156,14 @@ void unmapnotify(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
-    wl_list_remove(&c->link);
-    if (c->type == X11Unmanaged)
-        return;
+    // LayerShell shouldn't be resized
+    if (c->type != LayerShell) {
+        wl_list_remove(&c->link);
+        if (c->type == X11Unmanaged)
+            return;
+        wl_list_remove(&c->flink);
+    }
     setmon(c, NULL, 0);
-    wl_list_remove(&c->flink);
     wl_list_remove(&c->slink);
 }
 

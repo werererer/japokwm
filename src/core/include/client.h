@@ -6,6 +6,8 @@
 #include <X11/Xlib.h>
 #include <wlr/xwayland.h>
 
+enum shell { XDGShell, X11Managed, X11Unmanaged, LayerShell }; /* client types */
+
 struct client {
     struct wl_list link;
     struct wl_list flink;
@@ -22,7 +24,7 @@ struct client {
     struct wl_listener destroy;
     struct wlr_box geom;  /* layout-relative, includes border */
     struct monitor *mon;
-    unsigned int type;
+    enum shell type;
     int bw;
     unsigned int tags;
     int isfloating;
