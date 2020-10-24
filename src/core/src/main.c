@@ -291,7 +291,7 @@ void createkeyboard(struct wlr_input_device *device)
     struct xkb_keymap *keymap;
     struct keyboard *kb;
 
-    kb = device->data = malloc(sizeof(*kb));
+    kb = device->data = calloc(1, sizeof(*kb));
     kb->device = device;
 
     /* Prepare an XKB keymap and assign it to the keyboard. */
@@ -334,7 +334,7 @@ void createmon(struct wl_listener *listener, void *data)
     wlr_output_set_mode(wlr_output, wlr_output_preferred_mode(wlr_output));
 
     /* Allocates and configures monitor state using configured rules */
-    m = wlr_output->data = malloc(sizeof(*m));
+    m = wlr_output->data = calloc(1, sizeof(*m));
     m->wlr_output = wlr_output;
     m->tagset[0] = m->tagset[1] = 1;
     for (r = monrules; r < END(monrules); r++) {
@@ -384,7 +384,7 @@ void createnotify(struct wl_listener *listener, void *data)
         return;
 
     /* Allocate a Client for this surface */
-    c = xdg_surface->data = malloc(sizeof(*c));
+    c = xdg_surface->data = calloc(1, sizeof(*c));
     c->surface.xdg = xdg_surface;
     c->bw = borderPx;
     c->type = XDGShell;
@@ -406,19 +406,19 @@ void createnotify(struct wl_listener *listener, void *data)
 
 void createnotifyLayerShell(struct wl_listener *listener, void *data)
 {
-    /* This event is raised when wlr_xdg_shell receives a new xdg surface from a
-     * client, either a toplevel (application window) or popup. */
-    struct wlr_layer_surface_v1 *layer_surface = data;
-    struct client *c;
+	/* This event is raised when wlr_xdg_shell receives a new xdg surface from a
+	 * client, either a toplevel (application window) or popup. */
+	struct wlr_layer_surface_v1 *layer_surface = data;
+	struct client *c;
 
 
-    /* Allocate a Client for this surface */
-    c = layer_surface->data = malloc(sizeof(*c));
-    c->surface.layer = layer_surface;
-    c->bw = borderPx;
-    c->type = LayerShell;
+	/* Allocate a Client for this surface */
+	c = layer_surface->data = calloc(1, sizeof(*c));
+	c->surface.layer = layer_surface;
+	c->bw = borderPx;
+	c->type = LayerShell;
 
-    /* Listen to the various events it can emit */
+	/* Listen to the various events it can emit */
     c->commit.notify = commitnotify;
     wl_signal_add(&layer_surface->surface->events.commit, &c->commit);
     c->map.notify = maprequest;
@@ -443,7 +443,7 @@ void createpointer(struct wlr_input_device *device)
 void createxdeco(struct wl_listener *listener, void *data)
 {
     struct wlr_xdg_toplevel_decoration_v1 *wlr_deco = data;
-    Decoration *d = wlr_deco->data = malloc(sizeof(*d));
+    Decoration *d = wlr_deco->data = calloc(1, sizeof(*d));
 
     wl_signal_add(&wlr_deco->events.request_mode, &d->request_mode);
     d->request_mode.notify = getxdecomode;
@@ -1233,7 +1233,7 @@ void createnotifyx11(struct wl_listener *listener, void *data)
     struct client *c;
 
     /* Allocate a Client for this surface */
-    c = xwayland_surface->data = malloc(sizeof(*c));
+    c = xwayland_surface->data = calloc(1, sizeof(*c));
     c->surface.xwayland = xwayland_surface;
     c->type = xwayland_surface->override_redirect ? X11Unmanaged : X11Managed;
     c->bw = borderPx;

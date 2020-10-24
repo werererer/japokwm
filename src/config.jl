@@ -53,7 +53,6 @@ keys = [
         ["$mod space",       ()->  setLayout()            ],
         ["$mod m",           ()->  setLayout(1)  ],
         ["$mod t",           ()->  setLayout(2)  ],
-        ["$mod u",           ()->  setLayout(3)  ],
         ["$mod l",           ()->  Layouts.resizeThisAll(1/10, Layouts.RIGHT)        ],
         ["$mod h",           ()->  Layouts.resizeThisAll(1/10, Layouts.LEFT)        ],
         ["$mod parenright",  ()->  tag(~0)                ],
