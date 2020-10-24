@@ -53,10 +53,9 @@
 #include "utils/parseConfigUtils.h"
 #include "parseConfig.h"
 #include "render/render.h"
+#include "server.h"
 
 /* macros */
-#define BARF(fmt, ...)      do { fprintf(stderr, fmt "\n", ##__VA_ARGS__); exit(EXIT_FAILURE); } while (0)
-#define EBARF(fmt, ...)     BARF(fmt ": %s", ##__VA_ARGS__, strerror(errno))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define END(A)                  ((A) + LENGTH(A))
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
@@ -68,7 +67,7 @@ static const struct monRule monrules[] = {
     { "eDP-1",    0.5,  1,      2,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL },
     */
     /* defaults */
-    { NULL,       0.55, 1,      1,    &defaultLayout, WL_OUTPUT_TRANSFORM_NORMAL },
+    { NULL, 0.55, 1, 1, &defaultLayout, WL_OUTPUT_TRANSFORM_NORMAL },
 };
 
 typedef struct {
@@ -113,7 +112,7 @@ void pointerfocus(struct client *c, struct wlr_surface *surface,
  double sx, double sy, uint32_t time);
 void quit();
 void run(char *startup_cmd);
-void setcursor(struct wl_listener *listener, void *data);
+void setCursor(struct wl_listener *listener, void *data);
 void setpsel(struct wl_listener *listener, void *data);
 void setsel(struct wl_listener *listener, void *data);
 void setfloating(struct client *c, int floating);
@@ -132,22 +131,10 @@ struct client *xytoclient(double x, double y);
 struct monitor *xytomon(double x, double y);
 void zoom();
 
-/* variables */
-static struct wl_display *dpy = NULL;
-static struct wlr_backend *backend = NULL;
-static struct wlr_compositor *compositor = NULL;
-
-static struct wlr_xdg_shell *xdg_shell = NULL;
-static struct wlr_layer_shell_v1 *layer_shell = NULL;
-static struct wlr_xdg_decoration_manager_v1 *xdeco_mgr = NULL;
-
-static struct wlr_cursor *cursor = NULL;
-static struct wlr_xcursor_manager *cursor_mgr = NULL;
-
-static struct wl_list keyboards;
-static unsigned int cursor_mode;
-static struct client *grabc = NULL;
-static int grabcx, grabcy; /* client-relative */
+/* global variables */
+struct client *grabc = NULL;
+int grabcx, grabcy; /* client-relative */
+struct server server;
 
 /* global event handlers */
 static struct wl_listener cursor_axis = {.notify = axisnotify};
@@ -160,7 +147,7 @@ static struct wl_listener new_output = {.notify = createmon};
 static struct wl_listener new_xdeco = {.notify = createxdeco};
 static struct wl_listener new_xdg_surface = {.notify = createnotify};
 static struct wl_listener new_layer_shell_surface = {.notify = createnotifyLayerShell};
-static struct wl_listener request_cursor = {.notify = setcursor};
+static struct wl_listener request_cursor = {.notify = setCursor};
 static struct wl_listener request_set_psel = {.notify = setpsel};
 static struct wl_listener request_set_sel = {.notify = setsel};
 
@@ -196,7 +183,7 @@ void buttonpress(struct wl_listener *listener, void *data)
     switch (event->state) {
     case WLR_BUTTON_PRESSED:
         /* Change focus if the button was _pressed_ over a client */
-        if ((c = xytoclient(cursor->x, cursor->y)))
+        if ((c = xytoclient(server.cursor->x, server.cursor->y)))
             focusclient(selClient(), c, 1);
 
         /* Translate libinput to xkbcommon code */
@@ -215,12 +202,12 @@ void buttonpress(struct wl_listener *listener, void *data)
     case WLR_BUTTON_RELEASED:
         /* If you released any buttons, we exit interactive move/resize mode. */
         /* XXX should reset to the pointer focus's current setcursor */
-        if (cursor_mode != CurNormal) {
-            wlr_xcursor_manager_set_cursor_image(cursor_mgr,
-                    "left_ptr", cursor);
-            cursor_mode = CurNormal;
+        if (server.cursorMode != CurNormal) {
+            wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
+                    "left_ptr", server.cursor);
+            server.cursorMode = CurNormal;
             /* Drop the window off on its new monitor */
-            selMon = xytomon(cursor->x, cursor->y);
+            selMon = xytomon(server.cursor->x, server.cursor->y);
             setmon(grabc, selMon, 0);
             return;
         }
@@ -234,17 +221,17 @@ void buttonpress(struct wl_listener *listener, void *data)
 
 void chvt(unsigned int ui)
 {
-    wlr_session_change_vt(wlr_backend_get_session(backend), ui);
+    wlr_session_change_vt(wlr_backend_get_session(server.backend), ui);
 }
 
 void cleanup(void)
 {
     wlr_xwayland_destroy(xwayland);
-    wl_display_destroy_clients(dpy);
-    wl_display_destroy(dpy);
+    wl_display_destroy_clients(server.display);
+    wl_display_destroy(server.display);
 
-    wlr_xcursor_manager_destroy(cursor_mgr);
-    wlr_cursor_destroy(cursor);
+    wlr_xcursor_manager_destroy(server.cursorMgr);
+    wlr_cursor_destroy(server.cursor);
     wlr_output_layout_destroy(output_layout);
     jl_atexit_hook(0);
 }
@@ -316,8 +303,8 @@ void createkeyboard(struct wlr_input_device *device)
 
     wlr_seat_set_keyboard(seat, device);
 
-    /* And add the keyboard to our list of keyboards */
-    wl_list_insert(&keyboards, &kb->link);
+    /* And add the keyboard to our list of server.keyboards */
+    wl_list_insert(&server.keyboards, &kb->link);
 }
 
 void createmon(struct wl_listener *listener, void *data)
@@ -344,7 +331,7 @@ void createmon(struct wl_listener *listener, void *data)
             m->mfact = r->mfact;
             m->nmaster = r->nmaster;
             wlr_output_set_scale(wlr_output, r->scale);
-            wlr_xcursor_manager_load(cursor_mgr, r->scale);
+            wlr_xcursor_manager_load(server.cursorMgr, r->scale);
             m->lt = *r->lt;
             wlr_output_set_transform(wlr_output, r->rr);
             break;
@@ -439,7 +426,7 @@ void createpointer(struct wlr_input_device *device)
      * is proxied through wlr_cursor. On another compositor, you might take this
      * opportunity to do libinput configuration on the device to set
      * acceleration, etc. */
-    wlr_cursor_attach_input_device(cursor, device);
+    wlr_cursor_attach_input_device(server.cursor, device);
 }
 
 void createxdeco(struct wl_listener *listener, void *data)
@@ -576,11 +563,11 @@ void inputdevice(struct wl_listener *listener, void *data)
         break;
     }
     /* We need to let the wlr_seat know what our capabilities are, which is
-     * communiciated to the client. In dwl we always have a cursor, even if
-     * there are no pointer devices, so we always include that capability. */
+     * communiciated to the client. In dwl we always have a server.cursor, even 
+     * if there are no pointer devices, so we always include that capability. */
     /* XXX do we actually require a cursor? */
     caps = WL_SEAT_CAPABILITY_POINTER;
-    if (!wl_list_empty(&keyboards))
+    if (!wl_list_empty(&server.keyboards))
         caps |= WL_SEAT_CAPABILITY_KEYBOARD;
     wlr_seat_set_capabilities(seat, caps);
 }
@@ -607,9 +594,9 @@ void keypress(struct wl_listener *listener, void *data)
         for (i = 0; i < nsyms; i++) {
             if (syms[i] >= XKB_KEY_XF86Switch_VT_1
                     && syms[i] <= XKB_KEY_XF86Switch_VT_12) {
-                if (wlr_backend_is_multi(backend)) {
+                if (wlr_backend_is_multi(server.backend)) {
                     struct wlr_session *session =
-                        wlr_backend_get_session(backend);
+                        wlr_backend_get_session(server.backend);
                     if (session) {
                         unsigned vt = syms[i] - XKB_KEY_XF86Switch_VT_1 + 1;
                         wlr_session_change_vt(session, vt);
@@ -639,9 +626,9 @@ void keypressmod(struct wl_listener *listener, void *data)
     struct keyboard *kb = wl_container_of(listener, kb, modifiers);
     /*
      * A seat can only have one keyboard, but this is a limitation of the
-     * Wayland protocol - not wlroots. We assign all connected keyboards to the
-     * same seat. You can swap out the underlying wlr_keyboard like this and
-     * wlr_seat handles this transparently.
+     * Wayland protocol - not wlroots. We assign all connected server.keyboards 
+     * to the same seat. You can swap out the underlying wlr_keyboard like this
+     * and wlr_seat handles this transparently.
      */
     wlr_seat_set_keyboard(seat, kb->device);
     /* Send modifiers to the client. */
@@ -721,7 +708,7 @@ void motionabsolute(struct wl_listener *listener, void *data)
      * so we have to warp the mouse there. There is also some hardware which
      * emits these events. */
     struct wlr_event_pointer_motion_absolute *event = data;
-    wlr_cursor_warp_absolute(cursor, event->device, event->x, event->y);
+    wlr_cursor_warp_absolute(server.cursor, event->device, event->x, event->y);
     motionnotify(event->time_msec);
 }
 
@@ -733,33 +720,38 @@ void motionnotify(uint32_t time)
 
     /* Update selMon (even while dragging a window) */
     if (sloppyFocus)
-        selMon = xytomon(cursor->x, cursor->y);
+        selMon = xytomon(server.cursor->x, server.cursor->y);
 
     /* If we are currently grabbing the mouse, handle and return */
-    if (cursor_mode == CurMove) {
-        /* Move the grabbed client to the new position. */
-        resize(grabc, cursor->x - grabcx, cursor->y - grabcy,
-                grabc->geom.width, grabc->geom.height, 1);
-        return;
-    } else if (cursor_mode == CurResize) {
-        resize(grabc, grabc->geom.x, grabc->geom.y,
-                cursor->x - grabc->geom.x,
-                cursor->y - grabc->geom.y, 1);
-        return;
+    switch (server.cursorMode) {
+        case CurMove:
+            /* Move the grabbed client to the new position. */
+            resize(grabc, server.cursor->x - grabcx, server.cursor->y - grabcy,
+                    grabc->geom.width, grabc->geom.height, 1);
+            return;
+            break;
+        case CurResize:
+            resize(grabc, grabc->geom.x, grabc->geom.y,
+                    server.cursor->x - grabc->geom.x,
+                    server.cursor->y - grabc->geom.y, 1);
+            return;
+            break;
+        default:
+            break;
     }
 
-    if ((c = xytoclient(cursor->x, cursor->y))) {
+    if ((c = xytoclient(server.cursor->x, server.cursor->y))) {
             surface = wlr_surface_surface_at(getWlrSurface(c),
-                    cursor->x - c->geom.x - c->bw,
-                    cursor->y - c->geom.y - c->bw, &sx, &sy);
+                    server.cursor->x - c->geom.x - c->bw,
+                    server.cursor->y - c->geom.y - c->bw, &sx, &sy);
     }
 
-    /* If there's no client surface under the cursor, set the cursor image to a
+    /* If there's no client surface under the server.cursor, set the cursor image to a
      * default. This is what makes the cursor image appear when you move it
      * off of a client or over its border. */
     if (!surface) {
-        wlr_xcursor_manager_set_cursor_image(cursor_mgr,
-                "left_ptr", cursor);
+        wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
+                "left_ptr", server.cursor);
     }
 
     pointerfocus(c, surface, sx, sy, time);
@@ -775,39 +767,43 @@ void motionrelative(struct wl_listener *listener, void *data)
      * special configuration applied for the specific input device which
      * generated the event. You can pass NULL for the device if you want to move
      * the cursor around without any input. */
-    wlr_cursor_move(cursor, event->device,
+    wlr_cursor_move(server.cursor, event->device,
             event->delta_x, event->delta_y);
     motionnotify(event->time_msec);
 }
 
 void moveResize(unsigned int ui)
 {
-    grabc = xytoclient(cursor->x, cursor->y);
+    grabc = xytoclient(server.cursor->x, server.cursor->y);
     if (!grabc)
         return;
 
     /* Float the window and tell motionnotify to grab it */
     setfloating(grabc, 1);
-    switch (cursor_mode = ui) {
-    case CurMove:
-        grabcx = cursor->x - grabc->geom.x;
-        grabcy = cursor->y - grabc->geom.y;
-        wlr_xcursor_manager_set_cursor_image(cursor_mgr, "fleur", cursor);
-        break;
-    case CurResize:
-        /* Doesn't work for X11 output - the next absolute motion event
-         * returns the cursor to where it started */
-        wlr_cursor_warp_closest(cursor, NULL,
-                grabc->geom.x + grabc->geom.width,
-                grabc->geom.y + grabc->geom.height);
-        wlr_xcursor_manager_set_cursor_image(cursor_mgr,
-                "bottom_right_corner", cursor);
-        break;
+    switch (server.cursorMode = ui) {
+        case CurMove:
+            grabcx = server.cursor->x - grabc->geom.x;
+            grabcy = server.cursor->y - grabc->geom.y;
+            wlr_xcursor_manager_set_cursor_image(server.cursorMgr, 
+                    "fleur", server.cursor);
+            break;
+        case CurResize:
+            /* Doesn't work for X11 output - the next absolute motion event
+             * returns the cursor to where it started */
+            wlr_cursor_warp_closest(server.cursor, NULL,
+                    grabc->geom.x + grabc->geom.width,
+                    grabc->geom.y + grabc->geom.height);
+            wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
+                    "bottom_right_corner", server.cursor);
+            break;
+        default:
+            break;
     }
 }
 
 void
-pointerfocus(struct client *c, struct wlr_surface *surface, double sx, double sy, uint32_t time)
+pointerfocus(struct client *c, struct wlr_surface *surface,
+        double sx, double sy, uint32_t time)
 {
     /* Use top level surface if nothing more specific given */
     if (c && !surface)
@@ -838,7 +834,7 @@ pointerfocus(struct client *c, struct wlr_surface *surface, double sx, double sy
 
 void quit()
 {
-    wl_display_terminate(dpy);
+    wl_display_terminate(server.display);
 }
 
 void spawn(char *cmd)
@@ -854,26 +850,26 @@ void run(char *startup_cmd)
     pid_t startup_pid = -1;
 
     /* Add a Unix socket to the Wayland display. */
-    const char *socket = wl_display_add_socket_auto(dpy);
+    const char *socket = wl_display_add_socket_auto(server.display);
     if (!socket)
         BARF("startup: display_add_socket_auto");
 
     /* Start the backend. This will enumerate outputs and inputs, become the DRM
      * master, etc */
-    if (!wlr_backend_start(backend))
+    if (!wlr_backend_start(server.backend))
         BARF("startup: backend_start");
 
-    wlr_cursor_warp_absolute(cursor, NULL, 0.4, 0.3);
+    wlr_cursor_warp_absolute(server.cursor, NULL, 0.4, 0.3);
     /* Now that outputs are initialized, choose initial selMon based on
      * cursor position, and set default cursor image */
-    selMon = xytomon(cursor->x, cursor->y);
+    selMon = xytomon(server.cursor->x, server.cursor->y);
 
     /* XXX hack to get cursor to display in its initial location (100, 100)
      * instead of (0, 0) and then jumping.  still may not be fully
      * initialized, as the image/coordinates are not transformed for the
      * monitor when displayed here */
-    wlr_cursor_warp_closest(cursor, NULL, cursor->x, cursor->y);
-    wlr_xcursor_manager_set_cursor_image(cursor_mgr, "left_ptr", cursor);
+    wlr_cursor_warp_closest(server.cursor, NULL, server.cursor->x, server.cursor->y);
+    wlr_xcursor_manager_set_cursor_image(server.cursorMgr, "left_ptr", server.cursor);
 
     /* Set the WAYLAND_DISPLAY environment variable to our socket and run the
      * startup command if requested. */
@@ -893,7 +889,7 @@ void run(char *startup_cmd)
      * loop configuration to listen to libinput events, DRM events, generate
      * frame events at the refresh rate, and so on. */
     //load global variables
-    wl_display_run(dpy);
+    wl_display_run(server.display);
 
     if (startup_cmd) {
         kill(startup_pid, SIGTERM);
@@ -901,13 +897,13 @@ void run(char *startup_cmd)
     }
 }
 
-void setcursor(struct wl_listener *listener, void *data)
+void setCursor(struct wl_listener *listener, void *data)
 {
     /* This event is raised by the seat when a client provides a cursor image */
     struct wlr_seat_pointer_request_set_cursor_event *event = data;
-    /* If we're "grabbing" the cursor, don't use the client's image */
+    /* If we're "grabbing" the server.cursor, don't use the client's image */
     /* XXX still need to save the provided surface to restore later */
-    if (cursor_mode != CurNormal)
+    if (server.cursorMode != CurNormal)
         return;
     /* This can be sent by any client, so we check to make sure this one is
      * actually has pointer focus first. If so, we can tell the cursor to
@@ -915,7 +911,7 @@ void setcursor(struct wl_listener *listener, void *data)
      * hardware cursor on the output that it's currently on and continue to
      * do so as the cursor moves between outputs. */
     if (event->seat_client == seat->pointer_state.focused_client)
-        wlr_cursor_set_surface(cursor, event->surface,
+        wlr_cursor_set_surface(server.cursor, event->surface,
                 event->hotspot_x, event->hotspot_y);
 }
 
@@ -962,7 +958,7 @@ void setup(void)
 {
     /* The Wayland display is managed by libwayland. It handles accepting
      * clients from the Unix socket, manging Wayland globals, and so on. */
-    dpy = wl_display_create();
+    server.display = wl_display_create();
 
     /* clean up child processes immediately */
     sigchld(0);
@@ -975,14 +971,14 @@ void setup(void)
      * backend uses the renderer, for example, to fall back to software cursors
      * if the backend does not support hardware cursors (some older GPUs
      * don't). */
-    if (!(backend = wlr_backend_autocreate(dpy, NULL)))
+    if (!(server.backend = wlr_backend_autocreate(server.display, NULL)))
         BARF("couldn't create backend");
 
     /* If we don't provide a renderer, autocreate makes a GLES2 renderer for us.
      * The renderer is responsible for defining the various pixel formats it
      * supports for shared memory, this configures that for clients. */
-    drw = wlr_backend_get_renderer(backend);
-    wlr_renderer_init_wl_display(drw, dpy);
+    drw = wlr_backend_get_renderer(server.backend);
+    wlr_renderer_init_wl_display(drw, server.display);
 
     /* This creates some hands-off wlroots interfaces. The compositor is
      * necessary for clients to allocate surfaces and the data device manager
@@ -990,25 +986,25 @@ void setup(void)
      * to dig your fingers in and play with their behavior if you want. Note that
      * the clients cannot set the selection directly without compositor approval,
      * see the setsel() function. */
-    compositor = wlr_compositor_create(dpy, drw);
-    wlr_export_dmabuf_manager_v1_create(dpy);
-    wlr_screencopy_manager_v1_create(dpy);
-    wlr_data_device_manager_create(dpy);
-    wlr_gamma_control_manager_v1_create(dpy);
-    wlr_primary_selection_v1_device_manager_create(dpy);
-    wlr_viewporter_create(dpy);
+    server.compositor = wlr_compositor_create(server.display, drw);
+    wlr_export_dmabuf_manager_v1_create(server.display);
+    wlr_screencopy_manager_v1_create(server.display);
+    wlr_data_device_manager_create(server.display);
+    wlr_gamma_control_manager_v1_create(server.display);
+    wlr_primary_selection_v1_device_manager_create(server.display);
+    wlr_viewporter_create(server.display);
 
     /* Creates an output layout, which a wlroots utility for working with an
      * arrangement of screens in a physical layout. */
     output_layout = wlr_output_layout_create();
-    wlr_xdg_output_manager_v1_create(dpy, output_layout);
+    wlr_xdg_output_manager_v1_create(server.display, output_layout);
 
     /* Configure textures */
     wlr_list_init(&renderData.textures);
     /* Configure a listener to be notified when new outputs are available on the
      * backend. */
     wl_list_init(&mons);
-    wl_signal_add(&backend->events.new_output, &new_output);
+    wl_signal_add(&server.backend->events.new_output, &new_output);
 
     /* Set up our client lists and the xdg-shell. The xdg-shell is a
      * Wayland protocol which is used for application windows. For more
@@ -1020,27 +1016,28 @@ void setup(void)
     wl_list_init(&focus_stack);
     wl_list_init(&stack);
     wl_list_init(&independents);
-    xdg_shell = wlr_xdg_shell_create(dpy);
-    wl_signal_add(&xdg_shell->events.new_surface, &new_xdg_surface);
-    layer_shell = wlr_layer_shell_v1_create(dpy);
-    wl_signal_add(&layer_shell->events.new_surface, &new_layer_shell_surface);
+    server.xdgShell = wlr_xdg_shell_create(server.display);
+    wl_signal_add(&server.xdgShell->events.new_surface, &new_xdg_surface);
+    server.layerShell = wlr_layer_shell_v1_create(server.display);
+    wl_signal_add(&server.layerShell->events.new_surface,
+            &new_layer_shell_surface);
 
     /* Use xdg_decoration protocol to negotiate server-side decorations */
-    xdeco_mgr = wlr_xdg_decoration_manager_v1_create(dpy);
-    wl_signal_add(&xdeco_mgr->events.new_toplevel_decoration, &new_xdeco);
+    server.xdecoMgr = wlr_xdg_decoration_manager_v1_create(server.display);
+    wl_signal_add(&server.xdecoMgr->events.new_toplevel_decoration, &new_xdeco);
 
     /*
-     * Creates a cursor, which is a wlroots utility for tracking the cursor
+     * Creates a server.cursor, which is a wlroots utility for tracking the cursor
      * image shown on screen.
      */
-    cursor = wlr_cursor_create();
-    wlr_cursor_attach_output_layout(cursor, output_layout);
+    server.cursor = wlr_cursor_create();
+    wlr_cursor_attach_output_layout(server.cursor, output_layout);
 
     /* Creates an xcursor manager, another wlroots utility which loads up
      * Xcursor themes to source cursor images from and makes sure that cursor
      * images are available at all scale factors on the screen (necessary for
      * HiDPI support). Scaled cursors will be loaded with each output. */
-    cursor_mgr = wlr_xcursor_manager_create(NULL, 24);
+    server.cursorMgr = wlr_xcursor_manager_create(NULL, 24);
 
     /*
      * wlr_cursor *only* displays an image on screen. It does not move around
@@ -1054,12 +1051,12 @@ void setup(void)
      *
      * And more comments are sprinkled throughout the notify functions above.
      */
-    wl_signal_add(&cursor->events.motion, &cursor_motion);
-    wl_signal_add(&cursor->events.motion_absolute,
+    wl_signal_add(&server.cursor->events.motion, &cursor_motion);
+    wl_signal_add(&server.cursor->events.motion_absolute,
             &cursor_motion_absolute);
-    wl_signal_add(&cursor->events.button, &cursor_button);
-    wl_signal_add(&cursor->events.axis, &cursor_axis);
-    wl_signal_add(&cursor->events.frame, &cursor_frame);
+    wl_signal_add(&server.cursor->events.button, &cursor_button);
+    wl_signal_add(&server.cursor->events.axis, &cursor_axis);
+    wl_signal_add(&server.cursor->events.frame, &cursor_frame);
 
     /*
      * Configures a seat, which is a single "seat" at which a user sits and
@@ -1067,9 +1064,9 @@ void setup(void)
      * pointer, touch, and drawing tablet device. We also rig up a listener to
      * let us know when new input devices are available on the backend.
      */
-    wl_list_init(&keyboards);
-    wl_signal_add(&backend->events.new_input, &new_input);
-    seat = wlr_seat_create(dpy, "seat0");
+    wl_list_init(&server.keyboards);
+    wl_signal_add(&server.backend->events.new_input, &new_input);
+    seat = wlr_seat_create(server.display, "seat0");
     wl_signal_add(&seat->events.request_set_cursor,
             &request_cursor);
     wl_signal_add(&seat->events.request_set_selection,
@@ -1081,7 +1078,7 @@ void setup(void)
      * Initialise the XWayland X server.
      * It will be started when the first X client is started.
      */
-    xwayland = wlr_xwayland_create(dpy, compositor, true);
+    xwayland = wlr_xwayland_create(server.display, server.compositor, true);
     if (xwayland) {
         wl_signal_add(&xwayland->events.ready, &xwayland_ready);
         wl_signal_add(&xwayland->events.new_surface, &new_xwayland_surface);
@@ -1264,7 +1261,8 @@ void xwaylandready(struct wl_listener *listener, void *data)
     xcb_connection_t *xc = xcb_connect(xwayland->display_name, NULL);
     int err = xcb_connection_has_error(xc);
     if (err) {
-        fprintf(stderr, "xcb_connect to X server failed with code %d\n. Continuing with degraded functionality.\n", err);
+        fprintf(stderr, "xcb_connect to X server failed with code %d\n. "
+                "Continuing with degraded functionality.\n", err);
         return;
     }
 

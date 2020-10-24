@@ -20,9 +20,6 @@
 #define NUM_DIGITS 9
 #define ARR_STRING_LENGTH(X) strlen(X) + 2*(strlen("[]") + NUM_DIGITS)
 
-/* enums */
-enum { CurNormal, CurMove, CurResize }; /* cursor */
-
 typedef struct Monitor Monitor;
 typedef struct wlr_fbox Container;
 
