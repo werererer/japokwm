@@ -1,6 +1,9 @@
 #include "client.h"
+#include <stdio.h>
 #include <wayland-util.h>
+
 #include "tile/tile.h"
+#include "utils/coreUtils.h"
 
 //global variables
 struct wl_list clients; /* tiling order */
@@ -8,8 +11,6 @@ struct wl_list focus_stack;  /* focus order */
 struct wl_list stack;   /* stacking z-order */
 struct wlr_output_layout *output_layout;
 struct wlr_box sgeom;
-struct wl_list mons;
-struct monitor *selMon = NULL;
 
 /* function implementations */
 void applybounds(struct client *c, struct wlr_box bbox)
@@ -35,7 +36,7 @@ void applyrules(struct client *c)
     const struct rule *r;
     struct monitor *m; 
     /* rule matching */
-    c->isfloating = false;
+    c->floating = false;
     switch (c->type) {
         case XDGShell:
             appid = c->surface.xdg->toplevel->app_id;
@@ -59,7 +60,7 @@ void applyrules(struct client *c)
     for (r = rules; r < END(rules); r++) {
         if ((!r->title || strstr(title, r->title))
                 && (!r->id || strstr(appid, r->id))) {
-            c->isfloating = r->isfloating;
+            c->floating = r->floating;
             newtags |= r->tags;
             i = 0;
             wl_list_for_each(m, &mons, link)
@@ -72,10 +73,16 @@ void applyrules(struct client *c)
 
 struct client *selClient()
 {
-    struct client *c = wl_container_of(focus_stack.next, c, flink);
-    if (!visibleon(c, selMon))
+    if (wl_list_length(&focus_stack))
+    {
+        struct client *c = wl_container_of(focus_stack.next, c, flink);
+        if (!visibleon(c, selMon))
+            return NULL;
+        else
+            return c;
+    } else {
         return NULL;
-    return c;
+    }
 }
 
 struct wlr_surface *getWlrSurface(struct client *c)
@@ -100,9 +107,8 @@ bool visibleon(struct client *c, struct monitor *m)
 {
     if (m && c) {
         bool sameMon = c->mon == m;
-        bool sameTag = c->tags & m->tagset[m->seltags];
+        bool sameTag = c->mon->tagset.selTags[0] & (1 << m->tagset.focusedTag);
         return sameMon && sameTag;
     }
     return false;
 }
-

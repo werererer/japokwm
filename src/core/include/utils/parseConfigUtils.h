@@ -1,7 +1,8 @@
 #ifndef PARSE_CONFIG_UTILS_H
 #define PARSE_CONFIG_UTILS_H
-#include "utils/coreUtils.h"
+#include "monitor.h"
 #include <string.h>
+#include "utils/coreUtils.h"
 
 void initConfig(char *path);
 // basic
@@ -30,6 +31,5 @@ void getConfigMonRuleArr(struct monRule *monrules, char *name);
 //utils
 void arrayPosToStr(char *resStr, char *varName, int i);
 void array2DPosToStr(char *resStr, char *varName, int i, int j);
-
 
 #endif /* PARSE_CONFIG_UTILS_H */

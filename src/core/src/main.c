@@ -1,25 +1,32 @@
 /*
  * See LICENSE file for copyright and license details.
  */
-#include <assert.h>
-#include <string.h>
-#include <wayland-server-protocol.h>
+
+#include "tagset.h"
 #define _POSIX_C_SOURCE 200809L
+#include <X11/XKBlib.h>
+#include <X11/Xlib.h>
+#include <assert.h>
 #include <getopt.h>
+#include <julia.h>
 #include <linux/input-event-codes.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 #include <wayland-server-core.h>
+#include <wayland-server-core.h>
+#include <wayland-server-protocol.h>
+#include <wayland-util.h>
 #include <wlr/backend.h>
+#include <wlr/backend/multi.h>
+#include <wlr/backend/session.h>
+#include <wlr/render/wlr_renderer.h>
 #include <wlr/render/wlr_renderer.h>
 #include <wlr/types/wlr_compositor.h>
-#include <wayland-util.h>
-#include <wayland-server-core.h>
-#include <wlr/render/wlr_renderer.h>
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_export_dmabuf_v1.h>
@@ -38,37 +45,17 @@
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_output_v1.h>
 #include <wlr/types/wlr_xdg_shell.h>
-#include <wlr/backend/multi.h>
-#include <wlr/backend/session.h>
 #include <wlr/util/log.h>
-#include <X11/Xlib.h>
 #include <wlr/xwayland.h>
-#include <julia.h>
-#include <X11/XKBlib.h>
 
-#include "tile/tile.h"
-#include "tile/tileUtils.h"
 #include "client.h"
-#include "utils/coreUtils.h"
-#include "utils/parseConfigUtils.h"
+#include "monitor.h"
 #include "parseConfig.h"
 #include "render/render.h"
 #include "server.h"
-
-/* macros */
-#define LENGTH(X)               (sizeof X / sizeof X[0])
-#define END(A)                  ((A) + LENGTH(A))
-#define TAGMASK                 ((1 << LENGTH(tags)) - 1)
-
-/* monitors */
-static const struct monRule monrules[] = {
-    /* name       mfact nmaster scale layout       rotate/reflect */
-    /* example of a HiDPI laptop monitor:
-    { "eDP-1",    0.5,  1,      2,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL },
-    */
-    /* defaults */
-    { NULL, 0.55, 1, 1, &defaultLayout, WL_OUTPUT_TRANSFORM_NORMAL },
-};
+#include "tile/tile.h"
+#include "tile/tileUtils.h"
+#include "tagset.h"
 
 typedef struct {
     struct wl_listener request_mode;
@@ -83,10 +70,8 @@ void buttonpress(struct wl_listener *listener, void *data);
 void chvt(unsigned int ui);
 void cleanup(void);
 void cleanupkeyboard(struct wl_listener *listener, void *data);
-void cleanupmon(struct wl_listener *listener, void *data);
 void commitnotify(struct wl_listener *listener, void *data);
 void createkeyboard(struct wlr_input_device *device);
-void createmon(struct wl_listener *listener, void *data);
 void createnotify(struct wl_listener *listener, void *data);
 void createnotifyLayerShell(struct wl_listener *listener, void *data);
 void createpointer(struct wlr_input_device *device);
@@ -115,7 +100,7 @@ void run(char *startup_cmd);
 void setCursor(struct wl_listener *listener, void *data);
 void setpsel(struct wl_listener *listener, void *data);
 void setsel(struct wl_listener *listener, void *data);
-void setfloating(struct client *c, int floating);
+void setFloating(struct client *c, bool floating);
 void setlayout(void* v);
 void setmfact(float factor);
 void setup(void);
@@ -134,7 +119,6 @@ void zoom();
 /* global variables */
 struct client *grabc = NULL;
 int grabcx, grabcy; /* client-relative */
-struct server server;
 
 /* global event handlers */
 static struct wl_listener cursor_axis = {.notify = axisnotify};
@@ -143,7 +127,7 @@ static struct wl_listener cursor_frame = {.notify = cursorframe};
 static struct wl_listener cursor_motion = {.notify = motionrelative};
 static struct wl_listener cursor_motion_absolute = {.notify = motionabsolute};
 static struct wl_listener new_input = {.notify = inputdevice};
-static struct wl_listener new_output = {.notify = createmon};
+static struct wl_listener new_output = {.notify = createMonitor};
 static struct wl_listener new_xdeco = {.notify = createxdeco};
 static struct wl_listener new_xdg_surface = {.notify = createnotify};
 static struct wl_listener new_layer_shell_surface = {.notify = createnotifyLayerShell};
@@ -157,9 +141,6 @@ static void xwaylandready(struct wl_listener *listener, void *data);
 static struct wl_listener new_xwayland_surface = {.notify = createnotifyx11};
 static struct wl_listener xwayland_ready = {.notify = xwaylandready};
 static struct wlr_xwayland *xwayland = NULL;
-
-/* compile-time check if all tags fit into an unsigned int bit array. */
-struct NumTags { char limitexceeded[LENGTH(tags) > 32 ? -1 : 1]; };
 
 void axisnotify(struct wl_listener *listener, void *data)
 {
@@ -226,6 +207,9 @@ void chvt(unsigned int ui)
 
 void cleanup(void)
 {
+    // created in parseConfig.c updateConfig()
+    tagsetDestroy(&tagset);
+
     wlr_xwayland_destroy(xwayland);
     wl_display_destroy_clients(server.display);
     wl_display_destroy(server.display);
@@ -243,15 +227,6 @@ void cleanupkeyboard(struct wl_listener *listener, void *data)
 
     wl_list_remove(&kb->destroy.link);
     free(kb);
-}
-
-void cleanupmon(struct wl_listener *listener, void *data)
-{
-    struct wlr_output *wlr_output = data;
-    struct monitor *m = wlr_output->data;
-
-    wl_list_remove(&m->destroy.link);
-    free(m);
 }
 
 void commitnotify(struct wl_listener *listener, void *data)
@@ -307,61 +282,6 @@ void createkeyboard(struct wlr_input_device *device)
     wl_list_insert(&server.keyboards, &kb->link);
 }
 
-void createmon(struct wl_listener *listener, void *data)
-{
-    
-    /* This event is raised by the backend when a new output (aka a display or
-     * monitor) becomes available. */
-    struct wlr_output *wlr_output = data;
-    struct monitor *m;
-    const struct monRule *r;
-
-    /* The mode is a tuple of (width, height, refresh rate), and each
-     * monitor supports only a specific set of modes. We just pick the
-     * monitor's preferred mode; a more sophisticated compositor would let
-     * the user configure it. */
-    wlr_output_set_mode(wlr_output, wlr_output_preferred_mode(wlr_output));
-
-    /* Allocates and configures monitor state using configured rules */
-    m = wlr_output->data = calloc(1, sizeof(*m));
-    m->wlr_output = wlr_output;
-    m->tagset[0] = m->tagset[1] = 1;
-    for (r = monrules; r < END(monrules); r++) {
-        if (!r->name || strstr(wlr_output->name, r->name)) {
-            m->mfact = r->mfact;
-            m->nmaster = r->nmaster;
-            wlr_output_set_scale(wlr_output, r->scale);
-            wlr_xcursor_manager_load(server.cursorMgr, r->scale);
-            m->lt = *r->lt;
-            wlr_output_set_transform(wlr_output, r->rr);
-            break;
-        }
-    }
-    /* Set up event listeners */
-    m->frame.notify = renderFrame;
-    wl_signal_add(&wlr_output->events.frame, &m->frame);
-    m->destroy.notify = cleanupmon;
-    wl_signal_add(&wlr_output->events.destroy, &m->destroy);
-
-    wl_list_insert(&mons, &m->link);
-
-    wlr_output_enable(wlr_output, 1);
-    if (!wlr_output_commit(wlr_output))
-        return;
-
-    /* Adds this to the output layout. The add_auto function arranges outputs
-     * from left-to-right in the order they appear. A more sophisticated
-     * compositor would let the user configure the arrangement of outputs in the
-     * layout.
-     *
-     * The output layout utility automatically adds a wl_output global to the
-     * display, which Wayland clients can see to find out information about the
-     * output (such as DPI, scale factor, manufacturer, etc).
-     */
-    wlr_output_layout_add_auto(output_layout, wlr_output);
-    sgeom = *wlr_output_layout_get_box(output_layout, NULL);
-}
-
 void createnotify(struct wl_listener *listener, void *data)
 {
     /* This event is raised when wlr_xdg_shell receives a new xdg surface from a
@@ -377,6 +297,8 @@ void createnotify(struct wl_listener *listener, void *data)
     c->surface.xdg = xdg_surface;
     c->bw = borderPx;
     c->type = XDGShell;
+    tagsetCreate(&c->tagset);
+    c->mon = selMon;
 
     /* Tell the client not to try anything fancy */
     wlr_xdg_toplevel_set_tiled(c->surface.xdg, WLR_EDGE_TOP |
@@ -406,6 +328,8 @@ void createnotifyLayerShell(struct wl_listener *listener, void *data)
     c->surface.layer = layer_surface;
     c->bw = borderPx;
     c->type = LayerShell;
+    tagsetCreate(&c->tagset);
+    c->mon = selMon;
 
     /* Listen to the various events it can emit */
     c->commit.notify = commitnotify;
@@ -697,6 +621,7 @@ void maprequest(struct wl_listener *listener, void *data)
 
     /* Set initial monitor, tags, floating status, and focus */
     applyrules(c);
+    arrange(selMon, false);
 }
 
 void motionabsolute(struct wl_listener *listener, void *data)
@@ -779,7 +704,7 @@ void moveResize(unsigned int ui)
         return;
 
     /* Float the window and tell motionnotify to grab it */
-    setfloating(grabc, 1);
+    setFloating(grabc, true);
     switch (server.cursorMode = ui) {
         case CurMove:
             grabcx = server.cursor->x - grabc->geom.x;
@@ -915,23 +840,23 @@ void setCursor(struct wl_listener *listener, void *data)
                 event->hotspot_x, event->hotspot_y);
 }
 
-void setfloating(struct client *c, int floating)
+void setFloating(struct client *c, bool floating)
 {
-    if (c->isfloating == floating)
+    if (c->floating == floating)
         return;
-    c->isfloating = floating;
+    c->floating = floating;
     arrange(c->mon, false);
 }
 
 /* arg > 1.0 will set mfact absolutely */
 void setmfact(float factor) {
-  if (!selMon->lt.arrange)
-    return;
-  factor = factor < 1.0 ? factor + selMon->mfact : factor - 1.0;
-  if (factor < 0.1 || factor > 0.9)
-    return;
-  selMon->mfact = factor;
-  arrange(selMon, false);
+    if (!selMon->tagset.lt.arrange)
+        return;
+    factor = factor < 1.0 ? factor + selMon->mfact : factor - 1.0;
+    if (factor < 0.1 || factor > 0.9)
+        return;
+    selMon->mfact = factor;
+    arrange(selMon, false);
 }
 
 void setpsel(struct wl_listener *listener, void *data)
@@ -1099,19 +1024,11 @@ void sigchld(int unused)
 void tag(unsigned int ui)
 {
     struct client *sel = selClient();
-    if (sel && ui & TAGMASK) {
-        sel->tags = ui & TAGMASK;
+    if (sel && ui) {
+        toggleAddTag(&sel->tagset, tagPositionToFlag(ui));
         focusclient(sel, focustop(selMon), 1);
         arrange(selMon, false);
     }
-}
-
-void tagmon(int i)
-{
-    struct client *sel = selClient();
-    if (!sel)
-        return;
-    setmon(sel, dirtomon(i), 0);
 }
 
 void toggleFloating()
@@ -1120,39 +1037,35 @@ void toggleFloating()
     if (!sel)
         return;
     /* return if fullscreen */
-    setfloating(sel, !sel->isfloating /* || sel->isfixed */);
+    setFloating(sel, !sel->floating /* || sel->isfixed */);
 }
 
 void toggletag(unsigned int ui)
 {
-    unsigned int newtags;
     struct client *sel = selClient();
     if (!sel)
         return;
-    newtags = sel->tags ^ (ui & TAGMASK);
+
+    unsigned int newtags = sel->tagset.selTags[0] ^ ui;
     if (newtags) {
-        sel->tags = newtags;
-        focusclient(sel, focustop(selMon), 1);
+        setSelTags(&sel->tagset, newtags);
+        focusclient(sel, focustop(selMon), true);
         arrange(selMon, false);
     }
 }
 
 void toggleview(unsigned int ui)
 {
-    struct client *sel = selClient();
-    unsigned int newtagset = selMon->tagset[selMon->seltags] ^ (ui & TAGMASK);
-
-    if (newtagset) {
-        selMon->tagset[selMon->seltags] = newtagset;
-        focusclient(sel, focustop(selMon), 1);
-        arrange(selMon, false);
-    }
+    toggleTagset(&selMon->tagset);
+    focusclient(selClient(), focustop(selMon), 1);
+    arrange(selMon, false);
 }
 
 void unmapnotify(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
+    tagsetDestroy(&c->tagset);
     // LayerShell shouldn't be resized
     if (c->type != LayerShell) {
         wl_list_remove(&c->link);
@@ -1167,12 +1080,8 @@ void unmapnotify(struct wl_listener *listener, void *data)
 void view(unsigned ui)
 {
     struct client *sel = selClient();
-    if ((ui & TAGMASK) == selMon->tagset[selMon->seltags])
-        return;
 
-    selMon->seltags ^= 1; /* toggle sel tagset */
-    if (ui & TAGMASK)
-        selMon->tagset[selMon->seltags] = ui & TAGMASK;
+    setSelTags(&selMon->tagset, ui);
     focusclient(sel, focustop(selMon), 1);
     arrange(selMon, false);
 }
@@ -1198,13 +1107,13 @@ void zoom()
 {
     struct client *c, *sel = selClient(), *oldsel = sel;
 
-    if (!sel || !selMon->lt.arrange || sel->isfloating)
+    if (!sel || !selMon->tagset.lt.arrange || sel->floating)
         return;
 
     /* Search for the first tiled window that is not sel, marking sel as
      * NULL if we pass it along the way */
     wl_list_for_each(c, &clients, link)
-        if (visibleon(c, selMon) && !c->isfloating) {
+        if (visibleon(c, selMon) && !c->floating) {
             if (c != sel)
                 break;
             sel = NULL;
@@ -1244,6 +1153,8 @@ void createnotifyx11(struct wl_listener *listener, void *data)
     c->surface.xwayland = xwayland_surface;
     c->type = xwayland_surface->override_redirect ? X11Unmanaged : X11Managed;
     c->bw = borderPx;
+    tagsetCreate(&c->tagset);
+    c->mon = selMon;
 
     /* Listen to the various events it can emit */
     c->map.notify = maprequest;

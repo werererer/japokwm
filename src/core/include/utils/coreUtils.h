@@ -11,36 +11,18 @@
 #include <wlr/render/wlr_texture.h>
 #include <julia.h>
 
+#include "tagset.h"
+
 /* macros */
 #define BARF(fmt, ...)      do { fprintf(stderr, fmt "\n", ##__VA_ARGS__); exit(EXIT_FAILURE); } while (0)
 #define EBARF(fmt, ...)     BARF(fmt ": %s", ##__VA_ARGS__, strerror(errno))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define END(A)                  ((A) + LENGTH(A))
-#define TAGMASK                 ((1 << LENGTH(tags)) - 1)
-#define NUM_DIGITS 9
+/* number of chars a string should contain */
 #define ARR_STRING_LENGTH(X) strlen(X) + 2*(strlen("[]") + NUM_DIGITS)
 
 typedef struct Monitor Monitor;
 typedef struct wlr_fbox Container;
-
-struct layout {
-    char *symbol;
-    jl_function_t *arrange;
-};
-
-struct monitor {
-    struct wl_list link;
-    struct wlr_output *wlr_output;
-    struct wl_listener frame;
-    struct wl_listener destroy;
-    struct wlr_box m;      /* monitor area, layout-relative */
-    struct wlr_box w;      /* window area, layout-relative */
-    struct layout lt;
-    unsigned int seltags;
-    unsigned int tagset[2];
-    double mfact;
-    int nmaster;
-};
 
 struct keyboard {
     struct wl_list link;
@@ -70,7 +52,7 @@ struct rule {
     const char *id;
     const char *title;
     int tags;
-    int isfloating;
+    int floating;
     int monitor;
 };
 

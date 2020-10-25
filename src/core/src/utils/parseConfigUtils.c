@@ -4,8 +4,8 @@
 #include <string.h>
 
 static int jlArrLen(char *name) {
-  jl_value_t *arr = jl_eval_string(name);
-  return jl_array_len(arr);
+    jl_value_t *arr = jl_eval_string(name);
+    return jl_array_len(arr);
 }
 
 void initConfig(char *path)
@@ -99,7 +99,7 @@ struct rule getConfigRule(char *name)
     arrayPosToStr(execStr5, name, 5);
 
     rule.id = getConfigStr(execStr1);
-    rule.isfloating = getConfigInt(execStr2);
+    rule.floating = getConfigInt(execStr2);
     rule.monitor = getConfigInt(execStr3);
     rule.tags = getConfigInt(execStr4);
     rule.title = getConfigStr(execStr5);
@@ -153,8 +153,8 @@ jl_value_t* toJlMonitor(char *name, struct monitor *m)
 {
     jl_datatype_t *t = (jl_datatype_t *)jl_eval_string(name);
     jl_value_t *sM = getWlrBox(m->m);
-    jl_value_t *sW = getWlrBox(m->w);
-    jl_value_t *sTagset = jl_box_uint64(m->seltags);
+    jl_value_t *sW = getWlrBox(m->tagset.w);
+    jl_value_t *sTagset = jl_box_uint64(m->tagset.selTags[0]);
     jl_value_t *sMfact = jl_box_float64(m->mfact);
     jl_value_t *sNmaster = jl_box_uint64(m->nmaster);
     jl_value_t *res = jl_new_struct(t, sM, sW, sTagset, sMfact, sNmaster);

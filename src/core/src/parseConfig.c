@@ -1,6 +1,9 @@
 #include "parseConfig.h"
+#include "tagset.h"
 #include "utils/parseConfigUtils.h"
 #include <julia.h>
+#include <stdlib.h>
+#include <string.h>
 
 int sloppyFocus;
 int borderPx;
@@ -12,7 +15,7 @@ float textColor[4];
 float selOverlayColor[4];
 float selTextColor[4];
 
-char *tags[MAXLEN];
+struct tagset tagset;
 struct rule rules[MAXLEN];
 struct layout defaultLayout;
 struct layout prevLayout;
@@ -28,6 +31,9 @@ Key buttons[MAXLEN];
 
 void updateConfig()
 {
+    // create tagset since it is required see tagset.h
+    tagsetCreate(&tagset);
+
     sloppyFocus = getConfigInt("sloppyFocus");
     borderPx = getConfigInt("borderPx");
 
@@ -40,9 +46,8 @@ void updateConfig()
     getConfigFloatArr(selOverlayColor, "overlayColor");
     getConfigFloatArr(selTextColor, "textColor");
 
-    /* tagging */
-    getConfigStrArr(tags, "tags");
-    getConfigRuleArr(rules, "rules");
+    getConfigStrArr(tagset.tagNames, "tagNames");
+    getConfigRuleArr(rules,"rules");
 
     /* monitors */
     //getConfigMonRuleArr(monrules, "monrules");

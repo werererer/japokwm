@@ -4,6 +4,28 @@ include("translationLayer.jl")
 include("coreUtils.jl")
 include("parseLayout.jl")
 
+# from 0-1
+struct Container
+    x :: Cdouble
+    y :: Cdouble
+    width :: Cdouble
+    height :: Cdouble
+end
+
+mutable struct Monitor
+    m :: Container # monitor area
+    w :: Container # window area
+    tagset :: Int
+    mfact :: Float64
+    nmaster :: Int
+end
+
+struct cContainerList
+    container :: Ptr{Container}
+    size :: Cint
+end
+
+
 function add(box :: Container)
     ccall((:addBox, corePath), Cvoid, (Cint, Cint, Cint, Cint), 3, 3, 4, 5)
 end
@@ -190,21 +212,21 @@ function resizeThisAll(n :: Float64, d :: Direction)
     arrangeThis(false)
 end
 
-function tile(n :: Int) :: Ptr{cContainerArr}
+function tile(n :: Int) :: Ptr{cContainerList}
     global layoutData = getLayout("tile")
     return update(n)
 end
 
-function monocle(n :: Int) :: Ptr{cContainerArr}
+function monocle(n :: Int) :: Ptr{cContainerList}
     global layoutData = getLayout("monocle")
     return update(n)
 end
 
 # return array of arrangement
-function update(n :: Int) :: Ptr{cContainerArr}
+function update(n :: Int) :: Ptr{cContainerList}
     global layoutData
     n = max(1, min(n, length(layoutData)))
-    res = cContainerArr(pointer(layoutData[n]), length(layoutData[n]))
+    res = cContainerList(pointer(layoutData[n]), length(layoutData[n]))
     res = pointer([res])
     return res
 end

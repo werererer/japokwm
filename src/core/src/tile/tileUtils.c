@@ -5,61 +5,77 @@
 #include <sys/param.h>
 #include <wayland-util.h>
 #include <wlr/types/wlr_foreign_toplevel_management_v1.h>
+#include <wlr/types/wlr_box.h>
 
+#include "monitor.h"
+#include "tagset.h"
 #include "utils/coreUtils.h"
 #include "parseConfig.h"
 #include "tile/tileTexture.h"
+#include "utils/parseConfigUtils.h"
 
 bool overlay = false;
 
-struct cLayoutArr {
-  struct wlr_fbox *layout;
-  int size;
+struct containerList {
+    struct wlr_fbox *container;
+    int size;
 };
+
+/* *
+ * the wlr_fbox has includes the window size in percent.
+ * It will we mulitiplicated with the screen width and height
+ * */
+static struct wlr_box getAbsoluteBox(struct monitor *m, struct wlr_fbox b)
+{
+    struct wlr_box w = m->tagset.w;
+
+    w.x = w.width * b.x;
+    w.y = w.height * b.y;
+    w.width = w.width * b.width;
+    w.height = w.height * b.height;
+    return w;
+}
 
 void arrange(struct monitor *m, bool reset)
 {
+    printf("ARRANGE\n");
     /* Get effective monitor geometry to use for window area */
-    m->m = *wlr_output_layout_get_box(output_layout, m->wlr_output);
-    m->w = m->m;
-    if (m->lt.arrange) {
-        struct client *c;
+    struct tagset *tagset = &m->tagset;
+    selMon->m = *wlr_output_layout_get_box(output_layout, selMon->wlr_output);
+    tagset->w = selMon->m;
+    if (tagset->lt.arrange) {
+        struct client *c = NULL;
         jl_value_t *v = NULL;
 
-        int n = tiledClientCount(m);
+        int n = tiledClientCount(selMon);
         // call arrange function
         // if previous layout is different or reset -> reset layout
-        if (strcmp(prevLayout.symbol, selMon->lt.symbol) != 0 || reset) {
-            prevLayout = selMon->lt;
+        if (strcmp(prevLayout.symbol, selMon->tagset.lt.symbol) != 0 || reset) {
+            prevLayout = tagset->lt;
             jl_value_t *arg1 = jl_box_int64(n);
-            v = jl_call1(m->lt.arrange, arg1);
+            v = jl_call1(tagset->lt.arrange, arg1);
         } else {
             jl_function_t *f = jl_eval_string("Layouts.update");
             jl_value_t *arg1 = jl_box_int64(n);
             v = jl_call1(f, arg1);
         }
 
-        struct cLayoutArr *layoutArr = NULL;
+        struct containerList *containerList = NULL;
         if (v) {
-            layoutArr = jl_unbox_voidpointer(v);
+            containerList = jl_unbox_voidpointer(v);
 
             // place clients
             int i = 0;
             wl_list_for_each(c, &clients, link) {
-                if (!visibleon(c, m) || c->isfloating)
+                if (!visibleon(c, selMon) || c->floating)
                     continue;
-
-                resize(c,
-                        layoutArr->layout[i].x*m->w.width,
-                        layoutArr->layout[i].y*m->w.height,
-                        layoutArr->layout[i].width*m->w.width,
-                        layoutArr->layout[i].height*m->w.height, 
-                        0);
-                i = MIN(i + 1, layoutArr->size-1);
+                struct wlr_box b =
+                    getAbsoluteBox(selMon, containerList->container[i]);
+                resize(c, b.x, b.y, b.width, b.height, false);
+                i = MIN(i + 1, containerList->size-1);
             }
 
             // create overlay
-
             if (overlay) {
                 createNewOverlay();
             } else {
@@ -67,7 +83,7 @@ void arrange(struct monitor *m, bool reset)
             }
 
         } else {
-            printf("Empty function with symbol: %s\n", m->lt.symbol);
+            printf("Empty function with symbol: %s\n", tagset->lt.symbol);
         }
     }
 }
@@ -95,6 +111,7 @@ static void unfocusClient(struct client *c)
     }
 }
 
+//TODO: unfocusClient doesn't belong to here
 void focusclient(struct client *old, struct client *c, bool lift)
 {
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat);
@@ -147,6 +164,7 @@ struct client *focustop(struct monitor *m)
 void setmon(struct client *c, struct monitor *m, unsigned int newtags)
 {
     struct monitor *oldmon = c->mon;
+    // if monitors are changed a new client must be selected too
     struct client *oldsel = selClient();
 
     if (oldmon == m)
@@ -162,26 +180,28 @@ void setmon(struct client *c, struct monitor *m, unsigned int newtags)
         /* Make sure window actually overlaps with the monitor */
         applybounds(c, m->m);
         wlr_surface_send_enter(getWlrSurface(c), m->wlr_output);
-        c->tags = newtags ? newtags : m->tagset[m->seltags]; /* assign tags of target monitor */
+        /* assign tags of target monitor */
+        setSelTags(&c->mon->tagset, newtags ? newtags : m->tagset.selTags[0]);
         arrange(m, false);
     }
     focusclient(oldsel, focustop(selMon), true);
 }
 
-void
-resize(struct client *c, int x, int y, int w, int h, int interact)
+void resize(struct client *c, int x, int y, int w, int h, bool interact)
 {
     /*
      * Note that I took some shortcuts here. In a more fleshed-out
      * compositor, you'd wait for the client to prepare a buffer at
      * the new size, then commit any movement that was prepared.
      */
-    struct wlr_box bbox = interact ? sgeom : c->mon->w;
-    c->geom.x = x;
-    c->geom.y = y;
-    c->geom.width = w;
-    c->geom.height = h;
-    applybounds(c, bbox);
+    struct wlr_box box;
+    box.x = x;
+    box.y = y;
+    box.width = w;
+    box.height = h;
+    c->geom = box;
+    applybounds(c, box);
+
     /* wlroots makes this a no-op if size hasn't changed */
     switch (c->type) {
         case XDGShell:
@@ -189,7 +209,7 @@ resize(struct client *c, int x, int y, int w, int h, int interact)
                     c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
             break;
         case LayerShell:
-            wlr_layer_surface_v1_configure(c->surface.layer, 
+            wlr_layer_surface_v1_configure(c->surface.layer,
                     c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
             break;
         case X11Managed:
@@ -202,7 +222,7 @@ resize(struct client *c, int x, int y, int w, int h, int interact)
 
 void updateLayout()
 {
-    selMon->lt = getConfigLayout("layout");
+    selMon->tagset.lt = getConfigLayout("layout");
     arrange(selMon, true);
 }
 
@@ -217,7 +237,7 @@ int tiledClientCount(struct monitor *m)
     int n = 0;
 
     wl_list_for_each(c, &clients, link)
-        if (visibleon(c, m) && !c->isfloating)
+        if (visibleon(c, m) && !c->floating)
             n++;
     return n;
 }
@@ -229,7 +249,7 @@ int clientPos()
     int n = 0;
 
     wl_list_for_each(c, &clients, link) {
-        if (visibleon(c, m) && !c->isfloating) {
+        if (visibleon(c, m) && !c->floating) {
             if (c == selClient())
                 return n;
             n++;

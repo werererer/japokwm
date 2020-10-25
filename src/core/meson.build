@@ -21,17 +21,23 @@ foreach p:protocols
 endforeach
 
 srcs = files(
-  'src/client.c',
-  'src/parseConfig.c',
   'src/main.c',
-  'src/utils/coreUtils.c',
-  'src/xdg-shell-protocol.c',
+  'src/monitor.c',
   'src/wlr-layer-shell-unstable-v1-protocol.c',
+  'src/client.c',
+  'src/server.c',
+  'src/parseConfig.c',
+  'src/utils/writeFile.c',
+  'src/utils/coreUtils.c',
+  'src/utils/stringUtils.c',
   'src/utils/parseConfigUtils.c',
-  'src/tile/tile.c',
+  'src/xdg-shell-protocol.c',
+  'src/tagset.c',
+  'src/render/render.c',
   'src/tile/tileUtils.c',
   'src/tile/tileTexture.c',
-  'src/render/render.c',
+  'src/tile/tile.c',
+  'src/wlr-foreign-toplevel-management-unstable-v1-protocol.c',
   )
 libName = 'juliawm'
 shared_library(libName,

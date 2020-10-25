@@ -10,8 +10,7 @@ textColor = [0.003, 0.003, 0.003, 1.0]
 selOverlayColor = []
 selTextColor = []
 
-
-tags = [ "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
+tagNames = [ "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
 
 # where to put things
 rules = [

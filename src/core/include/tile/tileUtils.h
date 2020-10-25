@@ -11,7 +11,7 @@ void arrange(struct monitor *m, bool reset);
 void arrangeThis(bool reset);
 void focusclient(struct client *old, struct client *c, bool lift);
 void setmon(struct client *c, struct monitor *m, unsigned int newtags);
-void resize(struct client *c, int x, int y, int w, int h, int interact);
+void resize(struct client *c, int x, int y, int w, int h, bool interact);
 void updateLayout();
 int thisTiledClientCount();
 int tiledClientCount(struct monitor *m);

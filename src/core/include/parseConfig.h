@@ -1,6 +1,7 @@
 #ifndef PARSE_CONFIG_H
 #define PARSE_CONFIG_H
 
+#include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"
 
 /*
@@ -18,8 +19,7 @@ extern float textColor[4];
 extern float selOverlayColor[4];
 extern float selTextColor[4];
 
-#define MAXLEN 15
-extern char *tags[MAXLEN];
+extern struct tagset tagset;
 extern struct rule rules[MAXLEN];
 
 extern struct layout defaultLayout;

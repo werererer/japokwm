@@ -22,7 +22,6 @@ static int writeToFile(char *file, char *content)
 
 static int writeDoubleToFile(char *file, double d)
 {
-    int filedesc = open("test.txt", O_WRONLY);
     char content[NUM_DIGITS];
     doubleToString(content, d);
     return writeToFile(file, content);
@@ -54,7 +53,7 @@ void writeContainerArrayToFile(char *layout, Container **pTexture,
         joinPath(file, c);
         mkdir(file, 755);
         for (int j = 0; j < width; j++) {
-            writeContainerToFile(file, arr[i][j]);
+            writeContainerToFile(file, pTexture[j]);
         }
     }
 }

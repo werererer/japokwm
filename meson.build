@@ -1,4 +1,4 @@
-project('juliawm', 'c',)
+project('juliawm', 'c')
 pkg = import('pkgconfig')
 
 wayland_scanner = find_program('wayland-scanner', native: true)
