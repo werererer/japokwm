@@ -434,7 +434,26 @@ void focusmon(int i)
 
 void focusstack(int i)
 {
-    focusClient(selClient(), getClient(i), true);
+    struct client *c, *sel = selClient();
+    if (!sel)
+        return;
+    if (i > 0) {
+        wl_list_for_each(c, &sel->link, link) {
+            if (&c->link == &clients)
+                continue;  /* wrap past the sentinel node */
+            if (visibleon(c, selMon))
+                break;  /* found it */
+        }
+    } else {
+        wl_list_for_each_reverse(c, &sel->link, link) {
+            if (&c->link == &clients)
+                continue;  /* wrap past the sentinel node */
+            if (visibleon(c, selMon))
+                break;  /* found it */
+        }
+    }
+    /* If only one client is visible on selMon, then c == sel */
+    focusClient(selClient(), c, true);
 }
 
 void getxdecomode(struct wl_listener *listener, void *data)

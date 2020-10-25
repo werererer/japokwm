@@ -116,24 +116,21 @@ struct client *prevClient()
 struct client *getClient(int i)
 {
     struct client *c;
+
+    if (abs(i) > wl_list_length(&focus_stack))
+        return NULL;
     if (i == 0)
     {
         c = selClient();
     } else if (i > 0) {
-        if (i > wl_list_length(&focus_stack))
-            return NULL;
-
-        struct wl_list *pos= focus_stack.next;
+        struct wl_list *pos = &focus_stack;
         while (i > 0) {
-            pos = pos->next;
+            if (pos->next)
+                pos = pos->next;
             i--;
         }
         c = wl_container_of(pos, c, flink);
-    } else {
-        // i < 0
-        if (abs(i) > wl_list_length(&focus_stack))
-            return NULL;
-
+    } else { // i < 0
         struct wl_list *pos = &focus_stack;
         while (i < 0) {
             pos = pos->prev;
@@ -175,7 +172,6 @@ bool visibleon(struct client *c, struct monitor *m)
 static void unfocusClient(struct client *c)
 {
     if (c) {
-        printf("not empty !!\n");
         switch (c->type) {
             case XDGShell:
                 wlr_xdg_toplevel_set_activated(c->surface.xdg, false);
