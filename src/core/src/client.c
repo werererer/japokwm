@@ -68,7 +68,6 @@ void applyrules(struct client *c)
                     selMon = m;
         }
     }
-    setmon(c, selMon, newtags);
 }
 
 struct client *selClient()
@@ -111,4 +110,78 @@ bool visibleon(struct client *c, struct monitor *m)
         return sameMon && sameTag;
     }
     return false;
+}
+
+static void unfocusClient(struct client *c)
+{
+    if (c) {
+        switch (c->type) {
+            case XDGShell:
+                wlr_xdg_toplevel_set_activated(c->surface.xdg, 0);
+                break;
+            case X11Managed:
+            case X11Unmanaged:
+                wlr_xwayland_surface_activate(c->surface.xwayland, 0);
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+void focusClient(struct client *c, bool lift)
+{
+    struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat);
+    struct client *old = selClient();
+
+    unfocusClient(old);
+    /* Raise client in stacking order if requested */
+    if (c && lift) {
+        wl_list_remove(&c->slink);
+        wl_list_insert(&stack, &c->slink);
+    }
+    /* Update wlroots' keyboard focus */
+    if (!c) {
+        /* With no client, all we have left is to clear focus */
+        wlr_seat_keyboard_notify_clear_focus(seat);
+        return;
+    }
+
+    /* Have a client, so focus its top-level wlr_surface */
+    wlr_seat_keyboard_notify_enter(seat, getWlrSurface(c), kb->keycodes, 
+            kb->num_keycodes, &kb->modifiers);
+
+    /* Put the new client atop the focus stack and select its monitor */
+    wl_list_remove(&c->flink);
+    wl_list_insert(&focus_stack, &c->flink);
+    selMon = c->mon;
+
+    /* Activate the new client */
+    switch (c->type) {
+        case XDGShell:
+            wlr_xdg_toplevel_set_activated(c->surface.xdg, 1);
+            break;
+        case X11Managed:
+        case X11Unmanaged:
+            wlr_xwayland_surface_activate(c->surface.xwayland, 1);
+            break;
+        default:
+            break;
+    }
+}
+
+void focusTopClient(bool lift)
+{
+    struct client *c;
+    bool focus = false;
+
+
+    // focus_stack should not be changed while iterating
+    wl_list_for_each(c, &focus_stack, flink)
+        if (visibleon(c, selMon)) {
+            focus = true;
+            break;
+        }
+    if (focus)
+        focusClient(c, lift);
 }

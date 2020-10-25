@@ -38,7 +38,6 @@ static struct wlr_box getAbsoluteBox(struct monitor *m, struct wlr_fbox b)
 
 void arrange(struct monitor *m, bool reset)
 {
-    printf("ARRANGE\n");
     /* Get effective monitor geometry to use for window area */
     struct tagset *tagset = &m->tagset;
     selMon->m = *wlr_output_layout_get_box(output_layout, selMon->wlr_output);
@@ -92,99 +91,6 @@ void arrange(struct monitor *m, bool reset)
 void arrangeThis(bool reset)
 {
     arrange(selMon, reset);
-}
-
-static void unfocusClient(struct client *c)
-{
-    if (c) {
-        switch (c->type) {
-            case XDGShell:
-                wlr_xdg_toplevel_set_activated(c->surface.xdg, 0);
-                break;
-            case X11Managed:
-            case X11Unmanaged:
-                wlr_xwayland_surface_activate(c->surface.xwayland, 0);
-                break;
-            default:
-                break;
-        }
-    }
-}
-
-//TODO: unfocusClient doesn't belong to here
-void focusclient(struct client *old, struct client *c, bool lift)
-{
-    struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat);
-
-    unfocusClient(old);
-    /* Raise client in stacking order if requested */
-    if (c && lift) {
-        wl_list_remove(&c->slink);
-        wl_list_insert(&stack, &c->slink);
-    }
-    /* Update wlroots' keyboard focus */
-    if (!c) {
-        /* With no client, all we have left is to clear focus */
-        wlr_seat_keyboard_notify_clear_focus(seat);
-        return;
-    }
-
-    /* Have a client, so focus its top-level wlr_surface */
-    wlr_seat_keyboard_notify_enter(seat, getWlrSurface(c), kb->keycodes, 
-            kb->num_keycodes, &kb->modifiers);
-
-    /* Put the new client atop the focus stack and select its monitor */
-    wl_list_remove(&c->flink);
-    wl_list_insert(&focus_stack, &c->flink);
-    selMon = c->mon;
-
-    /* Activate the new client */
-    switch (c->type) {
-        case XDGShell:
-            wlr_xdg_toplevel_set_activated(c->surface.xdg, 1);
-            break;
-        case X11Managed:
-        case X11Unmanaged:
-            wlr_xwayland_surface_activate(c->surface.xwayland, 1);
-            break;
-        default:
-            break;
-    }
-}
-
-struct client *focustop(struct monitor *m)
-{
-    struct client *c;
-    wl_list_for_each(c, &focus_stack, flink)
-        if (visibleon(c, m))
-            return c;
-    return NULL;
-}
-
-void setmon(struct client *c, struct monitor *m, unsigned int newtags)
-{
-    struct monitor *oldmon = c->mon;
-    // if monitors are changed a new client must be selected too
-    struct client *oldsel = selClient();
-
-    if (oldmon == m)
-        return;
-    c->mon = m;
-
-    /* XXX leave/enter is not optimal but works */
-    if (oldmon) {
-        wlr_surface_send_leave(getWlrSurface(c), oldmon->wlr_output);
-        arrange(oldmon, false);
-    }
-    if (m) {
-        /* Make sure window actually overlaps with the monitor */
-        applybounds(c, m->m);
-        wlr_surface_send_enter(getWlrSurface(c), m->wlr_output);
-        /* assign tags of target monitor */
-        setSelTags(&c->mon->tagset, newtags ? newtags : m->tagset.selTags[0]);
-        arrange(m, false);
-    }
-    focusclient(oldsel, focustop(selMon), true);
 }
 
 void resize(struct client *c, int x, int y, int w, int h, bool interact)

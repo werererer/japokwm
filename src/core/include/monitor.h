@@ -1,6 +1,5 @@
 #ifndef MONITOR_H
 #define MONITOR_H
-
 #include <wayland-server.h>
 #include <wlr/types/wlr_box.h>
 
@@ -20,6 +19,7 @@ struct monitor {
 
 void createMonitor(struct wl_listener *listener, void *data);
 void cleanupMonitor(struct wl_listener *listener, void *data);
+void setMonitor(struct monitor *m);
 
 extern struct wl_list mons;
 extern struct monitor *selMon;

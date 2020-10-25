@@ -165,7 +165,7 @@ void buttonpress(struct wl_listener *listener, void *data)
     case WLR_BUTTON_PRESSED:
         /* Change focus if the button was _pressed_ over a client */
         if ((c = xytoclient(server.cursor->x, server.cursor->y)))
-            focusclient(selClient(), c, 1);
+            focusClient(c, true);
 
         /* Translate libinput to xkbcommon code */
         unsigned sym = event->button + 64985;
@@ -189,7 +189,6 @@ void buttonpress(struct wl_listener *listener, void *data)
             server.cursorMode = CurNormal;
             /* Drop the window off on its new monitor */
             selMon = xytomon(server.cursor->x, server.cursor->y);
-            setmon(grabc, selMon, 0);
             return;
         }
         break;
@@ -394,7 +393,12 @@ void destroynotify(struct wl_listener *listener, void *data)
         default:
             break;
     }
+
     free(c);
+    c = NULL;
+
+    arrange(selMon, false);
+    focusTopClient(false);
 }
 
 void destroyxdeco(struct wl_listener *listener, void *data)
@@ -424,10 +428,8 @@ struct monitor *dirtomon(int dir)
 
 void focusmon(int i)
 {
-    struct client *sel = selClient();
-
     selMon = dirtomon(i);
-    focusclient(sel, focustop(selMon), 1);
+    focusTopClient(true);
 }
 
 //TODO: EXPORT
@@ -453,7 +455,7 @@ void focusstack(int i)
         }
     }
     /* If only one client is visible on selMon, then c == sel */
-    focusclient(sel, c, 1);
+    focusClient(c, true);
 }
 
 void getxdecomode(struct wl_listener *listener, void *data)
@@ -619,8 +621,8 @@ void maprequest(struct wl_listener *listener, void *data)
             c->geom.height = c->surface.xwayland->height + 2 * c->bw;
     }
 
-    /* Set initial monitor, tags, floating status, and focus */
     applyrules(c);
+    focusTopClient(false);
     arrange(selMon, false);
 }
 
@@ -754,7 +756,7 @@ pointerfocus(struct client *c, struct wlr_surface *surface,
         return;
 
     if (sloppyFocus)
-        focusclient(selClient(), c, 0);
+        focusClient(c, false);
 }
 
 void quit()
@@ -1026,7 +1028,7 @@ void tag(unsigned int ui)
     struct client *sel = selClient();
     if (sel && ui) {
         toggleAddTag(&sel->tagset, tagPositionToFlag(ui));
-        focusclient(sel, focustop(selMon), 1);
+        focusTopClient(true);
         arrange(selMon, false);
     }
 }
@@ -1049,7 +1051,7 @@ void toggletag(unsigned int ui)
     unsigned int newtags = sel->tagset.selTags[0] ^ ui;
     if (newtags) {
         setSelTags(&sel->tagset, newtags);
-        focusclient(sel, focustop(selMon), true);
+        focusTopClient(true);
         arrange(selMon, false);
     }
 }
@@ -1057,7 +1059,7 @@ void toggletag(unsigned int ui)
 void toggleview(unsigned int ui)
 {
     toggleTagset(&selMon->tagset);
-    focusclient(selClient(), focustop(selMon), 1);
+    focusTopClient(true);
     arrange(selMon, false);
 }
 
@@ -1073,16 +1075,13 @@ void unmapnotify(struct wl_listener *listener, void *data)
             return;
         wl_list_remove(&c->flink);
     }
-    setmon(c, NULL, 0);
     wl_list_remove(&c->slink);
 }
 
 void view(unsigned ui)
 {
-    struct client *sel = selClient();
-
     setSelTags(&selMon->tagset, ui);
-    focusclient(sel, focustop(selMon), 1);
+    focusTopClient(false);
     arrange(selMon, false);
 }
 
@@ -1105,19 +1104,19 @@ struct monitor *xytomon(double x, double y)
 
 void zoom()
 {
-    struct client *c, *sel = selClient(), *oldsel = sel;
+    struct client *c, *old = selClient();
 
-    if (!sel || !selMon->tagset.lt.arrange || sel->floating)
+    if (!old || !selMon->tagset.lt.arrange || old->floating)
         return;
 
     /* Search for the first tiled window that is not sel, marking sel as
      * NULL if we pass it along the way */
-    wl_list_for_each(c, &clients, link)
-        if (visibleon(c, selMon) && !c->floating) {
-            if (c != sel)
-                break;
-            sel = NULL;
-        }
+    wl_list_for_each(c, &clients,
+            link) if (visibleon(c, selMon) && !c->floating) {
+        if (c != old)
+            break;
+        old = NULL;
+    }
 
     /* Return if no other tiled window was found */
     if (&c->link == &clients)
@@ -1125,12 +1124,12 @@ void zoom()
 
     /* If we passed sel, move c to the front; otherwise, move sel to the
      * front */
-    if (!sel)
-        sel = c;
-    wl_list_remove(&sel->link);
-    wl_list_insert(&clients, &sel->link);
+    if (!old)
+        old = c;
+    wl_list_remove(&old->link);
+    wl_list_insert(&clients, &old->link);
 
-    focusclient(oldsel, sel, 1);
+    focusClient(old, true);
     arrange(selMon, false);
 }
 

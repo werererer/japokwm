@@ -1,8 +1,8 @@
 #ifndef PARSE_CONFIG_UTILS_H
 #define PARSE_CONFIG_UTILS_H
-#include "monitor.h"
 #include <string.h>
 #include "utils/coreUtils.h"
+#include "monitor.h"
 
 void initConfig(char *path);
 // basic

@@ -1,10 +1,11 @@
 #include "monitor.h"
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_xcursor_manager.h>
+
 #include "parseConfig.h"
 #include "render/render.h"
 #include "server.h"
-#include "tagset.h"
+#include "tile/tileUtils.h"
 
 /* monitors */
 static const struct monRule monrules[] = {
@@ -73,6 +74,12 @@ void createMonitor(struct wl_listener *listener, void *data)
     wlr_output_layout_add_auto(output_layout, wlr_output);
     sgeom = *wlr_output_layout_get_box(output_layout, NULL);
 }
+
+void setMonitor(struct monitor *m)
+{
+    selMon = m;
+}
+
 
 void cleanupMonitor(struct wl_listener *listener, void *data)
 {

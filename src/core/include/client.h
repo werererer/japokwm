@@ -4,9 +4,8 @@
 #include <X11/Xlib.h>
 #include <wlr/xwayland.h>
 
-#include "parseConfig.h"
 #include "tagset.h"
-#include "utils/coreUtils.h"
+#include "parseConfig.h"
 
 enum shell { XDGShell, X11Managed, X11Unmanaged, LayerShell }; /* client types */
 
@@ -33,13 +32,16 @@ struct client {
     uint32_t resize; /* configure serial of a pending resize */
 };
 
-void clientCreate(struct client *c);
-void clientDestroy(struct client *c);
+void createClient(struct client *c);
+void destroyClient(struct client *c);
 
 void applybounds(struct client *c, struct wlr_box bbox);
+/* set title and floating status */
 void applyrules(struct client *c);
 struct client *selClient();
 bool visibleon(struct client *c, struct monitor *m);
+void focusClient(struct client *c, bool lift);
+void focusTopClient(bool lift);
 
 extern struct wl_list clients; /* tiling order */
 extern struct wl_list focus_stack;  /* focus order */
