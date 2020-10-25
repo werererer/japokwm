@@ -5,6 +5,9 @@
 
 struct layout {
     char *symbol;
+    /* this function gets executed when the arrange function is called
+     * usually this function will read the data about the layout from a
+     * file.*/
     jl_function_t *arrange;
 };
 

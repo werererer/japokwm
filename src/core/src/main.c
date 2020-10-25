@@ -439,14 +439,14 @@ void focusstack(int i)
         return;
     if (i > 0) {
         wl_list_for_each(c, &sel->link, link) {
-            if (&c->link == &clients)
+            if (&c->link == &containers)
                 continue;  /* wrap past the sentinel node */
             if (visibleon(c, selMon))
                 break;  /* found it */
         }
     } else {
         wl_list_for_each_reverse(c, &sel->link, link) {
-            if (&c->link == &clients)
+            if (&c->link == &containers)
                 continue;  /* wrap past the sentinel node */
             if (visibleon(c, selMon))
                 break;  /* found it */
@@ -592,8 +592,8 @@ void maprequest(struct wl_listener *listener, void *data)
 
     /* Insert this client into client lists. */
     if (c->type != LayerShell) {
-        wl_list_insert(&clients, &c->link);
-        wl_list_insert(&focus_stack, &c->flink);
+        wl_list_insert(&containers, &c->link);
+        wl_list_insert(&focusStack, &c->flink);
     }
     wl_list_insert(&stack, &c->slink);
     struct client *prev = wl_container_of(listener, prev, map);
@@ -937,8 +937,8 @@ void setup(void)
      *
      * https://drewdevault.com/2018/07/29/Wayland-shells.html
      */
-    wl_list_init(&clients);
-    wl_list_init(&focus_stack);
+    wl_list_init(&containers);
+    wl_list_init(&focusStack);
     wl_list_init(&stack);
     wl_list_init(&independents);
     server.xdgShell = wlr_xdg_shell_create(server.display);
@@ -1110,7 +1110,7 @@ void zoom()
 
     /* Search for the first tiled window that is not sel, marking sel as
      * NULL if we pass it along the way */
-    wl_list_for_each(c, &clients,
+    wl_list_for_each(c, &containers,
             link) if (visibleon(c, selMon) && !c->floating) {
         if (c != old)
             break;
@@ -1118,7 +1118,7 @@ void zoom()
     }
 
     /* Return if no other tiled window was found */
-    if (&c->link == &clients)
+    if (&c->link == &containers)
         return;
 
     /* If we passed sel, move c to the front; otherwise, move sel to the
@@ -1126,7 +1126,7 @@ void zoom()
     if (!old)
         old = c;
     wl_list_remove(&old->link);
-    wl_list_insert(&clients, &old->link);
+    wl_list_insert(&containers, &old->link);
 
     focusClient(nextClient(), old, true);
     arrange(selMon, false);

@@ -77,7 +77,7 @@ void createOverlay()
 
     int i = 1;
     char text[NUM_DIGITS];
-    wl_list_for_each(c, &stack, slink) {
+    wl_list_for_each(c, &containers, link) {
         if (!visibleon(c, c->mon))
             continue;
 

@@ -10,8 +10,6 @@
 */
 
 //relative position
-extern struct wlr_list *containers;
-
 void create(Monitor *m);
 void tile(Monitor *m);
 void addClient(struct client *c, int x1, int y1, int x2, int y2, Monitor *m);

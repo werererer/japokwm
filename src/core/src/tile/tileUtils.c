@@ -65,7 +65,7 @@ void arrange(struct monitor *m, bool reset)
 
             // place clients
             int i = 0;
-            wl_list_for_each(c, &clients, link) {
+            wl_list_for_each(c, &containers, link) {
                 if (!visibleon(c, selMon) || c->floating)
                     continue;
                 struct wlr_box b =
@@ -142,7 +142,7 @@ int tiledClientCount(struct monitor *m)
     struct client *c;
     int n = 0;
 
-    wl_list_for_each(c, &clients, link)
+    wl_list_for_each(c, &containers, link)
         if (visibleon(c, m) && !c->floating)
             n++;
     return n;
@@ -154,7 +154,7 @@ int clientPos()
     struct client *c;
     int n = 0;
 
-    wl_list_for_each(c, &clients, link) {
+    wl_list_for_each(c, &containers, link) {
         if (visibleon(c, m) && !c->floating) {
             if (c == selClient())
                 return n;
