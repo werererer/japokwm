@@ -165,7 +165,7 @@ void buttonpress(struct wl_listener *listener, void *data)
     case WLR_BUTTON_PRESSED:
         /* Change focus if the button was _pressed_ over a client */
         if ((c = xytoclient(server.cursor->x, server.cursor->y)))
-            focusClient(c, true);
+            focusClient(nextClient(), c, true);
 
         /* Translate libinput to xkbcommon code */
         unsigned sym = event->button + 64985;
@@ -398,7 +398,7 @@ void destroynotify(struct wl_listener *listener, void *data)
     c = NULL;
 
     arrange(selMon, false);
-    focusTopClient(false);
+    focusTopClient(nextClient(), false);
 }
 
 void destroyxdeco(struct wl_listener *listener, void *data)
@@ -409,8 +409,8 @@ void destroyxdeco(struct wl_listener *listener, void *data)
     wl_list_remove(&d->destroy.link);
     wl_list_remove(&d->request_mode.link);
     free(d);
-}
 
+}
 struct monitor *dirtomon(int dir)
 {
     struct monitor *m;
@@ -429,33 +429,12 @@ struct monitor *dirtomon(int dir)
 void focusmon(int i)
 {
     selMon = dirtomon(i);
-    focusTopClient(true);
+    focusTopClient(nextClient(), true);
 }
 
-//TODO: EXPORT
 void focusstack(int i)
 {
-    /* Focus the next or previous client (in tiling order) on selMon */
-    struct client *c, *sel = selClient();
-    if (!sel)
-        return;
-    if (i > 0) {
-        wl_list_for_each(c, &sel->link, link) {
-            if (&c->link == &clients)
-                continue;  /* wrap past the sentinel node */
-            if (visibleon(c, selMon))
-                break;  /* found it */
-        }
-    } else {
-        wl_list_for_each_reverse(c, &sel->link, link) {
-            if (&c->link == &clients)
-                continue;  /* wrap past the sentinel node */
-            if (visibleon(c, selMon))
-                break;  /* found it */
-        }
-    }
-    /* If only one client is visible on selMon, then c == sel */
-    focusClient(c, true);
+    focusClient(selClient(), getClient(i), true);
 }
 
 void getxdecomode(struct wl_listener *listener, void *data)
@@ -622,7 +601,7 @@ void maprequest(struct wl_listener *listener, void *data)
     }
 
     applyrules(c);
-    focusTopClient(false);
+    focusTopClient(nextClient(), false);
     arrange(selMon, false);
 }
 
@@ -756,7 +735,7 @@ pointerfocus(struct client *c, struct wlr_surface *surface,
         return;
 
     if (sloppyFocus)
-        focusClient(c, false);
+        focusClient(nextClient(), c, false);
 }
 
 void quit()
@@ -1028,7 +1007,7 @@ void tag(unsigned int ui)
     struct client *sel = selClient();
     if (sel && ui) {
         toggleAddTag(&sel->tagset, tagPositionToFlag(ui));
-        focusTopClient(true);
+        focusTopClient(nextClient(), true);
         arrange(selMon, false);
     }
 }
@@ -1051,7 +1030,7 @@ void toggletag(unsigned int ui)
     unsigned int newtags = sel->tagset.selTags[0] ^ ui;
     if (newtags) {
         setSelTags(&sel->tagset, newtags);
-        focusTopClient(true);
+        focusTopClient(nextClient(), true);
         arrange(selMon, false);
     }
 }
@@ -1059,7 +1038,7 @@ void toggletag(unsigned int ui)
 void toggleview(unsigned int ui)
 {
     toggleTagset(&selMon->tagset);
-    focusTopClient(true);
+    focusTopClient(nextClient(), true);
     arrange(selMon, false);
 }
 
@@ -1080,8 +1059,9 @@ void unmapnotify(struct wl_listener *listener, void *data)
 
 void view(unsigned ui)
 {
+    printf("view\n");
     setSelTags(&selMon->tagset, ui);
-    focusTopClient(false);
+    focusTopClient(nextClient(), false);
     arrange(selMon, false);
 }
 
@@ -1129,7 +1109,7 @@ void zoom()
     wl_list_remove(&old->link);
     wl_list_insert(&clients, &old->link);
 
-    focusClient(old, true);
+    focusClient(nextClient(), old, true);
     arrange(selMon, false);
 }
 

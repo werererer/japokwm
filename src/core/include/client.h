@@ -37,11 +37,13 @@ void destroyClient(struct client *c);
 
 void applybounds(struct client *c, struct wlr_box bbox);
 /* set title and floating status */
-void applyrules(struct client *c);
-struct client *selClient();
 bool visibleon(struct client *c, struct monitor *m);
-void focusClient(struct client *c, bool lift);
-void focusTopClient(bool lift);
+struct client *nextClient();
+struct client *selClient();
+void applyrules(struct client *c);
+void focusClient(struct client *old, struct client *c, bool lift);
+void focusTopClient(struct client *old, bool lift);
+struct client *getClient(int i);
 
 extern struct wl_list clients; /* tiling order */
 extern struct wl_list focus_stack;  /* focus order */

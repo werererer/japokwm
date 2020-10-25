@@ -1,5 +1,6 @@
 #include "client.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <wayland-util.h>
 
 #include "tile/tile.h"
@@ -84,6 +85,65 @@ struct client *selClient()
     }
 }
 
+struct client *nextClient()
+{
+    if (wl_list_length(&focus_stack) >= 2)
+    {
+        struct client *c = wl_container_of(focus_stack.next->next, c, flink);
+        if (!visibleon(c, selMon))
+            return NULL;
+        else
+            return c;
+    } else {
+        return NULL;
+    }
+}
+
+struct client *prevClient()
+{
+    if (wl_list_length(&focus_stack) >= 2)
+    {
+        struct client *c = wl_container_of(focus_stack.prev, c, flink);
+        if (!visibleon(c, selMon))
+            return NULL;
+        else
+            return c;
+    } else {
+        return NULL;
+    }
+}
+
+struct client *getClient(int i)
+{
+    struct client *c;
+    if (i == 0)
+    {
+        c = selClient();
+    } else if (i > 0) {
+        if (i > wl_list_length(&focus_stack))
+            return NULL;
+
+        struct wl_list *pos= focus_stack.next;
+        while (i > 0) {
+            pos = pos->next;
+            i--;
+        }
+        c = wl_container_of(pos, c, flink);
+    } else {
+        // i < 0
+        if (abs(i) > wl_list_length(&focus_stack))
+            return NULL;
+
+        struct wl_list *pos = &focus_stack;
+        while (i < 0) {
+            pos = pos->prev;
+            i++;
+        }
+        c = wl_container_of(pos, c, flink);
+    }
+    return c;
+}
+
 struct wlr_surface *getWlrSurface(struct client *c)
 {
     switch (c->type) {
@@ -115,13 +175,14 @@ bool visibleon(struct client *c, struct monitor *m)
 static void unfocusClient(struct client *c)
 {
     if (c) {
+        printf("not empty !!\n");
         switch (c->type) {
             case XDGShell:
-                wlr_xdg_toplevel_set_activated(c->surface.xdg, 0);
+                wlr_xdg_toplevel_set_activated(c->surface.xdg, false);
                 break;
             case X11Managed:
             case X11Unmanaged:
-                wlr_xwayland_surface_activate(c->surface.xwayland, 0);
+                wlr_xwayland_surface_activate(c->surface.xwayland, false);
                 break;
             default:
                 break;
@@ -129,17 +190,15 @@ static void unfocusClient(struct client *c)
     }
 }
 
-void focusClient(struct client *c, bool lift)
+void focusClient(struct client *old, struct client *c, bool lift)
 {
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat);
-    struct client *old = selClient();
-
-    unfocusClient(old);
     /* Raise client in stacking order if requested */
     if (c && lift) {
         wl_list_remove(&c->slink);
         wl_list_insert(&stack, &c->slink);
     }
+    unfocusClient(old);
     /* Update wlroots' keyboard focus */
     if (!c) {
         /* With no client, all we have left is to clear focus */
@@ -151,30 +210,28 @@ void focusClient(struct client *c, bool lift)
     wlr_seat_keyboard_notify_enter(seat, getWlrSurface(c), kb->keycodes, 
             kb->num_keycodes, &kb->modifiers);
 
-    /* Put the new client atop the focus stack and select its monitor */
+    /* Put the new client atop the focus stack */
     wl_list_remove(&c->flink);
     wl_list_insert(&focus_stack, &c->flink);
-    selMon = c->mon;
 
     /* Activate the new client */
     switch (c->type) {
         case XDGShell:
-            wlr_xdg_toplevel_set_activated(c->surface.xdg, 1);
+            wlr_xdg_toplevel_set_activated(c->surface.xdg, true);
             break;
         case X11Managed:
         case X11Unmanaged:
-            wlr_xwayland_surface_activate(c->surface.xwayland, 1);
+            wlr_xwayland_surface_activate(c->surface.xwayland, true);
             break;
         default:
             break;
     }
 }
 
-void focusTopClient(bool lift)
+void focusTopClient(struct client *old, bool lift)
 {
     struct client *c;
     bool focus = false;
-
 
     // focus_stack should not be changed while iterating
     wl_list_for_each(c, &focus_stack, flink)
@@ -183,5 +240,5 @@ void focusTopClient(bool lift)
             break;
         }
     if (focus)
-        focusClient(c, lift);
+        focusClient(old, c, lift);
 }
