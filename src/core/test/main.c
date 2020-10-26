@@ -6,7 +6,7 @@
 #include "client.h"
 #include "tagset.h"
 
-void testTagsetCreate()
+void testVisibleon()
 {
     struct client c;
     struct monitor m;
