@@ -20,9 +20,10 @@ jobs:
             - run: pacman -S --noconfirm cmocka
             - checkout
             - run: ls
-            - run: meson build
+            - run: meson -Db_coverage=true build
             - run: cd build && meson compile
             - run: cd build && meson test
+            - run: cd build && meson coverage-xml
             - run: bash <(curl -s https://codecov.io/bash)
 workflows:
     one:
