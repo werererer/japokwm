@@ -1,4 +1,4 @@
-# juliawm - for Wayland [![CircleCI](https://circleci.com/gh/werererer/juliawm.svg?style=svg)](https://app.circleci.com/pipelines/github/werererer)
+# juliawm - for Wayland [![CircleCI](https://circleci.com/gh/werererer/juliawm.svg?style=svg)](https://app.circleci.com/pipelines/github/werererer) [![codecov](https://codecov.io/gh/werererer/juliawm/branch/master/graph/badge.svg?token=T8YAGSEC8M)](undefined)
 
 juliawm tries to fill the gap of missing tiling windowmanagers that are list/stack based in wayland.
 Its goals are:
