@@ -17,11 +17,13 @@ jobs:
             - run: pacman -S --noconfirm cairo
             - run: pacman -S --noconfirm wayland
             - run: pacman -S --noconfirm wayland-protocols
+            - run: pacman -S --noconfirm cmocka
             - checkout
             - run: ls
             - run: meson build
             - run: cd build && meson compile
             - run: cd build && meson test
+            - run: bash <(curl -s https://codecov.io/bash)
 workflows:
     one:
         jobs:
