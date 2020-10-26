@@ -1,6 +1,7 @@
 #include "tile/tileUtils.h"
 #include <client.h>
 #include <julia.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/param.h>
 #include <wayland-util.h>
@@ -41,14 +42,15 @@ void arrange(struct monitor *m, bool reset)
     /* Get effective monitor geometry to use for window area */
     struct tagset *tagset = &m->tagset;
     selMon->m = *wlr_output_layout_get_box(output_layout, selMon->wlr_output);
+    //TODO: this doesn't belong to this function
     tagset->w = selMon->m;
     if (tagset->lt.arrange) {
         struct client *c = NULL;
         jl_value_t *v = NULL;
 
         int n = tiledClientCount(selMon);
-        // call arrange function
-        // if previous layout is different or reset -> reset layout
+        /* call arrange function
+         * if previous layout is different or reset -> reset layout */
         if (strcmp(prevLayout.symbol, selMon->tagset.lt.symbol) != 0 || reset) {
             prevLayout = tagset->lt;
             jl_value_t *arg1 = jl_box_int64(n);
@@ -65,7 +67,10 @@ void arrange(struct monitor *m, bool reset)
 
             // place clients
             int i = 0;
-            wl_list_for_each(c, &containers, link) {
+            printf("numb clients: %i\n", wl_list_length(&clients));
+            printf("mon set: %i\n", m->tagset.selTags[0]);
+            wl_list_for_each(c, &clients, link) {
+                printf("pos %i\n", c->tagset.selTags[0]);
                 if (!visibleon(c, selMon) || c->floating)
                     continue;
                 struct wlr_box b =
@@ -73,8 +78,8 @@ void arrange(struct monitor *m, bool reset)
                 resize(c, b.x, b.y, b.width, b.height, false);
                 i = MIN(i + 1, containerList->size-1);
             }
-
             // create overlay
+
             if (overlay) {
                 createNewOverlay();
             } else {
@@ -142,7 +147,7 @@ int tiledClientCount(struct monitor *m)
     struct client *c;
     int n = 0;
 
-    wl_list_for_each(c, &containers, link)
+    wl_list_for_each(c, &clients, link)
         if (visibleon(c, m) && !c->floating)
             n++;
     return n;
@@ -154,7 +159,7 @@ int clientPos()
     struct client *c;
     int n = 0;
 
-    wl_list_for_each(c, &containers, link) {
+    wl_list_for_each(c, &clients, link) {
         if (visibleon(c, m) && !c->floating) {
             if (c == selClient())
                 return n;

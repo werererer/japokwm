@@ -15,7 +15,6 @@ char* getConfigStr(char *name);
 float getConfigFloat(char *name);
 int getConfigInt(char *name);
 jl_function_t* getConfigFunc(char *name);
-jl_value_t* toJlMonitor(char *name, struct monitor *m);
 // set
 void setConfigLayoutSymbol(char *name, struct layout l);
 

@@ -21,7 +21,7 @@ jobs:
             - run: ls
             - run: meson build
             - run: cd build && meson compile
-            - run: cd build && meson install
+            - run: cd build && meson test
 workflows:
     one:
         jobs:

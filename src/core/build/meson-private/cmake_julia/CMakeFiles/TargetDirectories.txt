@@ -1,2 +1,0 @@
-/home/jakob/git/juliawm/src/core/build/meson-private/cmake_julia/CMakeFiles/rebuild_cache.dir
-/home/jakob/git/juliawm/src/core/build/meson-private/cmake_julia/CMakeFiles/edit_cache.dir

@@ -7,7 +7,7 @@
 #include "utils/coreUtils.h"
 
 //global variables
-struct wl_list containers; /* tiling order */
+struct wl_list clients; /* tiling order */
 struct wl_list focusStack;  /* focus order */
 struct wl_list stack;   /* stacking z-order */
 struct wlr_output_layout *output_layout;
@@ -162,10 +162,9 @@ struct wlr_surface *getWlrSurface(struct client *c)
 bool visibleon(struct client *c, struct monitor *m)
 {
     if (m && c) {
-        bool sameMon = c->mon == m;
-        unsigned int tagPos = tagPositionToFlag(m->tagset.selTags[0]);
-        bool sameTag = c->mon->tagset.selTags[0] & tagPos;
-        return sameMon && sameTag;
+        if (c->mon == m) {
+            return c->tagset.selTags[0] & m->tagset.selTags[0];
+        }
     }
     return false;
 }

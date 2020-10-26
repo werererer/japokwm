@@ -45,7 +45,7 @@ void focusClient(struct client *old, struct client *c, bool lift);
 void focusTopClient(struct client *old, bool lift);
 struct client *getClient(int i);
 
-extern struct wl_list containers; /* tiling order */
+extern struct wl_list clients; /* tiling order */
 extern struct wl_list focusStack;  /* focus order */
 extern struct wl_list stack;   /* stacking z-order */
 extern struct wlr_output_layout *output_layout;

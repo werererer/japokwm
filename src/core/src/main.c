@@ -437,14 +437,14 @@ void focusstack(int i)
         return;
     if (i > 0) {
         wl_list_for_each(c, &sel->link, link) {
-            if (&c->link == &containers)
+            if (&c->link == &clients)
                 continue;  /* wrap past the sentinel node */
             if (visibleon(c, selMon))
                 break;  /* found it */
         }
     } else {
         wl_list_for_each_reverse(c, &sel->link, link) {
-            if (&c->link == &containers)
+            if (&c->link == &clients)
                 continue;  /* wrap past the sentinel node */
             if (visibleon(c, selMon))
                 break;  /* found it */
@@ -582,9 +582,8 @@ void maprequest(struct wl_listener *listener, void *data)
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
     tagsetCreate(&c->tagset);
-    printf("tags: %i\n", selMon->tagset.selTags[0]);
     setSelTags(&c->tagset, selMon->tagset.selTags[0]);
-    c->tagset.focusedTag = 1;
+    c->tagset.focusedTag = selMon->tagset.focusedTag;
 
     if (c->type == X11Unmanaged) {
         /* Insert this independent into independents lists. */
@@ -594,7 +593,7 @@ void maprequest(struct wl_listener *listener, void *data)
 
     /* Insert this client into client lists. */
     if (c->type != LayerShell) {
-        wl_list_insert(&containers, &c->link);
+        wl_list_insert(&clients, &c->link);
         wl_list_insert(&focusStack, &c->flink);
     }
     wl_list_insert(&stack, &c->slink);
@@ -939,7 +938,7 @@ void setup(void)
      *
      * https://drewdevault.com/2018/07/29/Wayland-shells.html
      */
-    wl_list_init(&containers);
+    wl_list_init(&clients);
     wl_list_init(&focusStack);
     wl_list_init(&stack);
     wl_list_init(&independents);
@@ -1113,7 +1112,7 @@ void zoom()
 
     /* Search for the first tiled window that is not sel, marking sel as
      * NULL if we pass it along the way */
-    wl_list_for_each(c, &containers,
+    wl_list_for_each(c, &clients,
             link) if (visibleon(c, selMon) && !c->floating) {
         if (c != old)
             break;
@@ -1121,7 +1120,7 @@ void zoom()
     }
 
     /* Return if no other tiled window was found */
-    if (&c->link == &containers)
+    if (&c->link == &clients)
         return;
 
     /* If we passed sel, move c to the front; otherwise, move sel to the
@@ -1129,7 +1128,7 @@ void zoom()
     if (!old)
         old = c;
     wl_list_remove(&old->link);
-    wl_list_insert(&containers, &old->link);
+    wl_list_insert(&clients, &old->link);
 
     focusClient(nextClient(), old, true);
     arrange(selMon, false);

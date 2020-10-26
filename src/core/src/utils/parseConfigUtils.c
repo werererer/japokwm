@@ -70,18 +70,6 @@ void setConfiglayoutSymbol(char *name, struct layout l)
     jl_eval_string(execStr);
 }
 
-static jl_value_t* getWlrBox(struct wlr_box w)
-{
-
-    jl_datatype_t *wlrBox = (jl_datatype_t *)jl_eval_string("Layouts.wlr_fbox");
-    jl_value_t *sX = jl_box_int32(w.x);
-    jl_value_t *sY = jl_box_int32(8);
-    jl_value_t *sWidth = jl_box_int32(w.width);
-    jl_value_t *sHeight = jl_box_int32(w.height);
-    jl_value_t *str = jl_new_struct(wlrBox, sX, sY, sWidth, sHeight);
-    return str;
-}
-
 struct rule getConfigRule(char *name)
 {
     struct rule rule;
@@ -147,18 +135,6 @@ Key getConfigKey(char *name)
     key.symbol = getConfigStr(execStr1);
     key.func = getConfigFunc(execStr2);
     return key;
-}
-
-jl_value_t* toJlMonitor(char *name, struct monitor *m)
-{
-    jl_datatype_t *t = (jl_datatype_t *)jl_eval_string(name);
-    jl_value_t *sM = getWlrBox(m->m);
-    jl_value_t *sW = getWlrBox(m->tagset.w);
-    jl_value_t *sTagset = jl_box_uint64(m->tagset.selTags[0]);
-    jl_value_t *sMfact = jl_box_float64(m->mfact);
-    jl_value_t *sNmaster = jl_box_uint64(m->nmaster);
-    jl_value_t *res = jl_new_struct(t, sM, sW, sTagset, sMfact, sNmaster);
-    return res;
 }
 
 void getConfigStrArr(char **resArr, char *name)

@@ -20,8 +20,8 @@ foreach p:protocols
     endif
 endforeach
 
+main = files('src/main.c')
 srcs = files(
-  'src/main.c',
   'src/monitor.c',
   'src/wlr-layer-shell-unstable-v1-protocol.c',
   'src/client.c',
@@ -40,11 +40,12 @@ srcs = files(
   'src/wlr-foreign-toplevel-management-unstable-v1-protocol.c',
   )
 libName = 'juliawm'
-shared_library(libName,
-              srcs,
+wmlib = shared_library(libName,
+              [main, srcs],
               dependencies: deps,
               include_directories: inc,
               link_args: '-ljulia',
               install: true,
               install_dir: root / srcDir,
               )
+subdir('test')
