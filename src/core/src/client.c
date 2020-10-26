@@ -163,7 +163,8 @@ bool visibleon(struct client *c, struct monitor *m)
 {
     if (m && c) {
         bool sameMon = c->mon == m;
-        bool sameTag = c->mon->tagset.selTags[0] & (1 << m->tagset.focusedTag);
+        unsigned int tagPos = tagPositionToFlag(m->tagset.selTags[0]);
+        bool sameTag = c->mon->tagset.selTags[0] & tagPos;
         return sameMon && sameTag;
     }
     return false;

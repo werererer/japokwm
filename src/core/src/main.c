@@ -296,7 +296,6 @@ void createnotify(struct wl_listener *listener, void *data)
     c->surface.xdg = xdg_surface;
     c->bw = borderPx;
     c->type = XDGShell;
-    tagsetCreate(&c->tagset);
     c->mon = selMon;
 
     /* Tell the client not to try anything fancy */
@@ -327,7 +326,6 @@ void createnotifyLayerShell(struct wl_listener *listener, void *data)
     c->surface.layer = layer_surface;
     c->bw = borderPx;
     c->type = LayerShell;
-    tagsetCreate(&c->tagset);
     c->mon = selMon;
 
     /* Listen to the various events it can emit */
@@ -583,6 +581,10 @@ void maprequest(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
+    tagsetCreate(&c->tagset);
+    printf("tags: %i\n", selMon->tagset.selTags[0]);
+    setSelTags(&c->tagset, selMon->tagset.selTags[0]);
+    c->tagset.focusedTag = 1;
 
     if (c->type == X11Unmanaged) {
         /* Insert this independent into independents lists. */
@@ -754,7 +756,7 @@ pointerfocus(struct client *c, struct wlr_surface *surface,
         return;
 
     if (sloppyFocus)
-        focusClient(nextClient(), c, false);
+        focusClient(selClient(), c, false);
 }
 
 void quit()
@@ -1079,6 +1081,7 @@ void unmapnotify(struct wl_listener *listener, void *data)
 void view(unsigned ui)
 {
     printf("view\n");
+    selMon->tagset.focusedTag = 0;
     setSelTags(&selMon->tagset, ui);
     focusTopClient(nextClient(), false);
     arrange(selMon, false);
@@ -1151,7 +1154,6 @@ void createnotifyx11(struct wl_listener *listener, void *data)
     c->surface.xwayland = xwayland_surface;
     c->type = xwayland_surface->override_redirect ? X11Unmanaged : X11Managed;
     c->bw = borderPx;
-    tagsetCreate(&c->tagset);
     c->mon = selMon;
 
     /* Listen to the various events it can emit */

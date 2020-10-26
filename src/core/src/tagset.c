@@ -13,7 +13,8 @@ void tagsetDestroy(struct tagset *tagset)
 
 unsigned int tagPositionToFlag(enum tagPosition pos)
 {
-    return (1 << pos);
+    /* tagPosition begins at 1 */
+    return (1 << (pos-1));
 }
 
 void setSelTags(struct tagset *tagset, unsigned int selTags)
