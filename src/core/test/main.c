@@ -13,9 +13,16 @@ void testTagsetCreate()
 
     tagsetCreate(&c.tagset);
     tagsetCreate(&m.tagset);
+
+    c.mon = &m;
     c.tagset.selTags[0] = 7;
     m.tagset.selTags[0] = 8;
     assert_false(visibleon(&c, &m));
+    c.tagset.selTags[0] = 5;
+    m.tagset.selTags[0] = 3;
+    m.tagset.focusedTag = 1;
+    assert_true(visibleon(&c, &m));
+
     tagsetDestroy(&m.tagset);
     tagsetDestroy(&c.tagset);
 }
