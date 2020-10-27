@@ -3,6 +3,7 @@
  */
 
 #include "tagset.h"
+#include <xkbcommon/xkbcommon.h>
 #define _POSIX_C_SOURCE 200809L
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
@@ -506,6 +507,10 @@ void keypress(struct wl_listener *listener, void *data)
     uint32_t keycode = event->keycode + 8;
     /* Get a list of keysyms based on the keymap for this keyboard */
     const xkb_keysym_t *syms;
+    xkb_state_key_get_one_sym(kb->device->keyboard->xkb_state, keycode);
+
+    /* create new state to clear the shift modifier to get a instead of A */
+    kb->device->keyboard->xkb_state = xkb_state_new(kb->device->keyboard->keymap);
     int nsyms = xkb_state_key_get_syms(
             kb->device->keyboard->xkb_state, keycode, &syms);
 
@@ -515,6 +520,8 @@ void keypress(struct wl_listener *listener, void *data)
     /* On _press_, attempt to process a compositor keybinding. */
     if (event->state == WLR_KEY_PRESSED) {
         for (i = 0; i < nsyms; i++) {
+
+            /* if required switch to different virtual terminal */
             if (syms[i] >= XKB_KEY_XF86Switch_VT_1
                     && syms[i] <= XKB_KEY_XF86Switch_VT_12) {
                 if (wlr_backend_is_multi(server.backend)) {
@@ -523,9 +530,11 @@ void keypress(struct wl_listener *listener, void *data)
                     if (session) {
                         unsigned vt = syms[i] - XKB_KEY_XF86Switch_VT_1 + 1;
                         wlr_session_change_vt(session, vt);
+                        break;
                     }
                 }
             }
+
             jl_function_t* f = jl_eval_string("keyPressed");
             jl_value_t *arg1 = jl_box_uint32(mods);
             jl_value_t *arg2 = jl_box_uint32(syms[i]);

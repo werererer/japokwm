@@ -67,10 +67,7 @@ void arrange(struct monitor *m, bool reset)
 
             // place clients
             int i = 0;
-            printf("numb clients: %i\n", wl_list_length(&clients));
-            printf("mon set: %i\n", m->tagset.selTags[0]);
             wl_list_for_each(c, &clients, link) {
-                printf("pos %i\n", c->tagset.selTags[0]);
                 if (!visibleon(c, selMon) || c->floating)
                     continue;
                 struct wlr_box b =
@@ -78,7 +75,6 @@ void arrange(struct monitor *m, bool reset)
                 resize(c, b.x, b.y, b.width, b.height, false);
                 i = MIN(i + 1, containerList->size-1);
             }
-            // create overlay
 
             if (overlay) {
                 createNewOverlay();
