@@ -47,6 +47,10 @@ function view(ui :: Int)
     ccall((:view, corePath), Cvoid, (Cint,), ui)
 end
 
+function toggleAddView(ui :: Int)
+    ccall((:toggleAddView, corePath), Cvoid, (Cint,), ui)
+end
+
 function killclient()
     ccall((:killclient, corePath), Cvoid, ())
 end

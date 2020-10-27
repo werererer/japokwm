@@ -82,14 +82,16 @@ void createOverlay()
             continue;
 
         sprintf(text, "%i", i);
-        wlr_list_push(&renderData.textures, createTextbox( c->geom, overlayColor, textColor, text));
+
+        wlr_list_push(&renderData.textures, 
+                createTextbox(c->geom, overlayColor, textColor, text));
         i++;
     }
 }
 
 void writeOverlay(char *file)
 {
-    // TODO write logic
+    // TODO wite logic
     /* struct posTexture *pTexture; */
     /* struct wlr_list *listPtr,list = renderData.textures; */
     /* listPtr = &list; */

@@ -112,6 +112,7 @@ void toggletag(unsigned int ui);
 void toggleview(unsigned int ui);
 void unmapnotify(struct wl_listener *listener, void *data);
 void view(unsigned ui);
+void toggleAddView(unsigned ui);
 struct client *xytoclient(double x, double y);
 struct monitor *xytomon(double x, double y);
 void zoom();
@@ -1079,9 +1080,16 @@ void unmapnotify(struct wl_listener *listener, void *data)
 
 void view(unsigned ui)
 {
-    printf("view\n");
-    selMon->tagset.focusedTag = 0;
+    selMon->tagset.focusedTag = ui;
     setSelTags(&selMon->tagset, ui);
+    focusTopClient(nextClient(), false);
+    arrange(selMon, false);
+}
+
+void toggleAddView(unsigned ui)
+{
+    selMon->tagset.focusedTag = 0;
+    toggleAddTag(&selMon->tagset, ui);
     focusTopClient(nextClient(), false);
     arrange(selMon, false);
 }
