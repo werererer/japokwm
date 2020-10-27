@@ -36,12 +36,28 @@ function buttonPressed(mod, sym) :: Bool
     return processBinding(bind, buttons)
 end
 
+function isSameKeybind(bind :: String, bind2 :: String) :: Bool
+    result = bind2
+    for key in split(bind, " ")
+        if !isempty(key)
+            if !occursin(key, bind2)
+                # exit this function if key not in elem
+                return false
+            else
+                result = replace(result, key => "")
+            end
+        end
+    end
+    result = strip(result)
+    return isempty(result)
+end
+
 function processBinding(bind :: String, arr) :: Bool
     println(bind)
     handled = false
     for elem in arr
-        if (bind == elem[1])
-            #call function saved in key[2]
+        i = 0 :: Int
+        if isSameKeybind(bind, elem[1])
             elem[2]()
             handled = true
         end
