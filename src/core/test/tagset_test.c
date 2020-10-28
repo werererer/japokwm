@@ -3,16 +3,17 @@
 
 START_TEST(flagToTagPositionTest)
 {
-    enum tagPosition tp = 4;
-    ck_assert_int_eq(TAG_FOUR, tagPositionToFlag(tp));
+    ck_assert_int_eq(TAG_ONE, tagPositionToFlag(1));
+    ck_assert_int_eq(TAG_EIGHT, tagPositionToFlag(8));
 } END_TEST
 
 START_TEST(tagPositionToFlagTest)
 {
-    ck_assert_int_eq(TAG_ONE, flagToTagPosition(49));
-    ck_assert_int_eq(TAG_FOUR, flagToTagPosition(16));
+    // on error this function returns TAG_ONE
+    ck_assert_int_eq(1, flagToTagPosition(35));
+    ck_assert_int_eq(1, flagToTagPosition(TAG_ONE));
+    ck_assert_int_eq(8, flagToTagPosition(TAG_EIGHT));
 } END_TEST
-
 
 Suite *suite()
 {

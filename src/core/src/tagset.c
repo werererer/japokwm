@@ -17,9 +17,9 @@ void tagsetDestroy(struct tagset *tagset)
 
 enum tagPosition flagToTagPosition(unsigned int flag)
 {
-    // inverse of 2^(x-1)
     if (flag % 2 == 0 || flag < 2) {
-        return log2(flag-1);
+        // inverse of 2^(x-1)
+        return log2(flag)+1;
     } else {
         return TAG_ONE;
     }
