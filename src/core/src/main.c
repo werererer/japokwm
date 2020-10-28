@@ -3,6 +3,8 @@
  */
 
 #include "tagset.h"
+#include <math.h>
+#include <tgmath.h>
 #include <xkbcommon/xkbcommon.h>
 #define _POSIX_C_SOURCE 200809L
 #include <X11/XKBlib.h>
@@ -861,7 +863,7 @@ void setFloating(struct client *c, bool floating)
 
 /* arg > 1.0 will set mfact absolutely */
 void setmfact(float factor) {
-    if (!selMon->tagset.lt.arrange)
+    if (!selLayout(&selMon->tagset)->arrange)
         return;
     factor = factor < 1.0 ? factor + selMon->mfact : factor - 1.0;
     if (factor < 0.1 || factor > 0.9)
@@ -1089,7 +1091,7 @@ void unmapnotify(struct wl_listener *listener, void *data)
 
 void view(unsigned ui)
 {
-    selMon->tagset.focusedTag = ui;
+    selMon->tagset.focusedTag = flagToTagPosition(ui);
     setSelTags(&selMon->tagset, ui);
     focusTopClient(nextClient(), false);
     arrange(selMon, false);
@@ -1124,7 +1126,7 @@ void zoom()
 {
     struct client *c, *old = selClient();
 
-    if (!old || !selMon->tagset.lt.arrange || old->floating)
+    if (!old || !selLayout(&selMon->tagset) || old->floating)
         return;
 
     /* Search for the first tiled window that is not sel, marking sel as

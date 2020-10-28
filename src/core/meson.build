@@ -44,7 +44,7 @@ wmlib = shared_library(libName,
               [main, srcs],
               dependencies: deps,
               include_directories: inc,
-              link_args: '-ljulia',
+              link_args: ['-ljulia', '-lm'],
               install: true,
               install_dir: root / srcDir,
               )

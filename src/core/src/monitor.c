@@ -45,7 +45,7 @@ void createMonitor(struct wl_listener *listener, void *data)
             m->nmaster = r->nmaster;
             wlr_output_set_scale(wlr_output, r->scale);
             wlr_xcursor_manager_load(server.cursorMgr, r->scale);
-            m->tagset.lt = *r->lt;
+            m->tagset.lt[tagset.focusedTag] = r->lt;
             wlr_output_set_transform(wlr_output, r->rr);
             break;
         }

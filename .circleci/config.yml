@@ -17,7 +17,7 @@ jobs:
             - run: pacman -S --noconfirm cairo
             - run: pacman -S --noconfirm wayland
             - run: pacman -S --noconfirm wayland-protocols
-            - run: pacman -S --noconfirm cmocka
+            - run: pacman -S --noconfirm check
             - run: pacman -S --noconfirm gcovr
             - checkout
             - run: ls

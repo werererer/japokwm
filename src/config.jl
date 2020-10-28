@@ -70,7 +70,7 @@ keys = [
         ["$mod 9",           ()->  view(256)                 ],
         ["$mod 0",           ()->  view(511)                 ],
         ["$shift $mod 1",           ()->  toggleAddView(1)                 ],
-        ["$shift $mod at",           ()->  toggleAddView(2)                 ],
+        ["$shift $mod 2",           ()->  toggleAddView(2)                 ],
         ["$shift $mod 3",           ()->  toggleAddView(4)                 ],
         ["$shift $mod 4",           ()->  toggleAddView(8)                 ],
         ["$shift $mod 5",           ()->  toggleAddView(16)                 ],
