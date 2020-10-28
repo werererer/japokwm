@@ -25,7 +25,6 @@ START_TEST(selLayoutTest)
     defaultLayout.arrange = NULL;
 
     tagsetCreate(&tagset);
-    // check if 
     ck_assert_str_eq(tagset.lt[1].symbol, selLayout(&tagset).symbol);
     tagsetDestroy(&tagset);
 } END_TEST
