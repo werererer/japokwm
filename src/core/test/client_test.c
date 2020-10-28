@@ -23,8 +23,7 @@ START_TEST(testVisibleon)
     tagsetDestroy(&c.tagset);
 } END_TEST
 
-Suite *m()
-{
+Suite *suite() {
     Suite *s;
     TCase *tc;
 
@@ -39,15 +38,17 @@ Suite *m()
 
 int main()
 {
-    bool success = false;
+    int numberFailed;
     Suite *s;
-    SRunner *runner;
+    SRunner *sr;
 
-    s = m();
-    runner = srunner_create(s);
+    s = suite();
+    sr = srunner_create(s);
 
-    srunner_run_all(runner, CK_NORMAL);
-    success = srunner_ntests_run(runner);
-    srunner_free(runner);
-    return (success) ? EXIT_SUCCESS : EXIT_FAILURE;
+    srunner_run_all(sr, CK_NORMAL);
+    srunner_ntests_run(sr);
+    numberFailed = srunner_ntests_failed(sr);
+    srunner_free(sr);
+
+    return (numberFailed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
