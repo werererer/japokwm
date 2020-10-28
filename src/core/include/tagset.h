@@ -31,7 +31,7 @@ struct tagset {
     /* position of current selected tag count starts at 0 */
     enum tagPosition focusedTag;
     char **tagNames;
-    struct layout **lt;
+    struct layout *lt;
     /* window area(area where windows can tile) */
     struct wlr_box w;
     /* *
@@ -62,6 +62,6 @@ void invertTagset(struct tagset *tagset);
 void toggleTagset(struct tagset *tagset);
 
 enum tagPosition flagToTagPosition(unsigned int flag);
-struct layout *selLayout(struct tagset *tagset);
-struct layout *setSelLayout(struct tagset *tagset, struct layout *layout);
+struct layout selLayout(struct tagset *tagset);
+struct layout setSelLayout(struct tagset *tagset, struct layout layout);
 #endif /* TAGSET_H */

@@ -44,17 +44,17 @@ void arrange(struct monitor *m, bool reset)
     selMon->m = *wlr_output_layout_get_box(output_layout, selMon->wlr_output);
     //TODO: this doesn't belong to this function
     tagset->w = selMon->m;
-    if (selLayout(tagset)->arrange) {
+    if (selLayout(tagset).arrange) {
         struct client *c = NULL;
         jl_value_t *v = NULL;
 
         int n = tiledClientCount(selMon);
         /* call arrange function
          * if previous layout is different or reset -> reset layout */
-        if (strcmp(prevLayout.symbol, selLayout(tagset)->symbol) != 0 || reset) {
-            prevLayout = *selLayout(tagset);
+        if (strcmp(prevLayout.symbol, selLayout(tagset).symbol) != 0 || reset) {
+            prevLayout = selLayout(tagset);
             jl_value_t *arg1 = jl_box_int64(n);
-            v = jl_call1(selLayout(tagset)->arrange, arg1);
+            v = jl_call1(selLayout(tagset).arrange, arg1);
         } else {
             jl_function_t *f = jl_eval_string("Layouts.update");
             jl_value_t *arg1 = jl_box_int64(n);
@@ -83,7 +83,7 @@ void arrange(struct monitor *m, bool reset)
             }
 
         } else {
-            printf("Empty function with symbol: %s\n", selLayout(tagset)->symbol);
+            printf("Empty function with symbol: %s\n", selLayout(tagset).symbol);
         }
     }
 }
@@ -129,7 +129,7 @@ void resize(struct client *c, int x, int y, int w, int h, bool interact)
 
 void updateLayout()
 {
-    *selMon->tagset.lt[selMon->tagset.focusedTag] = getConfigLayout("layout");
+    selMon->tagset.lt[selMon->tagset.focusedTag] = getConfigLayout("layout");
     arrange(selMon, true);
 }
 

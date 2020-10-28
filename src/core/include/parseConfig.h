@@ -19,16 +19,13 @@ extern float textColor[4];
 extern float selOverlayColor[4];
 extern float selTextColor[4];
 
-extern struct tagset tagset;
 extern struct rule rules[MAXLEN];
-
-extern struct layout defaultLayout;
-extern struct layout prevLayout;
 
 extern int repeatRate;
 extern int repeatDelay;
 
 /* commands */
+extern char *tagNames[MAXLEN];
 extern char *termcmd;
 extern Key keys[MAXLEN];
 extern Key buttons[MAXLEN];

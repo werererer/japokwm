@@ -1,5 +1,6 @@
-#include "tagset.h"
 #include <check.h>
+
+#include "tagset.h"
 
 START_TEST(flagToTagPositionTest)
 {
@@ -15,6 +16,20 @@ START_TEST(tagPositionToFlagTest)
     ck_assert_int_eq(8, flagToTagPosition(TAG_EIGHT));
 } END_TEST
 
+START_TEST(selLayoutTest)
+{
+    struct tagset tagset;
+
+    // tagsetCreate depends on defaultLayout
+    defaultLayout.symbol = "t";
+    defaultLayout.arrange = NULL;
+
+    tagsetCreate(&tagset);
+    // check if 
+    ck_assert_str_eq(tagset.lt[1].symbol, selLayout(&tagset).symbol);
+    tagsetDestroy(&tagset);
+} END_TEST
+
 Suite *suite()
 {
     Suite *s;
@@ -25,6 +40,8 @@ Suite *suite()
 
     tcase_add_test(tc, flagToTagPositionTest);
     tcase_add_test(tc, tagPositionToFlagTest);
+    tcase_add_test(tc, tagPositionToFlagTest);
+    tcase_add_test(tc, selLayoutTest);
     suite_add_tcase(s, tc);
 
     return s;

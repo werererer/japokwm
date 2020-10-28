@@ -22,23 +22,24 @@ endforeach
 
 main = files('src/main.c')
 srcs = files(
-  'src/monitor.c',
-  'src/wlr-layer-shell-unstable-v1-protocol.c',
   'src/client.c',
-  'src/server.c',
+  'src/layout.c',
+  'src/monitor.c',
   'src/parseConfig.c',
-  'src/utils/writeFile.c',
-  'src/utils/coreUtils.c',
-  'src/utils/stringUtils.c',
-  'src/utils/parseConfigUtils.c',
-  'src/xdg-shell-protocol.c',
-  'src/tagset.c',
   'src/render/render.c',
-  'src/tile/tileUtils.c',
-  'src/tile/tileTexture.c',
+  'src/server.c',
+  'src/tagset.c',
   'src/tile/tile.c',
+  'src/tile/tileTexture.c',
+  'src/tile/tileUtils.c',
+  'src/utils/coreUtils.c',
+  'src/utils/parseConfigUtils.c',
+  'src/utils/stringUtils.c',
+  'src/utils/writeFile.c',
   'src/wlr-foreign-toplevel-management-unstable-v1-protocol.c',
-  )
+  'src/wlr-layer-shell-unstable-v1-protocol.c',
+  'src/xdg-shell-protocol.c',
+)
 libName = 'juliawm'
 wmlib = shared_library(libName,
               [main, srcs],

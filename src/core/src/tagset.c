@@ -7,6 +7,10 @@ void tagsetCreate(struct tagset *tagset)
 {
     tagset->tagNames = calloc(NUM_CHARS * MAXLEN, sizeof(char));
     tagset->lt = calloc(MAXLEN, sizeof(*tagset->lt));
+    for (int i = 0; i < MAXLEN; i++) {
+        tagset->lt[i] = defaultLayout;
+    }
+    tagset->focusedTag = 1;
 }
 
 void tagsetDestroy(struct tagset *tagset)
@@ -59,12 +63,12 @@ void toggleTagset(struct tagset *tagset)
     tagset->selTags[0] = ts;
 }
 
-struct layout *selLayout(struct tagset *tagset)
+struct layout selLayout(struct tagset *tagset)
 {
-    return tagset->lt[tagset->focusedTag];
+    return tagset->lt[tagset->focusedTag-1];
 }
 
-struct layout *setSelLayout(struct tagset *tagset, struct layout *layout)
+struct layout setSelLayout(struct tagset *tagset, struct layout layout)
 {
-    return tagset->lt[tagset->focusedTag] = layout;
+    return tagset->lt[tagset->focusedTag-1] = layout;
 }

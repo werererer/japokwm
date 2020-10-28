@@ -11,4 +11,6 @@ struct layout {
     jl_function_t *arrange;
 };
 
+extern struct layout defaultLayout;
+extern struct layout prevLayout;
 #endif /* LAYOUT_H */

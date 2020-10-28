@@ -210,9 +210,6 @@ void chvt(unsigned int ui)
 
 void cleanup(void)
 {
-    // created in parseConfig.c updateConfig()
-    tagsetDestroy(&tagset);
-
     wlr_xwayland_destroy(xwayland);
     wl_display_destroy_clients(server.display);
     wl_display_destroy(server.display);
@@ -863,7 +860,7 @@ void setFloating(struct client *c, bool floating)
 
 /* arg > 1.0 will set mfact absolutely */
 void setmfact(float factor) {
-    if (!selLayout(&selMon->tagset)->arrange)
+    if (!selLayout(&selMon->tagset).arrange)
         return;
     factor = factor < 1.0 ? factor + selMon->mfact : factor - 1.0;
     if (factor < 0.1 || factor > 0.9)
@@ -1099,7 +1096,7 @@ void view(unsigned ui)
 
 void toggleAddView(unsigned ui)
 {
-    selMon->tagset.focusedTag = 0;
+    selMon->tagset.focusedTag = flagToTagPosition(ui);
     toggleAddTag(&selMon->tagset, ui);
     focusTopClient(nextClient(), false);
     arrange(selMon, false);
@@ -1126,7 +1123,7 @@ void zoom()
 {
     struct client *c, *old = selClient();
 
-    if (!old || !selLayout(&selMon->tagset) || old->floating)
+    if (!old || old->floating)
         return;
 
     /* Search for the first tiled window that is not sel, marking sel as

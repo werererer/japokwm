@@ -5,6 +5,7 @@
 #include "parseConfig.h"
 #include "render/render.h"
 #include "server.h"
+#include "tagset.h"
 #include "tile/tileUtils.h"
 
 /* monitors */
@@ -45,7 +46,7 @@ void createMonitor(struct wl_listener *listener, void *data)
             m->nmaster = r->nmaster;
             wlr_output_set_scale(wlr_output, r->scale);
             wlr_xcursor_manager_load(server.cursorMgr, r->scale);
-            m->tagset.lt[tagset.focusedTag] = r->lt;
+            setSelLayout(&m->tagset, *r->lt);
             wlr_output_set_transform(wlr_output, r->rr);
             break;
         }
@@ -89,4 +90,3 @@ void cleanupMonitor(struct wl_listener *listener, void *data)
     wl_list_remove(&m->destroy.link);
     free(m);
 }
-

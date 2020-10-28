@@ -23,7 +23,7 @@ layouts = [
     [ "><>", (n)-> Layouts.floating(n) ],
 ]
 
-layout = layouts[1]
+defaultLayout = layouts[1]
 
 monrules = [
     # name mfact nmaster scale layout transform
