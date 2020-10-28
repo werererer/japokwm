@@ -28,8 +28,8 @@ Suite *m()
     Suite *s;
     TCase *tc;
 
-    s = suite_create("tagset");
-    tc = tcase_create("Core");
+    s = suite_create("client");
+    tc = tcase_create("core");
 
     tcase_add_test(tc, testVisibleon);
     suite_add_tcase(s, tc);
