@@ -24,6 +24,8 @@ jobs:
             - run: meson -Db_coverage=true build
             - run: cd build && meson compile
             - run: cd build && meson test
+            - store_test_results:
+                path: build/meson-logs
             - run: ninja -C build coverage
             - run: bash <(curl -s https://codecov.io/bash)
 workflows:
