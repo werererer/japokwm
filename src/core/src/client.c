@@ -10,6 +10,7 @@
 struct wl_list clients; /* tiling order */
 struct wl_list focusStack;  /* focus order */
 struct wl_list stack;   /* stacking z-order */
+struct wl_list layerStack;   /* stacking z-order */
 struct wlr_output_layout *output_layout;
 struct wlr_box sgeom;
 
@@ -213,7 +214,7 @@ void focusClient(struct client *old, struct client *c, bool lift)
     }
 
     /* Have a client, so focus its top-level wlr_surface */
-    wlr_seat_keyboard_notify_enter(seat, getWlrSurface(c), kb->keycodes, 
+    wlr_seat_keyboard_notify_enter(seat, getWlrSurface(c), kb->keycodes,
             kb->num_keycodes, &kb->modifiers);
 
     /* Put the new client atop the focus stack */

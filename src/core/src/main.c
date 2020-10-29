@@ -604,8 +604,10 @@ void maprequest(struct wl_listener *listener, void *data)
     if (c->type != LayerShell) {
         wl_list_insert(&clients, &c->link);
         wl_list_insert(&focusStack, &c->flink);
+        wl_list_insert(&stack, &c->slink);
+    } else {
+        wl_list_insert(&layerStack, &c->llink);
     }
-    wl_list_insert(&stack, &c->slink);
     struct client *prev = wl_container_of(listener, prev, map);
 
     switch (c->type) {
@@ -951,6 +953,7 @@ void setup(void)
     wl_list_init(&focusStack);
     wl_list_init(&stack);
     wl_list_init(&independents);
+    wl_list_init(&layerStack);
     server.xdgShell = wlr_xdg_shell_create(server.display);
     wl_signal_add(&server.xdgShell->events.new_surface, &new_xdg_surface);
     server.layerShell = wlr_layer_shell_v1_create(server.display);
@@ -1082,8 +1085,10 @@ void unmapnotify(struct wl_listener *listener, void *data)
         if (c->type == X11Unmanaged)
             return;
         wl_list_remove(&c->flink);
+        wl_list_remove(&c->slink);
+    } else {
+        wl_list_remove(&c->llink);
     }
-    wl_list_remove(&c->slink);
 }
 
 void view(unsigned ui)

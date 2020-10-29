@@ -135,6 +135,37 @@ static void renderClients(struct monitor *m)
     }
 }
 
+static void renderExtra(struct monitor *m)
+{
+    struct client *c;
+    struct renderData rdata; 
+    /* Each subsequent window we render is rendered on top of the last. Because
+     * k
+     * our stacking list is ordered front-to-back, we iterate over it backwards. */
+    wl_list_for_each_reverse(c, &layerStack, llink) {
+        if (c->type != LayerShell)
+            continue;
+
+        /* Only render visible clients which show on this monitor */
+        if (!visibleon(c, c->mon) || !wlr_output_layout_intersects(
+                    output_layout, m->wlr_output, &c->geom))
+            continue;
+
+        /* This calls our render function for each surface among the
+         * xdg_surface's toplevel and popups. */
+
+        struct timespec now;
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        rdata.output = m->wlr_output;
+        rdata.when = &now;
+        rdata.x = c->geom.x + c->bw;
+        rdata.y = c->geom.y + c->bw;
+
+        wlr_surface_for_each_surface(getWlrSurface(c), render, &rdata);
+        wlr_layer_surface_v1_for_each_surface(c->surface.layer, render, &rdata);
+    }
+}
+
 /* will be called foreach texture in renderData */
 static void renderTexture(void *texture)
 {
@@ -218,6 +249,7 @@ void renderFrame(struct wl_listener *listener, void *data)
 
         renderClients(m);
         renderIndependents(m->wlr_output);
+        renderExtra(m);
 
         /* render all textures in list */
         wlr_list_for_each(&renderData.textures, renderTexture);

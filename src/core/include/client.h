@@ -13,6 +13,7 @@ struct client {
     struct wl_list link;
     struct wl_list flink;
     struct wl_list slink;
+    struct wl_list llink;
     union {
         struct wlr_xdg_surface *xdg;
         struct wlr_layer_surface_v1 *layer;
@@ -49,6 +50,7 @@ struct client *getClient(int i);
 extern struct wl_list clients; /* tiling order */
 extern struct wl_list focusStack;  /* focus order */
 extern struct wl_list stack;   /* stacking z-order */
+extern struct wl_list layerStack;   /* stacking z-order */
 extern struct wlr_output_layout *output_layout;
 extern struct wlr_box sgeom;
 
