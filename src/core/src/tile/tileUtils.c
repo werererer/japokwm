@@ -129,7 +129,7 @@ void resize(struct client *c, int x, int y, int w, int h, bool interact)
 
 void updateLayout()
 {
-    selMon->tagset.lt[selMon->tagset.focusedTag] = getConfigLayout("layout");
+    setSelLayout(&selMon->tagset, getConfigLayout("layout"));
     arrange(selMon, true);
 }
 

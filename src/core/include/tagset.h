@@ -29,7 +29,7 @@ enum tagPosition {
  * */
 struct tagset {
     /* position of current selected tag count starts at 0 */
-    enum tagPosition focusedTag;
+    unsigned int focusedTag;
     char **tagNames;
     struct layout *lt;
     /* window area(area where windows can tile) */
