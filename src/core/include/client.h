@@ -38,6 +38,7 @@ void destroyClient(struct client *c);
 void applybounds(struct client *c, struct wlr_box bbox);
 /* set title and floating status */
 bool visibleon(struct client *c, struct monitor *m);
+bool visibleonTag(struct client *c, struct monitor *m, size_t focusedTag);
 struct client *nextClient();
 struct client *selClient();
 void applyrules(struct client *c);

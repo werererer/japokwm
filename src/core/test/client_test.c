@@ -1,6 +1,7 @@
 #include <check.h>
 
 #include "client.h"
+#include "tagset.h"
 
 START_TEST(testVisibleon)
 {
@@ -12,12 +13,36 @@ START_TEST(testVisibleon)
 
     c.mon = &m;
     c.tagset.selTags[0] = 7;
+    c.tagset.focusedTag = 0;
     m.tagset.selTags[0] = 8;
+    m.tagset.focusedTag = 8;
     ck_assert_int_eq(visibleon(&c, &m), false);
     c.tagset.selTags[0] = 5;
-    m.tagset.selTags[0] = 3;
+    c.tagset.focusedTag = 0;
+    m.tagset.selTags[0] = 2;
     m.tagset.focusedTag = 1;
-    ck_assert_int_eq(visibleon(&c, &m), true);
+    ck_assert_int_eq(visibleon(&c, &m), false);
+
+    tagsetDestroy(&m.tagset);
+    tagsetDestroy(&c.tagset);
+} END_TEST
+
+START_TEST(testVisibleonTag)
+{
+    struct client c;
+    struct monitor m;
+
+    tagsetCreate(&c.tagset);
+    tagsetCreate(&m.tagset);
+
+    c.mon = &m;
+    c.tagset.selTags[0] = TAG_SIX;
+    m.tagset.selTags[0] = 8;
+    ck_assert_int_eq(visibleonTag(&c, &m, 6), true);
+    c.tagset.selTags[0] = TAG_SEVEN;
+    m.tagset.selTags[0] = TAG_SEVEN;
+    m.tagset.focusedTag = 8;
+    ck_assert_int_eq(visibleonTag(&c, &m, m.tagset.focusedTag), false);
 
     tagsetDestroy(&m.tagset);
     tagsetDestroy(&c.tagset);
@@ -31,6 +56,7 @@ Suite *suite() {
     tc = tcase_create("core");
 
     tcase_add_test(tc, testVisibleon);
+    tcase_add_test(tc, testVisibleonTag);
     suite_add_tcase(s, tc);
 
     return s;

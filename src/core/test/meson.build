@@ -19,3 +19,11 @@ t = executable('tagset_test', ['tagset_test.c', srcs],
                include_directories: inc,
               )
 test('tagset', t)
+t = executable('stringUtils_test', ['utils/stringUtils_test.c', srcs], 
+               c_args: c_args,
+               link_args: link_args,
+               dependencies: [deps, extraLibs],
+               link_with: [wmlib],
+               include_directories: inc,
+              )
+test('stringUtils', t)

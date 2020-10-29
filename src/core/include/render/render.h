@@ -30,6 +30,7 @@ struct posTexture {
     struct wlr_texture *texture;
 };
 
+Container posTextureToContainer(struct posTexture *pTexture);
 void renderFrame(struct wl_listener *listener, void *data);
 void scalebox(struct wlr_box *box, float scale);
 

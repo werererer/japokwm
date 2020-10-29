@@ -8,7 +8,7 @@
 #include "utils/stringUtils.h"
 #include "render/render.h"
 
-void writeContainerToFile(char *file, struct wlr_fbox *box);
-void writeContainerArrayToFile(char *layout, Container **pTexture,
-        size_t width, size_t height);
+void writeContainerToFile(int fd, Container box);
+void writeContainerArrayToFile(int fd, Container box[], size_t length);
+/* returns path to newly created directory */
 #endif /* WRITE_FILE_H */

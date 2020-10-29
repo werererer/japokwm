@@ -1,5 +1,6 @@
 #include "tagset.h"
 #include <math.h>
+#include <stdio.h>
 #include <tgmath.h>
 #include <stdlib.h>
 
@@ -19,7 +20,7 @@ void tagsetDestroy(struct tagset *tagset)
     free(tagset->lt);
 }
 
-enum tagPosition flagToTagPosition(unsigned int flag)
+unsigned int flagToPosition(enum tagPosition flag)
 {
     if (flag % 2 == 0 || flag < 2) {
         // inverse of (1 << (x-1)) = 2^(x-1)
@@ -29,7 +30,7 @@ enum tagPosition flagToTagPosition(unsigned int flag)
     }
 }
 
-unsigned int tagPositionToFlag(enum tagPosition pos)
+enum tagPosition positionToFlag(unsigned int pos)
 {
     /* tagPosition begins at 1 */
     return (1 << (pos-1));
@@ -61,6 +62,11 @@ void toggleTagset(struct tagset *tagset)
     unsigned int ts = tagset->selTags[1];
     tagset->selTags[1] = tagset->selTags[0];
     tagset->selTags[0] = ts;
+}
+
+bool tagsOverlap(unsigned int tags, unsigned int tags2)
+{
+    return tags & tags2;
 }
 
 struct layout selLayout(struct tagset *tagset)

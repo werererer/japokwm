@@ -1,8 +1,18 @@
 #include "tile/tileTexture.h"
+#include "client.h"
+#include "tagset.h"
+#include "utils/coreUtils.h"
+#include "utils/stringUtils.h"
+#include "utils/writeFile.h"
 #include <cairo/cairo.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <wayland-util.h>
 #include <wlr/backend.h>
 
+bool overlay = false;
 // TODO: rewrite getPosition
 /* static struct wlr_box getPosition(struct posTexture *pTexture) */
 /* { */
@@ -89,12 +99,37 @@ void createOverlay()
     }
 }
 
-void writeOverlay(char *file)
+void writeThisOverlay(char *layout)
 {
-    // TODO wite logic
-    /* struct posTexture *pTexture; */
-    /* struct wlr_list *listPtr,list = renderData.textures; */
-    /* listPtr = &list; */
+    writeOverlay(selMon, layout);
+}
 
-    /* writeContainerArrayToFile(file, listPtr, length); */
+void writeOverlay(struct monitor *m, char *layout)
+{
+    if (!overlay)
+        return;
+    struct client *c;
+    char file[NUM_CHARS];
+    char filename[NUM_DIGITS];
+
+    mkdir(layout, 0755);
+    // tags are counted from 1
+    for (int i = 1; i <= 9; i++) {
+        intToString(filename, i);
+        strcpy(file, layout);
+        joinPath(file, filename);
+
+        int fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        for (int j = 0; j < renderData.textures.length; j++) {
+            // TODO: algorithm is not really efficient fix it
+            wl_list_for_each(c, &clients, link) {
+                if (visibleonTag(c, m, i)) {
+                    writeContainerToFile(fd,
+                            posTextureToContainer(renderData.textures.items[j]));
+                }
+            }
+        }
+
+        close(fd);
+    }
 }

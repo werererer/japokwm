@@ -19,7 +19,7 @@ enum tagPosition {
 };
 
 #define MAXLEN 15
-#define NUM_CHARS 10
+#define NUM_CHARS 64
 #define NUM_DIGITS 9
 
 /* A tag is simply a workspace that can be focused (like a normal workspace)
@@ -45,7 +45,6 @@ struct tagset {
 void tagsetCreate(struct tagset *tagset);
 void tagsetDestroy(struct tagset *tagset);
 
-unsigned int tagPositionToFlag(enum tagPosition pos);
 /* sets the value of selTag[0] */
 void setSelTags(struct tagset *tagset, unsigned int selTags);
 /* *
@@ -61,7 +60,10 @@ void toggleAddTag(struct tagset *tagset, unsigned int selTags);
 void invertTagset(struct tagset *tagset);
 void toggleTagset(struct tagset *tagset);
 
-enum tagPosition flagToTagPosition(unsigned int flag);
+bool tagsOverlap(unsigned int tags, unsigned int tags2);
+
+enum tagPosition positionToFlag(unsigned int pos);
+unsigned int flagToPosition(enum tagPosition flag);
 struct layout selLayout(struct tagset *tagset);
 struct layout setSelLayout(struct tagset *tagset, struct layout layout);
 #endif /* TAGSET_H */

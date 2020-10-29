@@ -18,5 +18,8 @@ struct posTexture *createTextbox(struct wlr_box box, float boxColor[4],
 void createNewOverlay();
 /* creates overlay (that thing that covers the windows) */
 void createOverlay();
-void writeOverlay(char *file);
+void writeThisOverlay(char *layout);
+void writeOverlay(struct monitor *m, char *filename);
+
+extern bool overlay;
 #endif /* TILE_TEXTURE_H */

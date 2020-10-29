@@ -98,3 +98,7 @@ end
 function getOverlay() :: Bool
     ccall((:getOverlay, corePath), Bool, ())
 end
+
+function writeThisOverlay(layout :: String)
+    ccall((:writeThisOverlay, corePath), Bool, (Cstring,), layout)
+end

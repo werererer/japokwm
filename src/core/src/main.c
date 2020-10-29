@@ -1035,7 +1035,7 @@ void tag(unsigned int ui)
 {
     struct client *sel = selClient();
     if (sel && ui) {
-        toggleAddTag(&sel->tagset, tagPositionToFlag(ui));
+        toggleAddTag(&sel->tagset, positionToFlag(ui));
         focusTopClient(nextClient(), true);
         arrange(selMon, false);
     }
@@ -1088,7 +1088,7 @@ void unmapnotify(struct wl_listener *listener, void *data)
 
 void view(unsigned ui)
 {
-    selMon->tagset.focusedTag = flagToTagPosition(ui);
+    selMon->tagset.focusedTag = flagToPosition(ui);
     setSelTags(&selMon->tagset, ui);
     focusTopClient(nextClient(), false);
     arrange(selMon, false);
@@ -1096,7 +1096,7 @@ void view(unsigned ui)
 
 void toggleAddView(unsigned ui)
 {
-    selMon->tagset.focusedTag = flagToTagPosition(ui);
+    selMon->tagset.focusedTag = flagToPosition(ui);
     toggleAddTag(&selMon->tagset, ui);
     focusTopClient(nextClient(), false);
     arrange(selMon, false);

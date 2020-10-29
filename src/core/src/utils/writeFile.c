@@ -3,57 +3,43 @@
 #include <string.h>
 #include <sys/stat.h>
 
-static int writeToFile(char *file, char *content)
+static int writeToFile(int fd, char *content)
 {
-    int filedesc = open(file, O_WRONLY);
-
-    if (filedesc < 0) {
+    if (fd < 0) {
         EBARF("ERROR: file didn't open correctly\n");
         return -1;
     }
 
-    if (write(filedesc, content, sizeof(content)) != sizeof(content)) {
+    if (write(fd, content, strlen(content)) != strlen(content)) {
         EBARF("ERROR: failed to write content to file\n");
         return -1;
     }
-
     return 0;
 }
 
-static int writeDoubleToFile(char *file, double d)
+static int writeDoubleToFile(int fd, double d)
 {
-    char content[NUM_DIGITS];
+    char content[NUM_CHARS];
     doubleToString(content, d);
-    return writeToFile(file, content);
+    return writeToFile(fd, content);
 }
 
-void writeContainerToFile(char *file, struct wlr_fbox *box)
+void writeContainerToFile(int fd, Container box)
 {
-    writeDoubleToFile(file, box->x);
-    writeToFile(file, " ");
-    writeDoubleToFile(file, box->y);
-    writeToFile(file, " ");
-    writeDoubleToFile(file, box->width);
-    writeToFile(file, " ");
-    writeDoubleToFile(file, box->height);
-    writeToFile(file, "\n");
+    printf("create container\n");
+    writeDoubleToFile(fd, box.x);
+    writeToFile(fd, " ");
+    writeDoubleToFile(fd, box.y);
+    writeToFile(fd, " ");
+    writeDoubleToFile(fd, box.width);
+    writeToFile(fd, " ");
+    writeDoubleToFile(fd, box.height);
+    writeToFile(fd, "\n");
 }
 
-void writeContainerArrayToFile(char *layout, Container **pTexture, 
-        size_t width, size_t height)
+void writeContainerArrayToFile(int fd, Container box[], size_t length)
 {
-    char base[64] = "layouts";
-    char file[64];
-    char c[NUM_DIGITS];
-
-    joinPath(base, layout);
-    for (int i = 0; i < height; i++) {
-        strcpy(file, base);
-        intToString(c, i);
-        joinPath(file, c);
-        mkdir(file, 755);
-        for (int j = 0; j < width; j++) {
-            writeContainerToFile(file, pTexture[j]);
-        }
+    for (int i = 0; i < length; i++) {
+        writeContainerToFile(fd, box[i]);
     }
 }

@@ -170,6 +170,16 @@ static void renderIndependents(struct wlr_output *output)
     }
 }
 
+Container posTextureToContainer(struct posTexture *pTexture)
+{
+    Container c;
+    c.x = pTexture->x;
+    c.y = pTexture->y;
+    c.width = pTexture->texture->width;
+    c.height = pTexture->texture->height;
+    return c;
+}
+
 /* called from a wl_signal in setup() */
 void renderFrame(struct wl_listener *listener, void *data)
 {

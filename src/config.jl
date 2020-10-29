@@ -54,6 +54,7 @@ keys = [
         ["$mod t",           ()->  setLayout(2)  ],
         ["$mod l",           ()->  Layouts.resizeThisAll(1/10, Layouts.RIGHT)        ],
         ["$mod h",           ()->  Layouts.resizeThisAll(1/10, Layouts.LEFT)        ],
+        ["$mod $shift s",    ()->  writeThisOverlay("testLayout")        ],
         ["$mod parenright",  ()->  tag(~0)                ],
         ["$mod greater",     ()->  tagmon(+1)             ],
         ["$mod less",        ()->  tagmon(-1)             ],

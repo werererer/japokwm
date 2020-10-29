@@ -15,8 +15,6 @@
 #include "tile/tileTexture.h"
 #include "utils/parseConfigUtils.h"
 
-bool overlay = false;
-
 struct containerList {
     struct wlr_fbox *container;
     int size;

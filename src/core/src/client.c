@@ -169,6 +169,16 @@ bool visibleon(struct client *c, struct monitor *m)
     return false;
 }
 
+bool visibleonTag(struct client *c, struct monitor *m, size_t focusedTag)
+{
+    if (m && c) {
+        if (c->mon == m) {
+            return c->tagset.selTags[0] & positionToFlag(focusedTag);
+        }
+    }
+    return false;
+}
+
 static void unfocusClient(struct client *c)
 {
     if (c) {

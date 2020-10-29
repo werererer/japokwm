@@ -10,14 +10,14 @@ void intToString(char *res, int i)
 
 void doubleToString(char *res, double f)
 {
-    sprintf(res, "%f", f);
+    sprintf(res, "%.3f", f);
 }
 
 void repeatString(char *str, int n)
 {
-    char t[64];
-    if (sizeof(str) > 64)
-        wlr_log(WLR_ERROR, "Too big string in: %s", __func__);
-    strcpy(t, str);
-    sprintf(str, "%.*s", n, t);
+    char res[NUM_CHARS] = "";
+    for (int i = 0; i < n; i++) {
+        strcat(res, str);
+    }
+    strcpy(str, res);
 }
