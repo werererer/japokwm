@@ -50,6 +50,7 @@
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/util/log.h>
 #include <wlr/xwayland.h>
+#include <xkbcommon/xkbcommon.h>
 
 #include "client.h"
 #include "monitor.h"
@@ -506,13 +507,12 @@ void keypress(struct wl_listener *listener, void *data)
     uint32_t keycode = event->keycode + 8;
     /* Get a list of keysyms based on the keymap for this keyboard */
     const xkb_keysym_t *syms;
+    struct xkb_state *state;
     xkb_state_key_get_one_sym(kb->device->keyboard->xkb_state, keycode);
 
     /* create new state to clear the shift modifier to get a instead of A */
-    kb->device->keyboard->xkb_state = xkb_state_new(kb->device->keyboard->keymap);
-    int nsyms = xkb_state_key_get_syms(
-            kb->device->keyboard->xkb_state, keycode, &syms);
-
+    state = xkb_state_new(kb->device->keyboard->keymap);
+    int nsyms = xkb_state_key_get_syms(state, keycode, &syms);
 
     int handled = 0;
     uint32_t mods = wlr_keyboard_get_modifiers(kb->device->keyboard);
