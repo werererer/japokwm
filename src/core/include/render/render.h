@@ -5,7 +5,8 @@
 #include <wayland-util.h>
 #include <wlr/types/wlr_matrix.h>
 #include <wlr/render/wlr_texture.h>
-
+#include <wlr/types/wlr_box.h>
+#include <wlr/util/edges.h>
 
 typedef enum {
     OVERLAY,
@@ -35,6 +36,5 @@ void renderFrame(struct wl_listener *listener, void *data);
 void scalebox(struct wlr_box *box, float scale);
 
 extern struct wlr_renderer *drw;
-extern struct wl_list independents;
 extern struct renderData renderData;
 #endif /* RENDER_H */

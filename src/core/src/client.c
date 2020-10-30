@@ -10,6 +10,7 @@
 struct wl_list clients; /* tiling order */
 struct wl_list focusStack;  /* focus order */
 struct wl_list stack;   /* stacking z-order */
+struct wl_list independents;
 struct wl_list layerStack;   /* stacking z-order */
 struct wlr_output_layout *output_layout;
 struct wlr_box sgeom;

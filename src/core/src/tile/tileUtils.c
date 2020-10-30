@@ -35,13 +35,18 @@ static struct wlr_box getAbsoluteBox(struct monitor *m, struct wlr_fbox b)
     return w;
 }
 
+// TODO reduce function size
 void arrange(struct monitor *m, bool reset)
 {
     /* Get effective monitor geometry to use for window area */
     struct tagset *tagset = &m->tagset;
     selMon->m = *wlr_output_layout_get_box(output_layout, selMon->wlr_output);
-    //TODO: this doesn't belong to this function
-    tagset->w = selMon->m;
+    // TODO fix this (outher gap)
+    tagset->w.width = selMon->m.width - 20;
+    tagset->w.height = selMon->m.height - 20;
+    tagset->w.x = selMon->m.x + 10;
+    tagset->w.y = selMon->m.y + 10;
+    // TODO: this doesn't belong to this function
     if (selLayout(tagset).arrange) {
         struct client *c = NULL;
         jl_value_t *v = NULL;

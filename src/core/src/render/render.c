@@ -3,9 +3,9 @@
 #include "tile/tileTexture.h"
 #include <stdio.h>
 #include <wayland-util.h>
+#include <wlr/util/edges.h>
 
 struct wlr_renderer *drw;
-struct wl_list independents;
 struct renderData renderData;
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data);
@@ -40,10 +40,11 @@ static void render(struct wlr_surface *surface, int sx, int sy, void *data)
 
     /* We also have to apply the scale factor for HiDPI outputs. This is only
      * part of the puzzle, dwl does not fully support HiDPI. */
-    obox.x = ox + rdata->x + sx;
-    obox.y = oy + rdata->y + sy;
-    obox.width = surface->current.width;
-    obox.height = surface->current.height;
+    // TODO: gaps here
+    obox.x = ox + rdata->x + sx + 5;
+    obox.y = oy + rdata->y + sy + 5;
+    obox.width = surface->current.width - 10;
+    obox.height = surface->current.height - 10;
     scalebox(&obox, output->scale);
 
     /*
@@ -116,6 +117,7 @@ static void renderClients(struct monitor *m)
         clock_gettime(CLOCK_MONOTONIC, &now);
         rdata.output = m->wlr_output;
         rdata.when = &now;
+        // TODO: create gaps
         rdata.x = c->geom.x + c->bw;
         rdata.y = c->geom.y + c->bw;
 
@@ -226,6 +228,10 @@ void renderFrame(struct wl_listener *listener, void *data)
         selMon->m = *wlr_output_layout_get_box(output_layout, selMon->wlr_output);
         if (selMon->m.width != b.width || selMon->m.height != b.height) {
             arrange(selMon, false);
+            struct client *c;
+            wl_list_for_each(c, &layerStack, llink) {
+                wlr_layer_surface_v1_configure(c->surface.layer, selMon->wlr_output->width, selMon->wlr_output->height);
+            }
         }
     }
 
