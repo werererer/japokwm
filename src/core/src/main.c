@@ -325,7 +325,7 @@ void createnotifyLayerShell(struct wl_listener *listener, void *data)
     /* Allocate a Client for this surface */
     c = layer_surface->data = calloc(1, sizeof(*c));
     c->surface.layer = layer_surface;
-    c->bw = borderPx;
+    c->bw = 0;
     c->type = LayerShell;
     c->mon = selMon;
 
@@ -338,8 +338,8 @@ void createnotifyLayerShell(struct wl_listener *listener, void *data)
     wl_signal_add(&layer_surface->events.unmap, &c->unmap);
     c->destroy.notify = destroynotify;
     wl_signal_add(&layer_surface->events.destroy, &c->destroy);
-    wlr_layer_surface_v1_configure(c->surface.layer,
-                    1000, 500);
+    // TODO always resize when mon size is changed
+    wlr_layer_surface_v1_configure(c->surface.layer, selMon->wlr_output->width, selMon->wlr_output->height);
 }
 
 void createpointer(struct wlr_input_device *device)
@@ -601,10 +601,10 @@ void maprequest(struct wl_listener *listener, void *data)
     }
 
     /* Insert this client into client lists. */
+    wl_list_insert(&focusStack, &c->flink);
+    wl_list_insert(&stack, &c->slink);
     if (c->type != LayerShell) {
         wl_list_insert(&clients, &c->link);
-        wl_list_insert(&focusStack, &c->flink);
-        wl_list_insert(&stack, &c->slink);
     } else {
         wl_list_insert(&layerStack, &c->llink);
     }
@@ -619,10 +619,15 @@ void maprequest(struct wl_listener *listener, void *data)
         case LayerShell:
             c->geom.x = 0;
             c->geom.y = 0;
-            c->geom.width = c->surface.layer->current.desired_width;
-            c->geom.height = c->surface.layer->current.desired_height;
-            c->geom.width += 2 * c->bw;
-            c->geom.height += 2 * c->bw;
+            if (c->surface.layer->current.desired_width)
+                c->geom.width = c->surface.layer->current.desired_width;
+            else
+                c->geom.width = selMon->wlr_output->width;
+            if (c->surface.layer->current.desired_height)
+                c->geom.height = c->surface.layer->current.desired_height;
+            else
+                c->geom.height = selMon->wlr_output->height;
+            break;
         case X11Managed:
         case X11Unmanaged:
             c->geom.x = c->surface.xwayland->x;
@@ -754,10 +759,14 @@ pointerfocus(struct client *c, struct wlr_surface *surface,
 
     /* If surface is already focused, only notify of motion */
     if (surface == seat->pointer_state.focused_surface) {
+        printf("already focused \n");
         wlr_seat_pointer_notify_motion(seat, time, sx, sy);
         return;
     }
 
+    if (surface) {
+        printf("focus\n");
+    }
     /* Otherwise, let the client know that the mouse cursor has entered one
      * of its surfaces, and make keyboard focus follow if desired. */
     wlr_seat_pointer_notify_enter(seat, surface, sx, sy);
@@ -1079,13 +1088,13 @@ void unmapnotify(struct wl_listener *listener, void *data)
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
     tagsetDestroy(&c->tagset);
+    wl_list_remove(&c->flink);
+    wl_list_remove(&c->slink);
     // LayerShell shouldn't be resized
     if (c->type != LayerShell) {
         wl_list_remove(&c->link);
         if (c->type == X11Unmanaged)
             return;
-        wl_list_remove(&c->flink);
-        wl_list_remove(&c->slink);
     } else {
         wl_list_remove(&c->llink);
     }
@@ -1112,9 +1121,11 @@ struct client * xytoclient(double x, double y)
     /* Find the topmost visible client (if any) at point (x, y), including
      * borders. This relies on stack being ordered from top to bottom. */
     struct client *c;
-    wl_list_for_each(c, &stack, slink)
-        if (visibleon(c, c->mon) && wlr_box_contains_point(&c->geom, x, y))
+    wl_list_for_each(c, &focusStack, flink) {
+        if (visibleon(c, c->mon) && wlr_box_contains_point(&c->geom, x, y)) {
             return c;
+        }
+    }
     return NULL;
 }
 
