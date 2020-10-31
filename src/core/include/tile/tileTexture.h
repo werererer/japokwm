@@ -22,4 +22,7 @@ void writeThisOverlay(char *layout);
 void writeOverlay(struct monitor *m, char *filename);
 
 extern bool overlay;
+extern int overlay2;
+void setOverlay(bool ol);
+bool getOverlay();
 #endif /* TILE_TEXTURE_H */

@@ -167,13 +167,3 @@ int clientPos()
     }
     return 0;
 }
-
-void setOverlay(bool ol)
-{
-    overlay = ol;
-}
-
-bool getOverlay()
-{
-    return overlay;
-}

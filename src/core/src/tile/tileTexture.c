@@ -133,3 +133,13 @@ void writeOverlay(struct monitor *m, char *layout)
         close(fd);
     }
 }
+
+void setOverlay(bool ol)
+{
+    overlay = ol;
+}
+
+bool getOverlay()
+{
+    return overlay;
+}

@@ -6,7 +6,6 @@
 #include <math.h>
 #include <tgmath.h>
 #include <xkbcommon/xkbcommon.h>
-#define _POSIX_C_SOURCE 200809L
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 #include <assert.h>
@@ -1044,6 +1043,14 @@ void setup(void)
         setenv("DISPLAY", xwayland->display_name, true);
     } else {
         fprintf(stderr, "failed to setup XWayland X server, continuing without it\n");
+    }
+
+    /* because of a bug global variables can't be initialized to zero when
+     * called from julia code
+     * remove those lines as soon as the bug is resolved */
+    if (overlay) {
+        printf("bug exists\n");
+        overlay = false;
     }
 }
 

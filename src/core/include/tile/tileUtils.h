@@ -16,7 +16,4 @@ int tiledClientCount(struct monitor *m);
 int clientPos();
 
 // this exposes the overlay variable to julia
-void setOverlay(bool ol);
-bool getOverlay();
-extern bool overlay;
 #endif
