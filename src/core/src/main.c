@@ -844,7 +844,6 @@ void run(char *startup_cmd)
      * compositor. Starting the backend rigged up all of the necessary event
      * loop configuration to listen to libinput events, DRM events, generate
      * frame events at the refresh rate, and so on. */
-    //load global variables
     wl_display_run(server.display);
 
     if (startup_cmd) {
