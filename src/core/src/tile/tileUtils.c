@@ -71,9 +71,15 @@ void arrange(struct monitor *m, bool reset)
                 if (!visibleon(c, m) || c->floating)
                     continue;
                 struct wlr_box b =
-                    getAbsoluteBox(m, containerList->container[i]);
+                    getAbsoluteBox(m, containerList->container[MIN(i, containerList->size-1)]);
                 resize(c, b.x, b.y, b.width, b.height, false);
-                i = MIN(i + 1, containerList->size-1);
+                if (i > containerList->size-1) {
+                    c->geom.x = -100;
+                    c->geom.y = -100;
+                    c->geom.width = 1;
+                    c->geom.height = 1;
+                }
+                i++;
             }
 
             if (overlay) {
