@@ -496,6 +496,32 @@ void inputdevice(struct wl_listener *listener, void *data)
     wlr_seat_set_capabilities(seat, caps);
 }
 
+static bool handleVTKeys(struct keyboard *kb, uint32_t keycode)
+{
+    const xkb_keysym_t *syms;
+    int nsyms =
+        xkb_state_key_get_syms(kb->device->keyboard->xkb_state, keycode, &syms);
+    bool handled = false;
+
+    for (int i = 0; i < nsyms; i++) {
+        if (syms[i] >= XKB_KEY_XF86Switch_VT_1
+                && syms[i] <= XKB_KEY_XF86Switch_VT_12) {
+            /* if required switch to different virtual terminal */
+            if (wlr_backend_is_multi(server.backend)) {
+                struct wlr_session *session =
+                    wlr_backend_get_session(server.backend);
+                if (session) {
+                    int vt = syms[i] - XKB_KEY_XF86Switch_VT_1 + 1;
+                    wlr_session_change_vt(session, vt);
+                    handled = true;
+                    break;
+                }
+            }
+        }
+    }
+    return handled;
+}
+
 void keypress(struct wl_listener *listener, void *data)
 {
     /* This event is raised when a key is pressed or released. */
@@ -517,22 +543,12 @@ void keypress(struct wl_listener *listener, void *data)
     int handled = 0;
     uint32_t mods = wlr_keyboard_get_modifiers(kb->device->keyboard);
     /* On _press_, attempt to process a compositor keybinding. */
+
+    if (handleVTKeys(kb, keycode))
+        return;
+
     if (event->state == WLR_KEY_PRESSED) {
         for (i = 0; i < nsyms; i++) {
-
-            /* if required switch to different virtual terminal */
-            if (syms[i] >= XKB_KEY_XF86Switch_VT_1
-                    && syms[i] <= XKB_KEY_XF86Switch_VT_12) {
-                if (wlr_backend_is_multi(server.backend)) {
-                    struct wlr_session *session =
-                        wlr_backend_get_session(server.backend);
-                    if (session) {
-                        unsigned vt = syms[i] - XKB_KEY_XF86Switch_VT_1 + 1;
-                        wlr_session_change_vt(session, vt);
-                        break;
-                    }
-                }
-            }
 
             jl_function_t* f = jl_eval_string("keyPressed");
             jl_value_t *arg1 = jl_box_uint32(mods);
@@ -759,13 +775,8 @@ pointerfocus(struct client *c, struct wlr_surface *surface,
 
     /* If surface is already focused, only notify of motion */
     if (surface == seat->pointer_state.focused_surface) {
-        printf("already focused \n");
         wlr_seat_pointer_notify_motion(seat, time, sx, sy);
         return;
-    }
-
-    if (surface) {
-        printf("focus\n");
     }
     /* Otherwise, let the client know that the mouse cursor has entered one
      * of its surfaces, and make keyboard focus follow if desired. */
