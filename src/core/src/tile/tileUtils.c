@@ -28,23 +28,10 @@ struct containerList {
 static struct wlr_box getAbsoluteBox(struct monitor *m, struct wlr_fbox b)
 {
     struct wlr_box w = m->tagset.w;
-    printf("\n\n:");
-    printf("monwidth: %i\n", m->m.width);
-    printf("monheight: %i\n", m->m.height);
-    printf("before\n:");
-    printf("x: %i\n", w.x);
-    printf("y: %i\n", w.y);
-    printf("width: %i\n", w.width);
-    printf("height: %i\n", w.height);
     w.x = w.width * b.x + w.x;
     w.y = w.height * b.y + w.y;
     w.width = w.width * b.width;
     w.height = w.height * b.height;
-    printf("after\n:");
-    printf("x: %i\n", w.x);
-    printf("y: %i\n", w.y);
-    printf("width: %i\n", w.width);
-    printf("height: %i\n", w.height);
     return w;
 }
 
@@ -120,7 +107,6 @@ void resize(struct client *c, int x, int y, int w, int h, bool interact)
     box.width = w;
     box.height = h;
 
-    printf("innerGaps: %f\n", innerGap);
     containerSurroundGaps(&box, innerGap);
     c->geom = box;
     applybounds(c, box);

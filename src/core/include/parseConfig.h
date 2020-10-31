@@ -11,8 +11,8 @@
 /* appearance */
 extern int sloppyFocus;
 extern int borderPx;
-extern float innerGap;
-extern float outerGap;
+extern int innerGap;
+extern int outerGap;
 extern float rootColor[4];
 extern float borderColor[4];
 extern float focusColor[4];

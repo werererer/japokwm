@@ -2,6 +2,7 @@
 #include <julia.h>
 #include <stdlib.h>
 #include <string.h>
+#include "utils/gapUtils.h"
 
 int sloppyFocus;
 int borderPx;
@@ -19,8 +20,8 @@ struct rule rules[MAXLEN];
 
 int repeatRate;
 int repeatDelay;
-float innerGap;
-float outerGap;
+int innerGap;
+int outerGap;
 
 char *tagNames[MAXLEN];
 char *termcmd;
@@ -31,8 +32,11 @@ void updateConfig()
 {
     sloppyFocus = getConfigInt("sloppyFocus");
     borderPx = getConfigInt("borderPx");
-    innerGap = getConfigFloat("innerGap");
-    outerGap = getConfigFloat("outerGap");
+    
+    /* gaps */
+    innerGap = getConfigInt("innerGap");
+    outerGap = getConfigInt("outerGap");
+    configureGaps(&innerGap, &outerGap);
 
     /* appearance */
     getConfigFloatArr(rootColor, "rootColor");
