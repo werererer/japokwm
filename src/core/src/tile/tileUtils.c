@@ -13,6 +13,7 @@
 #include "utils/coreUtils.h"
 #include "parseConfig.h"
 #include "tile/tileTexture.h"
+#include "utils/gapUtils.h"
 #include "utils/parseConfigUtils.h"
 
 struct containerList {
@@ -27,11 +28,23 @@ struct containerList {
 static struct wlr_box getAbsoluteBox(struct monitor *m, struct wlr_fbox b)
 {
     struct wlr_box w = m->tagset.w;
-
-    w.x = w.width * b.x;
-    w.y = w.height * b.y;
+    printf("\n\n:");
+    printf("monwidth: %i\n", m->m.width);
+    printf("monheight: %i\n", m->m.height);
+    printf("before\n:");
+    printf("x: %i\n", w.x);
+    printf("y: %i\n", w.y);
+    printf("width: %i\n", w.width);
+    printf("height: %i\n", w.height);
+    w.x = w.width * b.x + w.x;
+    w.y = w.height * b.y + w.y;
     w.width = w.width * b.width;
     w.height = w.height * b.height;
+    printf("after\n:");
+    printf("x: %i\n", w.x);
+    printf("y: %i\n", w.y);
+    printf("width: %i\n", w.width);
+    printf("height: %i\n", w.height);
     return w;
 }
 
@@ -40,18 +53,15 @@ void arrange(struct monitor *m, bool reset)
 {
     /* Get effective monitor geometry to use for window area */
     struct tagset *tagset = &m->tagset;
-    selMon->m = *wlr_output_layout_get_box(output_layout, selMon->wlr_output);
-    // TODO fix this (outher gap)
-    tagset->w.width = selMon->m.width - 20;
-    tagset->w.height = selMon->m.height - 20;
-    tagset->w.x = selMon->m.x + 10;
-    tagset->w.y = selMon->m.y + 10;
-    // TODO: this doesn't belong to this function
+    m->m = *wlr_output_layout_get_box(output_layout, m->wlr_output);
+
+    tagset->w = m->m;
+    containerSurroundGaps(&tagset->w, outerGap);
     if (selLayout(tagset).arrange) {
         struct client *c = NULL;
         jl_value_t *v = NULL;
 
-        int n = tiledClientCount(selMon);
+        int n = tiledClientCount(m);
         /* call arrange function
          * if previous layout is different or reset -> reset layout */
         if (strcmp(prevLayout.symbol, selLayout(tagset).symbol) != 0 || reset) {
@@ -71,10 +81,10 @@ void arrange(struct monitor *m, bool reset)
             // place clients
             int i = 0;
             wl_list_for_each(c, &clients, link) {
-                if (!visibleon(c, selMon) || c->floating)
+                if (!visibleon(c, m) || c->floating)
                     continue;
                 struct wlr_box b =
-                    getAbsoluteBox(selMon, containerList->container[i]);
+                    getAbsoluteBox(m, containerList->container[i]);
                 resize(c, b.x, b.y, b.width, b.height, false);
                 i = MIN(i + 1, containerList->size-1);
             }
@@ -109,6 +119,9 @@ void resize(struct client *c, int x, int y, int w, int h, bool interact)
     box.y = y;
     box.width = w;
     box.height = h;
+
+    printf("innerGaps: %f\n", innerGap);
+    containerSurroundGaps(&box, innerGap);
     c->geom = box;
     applybounds(c, box);
 

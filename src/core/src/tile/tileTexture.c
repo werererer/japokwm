@@ -12,7 +12,7 @@
 #include <wayland-util.h>
 #include <wlr/backend.h>
 
-bool overlay = false;
+bool overlay;
 // TODO: rewrite getPosition
 /* static struct wlr_box getPosition(struct posTexture *pTexture) */
 /* { */
@@ -72,6 +72,11 @@ struct posTexture *createTextbox(struct wlr_box box, float boxColor[],
     posTexture->x = box.x;
     posTexture->y = box.y;
     return posTexture;
+}
+
+void initOverlay()
+{
+    overlay = false;
 }
 
 void createNewOverlay()

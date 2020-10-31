@@ -41,10 +41,10 @@ static void render(struct wlr_surface *surface, int sx, int sy, void *data)
     /* We also have to apply the scale factor for HiDPI outputs. This is only
      * part of the puzzle, dwl does not fully support HiDPI. */
     // TODO: gaps here
-    obox.x = ox + rdata->x + sx + 5;
-    obox.y = oy + rdata->y + sy + 5;
-    obox.width = surface->current.width - 10;
-    obox.height = surface->current.height - 10;
+    obox.x = ox + rdata->x + sx;
+    obox.y = oy + rdata->y + sy;
+    obox.width = surface->current.width;
+    obox.height = surface->current.height;
     scalebox(&obox, output->scale);
 
     /*
@@ -81,7 +81,6 @@ static void renderClients(struct monitor *m)
     struct wlr_box *borders;
     struct wlr_surface *surface;
     /* Each subsequent window we render is rendered on top of the last. Because
-     * k
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each_reverse(c, &stack, slink) {
         /* Only render visible clients which show on this monitor */
@@ -117,11 +116,9 @@ static void renderClients(struct monitor *m)
         clock_gettime(CLOCK_MONOTONIC, &now);
         rdata.output = m->wlr_output;
         rdata.when = &now;
-        // TODO: create gaps
         rdata.x = c->geom.x + c->bw;
         rdata.y = c->geom.y + c->bw;
 
-        wlr_surface_for_each_surface(getWlrSurface(c), render, &rdata);
         switch (c->type) {
             case XDGShell:
                 wlr_xdg_surface_for_each_surface(c->surface.xdg, render, &rdata);

@@ -15,7 +15,6 @@ struct wl_list layerStack;   /* stacking z-order */
 struct wlr_output_layout *output_layout;
 struct wlr_box sgeom;
 
-/* function implementations */
 void applybounds(struct client *c, struct wlr_box bbox)
 {
     /* set minimum possible */

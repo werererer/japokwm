@@ -40,6 +40,20 @@ START_TEST(containerAddGapsTest)
     ck_assert_double_eq(con2.height, 95);
 } END_TEST
 
+START_TEST(containerSurroundGapsTest)
+{
+    Container con;
+    con.x = 50;
+    con.y = 50;
+    con.width = 100;
+    con.height = 100;
+    containerSurroundGaps(&con, 4.0);
+    ck_assert_double_eq(con.x, 52);
+    ck_assert_double_eq(con.y, 52);
+    ck_assert_double_eq(con.width, 96);
+    ck_assert_double_eq(con.height, 96);
+} END_TEST
+
 Suite *suite()
 {
     Suite *s;
@@ -48,6 +62,7 @@ Suite *suite()
     s = suite_create("tagset");
     tc = tcase_create("Core");
     tcase_add_test(tc, containerAddGapsTest);
+    tcase_add_test(tc, containerSurroundGapsTest);
 
     suite_add_tcase(s, tc);
 

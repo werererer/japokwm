@@ -19,6 +19,8 @@ struct rule rules[MAXLEN];
 
 int repeatRate;
 int repeatDelay;
+float innerGap;
+float outerGap;
 
 char *tagNames[MAXLEN];
 char *termcmd;
@@ -29,6 +31,8 @@ void updateConfig()
 {
     sloppyFocus = getConfigInt("sloppyFocus");
     borderPx = getConfigInt("borderPx");
+    innerGap = getConfigFloat("innerGap");
+    outerGap = getConfigFloat("outerGap");
 
     /* appearance */
     getConfigFloatArr(rootColor, "rootColor");
