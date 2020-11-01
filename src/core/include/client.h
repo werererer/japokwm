@@ -30,6 +30,7 @@ struct client {
     struct tagset tagset;
     int bw;
     bool floating;
+    bool hidden;
     uint32_t resize; /* configure serial of a pending resize */
 };
 
@@ -37,15 +38,22 @@ void createClient(struct client *c);
 void destroyClient(struct client *c);
 
 void applybounds(struct client *c, struct wlr_box bbox);
-/* set title and floating status */
+/* it ignores bool  hiding which visibleon doesn't */
+bool existon(struct client *c, struct monitor *m);
 bool visibleon(struct client *c, struct monitor *m);
+bool hiddenon(struct client *c, struct monitor *m);
 bool visibleonTag(struct client *c, struct monitor *m, size_t focusedTag);
 struct client *nextClient();
 struct client *selClient();
+struct client *getClient(int i);
+/* get first visible client */
+struct client *firstClient();
+/* get last visible client */
+struct client *lastClient();
 void applyrules(struct client *c);
 void focusClient(struct client *old, struct client *c, bool lift);
 void focusTopClient(struct client *old, bool lift);
-struct client *getClient(int i);
+void hideClient(struct client *c);
 
 extern struct wl_list clients; /* tiling order */
 extern struct wl_list focusStack;  /* focus order */

@@ -13,8 +13,12 @@ function spawn(cmd :: String)
     ccall((:spawn, corePath), Cvoid, (Cstring,), cmd)
 end
 
-function focusstack(i)
-    ccall((:focusstack, corePath), Cvoid, (Cint,), i)
+function focusOnStack(i)
+    ccall((:focusOnStack, corePath), Cvoid, (Cint,), i)
+end
+
+function focusOnHiddenStack(i)
+    ccall((:focusOnHiddenStack, corePath), Cvoid, (Cint,), i)
 end
 
 function incnmaster(i)

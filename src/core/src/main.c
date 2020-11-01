@@ -84,7 +84,6 @@ void destroynotify(struct wl_listener *listener, void *data);
 void destroyxdeco(struct wl_listener *listener, void *data);
 struct monitor *dirtomon(int dir);
 void focusmon(int i);
-void focusstack(int i);
 void getxdecomode(struct wl_listener *listener, void *data);
 void incnmaster(int i);
 void inputdevice(struct wl_listener *listener, void *data);
@@ -431,30 +430,6 @@ void focusmon(int i)
     focusTopClient(nextClient(), true);
 }
 
-void focusstack(int i)
-{
-    struct client *c, *sel = selClient();
-    if (!sel)
-        return;
-    if (i > 0) {
-        wl_list_for_each(c, &sel->link, link) {
-            if (&c->link == &clients)
-                continue;  /* wrap past the sentinel node */
-            if (visibleon(c, selMon))
-                break;  /* found it */
-        }
-    } else {
-        wl_list_for_each_reverse(c, &sel->link, link) {
-            if (&c->link == &clients)
-                continue;  /* wrap past the sentinel node */
-            if (visibleon(c, selMon))
-                break;  /* found it */
-        }
-    }
-    /* If only one client is visible on selMon, then c == sel */
-    focusClient(selClient(), c, true);
-}
-
 void getxdecomode(struct wl_listener *listener, void *data)
 {
     struct wlr_xdg_toplevel_decoration_v1 *wlr_deco = data;
@@ -623,6 +598,7 @@ void maprequest(struct wl_listener *listener, void *data)
     } else {
         wl_list_insert(&layerStack, &c->llink);
     }
+    updateHiddenStatus();
     struct client *prev = wl_container_of(listener, prev, map);
 
     switch (c->type) {
@@ -1108,6 +1084,7 @@ void unmapnotify(struct wl_listener *listener, void *data)
     } else {
         wl_list_remove(&c->llink);
     }
+    updateHiddenStatus();
 }
 
 void view(unsigned ui)

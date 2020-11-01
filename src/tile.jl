@@ -1,7 +1,6 @@
 module Layouts
 import Statistics
 include("translationLayer.jl")
-include("coreUtils.jl")
 include("parseLayout.jl")
 
 # from 0-1

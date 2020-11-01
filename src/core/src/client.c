@@ -5,6 +5,7 @@
 
 #include "tile/tile.h"
 #include "utils/coreUtils.h"
+#include "tile/tileUtils.h"
 
 //global variables
 struct wl_list clients; /* tiling order */
@@ -142,6 +143,37 @@ struct client *getClient(int i)
     return c;
 }
 
+struct client *firstClient()
+{
+    if (containerList->size)
+    {
+        struct client *c = wl_container_of(stack.next, c, link);
+        wl_list_for_each(c, &stack, slink) {
+            if (!visibleon(c, selMon))
+                continue;
+            return c;
+        }
+    }
+    return NULL;
+}
+
+struct client *lastClient()
+{
+    if (containerList->size)
+    {
+        struct client *c = wl_container_of(stack.next, c, link);
+        int i = 1;
+        wl_list_for_each(c, &stack, slink) {
+            if (!visibleon(c, selMon))
+                continue;
+            if (i > containerList->size)
+                return c;
+            i++;
+        }
+    }
+    return NULL;
+}
+
 struct wlr_surface *getWlrSurface(struct client *c)
 {
     switch (c->type) {
@@ -160,10 +192,30 @@ struct wlr_surface *getWlrSurface(struct client *c)
     }
 }
 
-bool visibleon(struct client *c, struct monitor *m)
+bool existon(struct client *c, struct monitor *m)
 {
     if (m && c) {
         if (c->mon == m) {
+            return c->tagset.selTags[0] & m->tagset.selTags[0];
+        }
+    }
+    return false;
+}
+
+bool visibleon(struct client *c, struct monitor *m)
+{
+    if (m && c) {
+        if (c->mon == m && !c->hidden) {
+            return c->tagset.selTags[0] & m->tagset.selTags[0];
+        }
+    }
+    return false;
+}
+
+bool hiddenon(struct client *c, struct monitor *m)
+{
+    if (m && c) {
+        if (c->mon == m && c->hidden) {
             return c->tagset.selTags[0] & m->tagset.selTags[0];
         }
     }
@@ -248,4 +300,9 @@ void focusTopClient(struct client *old, bool lift)
         }
     if (focus)
         focusClient(old, c, lift);
+}
+
+void hideClient(struct client *c)
+{
+    c->hidden = true;
 }

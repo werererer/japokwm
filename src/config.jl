@@ -9,8 +9,8 @@ overlayColor = [0.65, 0.65, 0.65, 0.5]
 textColor = [0.003, 0.003, 0.003, 1.0]
 selOverlayColor = []
 selTextColor = []
-outerGap = 50
-innerGap = 100
+outerGap = 30
+innerGap = 20
 
 tagNames = [ "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
 
@@ -43,8 +43,10 @@ keys = [
         ["$mod u",           ()->  spawn(termcmd)        ],
         ["$mod period",      ()->  focusmon(+1)           ],
         ["$mod comma",       ()->  focusmon(-1)           ],
-        ["$mod k",           ()->  focusstack(-1)         ],
-        ["$mod j",           ()->  focusstack(1)          ],
+        ["$mod k",           ()->  focusOnStack(-1)         ],
+        ["$mod j",           ()->  focusOnStack(1)          ],
+        ["$mod $shift j",    ()->  focusOnHiddenStack(1)          ],
+        ["$mod $shift k",    ()->  focusOnHiddenStack(-1)          ],
         ["$mod d",           ()->  incnmaster(-1)         ],
         ["$mod c",           ()->  killclient()           ],
         ["$mod q",           ()->  quit()                 ],

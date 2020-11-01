@@ -53,7 +53,6 @@ function isSameKeybind(bind :: String, bind2 :: String) :: Bool
 end
 
 function processBinding(bind :: String, arr) :: Bool
-    println(bind)
     handled = false
     for elem in arr
         i = 0 :: Int

@@ -16,10 +16,7 @@
 #include "utils/gapUtils.h"
 #include "utils/parseConfigUtils.h"
 
-struct containerList {
-    struct wlr_fbox *container;
-    int size;
-};
+struct containerList *containerList = NULL;
 
 /* *
  * the wlr_fbox has includes the window size in percent.
@@ -61,11 +58,10 @@ void arrange(struct monitor *m, bool reset)
             v = jl_call1(f, arg1);
         }
 
-        struct containerList *containerList = NULL;
         if (v) {
             containerList = jl_unbox_voidpointer(v);
 
-            // place clients
+            updateHiddenStatus();
             int i = 0;
             wl_list_for_each(c, &clients, link) {
                 if (!visibleon(c, m) || c->floating)
@@ -73,12 +69,6 @@ void arrange(struct monitor *m, bool reset)
                 struct wlr_box b =
                     getAbsoluteBox(m, containerList->container[MIN(i, containerList->size-1)]);
                 resize(c, b.x, b.y, b.width, b.height, false);
-                if (i > containerList->size-1) {
-                    c->geom.x = -100;
-                    c->geom.y = -100;
-                    c->geom.width = 1;
-                    c->geom.height = 1;
-                }
                 i++;
             }
 
@@ -135,6 +125,21 @@ void resize(struct client *c, int x, int y, int w, int h, bool interact)
     }
 }
 
+void updateHiddenStatus()
+{
+    struct client *c;
+    int i = 0;
+    wl_list_for_each(c, &clients, link) {
+        if (existon(c, selMon))
+        {
+            if (i++ < containerList->size)
+                c->hidden = false;
+            else
+                c->hidden = true;
+        }
+    }
+}
+
 void updateLayout()
 {
     setSelLayout(&selMon->tagset, getConfigLayout("layout"));
@@ -152,7 +157,7 @@ int tiledClientCount(struct monitor *m)
     int n = 0;
 
     wl_list_for_each(c, &clients, link)
-        if (visibleon(c, m) && !c->floating)
+        if (existon(c, m) && !c->floating)
             n++;
     return n;
 }
