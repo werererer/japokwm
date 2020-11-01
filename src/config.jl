@@ -22,6 +22,7 @@ rules = [
 layouts = [
     [ "[M]", (n)-> Layouts.monocle(n) ],
     [ "[]=", (n)-> Layouts.tile(n) ],
+    [ "[]=", (n)-> Layouts.twoPane(n) ],
     [ "><>", (n)-> Layouts.floating(n) ],
 ]
 
@@ -74,15 +75,15 @@ keys = [
         ["$mod 8",           ()->  view(128)                 ],
         ["$mod 9",           ()->  view(256)                 ],
         ["$mod 0",           ()->  view(511)                 ],
-        ["$shift $mod 1",           ()->  toggleAddView(1)                 ],
-        ["$shift $mod 2",           ()->  toggleAddView(2)                 ],
-        ["$shift $mod 3",           ()->  toggleAddView(4)                 ],
-        ["$shift $mod 4",           ()->  toggleAddView(8)                 ],
-        ["$shift $mod 5",           ()->  toggleAddView(16)                 ],
-        ["$shift $mod 6",           ()->  toggleAddView(32)                 ],
-        ["$shift $mod 7",           ()->  toggleAddView(64)                 ],
-        ["$shift $mod 8",           ()->  toggleAddView(128)                 ],
-        ["$shift $mod 9",           ()->  toggleAddView(256)                 ],
+        ["$mod $shift 1",           ()->  toggleAddView(1)                 ],
+        ["$mod $shift 2",           ()->  toggleAddView(2)                 ],
+        ["$mod $shift 3",           ()->  toggleAddView(4)                 ],
+        ["$mod $shift 4",           ()->  toggleAddView(8)                 ],
+        ["$mod $shift 5",           ()->  toggleAddView(16)                 ],
+        ["$mod $shift 6",           ()->  toggleAddView(32)                 ],
+        ["$mod $shift 7",           ()->  toggleAddView(64)                 ],
+        ["$mod $shift 8",           ()->  toggleAddView(128)                 ],
+        ["$mod $shift 9",           ()->  toggleAddView(256)                 ],
        ]
 
 buttons = [

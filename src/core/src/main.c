@@ -1097,7 +1097,6 @@ void view(unsigned ui)
 
 void toggleAddView(unsigned ui)
 {
-    selMon->tagset.focusedTag = flagToPosition(ui);
     toggleAddTag(&selMon->tagset, ui);
     focusTopClient(nextClient(), false);
     arrange(selMon, false);

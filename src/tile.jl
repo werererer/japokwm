@@ -213,6 +213,11 @@ function monocle(n :: Int) :: Ptr{cContainerList}
     return update(n)
 end
 
+function twoPane(n :: Int) :: Ptr{cContainerList}
+    global layoutData = getLayout("twoPane")
+    return update(n)
+end
+
 # return array of arrangement
 function update(n :: Int) :: Ptr{cContainerList}
     global layoutData
