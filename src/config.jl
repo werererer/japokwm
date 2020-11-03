@@ -1,4 +1,5 @@
 module config
+using Revise
 include("defaultConfig.jl")
 
 sloppyFocus = true
@@ -10,7 +11,7 @@ overlayColor = [0.65, 0.65, 0.65, 0.5]
 textColor = [0.003, 0.003, 0.003, 1.0]
 selOverlayColor = []
 selTextColor = []
-outerGap = 10
+outerGap = 40
 innerGap = 20
 
 tagNames = [ "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
@@ -85,6 +86,7 @@ keys = [
         ["$mod $shift 7",           ()->  toggleAddView(64)                 ],
         ["$mod $shift 8",           ()->  toggleAddView(128)                 ],
         ["$mod $shift 9",           ()->  toggleAddView(256)                 ],
+        ["$mod $shift r",           ()->  Revise.revise(config)                 ],
        ]
 
 buttons = [
