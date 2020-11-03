@@ -34,5 +34,4 @@ function julia_main() :: Cint
     cleanup()
     return 0
 end
-julia_main()
 end

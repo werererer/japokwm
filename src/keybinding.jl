@@ -29,8 +29,6 @@ end
 function keyPressed(mod, sym) :: Bool
     bind = symToBinding(mod, sym)
     ret = processBinding(bind, config.keys)
-    println("works3")
-    println("n$ret")
     return ret
 end
 
