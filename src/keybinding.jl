@@ -14,7 +14,7 @@ function modToString(mod) :: String
     mask = x->2^(x-1)
     for i in 1:8
         if mod & mask(i) != 0
-            res *= "$(mods[i]) "
+            res *= "$(config.mods[i]) "
         end
     end
     return res
@@ -28,12 +28,15 @@ end
 
 function keyPressed(mod, sym) :: Bool
     bind = symToBinding(mod, sym)
-    return processBinding(bind, keys)
+    ret = processBinding(bind, config.keys)
+    println("works3")
+    println("n$ret")
+    return ret
 end
 
 function buttonPressed(mod, sym) :: Bool
     bind = symToBinding(mod, sym)
-    return processBinding(bind, buttons)
+    return processBinding(bind, config.buttons)
 end
 
 function isSameKeybind(bind :: String, bind2 :: String) :: Bool
