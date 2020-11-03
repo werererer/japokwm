@@ -178,7 +178,7 @@ void buttonpress(struct wl_listener *listener, void *data)
         mods = wlr_keyboard_get_modifiers(keyboard);
 
         /* process */
-        jl_function_t *f = jl_eval_string("buttonPressed");
+        jl_function_t *f = getConfigFunc(mainModule, "buttonPressed");
         jl_value_t *arg1 = jl_box_uint32(mods);
         jl_value_t *arg2 = jl_box_uint32(sym);
         jl_call2(f, arg1, arg2);
@@ -524,7 +524,7 @@ void keypress(struct wl_listener *listener, void *data)
     if (event->state == WLR_KEY_PRESSED) {
         for (i = 0; i < nsyms; i++) {
 
-            jl_function_t* f = jl_eval_string("keyPressed");
+            jl_function_t* f = getConfigFunc(mainModule, "keyPressed");
             jl_value_t *arg1 = jl_box_uint32(mods);
             jl_value_t *arg2 = jl_box_uint32(syms[i]);
             jl_value_t *res = jl_call2(f, arg1, arg2);

@@ -9,6 +9,8 @@
 */
 
 /* appearance */
+extern char *mainModule;
+extern char *configModule;
 extern int sloppyFocus;
 extern int borderPx;
 extern int innerGap;

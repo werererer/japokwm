@@ -1,3 +1,5 @@
+module cool
+include("translationLayer.jl")
 include("keybinding.jl");
 include("keysym.jl")
 
@@ -11,10 +13,6 @@ end
 
 function cleanup()
     ccall((:cleanup, corePath), Cvoid, ())
-end
-
-function updateConfig()
-    ccall((:updateConfig, corePath), Cvoid, ())
 end
 
 function julia_main() :: Cint
@@ -36,5 +34,4 @@ function julia_main() :: Cint
     cleanup()
     return 0
 end
-
-julia_main()
+end

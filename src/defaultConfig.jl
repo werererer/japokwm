@@ -35,12 +35,12 @@ function setLayout()
     if layoutId > length(layouts)
         layoutId = 1
     end
-    layout = layouts[layoutId]
     updateLayout()
 end
 
 function setLayout(i :: Int)
     global layouts, layout, layoutId
+    println("setLayout")
     layoutId = i
     layout = layouts[i]
     updateLayout()

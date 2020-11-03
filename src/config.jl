@@ -1,3 +1,4 @@
+module config
 include("defaultConfig.jl")
 
 sloppyFocus = true
@@ -91,3 +92,4 @@ buttons = [
            ["$mod $btnMiddle",  ()  ->  toggleFloating()  ],
            ["$mod $btnRight",   ()  ->  moveResize(CurResize)      ],
           ]
+end

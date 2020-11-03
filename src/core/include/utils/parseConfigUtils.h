@@ -4,28 +4,25 @@
 #include "utils/coreUtils.h"
 #include "monitor.h"
 
-void initConfig(char *path);
-// basic
-// get
-Key getConfigKey(char *name);
-struct layout getConfigLayout(char *name);
-struct monRule getConfigMonRule(char *name);
-struct rule getConfigRule(char *name);
-char* getConfigStr(char *name);
-float getConfigFloat(char *name);
-int getConfigInt(char *name);
-jl_function_t* getConfigFunc(char *name);
-// set
-void setConfigLayoutSymbol(char *name, struct layout l);
+void initConfig(char *module, char *path);
+jl_value_t *evalString(char *module, const char *name);
+Key getConfigKey(char *module, char *name);
+struct layout getConfigLayout(char *module, char *name);
+struct monRule getConfigMonRule(char *module, char *name);
+struct rule getConfigRule(char *module, char *name);
+char* getConfigStr(char *module, char *name);
+float getConfigFloat(char *module, char *name);
+int getConfigInt(char *module, char *name);
+jl_function_t* getConfigFunc(char *module, char *name);
 
 // array
-void getConfigStrArr(char **resArr, char *name);
-void getConfigFloatArr(float *resArr, char *name);
-void getConfigIntArr(int *resArr, char *name);
-void getConfigLayoutArr(struct layout *layouts, char *name);
-void getConfigKeyArr(Key *keys, char *name);
-void getConfigRuleArr(struct rule *rules, char *name);
-void getConfigMonRuleArr(struct monRule *monrules, char *name);
+void getConfigStrArr(char *module, char **resArr, char *name);
+void getConfigFloatArr(char *module, float *resArr, char *name);
+void getConfigIntArr(char *module, int *resArr, char *name);
+void getConfigLayoutArr(char *module, struct layout *layouts, char *name);
+void getConfigKeyArr(char *module, Key *keys, char *name);
+void getConfigRuleArr(char *module, struct rule *rules, char *name);
+void getConfigMonRuleArr(char *module, struct monRule *monrules, char *name);
 
 //utils
 void arrayPosToStr(char *resStr, char *varName, int i);

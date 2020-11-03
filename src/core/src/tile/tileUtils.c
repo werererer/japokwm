@@ -53,7 +53,7 @@ void arrange(struct monitor *m, bool reset)
             jl_value_t *arg1 = jl_box_int64(n);
             v = jl_call1(selLayout(tagset).arrange, arg1);
         } else {
-            jl_function_t *f = jl_eval_string("Layouts.update");
+            jl_function_t *f = evalString(configModule, "Layouts.update");
             jl_value_t *arg1 = jl_box_int64(n);
             v = jl_call1(f, arg1);
         }
@@ -142,7 +142,7 @@ void updateHiddenStatus()
 
 void updateLayout()
 {
-    setSelLayout(&selMon->tagset, getConfigLayout("layout"));
+    setSelLayout(&selMon->tagset, getConfigLayout(configModule, "layout"));
     arrange(selMon, true);
 }
 

@@ -4,6 +4,8 @@
 #include <string.h>
 #include "utils/gapUtils.h"
 
+char *mainModule = "juliawm";
+char *configModule = "juliawm.config";
 int sloppyFocus;
 int borderPx;
 float rootColor[4];
@@ -30,38 +32,39 @@ Key buttons[MAXLEN];
 
 void updateConfig()
 {
-    sloppyFocus = getConfigInt("sloppyFocus");
-    borderPx = getConfigInt("borderPx");
-    
+    char *module = configModule;
+    sloppyFocus = getConfigInt(module, "sloppyFocus");
+    borderPx = getConfigInt(module, "borderPx");
+
     /* gaps */
-    innerGap = getConfigInt("innerGap");
-    outerGap = getConfigInt("outerGap");
+    innerGap = getConfigInt(module, "innerGap");
+    outerGap = getConfigInt(module, "outerGap");
     configureGaps(&innerGap, &outerGap);
 
     /* appearance */
-    getConfigFloatArr(rootColor, "rootColor");
-    getConfigFloatArr(borderColor, "borderColor");
-    getConfigFloatArr(focusColor, "focusColor");
-    getConfigFloatArr(overlayColor, "overlayColor");
-    getConfigFloatArr(textColor, "textColor");
-    getConfigFloatArr(selOverlayColor, "overlayColor");
-    getConfigFloatArr(selTextColor, "textColor");
+    getConfigFloatArr(module, rootColor, "rootColor");
+    getConfigFloatArr(module, borderColor, "borderColor");
+    getConfigFloatArr(module, focusColor, "focusColor");
+    getConfigFloatArr(module, overlayColor, "overlayColor");
+    getConfigFloatArr(module, textColor, "textColor");
+    getConfigFloatArr(module, selOverlayColor, "overlayColor");
+    getConfigFloatArr(module, selTextColor, "textColor");
 
-    getConfigStrArr(tagNames, "tagNames");
-    getConfigRuleArr(rules,"rules");
+    getConfigStrArr(module, tagNames, "tagNames");
+    getConfigRuleArr(module, rules,"rules");
 
     /* monitors */
     //getConfigMonRuleArr(monrules, "monrules");
 
     /* keyboard */
-    repeatRate = getConfigInt("repeatRate");
-    repeatDelay = getConfigInt("repeatDelay");
-    defaultLayout = getConfigLayout("defaultLayout");
+    repeatRate = getConfigInt(module, "repeatRate");
+    repeatDelay = getConfigInt(module, "repeatDelay");
+    defaultLayout = getConfigLayout(module, "defaultLayout");
     prevLayout = (struct layout){.symbol = "", .arrange = NULL};
 
     /* commands */
-    termcmd = getConfigStr("termcmd");
-    getConfigKeyArr(keys, "keys");
-    getConfigKeyArr(buttons, "buttons");
+    termcmd = getConfigStr(module, "termcmd");
+    getConfigKeyArr(module, keys, "keys");
+    getConfigKeyArr(module, buttons, "buttons");
     // getConfigkeyArr(buttons, "buttons");
 }
