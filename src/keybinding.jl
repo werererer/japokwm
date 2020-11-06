@@ -1,11 +1,12 @@
 include("config.jl")
+import Main.juliawm.config
 
 function XStringToKeysym(str :: String)
-    return ccall((:XStringToKeysym, corePath), Cint, (Cstring,), str)
+    return ccall((:XStringToKeysym, config.corePath), Cint, (Cstring,), str)
 end
 
 function XKeysymToString(sym) :: String
-    res = ccall((:XKeysymToString, corePath), Cstring, (Cint,), sym)
+    res = ccall((:XKeysymToString, config.corePath), Cstring, (Cint,), sym)
     return unsafe_string(res)
 end
 

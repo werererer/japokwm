@@ -9,13 +9,15 @@
 #include <wlr/types/wlr_output_layout.h>
 #include <wlr/types/wlr_seat.h>
 #include <wlr/render/wlr_texture.h>
-#include <julia.h>
+#include <lua.h>
 
 #include "tagset.h"
 
 /* macros */
 #define BARF(fmt, ...)      do { fprintf(stderr, fmt "\n", ##__VA_ARGS__); exit(EXIT_FAILURE); } while (0)
 #define EBARF(fmt, ...)     BARF(fmt ": %s", ##__VA_ARGS__, strerror(errno))
+#define MAX(A, B)               ((A) > (B) ? (A) : (B))
+#define MIN(A, B)               ((A) < (B) ? (A) : (B))
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define END(A)                  ((A) + LENGTH(A))
 /* number of chars a string should contain */
@@ -33,17 +35,8 @@ struct keyboard {
     struct wl_listener destroy;
 };
 
-/* datastructures for parsing julia */
-typedef struct {
-    const char *symbol;
-    jl_function_t *func;
-} Key;
-
-/* datastructures for parsing julia */
-typedef struct {
-    const char *symbol;
-    jl_function_t *func;
-} Button;
+typedef struct layout Key;
+typedef struct layout Buttom;
 
 typedef uint32_t xkb_keysym_t;
 
@@ -65,6 +58,7 @@ struct monRule {
     enum wl_output_transform rr;
 };
 extern struct wlr_seat *seat;
+extern struct lua_State *L;
 
 // breaking codestyle to abide by the wlroots style
 void wlr_list_clear(struct wlr_list *list);

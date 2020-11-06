@@ -1,4 +1,5 @@
 #include "utils/gapUtils.h"
+#include <math.h>
 
 static void containerAddGapLeft(Container *con, float gap)
 {

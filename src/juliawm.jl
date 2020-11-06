@@ -1,18 +1,17 @@
 module juliawm
-include("translationLayer.jl")
 include("keybinding.jl");
 include("keysym.jl")
 
 function setup()
-    ccall((:setup, corePath), Cvoid, ())
+    ccall((:setup, config.corePath), Cvoid, ())
 end
 
 function run(cmd::String)
-    return ccall((:run, corePath), Cvoid, (Cstring,), cmd)
+    return ccall((:run, config.corePath), Cvoid, (Cstring,), cmd)
 end
 
 function cleanup()
-    ccall((:cleanup, corePath), Cvoid, ())
+    ccall((:cleanup, config.corePath), Cvoid, ())
 end
 
 function julia_main() :: Cint
@@ -28,10 +27,11 @@ function julia_main() :: Cint
         println("XDG_RUNTIME_DIR must be set")
     end
 
-    updateConfig()
+    config.updateConfig()
     setup()
     run(startup_cmd)
     cleanup()
     return 0
 end
+julia_main()
 end

@@ -1,6 +1,7 @@
 #include "monitor.h"
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_xcursor_manager.h>
+#include <stdlib.h>
 
 #include "parseConfig.h"
 #include "render/render.h"

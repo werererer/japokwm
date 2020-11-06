@@ -43,11 +43,11 @@ srcs = files(
   'src/wlr-foreign-toplevel-management-unstable-v1-protocol.c',
 )
 libName = 'juliawm'
-wmlib = shared_library(libName,
+wmlib = executable(libName,
               [main, srcs],
               dependencies: deps,
               include_directories: inc,
-              link_args: ['-ljulia', '-lm'],
+              link_args: ['-lm'],
               install: true,
               install_dir: root / srcDir,
               )

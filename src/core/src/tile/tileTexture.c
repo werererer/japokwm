@@ -8,9 +8,9 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <wayland-util.h>
 #include <wlr/backend.h>
+#include <stdlib.h>
 
 bool overlay;
 // TODO: rewrite getPosition

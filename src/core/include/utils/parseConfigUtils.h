@@ -3,29 +3,32 @@
 #include <string.h>
 #include "utils/coreUtils.h"
 #include "monitor.h"
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
 
-void initConfig(char *module, char *path);
-jl_value_t *evalString(char *module, const char *name);
-Key getConfigKey(char *module, char *name);
-struct layout getConfigLayout(char *module, char *name);
-struct monRule getConfigMonRule(char *module, char *name);
-struct rule getConfigRule(char *module, char *name);
-char* getConfigStr(char *module, char *name);
-float getConfigFloat(char *module, char *name);
-int getConfigInt(char *module, char *name);
-jl_function_t* getConfigFunc(char *module, char *name);
+void loadConfig(lua_State *L, char *path);
+Key getConfigKey(lua_State *L, char *name);
+struct layout getConfigLayout(lua_State *L, char *name);
+struct monRule getConfigMonRule(lua_State *L, char *name);
+struct rule getConfigRule(lua_State *L, char *name);
+const char* getConfigStr(lua_State *L, char *name);
+float getConfigFloat(lua_State *L, char *name);
+int getConfigInt(lua_State *L, char *name);
+bool getConfigBool(lua_State *L, char *name);
+int getConfigFuncId(lua_State *L, char *name);
+void callArrangeFunc(lua_State *L, int funcId, int n);
 
 // array
-void getConfigStrArr(char *module, char **resArr, char *name);
-void getConfigFloatArr(char *module, float *resArr, char *name);
-void getConfigIntArr(char *module, int *resArr, char *name);
-void getConfigLayoutArr(char *module, struct layout *layouts, char *name);
-void getConfigKeyArr(char *module, Key *keys, char *name);
-void getConfigRuleArr(char *module, struct rule *rules, char *name);
-void getConfigMonRuleArr(char *module, struct monRule *monrules, char *name);
+void getConfigStrArr(lua_State *L, char **resArr, char *name);
+void getConfigFloatArr(lua_State *L, float *resArr, char *name);
+void getConfigIntArr(lua_State *L, int *resArr, char *name);
+void getConfigLayoutArr(lua_State *L, struct layout *layouts, char *name);
+void getConfigKeyArr(lua_State *L, Key *keys, char *name);
+void getConfigRuleArr(lua_State *L, struct rule *rules, char *name);
+void getConfigMonRuleArr(lua_State *L, struct monRule *monrules, char *name);
 
 //utils
-void arrayPosToStr(char *resStr, char *varName, int i);
-void array2DPosToStr(char *resStr, char *varName, int i, int j);
+void callfunc(int funcid);
 
 #endif /* PARSE_CONFIG_UTILS_H */

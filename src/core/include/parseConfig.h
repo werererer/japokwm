@@ -11,7 +11,7 @@
 /* appearance */
 extern char *mainModule;
 extern char *configModule;
-extern int sloppyFocus;
+extern bool sloppyFocus;
 extern int borderPx;
 extern int innerGap;
 extern int outerGap;
@@ -34,6 +34,7 @@ extern char *termcmd;
 extern Key keys[MAXLEN];
 extern Key buttons[MAXLEN];
 
-void updateConfig();
+/* sets global variables but needs  */
+void updateConfig(lua_State *L);
 void updateLayout();
 #endif /* PARSE_CONFIG_H */

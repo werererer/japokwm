@@ -10,7 +10,6 @@
 #include <X11/Xlib.h>
 #include <assert.h>
 #include <getopt.h>
-#include <julia.h>
 #include <linux/input-event-codes.h>
 #include <signal.h>
 #include <stdio.h>
@@ -160,8 +159,8 @@ void axisnotify(struct wl_listener *listener, void *data)
 void buttonpress(struct wl_listener *listener, void *data)
 {
     struct wlr_event_pointer_button *event = data;
-    struct wlr_keyboard *keyboard;
-    uint32_t mods;
+    /* struct wlr_keyboard *keyboard; */
+    /* uint32_t mods; */
     struct client *c;
 
     switch (event->state) {
@@ -171,17 +170,18 @@ void buttonpress(struct wl_listener *listener, void *data)
             focusClient(nextClient(), c, true);
 
         /* Translate libinput to xkbcommon code */
-        unsigned sym = event->button + 64985;
+        /* unsigned sym = event->button + 64985; */
 
         /* get modifiers */
-        keyboard = wlr_seat_get_keyboard(seat);
-        mods = wlr_keyboard_get_modifiers(keyboard);
+        /* keyboard = wlr_seat_get_keyboard(seat); */
+        /* mods = wlr_keyboard_get_modifiers(keyboard); */
 
+        // TODO: fix
         /* process */
-        jl_function_t *f = getConfigFunc(mainModule, "buttonPressed");
-        jl_value_t *arg1 = jl_box_uint32(mods);
-        jl_value_t *arg2 = jl_box_uint32(sym);
-        jl_call2(f, arg1, arg2);
+        /* lua_getglobal(L, "buttonPressed"); */
+        /* lua_pushinteger(L, mods); */
+        /* lua_pushinteger(L, sym); */
+        /* lua_pcall(L, 2, 0, 0); */
         break;
     case WLR_BUTTON_RELEASED:
         /* If you released any buttons, we exit interactive move/resize mode. */
@@ -209,6 +209,7 @@ void chvt(unsigned int ui)
 
 void cleanup(void)
 {
+    lua_close(L);
     wlr_xwayland_destroy(xwayland);
     wl_display_destroy_clients(server.display);
     wl_display_destroy(server.display);
@@ -216,7 +217,6 @@ void cleanup(void)
     wlr_xcursor_manager_destroy(server.cursorMgr);
     wlr_cursor_destroy(server.cursor);
     wlr_output_layout_destroy(output_layout);
-    jl_atexit_hook(0);
 }
 
 void cleanupkeyboard(struct wl_listener *listener, void *data)
@@ -515,7 +515,7 @@ void keypress(struct wl_listener *listener, void *data)
     int nsyms = xkb_state_key_get_syms(state, keycode, &syms);
 
     int handled = 0;
-    uint32_t mods = wlr_keyboard_get_modifiers(kb->device->keyboard);
+    /* uint32_t mods = wlr_keyboard_get_modifiers(kb->device->keyboard); */
     /* On _press_, attempt to process a compositor keybinding. */
 
     if (handleVTKeys(kb, keycode))
@@ -524,11 +524,13 @@ void keypress(struct wl_listener *listener, void *data)
     if (event->state == WLR_KEY_PRESSED) {
         for (i = 0; i < nsyms; i++) {
 
-            jl_function_t* f = getConfigFunc(mainModule, "keyPressed");
-            jl_value_t *arg1 = jl_box_uint32(mods);
-            jl_value_t *arg2 = jl_box_uint32(syms[i]);
-            jl_value_t *res = jl_call2(f, arg1, arg2);
-            handled = jl_unbox_uint32(res);
+            // TODO: fix here
+            /* lua_getglobal(L, "keyPressed"); */
+            /* lua_pushinteger(L, mods); */
+            /* lua_pushinteger(L, syms[i]); */
+            /* lua_pcall(L, 2, 1, 0); */
+            /* handled = luaL_checkinteger(L, -1); */
+            /* lua_pop(L, -1); */
         }
     }
 
@@ -856,7 +858,7 @@ void setFloating(struct client *c, bool floating)
 
 /* arg > 1.0 will set mfact absolutely */
 void setmfact(float factor) {
-    if (!selLayout(&selMon->tagset).arrange)
+    if (!selLayout(&selMon->tagset).funcId)
         return;
     factor = factor < 1.0 ? factor + selMon->mfact : factor - 1.0;
     if (factor < 0.1 || factor > 0.9)
@@ -887,6 +889,8 @@ void setsel(struct wl_listener *listener, void *data)
 
 void setup(void)
 {
+    L = luaL_newstate();
+    updateConfig(L);
     initOverlay();
     /* The Wayland display is managed by libwayland. It handles accepting
      * clients from the Unix socket, manging Wayland globals, and so on. */
@@ -1198,4 +1202,31 @@ void xwaylandready(struct wl_listener *listener, void *data)
     wlr_xwayland_set_seat(xwayland, seat);
 
     xcb_disconnect(xc);
+}
+
+int main(int argc, char *argv[])
+{
+    char *startup_cmd = NULL;
+    int c;
+
+    while ((c = getopt(argc, argv, "s:h")) != -1) {
+        if (c == 's')
+            startup_cmd = optarg;
+        else
+            goto usage;
+    }
+    if (optind < argc)
+        goto usage;
+
+    // Wayland requires XDG_RUNTIME_DIR for creating its communications
+    // socket
+    if (!getenv("XDG_RUNTIME_DIR"))
+        BARF("XDG_RUNTIME_DIR must be set");
+    setup();
+    run(startup_cmd);
+    cleanup();
+    return EXIT_SUCCESS;
+
+usage:
+    BARF("Usage: %s [-s startup command]", argv[0]);
 }

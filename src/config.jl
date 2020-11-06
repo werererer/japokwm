@@ -3,7 +3,7 @@ using Revise
 include("defaultConfig.jl")
 
 sloppyFocus = true
-borderPx = 1
+borderPx = 5
 rootColor = [0.3, 0.3, 0.3, 1.0]
 borderColor = [0.3, 0.3, 0.3, 1.0]
 focusColor = [1.0, 0.0, 0.0, 0.0]
@@ -86,7 +86,7 @@ keys = [
         ["$mod $shift 7",           ()->  toggleAddView(64)                 ],
         ["$mod $shift 8",           ()->  toggleAddView(128)                 ],
         ["$mod $shift 9",           ()->  toggleAddView(256)                 ],
-        ["$mod $shift r",           ()->  Revise.revise(config)                 ],
+        ["$mod $shift r",           ()->  import Main.juliawm.config               ],
        ]
 
 buttons = [

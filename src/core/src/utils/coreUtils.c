@@ -1,5 +1,8 @@
 #include "utils/coreUtils.h"
+#include <string.h>
+
 struct wlr_seat *seat;
+struct lua_State *L;
 
 void wlr_list_clear(struct wlr_list *list)
 {

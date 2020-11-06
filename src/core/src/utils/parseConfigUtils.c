@@ -1,258 +1,238 @@
 #include "utils/parseConfigUtils.h"
-#include <julia.h>
+#include <lua.h>
 #include <stdlib.h>
 #include <string.h>
 
-static int jlArrLen(char *module, char *name)
+void loadConfig(lua_State *L, char *path)
 {
-    jl_array_t *arr = (jl_array_t*)evalString(module, name);
-    return jl_array_len(arr);
-}
-
-jl_value_t *evalString(char *module, const char *name) {
-    char res[NUM_CHARS];
-    if (strcmp(module, "") != 0) {
-        strcpy(res, module);
-        strcat(res, ".");
-        strcat(res, name);
+    if (luaL_loadfile(L, path)) {
+        printf("file didn't load %s\n", luaL_checkstring(L, -1));
+        lua_pop(L, 1);
     }
-    return jl_eval_string(res);
+    lua_pcall(L, 0, 0, 0);
 }
 
-void initConfig(char *module, char *path)
+static const char *getConfigArrayStr(lua_State *L, size_t i)
 {
-    char *prefix = "include(\"";
-    char *postfix = "\")";
-    //pluse one for the null char after string
-    // int charPtrlen = strlen(path) + strlen(prefix) + strlen(postfix) + 1;
-    char res[30];
-    strcpy(res, prefix);
-    strcat(res, path);
-    strcat(res, postfix);
-    evalString(module, res);
+    lua_rawgeti(L, -1, i);
+    const char *s = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+    return s;
 }
 
-char *getConfigStr(char *module, char *name)
+const char *getConfigStr(lua_State *L, char *name)
 {
-    jl_value_t *v = evalString(module, name);
-    return (char *)jl_string_ptr(v);
+    lua_getglobal(L, name);
+    const char *str = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+    return str;
 }
 
-float getConfigFloat(char *module, char *name)
+static float getConfigArrayFloat(lua_State *L, size_t i)
 {
-    jl_value_t *v = evalString(module, name);
-    return jl_unbox_float64(v);
+    lua_rawgeti(L, -1, i);
+    float f = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+    return f;
 }
 
-int getConfigInt(char *module, char *name)
+float getConfigFloat(lua_State *L, char *name)
 {
-    jl_value_t* v = evalString(module, name);
-    return jl_unbox_int32(v);
+    lua_getglobal(L, name);
+    float f = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+    return f;
 }
 
-jl_function_t *getConfigFunc(char *module, char *name)
+static int getConfigArrayInt(lua_State *L, size_t i)
 {
-    jl_function_t *v = evalString(module, name);
-    return v;
+    lua_rawgeti(L, -1, i);
+    int f = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+    return f;
 }
 
-struct layout getConfigLayout(char *module, char *name)
+int getConfigInt(lua_State *L, char *name)
+{
+    lua_getglobal(L, name);
+    int i = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    return i;
+}
+
+bool getConfigBool(lua_State *L, char *name)
+{
+    lua_getglobal(L, name);
+    bool b = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+    return b;
+}
+
+static int getConfigArrayFuncId(lua_State *L, size_t i)
+{
+    lua_rawgeti(L, -1, i);
+    int r = luaL_ref(L, LUA_REGISTRYINDEX);
+    return r;
+}
+
+int getConfigFuncId(lua_State *L, char *name)
+{
+    lua_getglobal(L, name);
+    int f = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_pop(L, 1);
+    return f;
+}
+
+void callArrangeFunc(lua_State *L, int funcId, int n)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, funcId);
+    lua_pushinteger(L, n);
+    lua_pcall(L, 0, 0, 0);
+}
+
+static struct layout getConfigArrayLayout(lua_State *L, size_t i)
 {
     struct layout layout;
-    int len = ARR_STRING_LENGTH(name);
-    char execStr1[len];
-    char execStr2[len];
-
-    arrayPosToStr(execStr1, name, 1);
-    arrayPosToStr(execStr2, name, 2);
-
-    layout.symbol = getConfigStr(module, execStr1);
-    printf("symbol %s\n", layout.symbol);
-    layout.arrange = getConfigFunc(module, execStr2);
+    layout.symbol = (char *)getConfigArrayStr(L, 1);
+    layout.funcId = getConfigArrayFuncId(L, 2);
     return layout;
 }
 
-struct rule getConfigRule(char *module, char *name)
+static Key getConfigArrayKey(lua_State *L, size_t i)
+{
+    return getConfigArrayLayout(L, i);
+}
+
+struct layout getConfigLayout(lua_State *L, char *name)
+{
+    struct layout layout;
+    lua_getglobal(L, name);
+    layout.symbol = (char *)getConfigArrayStr(L, 1);
+    layout.funcId = getConfigArrayFuncId(L, 2);
+    lua_pop(L, 1);
+    return layout;
+}
+
+static struct rule getConfigArrayRule(lua_State *L, size_t i)
 {
     struct rule rule;
-    int len = ARR_STRING_LENGTH(name);
-    char execStr1[len];
-    char execStr2[len];
-    char execStr3[len];
-    char execStr4[len];
-    char execStr5[len];
-
-    arrayPosToStr(execStr1, name, 1);
-    arrayPosToStr(execStr2, name, 2);
-    arrayPosToStr(execStr3, name, 3);
-    arrayPosToStr(execStr4, name, 4);
-    arrayPosToStr(execStr5, name, 5);
-
-    rule.id = getConfigStr(module, execStr1);
-    rule.floating = getConfigInt(module, execStr2);
-    rule.monitor = getConfigInt(module, execStr3);
-    rule.tags = getConfigInt(module, execStr4);
-    rule.title = getConfigStr(module, execStr5);
+    lua_rawgeti(L, -1, i);
+    rule.id  = getConfigArrayStr(L, 1);
+    rule.title  = getConfigArrayStr(L, 2);
+    rule.tags  = getConfigArrayInt(L, 3);
+    rule.floating  = getConfigArrayFloat(L, 4);
+    rule.monitor  = getConfigArrayInt(L, 5);
+    lua_pop(L, 1);
     return rule;
 }
 
-struct monRule getConfigMonRule(char *module, char *name)
+
+struct rule getConfigRule(lua_State *L, char *name)
+{
+    struct rule rule;
+    rule.id  = getConfigArrayStr(L, 1);
+    rule.title  = getConfigArrayStr(L, 2);
+    rule.tags  = getConfigArrayInt(L, 3);
+    rule.floating  = getConfigArrayFloat(L, 4);
+    rule.monitor  = getConfigArrayInt(L, 5);
+    return rule;
+}
+
+static struct monRule getConfigArrayMonRule(lua_State *L, size_t i)
 {
     struct monRule monrule;
-
-    int len = ARR_STRING_LENGTH(name);
-    char execStr1[len];
-    char execStr2[len];
-    char execStr3[len];
-    char execStr4[len];
-    char execStr5[len];
-    char execStr6[len];
-
-    arrayPosToStr(execStr1, name, 1);
-    arrayPosToStr(execStr2, name, 2);
-    arrayPosToStr(execStr3, name, 3);
-    arrayPosToStr(execStr4, name, 4);
-    arrayPosToStr(execStr5, name, 5);
-    arrayPosToStr(execStr6, name, 6);
-
-    monrule.name = getConfigStr(module, execStr1);
-    monrule.mfact = getConfigFloat(module, execStr2);
-    monrule.nmaster = getConfigInt(module, execStr3);
-    monrule.scale = getConfigFloat(module, execStr4);
-    getConfigLayoutArr(module, monrule.lt, execStr5);
-    monrule.rr = getConfigInt(module, execStr6);
+    monrule.name = getConfigArrayStr(L, 1);
+    monrule.mfact = getConfigArrayFloat(L, 2);
+    monrule.nmaster = getConfigArrayInt(L, 3);
+    monrule.scale = getConfigArrayFloat(L, 4);
+    *monrule.lt = getConfigArrayLayout(L, 5);
     return monrule;
 }
 
-Key getConfigKey(char *module, char *name)
+struct monRule getConfigMonRule(lua_State *L, char *name)
 {
-    Key key;
-    int len = ARR_STRING_LENGTH(name);
-    char execStr1[len];
-    char execStr2[len];
+    struct monRule monrule;
+    lua_getglobal(L, name);
 
-    arrayPosToStr(execStr1, name, 1);
-    arrayPosToStr(execStr2, name, 2);
+    monrule.name = getConfigArrayStr(L, 1);
+    monrule.mfact = getConfigArrayFloat(L, 2);
+    monrule.nmaster = getConfigArrayInt(L, 3);
+    monrule.scale = getConfigArrayFloat(L, 4);
+    *monrule.lt = getConfigArrayLayout(L, 5);
+    return monrule;
+}
 
-    key.symbol = getConfigStr(module, execStr1);
-    key.func = getConfigFunc(module, execStr2);
+Key getConfigKey(lua_State *L, char *name)
+{
+    Key key = (Key)getConfigLayout(L, name);
     return key;
 }
 
-void getConfigStrArr(char *module, char **resArr, char *name)
+void getConfigStrArr(lua_State *L, char **resArr, char *name)
 {
-    char execStr[ARR_STRING_LENGTH(name)];
-    int len = jlArrLen(module, name);
+    lua_getglobal(L, name);
+    size_t len = lua_rawlen(L, -1);
 
-    for (int i = 0; i < len; i++) {
-        arrayPosToStr(execStr, name, i+1);
-        resArr[i] = getConfigStr(module, execStr);
-    }
+    for (int i = 0; i < len; i++)
+        resArr[i] = (char *)getConfigArrayStr(L, i);
 }
 
-void getConfigIntArr(char *module, int resArr[], char *name)
+void getConfigIntArr(lua_State *L, int resArr[], char *name)
 {
-    int len = jlArrLen(module, name);
-    char execStr[ARR_STRING_LENGTH(name)];
+    lua_getglobal(L, name);
+    size_t len = lua_rawlen(L, -1);
 
-    for (int i = 0; i < len; i++) {
-        arrayPosToStr(execStr, name, i+1);
-        resArr[i] = getConfigInt(module, execStr);
-    }
+    for (int i = 0; i < len; i++)
+        resArr[i] = getConfigArrayInt(L, i);
 }
 
-void getConfigFloatArr(char *module, float resArr[], char *name)
+void getConfigFloatArr(lua_State *L, float resArr[], char *name)
 {
-    int len = jlArrLen(module, name);
-    char execStr[ARR_STRING_LENGTH(name)];
+    lua_getglobal(L, name);
+    size_t len = lua_rawlen(L, -1);
 
-    for (int i = 0; i < len; i++) {
-        arrayPosToStr(execStr, name, i+1);
-        resArr[i] = getConfigFloat(module, execStr);
-    }
+    for (int i = 1; i <= len; i++)
+        resArr[i] = getConfigArrayFloat(L, i);
 }
 
-void getConfigKeyArr(char *module, Key *keys, char *name)
+void getConfigKeyArr(lua_State *L, Key *keys, char *name)
 {
-    int len = jlArrLen(module, name);
-    char execStr[ARR_STRING_LENGTH(name)];
+    lua_getglobal(L, name);
+    size_t len = lua_rawlen(L, -1);
 
-    for (int i = 0; i < len; i++) {
-        arrayPosToStr(execStr, name, i+1);
-        keys[i] = getConfigKey(module, execStr);
-    }
+    for (int i = 0; i < len; i++)
+        keys[i] = getConfigArrayKey(L, i);
 }
 
-void getConfigRuleArr(char *module, struct rule *rules, char *name)
+void getConfigRuleArr(lua_State *L, struct rule *rules, char *name)
 {
-    int len = jlArrLen(module, name);
-    char execStr[ARR_STRING_LENGTH(name)];
+    lua_getglobal(L, name);
+    size_t len = lua_rawlen(L, -1);
 
-    for (int i = 0; i < len; i++) {
-        arrayPosToStr(execStr, name, i+1);
-        rules[i] = getConfigRule(module, execStr);
-    }
+    for (int i = 0; i < len; i++)
+        rules[i] = getConfigArrayRule(L, i);
 }
 
-void getConfigLayoutArr(char *module, struct layout *layouts, char *name)
+void getConfigLayoutArr(lua_State *L, struct layout *layouts, char *name)
 {
-    int len = jlArrLen(module, name);
-    char execStr[ARR_STRING_LENGTH(name)];
+    lua_getglobal(L, name);
+    size_t len = lua_rawlen(L, -1);
 
-    for (int i = 1; i <= len; i++) {
-        arrayPosToStr(execStr, name, i);
-        layouts[i-1] = getConfigLayout(module, execStr);
-    }
+    for (int i = 0; i < len; i++)
+        layouts[i] = getConfigArrayLayout(L, i);
 }
 
-void getConfigMonRuleArr(char *module, struct monRule *monrules, char *name)
+void getConfigMonRuleArr(lua_State *L, struct monRule *monrules, char *name)
 {
-    int len = jlArrLen(module, name);
-    char execStr[ARR_STRING_LENGTH(name)];
-    for (int i = 0; i < len; i++) {
-        arrayPosToStr(execStr, name, i+1);
-        monrules[i] = getConfigMonRule(module, execStr);
-    }
+    lua_getglobal(L, name);
+    size_t len = lua_rawlen(L, -1);
+
+    for (int i = 0; i < len; i++)
+        monrules[i] = getConfigArrayMonRule(L, i);
 }
 
-//utils
-/*
- * convert an integer to a char* with brackets.
- * Example 1 -> "[1]"
- * */
-void appendIndex(char *resStr, int i)
+void callfunc(int funcid)
 {
-    char d[5];
-    sprintf(d, "%d", i);
-    strcat(resStr, "[");
-    strcat(resStr, d);
-    strcat(resStr, "]");
-}
-
-/* 
- * convert two integers to a char* with brackets.
- * Example 1 2 -> "[1][2]"
- * */
-static void append2DIndex(char *resStr, int i, int j)
-{
-    appendIndex(resStr, i);
-    appendIndex(resStr, j);
-}
-
-/*
- * convert varname and integer i to string: "varname[i]"
- * */
-void arrayPosToStr(char *resStr, char *varName, int i)
-{
-    strcpy(resStr, (char *)varName);
-    appendIndex(resStr, i);
-}
-
-/*
- * convert varname, integer i and integer j to string: "varname[i][j]"
- * */
-void array2DPosToStr(char *resStr, char *varName, int i, int j)
-{
-    strcpy(resStr, varName);
-    append2DIndex(resStr, i, j);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, funcid);
+    lua_pcall(L, 0, 0, 0);
 }

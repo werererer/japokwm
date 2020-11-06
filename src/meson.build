@@ -7,7 +7,8 @@ deps = [\
     dependency('wayland-server'),
     dependency('wayland-egl'),
     dependency('wlroots'),
-    dependency('cairo')
+    dependency('cairo'),
+    dependency('lua'),
     ]
 
 subdir('core/')

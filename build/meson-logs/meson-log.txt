@@ -1,6 +1,6 @@
-Build started at 2020-11-03T23:27:13.883870
+Build started at 2020-11-05T23:40:12.238407
 Main binary: /usr/bin/python
-Build Options: -Dbuildtype=debug
+Build Options: 
 Python system: Linux
 The Meson build system
 Version: 0.56.0
@@ -75,8 +75,8 @@ Called `/usr/bin/pkg-config xcb --libs` -> 0
 None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
 None of 'CC_LD' are defined in the environment, not changing global flags.
 Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmp01y581ki
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmp01y581ki/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmp01y581ki/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpw9vbs55k
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpw9vbs55k/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpw9vbs55k/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 
 
 Code:
  #include<stdio.h>
@@ -97,8 +97,8 @@ Program stderr:
 
 
 Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmptjg7e_go
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmptjg7e_go/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmptjg7e_go/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmp94zozeow
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmp94zozeow/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmp94zozeow/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
 
 Code:
  
@@ -190,6 +190,34 @@ Called `/usr/bin/pkg-config cairo --libs` -> 0
 -lcairo
 None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
 Run-time dependency cairo found: YES 1.17.3
+Pkg-config binary for MachineChoice.HOST is cached.
+Determining dependency 'lua' with pkg-config executable '/usr/bin/pkg-config'
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --modversion lua` -> 0
+5.4.1
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --cflags lua` -> 0
+
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config lua --libs` -> 0
+-L/usr/lib -llua -lm
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config lua --libs` -> 0
+-llua -lm
+None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
+None of 'CC_LD' are defined in the environment, not changing global flags.
+Running compile:
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpn_w6hp8r
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpn_w6hp8r/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpn_w6hp8r/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 -Wl,--start-group -lm -Wl,--end-group -Wl,--allow-shlib-undefined 
+
+Code:
+ int main(void) { return 0; }
+
+Compiler stdout:
+ 
+Compiler stderr:
+ 
+Run-time dependency lua found: YES 5.4.1
 Running command: /usr/bin/basename /home/jakob/git/juliawm/protocols/wlr-layer-shell-unstable-v1.xml .xml
 --- stdout ---
 wlr-layer-shell-unstable-v1
@@ -247,27 +275,7 @@ Running command: /usr/bin/[ -f include/wlr-foreign-toplevel-management-unstable-
 --- stderr ---
 
 
-Pkg-config binary for MachineChoice.HOST is cached.
-Determining dependency 'check' with pkg-config executable '/usr/bin/pkg-config'
-PKG_CONFIG_PATH: 
-Called `/usr/bin/pkg-config --modversion check` -> 0
-0.15.2
-PKG_CONFIG_PATH: 
-Called `/usr/bin/pkg-config --cflags check` -> 0
--pthread
-PKG_CONFIG_PATH: 
-Called `/usr/bin/pkg-config check --libs` -> 0
--L/usr/lib -lcheck
-PKG_CONFIG_PATH: 
-Called `/usr/bin/pkg-config check --libs` -> 0
--lcheck
-None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
-Run-time dependency check found: YES 0.15.2
-Adding test "client"
-Adding test "tagset"
-Adding test "stringUtils"
-Adding test "gapUtils"
-Build targets in project: 6
+Build targets in project: 2
 
 Found ninja-1.10.1 at /usr/bin/ninja
 None of 'STRIP' are defined in the environment, not changing global flags.

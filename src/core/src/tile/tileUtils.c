@@ -1,6 +1,5 @@
 #include "tile/tileUtils.h"
 #include <client.h>
-#include <julia.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/param.h>
@@ -32,6 +31,24 @@ static struct wlr_box getAbsoluteBox(struct monitor *m, struct wlr_fbox b)
     return w;
 }
 
+static void setContainerFromLua(lua_State *L,
+                                struct containerList *containers) {
+  lua_pushnil(L);
+  lua_next(L, -1);
+  containers->container[0].x = luaL_checknumber(L, -1);
+  lua_pop(L, 1);
+  lua_next(L, -1);
+  containers->container[0].y = luaL_checknumber(L, -1);
+  lua_pop(L, 1);
+  lua_next(L, -1);
+  containers->container[0].width = luaL_checknumber(L, -1);
+  lua_pop(L, 1);
+  lua_next(L, -1);
+  containers->container[0].height = luaL_checknumber(L, -1);
+  // pop nil && height
+  lua_pop(L, 2);
+}
+
 // TODO reduce function size
 void arrange(struct monitor *m, bool reset)
 {
@@ -41,46 +58,40 @@ void arrange(struct monitor *m, bool reset)
 
     tagset->w = m->m;
     containerSurroundGaps(&tagset->w, outerGap);
-    if (selLayout(tagset).arrange) {
+    if (selLayout(tagset).funcId) {
         struct client *c = NULL;
-        jl_value_t *v = NULL;
 
         int n = tiledClientCount(m);
         /* call arrange function
          * if previous layout is different or reset -> reset layout */
         if (strcmp(prevLayout.symbol, selLayout(tagset).symbol) != 0 || reset) {
             prevLayout = selLayout(tagset);
-            jl_value_t *arg1 = jl_box_int64(n);
-            v = jl_call1(selLayout(tagset).arrange, arg1);
+            callArrangeFunc(L, selLayout(tagset).funcId, n);
         } else {
-            jl_function_t *f = evalString(configModule, "Layouts.update");
-            jl_value_t *arg1 = jl_box_int64(n);
-            v = jl_call1(f, arg1);
+            lua_getglobal(L, "update");
+            lua_pushinteger(L, n);
+            lua_pcall(L, 1, 1, 0);
+            setContainerFromLua(L, containerList);
+            lua_pop(L, 1);
         }
 
-        if (v) {
-            containerList = jl_unbox_voidpointer(v);
-
-            updateHiddenStatus();
-            int i = 0;
-            wl_list_for_each(c, &clients, link) {
-                if (!visibleon(c, m) || c->floating)
-                    continue;
-                struct wlr_box b =
-                    getAbsoluteBox(m, containerList->container[MIN(i, containerList->size-1)]);
-                resize(c, b.x, b.y, b.width, b.height, false);
-                i++;
-            }
-
-            if (overlay) {
-                createNewOverlay();
-            } else {
-                wlr_list_clear(&renderData.textures);
-            }
-
-        } else {
-            printf("Empty function with symbol: %s\n", selLayout(tagset).symbol);
+        updateHiddenStatus();
+        int i = 0;
+        wl_list_for_each(c, &clients, link) {
+            if (!visibleon(c, m) || c->floating)
+                continue;
+            struct wlr_box b =
+                getAbsoluteBox(m, containerList->container[MIN(i, containerList->size-1)]);
+            resize(c, b.x, b.y, b.width, b.height, false);
+            i++;
         }
+
+        if (overlay) {
+            createNewOverlay();
+        } else {
+            wlr_list_clear(&renderData.textures);
+        }
+
     }
 }
 
@@ -142,7 +153,7 @@ void updateHiddenStatus()
 
 void updateLayout()
 {
-    setSelLayout(&selMon->tagset, getConfigLayout(configModule, "layout"));
+    setSelLayout(&selMon->tagset, getConfigLayout(L, "layout"));
     arrange(selMon, true);
 }
 
