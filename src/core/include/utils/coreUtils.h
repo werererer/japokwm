@@ -38,6 +38,12 @@ struct keyboard {
 typedef struct layout Key;
 typedef struct layout Button;
 
+struct containersInfo {
+    // count
+    int n;
+    int id;
+};
+
 typedef uint32_t xkb_keysym_t;
 
 /* rules */

@@ -101,6 +101,14 @@ void callArrangeFunc(lua_State *L, int funcId, int n)
     lua_pcall(L, 0, 0, 0);
 }
 
+void callFunction(lua_State *L, struct containersInfo cInfo)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, cInfo.id);
+    lua_pushinteger(L, cInfo.n);
+    lua_pcall(L, 1, 0, 0);
+    luaL_ref(L, LUA_REGISTRYINDEX);
+}
+
 static struct layout getConfigArrayLayout(lua_State *L, size_t i)
 {
     struct layout layout;

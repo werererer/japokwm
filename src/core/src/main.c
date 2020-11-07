@@ -58,6 +58,7 @@
 #include "tile/tile.h"
 #include "tile/tileUtils.h"
 #include "tagset.h"
+#include "keybinding.h"
 
 typedef struct {
     struct wl_listener request_mode;
@@ -512,8 +513,9 @@ void keypress(struct wl_listener *listener, void *data)
     /* create new state to clear the shift modifier to get a instead of A */
     state = xkb_state_new(kb->device->keyboard->keymap);
     int nsyms = xkb_state_key_get_syms(state, keycode, &syms);
+    uint32_t mods = wlr_keyboard_get_modifiers(kb->device->keyboard);
 
-    int handled = 0;
+    bool handled = false;
     /* uint32_t mods = wlr_keyboard_get_modifiers(kb->device->keyboard); */
     /* On _press_, attempt to process a compositor keybinding. */
 
@@ -522,14 +524,7 @@ void keypress(struct wl_listener *listener, void *data)
 
     if (event->state == WLR_KEY_PRESSED) {
         for (i = 0; i < nsyms; i++) {
-
-            // TODO: fix here
-            /* lua_getglobal(L, "keyPressed"); */
-            /* lua_pushinteger(L, mods); */
-            /* lua_pushinteger(L, syms[i]); */
-            /* lua_pcall(L, 2, 1, 0); */
-            /* handled = luaL_checkinteger(L, -1); */
-            /* lua_pop(L, -1); */
+            handled = keyPressed(mods, syms[i]);
         }
     }
 

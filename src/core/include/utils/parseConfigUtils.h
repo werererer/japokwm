@@ -18,6 +18,7 @@ int getConfigInt(lua_State *L, char *name);
 bool getConfigBool(lua_State *L, char *name);
 int getConfigFuncId(lua_State *L, char *name);
 void callArrangeFunc(lua_State *L, int funcId, int n);
+void callFunction(lua_State *L, struct containersInfo cInfo);
 
 // array
 void getConfigStrArr(lua_State *L, char **resArr, char *name);

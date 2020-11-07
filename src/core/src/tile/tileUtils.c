@@ -16,7 +16,7 @@
 #include "utils/gapUtils.h"
 #include "utils/parseConfigUtils.h"
 
-struct containerList containerList;
+struct containersInfo containersInfo;
 
 /* *
  * the wlr_fbox has includes the window size in percent.
@@ -48,31 +48,47 @@ void arrange(struct monitor *m, bool reset)
         /* call arrange function
          * if previous layout is different or reset -> reset layout */
         if (strcmp(prevLayout.symbol, selLayout(tagset).symbol) != 0 || reset) {
-            prevLayout = selLayout(tagset);
-            callArrangeFunc(L, selLayout(tagset).funcId, n);
-        } else {
-            printf("num stack %i\n", lua_gettop(L));
-            lua_getglobal(L, "update");
-            lua_pushinteger(L, n);
-            lua_pcall(L, 1, 1, 0);
-            printf("num stack %i\n", lua_gettop(L));
-
-            /* if (containerList.container) */
-            /*     free(containerList.container); */
-            /* containerList.container = calloc(len, sizeof(containerList.container)); */
-            lua_rawgeti(L, -1, 1);
-            float f = luaL_checknumber(L, -1);
-            printf("NUM: %f\n", f);
-            lua_pop(L, 1);
+            /* prevLayout = selLayout(tagset); */
+            /* lua_rawgeti(L, LUA_REGISTRYINDEX, selLayout(tagset).funcId); */
+            /* lua_pushinteger(L, n); */
+            /* lua_pcall(L, 1, 0, 0); */
         }
+        lua_getglobal(L, "update");
+        lua_pushinteger(L, n);
+        lua_pcall(L, 1, 1, 0);
+        containersInfo.n = lua_rawlen(L, -1);
+        containersInfo.id = luaL_ref(L, LUA_REGISTRYINDEX);
 
         updateHiddenStatus();
-        int i = 0;
+        int i = 1;
         wl_list_for_each(c, &clients, link) {
             if (!visibleon(c, m) || c->floating)
                 continue;
-            struct wlr_box b =
-                getAbsoluteBox(m, containerList.container[MIN(i, containerList.size-1)]);
+            struct wlr_fbox con;
+            // get lua container
+            // TODO: create function
+            lua_rawgeti(L, LUA_REGISTRYINDEX, containersInfo.id);
+            lua_rawgeti(L, -1, MIN(i, containersInfo.n));
+            lua_rawgeti(L, -1, 1);
+            con.x = luaL_checknumber(L, -1);
+            lua_pop(L, 1);
+            lua_rawgeti(L, -1, 2);
+            con.y = luaL_checknumber(L, -1);
+            lua_pop(L, 1);
+            lua_rawgeti(L, -1, 3);
+            con.width = luaL_checknumber(L, -1);
+            lua_pop(L, 1);
+            lua_rawgeti(L, -1, 4);
+            con.height = luaL_checknumber(L, -1);
+            lua_pop(L, 1);
+            lua_pop(L, 1);
+            lua_pop(L, 1);
+            printf("con: %f\n", con.x);
+            printf("con: %f\n", con.y);
+            printf("con: %f\n", con.width);
+            printf("con: %f\n", con.height);
+
+            struct wlr_box b = getAbsoluteBox(m, con);
             resize(c, b.x, b.y, b.width, b.height, false);
             i++;
         }
@@ -134,7 +150,7 @@ void updateHiddenStatus()
     wl_list_for_each(c, &clients, link) {
         if (existon(c, selMon))
         {
-            if (i++ < containerList.size)
+            if (i++ < containersInfo.n)
                 c->hidden = false;
             else
                 c->hidden = true;

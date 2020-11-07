@@ -14,9 +14,5 @@ int thisTiledClientCount();
 int tiledClientCount(struct monitor *m);
 int clientPos();
 
-struct containerList {
-    struct wlr_fbox *container;
-    int size;
-};
-extern struct containerList containerList;
+extern struct containersInfo containersInfo;
 #endif

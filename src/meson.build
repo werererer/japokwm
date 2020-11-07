@@ -9,6 +9,7 @@ deps = [\
     dependency('wlroots'),
     dependency('cairo'),
     dependency('lua'),
+    dependency('x11'),
     ]
 
 subdir('core/')
