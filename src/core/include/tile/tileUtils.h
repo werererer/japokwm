@@ -18,5 +18,5 @@ struct containerList {
     struct wlr_fbox *container;
     int size;
 };
-extern struct containerList *containerList;
+extern struct containerList containerList;
 #endif

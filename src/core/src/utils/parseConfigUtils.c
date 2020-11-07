@@ -12,20 +12,24 @@ void loadConfig(lua_State *L, char *path)
     lua_pcall(L, 0, 0, 0);
 }
 
-static const char *getConfigArrayStr(lua_State *L, size_t i)
+static char *getConfigArrayStr(lua_State *L, size_t i)
 {
     lua_rawgeti(L, -1, i);
-    const char *s = luaL_checkstring(L, -1);
+    const char *str = luaL_checkstring(L, -1);
+    char *termcmd = calloc(strlen(str), sizeof(char));
+    strcpy(termcmd, str);
     lua_pop(L, 1);
-    return s;
+    return termcmd;
 }
 
-const char *getConfigStr(lua_State *L, char *name)
+char *getConfigStr(lua_State *L, char *name)
 {
     lua_getglobal(L, name);
     const char *str = luaL_checkstring(L, -1);
+    char *termcmd = calloc(strlen(str), sizeof(char));
+    strcpy(termcmd, str);
     lua_pop(L, 1);
-    return str;
+    return termcmd;
 }
 
 static float getConfigArrayFloat(lua_State *L, size_t i)
@@ -60,6 +64,14 @@ int getConfigInt(lua_State *L, char *name)
     return i;
 }
 
+static bool getConfigArrayBool(lua_State *L, size_t i)
+{
+    lua_rawgeti(L, -1, i);
+    int f = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+    return f;
+}
+
 bool getConfigBool(lua_State *L, char *name)
 {
     lua_getglobal(L, name);
@@ -79,7 +91,6 @@ int getConfigFuncId(lua_State *L, char *name)
 {
     lua_getglobal(L, name);
     int f = luaL_ref(L, LUA_REGISTRYINDEX);
-    lua_pop(L, 1);
     return f;
 }
 
@@ -93,21 +104,18 @@ void callArrangeFunc(lua_State *L, int funcId, int n)
 static struct layout getConfigArrayLayout(lua_State *L, size_t i)
 {
     struct layout layout;
-    layout.symbol = (char *)getConfigArrayStr(L, 1);
+    lua_rawgeti(L, -1, i);
+    layout.symbol = getConfigArrayStr(L, 1);
     layout.funcId = getConfigArrayFuncId(L, 2);
+    lua_pop(L, 1);
     return layout;
-}
-
-static Key getConfigArrayKey(lua_State *L, size_t i)
-{
-    return getConfigArrayLayout(L, i);
 }
 
 struct layout getConfigLayout(lua_State *L, char *name)
 {
     struct layout layout;
     lua_getglobal(L, name);
-    layout.symbol = (char *)getConfigArrayStr(L, 1);
+    layout.symbol = getConfigArrayStr(L, 1);
     layout.funcId = getConfigArrayFuncId(L, 2);
     lua_pop(L, 1);
     return layout;
@@ -120,7 +128,7 @@ static struct rule getConfigArrayRule(lua_State *L, size_t i)
     rule.id  = getConfigArrayStr(L, 1);
     rule.title  = getConfigArrayStr(L, 2);
     rule.tags  = getConfigArrayInt(L, 3);
-    rule.floating  = getConfigArrayFloat(L, 4);
+    rule.floating  = getConfigArrayBool(L, 4);
     rule.monitor  = getConfigArrayInt(L, 5);
     lua_pop(L, 1);
     return rule;
@@ -170,11 +178,14 @@ Key getConfigKey(lua_State *L, char *name)
 
 void getConfigStrArr(lua_State *L, char **resArr, char *name)
 {
+    //TODO cleanup !!!
     lua_getglobal(L, name);
     size_t len = lua_rawlen(L, -1);
 
-    for (int i = 0; i < len; i++)
-        resArr[i] = (char *)getConfigArrayStr(L, i);
+    resArr = malloc(len * sizeof(char*));
+    for (int i = 1; i <= len; i++)
+        resArr[i-1] = getConfigArrayStr(L, i);
+    lua_pop(L, 1);
 }
 
 void getConfigIntArr(lua_State *L, int resArr[], char *name)
@@ -192,25 +203,8 @@ void getConfigFloatArr(lua_State *L, float resArr[], char *name)
     size_t len = lua_rawlen(L, -1);
 
     for (int i = 1; i <= len; i++)
-        resArr[i] = getConfigArrayFloat(L, i);
-}
-
-void getConfigKeyArr(lua_State *L, Key *keys, char *name)
-{
-    lua_getglobal(L, name);
-    size_t len = lua_rawlen(L, -1);
-
-    for (int i = 0; i < len; i++)
-        keys[i] = getConfigArrayKey(L, i);
-}
-
-void getConfigRuleArr(lua_State *L, struct rule *rules, char *name)
-{
-    lua_getglobal(L, name);
-    size_t len = lua_rawlen(L, -1);
-
-    for (int i = 0; i < len; i++)
-        rules[i] = getConfigArrayRule(L, i);
+        resArr[i-1] = getConfigArrayFloat(L, i);
+    lua_pop(L, 1);
 }
 
 void getConfigLayoutArr(lua_State *L, struct layout *layouts, char *name)
@@ -218,8 +212,30 @@ void getConfigLayoutArr(lua_State *L, struct layout *layouts, char *name)
     lua_getglobal(L, name);
     size_t len = lua_rawlen(L, -1);
 
-    for (int i = 0; i < len; i++)
-        layouts[i] = getConfigArrayLayout(L, i);
+    struct layout lt;
+    // TODO: cleanup malloc?
+    layouts = malloc(sizeof(*layouts)*len);
+    for (int i = 1; i <= len; i++) {
+        lt = getConfigArrayLayout(L, 1);
+        layouts[i-1].symbol = lt.symbol;
+        layouts[i-1].funcId = 4;
+    }
+    lua_pop(L, 1);
+}
+
+void getConfigKeyArr(lua_State *L, Key *keys, char *name)
+{
+    getConfigLayoutArr(L, keys, name);
+}
+
+void getConfigRuleArr(lua_State *L, struct rule *rules, char *name)
+{
+    lua_getglobal(L, name);
+    size_t len = lua_rawlen(L, -1);
+
+    for (int i = 1; i <= len; i++)
+        rules[i-1] = getConfigArrayRule(L, i);
+    lua_pop(L, 1);
 }
 
 void getConfigMonRuleArr(lua_State *L, struct monRule *monrules, char *name)

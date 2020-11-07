@@ -209,7 +209,6 @@ void chvt(unsigned int ui)
 
 void cleanup(void)
 {
-    lua_close(L);
     wlr_xwayland_destroy(xwayland);
     wl_display_destroy_clients(server.display);
     wl_display_destroy(server.display);
@@ -890,6 +889,7 @@ void setsel(struct wl_listener *listener, void *data)
 void setup(void)
 {
     L = luaL_newstate();
+    luaL_openlibs(L);
     updateConfig(L);
     initOverlay();
     /* The Wayland display is managed by libwayland. It handles accepting

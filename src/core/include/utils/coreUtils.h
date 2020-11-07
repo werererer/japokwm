@@ -36,21 +36,21 @@ struct keyboard {
 };
 
 typedef struct layout Key;
-typedef struct layout Buttom;
+typedef struct layout Button;
 
 typedef uint32_t xkb_keysym_t;
 
 /* rules */
 struct rule {
-    const char *id;
-    const char *title;
+    char *id;
+    char *title;
     int tags;
     int floating;
     int monitor;
 };
 
 struct monRule {
-    const char *name;
+    char *name;
     float mfact;
     int nmaster;
     float scale;

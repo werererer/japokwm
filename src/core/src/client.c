@@ -145,7 +145,7 @@ struct client *getClient(int i)
 
 struct client *firstClient()
 {
-    if (containerList->size)
+    if (containerList.size)
     {
         struct client *c = wl_container_of(stack.next, c, link);
         wl_list_for_each(c, &stack, slink) {
@@ -159,14 +159,14 @@ struct client *firstClient()
 
 struct client *lastClient()
 {
-    if (containerList->size)
+    if (containerList.size)
     {
         struct client *c = wl_container_of(stack.next, c, link);
         int i = 1;
         wl_list_for_each(c, &stack, slink) {
             if (!visibleon(c, selMon))
                 continue;
-            if (i > containerList->size)
+            if (i > containerList.size)
                 return c;
             i++;
         }

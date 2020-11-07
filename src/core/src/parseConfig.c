@@ -25,10 +25,10 @@ int repeatDelay;
 int innerGap;
 int outerGap;
 
-char *tagNames[MAXLEN];
+char **tagNames;
 char *termcmd;
-Key keys[MAXLEN];
-Key buttons[MAXLEN];
+Key *keys = NULL;
+Key *buttons = NULL;
 
 void updateConfig(lua_State *L)
 {
@@ -49,22 +49,21 @@ void updateConfig(lua_State *L)
     getConfigFloatArr(L, textColor, "textColor");
     getConfigFloatArr(L, selOverlayColor, "overlayColor");
     getConfigFloatArr(L, selTextColor, "textColor");
-    printf("%f\n", rootColor[0]);
 
-    /* getConfigStrArr(L, tagNames, "tagNames"); */
-    /* getConfigRuleArr(L, rules, "rules"); */
+    getConfigStrArr(L, tagNames, "tagNames");
+    getConfigRuleArr(L, rules, "rules");
 
-    /* /1* monitors *1/ */
-    /* //getConfigMonRuleArr(monrules, "monrules"); */
+    /* monitors */
+    //getConfigMonRuleArr(monrules, "monrules");
 
-    /* /1* keyboard *1/ */
-    /* repeatRate = getConfigInt(L, "repeatRate"); */
-    /* repeatDelay = getConfigInt(L, "repeatDelay"); */
-    /* defaultLayout = getConfigLayout(L, "defaultLayout"); */
+    /* keyboard */
+    repeatRate = getConfigInt(L, "repeatRate");
+    repeatDelay = getConfigInt(L, "repeatDelay");
+    defaultLayout = getConfigLayout(L, "defaultLayout");
+    prevLayout = (struct layout){.symbol = "", .funcId = 0};
 
-    /* /1* commands *1/ */
-    /* termcmd = (char *)getConfigStr(L, "termcmd"); */
-    /* getConfigKeyArr(L, keys, "keys"); */
-    /* getConfigKeyArr(L, buttons, "buttons"); */
-    /* // getConfigkeyArr(buttons, "buttons"); */
+    /* commands */
+    termcmd = getConfigStr(L, "termcmd");
+    getConfigKeyArr(L, keys, "keys");
+    getConfigKeyArr(L, buttons, "buttons");
 }

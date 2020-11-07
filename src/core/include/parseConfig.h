@@ -29,10 +29,10 @@ extern int repeatRate;
 extern int repeatDelay;
 
 /* commands */
-extern char *tagNames[MAXLEN];
+extern char **tagNames;
 extern char *termcmd;
-extern Key keys[MAXLEN];
-extern Key buttons[MAXLEN];
+extern Key *keys;
+extern Key *buttons;
 
 /* sets global variables but needs  */
 void updateConfig(lua_State *L);

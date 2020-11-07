@@ -12,7 +12,7 @@ Key getConfigKey(lua_State *L, char *name);
 struct layout getConfigLayout(lua_State *L, char *name);
 struct monRule getConfigMonRule(lua_State *L, char *name);
 struct rule getConfigRule(lua_State *L, char *name);
-const char* getConfigStr(lua_State *L, char *name);
+char* getConfigStr(lua_State *L, char *name);
 float getConfigFloat(lua_State *L, char *name);
 int getConfigInt(lua_State *L, char *name);
 bool getConfigBool(lua_State *L, char *name);

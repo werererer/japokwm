@@ -6,6 +6,7 @@
 #include <wayland-util.h>
 #include <wlr/types/wlr_foreign_toplevel_management_v1.h>
 #include <wlr/types/wlr_box.h>
+#include <stdlib.h>
 
 #include "monitor.h"
 #include "tagset.h"
@@ -15,7 +16,7 @@
 #include "utils/gapUtils.h"
 #include "utils/parseConfigUtils.h"
 
-struct containerList *containerList = NULL;
+struct containerList containerList;
 
 /* *
  * the wlr_fbox has includes the window size in percent.
@@ -29,24 +30,6 @@ static struct wlr_box getAbsoluteBox(struct monitor *m, struct wlr_fbox b)
     w.width = w.width * b.width;
     w.height = w.height * b.height;
     return w;
-}
-
-static void setContainerFromLua(lua_State *L,
-                                struct containerList *containers) {
-  lua_pushnil(L);
-  lua_next(L, -1);
-  containers->container[0].x = luaL_checknumber(L, -1);
-  lua_pop(L, 1);
-  lua_next(L, -1);
-  containers->container[0].y = luaL_checknumber(L, -1);
-  lua_pop(L, 1);
-  lua_next(L, -1);
-  containers->container[0].width = luaL_checknumber(L, -1);
-  lua_pop(L, 1);
-  lua_next(L, -1);
-  containers->container[0].height = luaL_checknumber(L, -1);
-  // pop nil && height
-  lua_pop(L, 2);
 }
 
 // TODO reduce function size
@@ -68,10 +51,18 @@ void arrange(struct monitor *m, bool reset)
             prevLayout = selLayout(tagset);
             callArrangeFunc(L, selLayout(tagset).funcId, n);
         } else {
+            printf("num stack %i\n", lua_gettop(L));
             lua_getglobal(L, "update");
             lua_pushinteger(L, n);
             lua_pcall(L, 1, 1, 0);
-            setContainerFromLua(L, containerList);
+            printf("num stack %i\n", lua_gettop(L));
+
+            /* if (containerList.container) */
+            /*     free(containerList.container); */
+            /* containerList.container = calloc(len, sizeof(containerList.container)); */
+            lua_rawgeti(L, -1, 1);
+            float f = luaL_checknumber(L, -1);
+            printf("NUM: %f\n", f);
             lua_pop(L, 1);
         }
 
@@ -81,7 +72,7 @@ void arrange(struct monitor *m, bool reset)
             if (!visibleon(c, m) || c->floating)
                 continue;
             struct wlr_box b =
-                getAbsoluteBox(m, containerList->container[MIN(i, containerList->size-1)]);
+                getAbsoluteBox(m, containerList.container[MIN(i, containerList.size-1)]);
             resize(c, b.x, b.y, b.width, b.height, false);
             i++;
         }
@@ -143,7 +134,7 @@ void updateHiddenStatus()
     wl_list_for_each(c, &clients, link) {
         if (existon(c, selMon))
         {
-            if (i++ < containerList->size)
+            if (i++ < containerList.size)
                 c->hidden = false;
             else
                 c->hidden = true;
