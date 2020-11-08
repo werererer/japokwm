@@ -34,9 +34,6 @@ struct client {
     uint32_t resize; /* configure serial of a pending resize */
 };
 
-void createClient(struct client *c);
-void destroyClient(struct client *c);
-
 void applybounds(struct client *c, struct wlr_box bbox);
 /* it ignores bool  hiding which visibleon doesn't */
 bool existon(struct client *c, struct monitor *m);

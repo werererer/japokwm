@@ -4,8 +4,10 @@
 #include <lauxlib.h>
 #include <stdlib.h>
 #include <string.h>
+#include "tile/tileUtils.h"
 #include "utils/gapUtils.h"
 #include "translationLayer.h"
+#include "actions.h"
 
 bool sloppyFocus;
 int borderPx;
@@ -67,4 +69,20 @@ void updateConfig(lua_State *L)
     termcmd = getConfigStr(L, "termcmd");
     getConfigKeyArr(L, keys, "keys");
     getConfigKeyArr(L, buttons, "buttons");
+}
+
+int reloadConfig(lua_State *L)
+{
+    printf("reload\n");
+    updateConfig(L);
+
+    // reconfigure clients
+    struct client *c = NULL;
+    wl_list_for_each(c, &clients, link) {
+        c->bw = borderPx;
+    }
+
+    lua_pushboolean(L, true);
+    arrangeThis(L);
+    return 0;
 }

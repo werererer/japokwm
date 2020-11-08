@@ -14,7 +14,6 @@ foreach p:protocols
     endif
     # if cHeader doesn't exist create Header
     if run_command('[', '-f', cHeader, ']').returncode() != 0
-        message('works\n\n')
         run_command(wayland_scanner, 'server-header', p, cHeader)
         message('generate: ' + cHeader)
     endif
@@ -44,6 +43,7 @@ srcs = files(
   'src/keybinding.c',
   'src/translationLayer.c',
   'src/actions.c',
+  'src/info.c',
 )
 libName = 'juliawm'
 wmlib = executable(libName,

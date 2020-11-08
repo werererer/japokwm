@@ -26,82 +26,79 @@ layoutData = {
 -- set: which window conf set
 -- client: current window
 function splitContainer(i, j, ratio)
-    local i = min(i, length(layoutData))
-    local j = min(j, length(layoutData[i]))
+    local i = math.min(i, #layoutData)
+    local j = math.min(j, #layoutData[i])
     container = layoutData[i][j]
 
-    prevHeight = container.height
-    container = {
-        container.x, container.y, container.width,
-        container.height * ratio
-    }
-    newContainer = {
-        container.x, container.y + container.height,
-        container.width, prevHeight * (1-ratio)
-    }
-    layoutData[i][j] = container
+    print(i, j)
+    x = container[1]
+    y = container[2]
+    width = container[3]
+    height = container[4]
 
-    table.insert(layoutData, i+1, layoutData[i])
-    table.insert(layoutData, newContainer)
-    arrangeThis(false)
+    container[4] = height * ratio
+    newContainer = {x, y + container[4], width, height * (1-ratio)}
+
+    table.insert(layoutData[i], newContainer)
+    action.arrangeThis(false)
 end
 
 function splitThisContainer(ratio)
-    local i = max(min(thisTiledClientCount(), length(layoutData)), 1)
-    local j = min(clientPos(), length(layoutData[i]))
+    local i = math.max(math.min(info.thisTiledClientCount(), #layoutData), 1)
+    local j = math.min(info.thisClientPos(), #layoutData[i])
     splitContainer(i, j, ratio)
 end
 
 -- set: which window conf set
 -- client: current window
 function vsplitContainer(i, j, ratio)
-    local i = min(i, length(layoutData))
-    local j = min(j, length(layoutData[i]))
+    local i = math.min(i, #layoutData)
+    local j = math.min(j, #layoutData[i])
     container = layoutData[i][j]
 
-    prevWidth = container.width
-    container = Container(container.x, container.y, container.width * ratio,
-                          container.height)
-    newContainer = Container(container.x + container.width, container.y,
-                             prevWidth * (1-ratio), container.height)
-    layoutData[i][j] = container
+    print(i, j)
+    x = container[1]
+    y = container[2]
+    width = container[3]
+    height = container[4]
 
-    table.insert(layoutData, i+1, layoutData[i])
-    table.insert(layoutData, newContainer)
-    arrangeThis(false)
+    container[3] = width * ratio
+    newContainer = {x + container[3], y, width * (1-ratio), height}
+
+    table.insert(layoutData[i], newContainer)
+    action.arrangeThis(false)
 end
 
 function vsplitThisContainer(ratio)
-    local i = max(min(thisTiledClientCount(), length(layoutData)), 1)
-    local j = min(clientPos(), length(layoutData[i]))
+    local i = math.max(math.min(info.thisTiledClientCount(), #layoutData), 1)
+    local j = math.min(info.thisClientPos(), #layoutData[i])
     vsplitContainer(i, j, ratio)
 end
 
 function mergeContainer(i, j1, j2)
-    if i > length(layoutData) then
+    if i > #layoutData then
         return
     end
-    if max(j1, j2) > length(layoutData[i]) then
+    if math.max(j1, j2) > #layoutData[i] then
         return
     end
 
-    local i = min(i, length(layoutData))
-    local j1 = min(j1, length(layoutData[i]))
-    local j2 = min(j2, length(layoutData[i]))
+    local i = math.min(i, #layoutData)
+    local j1 = math.min(j1, #layoutData[i])
+    local j2 = math.min(j2, #layoutData[i])
     local container1 = layoutData[i][j1]
     local container2 = layoutData[i][j2]
 
-    local x = min(container1.x, container2.x)
-    local y = min(container1.y, container2.y)
-    local width = max(container1.x + container1.width,
-                container2.x + container2.width) - x
-    local height = max(container1.y + container1.height,
-                container2.y + container2.height) - y
-    local newContainer = Container(x, y, width, height)
+    local x = math.min(container1[1], container2[1])
+    local y = math.min(container1[2], container2[2])
+    local width = math.max(container1[1] + container1[3],
+                container2[1] + container2[3]) - x
+    local height = math.max(container1[2] + container1[4],
+                container2[2] + container2[4]) - y
+    local newContainer = {x, y, width, height}
 
-    layoutData[i][min(j1, j2)] = newContainer
-    layoutData[i] = max(j1, j2)
-    arrangeThis(false)
+    layoutData[i][math.min(j1, j2)] = newContainer
+    action.arrangeThis(false)
 end
 
 Direction = {
@@ -152,7 +149,7 @@ function resizeThisContainer(n, d)
     local i = max(min(thisTiledClientCount(), length(layoutData)), 1)
     local j = min(clientPos(), length(layoutData[i]))
     resizeContainer(i, j, n, d)
-    arrangeThis(false)
+    action.arrangeThis(false)
 end
 
 function resizeAll(i, j, n, d)
@@ -186,7 +183,7 @@ function resizeThisAll(n, d)
     local i = max(min(thisTiledClientCount(), length(layoutData)), 1)
     local j = min(clientPos(), length(layoutData[i]))
     resizeAll(i, j, n, d)
-    arrangeThis(false)
+    action.arrangeThis(false)
 end
 
 function tile(n)
@@ -202,7 +199,6 @@ function twoPane(n)
 end
 
 function update(n)
-    print("update", #layoutData)
     local i = math.max(math.min(#layoutData, n), 1)
     return layoutData[i]
 end

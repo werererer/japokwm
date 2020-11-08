@@ -41,6 +41,12 @@ static void pointerfocus(struct client *c, struct wlr_surface *surface,
         focusClient(selClient(), c, false);
 }
 
+int arrangeThis(lua_State *L)
+{
+    bool reset = lua_toboolean(L, -1);
+    arrange(selMon, reset);
+    return 0;
+}
 
 int spawn(lua_State *L)
 {
@@ -323,4 +329,23 @@ int readOverlay(lua_State *L)
     }
 
     return 1;
+}
+
+int killClient(lua_State *L)
+{
+    struct client *sel = selClient();
+    if (sel) {
+        switch (sel->type) {
+            case XDGShell:
+                wlr_xdg_toplevel_send_close(sel->surface.xdg);
+                break;
+            case LayerShell:
+                wlr_layer_surface_v1_close(sel->surface.layer);
+                break;
+            case X11Managed:
+            case X11Unmanaged:
+                wlr_xwayland_surface_close(sel->surface.xwayland);
+        }
+    }
+    return 0;
 }

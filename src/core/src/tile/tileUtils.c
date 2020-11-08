@@ -99,12 +99,6 @@ void arrange(struct monitor *m, bool reset)
     }
 }
 
-
-void arrangeThis(bool reset)
-{
-    arrange(selMon, reset);
-}
-
 void resize(struct client *c, int x, int y, int w, int h, bool interact)
 {
     /*
@@ -155,11 +149,6 @@ void updateHiddenStatus()
     }
 }
 
-int thisTiledClientCount()
-{
-    return tiledClientCount(selMon);
-}
-
 int tiledClientCount(struct monitor *m)
 {
     struct client *c;
@@ -169,20 +158,4 @@ int tiledClientCount(struct monitor *m)
         if (existon(c, m) && !c->floating)
             n++;
     return n;
-}
-
-int clientPos()
-{
-    struct monitor *m = selMon;
-    struct client *c;
-    int n = 0;
-
-    wl_list_for_each(c, &clients, link) {
-        if (visibleon(c, m) && !c->floating) {
-            if (c == selClient())
-                return n;
-            n++;
-        }
-    }
-    return 0;
 }

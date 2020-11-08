@@ -21,6 +21,7 @@ static void modToString(char *res, unsigned int mod)
             lua_pop(L, 1);
         }
     }
+    lua_pop(L, 1);
 }
 
 static void symToBinding(char *res, int mods, int sym)
@@ -70,7 +71,6 @@ static bool isSameKeybind(const char *bind, const char *bind2)
 static bool processBinding(char *bind, const char *reference)
 {
     bool handled = false;
-    printf("BIND: %s|\n", bind);
     lua_getglobal(L, reference);
     int len = lua_rawlen(L, -1);
     for (int i = 1; i <= len; i++) {
@@ -86,23 +86,22 @@ static bool processBinding(char *bind, const char *reference)
         }
         lua_pop(L, 1);
     }
+    lua_pop(L, 1);
     return handled;
 }
 
 bool buttonPressed(int mods, int sym)
 {
-    char *bind = calloc(128, sizeof(char));
+    char bind[128] = "";
     symToBinding(bind, mods, sym);
     bool handled = processBinding(bind, "buttons");
-    free(bind);
     return handled;
 }
 
 bool keyPressed(int mods, int sym)
 {
-    char *bind = calloc(128, sizeof(char));
+    char bind[128] = "";
     symToBinding(bind, mods, sym);
     bool handled = processBinding(bind, "keys");
-    free(bind);
     return handled;
 }

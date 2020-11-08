@@ -23,9 +23,9 @@ cursorMode = {
 }
 
 layouts = {
-    { "[M]", function(n) Layouts.monocle(n) end },
-    { "[]=", function(n) Layouts.tile(n) end },
-    { "><>", function(n) Layouts.floating(n) end },
+    { "[M]", function(n) monocle(n) end },
+    { "[]=", function(n) tile(n) end },
+    { "><>", function(n) floating(n) end },
 }
 layout = layouts[layoutId]
 
@@ -41,12 +41,6 @@ function setLayout(i)
     layoutId = i
     layout = layouts[i]
     action.updateLayout()
-end
-
-function reloadConfig()
-    include("../config.jl")
-    updateConfig()
-    arrangeThis()
 end
 
 function toggleOverlay()

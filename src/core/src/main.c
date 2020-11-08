@@ -90,7 +90,6 @@ void incnmaster(int i);
 void inputdevice(struct wl_listener *listener, void *data);
 void keypress(struct wl_listener *listener, void *data);
 void keypressmod(struct wl_listener *listener, void *data);
-void killclient();
 void maprequest(struct wl_listener *listener, void *data);
 void motionabsolute(struct wl_listener *listener, void *data);
 void motionrelative(struct wl_listener *listener, void *data);
@@ -531,25 +530,6 @@ void keypressmod(struct wl_listener *listener, void *data)
     /* Send modifiers to the client. */
     wlr_seat_keyboard_notify_modifiers(seat,
         &kb->device->keyboard->modifiers);
-}
-
-void killclient()
-{
-    struct client *sel = selClient();
-    if (!sel)
-        return;
-
-    switch (sel->type) {
-        case XDGShell:
-            wlr_xdg_toplevel_send_close(sel->surface.xdg);
-            break;
-        case LayerShell:
-            wlr_layer_surface_v1_close(sel->surface.layer);
-            break;
-        case X11Managed:
-        case X11Unmanaged:
-            wlr_xwayland_surface_close(sel->surface.xwayland);
-    }
 }
 
 void maprequest(struct wl_listener *listener, void *data)

@@ -13,10 +13,3 @@ deps = [\
     ]
 
 subdir('core/')
-executable(
-    'debug',
-    'debug.c',
-    link_args: ['-ljulia'],
-    install: true,
-    install_dir: root / srcDir
-    )
