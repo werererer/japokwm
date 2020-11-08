@@ -50,6 +50,7 @@ struct client *getClient(int i);
 struct client *firstClient();
 /* get last visible client */
 struct client *lastClient();
+struct client *xytoclient(double x, double y);
 void applyrules(struct client *c);
 void focusClient(struct client *old, struct client *c, bool lift);
 void focusTopClient(struct client *old, bool lift);

@@ -12,7 +12,5 @@
 //relative position
 void create(Monitor *m);
 void tile(Monitor *m);
-void focusOnStack(int i);
-void focusOnHiddenStack(int i);
 void addClient(struct client *c, int x1, int y1, int x2, int y2, Monitor *m);
 #endif /* TILE_H */

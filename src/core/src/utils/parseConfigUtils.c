@@ -2,9 +2,11 @@
 #include <lua.h>
 #include <stdlib.h>
 #include <string.h>
+#include <translationLayer.h>
 
 void loadConfig(lua_State *L, char *path)
 {
+    loadLibs(L);
     if (luaL_loadfile(L, path)) {
         printf("file didn't load %s\n", luaL_checkstring(L, -1));
         lua_pop(L, 1);

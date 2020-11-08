@@ -83,13 +83,10 @@ void arrange(struct monitor *m, bool reset)
             lua_pop(L, 1);
             lua_pop(L, 1);
             lua_pop(L, 1);
-            printf("con: %f\n", con.x);
-            printf("con: %f\n", con.y);
-            printf("con: %f\n", con.width);
-            printf("con: %f\n", con.height);
 
-            struct wlr_box b = getAbsoluteBox(m, con);
-            resize(c, b.x, b.y, b.width, b.height, false);
+            struct wlr_box box = getAbsoluteBox(m, con);
+            containerSurroundGaps(&box, innerGap);
+            resize(c, box.x, box.y, box.width, box.height, false);
             i++;
         }
 
@@ -121,7 +118,6 @@ void resize(struct client *c, int x, int y, int w, int h, bool interact)
     box.width = w;
     box.height = h;
 
-    containerSurroundGaps(&box, innerGap);
     c->geom = box;
     applybounds(c, box);
 

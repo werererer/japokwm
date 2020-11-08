@@ -1,4 +1,4 @@
-Build started at 2020-11-07T18:47:00.789812
+Build started at 2020-11-08T01:53:44.219960
 Main binary: /usr/bin/python
 Build Options: -Dbackend=ninja
 Python system: Linux
@@ -29,62 +29,7 @@ Dependency wayland-egl found: YES 18.1.0 (cached)
 Dependency wlroots found: YES 0.11.0 (cached)
 Dependency cairo found: YES 1.17.3 (cached)
 Dependency lua found: YES 5.4.1 (cached)
-Pkg-config binary for MachineChoice.HOST is not cached.
-None of 'PKG_CONFIG' are defined in the environment, not changing global flags.
-Pkg-config binary missing from cross or native file, or env var undefined.
-Trying a default Pkg-config fallback at pkg-config
-Found pkg-config: /usr/bin/pkg-config (1.7.3)
-Determining dependency 'x11' with pkg-config executable '/usr/bin/pkg-config'
-PKG_CONFIG_PATH: 
-Called `/usr/bin/pkg-config --modversion x11` -> 0
-1.6.10
-PKG_CONFIG_PATH: 
-Called `/usr/bin/pkg-config --cflags x11` -> 0
-
-PKG_CONFIG_PATH: 
-Called `/usr/bin/pkg-config x11 --libs` -> 0
--L/usr/lib -lX11
-PKG_CONFIG_PATH: 
-Called `/usr/bin/pkg-config x11 --libs` -> 0
--lX11
-None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
-None of 'CC_LD' are defined in the environment, not changing global flags.
-Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmprd8aoiae
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmprd8aoiae/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmprd8aoiae/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 
-
-Code:
- #include<stdio.h>
-        
-        int main(void) {
-            printf("%ld\n", (long)(sizeof(void *)));
-            return 0;
-        };
-Compiler stdout:
- 
-Compiler stderr:
- 
-Program stdout:
-
-8
-
-Program stderr:
-
-
-Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmp60y0kctd
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmp60y0kctd/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmp60y0kctd/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
-
-Code:
- 
-Compiler stdout:
- install: /usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/
-programs: =/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../x86_64-pc-linux-gnu/bin/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../x86_64-pc-linux-gnu/bin/
-libraries: =/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../x86_64-pc-linux-gnu/lib/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../x86_64-pc-linux-gnu/lib/../lib/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../lib/:/lib/x86_64-pc-linux-gnu/10.2.0/:/lib/../lib/:/usr/lib/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../x86_64-pc-linux-gnu/lib/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../:/lib/:/usr/lib/
-
-Compiler stderr:
- 
-Run-time dependency x11 found: YES 1.6.10
+Dependency x11 found: YES 1.6.10 (cached)
 Running command: /usr/bin/basename /home/jakob/git/juliawm/protocols/wlr-layer-shell-unstable-v1.xml .xml
 --- stdout ---
 wlr-layer-shell-unstable-v1
@@ -145,5 +90,18 @@ Running command: /usr/bin/[ -f include/wlr-foreign-toplevel-management-unstable-
 Build targets in project: 2
 
 Found ninja-1.10.1 at /usr/bin/ninja
+Running compile:
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmp4mcihgd1
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmp4mcihgd1/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmp4mcihgd1/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
+
+Code:
+ 
+Compiler stdout:
+ install: /usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/
+programs: =/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../x86_64-pc-linux-gnu/bin/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../x86_64-pc-linux-gnu/bin/
+libraries: =/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../x86_64-pc-linux-gnu/lib/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../x86_64-pc-linux-gnu/lib/../lib/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../lib/:/lib/x86_64-pc-linux-gnu/10.2.0/:/lib/../lib/:/usr/lib/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../../x86_64-pc-linux-gnu/lib/:/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/../../../:/lib/:/usr/lib/
+
+Compiler stderr:
+ 
 None of 'STRIP' are defined in the environment, not changing global flags.
 None of 'STRIP' are defined in the environment, not changing global flags.

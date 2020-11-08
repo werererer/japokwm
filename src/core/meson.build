@@ -41,7 +41,9 @@ srcs = files(
   'src/tile/tileTexture.c',
   'src/tile/tile.c',
   'src/wlr-foreign-toplevel-management-unstable-v1-protocol.c',
-  'src/keybinding.c'
+  'src/keybinding.c',
+  'src/translationLayer.c',
+  'src/actions.c',
 )
 libName = 'juliawm'
 wmlib = executable(libName,

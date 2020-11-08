@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "utils/gapUtils.h"
+#include "translationLayer.h"
 
 bool sloppyFocus;
 int borderPx;

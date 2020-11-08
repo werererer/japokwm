@@ -59,6 +59,7 @@
 #include "tile/tileUtils.h"
 #include "tagset.h"
 #include "keybinding.h"
+#include "actions.h"
 
 typedef struct {
     struct wl_listener request_mode;
@@ -92,36 +93,23 @@ void keypressmod(struct wl_listener *listener, void *data);
 void killclient();
 void maprequest(struct wl_listener *listener, void *data);
 void motionabsolute(struct wl_listener *listener, void *data);
-void motionnotify(uint32_t time);
 void motionrelative(struct wl_listener *listener, void *data);
-void moveResize(unsigned int ui);
-void pointerfocus(struct client *c, struct wlr_surface *surface,
- double sx, double sy, uint32_t time);
-void quit();
 void run(char *startup_cmd);
 void setCursor(struct wl_listener *listener, void *data);
 void setpsel(struct wl_listener *listener, void *data);
 void setsel(struct wl_listener *listener, void *data);
-void setFloating(struct client *c, bool floating);
 void setlayout(void* v);
 void setmfact(float factor);
 void setup(void);
 void sigchld(int unused);
 void tag(unsigned int ui);
 void tagmon(int i);
-void toggleFloating();
 void toggletag(unsigned int ui);
 void toggleview(unsigned int ui);
 void unmapnotify(struct wl_listener *listener, void *data);
 void view(unsigned ui);
 void toggleAddView(unsigned ui);
-struct client *xytoclient(double x, double y);
-struct monitor *xytomon(double x, double y);
 void zoom();
-
-/* global variables */
-struct client *grabc = NULL;
-int grabcx, grabcy; /* client-relative */
 
 /* global event handlers */
 static struct wl_listener cursor_axis = {.notify = axisnotify};
@@ -171,18 +159,13 @@ void buttonpress(struct wl_listener *listener, void *data)
             focusClient(nextClient(), c, true);
 
         /* Translate libinput to xkbcommon code */
-        /* unsigned sym = event->button + 64985; */
+        unsigned sym = event->button + 64985;
 
         /* get modifiers */
-        /* keyboard = wlr_seat_get_keyboard(seat); */
-        /* mods = wlr_keyboard_get_modifiers(keyboard); */
+        struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat);
+        int mods = wlr_keyboard_get_modifiers(kb);
 
-        // TODO: fix
-        /* process */
-        /* lua_getglobal(L, "buttonPressed"); */
-        /* lua_pushinteger(L, mods); */
-        /* lua_pushinteger(L, sym); */
-        /* lua_pcall(L, 2, 0, 0); */
+        buttonPressed(mods, sym);
         break;
     case WLR_BUTTON_RELEASED:
         /* If you released any buttons, we exit interactive move/resize mode. */
@@ -641,51 +624,6 @@ void motionabsolute(struct wl_listener *listener, void *data)
     motionnotify(event->time_msec);
 }
 
-void motionnotify(uint32_t time)
-{
-    double sx = 0, sy = 0;
-    struct wlr_surface *surface = NULL;
-    struct client *c;
-
-    /* Update selMon (even while dragging a window) */
-    if (sloppyFocus)
-        selMon = xytomon(server.cursor->x, server.cursor->y);
-
-    /* If we are currently grabbing the mouse, handle and return */
-    switch (server.cursorMode) {
-        case CurMove:
-            /* Move the grabbed client to the new position. */
-            resize(grabc, server.cursor->x - grabcx, server.cursor->y - grabcy,
-                    grabc->geom.width, grabc->geom.height, 1);
-            return;
-            break;
-        case CurResize:
-            resize(grabc, grabc->geom.x, grabc->geom.y,
-                    server.cursor->x - grabc->geom.x,
-                    server.cursor->y - grabc->geom.y, 1);
-            return;
-            break;
-        default:
-            break;
-    }
-
-    if ((c = xytoclient(server.cursor->x, server.cursor->y))) {
-            surface = wlr_surface_surface_at(getWlrSurface(c),
-                    server.cursor->x - c->geom.x - c->bw,
-                    server.cursor->y - c->geom.y - c->bw, &sx, &sy);
-    }
-
-    /* If there's no client surface under the server.cursor, set the cursor image to a
-     * default. This is what makes the cursor image appear when you move it
-     * off of a client or over its border. */
-    if (!surface) {
-        wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
-                "left_ptr", server.cursor);
-    }
-
-    pointerfocus(c, surface, sx, sy, time);
-}
-
 void motionrelative(struct wl_listener *listener, void *data)
 {
     /* This event is forwarded by the cursor when a pointer emits a _relative_
@@ -699,78 +637,6 @@ void motionrelative(struct wl_listener *listener, void *data)
     wlr_cursor_move(server.cursor, event->device,
             event->delta_x, event->delta_y);
     motionnotify(event->time_msec);
-}
-
-void moveResize(unsigned int ui)
-{
-    grabc = xytoclient(server.cursor->x, server.cursor->y);
-    if (!grabc)
-        return;
-
-    /* Float the window and tell motionnotify to grab it */
-    setFloating(grabc, true);
-    switch (server.cursorMode = ui) {
-        case CurMove:
-            grabcx = server.cursor->x - grabc->geom.x;
-            grabcy = server.cursor->y - grabc->geom.y;
-            wlr_xcursor_manager_set_cursor_image(server.cursorMgr, 
-                    "fleur", server.cursor);
-            break;
-        case CurResize:
-            /* Doesn't work for X11 output - the next absolute motion event
-             * returns the cursor to where it started */
-            wlr_cursor_warp_closest(server.cursor, NULL,
-                    grabc->geom.x + grabc->geom.width,
-                    grabc->geom.y + grabc->geom.height);
-            wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
-                    "bottom_right_corner", server.cursor);
-            break;
-        default:
-            break;
-    }
-}
-
-void
-pointerfocus(struct client *c, struct wlr_surface *surface,
-        double sx, double sy, uint32_t time)
-{
-    /* Use top level surface if nothing more specific given */
-    if (c && !surface)
-        surface = getWlrSurface(c);
-
-    /* If surface is NULL, clear pointer focus */
-    if (!surface) {
-        wlr_seat_pointer_notify_clear_focus(seat);
-        return;
-    }
-
-    /* If surface is already focused, only notify of motion */
-    if (surface == seat->pointer_state.focused_surface) {
-        wlr_seat_pointer_notify_motion(seat, time, sx, sy);
-        return;
-    }
-    /* Otherwise, let the client know that the mouse cursor has entered one
-     * of its surfaces, and make keyboard focus follow if desired. */
-    wlr_seat_pointer_notify_enter(seat, surface, sx, sy);
-
-    if (c->type == X11Unmanaged)
-        return;
-
-    if (sloppyFocus)
-        focusClient(selClient(), c, false);
-}
-
-void quit()
-{
-    wl_display_terminate(server.display);
-}
-
-void spawn(char *cmd)
-{
-    if (fork() == 0) {
-        setsid();
-        execl("/bin/sh", "/bin/sh", "-c", cmd, (void *)NULL);
-    }
 }
 
 void run(char *startup_cmd)
@@ -840,14 +706,6 @@ void setCursor(struct wl_listener *listener, void *data)
     if (event->seat_client == seat->pointer_state.focused_client)
         wlr_cursor_set_surface(server.cursor, event->surface,
                 event->hotspot_x, event->hotspot_y);
-}
-
-void setFloating(struct client *c, bool floating)
-{
-    if (c->floating == floating)
-        return;
-    c->floating = floating;
-    arrange(c->mon, false);
 }
 
 /* arg > 1.0 will set mfact absolutely */
@@ -1038,15 +896,6 @@ void tag(unsigned int ui)
     }
 }
 
-void toggleFloating()
-{
-    struct client *sel = selClient();
-    if (!sel)
-        return;
-    /* return if fullscreen */
-    setFloating(sel, !sel->floating /* || sel->isfixed */);
-}
-
 void toggletag(unsigned int ui)
 {
     struct client *sel = selClient();
@@ -1099,25 +948,6 @@ void toggleAddView(unsigned ui)
     toggleAddTag(&selMon->tagset, ui);
     focusTopClient(nextClient(), false);
     arrange(selMon, false);
-}
-
-struct client * xytoclient(double x, double y)
-{
-    /* Find the topmost visible client (if any) at point (x, y), including
-     * borders. This relies on stack being ordered from top to bottom. */
-    struct client *c;
-    wl_list_for_each(c, &focusStack, flink) {
-        if (visibleon(c, c->mon) && wlr_box_contains_point(&c->geom, x, y)) {
-            return c;
-        }
-    }
-    return NULL;
-}
-
-struct monitor *xytomon(double x, double y)
-{
-    struct wlr_output *o = wlr_output_layout_output_at(output_layout, x, y);
-    return o ? o->data : NULL;
 }
 
 void zoom()

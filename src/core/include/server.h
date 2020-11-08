@@ -1,6 +1,9 @@
 #ifndef SERVER_H
 #define SERVER_H
 #include <wayland-server.h>
+#include <wlr/types/wlr_cursor.h>
+#include <wlr/xcursor.h>
+#include <wlr/types/wlr_xcursor_manager.h>
 
 /* enums */
 enum cursorMode { CurNormal, CurMove, CurResize }; /* cursor */

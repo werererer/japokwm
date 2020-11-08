@@ -91,3 +91,9 @@ void cleanupMonitor(struct wl_listener *listener, void *data)
     wl_list_remove(&m->destroy.link);
     free(m);
 }
+
+struct monitor *xytomon(double x, double y)
+{
+    struct wlr_output *o = wlr_output_layout_output_at(output_layout, x, y);
+    return o ? o->data : NULL;
+}

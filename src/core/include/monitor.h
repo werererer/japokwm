@@ -20,6 +20,7 @@ struct monitor {
 void createMonitor(struct wl_listener *listener, void *data);
 void cleanupMonitor(struct wl_listener *listener, void *data);
 void setMonitor(struct monitor *m);
+struct monitor *xytomon(double x, double y);
 
 extern struct wl_list mons;
 extern struct monitor *selMon;

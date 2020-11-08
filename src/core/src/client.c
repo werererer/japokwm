@@ -174,6 +174,19 @@ struct client *lastClient()
     return NULL;
 }
 
+struct client *xytoclient(double x, double y)
+{
+    /* Find the topmost visible client (if any) at point (x, y), including
+     * borders. This relies on stack being ordered from top to bottom. */
+    struct client *c;
+    wl_list_for_each(c, &focusStack, flink) {
+        if (visibleon(c, c->mon) && wlr_box_contains_point(&c->geom, x, y)) {
+            return c;
+        }
+    }
+    return NULL;
+}
+
 struct wlr_surface *getWlrSurface(struct client *c)
 {
     switch (c->type) {
