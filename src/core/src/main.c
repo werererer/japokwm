@@ -98,7 +98,6 @@ void run(char *startup_cmd);
 void setCursor(struct wl_listener *listener, void *data);
 void setpsel(struct wl_listener *listener, void *data);
 void setsel(struct wl_listener *listener, void *data);
-void setlayout(void* v);
 void setmfact(float factor);
 void setup(void);
 void sigchld(int unused);
@@ -109,7 +108,6 @@ void toggleview(unsigned int ui);
 void unmapnotify(struct wl_listener *listener, void *data);
 void view(unsigned ui);
 void toggleAddView(unsigned ui);
-void zoom();
 
 /* global event handlers */
 static struct wl_listener cursor_axis = {.notify = axisnotify};
@@ -947,37 +945,6 @@ void toggleAddView(unsigned ui)
 {
     toggleAddTag(&selMon->tagset, ui);
     focusTopClient(nextClient(), false);
-    arrange(selMon, false);
-}
-
-void zoom()
-{
-    struct client *c, *old = selClient();
-
-    if (!old || old->floating)
-        return;
-
-    /* Search for the first tiled window that is not sel, marking sel as
-     * NULL if we pass it along the way */
-    wl_list_for_each(c, &clients,
-            link) if (visibleon(c, selMon) && !c->floating) {
-        if (c != old)
-            break;
-        old = NULL;
-    }
-
-    /* Return if no other tiled window was found */
-    if (&c->link == &clients)
-        return;
-
-    /* If we passed sel, move c to the front; otherwise, move sel to the
-     * front */
-    if (!old)
-        old = c;
-    wl_list_remove(&old->link);
-    wl_list_insert(&clients, &old->link);
-
-    focusClient(nextClient(), old, true);
     arrange(selMon, false);
 }
 

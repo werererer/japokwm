@@ -36,5 +36,4 @@ extern Key *buttons;
 
 /* sets global variables but needs  */
 void updateConfig(lua_State *L);
-void updateLayout();
 #endif /* PARSE_CONFIG_H */

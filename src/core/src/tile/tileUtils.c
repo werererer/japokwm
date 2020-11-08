@@ -154,12 +154,6 @@ void updateHiddenStatus()
     }
 }
 
-void updateLayout()
-{
-    setSelLayout(&selMon->tagset, getConfigLayout(L, "layout"));
-    arrange(selMon, true);
-}
-
 int thisTiledClientCount()
 {
     return tiledClientCount(selMon);

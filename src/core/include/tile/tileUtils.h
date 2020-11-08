@@ -9,7 +9,6 @@ void arrange(struct monitor *m, bool reset);
 void arrangeThis(bool reset);
 void resize(struct client *c, int x, int y, int w, int h, bool interact);
 void updateHiddenStatus();
-void updateLayout();
 int thisTiledClientCount();
 int tiledClientCount(struct monitor *m);
 int clientPos();
