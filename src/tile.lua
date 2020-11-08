@@ -190,19 +190,19 @@ function resizeThisAll(n, d)
 end
 
 function tile(n)
-    -- layoutData = 
-    -- getLayout("tile")
+    layoutData = action.readOverlay("tile")
 end
 
 function monocle(n)
-    -- layoutData = getLayout("monocle")
+    layoutData = action.readOverlay("monocle")
 end
 
 function twoPane(n)
-    -- layoutData = getLayout("twoPane")
+    layoutData = action.readOverlay("twoPane")
 end
 
 function update(n)
+    print("update", #layoutData)
     local i = math.max(math.min(#layoutData, n), 1)
     return layoutData[i]
 end

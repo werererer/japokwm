@@ -48,10 +48,10 @@ void arrange(struct monitor *m, bool reset)
         /* call arrange function
          * if previous layout is different or reset -> reset layout */
         if (strcmp(prevLayout.symbol, selLayout(tagset).symbol) != 0 || reset) {
-            /* prevLayout = selLayout(tagset); */
-            /* lua_rawgeti(L, LUA_REGISTRYINDEX, selLayout(tagset).funcId); */
-            /* lua_pushinteger(L, n); */
-            /* lua_pcall(L, 1, 0, 0); */
+            prevLayout = selLayout(tagset);
+            lua_rawgeti(L, LUA_REGISTRYINDEX, selLayout(tagset).funcId);
+            lua_pushinteger(L, n);
+            lua_pcall(L, 1, 0, 0);
         }
 
         lua_getglobal(L, "update");

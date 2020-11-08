@@ -68,6 +68,6 @@ extern struct lua_State *L;
 
 // breaking codestyle to abide by the wlroots style
 void wlr_list_clear(struct wlr_list *list);
-void joinPath(char *base, char *file);
-char lastChar(char *str);
+void joinPath(char *base, const char *file);
+char lastChar(const char *str);
 #endif

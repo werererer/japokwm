@@ -301,7 +301,6 @@ void createnotifyLayerShell(struct wl_listener *listener, void *data)
     struct wlr_layer_surface_v1 *layer_surface = data;
     struct client *c;
 
-
     /* Allocate a Client for this surface */
     c = layer_surface->data = calloc(1, sizeof(*c));
     c->surface.layer = layer_surface;

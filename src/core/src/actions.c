@@ -3,6 +3,7 @@
 #include "client.h"
 #include "tile/tileUtils.h"
 #include "server.h"
+#include <stdlib.h>
 
 static struct client *grabc = NULL;
 static int grabcx, grabcy; /* client-relative */
@@ -55,7 +56,6 @@ int spawn(lua_State *L)
 int updateLayout(lua_State *L)
 {
     struct layout l = getConfigLayout(L, "layout");
-    printf("symbol %s: \n", l.symbol);
     setSelLayout(&selMon->tagset, l);
     arrange(selMon, true);
     return 0;
@@ -272,27 +272,55 @@ int zoom(lua_State *L)
 
 int readOverlay(lua_State *L)
 {
-    if (!overlay)
-        return 0;
     char file[NUM_CHARS];
     char filename[NUM_DIGITS];
     const char *layout = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
+    // create array for each file
+    lua_newtable(L);
+
     // tags are counted from 1
     for (int i = 1; i <= 9; i++) {
         intToString(filename, i);
-        strcpy(file, layout);
+        strcpy(file, "layouts");
+        joinPath(file, layout);
         joinPath(file, filename);
 
-        char *linebuf = NULL;
-        size_t linebufSize = 0;
-        int fd = open(file, O_RDONLY);
-        FILE *f = fdopen(fd, "r");
-        getline(&linebuf, &linebufSize, f);
-        printf("line: %s\n", linebuf);
 
-        close(fd);
+        FILE *fp;
+        if ( (fp = fopen(file, "r")) == NULL)
+            break;
+        // create inner array for each line
+        lua_newtable(L);
+        int j = 1;
+        size_t g;
+        char *line = NULL;
+        while ((getline(&line, &g, fp)) != -1) {
+            // create inner array for each number in file
+            lua_newtable(L);
+
+            struct wlr_fbox box;
+            char *pend;
+            box.x = strtof(line, &pend);
+            box.y = strtof(pend, &pend);
+            box.width = strtof(pend, &pend);
+            box.height = strtof(pend, NULL);
+            lua_pushnumber(L, box.x);
+            lua_pushnumber(L, box.y);
+            lua_pushnumber(L, box.width);
+            lua_pushnumber(L, box.height);
+            lua_rawseti(L, -5, 4);
+            lua_rawseti(L, -4, 3);
+            lua_rawseti(L, -3, 2);
+            lua_rawseti(L, -2, 1);
+
+            lua_rawseti(L, -2, j);
+            j++;
+        }
+        lua_rawseti(L, -2, i);
+        fclose(fp);
     }
-    return 0;
+
+    return 1;
 }
