@@ -1,4 +1,6 @@
 # juliawm - for Wayland [![CircleCI](https://circleci.com/gh/werererer/juliawm.svg?style=svg)](https://app.circleci.com/pipelines/github/werererer) [![codecov](https://codecov.io/gh/werererer/juliawm/branch/master/graph/badge.svg?token=T8YAGSEC8M)](https://codecov.io/gh/werererer/juliawm/branch/master)
+[ NOTE ]
+This project won't be written in julia anymore as it is not as good as lua for conifg files and because lua is significantly lighter than julia. This also means that this project will be renamed in the near future. Note that this doesn't mean that julia is a bad language, it just doesn't fit this program.
 
 juliawm tries to fill the gap of missing tiling windowmanagers that are list/stack based in wayland.
 Its goals are:
