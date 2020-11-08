@@ -26,7 +26,7 @@ meson compile
 meson install
 ```
 ## Running
-go to src/ and run `julia main.jl`
+go to src/ and run `juliawm`
 
 ## Goals
 - create your own tiling layouts easily
