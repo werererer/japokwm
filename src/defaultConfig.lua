@@ -40,7 +40,7 @@ end
 function setLayout(i)
     layoutId = i
     layout = layouts[i]
-    mylib.updateLayout()
+    action.updateLayout()
 end
 
 function reloadConfig()

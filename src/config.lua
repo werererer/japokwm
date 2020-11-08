@@ -41,16 +41,16 @@ termcmd = "/usr/bin/termite"
 mod = mod1
 -- maps (between 1 and 4)
 keys = {
-    {mod.." u",           function(n) mylib.spawn(termcmd) end},
+    {mod.." u",           function(n) action.spawn(termcmd) end},
     {mod.." period",      function(n) focusmon(1) end},
     {mod.." comma",       function(n) focusmon(-1) end},
-    {mod.." k",           function(n) mylib.focusOnStack(-1) end},
-    {mod.." j",           function(n) mylib.focusOnStack(1) end},
-    {mod.." "..shift.." j",    function(n) mylib.focusOnHiddenStack(1) end},
-    {mod..shift.." k",    function(n) mylib.focusOnHiddenStack(-1) end},
+    {mod.." k",           function(n) action.focusOnStack(-1) end},
+    {mod.." j",           function(n) action.focusOnStack(1) end},
+    {mod.." "..shift.." j",    function(n) action.focusOnHiddenStack(1) end},
+    {mod..shift.." k",    function(n) action.focusOnHiddenStack(-1) end},
     {mod.." d",           function(n) incnmaster(-1) end},
     {mod.." c",           function(n) killclient() end},
-    {mod.." q",           function(n) mylib.quit() end},
+    {mod.." q",           function(n) action.quit() end},
     {mod.." p",           function(n) Layouts.splitThisContainer(1/2) end},
     {mod.." o",           function(n) Layouts.vsplitThisContainer(1/2) end},
     {mod.." i",           function(n) Layouts.mergeContainer(1, 1, 2) end},
@@ -63,7 +63,7 @@ keys = {
     {mod.." parenright",  function(n) tag(~0) end},
     {mod.." greater",     function(n) tagmon(1) end},
     {mod.." less",        function(n) tagmon(-1) end},
-    {mod.." Return",      function(n) mylib.zoom() end},
+    {mod.." Return",      function(n) action.zoom() end},
     {mod.." s",           function(n) toggleOverlay() end},
     {mod.." 1",           function(n) view(1) end},
     {mod.." 2",           function(n) view(2) end},
@@ -87,7 +87,7 @@ keys = {
 }
 
 buttons = {
-    {mod.." "..btnLeft,    function(n) mylib.moveResize(cursorMode.CurMove) end},
-    {mod.." "..btnMiddle,  function(n) mylib.toggleFloating()    end},
-    {mod.." "..btnRight,   function(n) mylib.moveResize(cursorMode.CurResize) end},
+    {mod.." "..btnLeft,    function(n) action.moveResize(cursorMode.CurMove) end},
+    {mod.." "..btnMiddle,  function(n) action.toggleFloating()    end},
+    {mod.." "..btnRight,   function(n) action.moveResize(cursorMode.CurResize) end},
 }

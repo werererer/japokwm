@@ -43,12 +43,12 @@ static void pointerfocus(struct client *c, struct wlr_surface *surface,
 
 int spawn(lua_State *L)
 {
+    const char *cmd = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
     if (fork() == 0) {
         setsid();
-        const char *cmd = luaL_checkstring(L, -1);
         execl("/bin/sh", "/bin/sh", "-c", cmd, (void *)NULL);
     }
-    lua_pop(L, 1);
     return 0;
 }
 
@@ -270,3 +270,29 @@ int zoom(lua_State *L)
     return 0;
 }
 
+int readOverlay(lua_State *L)
+{
+    if (!overlay)
+        return 0;
+    char file[NUM_CHARS];
+    char filename[NUM_DIGITS];
+    const char *layout = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+
+    // tags are counted from 1
+    for (int i = 1; i <= 9; i++) {
+        intToString(filename, i);
+        strcpy(file, layout);
+        joinPath(file, filename);
+
+        char *linebuf = NULL;
+        size_t linebufSize = 0;
+        int fd = open(file, O_RDONLY);
+        FILE *f = fdopen(fd, "r");
+        getline(&linebuf, &linebufSize, f);
+        printf("line: %s\n", linebuf);
+
+        close(fd);
+    }
+    return 0;
+}

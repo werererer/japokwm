@@ -53,12 +53,12 @@ void arrange(struct monitor *m, bool reset)
             /* lua_pushinteger(L, n); */
             /* lua_pcall(L, 1, 0, 0); */
         }
+
         lua_getglobal(L, "update");
         lua_pushinteger(L, n);
         lua_pcall(L, 1, 1, 0);
         containersInfo.n = lua_rawlen(L, -1);
         containersInfo.id = luaL_ref(L, LUA_REGISTRYINDEX);
-
         updateHiddenStatus();
         int i = 1;
         wl_list_for_each(c, &clients, link) {
@@ -82,7 +82,7 @@ void arrange(struct monitor *m, bool reset)
             con.height = luaL_checknumber(L, -1);
             lua_pop(L, 1);
             lua_pop(L, 1);
-            lua_pop(L, 1);
+            containersInfo.id = luaL_ref(L, LUA_REGISTRYINDEX);
 
             struct wlr_box box = getAbsoluteBox(m, con);
             containerSurroundGaps(&box, innerGap);
@@ -146,10 +146,11 @@ void updateHiddenStatus()
     wl_list_for_each(c, &clients, link) {
         if (existon(c, selMon))
         {
-            if (i++ < containersInfo.n)
+            if (i < containersInfo.n)
                 c->hidden = false;
             else
                 c->hidden = true;
+            i++;
         }
     }
 }

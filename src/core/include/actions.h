@@ -17,6 +17,7 @@ int moveClient(lua_State *L);
 int resizeClient(lua_State *L);
 int updateLayout(lua_State *L);
 int zoom(lua_State *L);
+int readOverlay(lua_State *L);
 
 void motionnotify(uint32_t time);
 
