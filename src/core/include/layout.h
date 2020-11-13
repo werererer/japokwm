@@ -9,7 +9,8 @@ struct layout {
     int funcId;
 };
 
-void initLayout(struct layout *lt);
+void layoutCreate(struct layout *lt, const char *symbol, int funcId);
+void layoutDestroy(struct layout *lt);
 
 extern struct layout defaultLayout;
 extern struct layout prevLayout;

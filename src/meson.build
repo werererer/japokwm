@@ -10,6 +10,7 @@ deps = [\
     dependency('cairo'),
     dependency('lua'),
     dependency('x11'),
+    dependency('json-c'),
     ]
 
 subdir('core/')

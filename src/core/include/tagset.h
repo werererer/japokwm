@@ -2,7 +2,9 @@
 #define TAGSET_H
 
 #include "layout.h"
+#include "tag.h"
 #include <wlr/types/wlr_box.h>
+#include <wlr/types/wlr_list.h>
 
 // TODO: support 32 tags if possible
 enum tagPosition {
@@ -22,28 +24,27 @@ enum tagPosition {
 #define NUM_CHARS 64
 #define NUM_DIGITS 9
 
-/* A tag is simply a workspace that can be focused (like a normal workspace)
- * and can selected: which just means that all clients on the selected tags
- * will be combined to be shown on the focused tag
- * using this struct requires to use tagsetCreate and later tagsetDestroy
+/* A tagset contains a list of tags and has informations about
  * */
 struct tagset {
-    /* position of current selected tag count starts at 0 */
-    unsigned int focusedTag;
-    char **tagNames;
-    struct layout *lt;
-    /* window area(area where windows can tile) */
-    struct wlr_box w;
     /* *
      * selTags are flags that should that represent the selected Tags in binary.
      * At position 0 the current selTags are stored.
      * At position 1 the previous selTags are stored.
      * */
     unsigned int selTags[2];
+    /* position of current selected tag count starts at 0 */
+    unsigned int focusedTag;
+    /* list of tags */
+    struct wlr_list tags;
 };
 
-void tagsetCreate(struct tagset *tagset);
+struct tagset *tagsetCreate(struct wlr_list *tagNames);
 void tagsetDestroy(struct tagset *tagset);
+
+void tagsetAddTag(struct tagset *tagset, struct tag *tag);
+struct tag *tagsetGetTag(struct tagset *tagset, size_t i);
+struct tag *tagsetFocusedTag(struct tagset *tagset);
 
 /* sets the value of selTag[0] */
 void setSelTags(struct tagset *tagset, unsigned int selTags);
@@ -65,5 +66,5 @@ bool tagsOverlap(unsigned int tags, unsigned int tags2);
 enum tagPosition positionToFlag(unsigned int pos);
 unsigned int flagToPosition(enum tagPosition flag);
 struct layout selLayout(struct tagset *tagset);
-struct layout setSelLayout(struct tagset *tagset, struct layout layout);
+void setSelLayout(struct tagset *tagset, struct layout layout);
 #endif /* TAGSET_H */

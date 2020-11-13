@@ -8,10 +8,10 @@
 #include "utils/gapUtils.h"
 #include "translationLayer.h"
 #include "actions.h"
+#include "root.h"
 
 bool sloppyFocus;
 int borderPx;
-float rootColor[4];
 float borderColor[4];
 float focusColor[4];
 float overlayColor[4];
@@ -19,6 +19,7 @@ float textColor[4];
 float selOverlayColor[4];
 float selTextColor[4];
 
+struct wlr_list tagNames;
 struct rule rules[MAXLEN];
 
 //MonitorRule monrules[MAXLEN];
@@ -28,7 +29,7 @@ int repeatDelay;
 int innerGap;
 int outerGap;
 
-char **tagNames;
+struct wlr_list tagNames;
 char *termcmd;
 Key *keys = NULL;
 Key *buttons = NULL;
@@ -45,7 +46,7 @@ void updateConfig(lua_State *L)
     configureGaps(&innerGap, &outerGap);
 
     /* appearance */
-    getConfigFloatArr(L, rootColor, "rootColor");
+    getConfigFloatArr(L, root.color, "rootColor");
     getConfigFloatArr(L, borderColor, "borderColor");
     getConfigFloatArr(L, focusColor, "focusColor");
     getConfigFloatArr(L, overlayColor, "overlayColor");
@@ -53,7 +54,8 @@ void updateConfig(lua_State *L)
     getConfigFloatArr(L, selOverlayColor, "overlayColor");
     getConfigFloatArr(L, selTextColor, "textColor");
 
-    getConfigStrArr(L, tagNames, "tagNames");
+    wlr_list_init(&tagNames);
+    getConfigStrArr(L, &tagNames, "tagNames");
     getConfigRuleArr(L, rules, "rules");
 
     /* monitors */

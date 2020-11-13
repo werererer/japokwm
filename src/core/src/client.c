@@ -5,6 +5,7 @@
 
 #include "tile/tile.h"
 #include "utils/coreUtils.h"
+#include "server.h"
 #include "tile/tileUtils.h"
 
 //global variables
@@ -209,7 +210,7 @@ bool existon(struct client *c, struct monitor *m)
 {
     if (m && c) {
         if (c->mon == m) {
-            return c->tagset.selTags[0] & m->tagset.selTags[0];
+            return c->tagset->selTags[0] & m->tagset->selTags[0];
         }
     }
     return false;
@@ -219,7 +220,7 @@ bool visibleon(struct client *c, struct monitor *m)
 {
     if (m && c) {
         if (c->mon == m && !c->hidden) {
-            return c->tagset.selTags[0] & m->tagset.selTags[0];
+            return c->tagset->selTags[0] & m->tagset->selTags[0];
         }
     }
     return false;
@@ -229,7 +230,7 @@ bool hiddenon(struct client *c, struct monitor *m)
 {
     if (m && c) {
         if (c->mon == m && c->hidden) {
-            return c->tagset.selTags[0] & m->tagset.selTags[0];
+            return c->tagset->selTags[0] & m->tagset->selTags[0];
         }
     }
     return false;
@@ -239,7 +240,7 @@ bool visibleonTag(struct client *c, struct monitor *m, size_t focusedTag)
 {
     if (m && c) {
         if (c->mon == m) {
-            return c->tagset.selTags[0] & positionToFlag(focusedTag);
+            return c->tagset->selTags[0] & positionToFlag(focusedTag);
         }
     }
     return false;
@@ -264,7 +265,7 @@ static void unfocusClient(struct client *c)
 
 void focusClient(struct client *old, struct client *c, bool lift)
 {
-    struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat);
+    struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
     /* Raise client in stacking order if requested */
     if (c && lift) {
         wl_list_remove(&c->slink);
@@ -274,12 +275,12 @@ void focusClient(struct client *old, struct client *c, bool lift)
     /* Update wlroots' keyboard focus */
     if (!c) {
         /* With no client, all we have left is to clear focus */
-        wlr_seat_keyboard_notify_clear_focus(seat);
+        wlr_seat_keyboard_notify_clear_focus(server.seat);
         return;
     }
 
     /* Have a client, so focus its top-level wlr_surface */
-    wlr_seat_keyboard_notify_enter(seat, getWlrSurface(c), kb->keycodes,
+    wlr_seat_keyboard_notify_enter(server.seat, getWlrSurface(c), kb->keycodes,
             kb->num_keycodes, &kb->modifiers);
 
     /* Put the new client atop the focus stack */

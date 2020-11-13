@@ -1,6 +1,6 @@
 srcDir = 'src/'
 includeDir = 'include/'
-inc = include_directories(includeDir)
+inc = include_directories(includeDir, '/usr/include/json-c/')
 
 foreach p:protocols
     pName = run_command('basename', p, '.xml').stdout().strip()
@@ -44,6 +44,9 @@ srcs = files(
   'src/translationLayer.c',
   'src/actions.c',
   'src/info.c',
+  'src/ipc-json.c',
+  'src/root.c',
+  'src/ipc-server.c',
 )
 libName = 'juliawm'
 wmlib = executable(libName,

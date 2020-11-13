@@ -186,15 +186,14 @@ Key getConfigKey(lua_State *L, char *name)
     return key;
 }
 
-void getConfigStrArr(lua_State *L, char **resArr, char *name)
+void getConfigStrArr(lua_State *L, struct wlr_list *resArr, char *name)
 {
     //TODO cleanup !!!
     lua_getglobal(L, name);
     size_t len = lua_rawlen(L, -1);
 
-    resArr = malloc(len * sizeof(char*));
     for (int i = 1; i <= len; i++)
-        resArr[i-1] = getConfigArrayStr(L, i);
+        wlr_list_push(resArr, getConfigArrayStr(L, i));
     lua_pop(L, 1);
 }
 

@@ -1,4 +1,4 @@
-Build started at 2020-11-08T22:50:57.381252
+Build started at 2020-11-12T20:04:07.021858
 Main binary: /usr/bin/python
 Build Options: -Dbackend=ninja
 Python system: Linux
@@ -26,10 +26,11 @@ Dependency xcb found: YES 1.14 (cached)
 Dependency xkbcommon found: YES 1.0.1 (cached)
 Dependency wayland-server found: YES 1.18.0 (cached)
 Dependency wayland-egl found: YES 18.1.0 (cached)
-Dependency wlroots found: YES 0.11.0 (cached)
+Dependency wlroots found: YES 0.12.0 (cached)
 Dependency cairo found: YES 1.17.3 (cached)
 Dependency lua found: YES 5.4.1 (cached)
 Dependency x11 found: YES 1.6.10 (cached)
+Dependency json-c found: YES 0.15 (cached)
 Running command: /usr/bin/basename /home/jakob/git/juliawm/protocols/wlr-layer-shell-unstable-v1.xml .xml
 --- stdout ---
 wlr-layer-shell-unstable-v1
@@ -91,8 +92,8 @@ Build targets in project: 1
 
 Found ninja-1.10.1 at /usr/bin/ninja
 Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpiplyxw68
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpiplyxw68/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpiplyxw68/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpfz_st4pw
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpfz_st4pw/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpfz_st4pw/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
 
 Code:
  

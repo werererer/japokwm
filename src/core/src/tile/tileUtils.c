@@ -15,6 +15,7 @@
 #include "tile/tileTexture.h"
 #include "utils/gapUtils.h"
 #include "utils/parseConfigUtils.h"
+#include "root.h"
 
 struct containersInfo containersInfo;
 
@@ -24,7 +25,7 @@ struct containersInfo containersInfo;
  * */
 static struct wlr_box getAbsoluteBox(struct monitor *m, struct wlr_fbox b)
 {
-    struct wlr_box w = m->tagset.w;
+    struct wlr_box w = root.w;
     w.x = w.width * b.x + w.x;
     w.y = w.height * b.y + w.y;
     w.width = w.width * b.width;
@@ -36,11 +37,11 @@ static struct wlr_box getAbsoluteBox(struct monitor *m, struct wlr_fbox b)
 void arrange(struct monitor *m, bool reset)
 {
     /* Get effective monitor geometry to use for window area */
-    struct tagset *tagset = &m->tagset;
-    m->m = *wlr_output_layout_get_box(output_layout, m->wlr_output);
+    struct tagset *tagset = m->tagset;
+    m->m = *wlr_output_layout_get_box(output_layout, m->output);
 
-    tagset->w = m->m;
-    containerSurroundGaps(&tagset->w, outerGap);
+    root.w = m->m;
+    containerSurroundGaps(&root.w, outerGap);
     if (selLayout(tagset).funcId) {
         struct client *c = NULL;
 

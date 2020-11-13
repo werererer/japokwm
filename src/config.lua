@@ -9,8 +9,8 @@ overlayColor = {0.65, 0.65, 0.65, 0.5}
 textColor = {0.003, 0.003, 0.003, 1.0}
 selOverlayColor = {}
 selTextColor = {}
-outerGap = 10
-innerGap = 25
+outerGap = 12
+innerGap = 10
 
 tagNames = {"1", "2", "3", "4", "5", "6", "7", "8", "9"}
 
@@ -49,7 +49,7 @@ keys = {
     {mod.." "..shift.." j",    function(n) action.focusOnHiddenStack(1) end},
     {mod.." "..shift.." k",    function(n) action.focusOnHiddenStack(-1) end},
     -- {mod.." d",           function(n) incnmaster(-1) end},
-    {mod.." c",           function(n) action.kill() end},
+    {mod.." "..shift.." c",           function(n) action.kill() end},
     {mod.." q",           function(n) action.quit() end},
     {mod.." p",           function(n) splitThisContainer(1/2) end},
     {mod.." o",           function(n) vsplitThisContainer(1/2) end},
@@ -64,7 +64,7 @@ keys = {
     -- {mod.." parenright",  function(n) tag(~0) end},
     -- {mod.." greater",     function(n) tagmon(1) end},
     -- {mod.." less",        function(n) tagmon(-1) end},
-    -- {mod.." Return",      function(n) action.zoom() end},
+    {mod.." Return",      function(n) action.zoom() end},
     -- {mod.." s",           function(n) toggleOverlay() end},
     -- {mod.." 1",           function(n) view(1) end},
     -- {mod.." 2",           function(n) view(2) end},

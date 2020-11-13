@@ -26,7 +26,7 @@ void createMonitor(struct wl_listener *listener, void *data)
 {
     /* This event is raised by the backend when a new output (aka a display or
      * monitor) becomes available. */
-    struct wlr_output *wlr_output = data;
+    struct wlr_output *output = data;
     struct monitor *m;
     const struct monRule *r;
 
@@ -34,34 +34,34 @@ void createMonitor(struct wl_listener *listener, void *data)
      * monitor supports only a specific set of modes. We just pick the
      * monitor's preferred mode; a more sophisticated compositor would let
      * the user configure it. */
-    wlr_output_set_mode(wlr_output, wlr_output_preferred_mode(wlr_output));
+    wlr_output_set_mode(output, wlr_output_preferred_mode(output));
 
     /* Allocates and configures monitor state using configured rules */
-    m = wlr_output->data = calloc(1, sizeof(*m));
-    m->wlr_output = wlr_output;
-    tagsetCreate(&m->tagset);
-    pushSelTags(&m->tagset, TAG_ONE);
+    m = output->data = calloc(1, sizeof(struct monitor));
+    m->output = output;
+    m->tagset = tagsetCreate(&tagNames);
+    pushSelTags(m->tagset, TAG_ONE);
     for (r = monrules; r < END(monrules); r++) {
-        if (!r->name || strstr(wlr_output->name, r->name)) {
+        if (!r->name || strstr(output->name, r->name)) {
             m->mfact = r->mfact;
             m->nmaster = r->nmaster;
-            wlr_output_set_scale(wlr_output, r->scale);
+            wlr_output_set_scale(output, r->scale);
             wlr_xcursor_manager_load(server.cursorMgr, r->scale);
-            setSelLayout(&m->tagset, *r->lt);
-            wlr_output_set_transform(wlr_output, r->rr);
+            setSelLayout(m->tagset, *r->lt);
+            wlr_output_set_transform(output, r->rr);
             break;
         }
     }
     /* Set up event listeners */
     m->frame.notify = renderFrame;
-    wl_signal_add(&wlr_output->events.frame, &m->frame);
+    wl_signal_add(&output->events.frame, &m->frame);
     m->destroy.notify = cleanupMonitor;
-    wl_signal_add(&wlr_output->events.destroy, &m->destroy);
+    wl_signal_add(&output->events.destroy, &m->destroy);
 
     wl_list_insert(&mons, &m->link);
 
-    wlr_output_enable(wlr_output, 1);
-    if (!wlr_output_commit(wlr_output))
+    wlr_output_enable(output, 1);
+   if (!wlr_output_commit(output))
         return;
 
     /* Adds this to the output layout. The add_auto function arranges outputs
@@ -73,7 +73,7 @@ void createMonitor(struct wl_listener *listener, void *data)
      * display, which Wayland clients can see to find out information about the
      * output (such as DPI, scale factor, manufacturer, etc).
      */
-    wlr_output_layout_add_auto(output_layout, wlr_output);
+    wlr_output_layout_add_auto(output_layout, output);
     sgeom = *wlr_output_layout_get_box(output_layout, NULL);
 }
 

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <wayland-util.h>
 #include <wlr/util/edges.h>
+#include "root.h"
 
 struct wlr_renderer *drw;
 struct renderData renderData;
@@ -85,12 +86,12 @@ static void renderClients(struct monitor *m)
     wl_list_for_each_reverse(c, &clients, link) {
         /* Only render visible clients which show on this monitor */
         if (!visibleon(c, c->mon) || !wlr_output_layout_intersects(
-                    output_layout, m->wlr_output, &c->geom))
+                    output_layout, m->output, &c->geom))
             continue;
 
         surface = getWlrSurface(c);
         ox = c->geom.x, oy = c->geom.y;
-        wlr_output_layout_output_coords(output_layout, m->wlr_output,
+        wlr_output_layout_output_coords(output_layout, m->output,
                 &ox, &oy);
         w = surface->current.width;
         h = surface->current.height;
@@ -104,9 +105,9 @@ static void renderClients(struct monitor *m)
         /* Draw window borders */
         color = (c == sel) ? focusColor : borderColor;
         for (i = 0; i < 4; i++) {
-            scalebox(&borders[i], m->wlr_output->scale);
+            scalebox(&borders[i], m->output->scale);
             wlr_render_rect(drw, &borders[i], color,
-                    m->wlr_output->transform_matrix);
+                    m->output->transform_matrix);
         }
 
         /* This calls our render function for each surface among the
@@ -114,7 +115,7 @@ static void renderClients(struct monitor *m)
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
-        rdata.output = m->wlr_output;
+        rdata.output = m->output;
         rdata.when = &now;
         rdata.x = c->geom.x + c->bw;
         rdata.y = c->geom.y + c->bw;
@@ -147,7 +148,7 @@ static void renderExtra(struct monitor *m)
 
         /* Only render visible clients which show on this monitor */
         if (!visibleon(c, c->mon) || !wlr_output_layout_intersects(
-                    output_layout, m->wlr_output, &c->geom))
+                    output_layout, m->output, &c->geom))
             continue;
 
         /* This calls our render function for each surface among the
@@ -155,7 +156,7 @@ static void renderExtra(struct monitor *m)
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
-        rdata.output = m->wlr_output;
+        rdata.output = m->output;
         rdata.when = &now;
         rdata.x = c->geom.x + c->bw;
         rdata.y = c->geom.y + c->bw;
@@ -169,7 +170,7 @@ static void renderExtra(struct monitor *m)
 static void renderTexture(void *texture)
 {
     struct posTexture *text = texture;
-    wlr_render_texture(drw, text->texture, selMon->wlr_output->transform_matrix, 
+    wlr_render_texture(drw, text->texture, selMon->output->transform_matrix, 
                        text->x, text->y, 1);
 }
 
@@ -222,12 +223,12 @@ void renderFrame(struct wl_listener *listener, void *data)
 
     if (selMon) {
         struct wlr_box b = selMon->m;
-        selMon->m = *wlr_output_layout_get_box(output_layout, selMon->wlr_output);
+        selMon->m = *wlr_output_layout_get_box(output_layout, selMon->output);
         if (selMon->m.width != b.width || selMon->m.height != b.height) {
             arrange(selMon, false);
             struct client *c;
             wl_list_for_each(c, &layerStack, llink) {
-                wlr_layer_surface_v1_configure(c->surface.layer, selMon->wlr_output->width, selMon->wlr_output->height);
+                wlr_layer_surface_v1_configure(c->surface.layer, selMon->output->width, selMon->output->height);
             }
         }
     }
@@ -242,16 +243,16 @@ void renderFrame(struct wl_listener *listener, void *data)
     }
 
     /* wlr_output_attach_render makes the OpenGL context current. */
-    if (!wlr_output_attach_render(m->wlr_output, NULL))
+    if (!wlr_output_attach_render(m->output, NULL))
         return;
 
     if (render) {
         /* Begin the renderer (calls glViewport and some other GL sanity checks) */
-        wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
-        wlr_renderer_clear(drw, rootColor);
+        wlr_renderer_begin(drw, m->output->width, m->output->height);
+        wlr_renderer_clear(drw, root.color);
 
         renderClients(m);
-        renderIndependents(m->wlr_output);
+        renderIndependents(m->output);
         renderExtra(m);
 
         /* render all textures in list */
@@ -263,14 +264,14 @@ void renderFrame(struct wl_listener *listener, void *data)
          * reason, wlroots provides a software fallback, which we ask it to render
          * here. wlr_cursor handles configuring hardware vs software cursors for you,
          * and this function is a no-op when hardware cursors are in use. */
-        wlr_output_render_software_cursors(m->wlr_output, NULL);
+        wlr_output_render_software_cursors(m->output, NULL);
 
         /* Conclude rendering and swap the buffers, showing the final frame
          * on-screen. */
         wlr_renderer_end(drw);
     }
 
-    wlr_output_commit(m->wlr_output);
+    wlr_output_commit(m->output);
 }
 
 void scalebox(struct wlr_box *box, float scale)

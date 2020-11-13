@@ -60,6 +60,7 @@
 #include "tagset.h"
 #include "keybinding.h"
 #include "actions.h"
+#include "ipc-server.h"
 
 typedef struct {
     struct wl_listener request_mode;
@@ -136,7 +137,7 @@ void axisnotify(struct wl_listener *listener, void *data)
      * for example when you move the scroll wheel. */
     struct wlr_event_pointer_axis *event = data;
     /* Notify the client with pointer focus of the axis event. */
-    wlr_seat_pointer_notify_axis(seat,
+    wlr_seat_pointer_notify_axis(server.seat,
             event->time_msec, event->orientation, event->delta,
             event->delta_discrete, event->source);
 }
@@ -159,7 +160,7 @@ void buttonpress(struct wl_listener *listener, void *data)
         unsigned sym = event->button + 64985;
 
         /* get modifiers */
-        struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat);
+        struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
         int mods = wlr_keyboard_get_modifiers(kb);
 
         buttonPressed(mods, sym);
@@ -179,7 +180,7 @@ void buttonpress(struct wl_listener *listener, void *data)
     }
     /* If the event wasn't handled by the compositor, notify the client with
      * pointer focus that a button press has occurred */
-    wlr_seat_pointer_notify_button(seat,
+    wlr_seat_pointer_notify_button(server.seat,
             event->time_msec, event->button, event->state);
 }
 
@@ -255,7 +256,7 @@ void createkeyboard(struct wlr_input_device *device)
     kb->destroy.notify = cleanupkeyboard;
     wl_signal_add(&device->events.destroy, &kb->destroy);
 
-    wlr_seat_set_keyboard(seat, device);
+    wlr_seat_set_keyboard(server.seat, device);
 
     /* And add the keyboard to our list of server.keyboards */
     wl_list_insert(&server.keyboards, &kb->link);
@@ -317,7 +318,7 @@ void createnotifyLayerShell(struct wl_listener *listener, void *data)
     c->destroy.notify = destroynotify;
     wl_signal_add(&layer_surface->events.destroy, &c->destroy);
     // TODO always resize when mon size is changed
-    wlr_layer_surface_v1_configure(c->surface.layer, selMon->wlr_output->width, selMon->wlr_output->height);
+    wlr_layer_surface_v1_configure(c->surface.layer, selMon->output->width, selMon->output->height);
 }
 
 void createpointer(struct wlr_input_device *device)
@@ -350,7 +351,7 @@ void cursorframe(struct wl_listener *listener, void *data)
      * multiple events together. For instance, two axis events may happen at the
      * same time, in which case a frame event won't be sent in between. */
     /* Notify the client with pointer focus of the frame event. */
-    wlr_seat_pointer_notify_frame(seat);
+    wlr_seat_pointer_notify_frame(server.seat);
 }
 
 void destroynotify(struct wl_listener *listener, void *data)
@@ -446,7 +447,7 @@ void inputdevice(struct wl_listener *listener, void *data)
     caps = WL_SEAT_CAPABILITY_POINTER;
     if (!wl_list_empty(&server.keyboards))
         caps |= WL_SEAT_CAPABILITY_KEYBOARD;
-    wlr_seat_set_capabilities(seat, caps);
+    wlr_seat_set_capabilities(server.seat, caps);
 }
 
 static bool handleVTKeys(struct keyboard *kb, uint32_t keycode)
@@ -509,8 +510,8 @@ void keypress(struct wl_listener *listener, void *data)
 
     if (!handled) {
         /* Pass unhandled keycodes along to the client. */
-        wlr_seat_set_keyboard(seat, kb->device);
-        wlr_seat_keyboard_notify_key(seat, event->time_msec,
+        wlr_seat_set_keyboard(server.seat, kb->device);
+        wlr_seat_keyboard_notify_key(server.seat, event->time_msec,
             event->keycode, event->state);
     }
 }
@@ -526,9 +527,9 @@ void keypressmod(struct wl_listener *listener, void *data)
      * to the same seat. You can swap out the underlying wlr_keyboard like this
      * and wlr_seat handles this transparently.
      */
-    wlr_seat_set_keyboard(seat, kb->device);
+    wlr_seat_set_keyboard(server.seat, kb->device);
     /* Send modifiers to the client. */
-    wlr_seat_keyboard_notify_modifiers(seat,
+    wlr_seat_keyboard_notify_modifiers(server.seat,
         &kb->device->keyboard->modifiers);
 }
 
@@ -536,9 +537,10 @@ void maprequest(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
-    tagsetCreate(&c->tagset);
-    setSelTags(&c->tagset, selMon->tagset.selTags[0]);
-    c->tagset.focusedTag = selMon->tagset.focusedTag;
+    // TODO How many tags are there?
+    c->tagset = tagsetCreate(&tagNames);
+    setSelTags(c->tagset, selMon->tagset->selTags[0]);
+    c->tagset->focusedTag = selMon->tagset->focusedTag;
 
     if (c->type == X11Unmanaged) {
         /* Insert this independent into independents lists. */
@@ -569,11 +571,11 @@ void maprequest(struct wl_listener *listener, void *data)
             if (c->surface.layer->current.desired_width)
                 c->geom.width = c->surface.layer->current.desired_width;
             else
-                c->geom.width = selMon->wlr_output->width;
+                c->geom.width = selMon->output->width;
             if (c->surface.layer->current.desired_height)
                 c->geom.height = c->surface.layer->current.desired_height;
             else
-                c->geom.height = selMon->wlr_output->height;
+                c->geom.height = selMon->output->height;
             break;
         case X11Managed:
         case X11Unmanaged:
@@ -680,14 +682,14 @@ void setCursor(struct wl_listener *listener, void *data)
      * use the provided surface as the cursor image. It will set the
      * hardware cursor on the output that it's currently on and continue to
      * do so as the cursor moves between outputs. */
-    if (event->seat_client == seat->pointer_state.focused_client)
+    if (event->seat_client == server.seat->pointer_state.focused_client)
         wlr_cursor_set_surface(server.cursor, event->surface,
                 event->hotspot_x, event->hotspot_y);
 }
 
 /* arg > 1.0 will set mfact absolutely */
 void setmfact(float factor) {
-    if (!selLayout(&selMon->tagset).funcId)
+    if (!selLayout(selMon->tagset).funcId)
         return;
     factor = factor < 1.0 ? factor + selMon->mfact : factor - 1.0;
     if (factor < 0.1 || factor > 0.9)
@@ -703,7 +705,7 @@ void setpsel(struct wl_listener *listener, void *data)
      * ignore such requests if they so choose, but in dwl we always honor
      */
     struct wlr_seat_request_set_primary_selection_event *event = data;
-    wlr_seat_set_primary_selection(seat, event->source, event->serial);
+    wlr_seat_set_primary_selection(server.seat, event->source, event->serial);
 }
 
 void setsel(struct wl_listener *listener, void *data)
@@ -713,7 +715,7 @@ void setsel(struct wl_listener *listener, void *data)
      * ignore such requests if they so choose, but in dwl we always honor
      */
     struct wlr_seat_request_set_selection_event *event = data;
-    wlr_seat_set_selection(seat, event->source, event->serial);
+    wlr_seat_set_selection(server.seat, event->source, event->serial);
 }
 
 void setup(void)
@@ -725,6 +727,8 @@ void setup(void)
     /* The Wayland display is managed by libwayland. It handles accepting
      * clients from the Unix socket, manging Wayland globals, and so on. */
     server.display = wl_display_create();
+    server.wl_event_loop = wl_event_loop_create();
+    ipc_init(server.wl_event_loop);
 
     /* clean up child processes immediately */
     sigchld(0);
@@ -833,12 +837,12 @@ void setup(void)
      */
     wl_list_init(&server.keyboards);
     wl_signal_add(&server.backend->events.new_input, &new_input);
-    seat = wlr_seat_create(server.display, "seat0");
-    wl_signal_add(&seat->events.request_set_cursor,
+    server.seat = wlr_seat_create(server.display, "seat0");
+    wl_signal_add(&server.seat->events.request_set_cursor,
             &request_cursor);
-    wl_signal_add(&seat->events.request_set_selection,
+    wl_signal_add(&server.seat->events.request_set_selection,
             &request_set_sel);
-    wl_signal_add(&seat->events.request_set_primary_selection,
+    wl_signal_add(&server.seat->events.request_set_primary_selection,
             &request_set_psel);
 
     /*
@@ -867,7 +871,7 @@ void tag(unsigned int ui)
 {
     struct client *sel = selClient();
     if (sel && ui) {
-        toggleAddTag(&sel->tagset, positionToFlag(ui));
+        toggleAddTag(sel->tagset, positionToFlag(ui));
         focusTopClient(nextClient(), true);
         arrange(selMon, false);
     }
@@ -879,9 +883,9 @@ void toggletag(unsigned int ui)
     if (!sel)
         return;
 
-    unsigned int newtags = sel->tagset.selTags[0] ^ ui;
+    unsigned int newtags = sel->tagset->selTags[0] ^ ui;
     if (newtags) {
-        setSelTags(&sel->tagset, newtags);
+        setSelTags(sel->tagset, newtags);
         focusTopClient(nextClient(), true);
         arrange(selMon, false);
     }
@@ -889,7 +893,7 @@ void toggletag(unsigned int ui)
 
 void toggleview(unsigned int ui)
 {
-    toggleTagset(&selMon->tagset);
+    toggleTagset(selMon->tagset);
     focusTopClient(nextClient(), true);
     arrange(selMon, false);
 }
@@ -898,7 +902,7 @@ void unmapnotify(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
-    tagsetDestroy(&c->tagset);
+    tagsetDestroy(c->tagset);
     wl_list_remove(&c->flink);
     wl_list_remove(&c->slink);
     // LayerShell shouldn't be resized
@@ -914,15 +918,15 @@ void unmapnotify(struct wl_listener *listener, void *data)
 
 void view(unsigned ui)
 {
-    selMon->tagset.focusedTag = flagToPosition(ui);
-    setSelTags(&selMon->tagset, ui);
+    selMon->tagset->focusedTag = flagToPosition(ui);
+    setSelTags(selMon->tagset, ui);
     focusTopClient(nextClient(), false);
     arrange(selMon, false);
 }
 
 void toggleAddView(unsigned ui)
 {
-    toggleAddTag(&selMon->tagset, ui);
+    toggleAddTag(selMon->tagset, ui);
     focusTopClient(nextClient(), false);
     arrange(selMon, false);
 }
@@ -938,6 +942,7 @@ void activatex11(struct wl_listener *listener, void *data)
 
 void createnotifyx11(struct wl_listener *listener, void *data)
 {
+    printf("createx11\n");
     struct wlr_xwayland_surface *xwayland_surface = data;
     struct client *c;
 
@@ -970,7 +975,7 @@ void xwaylandready(struct wl_listener *listener, void *data)
     }
 
     /* assign the one and only seat */
-    wlr_xwayland_set_seat(xwayland, seat);
+    wlr_xwayland_set_seat(xwayland, server.seat);
 
     xcb_disconnect(xc);
 }

@@ -3,21 +3,31 @@
 #include <stdio.h>
 #include <tgmath.h>
 #include <stdlib.h>
+#include <string.h>
 
-void tagsetCreate(struct tagset *tagset)
+struct tagset *tagsetCreate(struct wlr_list *tagNames)
 {
-    tagset->tagNames = calloc(NUM_CHARS * MAXLEN, sizeof(char));
-    tagset->lt = calloc(MAXLEN, sizeof(*tagset->lt));
-    for (int i = 0; i < MAXLEN; i++) {
-        tagset->lt[i] = defaultLayout;
+    struct tagset *tagset = calloc(1, sizeof(struct tagset));
+    wlr_list_init(&tagset->tags);
+
+    for (int i = 0; i < tagNames->length; i++) {
+        struct tag *tag = calloc(1, sizeof(struct tag));
+        tag->name = tagNames->items[i];
+        tag->layout = defaultLayout;
+        wlr_list_push(&tagset->tags, tag);
     }
-    tagset->focusedTag = 1;
+
+    tagset->focusedTag = 0;
+    return tagset;
 }
 
 void tagsetDestroy(struct tagset *tagset)
 {
-    free(tagset->tagNames);
-    free(tagset->lt);
+    // delete all tags dynamically allocated by create
+    for (int i = 0; i < tagset->tags.length; i++)
+        free(wlr_list_pop(&tagset->tags));
+    wlr_list_finish(&tagset->tags);
+    free(tagset);
 }
 
 unsigned int flagToPosition(enum tagPosition flag)
@@ -39,6 +49,16 @@ enum tagPosition positionToFlag(unsigned int pos)
 void setSelTags(struct tagset *tagset, unsigned int selTags)
 {
     tagset->selTags[0] = selTags;
+}
+
+struct tag *tagsetGetTag(struct tagset *tagset, size_t i)
+{
+    return tagset->tags.items[i];
+}
+
+struct tag *tagsetFocusedTag(struct tagset *tagset)
+{
+    return tagsetGetTag(tagset, tagset->focusedTag);
 }
 
 void toggleAddTag(struct tagset *tagset, unsigned int selTags)
@@ -71,10 +91,15 @@ bool tagsOverlap(unsigned int tags, unsigned int tags2)
 
 struct layout selLayout(struct tagset *tagset)
 {
-    return tagset->lt[tagset->focusedTag-1];
+    return tagsetFocusedTag(tagset)->layout;
 }
 
-struct layout setSelLayout(struct tagset *tagset, struct layout layout)
+void setSelLayout(struct tagset *tagset, struct layout layout)
 {
-    return tagset->lt[tagset->focusedTag-1] = layout;
+    struct tag *tag = tagsetFocusedTag(tagset);
+    if (strcmp(tag->name, "") == 0) {
+        printf("ERROR: tag not initialized\n");
+        return;
+    }
+    tag->layout = layout;
 }

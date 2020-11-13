@@ -15,7 +15,6 @@ extern bool sloppyFocus;
 extern int borderPx;
 extern int innerGap;
 extern int outerGap;
-extern float rootColor[4];
 extern float borderColor[4];
 extern float focusColor[4];
 extern float overlayColor[4];
@@ -29,7 +28,7 @@ extern int repeatRate;
 extern int repeatDelay;
 
 /* commands */
-extern char **tagNames;
+extern struct wlr_list tagNames;
 extern char *termcmd;
 extern Key *keys;
 extern Key *buttons;

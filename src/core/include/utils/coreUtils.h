@@ -63,7 +63,6 @@ struct monRule {
     struct layout *lt;
     enum wl_output_transform rr;
 };
-extern struct wlr_seat *seat;
 extern struct lua_State *L;
 
 // breaking codestyle to abide by the wlroots style

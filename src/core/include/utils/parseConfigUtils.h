@@ -21,7 +21,7 @@ void callArrangeFunc(lua_State *L, int funcId, int n);
 void callFunction(lua_State *L, struct containersInfo cInfo);
 
 // array
-void getConfigStrArr(lua_State *L, char **resArr, char *name);
+void getConfigStrArr(lua_State *L, struct wlr_list *resArr, char *name);
 void getConfigFloatArr(lua_State *L, float *resArr, char *name);
 void getConfigIntArr(lua_State *L, int *resArr, char *name);
 void getConfigLayoutArr(lua_State *L, struct layout *layouts, char *name);

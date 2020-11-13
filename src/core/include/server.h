@@ -3,14 +3,17 @@
 #include <wayland-server.h>
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/xcursor.h>
+#include <wayland-server-core.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 
 /* enums */
 enum cursorMode { CurNormal, CurMove, CurResize }; /* cursor */
 struct server {
     struct wl_display *display;
+    struct wl_event_loop *wl_event_loop;
     struct wlr_backend *backend;
     struct wlr_compositor *compositor;
+    struct wlr_seat *seat;
 
     struct wlr_xdg_shell *xdgShell;
     struct wlr_layer_shell_v1 *layerShell;

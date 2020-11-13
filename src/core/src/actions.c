@@ -21,18 +21,18 @@ static void pointerfocus(struct client *c, struct wlr_surface *surface,
 
     /* If surface is NULL, clear pointer focus */
     if (!surface) {
-        wlr_seat_pointer_notify_clear_focus(seat);
+        wlr_seat_pointer_notify_clear_focus(server.seat);
         return;
     }
 
     /* If surface is already focused, only notify of motion */
-    if (surface == seat->pointer_state.focused_surface) {
-        wlr_seat_pointer_notify_motion(seat, time, sx, sy);
+    if (surface == server.seat->pointer_state.focused_surface) {
+        wlr_seat_pointer_notify_motion(server.seat, time, sx, sy);
         return;
     }
     /* Otherwise, let the client know that the mouse cursor has entered one
      * of its surfaces, and make keyboard focus follow if desired. */
-    wlr_seat_pointer_notify_enter(seat, surface, sx, sy);
+    wlr_seat_pointer_notify_enter(server.seat, surface, sx, sy);
 
     if (c->type == X11Unmanaged)
         return;
@@ -62,7 +62,7 @@ int spawn(lua_State *L)
 int updateLayout(lua_State *L)
 {
     struct layout l = getConfigLayout(L, "layout");
-    setSelLayout(&selMon->tagset, l);
+    setSelLayout(selMon->tagset, l);
     arrange(selMon, true);
     return 0;
 }

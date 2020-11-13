@@ -27,8 +27,10 @@ struct client {
     struct wlr_box geom;  /* layout-relative, includes border */
     struct monitor *mon;
     enum shell type;
-    struct tagset tagset;
+    struct tagset *tagset;
     int bw;
+    int id;
+    char *title;
     bool floating;
     bool hidden;
     uint32_t resize; /* configure serial of a pending resize */
