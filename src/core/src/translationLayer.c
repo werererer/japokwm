@@ -14,8 +14,13 @@ static const struct luaL_Reg action[] =
     {"quit", quit},
     {"readOverlay", readOverlay},
     {"spawn", spawn},
+    {"tag", tag},
+    {"toggleAddView", toggleAddView},
     {"toggleFloating", toggleFloating},
+    {"toggleTag", toggletag},
+    {"toggleView", toggleView},
     {"updateLayout", updateLayout},
+    {"view", view},
     {"zoom", zoom},
     {NULL, NULL},
 };

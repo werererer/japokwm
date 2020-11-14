@@ -16,8 +16,13 @@ int quit(lua_State *L);
 int readOverlay(lua_State *L);
 int resizeClient(lua_State *L);
 int spawn(lua_State *L);
+int tag(lua_State *L);
+int toggleAddView(lua_State *L);
 int toggleFloating(lua_State *L);
+int toggleView(lua_State *L);
+int toggletag(lua_State *L);
 int updateLayout(lua_State *L);
+int view(lua_State *L);
 int zoom(lua_State *L);
 // kill
 int killClient(lua_State *L);

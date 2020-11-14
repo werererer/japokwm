@@ -212,6 +212,65 @@ void motionnotify(uint32_t time)
     pointerfocus(c, surface, sx, sy, time);
 }
 
+int tag(lua_State *L)
+{
+    unsigned int ui = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    struct client *sel = selClient();
+    if (sel && ui) {
+        toggleAddTag(sel->tagset, positionToFlag(ui));
+        focusTopClient(nextClient(), true);
+        arrange(selMon, false);
+    }
+    return 0;
+}
+
+int toggletag(lua_State *L)
+{
+    unsigned int ui = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+
+    struct client *sel = selClient();
+    if (sel) {
+        unsigned int newtags = sel->tagset->selTags[0] ^ ui;
+        if (newtags) {
+            setSelTags(sel->tagset, newtags);
+            focusTopClient(nextClient(), true);
+            arrange(selMon, false);
+        }
+    }
+    return 0;
+}
+
+int view(lua_State *L)
+{
+    unsigned int ui = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    selMon->tagset->focusedTag = flagToPosition(ui);
+    setSelTags(selMon->tagset, ui);
+    focusTopClient(nextClient(), false);
+    arrange(selMon, false);
+    return 0;
+}
+
+int toggleAddView(lua_State *L)
+{
+    unsigned int ui = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    toggleAddTag(selMon->tagset, ui);
+    focusTopClient(nextClient(), false);
+    arrange(selMon, false);
+    return 0;
+}
+
+
+int toggleView(lua_State *L)
+{
+    toggleTagset(selMon->tagset);
+    focusTopClient(nextClient(), true);
+    arrange(selMon, false);
+    return 0;
+}
 
 int toggleFloating(lua_State *L)
 {

@@ -101,13 +101,8 @@ void setsel(struct wl_listener *listener, void *data);
 void setmfact(float factor);
 void setup(void);
 void sigchld(int unused);
-void tag(unsigned int ui);
 void tagmon(int i);
-void toggletag(unsigned int ui);
-void toggleview(unsigned int ui);
 void unmapnotify(struct wl_listener *listener, void *data);
-void view(unsigned ui);
-void toggleAddView(unsigned ui);
 
 /* global event handlers */
 static struct wl_listener cursor_axis = {.notify = axisnotify};
@@ -867,37 +862,6 @@ void sigchld(int unused)
     while (0 < waitpid(-1, NULL, WNOHANG));
 }
 
-void tag(unsigned int ui)
-{
-    struct client *sel = selClient();
-    if (sel && ui) {
-        toggleAddTag(sel->tagset, positionToFlag(ui));
-        focusTopClient(nextClient(), true);
-        arrange(selMon, false);
-    }
-}
-
-void toggletag(unsigned int ui)
-{
-    struct client *sel = selClient();
-    if (!sel)
-        return;
-
-    unsigned int newtags = sel->tagset->selTags[0] ^ ui;
-    if (newtags) {
-        setSelTags(sel->tagset, newtags);
-        focusTopClient(nextClient(), true);
-        arrange(selMon, false);
-    }
-}
-
-void toggleview(unsigned int ui)
-{
-    toggleTagset(selMon->tagset);
-    focusTopClient(nextClient(), true);
-    arrange(selMon, false);
-}
-
 void unmapnotify(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is unmapped, and should no longer be shown. */
@@ -914,21 +878,6 @@ void unmapnotify(struct wl_listener *listener, void *data)
         wl_list_remove(&c->llink);
     }
     updateHiddenStatus();
-}
-
-void view(unsigned ui)
-{
-    selMon->tagset->focusedTag = flagToPosition(ui);
-    setSelTags(selMon->tagset, ui);
-    focusTopClient(nextClient(), false);
-    arrange(selMon, false);
-}
-
-void toggleAddView(unsigned ui)
-{
-    toggleAddTag(selMon->tagset, ui);
-    focusTopClient(nextClient(), false);
-    arrange(selMon, false);
 }
 
 void activatex11(struct wl_listener *listener, void *data)
