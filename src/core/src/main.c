@@ -727,7 +727,7 @@ void setup(void)
     /* The Wayland display is managed by libwayland. It handles accepting
      * clients from the Unix socket, manging Wayland globals, and so on. */
     server.display = wl_display_create();
-    server.wl_event_loop = wl_event_loop_create();
+    server.wl_event_loop = wl_display_get_event_loop(server.display);
     ipc_init(server.wl_event_loop);
 
     /* clean up child processes immediately */
