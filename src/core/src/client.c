@@ -218,6 +218,12 @@ bool existon(struct client *c, struct monitor *m)
 
 bool visibleon(struct client *c, struct monitor *m)
 {
+    // LayerShell based programs are visible on all workspaces
+    // TODO: more sophisticated approach with sticky windows needed
+    if (c->type == LayerShell && c->mon == m) {
+        return true;
+    }
+
     if (m && c) {
         if (c->mon == m && !c->hidden) {
             return c->tagset->selTags[0] & m->tagset->selTags[0];
@@ -314,9 +320,4 @@ void focusTopClient(struct client *old, bool lift)
         }
     if (focus)
         focusClient(old, c, lift);
-}
-
-void hideClient(struct client *c)
-{
-    c->hidden = true;
 }

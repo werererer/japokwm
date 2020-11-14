@@ -53,7 +53,6 @@ struct client *xytoclient(double x, double y);
 void applyrules(struct client *c);
 void focusClient(struct client *old, struct client *c, bool lift);
 void focusTopClient(struct client *old, bool lift);
-void hideClient(struct client *c);
 
 extern struct wl_list clients; /* tiling order */
 extern struct wl_list focusStack;  /* focus order */
