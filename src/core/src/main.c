@@ -533,9 +533,8 @@ void maprequest(struct wl_listener *listener, void *data)
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
     // TODO How many tags are there?
-    c->tagset = tagsetCreate(&tagNames);
-    setSelTags(c->tagset, selMon->tagset->selTags[0]);
-    c->tagset->focusedTag = selMon->tagset->focusedTag;
+    c->tagset = tagsetCreate(&tagNames, selMon->tagset->focusedTag, 
+            selMon->tagset->selTags[0]);
 
     if (c->type == X11Unmanaged) {
         /* Insert this independent into independents lists. */

@@ -4,8 +4,10 @@
 #include <tgmath.h>
 #include <stdlib.h>
 #include <string.h>
+#include "ipc-server.h"
 
-struct tagset *tagsetCreate(struct wlr_list *tagNames)
+struct tagset *tagsetCreate(struct wlr_list *tagNames, 
+        unsigned int focusedTag, unsigned int selTags)
 {
     struct tagset *tagset = calloc(1, sizeof(struct tagset));
     wlr_list_init(&tagset->tags);
@@ -17,7 +19,8 @@ struct tagset *tagsetCreate(struct wlr_list *tagNames)
         wlr_list_push(&tagset->tags, tag);
     }
 
-    tagset->focusedTag = 0;
+    tagset->focusedTag = focusedTag;
+    setSelTags(tagset, selTags);
     return tagset;
 }
 
@@ -33,8 +36,8 @@ void tagsetDestroy(struct tagset *tagset)
 unsigned int flagToPosition(enum tagPosition flag)
 {
     if (flag % 2 == 0 || flag < 2) {
-        // inverse of (1 << (x-1)) = 2^(x-1)
-        return log2(flag)+1;
+        // inverse of (1 << x)) = 2^x)
+        return log2(flag);
     } else {
         return TAG_ONE;
     }
@@ -42,13 +45,13 @@ unsigned int flagToPosition(enum tagPosition flag)
 
 enum tagPosition positionToFlag(unsigned int pos)
 {
-    /* tagPosition begins at 1 */
-    return (1 << (pos-1));
+    return 1 << pos;
 }
 
 void setSelTags(struct tagset *tagset, unsigned int selTags)
 {
     tagset->selTags[0] = selTags;
+    ipc_event_workspace();
 }
 
 struct tag *tagsetGetTag(struct tagset *tagset, size_t i)

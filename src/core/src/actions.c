@@ -4,6 +4,7 @@
 #include "tile/tileUtils.h"
 #include "server.h"
 #include <stdlib.h>
+#include "ipc-server.h"
 
 static struct client *grabc = NULL;
 static int grabcx, grabcy; /* client-relative */
@@ -216,6 +217,8 @@ int tag(lua_State *L)
 {
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
+    printf("TAG\n");
+    ipc_event_workspace();
     struct client *sel = selClient();
     if (sel && ui) {
         toggleAddTag(sel->tagset, positionToFlag(ui));

@@ -39,7 +39,7 @@ void createMonitor(struct wl_listener *listener, void *data)
     /* Allocates and configures monitor state using configured rules */
     m = output->data = calloc(1, sizeof(struct monitor));
     m->output = output;
-    m->tagset = tagsetCreate(&tagNames);
+    m->tagset = tagsetCreate(&tagNames, 0, 0);
     pushSelTags(m->tagset, TAG_ONE);
     for (r = monrules; r < END(monrules); r++) {
         if (!r->name || strstr(output->name, r->name)) {

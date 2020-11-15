@@ -66,7 +66,7 @@ keys = {
     -- {mod.." less",        function(n) tagmon(-1) end},
     {mod.." Return",      function(n) action.zoom() end},
     -- {mod.." s",           function(n) toggleOverlay() end},
-    {mod.." 1",           function(n) action.view(1) end},
+    {mod.." 1",           function(n) action.view(0) end},
     {mod.." 2",           function(n) action.view(2) end},
     {mod.." 3",           function(n) action.view(4) end},
     {mod.." 4",           function(n) action.view(8) end},

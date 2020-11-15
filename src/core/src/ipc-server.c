@@ -267,17 +267,8 @@ int ipc_client_handle_readable(int client_fd, uint32_t mask, void *data) {
     return 0;
 }
 
-static bool ipc_has_event_listeners(enum ipc_command_type event) {
-    for (size_t i = 0; i < ipc_client_list.length; i++) {
-        struct ipc_client *client = ipc_client_list.items[i];
-        if ((client->subscribed_events & event_mask(event)) != 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
 static void ipc_send_event(const char *json_string, enum ipc_command_type event) {
+    printf("SEND\n");
     struct ipc_client *client;
     for (size_t i = 0; i < ipc_client_list.length; i++) {
         client = ipc_client_list.items[i];
@@ -295,29 +286,8 @@ static void ipc_send_event(const char *json_string, enum ipc_command_type event)
     }
 }
 
-void ipc_event_workspace(struct tagset *oldTag, struct tagset *newTag,
-                         const char *change) {
-  if (!ipc_has_event_listeners(IPC_EVENT_WORKSPACE)) {
-    return;
-  }
-  printf("Sending workspace::%s event\n", change);
-  json_object *obj = json_object_new_object();
-  json_object_object_add(obj, "change", json_object_new_string(change));
-  if (oldTag) {
-    json_object_object_add(obj, "old", ipc_json_describe_tagset(oldTag));
-  } else {
-    json_object_object_add(obj, "old", NULL);
-  }
-
-  if (newTag) {
-    json_object_object_add(obj, "current", ipc_json_describe_tagset(newTag));
-  } else {
-    json_object_object_add(obj, "current", NULL);
-  }
-
-  const char *json_string = json_object_to_json_string(obj);
-  ipc_send_event(json_string, IPC_EVENT_WORKSPACE);
-  json_object_put(obj);
+void ipc_event_workspace() {
+  ipc_send_event("", IPC_EVENT_WORKSPACE);
 }
 
 int ipc_client_handle_writable(int client_fd, uint32_t mask, void *data) {
@@ -425,16 +395,20 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
         case IPC_GET_WORKSPACES:
             {
                 json_object *array = json_object_new_array();
-                json_object *workspaces = ipc_json_describe_tagset(selMon->tagset);
-                json_object_array_add(array, workspaces);
-                printf("works\n");
-                printf("W: %s\n", json_object_to_json_string(array));
-                printf("done\n");
-                const char *json_string = json_object_to_json_string(array);
-                printf("%s\n", json_string);
+                struct tagset *tagset = selMon->tagset;
+                for (int i = 0; i < tagset->tags.length; i++) {
+                    json_object_array_add(
+                            array,
+                            ipc_json_describe_tag(
+                                tagsetGetTag(tagset, i),
+                                (tagset->selTags[0] & positionToFlag(i)),
+                                tagset->selTags[0]
+                                ));
+                }
+                const char * json_string = json_object_get_string(array);
                 ipc_send_reply(client, payload_type, json_string,
-                        (uint32_t)strlen(json_string));
-                json_object_put(workspaces); // free
+                        strlen(json_string));
+                json_object_put(array); // free
                 goto exit_cleanup;
             }
 

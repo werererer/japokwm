@@ -75,8 +75,15 @@ void updateConfig(lua_State *L)
 
 int reloadConfig(lua_State *L)
 {
-    printf("reload\n");
+    for (int i = 0; i < tagNames.length; i++)
+        free(wlr_list_pop(&tagNames));
+    wlr_list_finish(&tagNames);
+
+    unsigned int focusedTag = selMon->tagset->focusedTag;
+    unsigned int selTags = selMon->tagset->selTags[0];
+    tagsetDestroy(selMon->tagset);
     updateConfig(L);
+    selMon->tagset = tagsetCreate(&tagNames, focusedTag, selTags);
 
     // reconfigure clients
     struct client *c = NULL;

@@ -39,7 +39,7 @@ struct tagset {
     struct wlr_list tags;
 };
 
-struct tagset *tagsetCreate(struct wlr_list *tagNames);
+struct tagset *tagsetCreate(struct wlr_list *tagNames, unsigned int focusedTag, unsigned int selTags);
 void tagsetDestroy(struct tagset *tagset);
 
 void tagsetAddTag(struct tagset *tagset, struct tag *tag);
