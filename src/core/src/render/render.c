@@ -135,7 +135,7 @@ static void renderClients(struct monitor *m)
     }
 }
 
-static void renderExtra(struct monitor *m)
+static void renderExtra(struct monitor *m, enum zwlr_layer_shell_v1_layer layer)
 {
     struct client *c;
     struct renderData rdata; 
@@ -145,6 +145,9 @@ static void renderExtra(struct monitor *m)
     wl_list_for_each_reverse(c, &layerStack, llink) {
         if (c->type != LayerShell)
             continue;
+        if (c->surface.layer->current.layer != layer)
+            continue;
+
 
         /* Only render visible clients which show on this monitor */
         if (!visibleon(c, c->mon) || !wlr_output_layout_intersects(
@@ -215,7 +218,7 @@ Container posTextureToContainer(struct posTexture *pTexture)
 void renderFrame(struct wl_listener *listener, void *data)
 {
     struct client *c;
-    int render = 1;
+    bool render = true;
 
     /* This function is called every time an output is ready to display a frame,
      * generally at the output's refresh rate (e.g. 60Hz). */
@@ -238,7 +241,7 @@ void renderFrame(struct wl_listener *listener, void *data)
     wl_list_for_each(c, &stack, slink) {
         if (c->resize) {
             wlr_surface_send_frame_done(getWlrSurface(c), &now);
-            render = 0;
+            render = false;
         }
     }
 
@@ -251,9 +254,12 @@ void renderFrame(struct wl_listener *listener, void *data)
         wlr_renderer_begin(drw, m->output->width, m->output->height);
         wlr_renderer_clear(drw, root.color);
 
+        renderExtra(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND);
+        renderExtra(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
         renderClients(m);
         renderIndependents(m->output);
-        renderExtra(m);
+        renderExtra(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP);
+        renderExtra(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
 
         /* render all textures in list */
         wlr_list_for_each(&renderData.textures, renderTexture);

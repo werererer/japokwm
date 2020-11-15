@@ -12,7 +12,7 @@ selTextColor = {}
 outerGap = 20
 innerGap = 10
 
-tagNames = {"0:1", "1:c", "2:b", "3:4", "4:5", "5:5", "6:7", "7:8"}
+tagNames = {"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"}
 
 -- where to put things
 rules = {
