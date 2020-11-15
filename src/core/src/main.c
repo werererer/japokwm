@@ -872,15 +872,21 @@ void unmapnotify(struct wl_listener *listener, void *data)
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
     tagsetDestroy(c->tagset);
-    wl_list_remove(&c->flink);
-    wl_list_remove(&c->slink);
     // LayerShell shouldn't be resized
-    if (c->type != LayerShell) {
-        wl_list_remove(&c->link);
-        if (c->type == X11Unmanaged)
-            return;
-    } else {
-        wl_list_remove(&c->llink);
+    switch (c->type) {
+        case LayerShell:
+            wl_list_remove(&c->flink);
+            wl_list_remove(&c->slink);
+            wl_list_remove(&c->llink);
+            break;
+        case XDGShell:
+            wl_list_remove(&c->flink);
+            wl_list_remove(&c->slink);
+            wl_list_remove(&c->link);
+            break;
+        case X11Managed:
+        case X11Unmanaged:
+            wl_list_remove(&c->link);
     }
     updateHiddenStatus();
 }
@@ -896,7 +902,6 @@ void activatex11(struct wl_listener *listener, void *data)
 
 void createnotifyx11(struct wl_listener *listener, void *data)
 {
-    printf("createx11\n");
     struct wlr_xwayland_surface *xwayland_surface = data;
     struct client *c;
 

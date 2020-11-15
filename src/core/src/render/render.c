@@ -124,18 +124,17 @@ static void renderClients(struct monitor *m)
             case XDGShell:
                 wlr_xdg_surface_for_each_surface(c->surface.xdg, render, &rdata);
                 break;
-            case LayerShell:
-                wlr_layer_surface_v1_for_each_surface(c->surface.layer, render, &rdata);
-                break;
             case X11Managed:
             case X11Unmanaged:
                 wlr_surface_for_each_surface(c->surface.xwayland->surface, render, &rdata);
+                break;
+            default:
                 break;
         }
     }
 }
 
-static void renderExtra(struct monitor *m, enum zwlr_layer_shell_v1_layer layer)
+static void renderLayerShell(struct monitor *m, enum zwlr_layer_shell_v1_layer layer)
 {
     struct client *c;
     struct renderData rdata; 
@@ -147,7 +146,7 @@ static void renderExtra(struct monitor *m, enum zwlr_layer_shell_v1_layer layer)
             continue;
         if (c->surface.layer->current.layer != layer)
             continue;
-
+        printf("POPUPS: %i\n", wl_list_length(&c->surface.layer->popups));
 
         /* Only render visible clients which show on this monitor */
         if (!visibleon(c, c->mon) || !wlr_output_layout_intersects(
@@ -254,12 +253,12 @@ void renderFrame(struct wl_listener *listener, void *data)
         wlr_renderer_begin(drw, m->output->width, m->output->height);
         wlr_renderer_clear(drw, root.color);
 
-        renderExtra(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND);
-        renderExtra(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
+        renderLayerShell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND);
+        renderLayerShell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
         renderClients(m);
         renderIndependents(m->output);
-        renderExtra(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP);
-        renderExtra(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
+        renderLayerShell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP);
+        renderLayerShell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
 
         /* render all textures in list */
         wlr_list_for_each(&renderData.textures, renderTexture);
