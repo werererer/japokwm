@@ -69,18 +69,18 @@ struct focus_inactive_data {
     json_object *object;
 };
 
-json_object *ipc_json_describe_tag(struct tag *tag, bool focused, unsigned int selTags) {
+json_object *ipc_json_describe_tag(struct tag *tag, bool focused, bool selected) {
     struct wlr_box box;
     box = selMon->m;
 
     int i = strlen(tag->name) + 1;
     char s[i];
     strcpy(s, "");
-    printf("%s\n", tag->name);
-    /* if (focused) */
-    /*     strcat(s, "*"); */
     strcat(s, tag->name);
-    json_object *object = ipc_json_create_node(0, s, focused, false, NULL, &box);
+    // TODO expose symbol
+    if (focused)
+        strcat(s, "*");
+    json_object *object = ipc_json_create_node(0, s, selected, false, NULL, &box);
     json_object_object_add(object, "num", json_object_new_int(0));
     json_object_object_add(object, "fullscreen_mode", json_object_new_int(0));
     json_object_object_add(object, "output", selMon->output ?

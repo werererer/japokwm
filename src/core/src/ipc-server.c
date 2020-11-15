@@ -401,8 +401,8 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
                             array,
                             ipc_json_describe_tag(
                                 tagsetGetTag(tagset, i),
-                                (tagset->selTags[0] & positionToFlag(i)),
-                                tagset->selTags[0]
+                                (tagset->focusedTag == i),
+                                (tagset->selTags[0] & positionToFlag(i))
                                 ));
                 }
                 const char * json_string = json_object_get_string(array);
