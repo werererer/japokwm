@@ -66,7 +66,7 @@ struct tag *tagsetFocusedTag(struct tagset *tagset)
 
 void toggleAddTag(struct tagset *tagset, unsigned int selTags)
 {
-    setSelTags(tagset, tagset->selTags[0] | selTags);
+    setSelTags(tagset, tagset->selTags[0] ^ selTags);
 }
 
 void pushSelTags(struct tagset *tagset, unsigned int selTags)

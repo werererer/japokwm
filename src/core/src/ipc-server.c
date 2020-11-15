@@ -22,7 +22,7 @@
 #include "server.h"
 #include "tagset.h"
 #include "client.h"
-
+#include "command.h"
 #include "monitor.h"
 #include "root.h"
 
@@ -268,7 +268,6 @@ int ipc_client_handle_readable(int client_fd, uint32_t mask, void *data) {
 }
 
 static void ipc_send_event(const char *json_string, enum ipc_command_type event) {
-    printf("SEND\n");
     struct ipc_client *client;
     for (size_t i = 0; i < ipc_client_list.length; i++) {
         client = ipc_client_list.items[i];
@@ -391,6 +390,9 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
 
     switch (payload_type) {
         case IPC_COMMAND:
+            executeCommand(buf);
+            ipc_send_reply(client, payload_type, "", strlen(""));
+            goto exit_cleanup;
             break;
         case IPC_GET_WORKSPACES:
             {

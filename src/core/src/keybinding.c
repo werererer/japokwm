@@ -2,10 +2,11 @@
 #include "tile/tileUtils.h"
 #include "utils/parseConfigUtils.h"
 
+static size_t modifiers;
 /*
  * convert mod to mask
  */
-static unsigned int modMask(unsigned int x)
+inline static unsigned int modMask(unsigned int x)
 {
     return 1 << x;
 }
@@ -14,6 +15,7 @@ static void modToString(char *res, unsigned int mod)
 {
     lua_getglobal(L, "mods");
     for (int i = 0; i < 7; i++) {
+        modifiers = mod;
         if ((mod & modMask(i)) != 0) {
             lua_rawgeti(L, -1, i+1);
             strcat(res, luaL_checkstring(L, -1));
@@ -104,4 +106,10 @@ bool keyPressed(int mods, int sym)
     symToBinding(bind, mods, sym);
     bool handled = processBinding(bind, "keys");
     return handled;
+}
+
+bool keyStateHasModifiers(size_t mods)
+{
+    printf("%lu\n", mods);
+    return modifiers & mods;
 }

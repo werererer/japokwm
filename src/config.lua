@@ -9,10 +9,10 @@ overlayColor = {0.65, 0.65, 0.65, 0.5}
 textColor = {0.003, 0.003, 0.003, 1.0}
 selOverlayColor = {}
 selTextColor = {}
-outerGap = 12
+outerGap = 20
 innerGap = 10
 
-tagNames = {"0:lol", "1:c", "2:b", "3:4", "4:5", "5:5", "6:7", "7:8"}
+tagNames = {"0:1", "1:c", "2:b", "3:4", "4:5", "5:5", "6:7", "7:8"}
 
 -- where to put things
 rules = {
@@ -66,7 +66,7 @@ keys = {
     -- {mod.." less",        function(n) tagmon(-1) end},
     {mod.." Return",      function(n) action.zoom() end},
     -- {mod.." s",           function(n) toggleOverlay() end},
-    {mod.." 1",           function(n) action.view(0) end},
+    {mod.." 1",           function(n) action.view(1) end},
     {mod.." 2",           function(n) action.view(2) end},
     {mod.." 3",           function(n) action.view(4) end},
     {mod.." 4",           function(n) action.view(8) end},
