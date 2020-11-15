@@ -46,6 +46,7 @@
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_output_v1.h>
 #include <wlr/types/wlr_xdg_shell.h>
+#include <wlr/types/wlr_server_decoration.h>
 #include <wlr/util/log.h>
 #include <wlr/xwayland.h>
 #include <xkbcommon/xkbcommon.h>
@@ -787,8 +788,14 @@ void setup(void)
     wl_list_init(&stack);
     wl_list_init(&independents);
     wl_list_init(&layerStack);
+
     server.xdgShell = wlr_xdg_shell_create(server.display);
     wl_signal_add(&server.xdgShell->events.new_surface, &new_xdg_surface);
+    // remove csd(client side decorations) completely from xdg based windows
+    wlr_server_decoration_manager_set_default_mode(
+            wlr_server_decoration_manager_create(server.display),
+            WLR_SERVER_DECORATION_MANAGER_MODE_SERVER);
+
     server.layerShell = wlr_layer_shell_v1_create(server.display);
     wl_signal_add(&server.layerShell->events.new_surface,
             &new_layer_shell_surface);
