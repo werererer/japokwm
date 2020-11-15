@@ -61,6 +61,7 @@
 #include "keybinding.h"
 #include "actions.h"
 #include "ipc-server.h"
+#include "root.h"
 
 typedef struct {
     struct wl_listener request_mode;
@@ -562,14 +563,19 @@ void maprequest(struct wl_listener *listener, void *data)
         case LayerShell:
             c->geom.x = 0;
             c->geom.y = 0;
-            if (c->surface.layer->current.desired_width)
+            if (c->surface.layer->current.desired_width) {
                 c->geom.width = c->surface.layer->current.desired_width;
-            else
+            }
+            else {
                 c->geom.width = selMon->output->width;
-            if (c->surface.layer->current.desired_height)
+            }
+
+            if (c->surface.layer->current.desired_height) {
                 c->geom.height = c->surface.layer->current.desired_height;
-            else
+            }
+            else {
                 c->geom.height = selMon->output->height;
+            }
             break;
         case X11Managed:
         case X11Unmanaged:

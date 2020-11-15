@@ -40,7 +40,7 @@ void arrange(struct monitor *m, bool reset)
     struct tagset *tagset = m->tagset;
     m->m = *wlr_output_layout_get_box(output_layout, m->output);
 
-    root.w = m->m;
+    setRootArea(m);
     containerSurroundGaps(&root.w, outerGap);
     if (selLayout(tagset).funcId) {
         struct client *c = NULL;

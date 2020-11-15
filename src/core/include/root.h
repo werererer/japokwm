@@ -2,6 +2,7 @@
 #define ROOT_H
 
 #include <wlr/types/wlr_box.h>
+#include "monitor.h"
 
 struct root {
     /* window area(area where windows can tile) */
@@ -10,4 +11,5 @@ struct root {
 };
 extern struct root root;
 
+void setRootArea(struct monitor *m);
 #endif /* ROOT_H */
