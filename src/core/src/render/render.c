@@ -146,7 +146,6 @@ static void renderLayerShell(struct monitor *m, enum zwlr_layer_shell_v1_layer l
             continue;
         if (c->surface.layer->current.layer != layer)
             continue;
-        printf("POPUPS: %i\n", wl_list_length(&c->surface.layer->popups));
 
         /* Only render visible clients which show on this monitor */
         if (!visibleon(c, c->mon) || !wlr_output_layout_intersects(

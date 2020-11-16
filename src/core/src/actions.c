@@ -1,10 +1,12 @@
 #include "actions.h"
-#include <unistd.h>
 #include "client.h"
-#include "tile/tileUtils.h"
-#include "server.h"
-#include <stdlib.h>
 #include "ipc-server.h"
+#include "server.h"
+#include "tile/tileUtils.h"
+#include <stdlib.h>
+#include <unistd.h>
+#include <wayland-util.h>
+#include <wlr/types/wlr_xdg_shell.h>
 
 static struct client *grabc = NULL;
 static int grabcx, grabcy; /* client-relative */
@@ -197,9 +199,37 @@ void motionnotify(uint32_t time)
     }
 
     if ((c = xytoclient(server.cursor->x, server.cursor->y))) {
+        switch (c->type) {
+            case XDGShell:
+                if (wl_list_length(&c->surface.xdg->popups)) {
+                    struct wlr_surface *s;
+                    s = wlr_xdg_surface_surface_at(c->surface.xdg, server.cursor->x, server.cursor->y, &sx, &sy);
+                    if (s) {
+                        surface = s;
+                    } else {
+                        surface = NULL;
+                    }
+                }
+                break;
+            case LayerShell:
+                if (wl_list_length(&c->surface.layer->popups)) {
+                    struct wlr_surface *s;
+                    wlr_layer_surface_v1_surface_at(c->surface.layer, server.cursor->x, server.cursor->y, &sx, &sy);
+                    if (s) {
+                        surface = s;
+                    } else {
+                        surface = NULL;
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+        if (surface == NULL) {
             surface = wlr_surface_surface_at(getWlrSurface(c),
                     server.cursor->x - c->geom.x - c->bw,
                     server.cursor->y - c->geom.y - c->bw, &sx, &sy);
+        }
     }
 
     /* If there's no client surface under the server.cursor, set the cursor image to a

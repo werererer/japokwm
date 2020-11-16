@@ -49,6 +49,7 @@ srcs = files(
   'src/ipc-server.c',
   'src/command.c',
   'src/stringop.c',
+  'src/popup.c',
 )
 libName = 'juliawm'
 wmlib = executable(libName,
