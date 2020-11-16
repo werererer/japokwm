@@ -203,7 +203,8 @@ void motionnotify(uint32_t time)
             case XDGShell:
                 if (wl_list_length(&c->surface.xdg->popups)) {
                     struct wlr_surface *s;
-                    s = wlr_xdg_surface_surface_at(c->surface.xdg, server.cursor->x, server.cursor->y, &sx, &sy);
+                    s = wlr_xdg_surface_surface_at(c->surface.xdg,
+                            server.cursor->x, server.cursor->y, &sx, &sy);
                     if (s) {
                         surface = s;
                     } else {
@@ -214,7 +215,8 @@ void motionnotify(uint32_t time)
             case LayerShell:
                 if (wl_list_length(&c->surface.layer->popups)) {
                     struct wlr_surface *s;
-                    wlr_layer_surface_v1_surface_at(c->surface.layer, server.cursor->x, server.cursor->y, &sx, &sy);
+                    s = wlr_layer_surface_v1_surface_at(c->surface.layer,
+                            server.cursor->x, server.cursor->y, &sx, &sy);
                     if (s) {
                         surface = s;
                     } else {
