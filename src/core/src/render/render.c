@@ -1,10 +1,12 @@
 #include "render/render.h"
+#include "client.h"
 #include "tile/tileUtils.h"
 #include "tile/tileTexture.h"
 #include <stdio.h>
 #include <wayland-util.h>
 #include <wlr/util/edges.h>
 #include "root.h"
+#include "popup.h"
 
 struct wlr_renderer *drw;
 struct renderData renderData;
@@ -77,7 +79,7 @@ static void renderClients(struct monitor *m)
     struct client *c, *sel = selClient();
     const float *color;
     double ox, oy;
-    int i, w, h;
+    int w, h;
     struct renderData rdata;
     struct wlr_box *borders;
     struct wlr_surface *surface;
@@ -104,7 +106,7 @@ static void renderClients(struct monitor *m)
 
         /* Draw window borders */
         color = (c == sel) ? focusColor : borderColor;
-        for (i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) {
             scalebox(&borders[i], m->output->scale);
             wlr_render_rect(drw, &borders[i], color,
                     m->output->transform_matrix);
@@ -120,17 +122,7 @@ static void renderClients(struct monitor *m)
         rdata.x = c->geom.x + c->bw;
         rdata.y = c->geom.y + c->bw;
 
-        switch (c->type) {
-            case XDGShell:
-                wlr_xdg_surface_for_each_surface(c->surface.xdg, render, &rdata);
-                break;
-            case X11Managed:
-            case X11Unmanaged:
-                wlr_surface_for_each_surface(c->surface.xwayland->surface, render, &rdata);
-                break;
-            default:
-                break;
-        }
+        render(getWlrSurface(c), 0, 0, &rdata);
     }
 }
 
@@ -139,7 +131,6 @@ static void renderLayerShell(struct monitor *m, enum zwlr_layer_shell_v1_layer l
     struct client *c;
     struct renderData rdata; 
     /* Each subsequent window we render is rendered on top of the last. Because
-     * k
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each_reverse(c, &layerStack, llink) {
         if (c->type != LayerShell)
@@ -162,8 +153,7 @@ static void renderLayerShell(struct monitor *m, enum zwlr_layer_shell_v1_layer l
         rdata.x = c->geom.x + c->bw;
         rdata.y = c->geom.y + c->bw;
 
-        wlr_surface_for_each_surface(getWlrSurface(c), render, &rdata);
-        wlr_layer_surface_v1_for_each_surface(c->surface.layer, render, &rdata);
+        render(getWlrSurface(c), 0, 0, &rdata);
     }
 }
 
@@ -202,6 +192,20 @@ static void renderIndependents(struct wlr_output *output)
     }
 }
 
+static void renderPopups(struct monitor *m) {
+    struct xdg_popup *popup;
+    wl_list_for_each_reverse(popup, &popups, link) {
+        struct timespec now;
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        struct renderData rdata;
+        rdata.output = m->output;
+        rdata.when = &now;
+        rdata.x = popup->x;
+        rdata.y = popup->y;
+        render(popup->xdg->surface, 0, 0, &rdata);
+    }
+}
+
 Container posTextureToContainer(struct posTexture *pTexture)
 {
     Container c;
@@ -229,7 +233,8 @@ void renderFrame(struct wl_listener *listener, void *data)
             arrange(selMon, false);
             struct client *c;
             wl_list_for_each(c, &layerStack, llink) {
-                wlr_layer_surface_v1_configure(c->surface.layer, selMon->output->width, selMon->output->height);
+                wlr_layer_surface_v1_configure(c->surface.layer,
+                        selMon->output->width, selMon->output->height);
             }
         }
     }
@@ -258,6 +263,7 @@ void renderFrame(struct wl_listener *listener, void *data)
         renderIndependents(m->output);
         renderLayerShell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP);
         renderLayerShell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
+        renderPopups(m);
 
         /* render all textures in list */
         wlr_list_for_each(&renderData.textures, renderTexture);

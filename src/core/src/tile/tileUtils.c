@@ -23,9 +23,9 @@ struct containersInfo containersInfo;
  * the wlr_fbox has includes the window size in percent.
  * It will we mulitiplicated with the screen width and height
  * */
-static struct wlr_box getAbsoluteBox(struct monitor *m, struct wlr_fbox b)
+static struct wlr_box getAbsoluteBox(struct wlr_box box, struct wlr_fbox b)
 {
-    struct wlr_box w = root.w;
+    struct wlr_box w = box;
     w.x = w.width * b.x + w.x;
     w.y = w.height * b.y + w.y;
     w.width = w.width * b.width;
@@ -85,7 +85,7 @@ void arrange(struct monitor *m, bool reset)
             lua_pop(L, 1);
             containersInfo.id = luaL_ref(L, LUA_REGISTRYINDEX);
 
-            struct wlr_box box = getAbsoluteBox(m, con);
+            struct wlr_box box = getAbsoluteBox(root.w, con);
             containerSurroundGaps(&box, innerGap);
             resize(c, box.x, box.y, box.width, box.height, false);
             i++;
@@ -108,10 +108,18 @@ void resize(struct client *c, int x, int y, int w, int h, bool interact)
      * the new size, then commit any movement that was prepared.
      */
     struct wlr_box box;
-    box.x = x;
-    box.y = y;
-    box.width = w;
-    box.height = h;
+    // layershell based programs usually don't get borders
+    if (c->type != LayerShell) {
+        box.x = x + c->bw;
+        box.y = y + c->bw;
+        box.width = w - 2 * c->bw;
+        box.height = h - 2 * c->bw;
+    } else {
+        box.x = x;
+        box.y = y;
+        box.width = w;
+        box.height = h;
+    }
 
     c->geom = box;
     applybounds(c, box);
@@ -120,17 +128,16 @@ void resize(struct client *c, int x, int y, int w, int h, bool interact)
     switch (c->type) {
         case XDGShell:
             c->resize = wlr_xdg_toplevel_set_size(c->surface.xdg,
-                    c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
+                    c->geom.width, c->geom.height);
             break;
         case LayerShell:
             wlr_layer_surface_v1_configure(c->surface.layer,
-                    c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
+                    c->geom.width, c->geom.height);
             break;
         case X11Managed:
         case X11Unmanaged:
             wlr_xwayland_surface_configure(c->surface.xwayland,
-                    c->geom.x, c->geom.y,
-                    c->geom.width - 2 * c->bw, c->geom.height - 2 * c->bw);
+                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
     }
 }
 

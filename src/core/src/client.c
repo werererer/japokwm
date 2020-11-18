@@ -11,7 +11,6 @@
 //global variables
 struct wl_list clients; /* tiling order */
 struct wl_list focusStack;  /* focus order */
-struct wl_list hjjjk;  /* focus order */
 struct wl_list stack;   /* stacking z-order */
 struct wl_list independents;
 struct wl_list layerStack;   /* stacking z-order */

@@ -63,6 +63,7 @@
 #include "actions.h"
 #include "ipc-server.h"
 #include "root.h"
+#include "popup.h"
 
 typedef struct {
     struct wl_listener request_mode;
@@ -270,7 +271,7 @@ void createnotify(struct wl_listener *listener, void *data)
         return;
 
     /* Allocate a Client for this surface */
-    c = xdg_surface->data = calloc(1, sizeof(*c));
+    c = xdg_surface->data = calloc(1, sizeof(struct client));
     c->surface.xdg = xdg_surface;
     c->bw = borderPx;
     c->type = XDGShell;
@@ -289,6 +290,9 @@ void createnotify(struct wl_listener *listener, void *data)
     wl_signal_add(&xdg_surface->events.unmap, &c->unmap);
     c->destroy.notify = destroynotify;
     wl_signal_add(&xdg_surface->events.destroy, &c->destroy);
+    /* popups */
+    c->new_popup.notify = popup_handle_new_popup;
+    wl_signal_add(&xdg_surface->events.new_popup, &c->new_popup);
 }
 
 void createnotifyLayerShell(struct wl_listener *listener, void *data)
@@ -298,8 +302,9 @@ void createnotifyLayerShell(struct wl_listener *listener, void *data)
     struct wlr_layer_surface_v1 *layer_surface = data;
     struct client *c;
 
+    printf("LAYER SHELL\n");
     /* Allocate a Client for this surface */
-    c = layer_surface->data = calloc(1, sizeof(*c));
+    c = layer_surface->data = calloc(1, sizeof(struct client));
     c->surface.layer = layer_surface;
     c->bw = 0;
     c->type = LayerShell;
@@ -316,6 +321,9 @@ void createnotifyLayerShell(struct wl_listener *listener, void *data)
     wl_signal_add(&layer_surface->events.destroy, &c->destroy);
     // TODO always resize when mon size is changed
     wlr_layer_surface_v1_configure(c->surface.layer, selMon->output->width, selMon->output->height);
+    /* popups */
+    c->new_popup.notify = popup_handle_new_popup;
+    wl_signal_add(&layer_surface->events.new_popup, &c->new_popup);
 }
 
 void createpointer(struct wlr_input_device *device)
@@ -386,6 +394,7 @@ void destroyxdeco(struct wl_listener *listener, void *data)
     free(d);
 
 }
+
 struct monitor *dirtomon(int dir)
 {
     struct monitor *m;
@@ -550,6 +559,7 @@ void maprequest(struct wl_listener *listener, void *data)
     if (c->type != LayerShell) {
         wl_list_insert(&clients, &c->link);
     } else {
+        if (c->surface.xdg->role) 
         wl_list_insert(&layerStack, &c->llink);
     }
     updateHiddenStatus();
@@ -788,6 +798,7 @@ void setup(void)
     wl_list_init(&stack);
     wl_list_init(&independents);
     wl_list_init(&layerStack);
+    wl_list_init(&popups);
 
     server.xdgShell = wlr_xdg_shell_create(server.display);
     wl_signal_add(&server.xdgShell->events.new_surface, &new_xdg_surface);
@@ -876,6 +887,7 @@ void sigchld(int unused)
 
 void unmapnotify(struct wl_listener *listener, void *data)
 {
+    printf("unmap\n");
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
     tagsetDestroy(c->tagset);

@@ -3,6 +3,7 @@
 #include "ipc-server.h"
 #include "server.h"
 #include "tile/tileUtils.h"
+#include "xdg-shell-protocol.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <wayland-util.h>
@@ -202,26 +203,23 @@ void motionnotify(uint32_t time)
         switch (c->type) {
             case XDGShell:
                 if (wl_list_length(&c->surface.xdg->popups)) {
-                    struct wlr_surface *s;
-                    s = wlr_xdg_surface_surface_at(c->surface.xdg,
-                            server.cursor->x, server.cursor->y, &sx, &sy);
-                    if (s) {
-                        surface = s;
-                    } else {
-                        surface = NULL;
-                    }
+                    surface = wlr_surface_surface_at(wlr_surface_get_root_surface(c->surface.xdg->surface), server.cursor->x, server.cursor->y, &sx, &sy);
+                    surface = wlr_xdg_surface_surface_at(
+                            c->surface.xdg,
+                            /* absolute mouse position to relative in regards to
+                             * the client */
+                            server.cursor->x - c->geom.x,
+                            server.cursor->y - c->geom.y,
+                            &sx, &sy);
                 }
                 break;
             case LayerShell:
                 if (wl_list_length(&c->surface.layer->popups)) {
-                    struct wlr_surface *s;
-                    s = wlr_layer_surface_v1_surface_at(c->surface.layer,
-                            server.cursor->x, server.cursor->y, &sx, &sy);
-                    if (s) {
-                        surface = s;
-                    } else {
-                        surface = NULL;
-                    }
+                    surface = wlr_layer_surface_v1_surface_at(
+                            c->surface.layer,
+                            server.cursor->x - c->geom.x,
+                            server.cursor->y - c->geom.y,
+                            &sx, &sy);
                 }
                 break;
             default:

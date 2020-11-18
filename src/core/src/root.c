@@ -5,6 +5,7 @@
 
 struct root root;
 
+// TODO: Reduce side effects
 void setRootArea(struct monitor *m)
 {
     root.w = m->m;

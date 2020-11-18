@@ -24,6 +24,7 @@ struct client {
     struct wl_listener map;
     struct wl_listener unmap;
     struct wl_listener destroy;
+    struct wl_listener new_popup;
     struct wlr_box geom;  /* layout-relative, includes border */
     struct monitor *mon;
     enum shell type;
