@@ -226,28 +226,16 @@ void motionnotify(uint32_t time)
             default:
                 break;
         }
-        // 
-        bool nowPopup = surface == getWlrSurface(c) || !surface;
-        if (nowPopup && isPopup) {
+        if (!surface) {
             struct xdg_popup *popup, *tmp;
             wl_list_for_each_safe(popup, tmp, &popups, link) {
-                printf("x: %i\n", popup->x);
-                printf("y: %i\n", popup->y);
                 wlr_xdg_popup_destroy(popup->xdg);
             }
-        }
-        if (!surface) {
             surface = wlr_surface_surface_at(getWlrSurface(c),
                     server.cursor->x - c->geom.x - c->bw,
                     server.cursor->y - c->geom.y - c->bw, &sx, &sy);
         }
     }
-
-    /* /1* Update selMon (even while dragging a window) *1/ */
-    /* if (sloppyFocus && !isPopup) { */
-    /*     focusClient(selClient(), xytoclient(server.cursor->x, server.cursor->y), false); */
-    /* } */
-
 
     /* If there's no client surface under the server.cursor, set the cursor image to a
      * default. This is what makes the cursor image appear when you move it
