@@ -7,6 +7,8 @@
 #include "utils/coreUtils.h"
 #include "server.h"
 #include "tile/tileUtils.h"
+#include "surface.h"
+#include "popup.h"
 
 //global variables
 struct wl_list clients; /* tiling order */
@@ -14,6 +16,7 @@ struct wl_list focusStack;  /* focus order */
 struct wl_list stack;   /* stacking z-order */
 struct wl_list independents;
 struct wl_list layerStack;   /* stacking z-order */
+struct wl_list surfaces;
 struct wlr_output_layout *output_layout;
 struct wlr_box sgeom;
 
@@ -187,6 +190,16 @@ struct client *xytoclient(double x, double y)
     }
     return NULL;
 }
+
+/* // TODO: move to other place */
+/* struct wlr_surface *xytosurface(double x, double y) */
+/* { */
+/*     struct surface *surface; */
+/*     wl_list_for_each(surface, &surfaces, slink) { */
+/*         if () */ 
+/*     } */
+/*     return NULL; */
+/* } */
 
 struct wlr_surface *getWlrSurface(struct client *c)
 {

@@ -1,6 +1,7 @@
 #include "actions.h"
 #include "client.h"
 #include "ipc-server.h"
+#include "monitor.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "xdg-shell-protocol.h"
@@ -177,10 +178,6 @@ void motionnotify(uint32_t time)
     struct wlr_surface *surface = NULL;
     struct client *c;
 
-    /* Update selMon (even while dragging a window) */
-    if (sloppyFocus)
-        selMon = xytomon(server.cursor->x, server.cursor->y);
-
     /* If we are currently grabbing the mouse, handle and return */
     switch (server.cursorMode) {
         case CurMove:
@@ -199,11 +196,12 @@ void motionnotify(uint32_t time)
             break;
     }
 
-    if ((c = xytoclient(server.cursor->x, server.cursor->y))) {
+    bool isPopup = false;
+    if ((c = selClient())) {
         switch (c->type) {
             case XDGShell:
-                if (wl_list_length(&c->surface.xdg->popups)) {
-                    surface = wlr_surface_surface_at(wlr_surface_get_root_surface(c->surface.xdg->surface), server.cursor->x, server.cursor->y, &sx, &sy);
+                isPopup = !wl_list_empty(&c->surface.xdg->popups);
+                if (isPopup) {
                     surface = wlr_xdg_surface_surface_at(
                             c->surface.xdg,
                             /* absolute mouse position to relative in regards to
@@ -214,7 +212,9 @@ void motionnotify(uint32_t time)
                 }
                 break;
             case LayerShell:
-                if (wl_list_length(&c->surface.layer->popups)) {
+                isPopup = !wl_list_empty(&c->surface.layer->popups);
+                if (isPopup) {
+                    isPopup = true;
                     surface = wlr_layer_surface_v1_surface_at(
                             c->surface.layer,
                             server.cursor->x - c->geom.x,
@@ -232,6 +232,12 @@ void motionnotify(uint32_t time)
         }
     }
 
+    /* /1* Update selMon (even while dragging a window) *1/ */
+    /* if (sloppyFocus && !isPopup) { */
+    /*     focusClient(selClient(), xytoclient(server.cursor->x, server.cursor->y), false); */
+    /* } */
+
+
     /* If there's no client surface under the server.cursor, set the cursor image to a
      * default. This is what makes the cursor image appear when you move it
      * off of a client or over its border. */
@@ -240,6 +246,8 @@ void motionnotify(uint32_t time)
                 "left_ptr", server.cursor);
     }
 
+    if (!isPopup)
+        c = xytoclient(server.cursor->x, server.cursor->y);
     pointerfocus(c, surface, sx, sy, time);
 }
 

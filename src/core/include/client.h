@@ -14,6 +14,7 @@ struct client {
     struct wl_list flink;
     struct wl_list slink;
     struct wl_list llink;
+    struct wl_list plink;
     union {
         struct wlr_xdg_surface *xdg;
         struct wlr_layer_surface_v1 *layer;
@@ -51,6 +52,7 @@ struct client *firstClient();
 /* get last visible client */
 struct client *lastClient();
 struct client *xytoclient(double x, double y);
+struct wlr_surface *xytosurface(double x, double y);
 void applyrules(struct client *c);
 void focusClient(struct client *old, struct client *c, bool lift);
 void focusTopClient(struct client *old, bool lift);

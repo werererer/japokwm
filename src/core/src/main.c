@@ -64,6 +64,7 @@
 #include "ipc-server.h"
 #include "root.h"
 #include "popup.h"
+#include "surface.h"
 
 typedef struct {
     struct wl_listener request_mode;
@@ -799,6 +800,7 @@ void setup(void)
     wl_list_init(&independents);
     wl_list_init(&layerStack);
     wl_list_init(&popups);
+    wl_list_init(&surfaces);
 
     server.xdgShell = wlr_xdg_shell_create(server.display);
     wl_signal_add(&server.xdgShell->events.new_surface, &new_xdg_surface);
