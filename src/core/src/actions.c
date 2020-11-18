@@ -5,10 +5,12 @@
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "xdg-shell-protocol.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <wayland-util.h>
 #include <wlr/types/wlr_xdg_shell.h>
+#include "popup.h"
 
 static struct client *grabc = NULL;
 static int grabcx, grabcy; /* client-relative */
@@ -214,7 +216,6 @@ void motionnotify(uint32_t time)
             case LayerShell:
                 isPopup = !wl_list_empty(&c->surface.layer->popups);
                 if (isPopup) {
-                    isPopup = true;
                     surface = wlr_layer_surface_v1_surface_at(
                             c->surface.layer,
                             server.cursor->x - c->geom.x,
@@ -225,7 +226,17 @@ void motionnotify(uint32_t time)
             default:
                 break;
         }
-        if (surface == NULL) {
+        // 
+        bool nowPopup = surface == getWlrSurface(c) || !surface;
+        if (nowPopup && isPopup) {
+            struct xdg_popup *popup, *tmp;
+            wl_list_for_each_safe(popup, tmp, &popups, link) {
+                printf("x: %i\n", popup->x);
+                printf("y: %i\n", popup->y);
+                wlr_xdg_popup_destroy(popup->xdg);
+            }
+        }
+        if (!surface) {
             surface = wlr_surface_surface_at(getWlrSurface(c),
                     server.cursor->x - c->geom.x - c->bw,
                     server.cursor->y - c->geom.y - c->bw, &sx, &sy);
