@@ -56,19 +56,21 @@ void arrange(struct monitor *m, bool reset)
             lua_pcall(L, 1, 0, 0);
         }
 
+        /* update layout aquired from that was set with the arrange function */
         lua_getglobal(L, "update");
         lua_pushinteger(L, n);
         lua_pcall(L, 1, 1, 0);
         containersInfo.n = lua_rawlen(L, -1);
         containersInfo.id = luaL_ref(L, LUA_REGISTRYINDEX);
+
         updateHiddenStatus();
+
         int i = 1;
         wl_list_for_each(c, &clients, link) {
             if (!visibleon(c, m) || c->floating)
                 continue;
             struct wlr_fbox con;
             // get lua container
-            // TODO: create function
             lua_rawgeti(L, LUA_REGISTRYINDEX, containersInfo.id);
             lua_rawgeti(L, -1, MIN(i, containersInfo.n));
             lua_rawgeti(L, -1, 1);
@@ -110,17 +112,10 @@ void resize(struct client *c, int x, int y, int w, int h, bool interact)
      */
     struct wlr_box box;
     // layershell based programs usually don't get borders
-    if (c->type != LayerShell) {
-        box.x = x + c->bw;
-        box.y = y + c->bw;
-        box.width = w - 2 * c->bw;
-        box.height = h - 2 * c->bw;
-    } else {
-        box.x = x;
-        box.y = y;
-        box.width = w;
-        box.height = h;
-    }
+    box.x = x;
+    box.y = y;
+    box.width = w;
+    box.height = h;
 
     c->geom = box;
     applybounds(c, box);
@@ -147,6 +142,11 @@ void updateHiddenStatus()
     struct client *c;
     int i = 0;
     wl_list_for_each(c, &clients, link) {
+        // floating windows are always visible
+        if (c->floating == true) {
+            c->hidden = false;
+            continue;
+        }
         if (existon(c, selMon))
         {
             if (i < containersInfo.n)

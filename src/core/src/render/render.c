@@ -86,7 +86,7 @@ static void renderClients(struct monitor *m)
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each_reverse(c, &clients, link) {
-        /* Only render visible clients which show on this monitor */
+        /* Only render visible clients which are shown on this monitor */
         if (!visibleon(c, c->mon) || !wlr_output_layout_intersects(
                     output_layout, m->output, &c->geom))
             continue;
