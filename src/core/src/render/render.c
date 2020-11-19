@@ -200,8 +200,8 @@ static void renderPopups(struct monitor *m) {
         struct renderData rdata;
         rdata.output = m->output;
         rdata.when = &now;
-        rdata.x = popup->x;
-        rdata.y = popup->y;
+        rdata.x = popup->geom.x;
+        rdata.y = popup->geom.y;
         render(popup->xdg->surface, 0, 0, &rdata);
     }
 }

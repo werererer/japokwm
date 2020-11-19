@@ -232,18 +232,18 @@ void motionnotify(uint32_t time)
                 wlr_xdg_popup_destroy(popup->xdg);
             }
             surface = wlr_surface_surface_at(getWlrSurface(c),
-                    server.cursor->x - c->geom.x - c->bw,
-                    server.cursor->y - c->geom.y - c->bw, &sx, &sy);
+                    server.cursor->x - c->geom.x,
+                    server.cursor->y - c->geom.y, &sx, &sy);
         }
     }
 
     /* If there's no client surface under the server.cursor, set the cursor image to a
      * default. This is what makes the cursor image appear when you move it
      * off of a client or over its border. */
-    if (!surface) {
+    /* if (!surface) { */
         wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
                 "left_ptr", server.cursor);
-    }
+    /* } */
 
     if (!isPopup)
         c = xytoclient(server.cursor->x, server.cursor->y);
