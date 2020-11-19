@@ -6,6 +6,7 @@
 #include <wayland-util.h>
 #include <wlr/types/wlr_foreign_toplevel_management_v1.h>
 #include <wlr/types/wlr_box.h>
+#include <wlr/types/wlr_xdg_shell.h>
 #include <stdlib.h>
 
 #include "monitor.h"

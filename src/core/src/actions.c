@@ -226,10 +226,20 @@ void motionnotify(uint32_t time)
             default:
                 break;
         }
+
+        // if surface and subsurface exit
         if (!surface) {
+            // if client under cursor exist
+            struct client *c = xytoclient(server.cursor->x, server.cursor->y);
+            if (c) {
+                isPopup = isPopup && surface == selClient()->surface.xdg->surface;
+            }
+        }
+
+        if (!surface && !isPopup) {
             struct xdg_popup *popup, *tmp;
             wl_list_for_each_safe(popup, tmp, &popups, link) {
-                wlr_xdg_popup_destroy(popup->xdg);
+                wlr_xdg_popup_destroy(popup->xdg->base);
             }
             surface = wlr_surface_surface_at(getWlrSurface(c),
                     server.cursor->x - c->geom.x,

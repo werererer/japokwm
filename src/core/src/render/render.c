@@ -202,7 +202,7 @@ static void renderPopups(struct monitor *m) {
         rdata.when = &now;
         rdata.x = popup->geom.x;
         rdata.y = popup->geom.y;
-        render(popup->xdg->surface, 0, 0, &rdata);
+        render(popup->xdg->base->surface, 0, 0, &rdata);
     }
 }
 
@@ -229,6 +229,7 @@ void renderFrame(struct wl_listener *listener, void *data)
     if (selMon) {
         struct wlr_box b = selMon->m;
         selMon->m = *wlr_output_layout_get_box(output_layout, selMon->output);
+        // resize clients
         if (selMon->m.width != b.width || selMon->m.height != b.height) {
             arrange(selMon, false);
             struct client *c;
