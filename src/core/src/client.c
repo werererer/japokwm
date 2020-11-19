@@ -16,9 +16,31 @@ struct wl_list focusStack;  /* focus order */
 struct wl_list stack;   /* stacking z-order */
 struct wl_list independents;
 struct wl_list layerStack;   /* stacking z-order */
-struct wl_list surfaces;
 struct wlr_output_layout *output_layout;
-struct wlr_box sgeom;
+
+void addClientToFocusStack(struct client *c)
+{
+    if (c) {
+        wl_list_insert(&focusStack, &c->flink);
+    }
+}
+
+void addClientToStack(struct client *c)
+{
+    if (c) {
+        if (c->floating) {
+            wl_list_insert(&stack, &c->slink);
+        } else {
+            /* Insert client after the last floating client */
+            struct client *client;
+            wl_list_for_each(client, &stack, slink) {
+                if (!client->floating)
+                    break;
+            }
+            wl_list_insert(client->slink.prev, &c->slink);
+        }
+    }
+}
 
 void applybounds(struct client *c, struct wlr_box bbox)
 {
@@ -183,7 +205,7 @@ struct client *xytoclient(double x, double y)
     /* Find the topmost visible client (if any) at point (x, y), including
      * borders. This relies on stack being ordered from top to bottom. */
     struct client *c;
-    wl_list_for_each(c, &focusStack, flink) {
+    wl_list_for_each(c, &stack, slink) {
         if (visibleon(c, c->mon) && wlr_box_contains_point(&c->geom, x, y)) {
             return c;
         }
@@ -191,18 +213,10 @@ struct client *xytoclient(double x, double y)
     return NULL;
 }
 
-/* // TODO: move to other place */
-/* struct wlr_surface *xytosurface(double x, double y) */
-/* { */
-/*     struct surface *surface; */
-/*     wl_list_for_each(surface, &surfaces, slink) { */
-/*         if () */ 
-/*     } */
-/*     return NULL; */
-/* } */
-
 struct wlr_surface *getWlrSurface(struct client *c)
 {
+    if (!c)
+        return NULL;
     switch (c->type) {
         case XDGShell:
             return c->surface.xdg->surface;
@@ -233,13 +247,15 @@ bool visibleon(struct client *c, struct monitor *m)
 {
     // LayerShell based programs are visible on all workspaces
     // TODO: more sophisticated approach with sticky windows needed
-    if (c->type == LayerShell && c->mon == m) {
-        return true;
-    }
-
     if (m && c) {
-        if (c->mon == m && !c->hidden) {
-            return c->tagset->selTags[0] & m->tagset->selTags[0];
+        if (c->mon == m) {
+            if (c->type == LayerShell && c->mon == m) {
+                return true;
+            }
+
+            if (!c->hidden) {
+                return c->tagset->selTags[0] & m->tagset->selTags[0];
+            }
         }
     }
     return false;
@@ -284,12 +300,14 @@ static void unfocusClient(struct client *c)
 
 void focusClient(struct client *old, struct client *c, bool lift)
 {
+    if (old == c)
+        return;
+
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
-    /* Raise client in stacking order if requested */
-    if (c && lift) {
-        wl_list_remove(&c->slink);
-        wl_list_insert(&stack, &c->slink);
-    }
+
+    if (lift)
+        liftClient(c);
+
     unfocusClient(old);
     /* Update wlroots' keyboard focus */
     if (!c) {
@@ -304,7 +322,7 @@ void focusClient(struct client *old, struct client *c, bool lift)
 
     /* Put the new client atop the focus stack */
     wl_list_remove(&c->flink);
-    wl_list_insert(&focusStack, &c->flink);
+    addClientToFocusStack(c);
 
     /* Activate the new client */
     switch (c->type) {
@@ -333,4 +351,12 @@ void focusTopClient(struct client *old, bool lift)
         }
     if (focus)
         focusClient(old, c, lift);
+}
+
+void liftClient(struct client *c)
+{
+    if (c) {
+        wl_list_remove(&c->slink);
+        addClientToStack(c);
+    }
 }

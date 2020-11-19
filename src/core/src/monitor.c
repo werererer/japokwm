@@ -74,7 +74,6 @@ void createMonitor(struct wl_listener *listener, void *data)
      * output (such as DPI, scale factor, manufacturer, etc).
      */
     wlr_output_layout_add_auto(output_layout, output);
-    sgeom = *wlr_output_layout_get_box(output_layout, NULL);
 }
 
 void setMonitor(struct monitor *m)

@@ -53,9 +53,13 @@ struct client *firstClient();
 struct client *lastClient();
 struct client *xytoclient(double x, double y);
 struct wlr_surface *xytosurface(double x, double y);
+/* add new client and focus and raise it */
+void addClientToFocusStack(struct client *c);
+void addClientToStack(struct client *c);
 void applyrules(struct client *c);
 void focusClient(struct client *old, struct client *c, bool lift);
 void focusTopClient(struct client *old, bool lift);
+void liftClient(struct client *c);
 
 extern struct wl_list clients; /* tiling order */
 extern struct wl_list focusStack;  /* focus order */
@@ -63,7 +67,6 @@ extern struct wl_list stack;   /* stacking z-order */
 extern struct wl_list independents;
 extern struct wl_list layerStack;   /* stacking z-order */
 extern struct wlr_output_layout *output_layout;
-extern struct wlr_box sgeom;
 
 struct wlr_surface *getWlrSurface(struct client *c);
 #endif

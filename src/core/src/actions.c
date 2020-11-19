@@ -32,7 +32,7 @@ static void pointerfocus(struct client *c, struct wlr_surface *surface,
         return;
     }
 
-    /* If surface is already focused, only notify of motion */
+    /* If surface is already focused, only notify motion */
     if (surface == server.seat->pointer_state.focused_surface) {
         wlr_seat_pointer_notify_motion(server.seat, time, sx, sy);
         return;
@@ -171,9 +171,11 @@ static void setFloating(struct client *c, bool floating)
     if (c->floating == floating)
         return;
     c->floating = floating;
+    liftClient(c);
     arrange(c->mon, false);
 }
 
+// TODO optimize this function
 void motionnotify(uint32_t time)
 {
     double sx = 0, sy = 0;
@@ -229,10 +231,11 @@ void motionnotify(uint32_t time)
 
         // if surface and subsurface exit
         if (!surface) {
-            // if client under cursor exist
+            isPopup = false;
+        } else if (surface == selClient()->surface.xdg->surface) {
             struct client *c = xytoclient(server.cursor->x, server.cursor->y);
             if (c) {
-                isPopup = isPopup && surface == selClient()->surface.xdg->surface;
+                isPopup = isPopup && surface == c->surface.xdg->surface;
             }
         }
 
@@ -250,14 +253,15 @@ void motionnotify(uint32_t time)
     /* If there's no client surface under the server.cursor, set the cursor image to a
      * default. This is what makes the cursor image appear when you move it
      * off of a client or over its border. */
-    /* if (!surface) { */
-        wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
-                "left_ptr", server.cursor);
-    /* } */
+    wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
+            "left_ptr", server.cursor);
 
-    if (!isPopup)
+    // if there is no popup use the selected client's surface
+    if (!isPopup) {
         c = xytoclient(server.cursor->x, server.cursor->y);
-    pointerfocus(c, surface, sx, sy, time);
+        surface = getWlrSurface(c);
+    }
+        pointerfocus(c, surface, sx, sy, time);
 }
 
 int tag(lua_State *L)
