@@ -123,7 +123,6 @@ void resize(struct client *c, int x, int y, int w, int h, bool interact)
     /* wlroots makes this a no-op if size hasn't changed */
     switch (c->type) {
         case XDGShell:
-            wlr_xdg_toplevel_set_resizing(c->surface.xdg, true);
             c->resize = wlr_xdg_toplevel_set_size(c->surface.xdg,
                     c->geom.width, c->geom.height);
             break;

@@ -219,7 +219,6 @@ Container posTextureToContainer(struct posTexture *pTexture)
 /* called from a wl_signal in setup() */
 void renderFrame(struct wl_listener *listener, void *data)
 {
-    struct client *c;
     bool render = true;
 
     /* This function is called every time an output is ready to display a frame,
@@ -242,12 +241,6 @@ void renderFrame(struct wl_listener *listener, void *data)
 
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
-    wl_list_for_each(c, &stack, slink) {
-        if (c->resize) {
-            wlr_surface_send_frame_done(getWlrSurface(c), &now);
-            render = false;
-        }
-    }
 
     /* wlr_output_attach_render makes the OpenGL context current. */
     if (!wlr_output_attach_render(m->output, NULL))

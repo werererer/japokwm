@@ -154,6 +154,8 @@ int moveResize(lua_State *L)
         case CurResize:
             /* Doesn't work for X11 output - the next absolute motion event
              * returns the cursor to where it started */
+            grabcx = server.cursor->x - grabc->geom.x;
+            grabcy = server.cursor->y - grabc->geom.y;
             wlr_cursor_warp_closest(server.cursor, NULL,
                     grabc->geom.x + grabc->geom.width,
                     grabc->geom.y + grabc->geom.height);

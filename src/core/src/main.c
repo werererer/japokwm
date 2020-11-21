@@ -215,8 +215,9 @@ void commitnotify(struct wl_listener *listener, void *data)
     switch (c->type) {
         case XDGShell:
             /* mark a pending resize as completed */
-            if (c->resize && c->resize <= c->surface.xdg->configure_serial)
+            if (c->resize && c->resize <= c->surface.xdg->configure_serial) {
                 c->resize = 0;
+            }
             break;
         case LayerShell:
             /* mark a pending resize as completed */
@@ -303,7 +304,6 @@ void createnotifyLayerShell(struct wl_listener *listener, void *data)
     struct wlr_layer_surface_v1 *layer_surface = data;
     struct client *c;
 
-    printf("LAYER SHELL\n");
     /* Allocate a Client for this surface */
     c = layer_surface->data = calloc(1, sizeof(struct client));
     c->surface.layer = layer_surface;
@@ -320,7 +320,6 @@ void createnotifyLayerShell(struct wl_listener *listener, void *data)
     wl_signal_add(&layer_surface->events.unmap, &c->unmap);
     c->destroy.notify = destroynotify;
     wl_signal_add(&layer_surface->events.destroy, &c->destroy);
-    // TODO always resize when mon size is changed
     wlr_layer_surface_v1_configure(c->surface.layer, selMon->output->width, selMon->output->height);
     /* popups */
     c->new_popup.notify = popup_handle_new_popup;
@@ -348,7 +347,6 @@ void createxdeco(struct wl_listener *listener, void *data)
 
     getxdecomode(&d->request_mode, wlr_deco);
 }
-
 
 void cursorframe(struct wl_listener *listener, void *data)
 {
@@ -542,6 +540,7 @@ void keypressmod(struct wl_listener *listener, void *data)
 
 void maprequest(struct wl_listener *listener, void *data)
 {
+    printf("map\n");
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
     // TODO How many tags are there?
@@ -560,7 +559,6 @@ void maprequest(struct wl_listener *listener, void *data)
     if (c->type != LayerShell) {
         wl_list_insert(&clients, &c->link);
     } else {
-        if (c->surface.xdg->role) 
         wl_list_insert(&layerStack, &c->llink);
     }
     updateHiddenStatus();
@@ -891,7 +889,6 @@ void unmapnotify(struct wl_listener *listener, void *data)
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
     tagsetDestroy(c->tagset);
-    // LayerShell shouldn't be resized
     switch (c->type) {
         case LayerShell:
             wl_list_remove(&c->flink);
