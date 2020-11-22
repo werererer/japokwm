@@ -3,25 +3,30 @@
 #include "lib/info/info.h"
 #include "parseConfig.h"
 #include "tile/tile.h"
+#include "lib/actions/overlay.h"
 
 static const struct luaL_Reg action[] =
 {
     {"arrangeThis", arrange_this},
+    /* {"createOverlay", create_overlay}, */
     {"focusOnHiddenStack", focus_on_hidden_stack},
     {"focusOnStack", focus_on_stack},
-    {"kill", killClient},
-    {"moveResize", moveResize},
+    {"getOverlay", get_overlay},
+    {"kill", kill_client},
+    {"moveResize", move_resize},
+    {"moveResize", move_resize},
     {"quit", quit},
-    {"createOverlay", },
-    {"readOverlay", readOverlay},
+    {"readOverlay", read_overlay},
+    {"setOverlay", set_overlay},
     {"spawn", spawn},
     {"tag", tag},
-    {"toggleAddView", toggleAddView},
-    {"toggleFloating", toggleFloating},
-    {"toggleTag", toggletag},
-    {"toggleView", toggleView},
+    {"toggleAddView", toggle_add_view},
+    {"toggleFloating", toggle_floating},
+    {"toggleTag", toggle_tag},
+    {"toggleView", toggle_view},
     {"updateLayout", update_layout},
     {"view", view},
+    {"writeThisOverlay", write_this_overlay},
     {"zoom", zoom},
     {NULL, NULL},
 };

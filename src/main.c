@@ -100,7 +100,7 @@ void maprequest(struct wl_listener *listener, void *data);
 void motionabsolute(struct wl_listener *listener, void *data);
 void motionrelative(struct wl_listener *listener, void *data);
 void run(char *startup_cmd);
-void setCursor(struct wl_listener *listener, void *data);
+void set_cursor(struct wl_listener *listener, void *data);
 void setpsel(struct wl_listener *listener, void *data);
 void setsel(struct wl_listener *listener, void *data);
 void setmfact(float factor);
@@ -120,7 +120,7 @@ static struct wl_listener new_output = {.notify = createMonitor};
 static struct wl_listener new_xdeco = {.notify = createxdeco};
 static struct wl_listener new_xdg_surface = {.notify = createnotify};
 static struct wl_listener new_layer_shell_surface = {.notify = createnotifyLayerShell};
-static struct wl_listener request_cursor = {.notify = setCursor};
+static struct wl_listener request_cursor = {.notify = set_cursor};
 static struct wl_listener request_set_psel = {.notify = setpsel};
 static struct wl_listener request_set_sel = {.notify = setsel};
 
@@ -541,10 +541,8 @@ void keypressmod(struct wl_listener *listener, void *data)
 
 void maprequest(struct wl_listener *listener, void *data)
 {
-    printf("map\n");
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
-    // TODO How many tags are there?
     c->tagset = create_tagset(&tagNames, selected_monitor->tagset->focusedTag, 
             selected_monitor->tagset->selTags[0]);
 
@@ -562,7 +560,7 @@ void maprequest(struct wl_listener *listener, void *data)
     } else {
         wl_list_insert(&layerStack, &c->llink);
     }
-    updateHiddenStatus();
+    update_hidden_status();
     struct client *prev = wl_container_of(listener, prev, map);
 
     switch (c->type) {
@@ -680,7 +678,7 @@ void run(char *startup_cmd)
     }
 }
 
-void setCursor(struct wl_listener *listener, void *data)
+void set_cursor(struct wl_listener *listener, void *data)
 {
     /* This event is raised by the seat when a client provides a cursor image */
     struct wlr_seat_pointer_request_set_cursor_event *event = data;
@@ -909,7 +907,7 @@ void unmapnotify(struct wl_listener *listener, void *data)
         case X11_UNMANAGED:
             wl_list_remove(&c->link);
     }
-    updateHiddenStatus();
+    update_hidden_status();
 }
 
 void activatex11(struct wl_listener *listener, void *data)

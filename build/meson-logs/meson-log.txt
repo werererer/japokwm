@@ -1,6 +1,6 @@
-Build started at 2020-11-22T14:50:57.382601
+Build started at 2020-11-22T21:03:03.270119
 Main binary: /usr/bin/python
-Build Options: -Dbackend=ninja
+Build Options: 
 Python system: Linux
 The Meson build system
 Version: 0.56.0
@@ -9,9 +9,41 @@ Build dir: /home/jakob/git/juliawm/build
 Build type: native build
 Project name: juliawm
 Project version: undefined
+None of 'CC' are defined in the environment, not changing global flags.
+None of 'CFLAGS' are defined in the environment, not changing global flags.
+None of 'LDFLAGS' are defined in the environment, not changing global flags.
+None of 'CPPFLAGS' are defined in the environment, not changing global flags.
+None of 'CC_LD' are defined in the environment, not changing global flags.
+Sanity testing C compiler: cc
+Is cross compiler: False.
+None of 'CC_LD' are defined in the environment, not changing global flags.
+Sanity check compiler command line: cc /home/jakob/git/juliawm/build/meson-private/sanitycheckc.c -o /home/jakob/git/juliawm/build/meson-private/sanitycheckc.exe -pipe -D_FILE_OFFSET_BITS=64
+Sanity check compile stdout:
+
+-----
+Sanity check compile stderr:
+
+-----
+Running test binary command: /home/jakob/git/juliawm/build/meson-private/sanitycheckc.exe
 C compiler for the host machine: cc (gcc 10.2.0 "cc (GCC) 10.2.0")
 C linker for the host machine: cc ld.bfd 2.35.1
 None of 'AR' are defined in the environment, not changing global flags.
+None of 'CC' are defined in the environment, not changing global flags.
+None of 'CFLAGS' are defined in the environment, not changing global flags.
+None of 'LDFLAGS' are defined in the environment, not changing global flags.
+None of 'CPPFLAGS' are defined in the environment, not changing global flags.
+None of 'CC_LD' are defined in the environment, not changing global flags.
+Sanity testing C compiler: cc
+Is cross compiler: False.
+None of 'CC_LD' are defined in the environment, not changing global flags.
+Sanity check compiler command line: cc /home/jakob/git/juliawm/build/meson-private/sanitycheckc.c -o /home/jakob/git/juliawm/build/meson-private/sanitycheckc.exe -pipe -D_FILE_OFFSET_BITS=64
+Sanity check compile stdout:
+
+-----
+Sanity check compile stderr:
+
+-----
+Running test binary command: /home/jakob/git/juliawm/build/meson-private/sanitycheckc.exe
 C compiler for the build machine: cc (gcc 10.2.0 "cc (GCC) 10.2.0")
 C linker for the build machine: cc ld.bfd 2.35.1
 None of 'AR' are defined in the environment, not changing global flags.
@@ -79,21 +111,51 @@ Running command: /usr/bin/[ -f include/wlr-foreign-toplevel-management-unstable-
 --- stderr ---
 
 
-Dependency xcb found: YES 1.14 (cached)
-Dependency xkbcommon found: YES 1.0.1 (cached)
-Dependency wayland-server found: YES 1.18.0 (cached)
-Dependency wayland-egl found: YES 18.1.0 (cached)
-Dependency wlroots found: YES 0.12.0 (cached)
-Dependency cairo found: YES 1.17.3 (cached)
-Dependency lua found: YES 5.4.1 (cached)
-Dependency x11 found: YES 1.6.10 (cached)
-Dependency json-c found: YES 0.15 (cached)
-Build targets in project: 1
+Pkg-config binary for MachineChoice.HOST is not cached.
+None of 'PKG_CONFIG' are defined in the environment, not changing global flags.
+Pkg-config binary missing from cross or native file, or env var undefined.
+Trying a default Pkg-config fallback at pkg-config
+Found pkg-config: /usr/bin/pkg-config (1.7.3)
+Determining dependency 'xcb' with pkg-config executable '/usr/bin/pkg-config'
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --modversion xcb` -> 0
+1.14
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --cflags xcb` -> 0
 
-Found ninja-1.10.1 at /usr/bin/ninja
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config xcb --libs` -> 0
+-L/usr/lib -lxcb
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config xcb --libs` -> 0
+-lxcb
+None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
+None of 'CC_LD' are defined in the environment, not changing global flags.
 Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpvkvqfap_
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpvkvqfap_/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpvkvqfap_/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpml2axrx1
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpml2axrx1/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpml2axrx1/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 
+
+Code:
+ #include<stdio.h>
+        
+        int main(void) {
+            printf("%ld\n", (long)(sizeof(void *)));
+            return 0;
+        };
+Compiler stdout:
+ 
+Compiler stderr:
+ 
+Program stdout:
+
+8
+
+Program stderr:
+
+
+Running compile:
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmp_04jwqxw
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmp_04jwqxw/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmp_04jwqxw/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
 
 Code:
  
@@ -104,5 +166,149 @@ libraries: =/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/:/usr/lib/gcc/x86_64-pc-linu
 
 Compiler stderr:
  
+Run-time dependency xcb found: YES 1.14
+Pkg-config binary for MachineChoice.HOST is cached.
+Determining dependency 'xkbcommon' with pkg-config executable '/usr/bin/pkg-config'
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --modversion xkbcommon` -> 0
+1.0.2
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --cflags xkbcommon` -> 0
+
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config xkbcommon --libs` -> 0
+-L/usr/lib -lxkbcommon
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config xkbcommon --libs` -> 0
+-lxkbcommon
+None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
+Run-time dependency xkbcommon found: YES 1.0.2
+Pkg-config binary for MachineChoice.HOST is cached.
+Determining dependency 'wayland-server' with pkg-config executable '/usr/bin/pkg-config'
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --modversion wayland-server` -> 0
+1.18.0
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --cflags wayland-server` -> 0
+
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config wayland-server --libs` -> 0
+-L/usr/lib -lwayland-server
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config wayland-server --libs` -> 0
+-lwayland-server
+None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
+Run-time dependency wayland-server found: YES 1.18.0
+Pkg-config binary for MachineChoice.HOST is cached.
+Determining dependency 'wayland-egl' with pkg-config executable '/usr/bin/pkg-config'
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --modversion wayland-egl` -> 0
+18.1.0
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --cflags wayland-egl` -> 0
+
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config wayland-egl --libs` -> 0
+-L/usr/lib -lwayland-egl -lwayland-client
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config wayland-egl --libs` -> 0
+-lwayland-egl -lwayland-client
+None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
+Run-time dependency wayland-egl found: YES 18.1.0
+Pkg-config binary for MachineChoice.HOST is cached.
+Determining dependency 'wlroots' with pkg-config executable '/usr/bin/pkg-config'
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --modversion wlroots` -> 0
+0.12.0
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --cflags wlroots` -> 0
+-I/usr/include/libdrm -I/usr/include/pixman-1
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config wlroots --libs` -> 0
+-L/usr/lib -lwlroots
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config wlroots --libs` -> 0
+-lwlroots
+None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
+Run-time dependency wlroots found: YES 0.12.0
+Pkg-config binary for MachineChoice.HOST is cached.
+Determining dependency 'cairo' with pkg-config executable '/usr/bin/pkg-config'
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --modversion cairo` -> 0
+1.17.3
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --cflags cairo` -> 0
+-I/usr/include/cairo -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/pixman-1 -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config cairo --libs` -> 0
+-L/usr/lib -lcairo
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config cairo --libs` -> 0
+-lcairo
+None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
+Run-time dependency cairo found: YES 1.17.3
+Pkg-config binary for MachineChoice.HOST is cached.
+Determining dependency 'lua' with pkg-config executable '/usr/bin/pkg-config'
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --modversion lua` -> 0
+5.4.1
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --cflags lua` -> 0
+
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config lua --libs` -> 0
+-L/usr/lib -llua -lm
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config lua --libs` -> 0
+-llua -lm
+None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
+None of 'CC_LD' are defined in the environment, not changing global flags.
+Running compile:
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpfm77n9_9
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpfm77n9_9/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpfm77n9_9/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 -Wl,--start-group -lm -Wl,--end-group -Wl,--allow-shlib-undefined 
+
+Code:
+ int main(void) { return 0; }
+
+Compiler stdout:
+ 
+Compiler stderr:
+ 
+Run-time dependency lua found: YES 5.4.1
+Pkg-config binary for MachineChoice.HOST is cached.
+Determining dependency 'x11' with pkg-config executable '/usr/bin/pkg-config'
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --modversion x11` -> 0
+1.6.10
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --cflags x11` -> 0
+
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config x11 --libs` -> 0
+-L/usr/lib -lX11
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config x11 --libs` -> 0
+-lX11
+None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
+Run-time dependency x11 found: YES 1.6.10
+Pkg-config binary for MachineChoice.HOST is cached.
+Determining dependency 'json-c' with pkg-config executable '/usr/bin/pkg-config'
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --modversion json-c` -> 0
+0.15
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config --cflags json-c` -> 0
+-I/usr/include/json-c
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config json-c --libs` -> 0
+-L/usr/lib -ljson-c
+PKG_CONFIG_PATH: 
+Called `/usr/bin/pkg-config json-c --libs` -> 0
+-ljson-c
+None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
+Run-time dependency json-c found: YES 0.15
+Build targets in project: 1
+
+Found ninja-1.10.1 at /usr/bin/ninja
 None of 'STRIP' are defined in the environment, not changing global flags.
 None of 'STRIP' are defined in the environment, not changing global flags.

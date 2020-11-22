@@ -32,6 +32,8 @@ struct client {
     struct tagset *tagset;
     int bw;
     int id;
+    // if position -1 it is floating
+    int position;
     char *title;
     bool floating;
     bool hidden;

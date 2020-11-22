@@ -44,9 +44,9 @@ function setLayout(i)
 end
 
 function toggleOverlay()
-    print("toggle\n")
-    -- setOverlay(!getOverlay())
-    -- arrangeThis(false);
+    overlay = action.getOverlay()
+    action.setOverlay(not overlay)
+    action.arrangeThis(false);
 end
 
 -- default

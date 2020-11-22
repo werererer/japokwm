@@ -1,5 +1,6 @@
 #include "lib/actions/actions.h"
 
+#include <lua.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -19,7 +20,7 @@
 static struct client *grabc = NULL;
 static int grabcx, grabcy; /* client-relative */
 
-static void set_floating(struct client *c, bool floating);
+static void set_client_floating(struct client *c, bool floating);
 static void pointer_focus(struct client *c, struct wlr_surface *surface,
         double sx, double sy, uint32_t time);
 
@@ -55,6 +56,7 @@ static void pointer_focus(struct client *c, struct wlr_surface *surface,
 int arrange_this(lua_State *L)
 {
     bool reset = lua_toboolean(L, -1);
+    lua_pop(L, 1);
     arrange(selected_monitor, reset);
     return 0;
 }
@@ -138,7 +140,7 @@ int focus_on_hidden_stack(lua_State *L)
     return 0;
 }
 
-int moveResize(lua_State *L)
+int move_resize(lua_State *L)
 {
     int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
@@ -147,13 +149,14 @@ int moveResize(lua_State *L)
         return 0;
 
     /* Float the window and tell motionnotify to grab it */
-    set_floating(grabc, true);
+    set_client_floating(grabc, true);
     switch (server.cursorMode = ui) {
         case CURSOR_MOVE:
             grabcx = server.cursor->x - grabc->geom.x;
             grabcy = server.cursor->y - grabc->geom.y;
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
                     "fleur", server.cursor);
+            wlr_seat_pointer_notify_clear_focus(server.seat);
             break;
         case CURSOR_RESIZE:
             /* Doesn't work for X11 output - the next absolute motion event
@@ -165,6 +168,7 @@ int moveResize(lua_State *L)
                     grabc->geom.y + grabc->geom.height);
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
                     "bottom_right_corner", server.cursor);
+            wlr_seat_pointer_notify_clear_focus(server.seat);
             break;
         default:
             break;
@@ -172,7 +176,7 @@ int moveResize(lua_State *L)
     return 0;
 }
 
-static void set_floating(struct client *c, bool floating)
+static void set_client_floating(struct client *c, bool floating)
 {
     if (c->floating == floating)
         return;
@@ -188,18 +192,23 @@ void motionnotify(uint32_t time)
     struct wlr_surface *surface = NULL;
     struct client *c;
 
+    bool action = false;
     /* If we are currently grabbing the mouse, handle and return */
     switch (server.cursorMode) {
         case CURSOR_MOVE:
+            action = true;
             /* Move the grabbed client to the new position. */
             resize(grabc, server.cursor->x - grabcx, server.cursor->y - grabcy,
                     grabc->geom.width, grabc->geom.height, true);
+            arrange_client(grabc);
             return;
             break;
         case CURSOR_RESIZE:
+            action = true;
             resize(grabc, grabc->geom.x, grabc->geom.y,
                     server.cursor->x - grabc->geom.x,
                     server.cursor->y - grabc->geom.y, true);
+            arrange_client(grabc);
             return;
             break;
         default:
@@ -267,7 +276,9 @@ void motionnotify(uint32_t time)
         c = xytoclient(server.cursor->x, server.cursor->y);
         surface = get_wlrsurface(c);
     }
+    if (!action) {
         pointer_focus(c, surface, sx, sy, time);
+    }
 }
 
 int tag(lua_State *L)
@@ -285,7 +296,7 @@ int tag(lua_State *L)
     return 0;
 }
 
-int toggletag(lua_State *L)
+int toggle_tag(lua_State *L)
 {
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
@@ -313,7 +324,7 @@ int view(lua_State *L)
     return 0;
 }
 
-int toggleAddView(lua_State *L)
+int toggle_add_view(lua_State *L)
 {
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
@@ -324,7 +335,7 @@ int toggleAddView(lua_State *L)
 }
 
 
-int toggleView(lua_State *L)
+int toggle_view(lua_State *L)
 {
     toggle_tagset(selected_monitor->tagset);
     focusTopClient(nextClient(), true);
@@ -332,17 +343,17 @@ int toggleView(lua_State *L)
     return 0;
 }
 
-int toggleFloating(lua_State *L)
+int toggle_floating(lua_State *L)
 {
     struct client *sel = selected_client();
     if (!sel)
         return 0;
     /* return if fullscreen */
-    set_floating(sel, !sel->floating /* || sel->isfixed */);
+    set_client_floating(sel, !sel->floating /* || sel->isfixed */);
     return 0;
 }
 
-int moveClient(lua_State *L)
+int move_client(lua_State *L)
 {
     resize(grabc, server.cursor->x - grabcx, server.cursor->y - grabcy,
             grabc->geom.width, grabc->geom.height, 1);
@@ -395,7 +406,7 @@ int zoom(lua_State *L)
     return 0;
 }
 
-int readOverlay(lua_State *L)
+int read_overlay(lua_State *L)
 {
     char file[NUM_CHARS];
     char filename[NUM_DIGITS];
@@ -453,7 +464,7 @@ int readOverlay(lua_State *L)
     return 1;
 }
 
-int killClient(lua_State *L)
+int kill_client(lua_State *L)
 {
     struct client *sel = selected_client();
     if (sel) {

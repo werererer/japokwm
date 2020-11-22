@@ -234,7 +234,7 @@ void getConfigLayoutArr(lua_State *L, struct layout *layouts, char *name)
 
     struct layout lt;
     // TODO: cleanup malloc?
-    layouts = malloc(sizeof(*layouts)*len);
+    layouts = malloc(sizeof(struct layout)*len);
     for (int i = 1; i <= len; i++) {
         lt = getConfigArrayLayout(L, 1);
         layouts[i-1].symbol = lt.symbol;

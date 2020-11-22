@@ -24,7 +24,7 @@ struct containersInfo containersInfo;
  * the wlr_fbox has includes the window size in percent.
  * It will we mulitiplicated with the screen width and height
  * */
-static struct wlr_box getAbsoluteBox(struct wlr_box box, struct wlr_fbox b)
+static struct wlr_box get_absolute_box(struct wlr_box box, struct wlr_fbox b)
 {
     struct wlr_box w = box;
     w.x = w.width * b.x + w.x;
@@ -34,7 +34,6 @@ static struct wlr_box getAbsoluteBox(struct wlr_box box, struct wlr_fbox b)
     return w;
 }
 
-// TODO reduce function size
 void arrange(struct monitor *m, bool reset)
 {
     /* Get effective monitor geometry to use for window area */
@@ -63,44 +62,50 @@ void arrange(struct monitor *m, bool reset)
         containersInfo.n = lua_rawlen(L, -1);
         containersInfo.id = luaL_ref(L, LUA_REGISTRYINDEX);
 
-        updateHiddenStatus();
+        update_hidden_status();
 
-        int i = 1;
+        int i = 0;
         wl_list_for_each(c, &clients, link) {
-            if (!visibleon(c, m) || c->floating)
+            if (c->hidden)
                 continue;
-            struct wlr_fbox con;
-            // get lua container
-            lua_rawgeti(L, LUA_REGISTRYINDEX, containersInfo.id);
-            lua_rawgeti(L, -1, MIN(i, containersInfo.n));
-            lua_rawgeti(L, -1, 1);
-            con.x = luaL_checknumber(L, -1);
-            lua_pop(L, 1);
-            lua_rawgeti(L, -1, 2);
-            con.y = luaL_checknumber(L, -1);
-            lua_pop(L, 1);
-            lua_rawgeti(L, -1, 3);
-            con.width = luaL_checknumber(L, -1);
-            lua_pop(L, 1);
-            lua_rawgeti(L, -1, 4);
-            con.height = luaL_checknumber(L, -1);
-            lua_pop(L, 1);
-            lua_pop(L, 1);
-            containersInfo.id = luaL_ref(L, LUA_REGISTRYINDEX);
 
-            struct wlr_box box = getAbsoluteBox(root.w, con);
-            containerSurroundGaps(&box, innerGap);
-            resize(c, box.x, box.y, box.width, box.height, false);
+            c->position = i;
+            arrange_client(c);
             i++;
         }
-
-        if (overlay) {
-            create_new_overlay();
-        } else {
-            wlr_list_clear(&renderData.textures);
-        }
-
+        update_overlay_count(i);
     }
+}
+
+void arrange_client(struct client *c)
+{
+    if (!c || c->hidden)
+        return;
+
+    // if tiled get tile information from tile function and apply it
+    struct wlr_fbox con;
+    if (!c->floating) {
+        // get lua container
+        lua_rawgeti(L, LUA_REGISTRYINDEX, containersInfo.id);
+        lua_rawgeti(L, -1, MIN(c->position+1, containersInfo.n));
+        lua_rawgeti(L, -1, 1);
+        con.x = luaL_checknumber(L, -1);
+        lua_pop(L, 1);
+        lua_rawgeti(L, -1, 2);
+        con.y = luaL_checknumber(L, -1);
+        lua_pop(L, 1);
+        lua_rawgeti(L, -1, 3);
+        con.width = luaL_checknumber(L, -1);
+        lua_pop(L, 1);
+        lua_rawgeti(L, -1, 4);
+        con.height = luaL_checknumber(L, -1);
+        lua_pop(L, 1);
+        lua_pop(L, 1);
+        struct wlr_box box = get_absolute_box(root.w, con);
+        containerSurroundGaps(&box, innerGap);
+        resize(c, box.x, box.y, box.width, box.height, false);
+    }
+    update_client_overlay(c);
 }
 
 void resize(struct client *c, int x, int y, int w, int h, bool interact)
@@ -137,7 +142,7 @@ void resize(struct client *c, int x, int y, int w, int h, bool interact)
     }
 }
 
-void updateHiddenStatus()
+void update_hidden_status()
 {
     struct client *c;
     int i = 0;

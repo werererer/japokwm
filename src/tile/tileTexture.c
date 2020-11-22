@@ -12,7 +12,7 @@
 #include <wlr/backend.h>
 #include <stdlib.h>
 
-bool overlay;
+bool overlay = false;
 // TODO: rewrite getPosition
 /* static struct wlr_box getPosition(struct posTexture *pTexture) */
 /* { */
@@ -24,7 +24,7 @@ bool overlay;
 /*     return container; */
 /* } */
 
-struct posTexture *createTextbox(struct wlr_box box, float boxColor[],
+struct posTexture *create_textbox(struct wlr_box box, float boxColor[],
                                  float textColor[], char* text)
 {
     cairo_format_t cFormat = CAIRO_FORMAT_ARGB32;
@@ -76,7 +76,7 @@ struct posTexture *createTextbox(struct wlr_box box, float boxColor[],
 
 void init_overlay()
 {
-    overlay = false;
+    wlr_list_init(&renderData.textures);
 }
 
 void create_new_overlay()
@@ -99,17 +99,54 @@ void create_overlay()
         sprintf(text, "%i", i);
 
         wlr_list_push(&renderData.textures, 
-                createTextbox(c->geom, overlayColor, textColor, text));
+                create_textbox(c->geom, overlayColor, textColor, text));
         i++;
     }
 }
 
-void writeThisOverlay(char *layout)
+void update_client_overlay(struct client *c)
 {
-    write_overlay(selected_monitor, layout);
+    if (overlay) {
+        if (renderData.textures.length >= c->position+1) {
+            wlr_list_del(&renderData.textures, c->position);
+        }
+
+        char text[NUM_DIGITS];
+        if (c->hidden)
+            return;
+
+        sprintf(text, "%i", c->position+1);
+
+        wlr_list_insert(&renderData.textures, c->position,
+                create_textbox(c->geom, overlayColor, textColor, text));
+    } else {
+        if (&renderData.textures.length > 0)
+            wlr_list_clear(&renderData.textures);
+    }
 }
 
-void write_overlay(struct monitor *m, char *layout)
+void update_overlay_count(size_t count)
+{
+    if (count == 0) {
+        wlr_list_clear(&renderData.textures);
+    } else {
+        int len = renderData.textures.length;
+        for (size_t i = count; i < len; i++) {
+            wlr_list_del(&renderData.textures, count);
+        }
+    }
+}
+
+void update_overlay()
+{
+    if (overlay) {
+        create_new_overlay();
+    } else {
+        wlr_list_clear(&renderData.textures);
+    }
+}
+
+void write_overlay(struct monitor *m, const char *layout)
 {
     if (!overlay)
         return;
@@ -137,14 +174,4 @@ void write_overlay(struct monitor *m, char *layout)
 
         close(fd);
     }
-}
-
-void set_overlay(bool ol)
-{
-    overlay = ol;
-}
-
-bool get_overlay()
-{
-    return overlay;
 }

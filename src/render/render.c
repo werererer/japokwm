@@ -257,10 +257,9 @@ void renderFrame(struct wl_listener *listener, void *data)
         renderIndependents(m->output);
         renderLayerShell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP);
         renderLayerShell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
-        renderPopups(m);
 
-        /* render all textures in list */
         wlr_list_for_each(&renderData.textures, renderTexture);
+        renderPopups(m);
 
         /* Hardware cursors are rendered by the GPU on a separate plane, and can be
          * moved around without re-rendering what's beneath them - which is more

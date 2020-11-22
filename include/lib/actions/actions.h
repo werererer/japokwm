@@ -10,22 +10,22 @@
 int arrange_this(lua_State *L);
 int focus_on_hidden_stack(lua_State *L);
 int focus_on_stack(lua_State *L);
-int moveClient(lua_State *L);
-int moveResize(lua_State *L);
+int move_client(lua_State *L);
+int move_resize(lua_State *L);
 int quit(lua_State *L);
-int readOverlay(lua_State *L);
+int read_overlay(lua_State *L);
 int resizeClient(lua_State *L);
 int spawn(lua_State *L);
 int tag(lua_State *L);
-int toggleAddView(lua_State *L);
-int toggleFloating(lua_State *L);
-int toggleView(lua_State *L);
-int toggletag(lua_State *L);
+int toggle_add_view(lua_State *L);
+int toggle_floating(lua_State *L);
+int toggle_view(lua_State *L);
+int toggle_tag(lua_State *L);
 int update_layout(lua_State *L);
 int view(lua_State *L);
 int zoom(lua_State *L);
 // kill
-int killClient(lua_State *L);
+int kill_client(lua_State *L);
 
 void motionnotify(uint32_t time);
 

@@ -5,7 +5,7 @@ borderPx = 1
 rootColor = {0.3, 0.3, 0.3, 1.0}
 borderColor = {0.3, 0.3, 0.3, 1.0}
 focusColor = {1.0, 0.0, 0.0, 0.0}
-overlayColor = {0.65, 0.65, 0.65, 0.5}
+overlayColor = {0.65, 0.65, 0.65, 0.9}
 textColor = {0.003, 0.003, 0.003, 1.0}
 selOverlayColor = {}
 selTextColor = {}
@@ -65,7 +65,7 @@ keys = {
     -- {mod.." greater",     function(n) tagmon(1) end},
     -- {mod.." less",        function(n) tagmon(-1) end},
     {mod.." Return",      function(n) action.zoom() end},
-    -- {mod.." s",           function(n) toggleOverlay() end},
+    {mod.." s",           function(n) toggleOverlay() end},
     {mod.." 1",           function(n) action.view(1) end},
     {mod.." 2",           function(n) action.view(2) end},
     {mod.." 3",           function(n) action.view(4) end},
