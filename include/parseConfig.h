@@ -12,8 +12,6 @@ struct config {
     char *file;
 };
 
-#define SYSCONFDIR "/etc"
-
 extern const char *config_paths[];
 
 /* appearance */

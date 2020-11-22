@@ -16,7 +16,10 @@ char last_char(const char *str)
 
 void join_path(char *base, const char *file)
 {
-    if (last_char(base) != '/')
+    if (last_char(base) != '/' && file[0] != '/') {
         strcat(base, "/");
+    } else if (last_char(base) == '/' && file[0] == ' ') {
+        base[strlen(base)-1] = '\0';
+    }
     strcat(base, file);
 }

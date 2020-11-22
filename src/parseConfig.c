@@ -15,8 +15,8 @@
 
 const char *config_paths[] = {
     "$HOME/.config/juliawm/",
-    "$XDG_CONFIG_HOME/juliawm/layout/",
-    SYSCONFDIR "/juliawm/layout/",
+    "$XDG_CONFIG_HOME/juliawm/",
+    "/etc/juliawm/",
 };
 
 bool sloppyFocus;
@@ -93,7 +93,7 @@ void append_to_path(lua_State *L, const char *path)
     strcpy(path_var, curr_path);
     strcat(path_var, ";");
     strcat(path_var, path);
-    strcat(path_var, "/?.lua");
+    join_path(path_var, "/?.lua");
     lua_pushstring(L, path_var);
     lua_setfield(L, -2, "path");
     lua_pop(L, 1);
