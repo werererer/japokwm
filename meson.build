@@ -33,7 +33,8 @@ foreach p:protocols
     endif
 endforeach
 
-meson.add_install_script('install.sh')
+# meson.add_install_script('install.sh')
 # config files
 subdir('src')
+subdir('config')
 subdir('test')
