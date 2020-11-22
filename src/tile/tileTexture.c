@@ -129,7 +129,7 @@ void writeOverlay(struct monitor *m, char *layout)
             // TODO: algorithm is not really efficient fix it
             wl_list_for_each(c, &clients, link) {
                 if (visibleonTag(c, m, i)) {
-                    writeContainerToFile(fd,
+                    write_container_to_file(fd,
                             posTextureToContainer(renderData.textures.items[j]));
                 }
             }

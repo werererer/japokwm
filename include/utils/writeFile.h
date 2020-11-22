@@ -8,7 +8,7 @@
 #include "utils/stringUtils.h"
 #include "render/render.h"
 
-void writeContainerToFile(int fd, Container box);
-void writeContainerArrayToFile(int fd, Container box[], size_t length);
+void write_container_to_file(int fd, Container box);
+void write_container_array_to_file(int fd, Container box[], size_t length);
 /* returns path to newly created directory */
 #endif /* WRITE_FILE_H */
