@@ -1,4 +1,4 @@
-Build started at 2020-11-22T13:18:40.999358
+Build started at 2020-11-22T13:22:06.966710
 Main binary: /usr/bin/python
 Build Options: -Dbackend=ninja
 Python system: Linux
@@ -35,6 +35,13 @@ Running command: /usr/bin/[ -f src/wlr-layer-shell-unstable-v1-protocol.c ]
 --- stderr ---
 
 
+Running command: /usr/bin/wayland-scanner private-code /home/jakob/git/juliawm/protocols/wlr-layer-shell-unstable-v1.xml src/wlr-layer-shell-unstable-v1-protocol.c
+--- stdout ---
+
+--- stderr ---
+
+
+Message: generate: src/wlr-layer-shell-unstable-v1-protocol.c
 Running command: /usr/bin/[ -f include/wlr-layer-shell-unstable-v1-protocol.h ]
 --- stdout ---
 
@@ -73,6 +80,13 @@ Running command: /usr/bin/[ -f src/wlr-foreign-toplevel-management-unstable-v1-p
 --- stderr ---
 
 
+Running command: /usr/bin/wayland-scanner private-code /home/jakob/git/juliawm/protocols/wlr-foreign-toplevel-management-unstable-v1.xml src/wlr-foreign-toplevel-management-unstable-v1-protocol.c
+--- stdout ---
+
+--- stderr ---
+
+
+Message: generate: src/wlr-foreign-toplevel-management-unstable-v1-protocol.c
 Running command: /usr/bin/[ -f include/wlr-foreign-toplevel-management-unstable-v1-protocol.h ]
 --- stdout ---
 
@@ -92,8 +106,8 @@ Build targets in project: 1
 
 Found ninja-1.10.1 at /usr/bin/ninja
 Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpw3mljhz2
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpw3mljhz2/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpw3mljhz2/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpd0228mkt
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpd0228mkt/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpd0228mkt/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
 
 Code:
  

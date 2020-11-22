@@ -39,10 +39,12 @@ extern char *termcmd;
 extern Key *keys;
 extern Key *buttons;
 
-/* this char pointer must be freed */
+/* returned char pointer must be freed */
 char *get_config_layout();
-/* this char pointer must be freed */
-char *get_config_path();
+/* returned char pointer must be freed */
+char *get_config_file(const char *file);
+/* returned char pointer must be freed */
+char *get_config_dir(const char *file);
 
 /* sets global variables but needs  */
 int update_config(lua_State *L);

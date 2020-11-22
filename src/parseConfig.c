@@ -49,7 +49,7 @@ static bool file_exists(const char *path) {
 
 char *get_config_layout()
 {
-    char *path = get_config_path();
+    char *path = get_config_file("layout");
     if (path) {
         path = realloc(path, strlen(path) + strlen("/layouts"));
         join_path(path, "/layouts");
@@ -57,13 +57,21 @@ char *get_config_layout()
     return path;
 }
 
-char *get_config_path()
+char *get_config_dir(const char *file)
 {
-    for (size_t i = 0; i < sizeof(config_paths) / sizeof(char *); ++i) {
+    char *abs_file = get_config_file(file);
+    return dirname(abs_file);
+}
+
+char *get_config_file(const char *file)
+{
+    for (size_t i = 0; i < LENGTH(config_paths); ++i) {
         wordexp_t p;
         if (wordexp(config_paths[i], &p, WRDE_UNDEF) == 0) {
-            char *path = strdup(p.we_wordv[0]);
+            char *path = malloc(strlen(p.we_wordv[0]) + strlen(file));
+            strcpy(path, p.we_wordv[0]);
             wordfree(&p);
+            join_path(path, file);
             if (file_exists(path)) {
                 return path;
             }
@@ -96,7 +104,7 @@ void append_to_path(lua_State *L, const char *path)
 int update_config(lua_State *L)
 {
     // init
-    char *config_path = get_config_path();
+    char *config_path = get_config_dir("init.lua");
     append_to_path(L, config_path);
 
     if (load_config(L, config_path)) {
