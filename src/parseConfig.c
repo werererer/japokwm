@@ -49,19 +49,12 @@ static bool file_exists(const char *path) {
 
 char *get_config_layout()
 {
-    for (size_t i = 0; i < sizeof(config_paths) / sizeof(char *); ++i) {
-        wordexp_t p;
-        if (wordexp(config_paths[i], &p, WRDE_UNDEF) == 0) {
-            char *path = strdup(p.we_wordv[0]);
-            wordfree(&p);
-            if (file_exists(path)) {
-                return path;
-            }
-            free(path);
-        }
+    char *path = get_config_path();
+    if (path) {
+        path = realloc(path, strlen(path) + strlen("/layouts"));
+        join_path(path, "/layouts");
     }
-
-    return NULL;
+    return path;
 }
 
 char *get_config_path()

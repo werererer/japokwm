@@ -2,6 +2,7 @@
 #include "client.h"
 #include "ipc-server.h"
 #include "monitor.h"
+#include "parseConfig.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "xdg-shell-protocol.h"
@@ -398,13 +399,17 @@ int readOverlay(lua_State *L)
     const char *layout = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
+    char *config_path = get_config_path();
+
     // create array for each file
     lua_newtable(L);
 
     // tags are counted from 1
     for (int i = 1; i <= 9; i++) {
         intToString(filename, i);
-        strcpy(file, "layouts");
+        strcpy(file, "");
+        join_path(file, config_path);
+        join_path(file, "layouts");
         join_path(file, layout);
         join_path(file, filename);
 
@@ -443,6 +448,7 @@ int readOverlay(lua_State *L)
         fclose(fp);
     }
 
+    free(config_path);
     return 1;
 }
 

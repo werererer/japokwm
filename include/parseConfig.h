@@ -39,7 +39,9 @@ extern char *termcmd;
 extern Key *keys;
 extern Key *buttons;
 
+/* this char pointer must be freed */
 char *get_config_layout();
+/* this char pointer must be freed */
 char *get_config_path();
 
 /* sets global variables but needs  */
