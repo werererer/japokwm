@@ -8,3 +8,4 @@ tags
 vscjlsymserv-*
 build
 debug
+.cache
