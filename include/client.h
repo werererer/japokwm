@@ -45,7 +45,7 @@ void applybounds(struct client *c, struct wlr_box bbox);
 bool existon(struct client *c, struct monitor *m);
 bool visibleon(struct client *c, struct monitor *m);
 bool hiddenon(struct client *c, struct monitor *m);
-bool visibleonTag(struct client *c, struct monitor *m, size_t focusedTag);
+bool visible_on_tag(struct client *c, struct monitor *m, size_t focusedTag);
 struct client *nextClient();
 struct client *selected_client();
 struct client *getClient(int i);

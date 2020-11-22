@@ -1,10 +1,16 @@
 #include "lib/actions/overlay.h"
-#include "tile/tileTexture.h"
+
 #include <lua.h>
+
+#include "tile/tileTexture.h"
+#include "lib/actions/actions.h"
 
 int write_this_overlay(lua_State *L)
 {
     const char *layout = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+    /* lua_pushstring(L, "bemenu-run"); */
+    /* spawn(L); */
     write_overlay(selected_monitor, layout);
     return 0;
 }

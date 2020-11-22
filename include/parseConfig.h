@@ -40,7 +40,7 @@ extern Key *keys;
 extern Key *buttons;
 
 /* returned char pointer must be freed */
-char *get_config_layout();
+char *get_config_layout_path();
 /* returned char pointer must be freed */
 char *get_config_file(const char *file);
 /* returned char pointer must be freed */

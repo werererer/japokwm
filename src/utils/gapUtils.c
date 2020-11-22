@@ -1,27 +1,27 @@
 #include "utils/gapUtils.h"
 #include <math.h>
 
-static void containerAddGapLeft(Container *con, float gap)
+static void containerAddGapLeft(struct wlr_box *con, float gap)
 {
     con->x += gap;
 }
 
-static void containerAddGapRight(Container *con, float gap)
+static void containerAddGapRight(struct wlr_box *con, float gap)
 {
     con->width = MAX(1, con->width - gap);
 }
 
-static void containerAddGapTop(Container *con, float gap)
+static void containerAddGapTop(struct wlr_box *con, float gap)
 {
     con->y += gap;
 }
 
-static void containerAddGapBottom(Container *con, float gap)
+static void containerAddGapBottom(struct wlr_box *con, float gap)
 {
     con->height = MAX(1, con->height - gap);
 }
 
-void containerAddGaps(Container *con, double gap, enum wlr_edges edges) {
+void containerAddGaps(struct wlr_box *con, double gap, enum wlr_edges edges) {
     if (edges & WLR_EDGE_LEFT)
         containerAddGapLeft(con, gap);
     if (edges & WLR_EDGE_RIGHT)
@@ -32,7 +32,7 @@ void containerAddGaps(Container *con, double gap, enum wlr_edges edges) {
         containerAddGapBottom(con, gap);
 }
 
-void containerSurroundGaps(Container *con, double gap)
+void containerSurroundGaps(struct wlr_box *con, double gap)
 {
     /* *
      * left = x and top = y

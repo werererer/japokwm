@@ -48,14 +48,9 @@ static bool file_exists(const char *path) {
     return path && access(path, R_OK) != -1;
 }
 
-char *get_config_layout()
+char *get_config_layout_path()
 {
-    char *path = get_config_file("layout");
-    if (path) {
-        path = realloc(path, strlen(path) + strlen("/layouts"));
-        join_path(path, "/layouts");
-    }
-    return path;
+    return get_config_file("layouts");
 }
 
 char *get_config_dir(const char *file)

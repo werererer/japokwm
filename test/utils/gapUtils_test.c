@@ -8,13 +8,13 @@
 
 START_TEST(containerAddGapsTest)
 {
-    Container con;
+    struct wlr_box con;
     con.x = 50;
     con.y = 50;
     con.width = 100;
     con.height = 100;
 
-    Container con2 = con;
+    struct wlr_box con2 = con;
     int gap = 5;
 
     containerAddGaps(&con2, gap, WLR_EDGE_LEFT | WLR_EDGE_RIGHT);
@@ -42,7 +42,7 @@ START_TEST(containerAddGapsTest)
 
 START_TEST(containerSurroundGapsTest)
 {
-    Container con;
+    struct wlr_box con;
     con.x = 50;
     con.y = 50;
     con.width = 100;

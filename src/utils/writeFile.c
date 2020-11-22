@@ -24,7 +24,7 @@ static int write_double_to_file(int fd, double d)
     return write_to_file(fd, content);
 }
 
-void write_container_to_file(int fd, Container box)
+void write_container_to_file(int fd, struct wlr_fbox box)
 {
     printf("create container\n");
     write_double_to_file(fd, box.x);
@@ -37,7 +37,7 @@ void write_container_to_file(int fd, Container box)
     write_to_file(fd, "\n");
 }
 
-void write_container_array_to_file(int fd, Container box[], size_t length)
+void write_container_array_to_file(int fd, struct wlr_fbox box[], size_t length)
 {
     for (int i = 0; i < length; i++) {
         write_container_to_file(fd, box[i]);

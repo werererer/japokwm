@@ -165,6 +165,7 @@ static void renderTexture(void *texture)
                        text->x, text->y, 1);
 }
 
+
 static void renderIndependents(struct wlr_output *output)
 {
     struct client *c;
@@ -204,16 +205,6 @@ static void renderPopups(struct monitor *m) {
         rdata.y = popup->geom.y;
         render(popup->xdg->base->surface, 0, 0, &rdata);
     }
-}
-
-Container posTextureToContainer(struct posTexture *pTexture)
-{
-    Container c;
-    c.x = pTexture->x;
-    c.y = pTexture->y;
-    c.width = pTexture->texture->width;
-    c.height = pTexture->texture->height;
-    return c;
 }
 
 /* called from a wl_signal in setup() */

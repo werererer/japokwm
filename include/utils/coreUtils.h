@@ -24,7 +24,6 @@
 #define ARR_STRING_LENGTH(X) strlen(X) + 2*(strlen("[]") + NUM_DIGITS)
 
 typedef struct Monitor Monitor;
-typedef struct wlr_box Container;
 
 struct keyboard {
     struct wl_list link;

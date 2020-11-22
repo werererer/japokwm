@@ -4,12 +4,14 @@
 #include "utils/coreUtils.h"
 #include "utils/stringUtils.h"
 #include "utils/writeFile.h"
+#include "tile/tileUtils.h"
 #include <cairo/cairo.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <wayland-util.h>
 #include <wlr/backend.h>
+#include <wlr/util/log.h>
 #include <stdlib.h>
 
 bool overlay = false;
@@ -152,26 +154,52 @@ void write_overlay(struct monitor *m, const char *layout)
         return;
     struct client *c;
     char file[NUM_CHARS];
+    char filetmp[NUM_CHARS];
     char filename[NUM_DIGITS];
 
-    mkdir(layout, 0755);
-    // tags are counted from 1
-    for (int i = 1; i <= 9; i++) {
+    strcpy(file, get_config_layout_path());
+    join_path(file, layout);
+    mkdir(file, 0755);
+    join_path(file, filename);
+    mkdir(file, 0755);
+    strcpy(filetmp, file);
+    for (int i = 0; i <= 8; i++) {
+        strcpy(file, filetmp);
         intToString(filename, i);
-        strcpy(file, layout);
         join_path(file, filename);
 
         int fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-        for (int j = 0; j < renderData.textures.length; j++) {
+        wlr_log(WLR_DEBUG, "create file %s", file);
+        if (fd == -1) {
+            wlr_log(WLR_ERROR, "file didn't open correctly: %s", file);
+            return;
+        }
+
+        for (int j = 1; j <= renderData.textures.length; j++) {
             // TODO: algorithm is not really efficient fix it
             wl_list_for_each(c, &clients, link) {
-                if (visibleonTag(c, m, i)) {
-                    write_container_to_file(fd,
-                            posTextureToContainer(renderData.textures.items[j]));
+                if (visible_on_tag(c, m, i)) {
+                    struct wlr_fbox container =
+                        get_relative_box(
+                                postexture_to_container(
+                                    renderData.textures.items[j]),
+                                selected_monitor->m
+                                );
+                    write_container_to_file(fd, container);
                 }
             }
         }
 
         close(fd);
     }
+}
+
+struct wlr_box postexture_to_container(struct posTexture *pTexture)
+{
+    struct wlr_box c;
+    c.x = pTexture->x;
+    c.y = pTexture->y;
+    c.width = pTexture->texture->width;
+    c.height = pTexture->texture->height;
+    return c;
 }

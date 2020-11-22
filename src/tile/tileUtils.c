@@ -24,9 +24,23 @@ struct containersInfo containersInfo;
  * the wlr_fbox has includes the window size in percent.
  * It will we mulitiplicated with the screen width and height
  * */
-static struct wlr_box get_absolute_box(struct wlr_box box, struct wlr_fbox b)
+struct wlr_box get_absolute_box(struct wlr_box box, struct wlr_fbox b)
 {
     struct wlr_box w = box;
+    w.x = w.width * b.x + w.x;
+    w.y = w.height * b.y + w.y;
+    w.width = w.width * b.width;
+    w.height = w.height * b.height;
+    return w;
+}
+
+struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box b)
+{
+    struct wlr_fbox w;
+    w.x = box.x;
+    w.y = box.y;
+    w.width = box.width;
+    w.height = box.height;
     w.x = w.width * b.x + w.x;
     w.y = w.height * b.y + w.y;
     w.width = w.width * b.width;

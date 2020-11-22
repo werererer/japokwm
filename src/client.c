@@ -44,8 +44,8 @@ void addClientToStack(struct client *c)
 void applybounds(struct client *c, struct wlr_box bbox)
 {
     /* set minimum possible */
-    c->geom.width = MAX(1, c->geom.width);
-    c->geom.height = MAX(1, c->geom.height);
+    c->geom.width = MAX(30, c->geom.width);
+    c->geom.height = MAX(30, c->geom.height);
 
     if (c->geom.x >= bbox.x + bbox.width)
         c->geom.x = bbox.x + bbox.width - c->geom.width;
@@ -270,7 +270,7 @@ bool hiddenon(struct client *c, struct monitor *m)
     return false;
 }
 
-bool visibleonTag(struct client *c, struct monitor *m, size_t focusedTag)
+bool visible_on_tag(struct client *c, struct monitor *m, size_t focusedTag)
 {
     if (m && c) {
         if (c->mon == m) {
