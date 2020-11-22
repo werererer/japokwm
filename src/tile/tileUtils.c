@@ -95,7 +95,7 @@ void arrange(struct monitor *m, bool reset)
         }
 
         if (overlay) {
-            createNewOverlay();
+            create_new_overlay();
         } else {
             wlr_list_clear(&renderData.textures);
         }

@@ -736,7 +736,7 @@ int setup(void)
         wlr_log(WLR_ERROR, "failed updating config");
         return 1;
     }
-    initOverlay();
+    init_overlay();
     /* The Wayland display is managed by libwayland. It handles accepting
      * clients from the Unix socket, manging Wayland globals, and so on. */
     server.display = wl_display_create();

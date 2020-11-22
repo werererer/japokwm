@@ -44,6 +44,7 @@ srcs = files(
   'stringop.c',
   'popup.c',
 )
+
 libName = 'juliawm'
 wmlib = executable(libName,
               [main, srcs],

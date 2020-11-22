@@ -56,11 +56,11 @@ struct posTexture *createTextbox(struct wlr_box box, float boxColor[],
     cairo_show_text(cr, text);
     cairo_surface_flush(surface);
 
-    unsigned char *Cdata = cairo_image_surface_get_data(surface);
+    unsigned char *cdata = cairo_image_surface_get_data(surface);
 
     struct wlr_texture *cTexture = 
         wlr_texture_from_pixels(drw, WL_SHM_FORMAT_ARGB8888, stride, 
-                width, height, Cdata);
+                width, height, cdata);
 
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
@@ -74,19 +74,19 @@ struct posTexture *createTextbox(struct wlr_box box, float boxColor[],
     return posTexture;
 }
 
-void initOverlay()
+void init_overlay()
 {
     overlay = false;
 }
 
-void createNewOverlay()
+void create_new_overlay()
 {
     // recreate list
     wlr_list_clear(&renderData.textures);
-    createOverlay();
+    create_overlay();
 }
 
-void createOverlay()
+void create_overlay()
 {
     struct client *c;
 
@@ -106,10 +106,10 @@ void createOverlay()
 
 void writeThisOverlay(char *layout)
 {
-    writeOverlay(selMon, layout);
+    write_overlay(selMon, layout);
 }
 
-void writeOverlay(struct monitor *m, char *layout)
+void write_overlay(struct monitor *m, char *layout)
 {
     if (!overlay)
         return;
@@ -139,12 +139,12 @@ void writeOverlay(struct monitor *m, char *layout)
     }
 }
 
-void setOverlay(bool ol)
+void set_overlay(bool ol)
 {
     overlay = ol;
 }
 
-bool getOverlay()
+bool get_overlay()
 {
     return overlay;
 }

@@ -1,4 +1,4 @@
-Build started at 2020-11-22T10:02:51.675375
+Build started at 2020-11-22T12:30:26.435553
 Main binary: /usr/bin/python
 Build Options: -Dbackend=ninja
 Python system: Linux
@@ -79,6 +79,7 @@ Running command: /usr/bin/[ -f include/wlr-foreign-toplevel-management-unstable-
 --- stderr ---
 
 
+Program install.sh found: YES (/bin/bash /home/jakob/git/juliawm/install.sh)
 Dependency xcb found: YES 1.14 (cached)
 Dependency xkbcommon found: YES 1.0.1 (cached)
 Dependency wayland-server found: YES 1.18.0 (cached)
@@ -92,8 +93,8 @@ Build targets in project: 1
 
 Found ninja-1.10.1 at /usr/bin/ninja
 Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmptypu_r6b
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmptypu_r6b/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmptypu_r6b/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpm6zhh_fw
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpm6zhh_fw/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpm6zhh_fw/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
 
 Code:
  
