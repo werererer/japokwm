@@ -405,8 +405,8 @@ int readOverlay(lua_State *L)
     for (int i = 1; i <= 9; i++) {
         intToString(filename, i);
         strcpy(file, "layouts");
-        joinPath(file, layout);
-        joinPath(file, filename);
+        join_path(file, layout);
+        join_path(file, filename);
 
 
         FILE *fp;

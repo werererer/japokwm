@@ -49,7 +49,7 @@ struct posTexture *createTextbox(struct wlr_box box, float boxColor[],
             CAIRO_FONT_SLANT_NORMAL,
             CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, 32.0);
-    cairo_move_to(cr, width/2, height/2);
+    cairo_move_to(cr, width/2.0, height/2.0);
     cairo_set_source_rgb(cr, 0, 0, 0);
     cairo_set_source_rgba(cr,
             textColor[0], textColor[1], textColor[2], textColor[3]);
@@ -122,7 +122,7 @@ void writeOverlay(struct monitor *m, char *layout)
     for (int i = 1; i <= 9; i++) {
         intToString(filename, i);
         strcpy(file, layout);
-        joinPath(file, filename);
+        join_path(file, filename);
 
         int fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
         for (int j = 0; j < renderData.textures.length; j++) {

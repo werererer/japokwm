@@ -9,14 +9,14 @@ void wlr_list_clear(struct wlr_list *list)
     wlr_list_init(list);
 }
 
-char lastChar(const char *str)
+char last_char(const char *str)
 {
     return str[strlen(str)-1];
 }
 
-void joinPath(char *base, const char *file)
+void join_path(char *base, const char *file)
 {
-    if (lastChar(file) != '/')
+    if (last_char(base) != '/')
         strcat(base, "/");
     strcat(base, file);
 }

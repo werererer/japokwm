@@ -7,6 +7,6 @@
 void containerAddGaps(Container *con, double gap, enum wlr_edges edges);
 void containerSurroundGaps(Container *con, double gap);
 /* correctly configure gaps so that they work as expected */
-void configureGaps(int *innerGap, int *outerGap);
+void configure_gaps(int *innerGap, int *outerGap);
 
 #endif /* GAP_UTILS_H */

@@ -14,7 +14,7 @@
 #include "root.h"
 
 const char *config_paths[] = {
-    "$HOME/.juliawm/layout/",
+    "$HOME/.config/juliawm/",
     "$XDG_CONFIG_HOME/juliawm/layout/",
     SYSCONFDIR "/juliawm/layout/",
 };
@@ -45,14 +45,6 @@ Key *buttons = NULL;
 
 static bool file_exists(const char *path) {
     return path && access(path, R_OK) != -1;
-}
-
-void init_config_paths()
-{
-    char *config_home = getenv("XDG_CONFIG_HOME");
-    if (!config_home || !*config_home) {
-        config_paths[1] = "$HOME/.config/juliawm/layout/";
-    }
 }
 
 char *get_config_layout()
@@ -112,48 +104,48 @@ int update_config(lua_State *L)
 {
     // init
     char *config_path = get_config_path();
-    printf("current Path %s\n", config_path);
-    init_config_paths();
-    append_to_path(L, "");
-    if (loadConfig(L, config_path)) {
+    append_to_path(L, config_path);
+
+    if (load_config(L, config_path)) {
         wlr_log(WLR_ERROR, "file didn't load correctly");
         return 1;
     }
+    free(config_path);
 
-    sloppyFocus = getConfigBool(L, "sloppyFocus");
-    borderPx = getConfigInt(L, "borderPx");
+    sloppyFocus = get_config_bool(L, "sloppyFocus");
+    borderPx = get_config_int(L, "borderPx");
 
     /* gaps */
-    innerGap = getConfigInt(L, "innerGap");
-    outerGap = getConfigInt(L, "outerGap");
-    configureGaps(&innerGap, &outerGap);
+    innerGap = get_config_int(L, "innerGap");
+    outerGap = get_config_int(L, "outerGap");
+    configure_gaps(&innerGap, &outerGap);
 
     /* appearance */
-    getConfigFloatArr(L, root.color, "rootColor");
-    getConfigFloatArr(L, borderColor, "borderColor");
-    getConfigFloatArr(L, focusColor, "focusColor");
-    getConfigFloatArr(L, overlayColor, "overlayColor");
-    getConfigFloatArr(L, textColor, "textColor");
-    getConfigFloatArr(L, selOverlayColor, "overlayColor");
-    getConfigFloatArr(L, selTextColor, "textColor");
+    get_config_float_arr(L, root.color, "rootColor");
+    get_config_float_arr(L, borderColor, "borderColor");
+    get_config_float_arr(L, focusColor, "focusColor");
+    get_config_float_arr(L, overlayColor, "overlayColor");
+    get_config_float_arr(L, textColor, "textColor");
+    get_config_float_arr(L, selOverlayColor, "overlayColor");
+    get_config_float_arr(L, selTextColor, "textColor");
 
     wlr_list_init(&tagNames);
-    getConfigStrArr(L, &tagNames, "tagNames");
-    getConfigRuleArr(L, rules, "rules");
+    get_config_str_arr(L, &tagNames, "tagNames");
+    get_config_rule_arr(L, rules, "rules");
 
     /* monitors */
     //getConfigMonRuleArr(monrules, "monrules");
 
     /* keyboard */
-    repeatRate = getConfigInt(L, "repeatRate");
-    repeatDelay = getConfigInt(L, "repeatDelay");
+    repeatRate = get_config_int(L, "repeatRate");
+    repeatDelay = get_config_int(L, "repeatDelay");
     defaultLayout = getConfigLayout(L, "defaultLayout");
     prevLayout = (struct layout){.symbol = "", .funcId = 0};
 
     /* commands */
-    termcmd = getConfigStr(L, "termcmd");
-    getConfigKeyArr(L, keys, "keys");
-    getConfigKeyArr(L, buttons, "buttons");
+    termcmd = get_config_str(L, "termcmd");
+    get_config_key_arr(L, keys, "keys");
+    get_config_key_arr(L, buttons, "buttons");
     return 0;
 }
 

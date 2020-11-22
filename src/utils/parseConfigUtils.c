@@ -5,13 +5,17 @@
 #include <string.h>
 #include <translationLayer.h>
 
-int loadConfig(lua_State *L, char *path)
+int load_config(lua_State *L, char *path)
 {
+    char *config_file = calloc(1, strlen(path)+strlen("/init.lua"));
+    join_path(config_file, path);
+    join_path(config_file, "init.lua");
+
     if (!path) {
         return 1;
     }
     loadLibs(L);
-    if (luaL_loadfile(L, path)) {
+    if (luaL_loadfile(L, config_file)) {
         wlr_log(WLR_ERROR, "file didn't load %s\n", luaL_checkstring(L, -1));
         lua_pop(L, 1);
         return 1;
@@ -31,7 +35,7 @@ static char *getConfigArrayStr(lua_State *L, size_t i)
     return termcmd;
 }
 
-char *getConfigStr(lua_State *L, char *name)
+char *get_config_str(lua_State *L, char *name)
 {
     lua_getglobal(L, name);
     const char *str = luaL_checkstring(L, -1);
@@ -65,7 +69,7 @@ static int getConfigArrayInt(lua_State *L, size_t i)
     return f;
 }
 
-int getConfigInt(lua_State *L, char *name)
+int get_config_int(lua_State *L, char *name)
 {
     lua_getglobal(L, name);
     int i = luaL_checkinteger(L, -1);
@@ -81,7 +85,7 @@ static bool getConfigArrayBool(lua_State *L, size_t i)
     return f;
 }
 
-bool getConfigBool(lua_State *L, char *name)
+bool get_config_bool(lua_State *L, char *name)
 {
     lua_getglobal(L, name);
     bool b = lua_toboolean(L, -1);
@@ -193,7 +197,7 @@ Key getConfigKey(lua_State *L, char *name)
     return key;
 }
 
-void getConfigStrArr(lua_State *L, struct wlr_list *resArr, char *name)
+void get_config_str_arr(lua_State *L, struct wlr_list *resArr, char *name)
 {
     //TODO cleanup !!!
     lua_getglobal(L, name);
@@ -213,7 +217,7 @@ void getConfigIntArr(lua_State *L, int resArr[], char *name)
         resArr[i] = getConfigArrayInt(L, i);
 }
 
-void getConfigFloatArr(lua_State *L, float resArr[], char *name)
+void get_config_float_arr(lua_State *L, float resArr[], char *name)
 {
     lua_getglobal(L, name);
     size_t len = lua_rawlen(L, -1);
@@ -239,12 +243,12 @@ void getConfigLayoutArr(lua_State *L, struct layout *layouts, char *name)
     lua_pop(L, 1);
 }
 
-void getConfigKeyArr(lua_State *L, Key *keys, char *name)
+void get_config_key_arr(lua_State *L, Key *keys, char *name)
 {
     getConfigLayoutArr(L, keys, name);
 }
 
-void getConfigRuleArr(lua_State *L, struct rule *rules, char *name)
+void get_config_rule_arr(lua_State *L, struct rule *rules, char *name)
 {
     lua_getglobal(L, name);
     size_t len = lua_rawlen(L, -1);

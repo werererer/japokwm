@@ -51,7 +51,7 @@ void containerSurroundGaps(Container *con, double gap)
     containerAddGaps(con, gap, WLR_EDGE_RIGHT | WLR_EDGE_BOTTOM);
 }
 
-void configureGaps(int *innerGap, int *outerGap)
+void configure_gaps(int *innerGap, int *outerGap)
 {
     /* innerGaps are applied twice because gaps don't overlap from two
      containers therefore it has to be divided by 2*/
