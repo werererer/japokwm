@@ -1,4 +1,4 @@
-Build started at 2020-11-19T18:04:17.003835
+Build started at 2020-11-22T09:59:06.906757
 Main binary: /usr/bin/python
 Build Options: -Dbackend=ninja
 Python system: Linux
@@ -22,15 +22,6 @@ Host machine cpu: x86_64
 Target machine cpu family: x86_64
 Target machine cpu: x86_64
 Program wayland-scanner found: YES (/usr/bin/wayland-scanner)
-Dependency xcb found: YES 1.14 (cached)
-Dependency xkbcommon found: YES 1.0.1 (cached)
-Dependency wayland-server found: YES 1.18.0 (cached)
-Dependency wayland-egl found: YES 18.1.0 (cached)
-Dependency wlroots found: YES 0.12.0 (cached)
-Dependency cairo found: YES 1.17.3 (cached)
-Dependency lua found: YES 5.4.1 (cached)
-Dependency x11 found: YES 1.6.10 (cached)
-Dependency json-c found: YES 0.15 (cached)
 Running command: /usr/bin/basename /home/jakob/git/juliawm/protocols/wlr-layer-shell-unstable-v1.xml .xml
 --- stdout ---
 wlr-layer-shell-unstable-v1
@@ -88,12 +79,21 @@ Running command: /usr/bin/[ -f include/wlr-foreign-toplevel-management-unstable-
 --- stderr ---
 
 
+Dependency xcb found: YES 1.14 (cached)
+Dependency xkbcommon found: YES 1.0.1 (cached)
+Dependency wayland-server found: YES 1.18.0 (cached)
+Dependency wayland-egl found: YES 18.1.0 (cached)
+Dependency wlroots found: YES 0.12.0 (cached)
+Dependency cairo found: YES 1.17.3 (cached)
+Dependency lua found: YES 5.4.1 (cached)
+Dependency x11 found: YES 1.6.10 (cached)
+Dependency json-c found: YES 0.15 (cached)
 Build targets in project: 1
 
 Found ninja-1.10.1 at /usr/bin/ninja
 Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmp2hizri8s
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmp2hizri8s/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmp2hizri8s/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpz5p3ukg4
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpz5p3ukg4/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpz5p3ukg4/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
 
 Code:
  
