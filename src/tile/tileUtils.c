@@ -80,12 +80,13 @@ void arrange(struct monitor *m, bool reset)
 
         int i = 0;
         wl_list_for_each(c, &clients, link) {
-            if (c->hidden)
+            if (c->hidden || !visibleon(c, m))
                 continue;
 
             c->position = i;
             arrange_client(c);
-            i++;
+            if (!c->floating)
+                i++;
         }
         update_overlay_count(i);
     }
@@ -93,7 +94,7 @@ void arrange(struct monitor *m, bool reset)
 
 void arrange_client(struct client *c)
 {
-    if (!c || c->hidden)
+    if (c->hidden)
         return;
 
     // if tiled get tile information from tile function and apply it
@@ -118,6 +119,7 @@ void arrange_client(struct client *c)
         struct wlr_box box = get_absolute_box(root.w, con);
         containerSurroundGaps(&box, innerGap);
         resize(c, box.x, box.y, box.width, box.height, false);
+        containersInfo.id = luaL_ref(L, LUA_REGISTRYINDEX);
     }
     update_client_overlay(c);
 }

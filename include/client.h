@@ -41,6 +41,7 @@ struct client {
 };
 
 void applybounds(struct client *c, struct wlr_box bbox);
+
 /* it ignores bool  hiding which visibleon doesn't */
 bool existon(struct client *c, struct monitor *m);
 bool visibleon(struct client *c, struct monitor *m);

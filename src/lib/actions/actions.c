@@ -200,7 +200,7 @@ void motionnotify(uint32_t time)
             /* Move the grabbed client to the new position. */
             resize(grabc, server.cursor->x - grabcx, server.cursor->y - grabcy,
                     grabc->geom.width, grabc->geom.height, true);
-            arrange_client(grabc);
+            arrange(selected_monitor, false);
             return;
             break;
         case CURSOR_RESIZE:
@@ -208,7 +208,7 @@ void motionnotify(uint32_t time)
             resize(grabc, grabc->geom.x, grabc->geom.y,
                     server.cursor->x - grabc->geom.x,
                     server.cursor->y - grabc->geom.y, true);
-            arrange_client(grabc);
+            arrange(selected_monitor, false);
             return;
             break;
         default:
