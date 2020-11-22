@@ -1,24 +1,24 @@
-#include "info.h"
+#include "lib/info/info.h"
 
 #include "tile/tileUtils.h"
 
 int thisTiledClientCount(lua_State *L)
 {
-    int i = tiledClientCount(selMon);
+    int i = tiledClientCount(selected_monitor);
     lua_pushinteger(L, i);
     return 1;
 }
 
 int thisClientPos(lua_State *L)
 {
-    struct monitor *m = selMon;
+    struct monitor *m = selected_monitor;
     struct client *c;
     int n = 1;
     bool handled = false;
 
     wl_list_for_each(c, &clients, link) {
         if (visibleon(c, m) && !c->floating) {
-            if (c == selClient()) {
+            if (c == selected_client()) {
                 handled = true;
                 break;
             }

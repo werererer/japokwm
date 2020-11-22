@@ -39,32 +39,32 @@ struct tagset {
     struct wlr_list tags;
 };
 
-struct tagset *tagsetCreate(struct wlr_list *tagNames, unsigned int focusedTag, unsigned int selTags);
-void tagsetDestroy(struct tagset *tagset);
+struct tagset *create_tagset(struct wlr_list *tagNames, unsigned int focusedTag, unsigned int selTags);
+void destroy_tagset(struct tagset *tagset);
 
 void tagsetAddTag(struct tagset *tagset, struct tag *tag);
-struct tag *tagsetGetTag(struct tagset *tagset, size_t i);
-struct tag *tagsetFocusedTag(struct tagset *tagset);
+struct tag *get_tag_from_tagset(struct tagset *tagset, size_t i);
+struct tag *focused_tag_from_tagset(struct tagset *tagset);
 
 /* sets the value of selTag[0] */
-void setSelTags(struct tagset *tagset, unsigned int selTags);
+void set_selelected_Tags(struct tagset *tagset, unsigned int selTags);
 /* *
  * selTag[1] = selTag[0] then
  * selTag[0] = new value
  * */
-void pushSelTags(struct tagset *tagset, unsigned int selTags);
+void push_seleceted_tags(struct tagset *tagset, unsigned int selTags);
 /*
  * bit xor to add selTags
  */
-void toggleAddTag(struct tagset *tagset, unsigned int selTags);
+void toggle_add_tag(struct tagset *tagset, unsigned int selTags);
 
-void invertTagset(struct tagset *tagset);
-void toggleTagset(struct tagset *tagset);
+void invert_tagset(struct tagset *tagset);
+void toggle_tagset(struct tagset *tagset);
 
-bool tagsOverlap(unsigned int tags, unsigned int tags2);
+bool tags_overlap(unsigned int tags, unsigned int tags2);
 
-enum tagPosition positionToFlag(unsigned int pos);
-unsigned int flagToPosition(enum tagPosition flag);
-struct layout selLayout(struct tagset *tagset);
-void setSelLayout(struct tagset *tagset, struct layout layout);
+enum tagPosition position_to_flag(unsigned int pos);
+unsigned int flag_to_position(enum tagPosition flag);
+struct layout selected_layout(struct tagset *tagset);
+void set_selected_layout(struct tagset *tagset, struct layout layout);
 #endif /* TAGSET_H */

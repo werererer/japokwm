@@ -106,7 +106,7 @@ void create_overlay()
 
 void writeThisOverlay(char *layout)
 {
-    write_overlay(selMon, layout);
+    write_overlay(selected_monitor, layout);
 }
 
 void write_overlay(struct monitor *m, char *layout)

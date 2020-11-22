@@ -6,7 +6,7 @@
 #include <string.h>
 #include "ipc-server.h"
 
-struct tagset *tagsetCreate(struct wlr_list *tagNames, 
+struct tagset *create_tagset(struct wlr_list *tagNames, 
         unsigned int focusedTag, unsigned int selTags)
 {
     struct tagset *tagset = calloc(1, sizeof(struct tagset));
@@ -20,11 +20,11 @@ struct tagset *tagsetCreate(struct wlr_list *tagNames,
     }
 
     tagset->focusedTag = focusedTag;
-    setSelTags(tagset, selTags);
+    set_selelected_Tags(tagset, selTags);
     return tagset;
 }
 
-void tagsetDestroy(struct tagset *tagset)
+void destroy_tagset(struct tagset *tagset)
 {
     // delete all tags dynamically allocated by create
     for (int i = 0; i < tagset->tags.length; i++)
@@ -33,7 +33,7 @@ void tagsetDestroy(struct tagset *tagset)
     free(tagset);
 }
 
-unsigned int flagToPosition(enum tagPosition flag)
+unsigned int flag_to_position(enum tagPosition flag)
 {
     if (flag % 2 == 0 || flag < 2) {
         // inverse of (1 << x)) = 2^x)
@@ -43,63 +43,63 @@ unsigned int flagToPosition(enum tagPosition flag)
     }
 }
 
-enum tagPosition positionToFlag(unsigned int pos)
+enum tagPosition position_to_flag(unsigned int pos)
 {
     return 1 << pos;
 }
 
-void setSelTags(struct tagset *tagset, unsigned int selTags)
+void set_selelected_Tags(struct tagset *tagset, unsigned int selTags)
 {
     tagset->selTags[0] = selTags;
     ipc_event_workspace();
 }
 
-struct tag *tagsetGetTag(struct tagset *tagset, size_t i)
+struct tag *get_tag_from_tagset(struct tagset *tagset, size_t i)
 {
     return tagset->tags.items[i];
 }
 
-struct tag *tagsetFocusedTag(struct tagset *tagset)
+struct tag *focused_tag_from_tagset(struct tagset *tagset)
 {
-    return tagsetGetTag(tagset, tagset->focusedTag);
+    return get_tag_from_tagset(tagset, tagset->focusedTag);
 }
 
-void toggleAddTag(struct tagset *tagset, unsigned int selTags)
+void toggle_add_tag(struct tagset *tagset, unsigned int selTags)
 {
-    setSelTags(tagset, tagset->selTags[0] ^ selTags);
+    set_selelected_Tags(tagset, tagset->selTags[0] ^ selTags);
 }
 
-void pushSelTags(struct tagset *tagset, unsigned int selTags)
+void push_seleceted_tags(struct tagset *tagset, unsigned int selTags)
 {
     tagset->selTags[1] = tagset->selTags[0];
-    setSelTags(tagset, selTags);
+    set_selelected_Tags(tagset, selTags);
 }
 
-void invertTagset(struct tagset *tagset)
+void invert_tagset(struct tagset *tagset)
 {
-    pushSelTags(tagset, tagset->selTags[0] ^ 1);
+    push_seleceted_tags(tagset, tagset->selTags[0] ^ 1);
 }
 
-void toggleTagset(struct tagset *tagset)
+void toggle_tagset(struct tagset *tagset)
 {
     unsigned int ts = tagset->selTags[1];
     tagset->selTags[1] = tagset->selTags[0];
     tagset->selTags[0] = ts;
 }
 
-bool tagsOverlap(unsigned int tags, unsigned int tags2)
+bool tags_overlap(unsigned int tags, unsigned int tags2)
 {
     return tags & tags2;
 }
 
-struct layout selLayout(struct tagset *tagset)
+struct layout selected_layout(struct tagset *tagset)
 {
-    return tagsetFocusedTag(tagset)->layout;
+    return focused_tag_from_tagset(tagset)->layout;
 }
 
-void setSelLayout(struct tagset *tagset, struct layout layout)
+void set_selected_layout(struct tagset *tagset, struct layout layout)
 {
-    struct tag *tag = tagsetFocusedTag(tagset);
+    struct tag *tag = focused_tag_from_tagset(tagset);
     if (strcmp(tag->name, "") == 0) {
         printf("ERROR: tag not initialized\n");
         return;

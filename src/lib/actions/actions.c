@@ -1,31 +1,34 @@
-#include "actions.h"
-#include "client.h"
-#include "ipc-server.h"
-#include "monitor.h"
-#include "parseConfig.h"
-#include "server.h"
-#include "tile/tileUtils.h"
-#include "xdg-shell-protocol.h"
+#include "lib/actions/actions.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <wayland-util.h>
 #include <wlr/types/wlr_xdg_shell.h>
+
+#include "client.h"
+#include "ipc-server.h"
+#include "monitor.h"
+#include "parseConfig.h"
 #include "popup.h"
+#include "server.h"
+#include "tile/tileUtils.h"
+#include "utils/stringUtils.h"
+#include "xdg-shell-protocol.h"
 
 static struct client *grabc = NULL;
 static int grabcx, grabcy; /* client-relative */
 
-static void setFloating(struct client *c, bool floating);
-static void pointerfocus(struct client *c, struct wlr_surface *surface,
+static void set_floating(struct client *c, bool floating);
+static void pointer_focus(struct client *c, struct wlr_surface *surface,
         double sx, double sy, uint32_t time);
 
-static void pointerfocus(struct client *c, struct wlr_surface *surface,
+static void pointer_focus(struct client *c, struct wlr_surface *surface,
         double sx, double sy, uint32_t time)
 {
     /* Use top level surface if nothing more specific given */
     if (c && !surface)
-        surface = getWlrSurface(c);
+        surface = get_wlrsurface(c);
 
     /* If surface is NULL, clear pointer focus */
     if (!surface) {
@@ -42,17 +45,17 @@ static void pointerfocus(struct client *c, struct wlr_surface *surface,
      * of its surfaces, and make keyboard focus follow if desired. */
     wlr_seat_pointer_notify_enter(server.seat, surface, sx, sy);
 
-    if (c->type == X11Unmanaged)
+    if (c->type == X11_UNMANAGED)
         return;
 
     if (sloppyFocus)
-        focusClient(selClient(), c, false);
+        focus_client(selected_client(), c, false);
 }
 
-int arrangeThis(lua_State *L)
+int arrange_this(lua_State *L)
 {
     bool reset = lua_toboolean(L, -1);
-    arrange(selMon, reset);
+    arrange(selected_monitor, reset);
     return 0;
 }
 
@@ -67,17 +70,17 @@ int spawn(lua_State *L)
     return 0;
 }
 
-int updateLayout(lua_State *L)
+int update_layout(lua_State *L)
 {
     struct layout l = getConfigLayout(L, "layout");
-    setSelLayout(selMon->tagset, l);
-    arrange(selMon, true);
+    set_selected_layout(selected_monitor->tagset, l);
+    arrange(selected_monitor, true);
     return 0;
 }
 
-int focusOnStack(lua_State *L)
+int focus_on_stack(lua_State *L)
 {
-    struct client *c, *sel = selClient();
+    struct client *c, *sel = selected_client();
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     if (!sel)
@@ -85,24 +88,24 @@ int focusOnStack(lua_State *L)
     if (i > 0) {
         int j = 1;
         wl_list_for_each(c, &sel->link, link) {
-            if (visibleon(c, selMon))
+            if (visibleon(c, selected_monitor))
                 break;  /* found it */
             j++;
         }
     } else {
         wl_list_for_each_reverse(c, &sel->link, link) {
-            if (visibleon(c, selMon))
+            if (visibleon(c, selected_monitor))
                 break;  /* found it */
         }
     }
     /* If only one client is visible on selMon, then c == sel */
-    focusClient(sel, c, true);
+    focus_client(sel, c, true);
     return 0;
 }
 
-int focusOnHiddenStack(lua_State *L)
+int focus_on_hidden_stack(lua_State *L)
 {
-    struct client *c, *sel = selClient();
+    struct client *c, *sel = selected_client();
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     if (!sel)
@@ -110,13 +113,13 @@ int focusOnHiddenStack(lua_State *L)
     if (i > 0) {
         int j = 1;
         wl_list_for_each(c, &sel->link, link) {
-            if (hiddenon(c, selMon))
+            if (hiddenon(c, selected_monitor))
                 break;  /* found it */
             j++;
         }
     } else {
         wl_list_for_each_reverse(c, &sel->link, link) {
-            if (hiddenon(c, selMon))
+            if (hiddenon(c, selected_monitor))
                 break;  /* found it */
         }
     }
@@ -130,8 +133,8 @@ int focusOnHiddenStack(lua_State *L)
         wl_list_insert(clients.prev, &sel->link);
     }
     /* If only one client is visible on selMon, then c == sel */
-    focusClient(sel, c, true);
-    arrange(selMon, false);
+    focus_client(sel, c, true);
+    arrange(selected_monitor, false);
     return 0;
 }
 
@@ -144,15 +147,15 @@ int moveResize(lua_State *L)
         return 0;
 
     /* Float the window and tell motionnotify to grab it */
-    setFloating(grabc, true);
+    set_floating(grabc, true);
     switch (server.cursorMode = ui) {
-        case CurMove:
+        case CURSOR_MOVE:
             grabcx = server.cursor->x - grabc->geom.x;
             grabcy = server.cursor->y - grabc->geom.y;
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
                     "fleur", server.cursor);
             break;
-        case CurResize:
+        case CURSOR_RESIZE:
             /* Doesn't work for X11 output - the next absolute motion event
              * returns the cursor to where it started */
             grabcx = server.cursor->x - grabc->geom.x;
@@ -169,7 +172,7 @@ int moveResize(lua_State *L)
     return 0;
 }
 
-static void setFloating(struct client *c, bool floating)
+static void set_floating(struct client *c, bool floating)
 {
     if (c->floating == floating)
         return;
@@ -187,13 +190,13 @@ void motionnotify(uint32_t time)
 
     /* If we are currently grabbing the mouse, handle and return */
     switch (server.cursorMode) {
-        case CurMove:
+        case CURSOR_MOVE:
             /* Move the grabbed client to the new position. */
             resize(grabc, server.cursor->x - grabcx, server.cursor->y - grabcy,
                     grabc->geom.width, grabc->geom.height, true);
             return;
             break;
-        case CurResize:
+        case CURSOR_RESIZE:
             resize(grabc, grabc->geom.x, grabc->geom.y,
                     server.cursor->x - grabc->geom.x,
                     server.cursor->y - grabc->geom.y, true);
@@ -203,12 +206,12 @@ void motionnotify(uint32_t time)
             break;
     }
 
-    bool isPopup = false;
-    if ((c = selClient())) {
+    bool is_popup = false;
+    if ((c = selected_client())) {
         switch (c->type) {
-            case XDGShell:
-                isPopup = !wl_list_empty(&c->surface.xdg->popups);
-                if (isPopup) {
+            case XDG_SHELL:
+                is_popup = !wl_list_empty(&c->surface.xdg->popups);
+                if (is_popup) {
                     surface = wlr_xdg_surface_surface_at(
                             c->surface.xdg,
                             /* absolute mouse position to relative in regards to
@@ -218,9 +221,9 @@ void motionnotify(uint32_t time)
                             &sx, &sy);
                 }
                 break;
-            case LayerShell:
-                isPopup = !wl_list_empty(&c->surface.layer->popups);
-                if (isPopup) {
+            case LAYER_SHELL:
+                is_popup = !wl_list_empty(&c->surface.layer->popups);
+                if (is_popup) {
                     surface = wlr_layer_surface_v1_surface_at(
                             c->surface.layer,
                             server.cursor->x - c->geom.x,
@@ -234,20 +237,20 @@ void motionnotify(uint32_t time)
 
         // if surface and subsurface exit
         if (!surface) {
-            isPopup = false;
-        } else if (surface == selClient()->surface.xdg->surface) {
+            is_popup = false;
+        } else if (surface == selected_client()->surface.xdg->surface) {
             struct client *c = xytoclient(server.cursor->x, server.cursor->y);
             if (c) {
-                isPopup = isPopup && surface == c->surface.xdg->surface;
+                is_popup = is_popup && surface == c->surface.xdg->surface;
             }
         }
 
-        if (!surface && !isPopup) {
+        if (!surface && !is_popup) {
             struct xdg_popup *popup, *tmp;
             wl_list_for_each_safe(popup, tmp, &popups, link) {
                 wlr_xdg_popup_destroy(popup->xdg->base);
             }
-            surface = wlr_surface_surface_at(getWlrSurface(c),
+            surface = wlr_surface_surface_at(get_wlrsurface(c),
                     server.cursor->x - c->geom.x,
                     server.cursor->y - c->geom.y, &sx, &sy);
         }
@@ -260,11 +263,11 @@ void motionnotify(uint32_t time)
             "left_ptr", server.cursor);
 
     // if there is no popup use the selected client's surface
-    if (!isPopup) {
+    if (!is_popup) {
         c = xytoclient(server.cursor->x, server.cursor->y);
-        surface = getWlrSurface(c);
+        surface = get_wlrsurface(c);
     }
-        pointerfocus(c, surface, sx, sy, time);
+        pointer_focus(c, surface, sx, sy, time);
 }
 
 int tag(lua_State *L)
@@ -273,11 +276,11 @@ int tag(lua_State *L)
     lua_pop(L, 1);
     printf("TAG\n");
     ipc_event_workspace();
-    struct client *sel = selClient();
+    struct client *sel = selected_client();
     if (sel && ui) {
-        toggleAddTag(sel->tagset, positionToFlag(ui));
+        toggle_add_tag(sel->tagset, position_to_flag(ui));
         focusTopClient(nextClient(), true);
-        arrange(selMon, false);
+        arrange(selected_monitor, false);
     }
     return 0;
 }
@@ -287,13 +290,13 @@ int toggletag(lua_State *L)
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct client *sel = selClient();
+    struct client *sel = selected_client();
     if (sel) {
         unsigned int newtags = sel->tagset->selTags[0] ^ ui;
         if (newtags) {
-            setSelTags(sel->tagset, newtags);
+            set_selelected_Tags(sel->tagset, newtags);
             focusTopClient(nextClient(), true);
-            arrange(selMon, false);
+            arrange(selected_monitor, false);
         }
     }
     return 0;
@@ -303,10 +306,10 @@ int view(lua_State *L)
 {
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    selMon->tagset->focusedTag = flagToPosition(ui);
-    setSelTags(selMon->tagset, ui);
+    selected_monitor->tagset->focusedTag = flag_to_position(ui);
+    set_selelected_Tags(selected_monitor->tagset, ui);
     focusTopClient(nextClient(), false);
-    arrange(selMon, false);
+    arrange(selected_monitor, false);
     return 0;
 }
 
@@ -314,28 +317,28 @@ int toggleAddView(lua_State *L)
 {
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    toggleAddTag(selMon->tagset, ui);
+    toggle_add_tag(selected_monitor->tagset, ui);
     focusTopClient(nextClient(), false);
-    arrange(selMon, false);
+    arrange(selected_monitor, false);
     return 0;
 }
 
 
 int toggleView(lua_State *L)
 {
-    toggleTagset(selMon->tagset);
+    toggle_tagset(selected_monitor->tagset);
     focusTopClient(nextClient(), true);
-    arrange(selMon, false);
+    arrange(selected_monitor, false);
     return 0;
 }
 
 int toggleFloating(lua_State *L)
 {
-    struct client *sel = selClient();
+    struct client *sel = selected_client();
     if (!sel)
         return 0;
     /* return if fullscreen */
-    setFloating(sel, !sel->floating /* || sel->isfixed */);
+    set_floating(sel, !sel->floating /* || sel->isfixed */);
     return 0;
 }
 
@@ -362,7 +365,7 @@ int quit(lua_State *L)
 
 int zoom(lua_State *L)
 {
-    struct client *c, *old = selClient();
+    struct client *c, *old = selected_client();
 
     if (!old || old->floating)
         return 0;
@@ -370,7 +373,7 @@ int zoom(lua_State *L)
     /* Search for the first tiled window that is not sel, marking sel as
      * NULL if we pass it along the way */
     wl_list_for_each(c, &clients,
-            link) if (visibleon(c, selMon) && !c->floating) {
+            link) if (visibleon(c, selected_monitor) && !c->floating) {
         if (c != old)
             break;
         old = NULL;
@@ -387,8 +390,8 @@ int zoom(lua_State *L)
     wl_list_remove(&old->link);
     wl_list_insert(&clients, &old->link);
 
-    focusClient(nextClient(), old, true);
-    arrange(selMon, false);
+    focus_client(nextClient(), old, true);
+    arrange(selected_monitor, false);
     return 0;
 }
 
@@ -452,17 +455,17 @@ int readOverlay(lua_State *L)
 
 int killClient(lua_State *L)
 {
-    struct client *sel = selClient();
+    struct client *sel = selected_client();
     if (sel) {
         switch (sel->type) {
-            case XDGShell:
+            case XDG_SHELL:
                 wlr_xdg_toplevel_send_close(sel->surface.xdg);
                 break;
-            case LayerShell:
+            case LAYER_SHELL:
                 wlr_layer_surface_v1_close(sel->surface.layer);
                 break;
-            case X11Managed:
-            case X11Unmanaged:
+            case X11_MANAGED:
+            case X11_UNMANAGED:
                 wlr_xwayland_surface_close(sel->surface.xwayland);
         }
     }

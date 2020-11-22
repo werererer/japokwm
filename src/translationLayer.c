@@ -1,17 +1,18 @@
 #include "translationLayer.h"
-#include "actions.h"
-#include "tile/tile.h"
+#include "lib/actions/actions.h"
+#include "lib/info/info.h"
 #include "parseConfig.h"
-#include "info.h"
+#include "tile/tile.h"
 
 static const struct luaL_Reg action[] =
 {
-    {"arrangeThis", arrangeThis},
-    {"focusOnHiddenStack", focusOnHiddenStack},
-    {"focusOnStack", focusOnStack},
+    {"arrangeThis", arrange_this},
+    {"focusOnHiddenStack", focus_on_hidden_stack},
+    {"focusOnStack", focus_on_stack},
     {"kill", killClient},
     {"moveResize", moveResize},
     {"quit", quit},
+    {"createOverlay", },
     {"readOverlay", readOverlay},
     {"spawn", spawn},
     {"tag", tag},
@@ -19,7 +20,7 @@ static const struct luaL_Reg action[] =
     {"toggleFloating", toggleFloating},
     {"toggleTag", toggletag},
     {"toggleView", toggleView},
-    {"updateLayout", updateLayout},
+    {"updateLayout", update_layout},
     {"view", view},
     {"zoom", zoom},
     {NULL, NULL},

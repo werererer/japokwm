@@ -2,7 +2,6 @@
 #define TILEUTILS
 #include "utils/coreUtils.h"
 #include "client.h"
-#include "tile/tileTexture.h"
 
 struct client *focustop(struct monitor *m);
 void arrange(struct monitor *m, bool reset);

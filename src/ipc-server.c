@@ -397,14 +397,14 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
         case IPC_GET_WORKSPACES:
             {
                 json_object *array = json_object_new_array();
-                struct tagset *tagset = selMon->tagset;
+                struct tagset *tagset = selected_monitor->tagset;
                 for (int i = 0; i < tagset->tags.length; i++) {
                     json_object_array_add(
                             array,
                             ipc_json_describe_tag(
-                                tagsetGetTag(tagset, i),
+                                get_tag_from_tagset(tagset, i),
                                 (tagset->focusedTag == i),
-                                (tagset->selTags[0] & positionToFlag(i))
+                                (tagset->selTags[0] & position_to_flag(i))
                                 ));
                 }
                 const char * json_string = json_object_get_string(array);

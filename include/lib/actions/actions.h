@@ -7,9 +7,9 @@
 #include "monitor.h"
 #include "client.h"
 
-int arrangeThis(lua_State *L);
-int focusOnHiddenStack(lua_State *L);
-int focusOnStack(lua_State *L);
+int arrange_this(lua_State *L);
+int focus_on_hidden_stack(lua_State *L);
+int focus_on_stack(lua_State *L);
 int moveClient(lua_State *L);
 int moveResize(lua_State *L);
 int quit(lua_State *L);
@@ -21,7 +21,7 @@ int toggleAddView(lua_State *L);
 int toggleFloating(lua_State *L);
 int toggleView(lua_State *L);
 int toggletag(lua_State *L);
-int updateLayout(lua_State *L);
+int update_layout(lua_State *L);
 int view(lua_State *L);
 int zoom(lua_State *L);
 // kill

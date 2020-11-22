@@ -71,7 +71,7 @@ struct focus_inactive_data {
 
 json_object *ipc_json_describe_tag(struct tag *tag, bool focused, bool selected) {
     struct wlr_box box;
-    box = selMon->m;
+    box = selected_monitor->m;
 
     int i = strlen(tag->name) + 1;
     char s[i];
@@ -83,8 +83,8 @@ json_object *ipc_json_describe_tag(struct tag *tag, bool focused, bool selected)
     json_object *object = ipc_json_create_node(0, s, selected, false, NULL, &box);
     json_object_object_add(object, "num", json_object_new_int(0));
     json_object_object_add(object, "fullscreen_mode", json_object_new_int(0));
-    json_object_object_add(object, "output", selMon->output ?
-            json_object_new_string(selMon->output->name) : NULL);
+    json_object_object_add(object, "output", selected_monitor->output ?
+            json_object_new_string(selected_monitor->output->name) : NULL);
     json_object_object_add(object, "type", json_object_new_string("workspace"));
     json_object_object_add(object, "urgent",
             json_object_new_boolean(false)); 
@@ -94,11 +94,11 @@ json_object *ipc_json_describe_tag(struct tag *tag, bool focused, bool selected)
 }
 
 json_object *ipc_json_describe_node(struct client *c) {
-    bool focused = selClient() == c;
+    bool focused = selected_client() == c;
     char *title = c->title;
 
     struct wlr_box box;
-    box = selMon->m;
+    box = selected_monitor->m;
 
     json_object *focus = json_object_new_array();
 

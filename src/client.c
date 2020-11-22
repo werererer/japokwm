@@ -7,7 +7,6 @@
 #include "utils/coreUtils.h"
 #include "server.h"
 #include "tile/tileUtils.h"
-#include "surface.h"
 #include "popup.h"
 
 //global variables
@@ -67,16 +66,16 @@ void applyrules(struct client *c)
     /* rule matching */
     c->floating = false;
     switch (c->type) {
-        case XDGShell:
+        case XDG_SHELL:
             appid = c->surface.xdg->toplevel->app_id;
             title = c->surface.xdg->toplevel->title;
             break;
-        case LayerShell:
+        case LAYER_SHELL:
             appid = "test";
             title = "test";
             break;
-        case X11Managed:
-        case X11Unmanaged:
+        case X11_MANAGED:
+        case X11_UNMANAGED:
             appid = c->surface.xwayland->class;
             title = c->surface.xwayland->title;
             break;
@@ -94,17 +93,17 @@ void applyrules(struct client *c)
             i = 0;
             wl_list_for_each(m, &mons, link)
                 if (r->monitor == i++)
-                    selMon = m;
+                    selected_monitor = m;
         }
     }
 }
 
-struct client *selClient()
+struct client *selected_client()
 {
     if (wl_list_length(&focusStack))
     {
         struct client *c = wl_container_of(focusStack.next, c, flink);
-        if (!visibleon(c, selMon))
+        if (!visibleon(c, selected_monitor))
             return NULL;
         else
             return c;
@@ -118,7 +117,7 @@ struct client *nextClient()
     if (wl_list_length(&focusStack) >= 2)
     {
         struct client *c = wl_container_of(focusStack.next->next, c, flink);
-        if (!visibleon(c, selMon))
+        if (!visibleon(c, selected_monitor))
             return NULL;
         else
             return c;
@@ -132,7 +131,7 @@ struct client *prevClient()
     if (wl_list_length(&focusStack) >= 2)
     {
         struct client *c = wl_container_of(focusStack.prev, c, flink);
-        if (!visibleon(c, selMon))
+        if (!visibleon(c, selected_monitor))
             return NULL;
         else
             return c;
@@ -149,7 +148,7 @@ struct client *getClient(int i)
         return NULL;
     if (i == 0)
     {
-        c = selClient();
+        c = selected_client();
     } else if (i > 0) {
         struct wl_list *pos = &focusStack;
         while (i > 0) {
@@ -175,7 +174,7 @@ struct client *firstClient()
     {
         struct client *c = wl_container_of(stack.next, c, link);
         wl_list_for_each(c, &stack, slink) {
-            if (!visibleon(c, selMon))
+            if (!visibleon(c, selected_monitor))
                 continue;
             return c;
         }
@@ -190,7 +189,7 @@ struct client *lastClient()
         struct client *c = wl_container_of(stack.next, c, link);
         int i = 1;
         wl_list_for_each(c, &stack, slink) {
-            if (!visibleon(c, selMon))
+            if (!visibleon(c, selected_monitor))
                 continue;
             if (i > containersInfo.n)
                 return c;
@@ -213,19 +212,19 @@ struct client *xytoclient(double x, double y)
     return NULL;
 }
 
-struct wlr_surface *getWlrSurface(struct client *c)
+struct wlr_surface *get_wlrsurface(struct client *c)
 {
     if (!c)
         return NULL;
     switch (c->type) {
-        case XDGShell:
+        case XDG_SHELL:
             return c->surface.xdg->surface;
             break;
-        case LayerShell:
+        case LAYER_SHELL:
             return c->surface.layer->surface;
             break;
-        case X11Managed:
-        case X11Unmanaged:
+        case X11_MANAGED:
+        case X11_UNMANAGED:
             return c->surface.xwayland->surface;
         default:
             printf("wlr_surface is not supported: \n");
@@ -249,7 +248,7 @@ bool visibleon(struct client *c, struct monitor *m)
     // TODO: more sophisticated approach with sticky windows needed
     if (m && c) {
         if (c->mon == m) {
-            if (c->type == LayerShell && c->mon == m) {
+            if (c->type == LAYER_SHELL && c->mon == m) {
                 return true;
             }
 
@@ -275,7 +274,7 @@ bool visibleonTag(struct client *c, struct monitor *m, size_t focusedTag)
 {
     if (m && c) {
         if (c->mon == m) {
-            return c->tagset->selTags[0] & positionToFlag(focusedTag);
+            return c->tagset->selTags[0] & position_to_flag(focusedTag);
         }
     }
     return false;
@@ -285,11 +284,11 @@ static void unfocusClient(struct client *c)
 {
     if (c) {
         switch (c->type) {
-            case XDGShell:
+            case XDG_SHELL:
                 wlr_xdg_toplevel_set_activated(c->surface.xdg, false);
                 break;
-            case X11Managed:
-            case X11Unmanaged:
+            case X11_MANAGED:
+            case X11_UNMANAGED:
                 wlr_xwayland_surface_activate(c->surface.xwayland, false);
                 break;
             default:
@@ -298,7 +297,7 @@ static void unfocusClient(struct client *c)
     }
 }
 
-void focusClient(struct client *old, struct client *c, bool lift)
+void focus_client(struct client *old, struct client *c, bool lift)
 {
     if (old == c)
         return;
@@ -317,7 +316,7 @@ void focusClient(struct client *old, struct client *c, bool lift)
     }
 
     /* Have a client, so focus its top-level wlr_surface */
-    wlr_seat_keyboard_notify_enter(server.seat, getWlrSurface(c), kb->keycodes,
+    wlr_seat_keyboard_notify_enter(server.seat, get_wlrsurface(c), kb->keycodes,
             kb->num_keycodes, &kb->modifiers);
 
     /* Put the new client atop the focus stack */
@@ -326,11 +325,11 @@ void focusClient(struct client *old, struct client *c, bool lift)
 
     /* Activate the new client */
     switch (c->type) {
-        case XDGShell:
+        case XDG_SHELL:
             wlr_xdg_toplevel_set_activated(c->surface.xdg, true);
             break;
-        case X11Managed:
-        case X11Unmanaged:
+        case X11_MANAGED:
+        case X11_UNMANAGED:
             wlr_xwayland_surface_activate(c->surface.xwayland, true);
             break;
         default:
@@ -345,12 +344,12 @@ void focusTopClient(struct client *old, bool lift)
 
     // focus_stack should not be changed while iterating
     wl_list_for_each(c, &focusStack, flink)
-        if (visibleon(c, selMon)) {
+        if (visibleon(c, selected_monitor)) {
             focus = true;
             break;
         }
     if (focus)
-        focusClient(old, c, lift);
+        focus_client(old, c, lift);
 }
 
 void liftClient(struct client *c)

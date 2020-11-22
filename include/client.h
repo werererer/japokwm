@@ -7,7 +7,7 @@
 #include "tagset.h"
 #include "parseConfig.h"
 
-enum shell { XDGShell, X11Managed, X11Unmanaged, LayerShell }; /* client types */
+enum shell { XDG_SHELL, X11_MANAGED, X11_UNMANAGED, LAYER_SHELL }; /* client types */
 
 struct client {
     struct wl_list link;
@@ -45,7 +45,7 @@ bool visibleon(struct client *c, struct monitor *m);
 bool hiddenon(struct client *c, struct monitor *m);
 bool visibleonTag(struct client *c, struct monitor *m, size_t focusedTag);
 struct client *nextClient();
-struct client *selClient();
+struct client *selected_client();
 struct client *getClient(int i);
 /* get first visible client */
 struct client *firstClient();
@@ -57,7 +57,7 @@ struct wlr_surface *xytosurface(double x, double y);
 void addClientToFocusStack(struct client *c);
 void addClientToStack(struct client *c);
 void applyrules(struct client *c);
-void focusClient(struct client *old, struct client *c, bool lift);
+void focus_client(struct client *old, struct client *c, bool lift);
 void focusTopClient(struct client *old, bool lift);
 void liftClient(struct client *c);
 
@@ -68,5 +68,5 @@ extern struct wl_list independents;
 extern struct wl_list layerStack;   /* stacking z-order */
 extern struct wlr_output_layout *output_layout;
 
-struct wlr_surface *getWlrSurface(struct client *c);
+struct wlr_surface *get_wlrsurface(struct client *c);
 #endif

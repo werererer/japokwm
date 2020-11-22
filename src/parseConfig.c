@@ -1,17 +1,18 @@
 #include "parseConfig.h"
-#include <lauxlib.h>
-#include <lua.h>
-#include <lualib.h>
-#include <stdlib.h>
-#include <string.h>
-#include <wlr/util/log.h>
 #include <wordexp.h>
+#include <wlr/util/log.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include <lualib.h>
+#include <lua.h>
 #include <libgen.h>
-#include "tile/tileUtils.h"
+#include <lauxlib.h>
 #include "utils/gapUtils.h"
 #include "translationLayer.h"
-#include "actions.h"
+#include "tile/tileUtils.h"
 #include "root.h"
+#include "lib/actions/actions.h"
 
 const char *config_paths[] = {
     "$HOME/.config/juliawm/",
@@ -156,11 +157,11 @@ int reloadConfig(lua_State *L)
         free(wlr_list_pop(&tagNames));
     wlr_list_finish(&tagNames);
 
-    unsigned int focusedTag = selMon->tagset->focusedTag;
-    unsigned int selTags = selMon->tagset->selTags[0];
-    tagsetDestroy(selMon->tagset);
+    unsigned int focusedTag = selected_monitor->tagset->focusedTag;
+    unsigned int selTags = selected_monitor->tagset->selTags[0];
+    destroy_tagset(selected_monitor->tagset);
     update_config(L);
-    selMon->tagset = tagsetCreate(&tagNames, focusedTag, selTags);
+    selected_monitor->tagset = create_tagset(&tagNames, focusedTag, selTags);
 
     // reconfigure clients
     struct client *c = NULL;
@@ -169,6 +170,6 @@ int reloadConfig(lua_State *L)
     }
 
     lua_pushboolean(L, true);
-    arrangeThis(L);
+    arrange_this(L);
     return 0;
 }

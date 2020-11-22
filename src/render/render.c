@@ -76,7 +76,7 @@ static void render(struct wlr_surface *surface, int sx, int sy, void *data)
 
 static void renderClients(struct monitor *m)
 {
-    struct client *c, *sel = selClient();
+    struct client *c, *sel = selected_client();
     const float *color;
     double ox, oy;
     int w, h;
@@ -91,7 +91,7 @@ static void renderClients(struct monitor *m)
                     output_layout, m->output, &c->geom))
             continue;
 
-        surface = getWlrSurface(c);
+        surface = get_wlrsurface(c);
         ox = c->geom.x, oy = c->geom.y;
         wlr_output_layout_output_coords(output_layout, m->output,
                 &ox, &oy);
@@ -122,7 +122,7 @@ static void renderClients(struct monitor *m)
         rdata.x = c->geom.x + c->bw;
         rdata.y = c->geom.y + c->bw;
 
-        render(getWlrSurface(c), 0, 0, &rdata);
+        render(get_wlrsurface(c), 0, 0, &rdata);
     }
 }
 
@@ -133,7 +133,7 @@ static void renderLayerShell(struct monitor *m, enum zwlr_layer_shell_v1_layer l
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each_reverse(c, &layerStack, llink) {
-        if (c->type != LayerShell)
+        if (c->type != LAYER_SHELL)
             continue;
         if (c->surface.layer->current.layer != layer)
             continue;
@@ -153,7 +153,7 @@ static void renderLayerShell(struct monitor *m, enum zwlr_layer_shell_v1_layer l
         rdata.x = c->geom.x + c->bw;
         rdata.y = c->geom.y + c->bw;
 
-        render(getWlrSurface(c), 0, 0, &rdata);
+        render(get_wlrsurface(c), 0, 0, &rdata);
     }
 }
 
@@ -161,7 +161,7 @@ static void renderLayerShell(struct monitor *m, enum zwlr_layer_shell_v1_layer l
 static void renderTexture(void *texture)
 {
     struct posTexture *text = texture;
-    wlr_render_texture(drw, text->texture, selMon->output->transform_matrix, 
+    wlr_render_texture(drw, text->texture, selected_monitor->output->transform_matrix, 
                        text->x, text->y, 1);
 }
 
@@ -225,16 +225,16 @@ void renderFrame(struct wl_listener *listener, void *data)
      * generally at the output's refresh rate (e.g. 60Hz). */
     struct monitor *m = wl_container_of(listener, m, frame);
 
-    if (selMon) {
-        struct wlr_box b = selMon->m;
-        selMon->m = *wlr_output_layout_get_box(output_layout, selMon->output);
+    if (selected_monitor) {
+        struct wlr_box b = selected_monitor->m;
+        selected_monitor->m = *wlr_output_layout_get_box(output_layout, selected_monitor->output);
         // resize clients
-        if (selMon->m.width != b.width || selMon->m.height != b.height) {
-            arrange(selMon, false);
+        if (selected_monitor->m.width != b.width || selected_monitor->m.height != b.height) {
+            arrange(selected_monitor, false);
             struct client *c;
             wl_list_for_each(c, &layerStack, llink) {
                 wlr_layer_surface_v1_configure(c->surface.layer,
-                        selMon->output->width, selMon->output->height);
+                        selected_monitor->output->width, selected_monitor->output->height);
             }
         }
     }

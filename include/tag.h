@@ -13,7 +13,4 @@ struct tag {
     struct layout layout;
 };
 
-void tagCreate(struct tag *tag, const char *name);
-void tagDestroy(struct tag *tag);
-
 #endif /* TAG_H */

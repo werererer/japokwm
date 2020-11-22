@@ -43,15 +43,15 @@ void arrange(struct monitor *m, bool reset)
 
     setRootArea(m);
     containerSurroundGaps(&root.w, outerGap);
-    if (selLayout(tagset).funcId) {
+    if (selected_layout(tagset).funcId) {
         struct client *c = NULL;
 
         int n = tiledClientCount(m);
         /* call arrange function
          * if previous layout is different or reset -> reset layout */
-        if (strcmp(prevLayout.symbol, selLayout(tagset).symbol) != 0 || reset) {
-            prevLayout = selLayout(tagset);
-            lua_rawgeti(L, LUA_REGISTRYINDEX, selLayout(tagset).funcId);
+        if (strcmp(prevLayout.symbol, selected_layout(tagset).symbol) != 0 || reset) {
+            prevLayout = selected_layout(tagset);
+            lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(tagset).funcId);
             lua_pushinteger(L, n);
             lua_pcall(L, 1, 0, 0);
         }
@@ -122,16 +122,16 @@ void resize(struct client *c, int x, int y, int w, int h, bool interact)
 
     /* wlroots makes this a no-op if size hasn't changed */
     switch (c->type) {
-        case XDGShell:
+        case XDG_SHELL:
             c->resize = wlr_xdg_toplevel_set_size(c->surface.xdg,
                     c->geom.width, c->geom.height);
             break;
-        case LayerShell:
+        case LAYER_SHELL:
             wlr_layer_surface_v1_configure(c->surface.layer,
                     c->geom.width, c->geom.height);
             break;
-        case X11Managed:
-        case X11Unmanaged:
+        case X11_MANAGED:
+        case X11_UNMANAGED:
             wlr_xwayland_surface_configure(c->surface.xwayland,
                     c->geom.x, c->geom.y, c->geom.width, c->geom.height);
     }
@@ -147,7 +147,7 @@ void updateHiddenStatus()
             c->hidden = false;
             continue;
         }
-        if (existon(c, selMon))
+        if (existon(c, selected_monitor))
         {
             if (i < containersInfo.n)
                 c->hidden = false;

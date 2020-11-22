@@ -7,7 +7,7 @@
 #include <wlr/types/wlr_xcursor_manager.h>
 
 /* enums */
-enum cursorMode { CurNormal, CurMove, CurResize }; /* cursor */
+enum cursorMode { CurNormal, CURSOR_MOVE, CURSOR_RESIZE }; /* cursor */
 struct server {
     struct wl_display *display;
     struct wl_event_loop *wl_event_loop;
