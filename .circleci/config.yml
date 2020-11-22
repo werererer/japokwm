@@ -13,7 +13,7 @@ jobs:
             - run: pacman -S --noconfirm base-devel
             - run: pacman -S --noconfirm meson
             - run: pacman -S --noconfirm wlroots
-            - run: pacman -S --noconfirm julia
+            - run: pacman -S --noconfirm lua
             - run: pacman -S --noconfirm cairo
             - run: pacman -S --noconfirm wayland
             - run: pacman -S --noconfirm wayland-protocols
