@@ -163,7 +163,7 @@ void write_overlay(struct monitor *m, const char *layout)
     join_path(file, filename);
     mkdir(file, 0755);
     strcpy(filetmp, file);
-    for (int i = 0; i <= 8; i++) {
+    for (int i = 1; i <= 8; i++) {
         strcpy(file, filetmp);
         intToString(filename, i);
         join_path(file, filename);
@@ -175,17 +175,15 @@ void write_overlay(struct monitor *m, const char *layout)
             return;
         }
 
-        for (int j = 1; j <= renderData.textures.length; j++) {
+        for (int j = 0; j < renderData.textures.length; j++) {
             // TODO: algorithm is not really efficient fix it
             wl_list_for_each(c, &clients, link) {
                 if (visible_on_tag(c, m, i)) {
-                    struct wlr_fbox container =
-                        get_relative_box(
-                                postexture_to_container(
-                                    renderData.textures.items[j]),
-                                selected_monitor->m
-                                );
-                    write_container_to_file(fd, container);
+                    struct wlr_box container =
+                        postexture_to_container(renderData.textures.items[j]);
+                    struct wlr_fbox box =
+                        get_relative_box(container, selected_monitor->m);
+                    write_container_to_file(fd, box);
                 }
             }
         }
@@ -196,10 +194,18 @@ void write_overlay(struct monitor *m, const char *layout)
 
 struct wlr_box postexture_to_container(struct posTexture *pTexture)
 {
-    struct wlr_box c;
-    c.x = pTexture->x;
-    c.y = pTexture->y;
-    c.width = pTexture->texture->width;
-    c.height = pTexture->texture->height;
-    return c;
+    struct wlr_box box;
+    if (!pTexture) {
+        box.x = 0;
+        box.y = 0;
+        box.width = 0;
+        box.height = 0;
+        return box;
+    }
+
+    box.x = pTexture->x;
+    box.y = pTexture->y;
+    box.width = pTexture->texture->width;
+    box.height = pTexture->texture->height;
+    return box;
 }

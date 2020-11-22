@@ -37,14 +37,10 @@ struct wlr_box get_absolute_box(struct wlr_box box, struct wlr_fbox b)
 struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box b)
 {
     struct wlr_fbox w;
-    w.x = box.x;
-    w.y = box.y;
-    w.width = box.width;
-    w.height = box.height;
-    w.x = w.width * b.x + w.x;
-    w.y = w.height * b.y + w.y;
-    w.width = w.width * b.width;
-    w.height = w.height * b.height;
+    w.x = (float)box.x / b.width;
+    w.y = (float)box.y / b.height;
+    w.width = (float)box.width / b.width;
+    w.height = (float)box.height / b.height;
     return w;
 }
 
