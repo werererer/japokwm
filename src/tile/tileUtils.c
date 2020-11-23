@@ -61,8 +61,7 @@ void arrange(struct monitor *m, bool reset)
         if (strcmp(prevLayout.symbol, selected_layout(tagset).symbol) != 0 || reset) {
             prevLayout = selected_layout(tagset);
             lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(tagset).funcId);
-            lua_pushinteger(L, n);
-            lua_pcall(L, 1, 0, 0);
+            lua_pcall(L, 0, 0, 0);
         }
 
         /* update layout aquired from that was set with the arrange function */

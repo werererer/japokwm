@@ -186,15 +186,15 @@ function resizeThisAll(n, d)
     action.arrangeThis(false)
 end
 
-function tile(n)
+function tile()
     layoutData = action.readOverlay("tile")
 end
 
-function monocle(n)
+function monocle()
     layoutData = action.readOverlay("monocle")
 end
 
-function twoPane(n)
+function twoPane()
     layoutData = action.readOverlay("twoPane")
 end
 

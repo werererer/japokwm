@@ -23,9 +23,9 @@ cursorMode = {
 }
 
 layouts = {
-    { "[M]", function(n) monocle(n) end },
-    { "[]=", function(n) tile(n) end },
-    { "><>", function(n) floating(n) end },
+    { "[M]", function() monocle() end },
+    { "[]=", function() tile() end },
+    { "><>", function() floating() end },
 }
 layout = layouts[layoutId]
 

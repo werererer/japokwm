@@ -60,7 +60,7 @@ keys = {
     {mod.." w",           function(n) setLayout(3) end},
     -- {mod.." l",           function(n) Layouts.resizeThisAll(1/10, Direction.RIGHT) end},
     -- {mod.." h",           function(n) Layouts.resizeThisAll(1/10, Layouts.LEFT) end},
-    {mod.." "..shift.." s",    function(n) action.writeThisOverlay("testLayout") end},
+    {mod.." "..shift.." s",    function(n) action.writeThisOverlay("t") end},
     -- {mod.." parenright",  function(n) tag(~0) end},
     -- {mod.." greater",     function(n) tagmon(1) end},
     -- {mod.." less",        function(n) tagmon(-1) end},

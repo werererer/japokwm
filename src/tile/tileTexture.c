@@ -178,7 +178,7 @@ void write_overlay(struct monitor *m, const char *layout)
         for (int j = 0; j < renderData.textures.length; j++) {
             // TODO: algorithm is not really efficient fix it
             wl_list_for_each(c, &clients, link) {
-                if (visible_on_tag(c, m, i)) {
+                if (visible_on_tag(c, m, i-1)) {
                     struct wlr_box container =
                         postexture_to_container(renderData.textures.items[j]);
                     struct wlr_fbox box =
