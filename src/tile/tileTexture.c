@@ -100,6 +100,12 @@ void create_overlay()
             continue;
         intToString(text, c->textPosition+1);
 
+
+        struct posTexture *pTexture =
+            create_textbox(c->geom, overlayColor, textColor, text);
+        // sync properties
+        pTexture->mon = c->mon;
+        pTexture->tagset = c->tagset;
         wlr_list_push(&renderData.textures,
                 create_textbox(c->geom, overlayColor, textColor, text));
         i++;
