@@ -5,6 +5,7 @@
 #include "utils/stringUtils.h"
 #include "utils/writeFile.h"
 #include "tile/tileUtils.h"
+#include "tagset.h"
 #include <cairo/cairo.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -95,20 +96,21 @@ void create_overlay()
     char text[NUM_DIGITS];
     int i = 0;
     wl_list_for_each_reverse(c, &stack, slink) {
-        c->position = i;
-        if (!visibleon(c, c->mon))
+        if (c->hidden)
             continue;
-        intToString(text, c->textPosition+1);
 
-
-        struct posTexture *pTexture =
-            create_textbox(c->geom, overlayColor, textColor, text);
-        // sync properties
-        pTexture->mon = c->mon;
-        pTexture->tagset = c->tagset;
-        wlr_list_push(&renderData.textures,
-                create_textbox(c->geom, overlayColor, textColor, text));
+        c->position = i;
         i++;
+        if (c->mon == selected_monitor) {
+            intToString(text, c->textPosition+1);
+
+            struct posTexture *pTexture =
+                create_textbox(c->geom, overlayColor, textColor, text);
+            // sync properties
+            pTexture->mon = c->mon;
+            pTexture->tagset = c->tagset;
+            wlr_list_push(&renderData.textures, pTexture);
+        }
     }
 }
 
@@ -125,8 +127,11 @@ void update_client_overlay(struct client *c)
 
         intToString(text, c->textPosition+1);
 
-        wlr_list_insert(&renderData.textures, c->position,
-                create_textbox(c->geom, overlayColor, textColor, text));
+        struct posTexture *pTexture =
+            create_textbox(c->geom, overlayColor, textColor, text);
+        pTexture->mon = c->mon;
+        pTexture->tagset = c->tagset;
+        wlr_list_insert(&renderData.textures, c->position, pTexture);
     } else {
         if (&renderData.textures.length > 0)
             wlr_list_clear(&renderData.textures);
@@ -154,11 +159,11 @@ void update_overlay()
     }
 }
 
-bool postexture_visible_on_tag(struct posTexture *pTexture, struct monitor *m, size_t focusedTag)
+bool postexture_visible_on_flag(struct posTexture *pTexture, struct monitor *m, size_t flag)
 {
     if (m && pTexture) {
         if (pTexture->mon == m) {
-            return pTexture->tagset->selTags[0] & position_to_flag(focusedTag);
+            return pTexture->tagset->selTags[0] & flag;
         }
     }
     return false;
@@ -191,10 +196,11 @@ void write_overlay(struct monitor *m, const char *layout)
         }
 
         int k = 0;
+        printf("LENGTH: %lu\n", renderData.textures.length);
         for (int j = 0; j < renderData.textures.length; j++) {
-            // TODO: algorithm is not really efficient fix it
+            // TODO: todo fix order
             struct posTexture *pTexture = renderData.textures.items[j];
-            if (postexture_visible_on_tag(pTexture, m, i)) {
+            if (postexture_visible_on_flag(pTexture, m, position_to_flag(i))) {
                 struct wlr_box container = postexture_to_container(pTexture);
                 struct wlr_fbox box =
                     get_relative_box(container, selected_monitor->m);

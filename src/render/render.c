@@ -161,8 +161,10 @@ static void renderLayerShell(struct monitor *m, enum zwlr_layer_shell_v1_layer l
 static void renderTexture(void *texture)
 {
     struct posTexture *text = texture;
-    wlr_render_texture(drw, text->texture, selected_monitor->output->transform_matrix, 
-                       text->x, text->y, 1);
+    if (postexture_visible_on_flag(text, selected_monitor, selected_monitor->tagset->selTags[0])) {
+        wlr_render_texture(drw, text->texture, selected_monitor->output->transform_matrix,
+                text->x, text->y, 1);
+    }
 }
 
 

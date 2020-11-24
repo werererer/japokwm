@@ -35,6 +35,7 @@ void update_overlay();
 void update_overlay_count(size_t count);
 void write_overlay(struct monitor *m, const char *layout);
 struct wlr_box postexture_to_container(struct posTexture *pTexture);
+bool postexture_visible_on_flag(struct posTexture *pTexture, struct monitor *m, size_t focusedTag);
 
 extern bool overlay;
 #endif /* TILE_TEXTURE_H */
