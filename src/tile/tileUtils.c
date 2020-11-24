@@ -18,7 +18,7 @@
 #include "utils/parseConfigUtils.h"
 #include "root.h"
 
-struct containersInfo containersInfo;
+struct containers_info containers_info;
 
 /* *
  * the wlr_fbox has includes the window size in percent.
@@ -50,26 +50,27 @@ void arrange(struct monitor *m, bool reset)
     struct tagset *tagset = m->tagset;
     m->m = *wlr_output_layout_get_box(output_layout, m->output);
 
-    setRootArea(m);
-    containerSurroundGaps(&root.w, outerGap);
+    set_root_area(m);
+    container_surround_gaps(&root.w, outerGap);
     if (selected_layout(tagset).funcId) {
         struct client *c = NULL;
 
-        int n = tiledClientCount(m);
+        int n = tiled_client_count(m);
         /* call arrange function
          * if previous layout is different or reset -> reset layout */
-        if (strcmp(prevLayout.symbol, selected_layout(tagset).symbol) != 0 || reset) {
-            prevLayout = selected_layout(tagset);
+        if (strcmp(prev_layout.symbol, selected_layout(tagset).symbol) != 0 || reset) {
+            prev_layout = selected_layout(tagset);
             lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(tagset).funcId);
-            lua_pcall(L, 0, 0, 0);
+            lua_pushinteger(L, n);
+            lua_pcall(L, 1, 0, 0);
         }
 
         /* update layout aquired from that was set with the arrange function */
         lua_getglobal(L, "update");
         lua_pushinteger(L, n);
         lua_pcall(L, 1, 1, 0);
-        containersInfo.n = lua_rawlen(L, -1);
-        containersInfo.id = luaL_ref(L, LUA_REGISTRYINDEX);
+        containers_info.n = lua_rawlen(L, -1);
+        containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
 
         update_hidden_status();
 
@@ -83,7 +84,7 @@ void arrange(struct monitor *m, bool reset)
             if (!c->floating)
                 i++;
         }
-        update_overlay_count(i);
+        update_overlay();
     }
 }
 
@@ -96,8 +97,8 @@ void arrange_client(struct client *c)
     struct wlr_fbox con;
     if (!c->floating) {
         // get lua container
-        lua_rawgeti(L, LUA_REGISTRYINDEX, containersInfo.id);
-        lua_rawgeti(L, -1, MIN(c->position+1, containersInfo.n));
+        lua_rawgeti(L, LUA_REGISTRYINDEX, containers_info.id);
+        lua_rawgeti(L, -1, MIN(c->position+1, containers_info.n));
         lua_rawgeti(L, -1, 1);
         con.x = luaL_checknumber(L, -1);
         lua_pop(L, 1);
@@ -112,11 +113,11 @@ void arrange_client(struct client *c)
         lua_pop(L, 1);
         lua_pop(L, 1);
         struct wlr_box box = get_absolute_box(root.w, con);
-        containerSurroundGaps(&box, innerGap);
+        container_surround_gaps(&box, innerGap);
         resize(c, box.x, box.y, box.width, box.height, false);
-        containersInfo.id = luaL_ref(L, LUA_REGISTRYINDEX);
+        containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
     }
-    update_client_overlay(c);
+    /* update_client_overlay(c); */
 }
 
 void resize(struct client *c, int x, int y, int w, int h, bool interact)
@@ -165,7 +166,7 @@ void update_hidden_status()
         }
         if (existon(c, selected_monitor))
         {
-            if (i < containersInfo.n)
+            if (i < containers_info.n)
                 c->hidden = false;
             else
                 c->hidden = true;
@@ -174,7 +175,7 @@ void update_hidden_status()
     }
 }
 
-int tiledClientCount(struct monitor *m)
+int tiled_client_count(struct monitor *m)
 {
     struct client *c;
     int n = 0;

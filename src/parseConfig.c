@@ -136,8 +136,8 @@ int update_config(lua_State *L)
     /* keyboard */
     repeatRate = get_config_int(L, "repeatRate");
     repeatDelay = get_config_int(L, "repeatDelay");
-    defaultLayout = getConfigLayout(L, "defaultLayout");
-    prevLayout = (struct layout){.symbol = "", .funcId = 0};
+    defaultLayout = get_config_layout(L, "defaultLayout");
+    prev_layout = (struct layout){.symbol = "", .funcId = 0};
 
     /* commands */
     termcmd = get_config_str(L, "termcmd");

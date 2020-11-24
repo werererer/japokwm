@@ -24,8 +24,9 @@ cursorMode = {
 
 layouts = {
     { "[M]", function() monocle() end },
-    { "[]=", function() tile() end },
+    { "[]=", function() twoPane() end },
     { "><>", function() floating() end },
+    { "gf", function() loadLayout("tmp") end },
 }
 layout = layouts[layoutId]
 

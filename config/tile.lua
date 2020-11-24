@@ -17,10 +17,6 @@ layoutData = {
     {
         {0, 0, 1, 1},
     },
-    {
-        {0, 0, 1, 1},
-        {0, 0, 1, 1},
-    },
 }
 
 -- set: which window conf set
@@ -196,6 +192,10 @@ end
 
 function twoPane()
     layoutData = action.readOverlay("twoPane")
+end
+
+function loadLayout(layout)
+    layoutData = action.readOverlay(layout)
 end
 
 function update(n)

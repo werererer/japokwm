@@ -9,10 +9,10 @@ void arrange_client(struct client *c);
 void resize(struct client *c, int x, int y, int w, int h, bool interact);
 void update_hidden_status();
 int thisTiledClientCount();
-int tiledClientCount(struct monitor *m);
+int tiled_client_count(struct monitor *m);
 
 struct wlr_box get_absolute_box(struct wlr_box box, struct wlr_fbox b);
 struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box b);
 
-extern struct containersInfo containersInfo;
+extern struct containers_info containers_info;
 #endif

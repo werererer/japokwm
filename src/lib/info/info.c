@@ -4,7 +4,7 @@
 
 int thisTiledClientCount(lua_State *L)
 {
-    int i = tiledClientCount(selected_monitor);
+    int i = tiled_client_count(selected_monitor);
     lua_pushinteger(L, i);
     return 1;
 }

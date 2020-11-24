@@ -19,6 +19,7 @@ int set_overlay(lua_State *L)
 {
     overlay = lua_toboolean(L, -1);
     lua_pop(L, 1);
+    create_overlay();
     return 0;
 }
 

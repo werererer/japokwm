@@ -32,7 +32,7 @@ void containerAddGaps(struct wlr_box *con, double gap, enum wlr_edges edges) {
         containerAddGapBottom(con, gap);
 }
 
-void containerSurroundGaps(struct wlr_box *con, double gap)
+void container_surround_gaps(struct wlr_box *con, double gap)
 {
     /* *
      * left = x and top = y

@@ -13,5 +13,5 @@ void layoutCreate(struct layout *lt, const char *symbol, int funcId);
 void layoutDestroy(struct layout *lt);
 
 extern struct layout defaultLayout;
-extern struct layout prevLayout;
+extern struct layout prev_layout;
 #endif /* LAYOUT_H */

@@ -132,7 +132,7 @@ static void renderLayerShell(struct monitor *m, enum zwlr_layer_shell_v1_layer l
     struct renderData rdata; 
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    wl_list_for_each_reverse(c, &layerStack, llink) {
+    wl_list_for_each_reverse(c, &layerstack, llink) {
         if (c->type != LAYER_SHELL)
             continue;
         if (c->surface.layer->current.layer != layer)
@@ -223,7 +223,7 @@ void renderFrame(struct wl_listener *listener, void *data)
         if (selected_monitor->m.width != b.width || selected_monitor->m.height != b.height) {
             arrange(selected_monitor, false);
             struct client *c;
-            wl_list_for_each(c, &layerStack, llink) {
+            wl_list_for_each(c, &layerstack, llink) {
                 wlr_layer_surface_v1_configure(c->surface.layer,
                         selected_monitor->output->width, selected_monitor->output->height);
             }

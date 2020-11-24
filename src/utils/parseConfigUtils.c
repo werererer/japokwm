@@ -114,7 +114,7 @@ void callArrangeFunc(lua_State *L, int funcId, int n)
     lua_pcall(L, 0, 0, 0);
 }
 
-void callFunction(lua_State *L, struct containersInfo cInfo)
+void callFunction(lua_State *L, struct containers_info cInfo)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, cInfo.id);
     lua_pushinteger(L, cInfo.n);
@@ -132,7 +132,7 @@ static struct layout getConfigArrayLayout(lua_State *L, size_t i)
     return layout;
 }
 
-struct layout getConfigLayout(lua_State *L, char *name)
+struct layout get_config_layout(lua_State *L, char *name)
 {
     struct layout layout;
     lua_getglobal(L, name);
@@ -193,7 +193,7 @@ struct monRule getConfigMonRule(lua_State *L, char *name)
 
 Key getConfigKey(lua_State *L, char *name)
 {
-    Key key = (Key)getConfigLayout(L, name);
+    Key key = (Key)get_config_layout(L, name);
     return key;
 }
 

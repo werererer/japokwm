@@ -4,6 +4,7 @@
 #include <wayland-util.h>
 
 #include "tile/tile.h"
+#include "tile/tileTexture.h"
 #include "utils/coreUtils.h"
 #include "server.h"
 #include "tile/tileUtils.h"
@@ -11,20 +12,20 @@
 
 //global variables
 struct wl_list clients; /* tiling order */
-struct wl_list focusStack;  /* focus order */
+struct wl_list focus_stack;  /* focus order */
 struct wl_list stack;   /* stacking z-order */
 struct wl_list independents;
-struct wl_list layerStack;   /* stacking z-order */
+struct wl_list layerstack;   /* stacking z-order */
 struct wlr_output_layout *output_layout;
 
-void addClientToFocusStack(struct client *c)
+void add_client_to_focusstack(struct client *c)
 {
     if (c) {
-        wl_list_insert(&focusStack, &c->flink);
+        wl_list_insert(&focus_stack, &c->flink);
     }
 }
 
-void addClientToStack(struct client *c)
+void add_client_to_stack(struct client *c)
 {
     if (c) {
         if (c->floating) {
@@ -100,9 +101,9 @@ void applyrules(struct client *c)
 
 struct client *selected_client()
 {
-    if (wl_list_length(&focusStack))
+    if (wl_list_length(&focus_stack))
     {
-        struct client *c = wl_container_of(focusStack.next, c, flink);
+        struct client *c = wl_container_of(focus_stack.next, c, flink);
         if (!visibleon(c, selected_monitor))
             return NULL;
         else
@@ -112,11 +113,11 @@ struct client *selected_client()
     }
 }
 
-struct client *nextClient()
+struct client *next_client()
 {
-    if (wl_list_length(&focusStack) >= 2)
+    if (wl_list_length(&focus_stack) >= 2)
     {
-        struct client *c = wl_container_of(focusStack.next->next, c, flink);
+        struct client *c = wl_container_of(focus_stack.next->next, c, flink);
         if (!visibleon(c, selected_monitor))
             return NULL;
         else
@@ -126,11 +127,11 @@ struct client *nextClient()
     }
 }
 
-struct client *prevClient()
+struct client *prev_client()
 {
-    if (wl_list_length(&focusStack) >= 2)
+    if (wl_list_length(&focus_stack) >= 2)
     {
-        struct client *c = wl_container_of(focusStack.prev, c, flink);
+        struct client *c = wl_container_of(focus_stack.prev, c, flink);
         if (!visibleon(c, selected_monitor))
             return NULL;
         else
@@ -140,17 +141,17 @@ struct client *prevClient()
     }
 }
 
-struct client *getClient(int i)
+struct client *get_client(int i)
 {
     struct client *c;
 
-    if (abs(i) > wl_list_length(&focusStack))
+    if (abs(i) > wl_list_length(&focus_stack))
         return NULL;
     if (i == 0)
     {
         c = selected_client();
     } else if (i > 0) {
-        struct wl_list *pos = &focusStack;
+        struct wl_list *pos = &focus_stack;
         while (i > 0) {
             if (pos->next)
                 pos = pos->next;
@@ -158,7 +159,7 @@ struct client *getClient(int i)
         }
         c = wl_container_of(pos, c, flink);
     } else { // i < 0
-        struct wl_list *pos = &focusStack;
+        struct wl_list *pos = &focus_stack;
         while (i < 0) {
             pos = pos->prev;
             i++;
@@ -170,7 +171,7 @@ struct client *getClient(int i)
 
 struct client *firstClient()
 {
-    if (containersInfo.n)
+    if (containers_info.n)
     {
         struct client *c = wl_container_of(stack.next, c, link);
         wl_list_for_each(c, &stack, slink) {
@@ -182,16 +183,16 @@ struct client *firstClient()
     return NULL;
 }
 
-struct client *lastClient()
+struct client *last_client()
 {
-    if (containersInfo.n)
+    if (containers_info.n)
     {
         struct client *c = wl_container_of(stack.next, c, link);
         int i = 1;
         wl_list_for_each(c, &stack, slink) {
             if (!visibleon(c, selected_monitor))
                 continue;
-            if (i > containersInfo.n)
+            if (i > containers_info.n)
                 return c;
             i++;
         }
@@ -280,6 +281,16 @@ bool visible_on_tag(struct client *c, struct monitor *m, size_t focusedTag)
     return false;
 }
 
+bool client_visible_on_tag(struct client *c, struct monitor *m, size_t focusedTag)
+{
+    if (m && c) {
+        if (c->mon == m) {
+            return c->tagset->selTags[0] & position_to_flag(focusedTag);
+        }
+    }
+    return false;
+}
+
 static void unfocusClient(struct client *c)
 {
     if (c) {
@@ -305,7 +316,7 @@ void focus_client(struct client *old, struct client *c, bool lift)
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
 
     if (lift)
-        liftClient(c);
+        lift_client(c);
 
     unfocusClient(old);
     /* Update wlroots' keyboard focus */
@@ -321,7 +332,7 @@ void focus_client(struct client *old, struct client *c, bool lift)
 
     /* Put the new client atop the focus stack */
     wl_list_remove(&c->flink);
-    addClientToFocusStack(c);
+    add_client_to_focusstack(c);
 
     /* Activate the new client */
     switch (c->type) {
@@ -337,13 +348,13 @@ void focus_client(struct client *old, struct client *c, bool lift)
     }
 }
 
-void focusTopClient(struct client *old, bool lift)
+void focus_top_client(struct client *old, bool lift)
 {
     struct client *c;
     bool focus = false;
 
     // focus_stack should not be changed while iterating
-    wl_list_for_each(c, &focusStack, flink)
+    wl_list_for_each(c, &focus_stack, flink)
         if (visibleon(c, selected_monitor)) {
             focus = true;
             break;
@@ -352,10 +363,10 @@ void focusTopClient(struct client *old, bool lift)
         focus_client(old, c, lift);
 }
 
-void liftClient(struct client *c)
+void lift_client(struct client *c)
 {
     if (c) {
         wl_list_remove(&c->slink);
-        addClientToStack(c);
+        add_client_to_stack(c);
     }
 }

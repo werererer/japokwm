@@ -24,7 +24,8 @@ enum tagPosition {
 #define NUM_CHARS 64
 #define NUM_DIGITS 9
 
-/* A tagset contains a list of tags and has informations about
+/* *
+ * A tagset contains a list of tags
  * */
 struct tagset {
     /* *

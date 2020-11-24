@@ -154,7 +154,7 @@ void buttonpress(struct wl_listener *listener, void *data)
     case WLR_BUTTON_PRESSED:
         /* Change focus if the button was _pressed_ over a client */
         if ((c = xytoclient(server.cursor->x, server.cursor->y)))
-            focus_client(nextClient(), c, true);
+            focus_client(next_client(), c, true);
 
         /* Translate libinput to xkbcommon code */
         unsigned sym = event->button + 64985;
@@ -381,7 +381,7 @@ void destroynotify(struct wl_listener *listener, void *data)
     c = NULL;
 
     arrange(selected_monitor, false);
-    focusTopClient(nextClient(), false);
+    focus_top_client(next_client(), false);
 }
 
 void destroyxdeco(struct wl_listener *listener, void *data)
@@ -413,7 +413,7 @@ struct monitor *dirtomon(int dir)
 void focusmon(int i)
 {
     selected_monitor = dirtomon(i);
-    focusTopClient(nextClient(), true);
+    focus_top_client(next_client(), true);
 }
 
 void getxdecomode(struct wl_listener *listener, void *data)
@@ -552,13 +552,13 @@ void maprequest(struct wl_listener *listener, void *data)
         return;
     }
 
-    addClientToStack(c);
-    addClientToFocusStack(c);
+    add_client_to_stack(c);
+    add_client_to_focusstack(c);
 
     if (c->type != LAYER_SHELL) {
         wl_list_insert(&clients, &c->link);
     } else {
-        wl_list_insert(&layerStack, &c->llink);
+        wl_list_insert(&layerstack, &c->llink);
     }
     update_hidden_status();
     struct client *prev = wl_container_of(listener, prev, map);
@@ -595,7 +595,7 @@ void maprequest(struct wl_listener *listener, void *data)
     }
 
     applyrules(c);
-    focusTopClient(nextClient(), false);
+    focus_top_client(next_client(), false);
     arrange(selected_monitor, false);
 }
 
@@ -795,10 +795,10 @@ int setup(void)
      * https://drewdevault.com/2018/07/29/Wayland-shells.html
      */
     wl_list_init(&clients);
-    wl_list_init(&focusStack);
+    wl_list_init(&focus_stack);
     wl_list_init(&stack);
     wl_list_init(&independents);
-    wl_list_init(&layerStack);
+    wl_list_init(&layerstack);
     wl_list_init(&popups);
 
     server.xdgShell = wlr_xdg_shell_create(server.display);

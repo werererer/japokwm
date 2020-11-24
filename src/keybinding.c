@@ -82,7 +82,7 @@ static bool processBinding(char *bind, const char *reference)
         lua_pop(L, 1);
         if (isSameKeybind(bind, s)) {
             lua_rawgeti(L, -1, 2);
-            lua_pushinteger(L, containersInfo.n);
+            lua_pushinteger(L, containers_info.n);
             lua_pcall(L, 1, 0, 0);
             handled = true;
         }

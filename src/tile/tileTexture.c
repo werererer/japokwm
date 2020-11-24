@@ -92,13 +92,29 @@ void create_overlay()
 {
     struct client *c;
 
-    int i = 1;
+    int i = 0;
     char text[NUM_DIGITS];
     wl_list_for_each(c, &clients, link) {
         if (!visibleon(c, c->mon))
             continue;
+        if (c->floating)
+            continue;
+        c->position = i;
 
-        sprintf(text, "%i", i);
+        sprintf(text, "%i", i+1);
+
+        wlr_list_push(&renderData.textures, 
+                create_textbox(c->geom, overlayColor, textColor, text));
+        i++;
+    }
+    wl_list_for_each_reverse(c, &stack, slink) {
+        if (!visibleon(c, c->mon))
+            continue;
+        if (!c->floating)
+            continue;
+
+        sprintf(text, "%i", i+1);
+        c->position = i;
 
         wlr_list_push(&renderData.textures, 
                 create_textbox(c->geom, overlayColor, textColor, text));
@@ -178,7 +194,7 @@ void write_overlay(struct monitor *m, const char *layout)
         for (int j = 0; j < renderData.textures.length; j++) {
             // TODO: algorithm is not really efficient fix it
             wl_list_for_each(c, &clients, link) {
-                if (visible_on_tag(c, m, i-1)) {
+                if (visible_on_tag(c, m, i)) {
                     struct wlr_box container =
                         postexture_to_container(renderData.textures.items[j]);
                     struct wlr_fbox box =

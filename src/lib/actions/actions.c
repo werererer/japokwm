@@ -13,6 +13,7 @@
 #include "parseConfig.h"
 #include "popup.h"
 #include "server.h"
+#include "tile/tileTexture.h"
 #include "tile/tileUtils.h"
 #include "utils/stringUtils.h"
 #include "xdg-shell-protocol.h"
@@ -74,7 +75,7 @@ int spawn(lua_State *L)
 
 int update_layout(lua_State *L)
 {
-    struct layout l = getConfigLayout(L, "layout");
+    struct layout l = get_config_layout(L, "layout");
     set_selected_layout(selected_monitor->tagset, l);
     arrange(selected_monitor, true);
     return 0;
@@ -157,6 +158,8 @@ int move_resize(lua_State *L)
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
                     "fleur", server.cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
+            arrange(selected_monitor, false);
+            update_overlay();
             break;
         case CURSOR_RESIZE:
             /* Doesn't work for X11 output - the next absolute motion event
@@ -169,6 +172,7 @@ int move_resize(lua_State *L)
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
                     "bottom_right_corner", server.cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
+            update_overlay();
             break;
         default:
             break;
@@ -181,7 +185,7 @@ static void set_client_floating(struct client *c, bool floating)
     if (c->floating == floating)
         return;
     c->floating = floating;
-    liftClient(c);
+    lift_client(c);
     arrange(c->mon, false);
 }
 
@@ -200,7 +204,7 @@ void motionnotify(uint32_t time)
             /* Move the grabbed client to the new position. */
             resize(grabc, server.cursor->x - grabcx, server.cursor->y - grabcy,
                     grabc->geom.width, grabc->geom.height, true);
-            arrange(selected_monitor, false);
+            update_client_overlay(grabc);
             return;
             break;
         case CURSOR_RESIZE:
@@ -208,7 +212,7 @@ void motionnotify(uint32_t time)
             resize(grabc, grabc->geom.x, grabc->geom.y,
                     server.cursor->x - grabc->geom.x,
                     server.cursor->y - grabc->geom.y, true);
-            arrange(selected_monitor, false);
+            update_client_overlay(grabc);
             return;
             break;
         default:
@@ -290,7 +294,7 @@ int tag(lua_State *L)
     struct client *sel = selected_client();
     if (sel && ui) {
         toggle_add_tag(sel->tagset, position_to_flag(ui));
-        focusTopClient(nextClient(), true);
+        focus_top_client(next_client(), true);
         arrange(selected_monitor, false);
     }
     return 0;
@@ -306,7 +310,7 @@ int toggle_tag(lua_State *L)
         unsigned int newtags = sel->tagset->selTags[0] ^ ui;
         if (newtags) {
             set_selelected_Tags(sel->tagset, newtags);
-            focusTopClient(nextClient(), true);
+            focus_top_client(next_client(), true);
             arrange(selected_monitor, false);
         }
     }
@@ -319,7 +323,7 @@ int view(lua_State *L)
     lua_pop(L, 1);
     selected_monitor->tagset->focusedTag = flag_to_position(ui);
     set_selelected_Tags(selected_monitor->tagset, ui);
-    focusTopClient(nextClient(), false);
+    focus_top_client(next_client(), false);
     arrange(selected_monitor, false);
     return 0;
 }
@@ -329,7 +333,7 @@ int toggle_add_view(lua_State *L)
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     toggle_add_tag(selected_monitor->tagset, ui);
-    focusTopClient(nextClient(), false);
+    focus_top_client(next_client(), false);
     arrange(selected_monitor, false);
     return 0;
 }
@@ -338,7 +342,7 @@ int toggle_add_view(lua_State *L)
 int toggle_view(lua_State *L)
 {
     toggle_tagset(selected_monitor->tagset);
-    focusTopClient(nextClient(), true);
+    focus_top_client(next_client(), true);
     arrange(selected_monitor, false);
     return 0;
 }
@@ -401,7 +405,7 @@ int zoom(lua_State *L)
     wl_list_remove(&old->link);
     wl_list_insert(&clients, &old->link);
 
-    focus_client(nextClient(), old, true);
+    focus_client(next_client(), old, true);
     arrange(selected_monitor, false);
     return 0;
 }

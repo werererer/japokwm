@@ -13,5 +13,5 @@ extern struct root root;
 
 /* set the are where windows can be placed in respect to layershell based 
  * programs which occupie space*/
-void setRootArea(struct monitor *m);
+void set_root_area(struct monitor *m);
 #endif /* ROOT_H */

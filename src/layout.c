@@ -3,7 +3,7 @@
 #include <string.h>
 
 struct layout defaultLayout;
-struct layout prevLayout;
+struct layout prev_layout;
 
 void layoutCreate(struct layout *lt, const char *symbol, int funcId)
 {

@@ -47,28 +47,28 @@ bool existon(struct client *c, struct monitor *m);
 bool visibleon(struct client *c, struct monitor *m);
 bool hiddenon(struct client *c, struct monitor *m);
 bool visible_on_tag(struct client *c, struct monitor *m, size_t focusedTag);
-struct client *nextClient();
+struct client *next_client();
 struct client *selected_client();
-struct client *getClient(int i);
+struct client *get_client(int i);
 /* get first visible client */
 struct client *firstClient();
 /* get last visible client */
-struct client *lastClient();
+struct client *last_client();
 struct client *xytoclient(double x, double y);
 struct wlr_surface *xytosurface(double x, double y);
 /* add new client and focus and raise it */
-void addClientToFocusStack(struct client *c);
-void addClientToStack(struct client *c);
+void add_client_to_focusstack(struct client *c);
+void add_client_to_stack(struct client *c);
 void applyrules(struct client *c);
 void focus_client(struct client *old, struct client *c, bool lift);
-void focusTopClient(struct client *old, bool lift);
-void liftClient(struct client *c);
+void focus_top_client(struct client *old, bool lift);
+void lift_client(struct client *c);
 
 extern struct wl_list clients; /* tiling order */
-extern struct wl_list focusStack;  /* focus order */
+extern struct wl_list focus_stack;  /* focus order */
 extern struct wl_list stack;   /* stacking z-order */
 extern struct wl_list independents;
-extern struct wl_list layerStack;   /* stacking z-order */
+extern struct wl_list layerstack;   /* stacking z-order */
 extern struct wlr_output_layout *output_layout;
 
 struct wlr_surface *get_wlrsurface(struct client *c);

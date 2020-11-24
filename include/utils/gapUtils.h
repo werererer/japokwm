@@ -5,7 +5,7 @@
 #include "utils/coreUtils.h"
 
 void containerAddGaps(struct wlr_box *con, double gap, enum wlr_edges edges);
-void containerSurroundGaps(struct wlr_box *con, double gap);
+void container_surround_gaps(struct wlr_box *con, double gap);
 /* correctly configure gaps so that they work as expected */
 void configure_gaps(int *innerGap, int *outerGap);
 

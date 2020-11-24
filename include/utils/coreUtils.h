@@ -37,7 +37,7 @@ struct keyboard {
 typedef struct layout Key;
 typedef struct layout Button;
 
-struct containersInfo {
+struct containers_info {
     // count
     int n;
     int id;

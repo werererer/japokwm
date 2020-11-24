@@ -6,12 +6,12 @@
 struct root root;
 
 // TODO: Reduce side effects
-void setRootArea(struct monitor *m)
+void set_root_area(struct monitor *m)
 {
     root.w = m->m;
     int maxWidth = 0, maxHeight = 0;
     struct client *c;
-    wl_list_for_each(c, &layerStack, llink) {
+    wl_list_for_each(c, &layerstack, llink) {
         // if desired_width/height == 0 they are fullscreen and have no effect
         maxWidth = MAX(maxWidth, c->surface.layer->current.desired_width);
         maxHeight = MAX(maxHeight, c->surface.layer->current.desired_height);
