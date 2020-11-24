@@ -148,11 +148,20 @@ void update_overlay()
     }
 }
 
+bool postexture_visible_on_tag(struct posTexture *pTexture, struct monitor *m, size_t focusedTag)
+{
+    if (m && pTexture) {
+        if (pTexture->mon == m) {
+            return pTexture->tagset->selTags[0] & position_to_flag(focusedTag);
+        }
+    }
+    return false;
+}
+
 void write_overlay(struct monitor *m, const char *layout)
 {
     if (!overlay)
         return;
-    struct client *c;
     char file[NUM_CHARS];
     char filetmp[NUM_CHARS];
     char filename[NUM_DIGITS];
@@ -163,9 +172,9 @@ void write_overlay(struct monitor *m, const char *layout)
     join_path(file, filename);
     mkdir(file, 0755);
     strcpy(filetmp, file);
-    for (int i = 1; i <= 8; i++) {
+    for (int i = 0; i < 8; i++) {
         strcpy(file, filetmp);
-        intToString(filename, i);
+        intToString(filename, i+1);
         join_path(file, filename);
 
         int fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -175,20 +184,23 @@ void write_overlay(struct monitor *m, const char *layout)
             return;
         }
 
+        int k = 0;
         for (int j = 0; j < renderData.textures.length; j++) {
             // TODO: algorithm is not really efficient fix it
-            wl_list_for_each(c, &clients, link) {
-                if (visible_on_tag(c, m, i)) {
-                    struct wlr_box container =
-                        postexture_to_container(renderData.textures.items[j]);
-                    struct wlr_fbox box =
-                        get_relative_box(container, selected_monitor->m);
-                    write_container_to_file(fd, box);
-                }
+            struct posTexture *pTexture = renderData.textures.items[j];
+            if (postexture_visible_on_tag(pTexture, m, i)) {
+                struct wlr_box container = postexture_to_container(pTexture);
+                struct wlr_fbox box =
+                    get_relative_box(container, selected_monitor->m);
+                write_container_to_file(fd, box);
+                k++;
             }
         }
 
         close(fd);
+        if (!k) {
+            unlink(file);
+        }
     }
 }
 

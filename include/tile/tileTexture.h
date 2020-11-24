@@ -14,8 +14,11 @@
 /* a texture at a given position */
 struct posTexture {
     renderDataType_t dataType;
+    char *text;
     char *id;
     int x, y;
+    struct monitor *mon;
+    struct tagset *tagset;
     struct wlr_texture *texture;
 };
 
