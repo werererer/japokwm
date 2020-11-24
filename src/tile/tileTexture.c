@@ -92,31 +92,15 @@ void create_overlay()
 {
     struct client *c;
 
-    int i = 0;
     char text[NUM_DIGITS];
-    wl_list_for_each(c, &clients, link) {
-        if (!visibleon(c, c->mon))
-            continue;
-        if (c->floating)
-            continue;
-        c->position = i;
-
-        sprintf(text, "%i", i+1);
-
-        wlr_list_push(&renderData.textures, 
-                create_textbox(c->geom, overlayColor, textColor, text));
-        i++;
-    }
+    int i = 0;
     wl_list_for_each_reverse(c, &stack, slink) {
+        c->position = i;
         if (!visibleon(c, c->mon))
             continue;
-        if (!c->floating)
-            continue;
+        intToString(text, c->textPosition+1);
 
-        sprintf(text, "%i", i+1);
-        c->position = i;
-
-        wlr_list_push(&renderData.textures, 
+        wlr_list_push(&renderData.textures,
                 create_textbox(c->geom, overlayColor, textColor, text));
         i++;
     }
@@ -133,7 +117,7 @@ void update_client_overlay(struct client *c)
         if (c->hidden)
             return;
 
-        sprintf(text, "%i", c->position+1);
+        intToString(text, c->textPosition+1);
 
         wlr_list_insert(&renderData.textures, c->position,
                 create_textbox(c->geom, overlayColor, textColor, text));

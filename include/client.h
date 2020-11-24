@@ -34,6 +34,8 @@ struct client {
     int id;
     // if position -1 it is floating
     int position;
+    int clientPosition;
+    int textPosition;
     char *title;
     bool floating;
     bool hidden;

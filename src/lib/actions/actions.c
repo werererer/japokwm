@@ -159,7 +159,6 @@ int move_resize(lua_State *L)
                     "fleur", server.cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
             arrange(selected_monitor, false);
-            update_overlay();
             break;
         case CURSOR_RESIZE:
             /* Doesn't work for X11 output - the next absolute motion event
@@ -172,7 +171,7 @@ int move_resize(lua_State *L)
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
                     "bottom_right_corner", server.cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
-            update_overlay();
+            arrange(selected_monitor, false);
             break;
         default:
             break;

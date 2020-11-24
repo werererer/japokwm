@@ -78,27 +78,45 @@ void arrange(struct monitor *m, bool reset)
         wl_list_for_each(c, &clients, link) {
             if (c->hidden || !visibleon(c, m))
                 continue;
+            if (c->floating)
+                continue;
 
-            c->position = i;
-            arrange_client(c);
+            arrange_client(c, i);
+            i++;
+        }
+        wl_list_for_each(c, &clients, link) {
+            if (c->hidden || !visibleon(c, m))
+                continue;
             if (!c->floating)
-                i++;
+                continue;
+
+            arrange_client(c, i);
+            i++;
+        }
+        i = 0;
+        wl_list_for_each(c, &clients, link) {
+            if (c->hidden || !visibleon(c, m))
+                continue;
+
+            c->textPosition = i;
+            i++;
         }
         update_overlay();
     }
 }
 
-void arrange_client(struct client *c)
+void arrange_client(struct client *c, int i)
 {
     if (c->hidden)
         return;
+    c->clientPosition = i;
 
     // if tiled get tile information from tile function and apply it
     struct wlr_fbox con;
     if (!c->floating) {
         // get lua container
         lua_rawgeti(L, LUA_REGISTRYINDEX, containers_info.id);
-        lua_rawgeti(L, -1, MIN(c->position+1, containers_info.n));
+        lua_rawgeti(L, -1, MIN(c->clientPosition+1, containers_info.n));
         lua_rawgeti(L, -1, 1);
         con.x = luaL_checknumber(L, -1);
         lua_pop(L, 1);
@@ -117,7 +135,6 @@ void arrange_client(struct client *c)
         resize(c, box.x, box.y, box.width, box.height, false);
         containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
     }
-    /* update_client_overlay(c); */
 }
 
 void resize(struct client *c, int x, int y, int w, int h, bool interact)

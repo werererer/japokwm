@@ -1,4 +1,4 @@
-Build started at 2020-11-24T22:13:56.199862
+Build started at 2020-11-24T22:41:08.760152
 Main binary: /usr/bin/python
 Build Options: 
 Python system: Linux
@@ -132,8 +132,8 @@ Called `/usr/bin/pkg-config xcb --libs` -> 0
 None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
 None of 'CC_LD' are defined in the environment, not changing global flags.
 Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpvefny33l
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpvefny33l/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpvefny33l/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpjkedbgrf
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpjkedbgrf/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpjkedbgrf/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 
 
 Code:
  #include<stdio.h>
@@ -154,8 +154,8 @@ Program stderr:
 
 
 Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpi_4k959j
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpi_4k959j/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpi_4k959j/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpx4jxb68x
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpx4jxb68x/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpx4jxb68x/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
 
 Code:
  
@@ -264,8 +264,8 @@ Called `/usr/bin/pkg-config lua --libs` -> 0
 None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
 None of 'CC_LD' are defined in the environment, not changing global flags.
 Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmp57037asu
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmp57037asu/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmp57037asu/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 -Wl,--start-group -lm -Wl,--end-group -Wl,--allow-shlib-undefined 
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpgy8akias
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpgy8akias/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpgy8akias/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 -Wl,--start-group -lm -Wl,--end-group -Wl,--allow-shlib-undefined 
 
 Code:
  int main(void) { return 0; }
