@@ -12,6 +12,7 @@
 #include "monitor.h"
 #include "parseConfig.h"
 #include "popup.h"
+#include "root.h"
 #include "server.h"
 #include "tile/tileTexture.h"
 #include "tile/tileUtils.h"
@@ -59,6 +60,13 @@ int arrange_this(lua_State *L)
     bool reset = lua_toboolean(L, -1);
     lua_pop(L, 1);
     arrange(selected_monitor, reset);
+    return 0;
+}
+
+int toggle_consider_layer_shell(lua_State *L)
+{
+    root.consider_layer_shell = !root.consider_layer_shell;
+    arrange(selected_monitor, false);
     return 0;
 }
 
@@ -363,7 +371,7 @@ int move_client(lua_State *L)
     return 0;
 }
 
-int resizeClient(lua_State *L)
+int resize_client(lua_State *L)
 {
     resize(grabc, grabc->geom.x, grabc->geom.y,
             server.cursor->x - grabc->geom.x,

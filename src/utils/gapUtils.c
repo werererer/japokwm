@@ -1,4 +1,5 @@
 #include "utils/gapUtils.h"
+#include "tile/tileTexture.h"
 #include <math.h>
 
 static void containerAddGapLeft(struct wlr_box *con, float gap)
@@ -47,8 +48,8 @@ void container_surround_gaps(struct wlr_box *con, double gap)
      * therefore x and y need to be 1/2ed and the width has to be decreased by
      * the whole amound
      * */
-    containerAddGaps(con, gap/2, WLR_EDGE_TOP | WLR_EDGE_LEFT);
-    containerAddGaps(con, gap, WLR_EDGE_RIGHT | WLR_EDGE_BOTTOM);
+        containerAddGaps(con, gap/2, WLR_EDGE_TOP | WLR_EDGE_LEFT);
+        containerAddGaps(con, gap, WLR_EDGE_RIGHT | WLR_EDGE_BOTTOM);
 }
 
 void configure_gaps(int *innerGap, int *outerGap)

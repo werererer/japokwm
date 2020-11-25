@@ -51,7 +51,8 @@ void arrange(struct monitor *m, bool reset)
     m->m = *wlr_output_layout_get_box(output_layout, m->output);
 
     set_root_area(m);
-    container_surround_gaps(&root.w, outerGap);
+    if (!overlay)
+        container_surround_gaps(&root.w, outerGap);
     if (selected_layout(tagset).funcId) {
         struct client *c = NULL;
 
@@ -131,7 +132,8 @@ void arrange_client(struct client *c, int i)
         lua_pop(L, 1);
         lua_pop(L, 1);
         struct wlr_box box = get_absolute_box(root.w, con);
-        container_surround_gaps(&box, innerGap);
+        if (!overlay)
+            container_surround_gaps(&box, innerGap);
         resize(c, box.x, box.y, box.width, box.height, false);
         containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
     }

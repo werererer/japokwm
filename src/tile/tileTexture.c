@@ -6,6 +6,7 @@
 #include "utils/writeFile.h"
 #include "tile/tileUtils.h"
 #include "tagset.h"
+#include "root.h"
 #include <cairo/cairo.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -80,12 +81,14 @@ struct posTexture *create_textbox(struct wlr_box box, float boxColor[],
 void init_overlay()
 {
     wlr_list_init(&renderData.textures);
+    wlr_list_init(&renderData.base_textures);
 }
 
 void create_new_overlay()
 {
     // recreate list
     wlr_list_clear(&renderData.textures);
+    wlr_list_clear(&renderData.base_textures);
     create_overlay();
 }
 
@@ -96,7 +99,7 @@ void create_overlay()
     char text[NUM_DIGITS];
     int i = 0;
     wl_list_for_each_reverse(c, &stack, slink) {
-        if (c->hidden)
+        if (c->hidden || c->type == LAYER_SHELL)
             continue;
 
         c->position = i;
@@ -110,6 +113,7 @@ void create_overlay()
             pTexture->mon = c->mon;
             pTexture->tagset = c->tagset;
             wlr_list_push(&renderData.textures, pTexture);
+            wlr_list_push(&renderData.base_textures, pTexture);
         }
     }
 }
@@ -196,12 +200,19 @@ void write_overlay(struct monitor *m, const char *layout)
         }
 
         int k = 0;
-        printf("LENGTH: %lu\n", renderData.textures.length);
-        for (int j = 0; j < renderData.textures.length; j++) {
+
+        for (int j = renderData.base_textures.length-1; j >= 0; j--) {
             // TODO: todo fix order
-            struct posTexture *pTexture = renderData.textures.items[j];
+            struct posTexture *pTexture = renderData.base_textures.items[j];
             if (postexture_visible_on_flag(pTexture, m, position_to_flag(i))) {
+                // vector from root x/y -> monitor x/y
+                int wdiff = selected_monitor->m.x - root.w.y;
+                int hdiff = selected_monitor->m.y - root.w.y;
                 struct wlr_box container = postexture_to_container(pTexture);
+                // add vector to the container so that it is relative to
+                // monitor again
+                container.x += wdiff;
+                container.y += hdiff;
                 struct wlr_fbox box =
                     get_relative_box(container, selected_monitor->m);
                 write_container_to_file(fd, box);

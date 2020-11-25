@@ -10,6 +10,7 @@ static const struct luaL_Reg action[] =
     {"arrangeThis", arrange_this},
     /* {"createOverlay", create_overlay}, */
     {"focusOnHiddenStack", focus_on_hidden_stack},
+    {"toggleConsiderLayerShell", toggle_consider_layer_shell},
     {"focusOnStack", focus_on_stack},
     {"getOverlay", get_overlay},
     {"kill", kill_client},

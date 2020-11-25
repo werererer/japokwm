@@ -21,6 +21,9 @@ struct renderData {
      * list should be filled with posTexture
      * */
     struct wlr_list textures;
+    /* The textures before doing any kind of transformations
+     * */
+    struct wlr_list base_textures;
 };
 
 void renderFrame(struct wl_listener *listener, void *data);

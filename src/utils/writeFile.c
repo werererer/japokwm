@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <wlr/util/log.h>
 
 static int write_to_file(int fd, char *content)
 {
@@ -26,7 +27,7 @@ static int write_double_to_file(int fd, double d)
 
 void write_container_to_file(int fd, struct wlr_fbox box)
 {
-    printf("create container\n");
+    wlr_log(WLR_DEBUG, "write container");
     write_double_to_file(fd, box.x);
     write_to_file(fd, " ");
     write_double_to_file(fd, box.y);

@@ -58,6 +58,7 @@ keys = {
     {mod.." m",           function(n) setLayout(1) end},
     {mod.." t",           function(n) setLayout(2) end},
     {mod.." w",           function(n) setLayout(3) end},
+    {mod.." b",           function(n) action.toggleConsiderLayerShell() end},
     {mod.." "..shift.." w",           function(n) setLayout(4) end},
     -- {mod.." l",           function(n) Layouts.resizeThisAll(1/10, Direction.RIGHT) end},
     -- {mod.." h",           function(n) Layouts.resizeThisAll(1/10, Layouts.LEFT) end},
