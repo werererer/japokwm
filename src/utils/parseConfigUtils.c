@@ -167,9 +167,9 @@ struct rule getConfigRule(lua_State *L, char *name)
     return rule;
 }
 
-static struct monRule getConfigArrayMonRule(lua_State *L, size_t i)
+static struct mon_rule getConfigArrayMonRule(lua_State *L, size_t i)
 {
-    struct monRule monrule;
+    struct mon_rule monrule;
     monrule.name = getConfigArrayStr(L, 1);
     monrule.mfact = getConfigArrayFloat(L, 2);
     monrule.nmaster = getConfigArrayInt(L, 3);
@@ -178,9 +178,9 @@ static struct monRule getConfigArrayMonRule(lua_State *L, size_t i)
     return monrule;
 }
 
-struct monRule getConfigMonRule(lua_State *L, char *name)
+struct mon_rule getConfigMonRule(lua_State *L, char *name)
 {
-    struct monRule monrule;
+    struct mon_rule monrule;
     lua_getglobal(L, name);
 
     monrule.name = getConfigArrayStr(L, 1);
@@ -258,7 +258,7 @@ void get_config_rule_arr(lua_State *L, struct rule *rules, char *name)
     lua_pop(L, 1);
 }
 
-void getConfigMonRuleArr(lua_State *L, struct monRule *monrules, char *name)
+void getConfigMonRuleArr(lua_State *L, struct mon_rule *monrules, char *name)
 {
     lua_getglobal(L, name);
     size_t len = lua_rawlen(L, -1);

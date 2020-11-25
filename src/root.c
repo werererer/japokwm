@@ -5,6 +5,7 @@
 
 struct root root = {.consider_layer_shell = true};
 
+// TODO: documentation?
 static void set_layer_shell(struct client *c)
 {
     c->geom.x = 0;
@@ -42,9 +43,9 @@ void set_root_area(struct monitor *m)
         }
     }
     if (root.consider_layer_shell) {
-        root.w.x += maxWidth;
-        root.w.width -= maxWidth;
-        root.w.y += maxHeight;
-        root.w.height -= maxHeight;
+        root.w->x += maxWidth + m->m->x;
+        root.w->width -= maxWidth;
+        root.w->y += maxHeight + m->m->y;
+        root.w->height -= maxHeight;
     }
 }

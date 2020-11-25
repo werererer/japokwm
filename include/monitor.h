@@ -11,15 +11,15 @@ struct monitor {
     struct wl_listener frame;
     struct wl_listener destroy;
     /* monitor area, layout-relative */
-    struct wlr_box m;
+    struct wlr_box *m;
     struct tagset *tagset;
     double mfact;
     int nmaster;
 };
 
-void createMonitor(struct wl_listener *listener, void *data);
+void create_monitor(struct wl_listener *listener, void *data);
 void cleanupMonitor(struct wl_listener *listener, void *data);
-void setMonitor(struct monitor *m);
+void set_monitor(struct monitor *m);
 struct monitor *xytomon(double x, double y);
 
 extern struct wl_list mons;

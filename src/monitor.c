@@ -1,7 +1,9 @@
 #include "monitor.h"
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_xcursor_manager.h>
+#include <wlr/types/wlr_list.h>
 #include <stdlib.h>
+#include <wlr/util/log.h>
 
 #include "parseConfig.h"
 #include "render/render.h"
@@ -10,7 +12,7 @@
 #include "tile/tileUtils.h"
 
 /* monitors */
-static const struct monRule monrules[] = {
+static const struct mon_rule monrules[] = {
     /* name       mfact nmaster scale layout       rotate/reflect */
     /* example of a HiDPI laptop monitor:
     { "eDP-1",    0.5,  1,      2,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL },
@@ -22,13 +24,14 @@ static const struct monRule monrules[] = {
 struct wl_list mons;
 struct monitor *selected_monitor = NULL;
 
-void createMonitor(struct wl_listener *listener, void *data)
+void create_monitor(struct wl_listener *listener, void *data)
 {
     /* This event is raised by the backend when a new output (aka a display or
      * monitor) becomes available. */
+    printf("NEW MONITOR\n");
     struct wlr_output *output = data;
     struct monitor *m;
-    const struct monRule *r;
+    const struct mon_rule *r;
 
     /* The mode is a tuple of (width, height, refresh rate), and each
      * monitor supports only a specific set of modes. We just pick the
@@ -61,7 +64,7 @@ void createMonitor(struct wl_listener *listener, void *data)
     wl_list_insert(&mons, &m->link);
 
     wlr_output_enable(output, 1);
-   if (!wlr_output_commit(output))
+    if (!wlr_output_commit(output))
         return;
 
     /* Adds this to the output layout. The add_auto function arranges outputs
@@ -74,9 +77,10 @@ void createMonitor(struct wl_listener *listener, void *data)
      * output (such as DPI, scale factor, manufacturer, etc).
      */
     wlr_output_layout_add_auto(output_layout, output);
+    m->m = wlr_output_layout_get_box(output_layout, NULL);
 }
 
-void setMonitor(struct monitor *m)
+void set_monitor(struct monitor *m)
 {
     selected_monitor = m;
 }

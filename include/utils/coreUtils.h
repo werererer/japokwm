@@ -54,7 +54,7 @@ struct rule {
     int monitor;
 };
 
-struct monRule {
+struct mon_rule {
     char *name;
     float mfact;
     int nmaster;

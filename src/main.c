@@ -116,7 +116,7 @@ static struct wl_listener cursor_frame = {.notify = cursorframe};
 static struct wl_listener cursor_motion = {.notify = motionrelative};
 static struct wl_listener cursor_motion_absolute = {.notify = motionabsolute};
 static struct wl_listener new_input = {.notify = inputdevice};
-static struct wl_listener new_output = {.notify = createMonitor};
+static struct wl_listener new_output = {.notify = create_monitor};
 static struct wl_listener new_xdeco = {.notify = createxdeco};
 static struct wl_listener new_xdg_surface = {.notify = createnotify};
 static struct wl_listener new_layer_shell_surface = {.notify = createnotifyLayerShell};
@@ -563,36 +563,36 @@ void maprequest(struct wl_listener *listener, void *data)
     update_hidden_status();
     struct client *prev = wl_container_of(listener, prev, map);
 
-    /* switch (c->type) { */
-    /*     case XDG_SHELL: */
-    /*         /1* wlr_xdg_surface_get_geometry(c->surface.xdg, &c->geom); *1/ */
-    /*         /1* c->geom.width += 2 * c->bw; *1/ */
-    /*         /1* c->geom.height += 2 * c->bw; *1/ */
-    /*         break; */
-    /*     case LAYER_SHELL: */
-    /*         c->geom.x = 0; */
-    /*         c->geom.y = 0; */
-    /*         if (c->surface.layer->current.desired_width) { */
-    /*             c->geom.width = c->surface.layer->current.desired_width; */
-    /*         } */
-    /*         else { */
-    /*             c->geom.width = selected_monitor->output->width; */
-    /*         } */
+    switch (c->type) {
+        case XDG_SHELL:
+            /* wlr_xdg_surface_get_geometry(c->surface.xdg, &c->geom); */
+            /* c->geom.width += 2 * c->bw; */
+            /* c->geom.height += 2 * c->bw; */
+            break;
+        case LAYER_SHELL:
+            c->geom.x = 0;
+            c->geom.y = 0;
+            if (c->surface.layer->current.desired_width) {
+                c->geom.width = c->surface.layer->current.desired_width;
+            }
+            else {
+                c->geom.width = selected_monitor->output->width;
+            }
 
-    /*         if (c->surface.layer->current.desired_height) { */
-    /*             c->geom.height = c->surface.layer->current.desired_height; */
-    /*         } */
-    /*         else { */
-    /*             c->geom.height = selected_monitor->output->height; */
-    /*         } */
-    /*         break; */
-    /*     case X11_MANAGED: */
-    /*     case X11_UNMANAGED: */
-    /*         c->geom.x = c->surface.xwayland->x; */
-    /*         c->geom.y = c->surface.xwayland->y; */
-    /*         c->geom.width = c->surface.xwayland->width + 2 * c->bw; */
-    /*         c->geom.height = c->surface.xwayland->height + 2 * c->bw; */
-    /* } */
+            if (c->surface.layer->current.desired_height) {
+                c->geom.height = c->surface.layer->current.desired_height;
+            }
+            else {
+                c->geom.height = selected_monitor->output->height;
+            }
+            break;
+        case X11_MANAGED:
+        case X11_UNMANAGED:
+            c->geom.x = c->surface.xwayland->x;
+            c->geom.y = c->surface.xwayland->y;
+            c->geom.width = c->surface.xwayland->width + 2 * c->bw;
+            c->geom.height = c->surface.xwayland->height + 2 * c->bw;
+    }
 
     applyrules(c);
     focus_top_client(next_client(), false);

@@ -13,7 +13,7 @@ int load_config(lua_State *L, char *path);
 
 Key getConfigKey(lua_State *L, char *name);
 struct layout get_config_layout(lua_State *L, char *name);
-struct monRule getConfigMonRule(lua_State *L, char *name);
+struct mon_rule getConfigMonRule(lua_State *L, char *name);
 struct rule getConfigRule(lua_State *L, char *name);
 char* get_config_str(lua_State *L, char *name);
 float getConfigFloat(lua_State *L, char *name);
@@ -30,7 +30,7 @@ void getConfigIntArr(lua_State *L, int *resArr, char *name);
 void getConfigLayoutArr(lua_State *L, struct layout *layouts, char *name);
 void get_config_key_arr(lua_State *L, Key *keys, char *name);
 void get_config_rule_arr(lua_State *L, struct rule *rules, char *name);
-void getConfigMonRuleArr(lua_State *L, struct monRule *monrules, char *name);
+void getConfigMonRuleArr(lua_State *L, struct mon_rule *monrules, char *name);
 
 //utils
 void callfunc(int funcid);
