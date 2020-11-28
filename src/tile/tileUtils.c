@@ -53,15 +53,15 @@ void arrange(struct monitor *m, bool reset)
 
     if (!overlay)
         container_surround_gaps(&root.w, outerGap);
-    if (selected_layout(tagset).funcId) {
+    if (selected_layout(m->tagset).funcId) {
         struct client *c = NULL;
 
         int n = tiled_client_count(m);
         /* call arrange function
          * if previous layout is different or reset -> reset layout */
-        if (strcmp(prev_layout.symbol, selected_layout(tagset).symbol) != 0 || reset) {
-            prev_layout = selected_layout(tagset);
-            lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(tagset).funcId);
+        if (strcmp(prev_layout.symbol, selected_layout(m->tagset).symbol) != 0 || reset) {
+            prev_layout = selected_layout(m->tagset);
+            lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(m->tagset).funcId);
             lua_pushinteger(L, n);
             lua_pcall(L, 1, 0, 0);
         }
@@ -73,11 +73,11 @@ void arrange(struct monitor *m, bool reset)
         containers_info.n = lua_rawlen(L, -1);
         containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
 
-        update_hidden_status();
+        update_hidden_status(m);
 
         int i = 0;
         wl_list_for_each(c, &clients, link) {
-            if (c->hidden || !visibleon(c))
+            if (c->hidden || !visibleon(c, m))
                 continue;
             if (c->floating)
                 continue;
@@ -86,7 +86,7 @@ void arrange(struct monitor *m, bool reset)
             i++;
         }
         wl_list_for_each(c, &clients, link) {
-            if (c->hidden || !visibleon(c))
+            if (c->hidden || !visibleon(c, m))
                 continue;
             if (!c->floating)
                 continue;
@@ -96,7 +96,7 @@ void arrange(struct monitor *m, bool reset)
         }
         i = 0;
         wl_list_for_each(c, &clients, link) {
-            if (c->hidden || !visibleon(c))
+            if (c->hidden || !visibleon(c, m))
                 continue;
 
             c->textPosition = i;
@@ -173,7 +173,7 @@ void resize(struct client *c, int x, int y, int w, int h, bool interact)
     }
 }
 
-void update_hidden_status()
+void update_hidden_status(struct monitor *m)
 {
     struct client *c;
     int i = 0;
@@ -183,7 +183,7 @@ void update_hidden_status()
             c->hidden = false;
             continue;
         }
-        if (existon(c))
+        if (existon(c, m))
         {
             if (i < containers_info.n)
                 c->hidden = false;
@@ -200,7 +200,7 @@ int tiled_client_count(struct monitor *m)
     int n = 0;
 
     wl_list_for_each(c, &clients, link)
-        if (existon(c) && !c->floating)
+        if (existon(c, m) && !c->floating)
             n++;
     return n;
 }

@@ -6,8 +6,6 @@
 #include <string.h>
 #include "ipc-server.h"
 
-struct tagset *tagset = NULL;
-
 struct tagset *create_tagset(struct wlr_list *tagNames,
         unsigned int focusedTag, unsigned int selTags)
 {

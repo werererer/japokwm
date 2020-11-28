@@ -87,14 +87,12 @@ static void renderClients(struct monitor *m)
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each_reverse(c, &stack, slink) {
         /* Only render visible clients which are shown on this monitor */
-        if (!visibleon(c) || !wlr_output_layout_intersects(
-                    output_layout, m->wlr_output, &c->geom))
+        if (!visibleon(c, m))
             continue;
 
         surface = get_wlrsurface(c);
         ox = c->geom.x, oy = c->geom.y;
-        wlr_output_layout_output_coords(output_layout, m->wlr_output,
-                &ox, &oy);
+        wlr_output_layout_output_coords(output_layout, m->wlr_output, &ox, &oy);
         w = surface->current.width;
         h = surface->current.height;
         borders = (struct wlr_box[4]) {
@@ -139,7 +137,7 @@ static void renderLayerShell(struct monitor *m, enum zwlr_layer_shell_v1_layer l
             continue;
 
         /* Only render visible clients which show on this monitor */
-        if (!visibleon(c) || !wlr_output_layout_intersects(
+        if (!visibleon(c, m) || !wlr_output_layout_intersects(
                     output_layout, m->wlr_output, &c->geom))
             continue;
 
@@ -161,7 +159,7 @@ static void renderLayerShell(struct monitor *m, enum zwlr_layer_shell_v1_layer l
 static void renderTexture(void *texture)
 {
     struct posTexture *text = texture;
-    if (postexture_visible_on_flag(text, selected_monitor, tagset->selTags[0])) {
+    if (postexture_visible_on_flag(text, selected_monitor, selected_monitor->tagset->selTags[0])) {
         wlr_render_texture(drw, text->texture, selected_monitor->wlr_output->transform_matrix,
                 text->x, text->y, 1);
     }

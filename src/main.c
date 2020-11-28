@@ -541,8 +541,8 @@ void maprequest(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
-    c->tagset = create_tagset(&tagNames, tagset->focusedTag,
-            tagset->selTags[0]);
+    c->tagset = create_tagset(&tagNames, selected_monitor->tagset->focusedTag,
+            selected_monitor->tagset->selTags[0]);
 
     if (c->type == X11_UNMANAGED) {
         /* Insert this independent into independents lists. */
@@ -558,7 +558,7 @@ void maprequest(struct wl_listener *listener, void *data)
     } else {
         wl_list_insert(&layerstack, &c->llink);
     }
-    update_hidden_status();
+    update_hidden_status(selected_monitor);
     struct client *prev = wl_container_of(listener, prev, map);
 
     switch (c->type) {
@@ -696,7 +696,7 @@ void set_cursor(struct wl_listener *listener, void *data)
 
 /* arg > 1.0 will set mfact absolutely */
 void setmfact(float factor) {
-    if (!selected_layout(tagset).funcId)
+    if (!selected_layout(selected_monitor->tagset).funcId)
         return;
     factor = factor < 1.0 ? factor + selected_monitor->mfact : factor - 1.0;
     if (factor < 0.1 || factor > 0.9)
@@ -734,7 +734,6 @@ int setup(void)
         return 1;
     }
     init_overlay();
-    tagset = create_tagset(&tagNames, 0, 0);
     /* The Wayland display is managed by libwayland. It handles accepting
      * clients from the Unix socket, manging Wayland globals, and so on. */
     server.display = wl_display_create();
@@ -906,7 +905,8 @@ void unmapnotify(struct wl_listener *listener, void *data)
         case X11_UNMANAGED:
             wl_list_remove(&c->link);
     }
-    update_hidden_status();
+    // TODO why is this here?
+    update_hidden_status(selected_monitor);
 }
 
 void activatex11(struct wl_listener *listener, void *data)

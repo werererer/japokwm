@@ -44,10 +44,10 @@ struct client {
 void applybounds(struct client *c, struct wlr_box bbox);
 
 /* it ignores bool  hiding which visibleon doesn't */
-bool existon(struct client *c);
-bool visibleon(struct client *c);
-bool hiddenon(struct client *c);
-bool visible_on_tag(struct client *c, size_t focusedTag);
+bool existon(struct client *c, struct monitor *m);
+bool visibleon(struct client *c, struct monitor *m);
+bool hiddenon(struct client *c, struct monitor *m);
+bool visible_on_tag(struct client *c, struct monitor *m, size_t focusedTag);
 struct client *next_client();
 struct client *selected_client();
 struct client *get_client(int i);

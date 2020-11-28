@@ -84,7 +84,7 @@ int spawn(lua_State *L)
 int update_layout(lua_State *L)
 {
     struct layout l = get_config_layout(L, "layout");
-    set_selected_layout(tagset, l);
+    set_selected_layout(selected_monitor->tagset, l);
     arrange(selected_monitor, true);
     return 0;
 }
@@ -99,13 +99,13 @@ int focus_on_stack(lua_State *L)
     if (i > 0) {
         int j = 1;
         wl_list_for_each(c, &sel->link, link) {
-            if (visibleon(c))
+            if (visibleon(c, selected_monitor))
                 break;  /* found it */
             j++;
         }
     } else {
         wl_list_for_each_reverse(c, &sel->link, link) {
-            if (visibleon(c))
+            if (visibleon(c, selected_monitor))
                 break;  /* found it */
         }
     }
@@ -124,13 +124,13 @@ int focus_on_hidden_stack(lua_State *L)
     if (i > 0) {
         int j = 1;
         wl_list_for_each(c, &sel->link, link) {
-            if (hiddenon(c))
+            if (hiddenon(c, selected_monitor))
                 break;  /* found it */
             j++;
         }
     } else {
         wl_list_for_each_reverse(c, &sel->link, link) {
-            if (hiddenon(c))
+            if (hiddenon(c, selected_monitor))
                 break;  /* found it */
         }
     }
@@ -330,8 +330,8 @@ int view(lua_State *L)
 {
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    tagset->focusedTag = flag_to_position(ui);
-    set_selelected_Tags(tagset, ui);
+    selected_monitor->tagset->focusedTag = flag_to_position(ui);
+    set_selelected_Tags(selected_monitor->tagset, ui);
     focus_top_client(next_client(), false);
     arrange(selected_monitor, false);
     return 0;
@@ -341,7 +341,7 @@ int toggle_add_view(lua_State *L)
 {
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    toggle_add_tag(tagset, ui);
+    toggle_add_tag(selected_monitor->tagset, ui);
     focus_top_client(next_client(), false);
     arrange(selected_monitor, false);
     return 0;
@@ -350,7 +350,7 @@ int toggle_add_view(lua_State *L)
 
 int toggle_view(lua_State *L)
 {
-    toggle_tagset(tagset);
+    toggle_tagset(selected_monitor->tagset);
     focus_top_client(next_client(), true);
     arrange(selected_monitor, false);
     return 0;
@@ -397,7 +397,7 @@ int zoom(lua_State *L)
     /* Search for the first tiled window that is not sel, marking sel as
      * NULL if we pass it along the way */
     wl_list_for_each(c, &clients,
-            link) if (visibleon(c) && !c->floating) {
+            link) if (visibleon(c, selected_monitor) && !c->floating) {
         if (c != old)
             break;
         old = NULL;

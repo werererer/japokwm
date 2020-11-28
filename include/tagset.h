@@ -68,6 +68,4 @@ enum tagPosition position_to_flag(unsigned int pos);
 unsigned int flag_to_position(enum tagPosition flag);
 struct layout selected_layout(struct tagset *tagset);
 void set_selected_layout(struct tagset *tagset, struct layout layout);
-
-extern struct tagset *tagset;
 #endif /* TAGSET_H */
