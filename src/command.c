@@ -40,9 +40,9 @@ void executeCommand(const char *_exec)
     // execute command
     if (strcmp(argv[0], "workspace") == 0) {
         bool handled = false;
-        struct tagset *tagset = selected_monitor->tagset;
+        struct tagset *tagset = tagset;
         int i;
-        for (i = 0; i < selected_monitor->tagset->tags.length; i++) {
+        for (i = 0; i < tagset->tags.length; i++) {
             if (strcmp(get_tag_from_tagset(tagset, i)->name, argv[2]) == 0) {
                 handled = true;
                 break;
@@ -50,10 +50,10 @@ void executeCommand(const char *_exec)
         }
         if (handled) {
             if (keyStateHasModifiers(MOD_SHIFT)) {
-                toggle_add_tag(selected_monitor->tagset, position_to_flag(i));
+                toggle_add_tag(tagset, position_to_flag(i));
             } else {
-                push_seleceted_tags(selected_monitor->tagset, position_to_flag(i));
-                selected_monitor->tagset->focusedTag = i;
+                push_seleceted_tags(tagset, position_to_flag(i));
+                tagset->focusedTag = i;
             }
         }
     }

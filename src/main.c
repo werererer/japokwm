@@ -278,7 +278,6 @@ void createnotify(struct wl_listener *listener, void *data)
     c->surface.xdg = xdg_surface;
     c->bw = borderPx;
     c->type = XDG_SHELL;
-    c->mon = selected_monitor;
 
     /* Tell the client not to try anything fancy */
     wlr_xdg_toplevel_set_tiled(c->surface.xdg, WLR_EDGE_TOP |
@@ -310,7 +309,6 @@ void createnotifyLayerShell(struct wl_listener *listener, void *data)
     c->surface.layer = layer_surface;
     c->bw = 0;
     c->type = LAYER_SHELL;
-    c->mon = selected_monitor;
 
     /* Listen to the various events it can emit */
     c->commit.notify = commitnotify;
@@ -543,8 +541,8 @@ void maprequest(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
-    c->tagset = create_tagset(&tagNames, selected_monitor->tagset->focusedTag, 
-            selected_monitor->tagset->selTags[0]);
+    c->tagset = create_tagset(&tagNames, tagset->focusedTag,
+            tagset->selTags[0]);
 
     if (c->type == X11_UNMANAGED) {
         /* Insert this independent into independents lists. */
@@ -698,7 +696,7 @@ void set_cursor(struct wl_listener *listener, void *data)
 
 /* arg > 1.0 will set mfact absolutely */
 void setmfact(float factor) {
-    if (!selected_layout(selected_monitor->tagset).funcId)
+    if (!selected_layout(tagset).funcId)
         return;
     factor = factor < 1.0 ? factor + selected_monitor->mfact : factor - 1.0;
     if (factor < 0.1 || factor > 0.9)
@@ -736,6 +734,7 @@ int setup(void)
         return 1;
     }
     init_overlay();
+    tagset = create_tagset(&tagNames, 0, 0);
     /* The Wayland display is managed by libwayland. It handles accepting
      * clients from the Unix socket, manging Wayland globals, and so on. */
     server.display = wl_display_create();
@@ -929,7 +928,6 @@ void createnotifyx11(struct wl_listener *listener, void *data)
     c->surface.xwayland = xwayland_surface;
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
     c->bw = borderPx;
-    c->mon = selected_monitor;
 
     /* Listen to the various events it can emit */
     c->map.notify = maprequest;

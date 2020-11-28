@@ -104,17 +104,14 @@ void create_overlay()
 
         c->position = i;
         i++;
-        if (c->mon == selected_monitor) {
-            intToString(text, c->textPosition+1);
+        intToString(text, c->textPosition+1);
 
-            struct posTexture *pTexture =
-                create_textbox(c->geom, overlayColor, textColor, text);
-            // sync properties
-            pTexture->mon = c->mon;
-            pTexture->tagset = c->tagset;
-            wlr_list_push(&renderData.textures, pTexture);
-            wlr_list_push(&renderData.base_textures, pTexture);
-        }
+        struct posTexture *pTexture =
+            create_textbox(c->geom, overlayColor, textColor, text);
+        // sync properties
+        pTexture->tagset = c->tagset;
+        wlr_list_push(&renderData.textures, pTexture);
+        wlr_list_push(&renderData.base_textures, pTexture);
     }
 }
 
@@ -133,7 +130,6 @@ void update_client_overlay(struct client *c)
 
         struct posTexture *pTexture =
             create_textbox(c->geom, overlayColor, textColor, text);
-        pTexture->mon = c->mon;
         pTexture->tagset = c->tagset;
         wlr_list_insert(&renderData.textures, c->position, pTexture);
     } else {

@@ -397,7 +397,7 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
         case IPC_GET_WORKSPACES:
             {
                 json_object *array = json_object_new_array();
-                struct tagset *tagset = selected_monitor->tagset;
+                struct tagset *tagset = tagset;
                 for (int i = 0; i < tagset->tags.length; i++) {
                     json_object_array_add(
                             array,

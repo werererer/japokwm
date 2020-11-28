@@ -11,13 +11,12 @@ int thisTiledClientCount(lua_State *L)
 
 int thisClientPos(lua_State *L)
 {
-    struct monitor *m = selected_monitor;
     struct client *c;
     int n = 1;
     bool handled = false;
 
     wl_list_for_each(c, &clients, link) {
-        if (visibleon(c, m) && !c->floating) {
+        if (visibleon(c) && !c->floating) {
             if (c == selected_client()) {
                 handled = true;
                 break;

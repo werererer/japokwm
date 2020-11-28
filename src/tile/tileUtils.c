@@ -48,13 +48,12 @@ struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box b)
 void arrange(struct monitor *m, bool reset)
 {
     /* Get effective monitor geometry to use for window area */
-    struct tagset *tagset = m->tagset;
     m->m = *wlr_output_layout_get_box(output_layout, m->output);
     set_root_area(m);
-    /* m->m = *wlr_output_layout_get_box(output_layout, m->output); */
 
     if (!overlay)
         container_surround_gaps(&root.w, outerGap);
+    printf("%p\n", tagset);
     if (selected_layout(tagset).funcId) {
         struct client *c = NULL;
 
@@ -79,7 +78,7 @@ void arrange(struct monitor *m, bool reset)
 
         int i = 0;
         wl_list_for_each(c, &clients, link) {
-            if (c->hidden || !visibleon(c, m))
+            if (c->hidden || !visibleon(c))
                 continue;
             if (c->floating)
                 continue;
@@ -88,7 +87,7 @@ void arrange(struct monitor *m, bool reset)
             i++;
         }
         wl_list_for_each(c, &clients, link) {
-            if (c->hidden || !visibleon(c, m))
+            if (c->hidden || !visibleon(c))
                 continue;
             if (!c->floating)
                 continue;
@@ -98,7 +97,7 @@ void arrange(struct monitor *m, bool reset)
         }
         i = 0;
         wl_list_for_each(c, &clients, link) {
-            if (c->hidden || !visibleon(c, m))
+            if (c->hidden || !visibleon(c))
                 continue;
 
             c->textPosition = i;
@@ -185,7 +184,7 @@ void update_hidden_status()
             c->hidden = false;
             continue;
         }
-        if (existon(c, selected_monitor))
+        if (existon(c))
         {
             if (i < containers_info.n)
                 c->hidden = false;
@@ -202,7 +201,7 @@ int tiled_client_count(struct monitor *m)
     int n = 0;
 
     wl_list_for_each(c, &clients, link)
-        if (existon(c, m) && !c->floating)
+        if (existon(c) && !c->floating)
             n++;
     return n;
 }

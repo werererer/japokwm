@@ -41,15 +41,14 @@ void create_monitor(struct wl_listener *listener, void *data)
     /* Allocates and configures monitor state using configured rules */
     m = output->data = calloc(1, sizeof(struct monitor));
     m->output = output;
-    m->tagset = create_tagset(&tagNames, 0, 0);
-    push_seleceted_tags(m->tagset, TAG_ONE);
+    push_seleceted_tags(tagset, TAG_ONE);
     for (r = monrules; r < END(monrules); r++) {
         if (!r->name || strstr(output->name, r->name)) {
             m->mfact = r->mfact;
             m->nmaster = r->nmaster;
             wlr_output_set_scale(output, r->scale);
             wlr_xcursor_manager_load(server.cursorMgr, r->scale);
-            set_selected_layout(m->tagset, *r->lt);
+            set_selected_layout(tagset, *r->lt);
             wlr_output_set_transform(output, r->rr);
             break;
         }

@@ -99,7 +99,7 @@ struct client *selected_client()
     if (wl_list_length(&focus_stack))
     {
         struct client *c = wl_container_of(focus_stack.next, c, flink);
-        if (!visibleon(c, selected_monitor))
+        if (!visibleon(c))
             return NULL;
         else
             return c;
@@ -113,7 +113,7 @@ struct client *next_client()
     if (wl_list_length(&focus_stack) >= 2)
     {
         struct client *c = wl_container_of(focus_stack.next->next, c, flink);
-        if (!visibleon(c, selected_monitor))
+        if (!visibleon(c))
             return NULL;
         else
             return c;
@@ -127,7 +127,7 @@ struct client *prev_client()
     if (wl_list_length(&focus_stack) >= 2)
     {
         struct client *c = wl_container_of(focus_stack.prev, c, flink);
-        if (!visibleon(c, selected_monitor))
+        if (!visibleon(c))
             return NULL;
         else
             return c;
@@ -170,7 +170,7 @@ struct client *firstClient()
     {
         struct client *c = wl_container_of(stack.next, c, link);
         wl_list_for_each(c, &stack, slink) {
-            if (!visibleon(c, selected_monitor))
+            if (!visibleon(c))
                 continue;
             return c;
         }
@@ -185,7 +185,7 @@ struct client *last_client()
         struct client *c = wl_container_of(stack.next, c, link);
         int i = 1;
         wl_list_for_each(c, &stack, slink) {
-            if (!visibleon(c, selected_monitor))
+            if (!visibleon(c))
                 continue;
             if (i > containers_info.n)
                 return c;
@@ -201,7 +201,7 @@ struct client *xytoclient(double x, double y)
      * borders. This relies on stack being ordered from top to bottom. */
     struct client *c;
     wl_list_for_each(c, &stack, slink) {
-        if (visibleon(c, c->mon) && wlr_box_contains_point(&c->geom, x, y)) {
+        if (visibleon(c) && wlr_box_contains_point(&c->geom, x, y)) {
             return c;
         }
     }
@@ -228,60 +228,52 @@ struct wlr_surface *get_wlrsurface(struct client *c)
     }
 }
 
-bool existon(struct client *c, struct monitor *m)
+bool existon(struct client *c)
 {
-    if (m && c) {
-        if (c->mon == m) {
-            return c->tagset->selTags[0] & m->tagset->selTags[0];
-        }
+    if (c) {
+        return c->tagset->selTags[0] & tagset->selTags[0];
     }
     return false;
 }
 
-bool visibleon(struct client *c, struct monitor *m)
+bool visibleon(struct client *c)
 {
     // LayerShell based programs are visible on all workspaces
     // TODO: more sophisticated approach with sticky windows needed
-    if (m && c) {
-        if (c->mon == m) {
-            if (c->type == LAYER_SHELL && c->mon == m) {
-                return true;
-            }
+    if (c) {
+        if (c->type == LAYER_SHELL) {
+            return true;
+        }
 
-            if (!c->hidden) {
-                return c->tagset->selTags[0] & m->tagset->selTags[0];
-            }
+        if (!c->hidden) {
+            return c->tagset->selTags[0] & tagset->selTags[0];
         }
     }
     return false;
 }
 
-bool hiddenon(struct client *c, struct monitor *m)
+bool hiddenon(struct client *c)
 {
-    if (m && c) {
-        if (c->mon == m && c->hidden) {
-            return c->tagset->selTags[0] & m->tagset->selTags[0];
+    if (c) {
+        if (c->hidden) {
+            return c->tagset->selTags[0] & tagset->selTags[0];
         }
     }
     return false;
 }
 
-bool visible_on_tag(struct client *c, struct monitor *m, size_t focusedTag)
+bool visible_on_tag(struct client *c, size_t focusedTag)
 {
-    if (m && c) {
-        if (c->mon == m) {
-            return c->tagset->selTags[0] & position_to_flag(focusedTag);
-        }
+    if (c) {
+        return c->tagset->selTags[0] & position_to_flag(focusedTag);
     }
     return false;
 }
 
-bool client_visible_on_tag(struct client *c, struct monitor *m, size_t focusedTag)
+bool client_visible_on_tag(struct client *c, size_t focusedTag)
 {
-    if (m && c) {
-        if (c->mon == m) {
-            return c->tagset->selTags[0] & position_to_flag(focusedTag);
-        }
+    if (c) {
+        return c->tagset->selTags[0] & position_to_flag(focusedTag);
     }
     return false;
 }
@@ -350,7 +342,7 @@ void focus_top_client(struct client *old, bool lift)
 
     // focus_stack should not be changed while iterating
     wl_list_for_each(c, &focus_stack, flink)
-        if (visibleon(c, selected_monitor)) {
+        if (visibleon(c)) {
             focus = true;
             break;
         }

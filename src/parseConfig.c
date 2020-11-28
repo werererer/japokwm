@@ -152,11 +152,11 @@ int reloadConfig(lua_State *L)
         free(wlr_list_pop(&tagNames));
     wlr_list_finish(&tagNames);
 
-    unsigned int focusedTag = selected_monitor->tagset->focusedTag;
-    unsigned int selTags = selected_monitor->tagset->selTags[0];
-    destroy_tagset(selected_monitor->tagset);
+    unsigned int focusedTag = tagset->focusedTag;
+    unsigned int selTags = tagset->selTags[0];
+    destroy_tagset(tagset);
     update_config(L);
-    selected_monitor->tagset = create_tagset(&tagNames, focusedTag, selTags);
+    tagset = create_tagset(&tagNames, focusedTag, selTags);
 
     // reconfigure clients
     struct client *c = NULL;
