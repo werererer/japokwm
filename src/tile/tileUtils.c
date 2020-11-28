@@ -48,12 +48,11 @@ struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box b)
 void arrange(struct monitor *m, bool reset)
 {
     /* Get effective monitor geometry to use for window area */
-    m->m = *wlr_output_layout_get_box(output_layout, m->output);
+    m->m = *wlr_output_layout_get_box(output_layout, m->wlr_output);
     set_root_area(m);
 
     if (!overlay)
         container_surround_gaps(&root.w, outerGap);
-    printf("%p\n", tagset);
     if (selected_layout(tagset).funcId) {
         struct client *c = NULL;
 

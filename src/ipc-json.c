@@ -83,8 +83,8 @@ json_object *ipc_json_describe_tag(struct tag *tag, bool focused, bool selected)
     json_object *object = ipc_json_create_node(0, s, selected, false, NULL, box);
     json_object_object_add(object, "num", json_object_new_int(0));
     json_object_object_add(object, "fullscreen_mode", json_object_new_int(0));
-    json_object_object_add(object, "output", selected_monitor->output ?
-            json_object_new_string(selected_monitor->output->name) : NULL);
+    json_object_object_add(object, "output", selected_monitor->wlr_output ?
+            json_object_new_string(selected_monitor->wlr_output->name) : NULL);
     json_object_object_add(object, "type", json_object_new_string("workspace"));
     json_object_object_add(object, "urgent",
             json_object_new_boolean(false)); 

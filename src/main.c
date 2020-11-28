@@ -319,7 +319,7 @@ void createnotifyLayerShell(struct wl_listener *listener, void *data)
     wl_signal_add(&layer_surface->events.unmap, &c->unmap);
     c->destroy.notify = destroynotify;
     wl_signal_add(&layer_surface->events.destroy, &c->destroy);
-    wlr_layer_surface_v1_configure(c->surface.layer, selected_monitor->output->width, selected_monitor->output->height);
+    wlr_layer_surface_v1_configure(c->surface.layer, selected_monitor->wlr_output->width, selected_monitor->wlr_output->height);
     /* popups */
     c->new_popup.notify = popup_handle_new_popup;
     wl_signal_add(&layer_surface->events.new_popup, &c->new_popup);
@@ -574,14 +574,14 @@ void maprequest(struct wl_listener *listener, void *data)
                 c->geom.width = c->surface.layer->current.desired_width;
             }
             else {
-                c->geom.width = selected_monitor->output->width;
+                c->geom.width = selected_monitor->wlr_output->width;
             }
 
             if (c->surface.layer->current.desired_height) {
                 c->geom.height = c->surface.layer->current.desired_height;
             }
             else {
-                c->geom.height = selected_monitor->output->height;
+                c->geom.height = selected_monitor->wlr_output->height;
             }
             break;
         case X11_MANAGED:

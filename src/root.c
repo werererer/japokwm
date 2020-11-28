@@ -14,14 +14,14 @@ static void set_layer_shell(struct client *c)
         c->geom.width = c->surface.layer->current.desired_width;
     }
     else {
-        c->geom.width = selected_monitor->output->width;
+        c->geom.width = selected_monitor->wlr_output->width;
     }
 
     if (c->surface.layer->current.desired_height) {
         c->geom.height = c->surface.layer->current.desired_height;
     }
     else {
-        c->geom.height = selected_monitor->output->height;
+        c->geom.height = selected_monitor->wlr_output->height;
     }
 }
 

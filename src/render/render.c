@@ -88,12 +88,12 @@ static void renderClients(struct monitor *m)
     wl_list_for_each_reverse(c, &stack, slink) {
         /* Only render visible clients which are shown on this monitor */
         if (!visibleon(c) || !wlr_output_layout_intersects(
-                    output_layout, m->output, &c->geom))
+                    output_layout, m->wlr_output, &c->geom))
             continue;
 
         surface = get_wlrsurface(c);
         ox = c->geom.x, oy = c->geom.y;
-        wlr_output_layout_output_coords(output_layout, m->output,
+        wlr_output_layout_output_coords(output_layout, m->wlr_output,
                 &ox, &oy);
         w = surface->current.width;
         h = surface->current.height;
@@ -107,9 +107,9 @@ static void renderClients(struct monitor *m)
         /* Draw window borders */
         color = (c == sel) ? focusColor : borderColor;
         for (int i = 0; i < 4; i++) {
-            scalebox(&borders[i], m->output->scale);
+            scalebox(&borders[i], m->wlr_output->scale);
             wlr_render_rect(drw, &borders[i], color,
-                    m->output->transform_matrix);
+                    m->wlr_output->transform_matrix);
         }
 
         /* This calls our render function for each surface among the
@@ -117,7 +117,7 @@ static void renderClients(struct monitor *m)
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
-        rdata.output = m->output;
+        rdata.output = m->wlr_output;
         rdata.when = &now;
         rdata.x = c->geom.x + c->bw;
         rdata.y = c->geom.y + c->bw;
@@ -140,7 +140,7 @@ static void renderLayerShell(struct monitor *m, enum zwlr_layer_shell_v1_layer l
 
         /* Only render visible clients which show on this monitor */
         if (!visibleon(c) || !wlr_output_layout_intersects(
-                    output_layout, m->output, &c->geom))
+                    output_layout, m->wlr_output, &c->geom))
             continue;
 
         /* This calls our render function for each surface among the
@@ -148,7 +148,7 @@ static void renderLayerShell(struct monitor *m, enum zwlr_layer_shell_v1_layer l
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
-        rdata.output = m->output;
+        rdata.output = m->wlr_output;
         rdata.when = &now;
         rdata.x = c->geom.x + c->bw;
         rdata.y = c->geom.y + c->bw;
@@ -162,7 +162,7 @@ static void renderTexture(void *texture)
 {
     struct posTexture *text = texture;
     if (postexture_visible_on_flag(text, selected_monitor, tagset->selTags[0])) {
-        wlr_render_texture(drw, text->texture, selected_monitor->output->transform_matrix,
+        wlr_render_texture(drw, text->texture, selected_monitor->wlr_output->transform_matrix,
                 text->x, text->y, 1);
     }
 }
@@ -201,7 +201,7 @@ static void renderPopups(struct monitor *m) {
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
         struct renderData rdata;
-        rdata.output = m->output;
+        rdata.output = m->wlr_output;
         rdata.when = &now;
         rdata.x = popup->geom.x;
         rdata.y = popup->geom.y;
@@ -220,14 +220,14 @@ void renderFrame(struct wl_listener *listener, void *data)
 
     if (selected_monitor) {
         struct wlr_box b = selected_monitor->m;
-        selected_monitor->m = *wlr_output_layout_get_box(output_layout, selected_monitor->output);
+        selected_monitor->m = *wlr_output_layout_get_box(output_layout, selected_monitor->wlr_output);
         // resize clients
         if (selected_monitor->m.width != b.width || selected_monitor->m.height != b.height) {
             arrange(selected_monitor, false);
             struct client *c;
             wl_list_for_each(c, &layerstack, llink) {
                 wlr_layer_surface_v1_configure(c->surface.layer,
-                        selected_monitor->output->width, selected_monitor->output->height);
+                        selected_monitor->wlr_output->width, selected_monitor->wlr_output->height);
             }
         }
     }
@@ -236,18 +236,18 @@ void renderFrame(struct wl_listener *listener, void *data)
     clock_gettime(CLOCK_MONOTONIC, &now);
 
     /* wlr_output_attach_render makes the OpenGL context current. */
-    if (!wlr_output_attach_render(m->output, NULL))
+    if (!wlr_output_attach_render(m->wlr_output, NULL))
         return;
 
     if (render) {
         /* Begin the renderer (calls glViewport and some other GL sanity checks) */
-        wlr_renderer_begin(drw, m->output->width, m->output->height);
+        wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
         wlr_renderer_clear(drw, root.color);
 
         renderLayerShell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND);
         renderLayerShell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
         renderClients(m);
-        renderIndependents(m->output);
+        renderIndependents(m->wlr_output);
         renderLayerShell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP);
         renderLayerShell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
 
@@ -260,14 +260,14 @@ void renderFrame(struct wl_listener *listener, void *data)
          * reason, wlroots provides a software fallback, which we ask it to render
          * here. wlr_cursor handles configuring hardware vs software cursors for you,
          * and this function is a no-op when hardware cursors are in use. */
-        wlr_output_render_software_cursors(m->output, NULL);
+        wlr_output_render_software_cursors(m->wlr_output, NULL);
 
         /* Conclude rendering and swap the buffers, showing the final frame
          * on-screen. */
         wlr_renderer_end(drw);
     }
 
-    wlr_output_commit(m->output);
+    wlr_output_commit(m->wlr_output);
 }
 
 void scalebox(struct wlr_box *box, float scale)
