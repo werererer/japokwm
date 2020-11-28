@@ -22,7 +22,7 @@ static struct xdg_popup *create_popup(struct wlr_xdg_popup *xdg_popup,
     popup->toplevel = toplevel;
 
     // unconstrain
-    struct wlr_box *box = selected_monitor->m;
+    struct wlr_box *box = &selected_monitor->m;
     box->x = -popup->toplevel->geom.x;
     box->y = -popup->toplevel->geom.y;
     wlr_xdg_popup_unconstrain_from_box(popup->xdg, box);

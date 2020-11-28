@@ -219,10 +219,10 @@ void renderFrame(struct wl_listener *listener, void *data)
     struct monitor *m = wl_container_of(listener, m, frame);
 
     if (selected_monitor) {
-        struct wlr_box b = *selected_monitor->m;
-        selected_monitor->m = wlr_output_layout_get_box(output_layout, selected_monitor->output);
+        struct wlr_box b = selected_monitor->m;
+        selected_monitor->m = *wlr_output_layout_get_box(output_layout, selected_monitor->output);
         // resize clients
-        if (selected_monitor->m->width != b.width || selected_monitor->m->height != b.height) {
+        if (selected_monitor->m.width != b.width || selected_monitor->m.height != b.height) {
             arrange(selected_monitor, false);
             struct client *c;
             wl_list_for_each(c, &layerstack, llink) {

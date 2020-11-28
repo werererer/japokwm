@@ -43,9 +43,9 @@ void set_root_area(struct monitor *m)
         }
     }
     if (root.consider_layer_shell) {
-        root.w->x += maxWidth + m->m->x;
-        root.w->width -= maxWidth;
-        root.w->y += maxHeight + m->m->y;
-        root.w->height -= maxHeight;
+        root.w.x += maxWidth + m->m.x;
+        root.w.width -= maxWidth;
+        root.w.y += maxHeight + m->m.y;
+        root.w.height -= maxHeight;
     }
 }

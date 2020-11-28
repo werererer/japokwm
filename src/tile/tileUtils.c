@@ -11,6 +11,7 @@
 
 #include "monitor.h"
 #include "tagset.h"
+#include "server.h"
 #include "utils/coreUtils.h"
 #include "parseConfig.h"
 #include "tile/tileTexture.h"
@@ -34,13 +35,13 @@ struct wlr_box get_absolute_box(struct wlr_box box, struct wlr_fbox b)
     return w;
 }
 
-struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box *b)
+struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box b)
 {
     struct wlr_fbox w;
-    w.x = (float)box.x / b->width;
-    w.y = (float)box.y / b->height;
-    w.width = (float)box.width / b->width;
-    w.height = (float)box.height / b->height;
+    w.x = (float)box.x / b.width;
+    w.y = (float)box.y / b.height;
+    w.width = (float)box.width / b.width;
+    w.height = (float)box.height / b.height;
     return w;
 }
 
@@ -48,11 +49,12 @@ void arrange(struct monitor *m, bool reset)
 {
     /* Get effective monitor geometry to use for window area */
     struct tagset *tagset = m->tagset;
-    m->m = wlr_output_layout_get_box(output_layout, m->output);
-
+    m->m = *wlr_output_layout_get_box(output_layout, m->output);
     set_root_area(m);
+    /* m->m = *wlr_output_layout_get_box(output_layout, m->output); */
+
     if (!overlay)
-        container_surround_gaps(root.w, outerGap);
+        container_surround_gaps(&root.w, outerGap);
     if (selected_layout(tagset).funcId) {
         struct client *c = NULL;
 
@@ -131,7 +133,7 @@ void arrange_client(struct client *c, int i)
         con.height = luaL_checknumber(L, -1);
         lua_pop(L, 1);
         lua_pop(L, 1);
-        struct wlr_box box = get_absolute_box(*root.w, con);
+        struct wlr_box box = get_absolute_box(root.w, con);
         if (!overlay)
             container_surround_gaps(&box, innerGap);
         resize(c, box.x, box.y, box.width, box.height, false);
@@ -154,7 +156,7 @@ void resize(struct client *c, int x, int y, int w, int h, bool interact)
     box.height = h;
 
     c->geom = box;
-    applybounds(c, box);
+    applybounds(c, selected_monitor->m);
 
     /* wlroots makes this a no-op if size hasn't changed */
     switch (c->type) {

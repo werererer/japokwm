@@ -193,7 +193,7 @@ static void set_client_floating(struct client *c, bool floating)
         return;
     c->floating = floating;
     lift_client(c);
-    arrange(c->mon, false);
+    arrange(selected_monitor, false);
 }
 
 // TODO optimize this function
@@ -203,24 +203,8 @@ void motionnotify(uint32_t time)
     struct wlr_surface *surface = NULL;
     struct client *c;
 
-    printf("sx: %lf\n", server.cursor->x);
-    printf("sy: %lf\n", server.cursor->y);
-    struct monitor *m = xytomon(server.cursor->x, server.cursor->y);
-    printf("old\n");
-    printf("x: %i\n", selected_monitor->m->x);
-    printf("y: %i\n", selected_monitor->m->y);
-    printf("width: %i\n", selected_monitor->m->width);
-    printf("height: %i\n", selected_monitor->m->height);
-
-    printf("new\n");
-    printf("x: %i\n", m->m->x);
-    printf("y: %i\n", m->m->y);
-    printf("width: %i\n", m->m->width);
-    printf("height: %i\n", m->m->height);
-    if (m) {
-        printf("change\n");
-        selected_monitor = m;
-    }
+    selected_monitor = xytomon(server.cursor->x, server.cursor->y);
+    printf("change selected MON: %p\n", selected_monitor);
     bool action = false;
     /* If we are currently grabbing the mouse, handle and return */
     switch (server.cursorMode) {

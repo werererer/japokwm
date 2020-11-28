@@ -61,9 +61,8 @@ void applybounds(struct client *c, struct wlr_box bbox)
 void applyrules(struct client *c)
 {
     const char *appid, *title;
-    unsigned int i, newtags = 0;
+    unsigned int newtags = 0;
     const struct rule *r;
-    struct monitor *m; 
     /* rule matching */
     c->floating = false;
     switch (c->type) {
@@ -91,10 +90,6 @@ void applyrules(struct client *c)
                 && (!r->id || strstr(appid, r->id))) {
             c->floating = r->floating;
             newtags |= r->tags;
-            i = 0;
-            wl_list_for_each(m, &mons, link)
-                if (r->monitor == i++)
-                    selected_monitor = m;
         }
     }
 }

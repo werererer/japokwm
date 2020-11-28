@@ -11,7 +11,7 @@ struct monitor {
     struct wl_listener frame;
     struct wl_listener destroy;
     /* monitor area, layout-relative */
-    struct wlr_box *m;
+    struct wlr_box m;
     struct tagset *tagset;
     double mfact;
     int nmaster;

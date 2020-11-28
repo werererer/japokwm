@@ -28,7 +28,6 @@ void create_monitor(struct wl_listener *listener, void *data)
 {
     /* This event is raised by the backend when a new output (aka a display or
      * monitor) becomes available. */
-    printf("NEW MONITOR\n");
     struct wlr_output *output = data;
     struct monitor *m;
     const struct mon_rule *r;
@@ -77,7 +76,6 @@ void create_monitor(struct wl_listener *listener, void *data)
      * output (such as DPI, scale factor, manufacturer, etc).
      */
     wlr_output_layout_add_auto(output_layout, output);
-    m->m = wlr_output_layout_get_box(output_layout, NULL);
 }
 
 void set_monitor(struct monitor *m)
