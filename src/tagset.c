@@ -4,6 +4,7 @@
 #include <tgmath.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wlr/util/log.h>
 #include "ipc-server.h"
 
 struct tagset *create_tagset(struct wlr_list *tagNames,
@@ -56,13 +57,11 @@ void set_selelected_Tags(struct tagset *tagset, unsigned int selTags)
 
 struct tag *get_tag_from_tagset(struct tagset *tagset, size_t i)
 {
-    printf("get_tag_from_tagset %p\n", tagset);
     return tagset->tags.items[i];
 }
 
 struct tag *focused_tag_from_tagset(struct tagset *tagset)
 {
-    printf("focused_tag_from_tagset\n");
     return get_tag_from_tagset(tagset, tagset->focusedTag);
 }
 
@@ -96,16 +95,14 @@ bool tags_overlap(unsigned int tags, unsigned int tags2)
 
 struct layout selected_layout(struct tagset *tagset)
 {
-    printf("selected_layout\n");
     return focused_tag_from_tagset(tagset)->layout;
 }
 
 void set_selected_layout(struct tagset *tagset, struct layout layout)
 {
-    printf("set_selected_layout\n");
     struct tag *tag = focused_tag_from_tagset(tagset);
     if (strcmp(tag->name, "") == 0) {
-        printf("ERROR: tag not initialized\n");
+        wlr_log(WLR_ERROR, "ERROR: tag not initialized");
         return;
     }
     tag->layout = layout;

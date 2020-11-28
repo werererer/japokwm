@@ -204,7 +204,6 @@ void motionnotify(uint32_t time)
     struct client *c;
 
     selected_monitor = xytomon(server.cursor->x, server.cursor->y);
-    printf("change selected MON: %p\n", selected_monitor);
     bool action = false;
     /* If we are currently grabbing the mouse, handle and return */
     switch (server.cursorMode) {

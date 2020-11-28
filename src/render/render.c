@@ -12,8 +12,8 @@ struct wlr_renderer *drw;
 struct renderData renderData;
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data);
-static void renderClients(struct monitor *m);
-static void renderIndependents(struct wlr_output *output);
+static void render_clients();
+static void render_independents(struct wlr_output *output);
 static void renderTexture(void *texture);
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data)
@@ -74,7 +74,7 @@ static void render(struct wlr_surface *surface, int sx, int sy, void *data)
     wlr_surface_send_frame_done(surface, rdata->when);
 }
 
-static void renderClients(struct monitor *m)
+static void render_clients()
 {
     struct client *c, *sel = selected_client();
     const float *color;
@@ -83,48 +83,51 @@ static void renderClients(struct monitor *m)
     struct renderData rdata;
     struct wlr_box *borders;
     struct wlr_surface *surface;
-    /* Each subsequent window we render is rendered on top of the last. Because
-     * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    wl_list_for_each_reverse(c, &stack, slink) {
-        /* Only render visible clients which are shown on this monitor */
-        if (!visibleon(c, m))
-            continue;
+    struct monitor *m;
+    wl_list_for_each(m, &mons, link) {
+        /* Each subsequent window we render is rendered on top of the last. Because
+         * our stacking list is ordered front-to-back, we iterate over it backwards. */
+        wl_list_for_each_reverse(c, &stack, slink) {
+            /* Only render visible clients which are shown on this monitor */
+            if (!visibleon(c, m))
+                continue;
 
-        surface = get_wlrsurface(c);
-        ox = c->geom.x, oy = c->geom.y;
-        wlr_output_layout_output_coords(output_layout, m->wlr_output, &ox, &oy);
-        w = surface->current.width;
-        h = surface->current.height;
-        borders = (struct wlr_box[4]) {
-            {ox, oy, w + 2 * c->bw, c->bw},             /* top */
-                {ox, oy + c->bw, c->bw, h},                 /* left */
-                {ox + c->bw + w, oy + c->bw, c->bw, h},     /* right */
-                {ox, oy + c->bw + h, w + 2 * c->bw, c->bw}, /* bottom */
-        };
+            surface = get_wlrsurface(c);
+            ox = c->geom.x, oy = c->geom.y;
+            wlr_output_layout_output_coords(output_layout, m->wlr_output, &ox, &oy);
+            w = surface->current.width;
+            h = surface->current.height;
+            borders = (struct wlr_box[4]) {
+                {ox, oy, w + 2 * c->bw, c->bw},             /* top */
+                    {ox, oy + c->bw, c->bw, h},                 /* left */
+                    {ox + c->bw + w, oy + c->bw, c->bw, h},     /* right */
+                    {ox, oy + c->bw + h, w + 2 * c->bw, c->bw}, /* bottom */
+            };
 
-        /* Draw window borders */
-        color = (c == sel) ? focusColor : borderColor;
-        for (int i = 0; i < 4; i++) {
-            scalebox(&borders[i], m->wlr_output->scale);
-            wlr_render_rect(drw, &borders[i], color,
-                    m->wlr_output->transform_matrix);
+            /* Draw window borders */
+            color = (c == sel) ? focusColor : borderColor;
+            for (int i = 0; i < 4; i++) {
+                scalebox(&borders[i], m->wlr_output->scale);
+                wlr_render_rect(drw, &borders[i], color,
+                        m->wlr_output->transform_matrix);
+            }
+
+            /* This calls our render function for each surface among the
+             * xdg_surface's toplevel and popups. */
+
+            struct timespec now;
+            clock_gettime(CLOCK_MONOTONIC, &now);
+            rdata.output = m->wlr_output;
+            rdata.when = &now;
+            rdata.x = c->geom.x + c->bw;
+            rdata.y = c->geom.y + c->bw;
+
+            render(get_wlrsurface(c), 0, 0, &rdata);
         }
-
-        /* This calls our render function for each surface among the
-         * xdg_surface's toplevel and popups. */
-
-        struct timespec now;
-        clock_gettime(CLOCK_MONOTONIC, &now);
-        rdata.output = m->wlr_output;
-        rdata.when = &now;
-        rdata.x = c->geom.x + c->bw;
-        rdata.y = c->geom.y + c->bw;
-
-        render(get_wlrsurface(c), 0, 0, &rdata);
     }
 }
 
-static void renderLayerShell(struct monitor *m, enum zwlr_layer_shell_v1_layer layer)
+static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer layer)
 {
     struct client *c;
     struct renderData rdata; 
@@ -166,7 +169,7 @@ static void renderTexture(void *texture)
 }
 
 
-static void renderIndependents(struct wlr_output *output)
+static void render_independents(struct wlr_output *output)
 {
     struct client *c;
     struct renderData rdata;
@@ -193,7 +196,7 @@ static void renderIndependents(struct wlr_output *output)
     }
 }
 
-static void renderPopups(struct monitor *m) {
+static void render_popups(struct monitor *m) {
     struct xdg_popup *popup;
     wl_list_for_each_reverse(popup, &popups, link) {
         struct timespec now;
@@ -207,8 +210,7 @@ static void renderPopups(struct monitor *m) {
     }
 }
 
-/* called from a wl_signal in setup() */
-void renderFrame(struct wl_listener *listener, void *data)
+void render_frame(struct wl_listener *listener, void *data)
 {
     bool render = true;
 
@@ -242,15 +244,15 @@ void renderFrame(struct wl_listener *listener, void *data)
         wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
         wlr_renderer_clear(drw, root.color);
 
-        renderLayerShell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND);
-        renderLayerShell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
-        renderClients(m);
-        renderIndependents(m->wlr_output);
-        renderLayerShell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP);
-        renderLayerShell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
+        render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND);
+        render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
+        render_clients();
+        render_independents(m->wlr_output);
+        render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP);
+        render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
 
         wlr_list_for_each(&renderData.textures, renderTexture);
-        renderPopups(m);
+        render_popups(m);
 
         /* Hardware cursors are rendered by the GPU on a separate plane, and can be
          * moved around without re-rendering what's beneath them - which is more

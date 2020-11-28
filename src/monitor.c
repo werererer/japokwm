@@ -55,7 +55,7 @@ void create_monitor(struct wl_listener *listener, void *data)
         }
     }
     /* Set up event listeners */
-    m->frame.notify = renderFrame;
+    m->frame.notify = render_frame;
     wl_signal_add(&output->events.frame, &m->frame);
     m->destroy.notify = cleanupMonitor;
     wl_signal_add(&output->events.destroy, &m->destroy);
