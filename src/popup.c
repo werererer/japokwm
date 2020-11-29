@@ -8,6 +8,7 @@
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "xdg-shell-protocol.h"
+#include "tile/tileUtils.h"
 
 struct wl_list popups;
 
@@ -46,7 +47,7 @@ void popup_handle_new_popup(struct wl_listener *listener, void *data)
     struct wlr_xdg_popup *xdg_popup = data;
 
     struct xdg_popup *popup =
-        create_popup(xdg_popup, c->geom, c);
+        create_popup(xdg_popup, get_absolute_box(selected_monitor->m, c->geom), c);
 
     wl_list_insert(&popups, &popup->link);
 }

@@ -40,7 +40,7 @@ void executeCommand(const char *_exec)
     // execute command
     if (strcmp(argv[0], "workspace") == 0) {
         bool handled = false;
-        struct tagset *tagset = tagset;
+        struct tagset *tagset = selected_monitor->tagset;
         int i;
         for (i = 0; i < tagset->tags.length; i++) {
             if (strcmp(get_tag_from_tagset(tagset, i)->name, argv[2]) == 0) {

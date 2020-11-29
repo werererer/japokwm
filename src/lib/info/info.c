@@ -16,7 +16,7 @@ int thisClientPos(lua_State *L)
     bool handled = false;
 
     wl_list_for_each(c, &clients, link) {
-        if (visibleon(c, selected_monitor) && !c->floating) {
+        if (visibleon(c, selected_monitor->tagset) && !c->floating) {
             if (c == selected_client()) {
                 handled = true;
                 break;

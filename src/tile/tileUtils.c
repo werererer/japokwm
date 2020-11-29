@@ -77,7 +77,7 @@ void arrange(struct monitor *m, bool reset)
 
         int i = 0;
         wl_list_for_each(c, &clients, link) {
-            if (c->hidden || !visibleon(c, m))
+            if (c->hidden || !visibleon(c, m->tagset))
                 continue;
             if (c->floating)
                 continue;
@@ -86,7 +86,7 @@ void arrange(struct monitor *m, bool reset)
             i++;
         }
         wl_list_for_each(c, &clients, link) {
-            if (c->hidden || !visibleon(c, m))
+            if (c->hidden || !visibleon(c, m->tagset))
                 continue;
             if (!c->floating)
                 continue;
@@ -96,7 +96,7 @@ void arrange(struct monitor *m, bool reset)
         }
         i = 0;
         wl_list_for_each(c, &clients, link) {
-            if (c->hidden || !visibleon(c, m))
+            if (c->hidden || !visibleon(c, m->tagset))
                 continue;
 
             c->textPosition = i;
@@ -153,7 +153,7 @@ void resize(struct client *c, int x, int y, int w, int h, bool interact)
     box.width = w;
     box.height = h;
 
-    c->geom = box;
+    c->geom = get_relative_box(selected_monitor->m, box);
     applybounds(c, selected_monitor->m);
 
     /* wlroots makes this a no-op if size hasn't changed */

@@ -99,13 +99,13 @@ int focus_on_stack(lua_State *L)
     if (i > 0) {
         int j = 1;
         wl_list_for_each(c, &sel->link, link) {
-            if (visibleon(c, selected_monitor))
+            if (visibleon(c, selected_monitor->tagset))
                 break;  /* found it */
             j++;
         }
     } else {
         wl_list_for_each_reverse(c, &sel->link, link) {
-            if (visibleon(c, selected_monitor))
+            if (visibleon(c, selected_monitor->tagset))
                 break;  /* found it */
         }
     }
@@ -396,7 +396,7 @@ int zoom(lua_State *L)
     /* Search for the first tiled window that is not sel, marking sel as
      * NULL if we pass it along the way */
     wl_list_for_each(c, &clients,
-            link) if (visibleon(c, selected_monitor) && !c->floating) {
+            link) if (visibleon(c, selected_monitor->tagset) && !c->floating) {
         if (c != old)
             break;
         old = NULL;

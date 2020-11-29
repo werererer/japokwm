@@ -107,7 +107,8 @@ void create_overlay()
         intToString(text, c->textPosition+1);
 
         struct posTexture *pTexture =
-            create_textbox(c->geom, overlayColor, textColor, text);
+            create_textbox(get_absolute_box(selected_monitor->m, c->geom),
+                    overlayColor, textColor, text);
         // sync properties
         pTexture->tagset = c->tagset;
         wlr_list_push(&renderData.textures, pTexture);
@@ -129,7 +130,8 @@ void update_client_overlay(struct client *c)
         intToString(text, c->textPosition+1);
 
         struct posTexture *pTexture =
-            create_textbox(c->geom, overlayColor, textColor, text);
+            create_textbox(get_absolute_box(selected_monitor->m, c->geom),
+                    overlayColor, textColor, text);
         pTexture->tagset = c->tagset;
         wlr_list_insert(&renderData.textures, c->position, pTexture);
     } else {

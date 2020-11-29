@@ -26,7 +26,7 @@ struct client {
     struct wl_listener unmap;
     struct wl_listener destroy;
     struct wl_listener new_popup;
-    struct wlr_box geom;  /* layout-relative, includes border */
+    struct wlr_fbox geom;
     enum shell type;
     struct tagset *tagset;
     int bw;
@@ -45,7 +45,7 @@ void applybounds(struct client *c, struct wlr_box bbox);
 
 /* it ignores bool  hiding which visibleon doesn't */
 bool existon(struct client *c, struct monitor *m);
-bool visibleon(struct client *c, struct monitor *m);
+bool visibleon(struct client *c, struct tagset *tagset);
 bool hiddenon(struct client *c, struct monitor *m);
 bool visible_on_tag(struct client *c, struct monitor *m, size_t focusedTag);
 struct client *next_client();

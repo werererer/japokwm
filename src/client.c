@@ -99,7 +99,7 @@ struct client *selected_client()
     if (wl_list_length(&focus_stack))
     {
         struct client *c = wl_container_of(focus_stack.next, c, flink);
-        if (!visibleon(c, selected_monitor))
+        if (!visibleon(c, selected_monitor->tagset))
             return NULL;
         else
             return c;
@@ -113,7 +113,7 @@ struct client *next_client()
     if (wl_list_length(&focus_stack) >= 2)
     {
         struct client *c = wl_container_of(focus_stack.next->next, c, flink);
-        if (!visibleon(c, selected_monitor))
+        if (!visibleon(c, selected_monitor->tagset))
             return NULL;
         else
             return c;
@@ -127,7 +127,7 @@ struct client *prev_client()
     if (wl_list_length(&focus_stack) >= 2)
     {
         struct client *c = wl_container_of(focus_stack.prev, c, flink);
-        if (!visibleon(c, selected_monitor))
+        if (!visibleon(c, selected_monitor->tagset))
             return NULL;
         else
             return c;
@@ -170,7 +170,7 @@ struct client *firstClient()
     {
         struct client *c = wl_container_of(stack.next, c, link);
         wl_list_for_each(c, &stack, slink) {
-            if (!visibleon(c, selected_monitor))
+            if (!visibleon(c, selected_monitor->tagset))
                 continue;
             return c;
         }
@@ -185,7 +185,7 @@ struct client *last_client()
         struct client *c = wl_container_of(stack.next, c, link);
         int i = 1;
         wl_list_for_each(c, &stack, slink) {
-            if (!visibleon(c, selected_monitor))
+            if (!visibleon(c, selected_monitor->tagset))
                 continue;
             if (i > containers_info.n)
                 return c;
@@ -201,7 +201,9 @@ struct client *xytoclient(double x, double y)
      * borders. This relies on stack being ordered from top to bottom. */
     struct client *c;
     wl_list_for_each(c, &stack, slink) {
-        if (visibleon(c, selected_monitor) && wlr_box_contains_point(&c->geom, x, y)) {
+        struct wlr_box box = get_absolute_box(selected_monitor->m, c->geom);
+        if (visibleon(c, selected_monitor->tagset)
+                && wlr_box_contains_point(&box, x, y)) {
             return c;
         }
     }
@@ -236,16 +238,16 @@ bool existon(struct client *c, struct monitor *m)
     return false;
 }
 
-bool visibleon(struct client *c, struct monitor *m)
+bool visibleon(struct client *c, struct tagset *tagset)
 {
     // LayerShell based programs are visible on all workspaces
-    if (c) {
+    if (c && tagset) {
         if (c->type == LAYER_SHELL) {
             return true;
         }
 
         if (!c->hidden) {
-            return c->tagset->selTags[0] & m->tagset->selTags[0];
+            return c->tagset->selTags[0] & tagset->selTags[0];
         }
     }
     return false;
@@ -341,7 +343,7 @@ void focus_top_client(struct client *old, bool lift)
 
     // focus_stack should not be changed while iterating
     wl_list_for_each(c, &focus_stack, flink)
-        if (visibleon(c, selected_monitor)) {
+        if (visibleon(c, selected_monitor->tagset)) {
             focus = true;
             break;
         }

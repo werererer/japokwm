@@ -7,12 +7,13 @@
 #include <wlr/util/edges.h>
 #include "root.h"
 #include "popup.h"
+#include "server.h"
 
 struct wlr_renderer *drw;
 struct renderData renderData;
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data);
-static void render_clients();
+static void render_clients(struct monitor *m);
 static void render_independents(struct wlr_output *output);
 static void renderTexture(void *texture);
 
@@ -39,11 +40,11 @@ static void render(struct wlr_surface *surface, int sx, int sy, void *data)
      * one next to the other, both 1080p, a client on the rightmost display might
      * have layout coordinates of 2000,100. We need to translate that to
      * output-local coordinates, or (2000 - 1920). */
-    wlr_output_layout_output_coords(output_layout, output, &ox, &oy);
+    struct monitor *m = xytomon(rdata->x, rdata->y);
+    wlr_output_layout_output_coords(output_layout, m->wlr_output, &ox, &oy);
 
     /* We also have to apply the scale factor for HiDPI outputs. This is only
      * part of the puzzle, dwl does not fully support HiDPI. */
-    // TODO: gaps here
     obox.x = ox + rdata->x + sx;
     obox.y = oy + rdata->y + sy;
     obox.width = surface->current.width;
@@ -74,7 +75,7 @@ static void render(struct wlr_surface *surface, int sx, int sy, void *data)
     wlr_surface_send_frame_done(surface, rdata->when);
 }
 
-static void render_clients()
+static void render_clients(struct monitor *m)
 {
     struct client *c, *sel = selected_client();
     const float *color;
@@ -83,47 +84,50 @@ static void render_clients()
     struct renderData rdata;
     struct wlr_box *borders;
     struct wlr_surface *surface;
-    struct monitor *m;
-    wl_list_for_each(m, &mons, link) {
-        /* Each subsequent window we render is rendered on top of the last. Because
-         * our stacking list is ordered front-to-back, we iterate over it backwards. */
-        wl_list_for_each_reverse(c, &stack, slink) {
-            /* Only render visible clients which are shown on this monitor */
-            if (!visibleon(c, m))
-                continue;
 
-            surface = get_wlrsurface(c);
-            ox = c->geom.x, oy = c->geom.y;
-            wlr_output_layout_output_coords(output_layout, m->wlr_output, &ox, &oy);
-            w = surface->current.width;
-            h = surface->current.height;
-            borders = (struct wlr_box[4]) {
-                {ox, oy, w + 2 * c->bw, c->bw},             /* top */
-                    {ox, oy + c->bw, c->bw, h},                 /* left */
-                    {ox + c->bw + w, oy + c->bw, c->bw, h},     /* right */
-                    {ox, oy + c->bw + h, w + 2 * c->bw, c->bw}, /* bottom */
-            };
+    /* Each subsequent window we render is rendered on top of the last. Because
+     * our stacking list is ordered front-to-back, we iterate over it backwards. */
+    wl_list_for_each_reverse(c, &stack, slink) {
+        printf("DO?\n");
+        /* Only render visible clients which are shown on this monitor */
+        if (!visibleon(c, m->tagset))
+            continue;
+        struct wlr_box box = get_absolute_box(m->m, c->geom);
 
-            /* Draw window borders */
-            color = (c == sel) ? focusColor : borderColor;
-            for (int i = 0; i < 4; i++) {
-                scalebox(&borders[i], m->wlr_output->scale);
-                wlr_render_rect(drw, &borders[i], color,
-                        m->wlr_output->transform_matrix);
-            }
+        surface = get_wlrsurface(c);
+        ox = box.x, oy = box.y;
+        wlr_output_layout_output_coords(output_layout, m->wlr_output, &ox, &oy);
+        w = surface->current.width;
+        h = surface->current.height;
+        borders = (struct wlr_box[4]) {
+            {ox, oy, w + 2 * c->bw, c->bw},             /* top */
+                {ox, oy + c->bw, c->bw, h},                 /* left */
+                {ox + c->bw + w, oy + c->bw, c->bw, h},     /* right */
+                {ox, oy + c->bw + h, w + 2 * c->bw, c->bw}, /* bottom */
+        };
 
-            /* This calls our render function for each surface among the
-             * xdg_surface's toplevel and popups. */
-
-            struct timespec now;
-            clock_gettime(CLOCK_MONOTONIC, &now);
-            rdata.output = m->wlr_output;
-            rdata.when = &now;
-            rdata.x = c->geom.x + c->bw;
-            rdata.y = c->geom.y + c->bw;
-
-            render(get_wlrsurface(c), 0, 0, &rdata);
+        /* Draw window borders */
+        color = (c == sel) ? focusColor : borderColor;
+        for (int i = 0; i < 4; i++) {
+            scalebox(&borders[i], m->wlr_output->scale);
+            wlr_render_rect(drw, &borders[i], color,
+                    m->wlr_output->transform_matrix);
         }
+
+        /* This calls our render function for each surface among the
+         * xdg_surface's toplevel and popups. */
+
+        struct timespec now;
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        rdata.output = m->wlr_output;
+        rdata.when = &now;
+        rdata.x = box.x + c->bw;
+        rdata.y = box.y + c->bw;
+
+        printf("RENDER this %p\n", c);
+        printf("RENDER x %i\n", rdata.x);
+        printf("RENDER y %i\n", rdata.y);
+        render(surface, 0, 0, &rdata);
     }
 }
 
@@ -139,9 +143,10 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
         if (c->surface.layer->current.layer != layer)
             continue;
 
+        struct wlr_box box = get_absolute_box(m->m, c->geom);
         /* Only render visible clients which show on this monitor */
-        if (!visibleon(c, m) || !wlr_output_layout_intersects(
-                    output_layout, m->wlr_output, &c->geom))
+        if (!visibleon(c, m->tagset) || !wlr_output_layout_intersects(
+                    output_layout, m->wlr_output, &box))
             continue;
 
         /* This calls our render function for each surface among the
@@ -167,7 +172,6 @@ static void renderTexture(void *texture)
                 text->x, text->y, 1);
     }
 }
-
 
 static void render_independents(struct wlr_output *output)
 {
@@ -217,20 +221,7 @@ void render_frame(struct wl_listener *listener, void *data)
     /* This function is called every time an output is ready to display a frame,
      * generally at the output's refresh rate (e.g. 60Hz). */
     struct monitor *m = wl_container_of(listener, m, frame);
-
-    if (selected_monitor) {
-        struct wlr_box b = selected_monitor->m;
-        selected_monitor->m = *wlr_output_layout_get_box(output_layout, selected_monitor->wlr_output);
-        // resize clients
-        if (selected_monitor->m.width != b.width || selected_monitor->m.height != b.height) {
-            arrange(selected_monitor, false);
-            struct client *c;
-            wl_list_for_each(c, &layerstack, llink) {
-                wlr_layer_surface_v1_configure(c->surface.layer,
-                        selected_monitor->wlr_output->width, selected_monitor->wlr_output->height);
-            }
-        }
-    }
+    printf("\nRENDER start %p\n", m);
 
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
@@ -246,7 +237,7 @@ void render_frame(struct wl_listener *listener, void *data)
 
         render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND);
         render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
-        render_clients();
+        render_clients(m);
         render_independents(m->wlr_output);
         render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP);
         render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
@@ -268,6 +259,7 @@ void render_frame(struct wl_listener *listener, void *data)
     }
 
     wlr_output_commit(m->wlr_output);
+    printf("RENDER end\n");
 }
 
 void scalebox(struct wlr_box *box, float scale)
