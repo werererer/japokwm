@@ -2,7 +2,6 @@
 #define PARSE_CONFIG_UTILS_H
 #include <string.h>
 #include "utils/coreUtils.h"
-#include "monitor.h"
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>

@@ -46,6 +46,7 @@ srcs = files(
   'tile/tile.c',
   'wlr-foreign-toplevel-management-unstable-v1-protocol.c',
   'root.c',
+  'container.c',
 )
 
 libName = 'juliawm'

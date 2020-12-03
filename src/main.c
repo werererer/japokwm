@@ -2,8 +2,6 @@
  * See LICENSE file for copyright and license details.
  */
 
-#include "tagset.h"
-
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 #include <assert.h>
@@ -51,8 +49,8 @@
 #include <wlr/xwayland.h>
 #include <xkbcommon/xkbcommon.h>
 #include <xkbcommon/xkbcommon.h>
-
 #include "client.h"
+#include "container.h"
 #include "ipc-server.h"
 #include "keybinding.h"
 #include "lib/actions/actions.h"
@@ -62,7 +60,6 @@
 #include "render/render.h"
 #include "root.h"
 #include "server.h"
-#include "tagset.h"
 #include "tile/tile.h"
 #include "tile/tileTexture.h"
 #include "tile/tileUtils.h"
@@ -89,8 +86,6 @@ void createxdeco(struct wl_listener *listener, void *data);
 void cursorframe(struct wl_listener *listener, void *data);
 void destroynotify(struct wl_listener *listener, void *data);
 void destroyxdeco(struct wl_listener *listener, void *data);
-struct monitor *dirtomon(int dir);
-void focusmon(int i);
 void getxdecomode(struct wl_listener *listener, void *data);
 void incnmaster(int i);
 void inputdevice(struct wl_listener *listener, void *data);
@@ -148,23 +143,25 @@ void buttonpress(struct wl_listener *listener, void *data)
     struct wlr_event_pointer_button *event = data;
     /* struct wlr_keyboard *keyboard; */
     /* uint32_t mods; */
-    struct client *c;
 
     switch (event->state) {
     case WLR_BUTTON_PRESSED:
-        /* Change focus if the button was _pressed_ over a client */
-        if ((c = xytoclient(server.cursor->x, server.cursor->y)))
-            focus_client(next_client(), c, true);
+        {
+            /* Change focus if the button was _pressed_ over a client */
+            struct container *con;
+            if ((con = xytocontainer(server.cursor->x, server.cursor->y)))
+                focus_container(selected_monitor, con, false);
 
-        /* Translate libinput to xkbcommon code */
-        unsigned sym = event->button + 64985;
+            /* Translate libinput to xkbcommon code */
+            unsigned sym = event->button + 64985;
 
-        /* get modifiers */
-        struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
-        int mods = wlr_keyboard_get_modifiers(kb);
+            /* get modifiers */
+            struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
+            int mods = wlr_keyboard_get_modifiers(kb);
 
-        buttonPressed(mods, sym);
-        break;
+            buttonPressed(mods, sym);
+            break;
+        }
     case WLR_BUTTON_RELEASED:
         /* If you released any buttons, we exit interactive move/resize mode. */
         /* XXX should reset to the pointer focus's current setcursor */
@@ -359,11 +356,18 @@ void cursorframe(struct wl_listener *listener, void *data)
 
 void destroynotify(struct wl_listener *listener, void *data)
 {
+    printf("destroynotify\n");
     /* Called when the surface is destroyed and should never be shown again. */
     struct client *c = wl_container_of(listener, c, destroy);
     wl_list_remove(&c->map.link);
     wl_list_remove(&c->unmap.link);
     wl_list_remove(&c->destroy.link);
+
+    struct container *tmp, *con;
+    wl_list_for_each_safe(con, tmp, &c->containers, clink) {
+        destroy_container(con);
+    }
+
     switch (c->type) {
         case XDG_SHELL:
             wl_list_remove(&c->commit.link);
@@ -378,8 +382,8 @@ void destroynotify(struct wl_listener *listener, void *data)
     free(c);
     c = NULL;
 
-    arrange(selected_monitor, false);
-    focus_top_client(next_client(), false);
+    arrange(false);
+    focus_top_container(false);
 }
 
 void destroyxdeco(struct wl_listener *listener, void *data)
@@ -393,27 +397,6 @@ void destroyxdeco(struct wl_listener *listener, void *data)
 
 }
 
-struct monitor *dirtomon(int dir)
-{
-    struct monitor *m;
-
-    if (dir > 0) {
-        if (selected_monitor->link.next == &mons)
-            return wl_container_of(mons.next, m, link);
-        return wl_container_of(selected_monitor->link.next, m, link);
-    } else {
-        if (selected_monitor->link.prev == &mons)
-            return wl_container_of(mons.prev, m, link);
-        return wl_container_of(selected_monitor->link.prev, m, link);
-    }
-}
-
-void focusmon(int i)
-{
-    selected_monitor = dirtomon(i);
-    focus_top_client(next_client(), true);
-}
-
 void getxdecomode(struct wl_listener *listener, void *data)
 {
     struct wlr_xdg_toplevel_decoration_v1 *wlr_deco = data;
@@ -424,7 +407,7 @@ void getxdecomode(struct wl_listener *listener, void *data)
 void incnmaster(int i)
 {
     selected_monitor->nmaster = MAX(selected_monitor->nmaster + i, 0);
-    arrange(selected_monitor, false);
+    arrange(false);
 }
 
 void inputdevice(struct wl_listener *listener, void *data)
@@ -541,8 +524,11 @@ void maprequest(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
+
+    wl_list_init(&c->containers);
     c->tagset = create_tagset(&tagNames, selected_monitor->tagset->focusedTag,
             selected_monitor->tagset->selTags[0]);
+    create_container(c, selected_monitor);
 
     if (c->type == X11_UNMANAGED) {
         /* Insert this independent into independents lists. */
@@ -550,51 +536,46 @@ void maprequest(struct wl_listener *listener, void *data)
         return;
     }
 
-    add_client_to_stack(c);
-    add_client_to_focusstack(c);
-
     if (c->type != LAYER_SHELL) {
         wl_list_insert(&clients, &c->link);
     } else {
         wl_list_insert(&layerstack, &c->llink);
     }
-    update_hidden_status(selected_monitor);
     struct client *prev = wl_container_of(listener, prev, map);
 
-    switch (c->type) {
-        case XDG_SHELL:
-            /* wlr_xdg_surface_get_geometry(c->surface.xdg, &c->geom); */
-            /* c->geom.width += 2 * c->bw; */
-            /* c->geom.height += 2 * c->bw; */
-            break;
-        case LAYER_SHELL:
-            c->geom.x = 0;
-            c->geom.y = 0;
-            if (c->surface.layer->current.desired_width) {
-                c->geom.width = c->surface.layer->current.desired_width;
-            }
-            else {
-                c->geom.width = selected_monitor->wlr_output->width;
-            }
+    /* switch (c->type) { */
+    /*     case XDG_SHELL: */
+    /*         /1* wlr_xdg_surface_get_geometry(c->surface.xdg, &c->geom); *1/ */
+    /*         /1* c->geom.width += 2 * c->bw; *1/ */
+    /*         /1* c->geom.height += 2 * c->bw; *1/ */
+    /*         break; */
+    /*     case LAYER_SHELL: */
+    /*         c->geom.x = 0; */
+    /*         c->geom.y = 0; */
+    /*         if (c->surface.layer->current.desired_width) { */
+    /*             c->geom.width = c->surface.layer->current.desired_width; */
+    /*         } */
+    /*         else { */
+    /*             c->geom.width = selected_monitor->wlr_output->width; */
+    /*         } */
 
-            if (c->surface.layer->current.desired_height) {
-                c->geom.height = c->surface.layer->current.desired_height;
-            }
-            else {
-                c->geom.height = selected_monitor->wlr_output->height;
-            }
-            break;
-        case X11_MANAGED:
-        case X11_UNMANAGED:
-            c->geom.x = c->surface.xwayland->x;
-            c->geom.y = c->surface.xwayland->y;
-            c->geom.width = c->surface.xwayland->width + 2 * c->bw;
-            c->geom.height = c->surface.xwayland->height + 2 * c->bw;
-    }
+    /*         if (c->surface.layer->current.desired_height) { */
+    /*             c->geom.height = c->surface.layer->current.desired_height; */
+    /*         } */
+    /*         else { */
+    /*             c->geom.height = selected_monitor->wlr_output->height; */
+    /*         } */
+    /*         break; */
+    /*     case X11_MANAGED: */
+    /*     case X11_UNMANAGED: */
+    /*         c->geom.x = c->surface.xwayland->x; */
+    /*         c->geom.y = c->surface.xwayland->y; */
+    /*         c->geom.width = c->surface.xwayland->width + 2 * c->bw; */
+    /*         c->geom.height = c->surface.xwayland->height + 2 * c->bw; */
+    /* } */
 
-    applyrules(c);
-    focus_top_client(next_client(), false);
-    arrange(selected_monitor, false);
+    arrange(false);
+    focus_top_container(false);
 }
 
 void motionabsolute(struct wl_listener *listener, void *data)
@@ -695,14 +676,15 @@ void set_cursor(struct wl_listener *listener, void *data)
 }
 
 /* arg > 1.0 will set mfact absolutely */
-void setmfact(float factor) {
+void setmfact(float factor)
+{
     if (!selected_layout(selected_monitor->tagset).funcId)
         return;
     factor = factor < 1.0 ? factor + selected_monitor->mfact : factor - 1.0;
     if (factor < 0.1 || factor > 0.9)
         return;
     selected_monitor->mfact = factor;
-    arrange(selected_monitor, false);
+    arrange(false);
 }
 
 void setpsel(struct wl_listener *listener, void *data)
@@ -793,8 +775,6 @@ int setup(void)
      * https://drewdevault.com/2018/07/29/Wayland-shells.html
      */
     wl_list_init(&clients);
-    wl_list_init(&focus_stack);
-    wl_list_init(&stack);
     wl_list_init(&independents);
     wl_list_init(&layerstack);
     wl_list_init(&popups);
@@ -892,13 +872,9 @@ void unmapnotify(struct wl_listener *listener, void *data)
     destroy_tagset(c->tagset);
     switch (c->type) {
         case LAYER_SHELL:
-            wl_list_remove(&c->flink);
-            wl_list_remove(&c->slink);
             wl_list_remove(&c->llink);
             break;
         case XDG_SHELL:
-            wl_list_remove(&c->flink);
-            wl_list_remove(&c->slink);
             wl_list_remove(&c->link);
             break;
         case X11_MANAGED:
@@ -906,7 +882,7 @@ void unmapnotify(struct wl_listener *listener, void *data)
             wl_list_remove(&c->link);
     }
     // TODO why is this here?
-    update_hidden_status(selected_monitor);
+    update_hidden_status();
 }
 
 void activatex11(struct wl_listener *listener, void *data)

@@ -1,0 +1,436 @@
+root.c:11:5:    c->geom.x = 0;
+root.c:12:5:    c->geom.y = 0;
+root.c:13:9:    if (c->surface.layer->current.desired_width) {
+root.c:14:9:        c->geom.width = c->surface.layer->current.desired_width;
+root.c:14:25:        c->geom.width = c->surface.layer->current.desired_width;
+root.c:17:9:        c->geom.width = selected_monitor->wlr_output->width;
+root.c:20:9:    if (c->surface.layer->current.desired_height) {
+root.c:21:9:        c->geom.height = c->surface.layer->current.desired_height;
+root.c:21:26:        c->geom.height = c->surface.layer->current.desired_height;
+root.c:24:9:        c->geom.height = selected_monitor->wlr_output->height;
+root.c:37:34:        maxWidth = MAX(maxWidth, c->surface.layer->current.desired_width);
+root.c:38:36:        maxHeight = MAX(maxHeight, c->surface.layer->current.desired_height);
+root.c:41:13:            c->geom.x -= maxWidth;
+root.c:42:13:            c->geom.y -= maxHeight;
+tile/tileTexture.c:102:13:        if (c->hidden || c->type == LAYER_SHELL)
+tile/tileTexture.c:102:26:        if (c->hidden || c->type == LAYER_SHELL)
+tile/tileTexture.c:105:9:        c->position = i;
+tile/tileTexture.c:107:27:        intToString(text, c->textPosition+1);
+tile/tileTexture.c:110:66:            create_textbox(get_absolute_box(selected_monitor->m, c->geom),
+tile/tileTexture.c:113:28:        pTexture->tagset = c->tagset;
+tile/tileTexture.c:122:43:        if (renderData.textures.length >= c->position+1) {
+tile/tileTexture.c:123:48:            wlr_list_del(&renderData.textures, c->position);
+tile/tileTexture.c:127:13:        if (c->hidden)
+tile/tileTexture.c:130:27:        intToString(text, c->textPosition+1);
+tile/tileTexture.c:133:66:            create_textbox(get_absolute_box(selected_monitor->m, c->geom),
+tile/tileTexture.c:135:28:        pTexture->tagset = c->tagset;
+tile/tileTexture.c:136:47:        wlr_list_insert(&renderData.textures, c->position, pTexture);
+render/render.c:94:53:        struct wlr_box box = get_absolute_box(m->m, c->geom);
+render/render.c:102:30:            {ox, oy, w + 2 * c->bw, c->bw},             /* top */
+render/render.c:102:37:            {ox, oy, w + 2 * c->bw, c->bw},             /* top */
+render/render.c:103:27:                {ox, oy + c->bw, c->bw, h},                 /* left */
+render/render.c:103:34:                {ox, oy + c->bw, c->bw, h},                 /* left */
+render/render.c:104:23:                {ox + c->bw + w, oy + c->bw, c->bw, h},     /* right */
+render/render.c:104:39:                {ox + c->bw + w, oy + c->bw, c->bw, h},     /* right */
+render/render.c:104:46:                {ox + c->bw + w, oy + c->bw, c->bw, h},     /* right */
+render/render.c:105:27:                {ox, oy + c->bw + h, w + 2 * c->bw, c->bw}, /* bottom */
+render/render.c:105:46:                {ox, oy + c->bw + h, w + 2 * c->bw, c->bw}, /* bottom */
+render/render.c:105:53:                {ox, oy + c->bw + h, w + 2 * c->bw, c->bw}, /* bottom */
+render/render.c:123:27:        rdata.x = box.x + c->bw;
+render/render.c:124:27:        rdata.y = box.y + c->bw;
+render/render.c:140:13:        if (c->type != LAYER_SHELL)
+render/render.c:142:13:        if (c->surface.layer->current.layer != layer)
+render/render.c:145:53:        struct wlr_box box = get_absolute_box(m->m, c->geom);
+render/render.c:158:19:        rdata.x = c->geom.x + c->bw;
+render/render.c:158:31:        rdata.x = c->geom.x + c->bw;
+render/render.c:159:19:        rdata.y = c->geom.y + c->bw;
+render/render.c:159:31:        rdata.y = c->geom.y + c->bw;
+render/render.c:182:18:        geom.x = c->surface.xwayland->x;
+render/render.c:183:18:        geom.y = c->surface.xwayland->y;
+render/render.c:184:22:        geom.width = c->surface.xwayland->width;
+render/render.c:185:23:        geom.height = c->surface.xwayland->height;
+render/render.c:195:19:        rdata.x = c->surface.xwayland->x;
+render/render.c:196:19:        rdata.y = c->surface.xwayland->y;
+render/render.c:198:38:        wlr_surface_for_each_surface(c->surface.xwayland->surface, render, &rdata);
+meson.build:23:6:  'ipc-server.c',
+meson.build:41:6:  'ipc-json.c',
+tile/tileUtils.c:80:17:            if (c->hidden || !visibleon(c, m->tagset))
+tile/tileUtils.c:82:17:            if (c->floating)
+tile/tileUtils.c:89:17:            if (c->hidden || !visibleon(c, m->tagset))
+tile/tileUtils.c:91:18:            if (!c->floating)
+tile/tileUtils.c:99:17:            if (c->hidden || !visibleon(c, m->tagset))
+tile/tileUtils.c:102:13:            c->textPosition = i;
+tile/tileUtils.c:111:9:    if (c->hidden)
+tile/tileUtils.c:113:5:    c->clientPosition = i;
+tile/tileUtils.c:117:10:    if (!c->floating) {
+tile/tileUtils.c:120:32:        lua_rawgeti(L, -1, MIN(c->clientPosition+1, containers_info.n));
+tile/tileUtils.c:156:5:    c->geom = get_relative_box(selected_monitor->m, box);
+tile/tileUtils.c:160:13:    switch (c->type) {
+tile/tileUtils.c:162:13:            c->resize = wlr_xdg_toplevel_set_size(c->surface.xdg,
+tile/tileUtils.c:162:51:            c->resize = wlr_xdg_toplevel_set_size(c->surface.xdg,
+tile/tileUtils.c:163:21:                    c->geom.width, c->geom.height);
+tile/tileUtils.c:163:36:                    c->geom.width, c->geom.height);
+tile/tileUtils.c:166:44:            wlr_layer_surface_v1_configure(c->surface.layer,
+tile/tileUtils.c:167:21:                    c->geom.width, c->geom.height);
+tile/tileUtils.c:167:36:                    c->geom.width, c->geom.height);
+tile/tileUtils.c:171:44:            wlr_xwayland_surface_configure(c->surface.xwayland,
+tile/tileUtils.c:172:21:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+tile/tileUtils.c:172:32:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+tile/tileUtils.c:172:43:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+tile/tileUtils.c:172:58:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+tile/tileUtils.c:182:13:        if (c->floating == true) {
+tile/tileUtils.c:183:13:            c->hidden = false;
+tile/tileUtils.c:189:17:                c->hidden = false;
+tile/tileUtils.c:191:17:                c->hidden = true;
+tile/tileUtils.c:203:31:        if (existon(c, m) && !c->floating)
+ipc-json.c:10:13:#include "ipc-json.h"
+ipc-json.c:98:19:    char *title = c->title;
+ipc-json.c:106:13:            c->id, title, focused, false, focus, box);
+tagset.c:8:13:#include "ipc-server.h"
+popup.c:50:71:        create_popup(xdg_popup, get_absolute_box(selected_monitor->m, c->geom), c);
+parseConfig.c:165:9:        c->bw = borderPx;
+geom:1:17:root.c:11:5:    c->geom.x = 0;
+geom:2:17:root.c:12:5:    c->geom.y = 0;
+geom:3:21:root.c:13:9:    if (c->surface.layer->current.desired_width) {
+geom:4:21:root.c:14:9:        c->geom.width = c->surface.layer->current.desired_width;
+geom:4:37:root.c:14:9:        c->geom.width = c->surface.layer->current.desired_width;
+geom:5:22:root.c:14:25:        c->geom.width = c->surface.layer->current.desired_width;
+geom:5:38:root.c:14:25:        c->geom.width = c->surface.layer->current.desired_width;
+geom:6:21:root.c:17:9:        c->geom.width = selected_monitor->wlr_output->width;
+geom:7:21:root.c:20:9:    if (c->surface.layer->current.desired_height) {
+geom:8:21:root.c:21:9:        c->geom.height = c->surface.layer->current.desired_height;
+geom:8:38:root.c:21:9:        c->geom.height = c->surface.layer->current.desired_height;
+geom:9:22:root.c:21:26:        c->geom.height = c->surface.layer->current.desired_height;
+geom:9:39:root.c:21:26:        c->geom.height = c->surface.layer->current.desired_height;
+geom:10:21:root.c:24:9:        c->geom.height = selected_monitor->wlr_output->height;
+geom:11:47:root.c:37:34:        maxWidth = MAX(maxWidth, c->surface.layer->current.desired_width);
+geom:12:49:root.c:38:36:        maxHeight = MAX(maxHeight, c->surface.layer->current.desired_height);
+geom:13:26:root.c:41:13:            c->geom.x -= maxWidth;
+geom:14:26:root.c:42:13:            c->geom.y -= maxHeight;
+geom:15:39:tile/tileTexture.c:102:13:        if (c->hidden || c->type == LAYER_SHELL)
+geom:15:52:tile/tileTexture.c:102:13:        if (c->hidden || c->type == LAYER_SHELL)
+geom:16:39:tile/tileTexture.c:102:26:        if (c->hidden || c->type == LAYER_SHELL)
+geom:16:52:tile/tileTexture.c:102:26:        if (c->hidden || c->type == LAYER_SHELL)
+geom:17:34:tile/tileTexture.c:105:9:        c->position = i;
+geom:18:53:tile/tileTexture.c:107:27:        intToString(text, c->textPosition+1);
+geom:19:92:tile/tileTexture.c:110:66:            create_textbox(get_absolute_box(selected_monitor->m, c->geom),
+geom:20:54:tile/tileTexture.c:113:28:        pTexture->tagset = c->tagset;
+geom:21:69:tile/tileTexture.c:122:43:        if (renderData.textures.length >= c->position+1) {
+geom:22:74:tile/tileTexture.c:123:48:            wlr_list_del(&renderData.textures, c->position);
+geom:23:39:tile/tileTexture.c:127:13:        if (c->hidden)
+geom:24:53:tile/tileTexture.c:130:27:        intToString(text, c->textPosition+1);
+geom:25:92:tile/tileTexture.c:133:66:            create_textbox(get_absolute_box(selected_monitor->m, c->geom),
+geom:26:54:tile/tileTexture.c:135:28:        pTexture->tagset = c->tagset;
+geom:27:73:tile/tileTexture.c:136:47:        wlr_list_insert(&renderData.textures, c->position, pTexture);
+geom:28:75:render/render.c:94:53:        struct wlr_box box = get_absolute_box(m->m, c->geom);
+geom:29:53:render/render.c:102:30:            {ox, oy, w + 2 * c->bw, c->bw},             /* top */
+geom:29:60:render/render.c:102:30:            {ox, oy, w + 2 * c->bw, c->bw},             /* top */
+geom:30:53:render/render.c:102:37:            {ox, oy, w + 2 * c->bw, c->bw},             /* top */
+geom:30:60:render/render.c:102:37:            {ox, oy, w + 2 * c->bw, c->bw},             /* top */
+geom:31:50:render/render.c:103:27:                {ox, oy + c->bw, c->bw, h},                 /* left */
+geom:31:57:render/render.c:103:27:                {ox, oy + c->bw, c->bw, h},                 /* left */
+geom:32:50:render/render.c:103:34:                {ox, oy + c->bw, c->bw, h},                 /* left */
+geom:32:57:render/render.c:103:34:                {ox, oy + c->bw, c->bw, h},                 /* left */
+geom:33:46:render/render.c:104:23:                {ox + c->bw + w, oy + c->bw, c->bw, h},     /* right */
+geom:33:62:render/render.c:104:23:                {ox + c->bw + w, oy + c->bw, c->bw, h},     /* right */
+geom:33:69:render/render.c:104:23:                {ox + c->bw + w, oy + c->bw, c->bw, h},     /* right */
+geom:34:46:render/render.c:104:39:                {ox + c->bw + w, oy + c->bw, c->bw, h},     /* right */
+geom:34:62:render/render.c:104:39:                {ox + c->bw + w, oy + c->bw, c->bw, h},     /* right */
+geom:34:69:render/render.c:104:39:                {ox + c->bw + w, oy + c->bw, c->bw, h},     /* right */
+geom:35:46:render/render.c:104:46:                {ox + c->bw + w, oy + c->bw, c->bw, h},     /* right */
+geom:35:62:render/render.c:104:46:                {ox + c->bw + w, oy + c->bw, c->bw, h},     /* right */
+geom:35:69:render/render.c:104:46:                {ox + c->bw + w, oy + c->bw, c->bw, h},     /* right */
+geom:36:50:render/render.c:105:27:                {ox, oy + c->bw + h, w + 2 * c->bw, c->bw}, /* bottom */
+geom:36:69:render/render.c:105:27:                {ox, oy + c->bw + h, w + 2 * c->bw, c->bw}, /* bottom */
+geom:36:76:render/render.c:105:27:                {ox, oy + c->bw + h, w + 2 * c->bw, c->bw}, /* bottom */
+geom:37:50:render/render.c:105:46:                {ox, oy + c->bw + h, w + 2 * c->bw, c->bw}, /* bottom */
+geom:37:69:render/render.c:105:46:                {ox, oy + c->bw + h, w + 2 * c->bw, c->bw}, /* bottom */
+geom:37:76:render/render.c:105:46:                {ox, oy + c->bw + h, w + 2 * c->bw, c->bw}, /* bottom */
+geom:38:50:render/render.c:105:53:                {ox, oy + c->bw + h, w + 2 * c->bw, c->bw}, /* bottom */
+geom:38:69:render/render.c:105:53:                {ox, oy + c->bw + h, w + 2 * c->bw, c->bw}, /* bottom */
+geom:38:76:render/render.c:105:53:                {ox, oy + c->bw + h, w + 2 * c->bw, c->bw}, /* bottom */
+geom:39:50:render/render.c:123:27:        rdata.x = box.x + c->bw;
+geom:40:50:render/render.c:124:27:        rdata.y = box.y + c->bw;
+geom:41:36:render/render.c:140:13:        if (c->type != LAYER_SHELL)
+geom:42:36:render/render.c:142:13:        if (c->surface.layer->current.layer != layer)
+geom:43:76:render/render.c:145:53:        struct wlr_box box = get_absolute_box(m->m, c->geom);
+geom:44:42:render/render.c:158:19:        rdata.x = c->geom.x + c->bw;
+geom:44:54:render/render.c:158:19:        rdata.x = c->geom.x + c->bw;
+geom:45:42:render/render.c:158:31:        rdata.x = c->geom.x + c->bw;
+geom:45:54:render/render.c:158:31:        rdata.x = c->geom.x + c->bw;
+geom:46:42:render/render.c:159:19:        rdata.y = c->geom.y + c->bw;
+geom:46:54:render/render.c:159:19:        rdata.y = c->geom.y + c->bw;
+geom:47:42:render/render.c:159:31:        rdata.y = c->geom.y + c->bw;
+geom:47:54:render/render.c:159:31:        rdata.y = c->geom.y + c->bw;
+geom:48:41:render/render.c:182:18:        geom.x = c->surface.xwayland->x;
+geom:49:41:render/render.c:183:18:        geom.y = c->surface.xwayland->y;
+geom:50:45:render/render.c:184:22:        geom.width = c->surface.xwayland->width;
+geom:51:46:render/render.c:185:23:        geom.height = c->surface.xwayland->height;
+geom:52:42:render/render.c:195:19:        rdata.x = c->surface.xwayland->x;
+geom:53:42:render/render.c:196:19:        rdata.y = c->surface.xwayland->y;
+geom:54:61:render/render.c:198:38:        wlr_surface_for_each_surface(c->surface.xwayland->surface, render, &rdata);
+geom:55:23:meson.build:23:6:  'ipc-server.c',
+geom:56:23:meson.build:41:6:  'ipc-json.c',
+geom:57:40:tile/tileUtils.c:80:17:            if (c->hidden || !visibleon(c, m->tagset))
+geom:58:40:tile/tileUtils.c:82:17:            if (c->floating)
+geom:59:40:tile/tileUtils.c:89:17:            if (c->hidden || !visibleon(c, m->tagset))
+geom:60:41:tile/tileUtils.c:91:18:            if (!c->floating)
+geom:61:40:tile/tileUtils.c:99:17:            if (c->hidden || !visibleon(c, m->tagset))
+geom:62:37:tile/tileUtils.c:102:13:            c->textPosition = i;
+geom:63:32:tile/tileUtils.c:111:9:    if (c->hidden)
+geom:64:28:tile/tileUtils.c:113:5:    c->clientPosition = i;
+geom:65:34:tile/tileUtils.c:117:10:    if (!c->floating) {
+geom:66:56:tile/tileUtils.c:120:32:        lua_rawgeti(L, -1, MIN(c->clientPosition+1, containers_info.n));
+geom:67:28:tile/tileUtils.c:156:5:    c->geom = get_relative_box(selected_monitor->m, box);
+geom:68:37:tile/tileUtils.c:160:13:    switch (c->type) {
+geom:69:37:tile/tileUtils.c:162:13:            c->resize = wlr_xdg_toplevel_set_size(c->surface.xdg,
+geom:69:75:tile/tileUtils.c:162:13:            c->resize = wlr_xdg_toplevel_set_size(c->surface.xdg,
+geom:70:37:tile/tileUtils.c:162:51:            c->resize = wlr_xdg_toplevel_set_size(c->surface.xdg,
+geom:70:75:tile/tileUtils.c:162:51:            c->resize = wlr_xdg_toplevel_set_size(c->surface.xdg,
+geom:71:45:tile/tileUtils.c:163:21:                    c->geom.width, c->geom.height);
+geom:71:60:tile/tileUtils.c:163:21:                    c->geom.width, c->geom.height);
+geom:72:45:tile/tileUtils.c:163:36:                    c->geom.width, c->geom.height);
+geom:72:60:tile/tileUtils.c:163:36:                    c->geom.width, c->geom.height);
+geom:73:68:tile/tileUtils.c:166:44:            wlr_layer_surface_v1_configure(c->surface.layer,
+geom:74:45:tile/tileUtils.c:167:21:                    c->geom.width, c->geom.height);
+geom:74:60:tile/tileUtils.c:167:21:                    c->geom.width, c->geom.height);
+geom:75:45:tile/tileUtils.c:167:36:                    c->geom.width, c->geom.height);
+geom:75:60:tile/tileUtils.c:167:36:                    c->geom.width, c->geom.height);
+geom:76:68:tile/tileUtils.c:171:44:            wlr_xwayland_surface_configure(c->surface.xwayland,
+geom:77:45:tile/tileUtils.c:172:21:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+geom:77:56:tile/tileUtils.c:172:21:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+geom:77:67:tile/tileUtils.c:172:21:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+geom:77:82:tile/tileUtils.c:172:21:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+geom:78:45:tile/tileUtils.c:172:32:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+geom:78:56:tile/tileUtils.c:172:32:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+geom:78:67:tile/tileUtils.c:172:32:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+geom:78:82:tile/tileUtils.c:172:32:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+geom:79:45:tile/tileUtils.c:172:43:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+geom:79:56:tile/tileUtils.c:172:43:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+geom:79:67:tile/tileUtils.c:172:43:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+geom:79:82:tile/tileUtils.c:172:43:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+geom:80:45:tile/tileUtils.c:172:58:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+geom:80:56:tile/tileUtils.c:172:58:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+geom:80:67:tile/tileUtils.c:172:58:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+geom:80:82:tile/tileUtils.c:172:58:                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+geom:81:37:tile/tileUtils.c:182:13:        if (c->floating == true) {
+geom:82:37:tile/tileUtils.c:183:13:            c->hidden = false;
+geom:83:41:tile/tileUtils.c:189:17:                c->hidden = false;
+geom:84:41:tile/tileUtils.c:191:17:                c->hidden = true;
+geom:85:55:tile/tileUtils.c:203:31:        if (existon(c, m) && !c->floating)
+geom:86:3:ipc-json.c:10:13:#include "ipc-json.h"
+geom:86:30:ipc-json.c:10:13:#include "ipc-json.h"
+geom:87:3:ipc-json.c:98:19:    char *title = c->title;
+geom:87:36:ipc-json.c:98:19:    char *title = c->title;
+geom:88:3:ipc-json.c:106:13:            c->id, title, focused, false, focus, box);
+geom:88:31:ipc-json.c:106:13:            c->id, title, focused, false, focus, box);
+geom:89:27:tagset.c:8:13:#include "ipc-server.h"
+geom:90:85:popup.c:50:71:        create_popup(xdg_popup, get_absolute_box(selected_monitor->m, c->geom), c);
+geom:91:29:parseConfig.c:165:9:        c->bw = borderPx;
+lib/info/info.c:19:56:        if (visibleon(c, selected_monitor->tagset) && !c->floating) {
+stringop.c:146:15:    while (argc-- > 0) {
+ipc-server.c:20:13:#include "ipc-json.h"
+ipc-server.c:21:13:#include "ipc-server.h"
+client.c:24:39:        wl_list_insert(&focus_stack, &c->flink);
+client.c:31:13:        if (c->floating) {
+client.c:32:37:            wl_list_insert(&stack, &c->slink);
+client.c:40:49:            wl_list_insert(client->slink.prev, &c->slink);
+client.c:48:5:    c->geom.width = MAX(30, c->geom.width);
+client.c:48:29:    c->geom.width = MAX(30, c->geom.width);
+client.c:49:5:    c->geom.height = MAX(30, c->geom.height);
+client.c:49:30:    c->geom.height = MAX(30, c->geom.height);
+client.c:51:9:    if (c->geom.x >= bbox.x + bbox.width)
+client.c:52:9:        c->geom.x = bbox.x + bbox.width - c->geom.width;
+client.c:52:43:        c->geom.x = bbox.x + bbox.width - c->geom.width;
+client.c:53:9:    if (c->geom.y >= bbox.y + bbox.height)
+client.c:54:9:        c->geom.y = bbox.y + bbox.height - c->geom.height;
+client.c:54:44:        c->geom.y = bbox.y + bbox.height - c->geom.height;
+client.c:55:9:    if (c->geom.x + c->geom.width + 2 * c->bw <= bbox.x)
+client.c:55:21:    if (c->geom.x + c->geom.width + 2 * c->bw <= bbox.x)
+client.c:55:41:    if (c->geom.x + c->geom.width + 2 * c->bw <= bbox.x)
+client.c:56:9:        c->geom.x = bbox.x;
+client.c:57:9:    if (c->geom.y + c->geom.height + 2 * c->bw <= bbox.y)
+client.c:57:21:    if (c->geom.y + c->geom.height + 2 * c->bw <= bbox.y)
+client.c:57:42:    if (c->geom.y + c->geom.height + 2 * c->bw <= bbox.y)
+client.c:58:9:        c->geom.y = bbox.y;
+client.c:67:5:    c->floating = false;
+client.c:68:13:    switch (c->type) {
+client.c:70:21:            appid = c->surface.xdg->toplevel->app_id;
+client.c:71:21:            title = c->surface.xdg->toplevel->title;
+client.c:79:21:            appid = c->surface.xwayland->class;
+client.c:80:21:            title = c->surface.xwayland->title;
+client.c:91:13:            c->floating = r->floating;
+client.c:204:68:        struct wlr_box box = get_absolute_box(selected_monitor->m, c->geom);
+client.c:217:13:    switch (c->type) {
+client.c:219:20:            return c->surface.xdg->surface;
+client.c:222:20:            return c->surface.layer->surface;
+client.c:226:20:            return c->surface.xwayland->surface;
+client.c:236:16:        return c->tagset->selTags[0] & m->tagset->selTags[0];
+client.c:245:13:        if (c->type == LAYER_SHELL) {
+client.c:249:14:        if (!c->hidden) {
+client.c:250:20:            return c->tagset->selTags[0] & tagset->selTags[0];
+client.c:259:13:        if (c->hidden) {
+client.c:260:20:            return c->tagset->selTags[0] & m->tagset->selTags[0];
+client.c:269:16:        return c->tagset->selTags[0] & position_to_flag(focusedTag);
+client.c:277:16:        return c->tagset->selTags[0] & position_to_flag(focusedTag);
+client.c:285:17:        switch (c->type) {
+client.c:287:48:                wlr_xdg_toplevel_set_activated(c->surface.xdg, false);
+client.c:291:47:                wlr_xwayland_surface_activate(c->surface.xwayland, false);
+client.c:322:21:    wl_list_remove(&c->flink);
+client.c:326:13:    switch (c->type) {
+client.c:328:44:            wlr_xdg_toplevel_set_activated(c->surface.xdg, true);
+client.c:332:43:            wlr_xwayland_surface_activate(c->surface.xwayland, true);
+client.c:357:25:        wl_list_remove(&c->slink);
+lib/actions/actions.c:11:13:#include "ipc-server.h"
+lib/actions/actions.c:51:9:    if (c->type == X11_UNMANAGED)
+lib/actions/actions.c:141:25:        wl_list_remove(&c->link);
+lib/actions/actions.c:142:37:        wl_list_insert(&sel->link, &c->link);
+lib/actions/actions.c:164:45:            grabcx = server.cursor->x - grabc->geom.x;
+lib/actions/actions.c:165:45:            grabcy = server.cursor->y - grabc->geom.y;
+lib/actions/actions.c:174:45:            grabcx = server.cursor->x - grabc->geom.x;
+lib/actions/actions.c:175:45:            grabcy = server.cursor->y - grabc->geom.y;
+lib/actions/actions.c:177:25:                    grabc->geom.x + grabc->geom.width,
+lib/actions/actions.c:177:41:                    grabc->geom.x + grabc->geom.width,
+lib/actions/actions.c:178:25:                    grabc->geom.y + grabc->geom.height);
+lib/actions/actions.c:178:41:                    grabc->geom.y + grabc->geom.height);
+lib/actions/actions.c:192:9:    if (c->floating == floating)
+lib/actions/actions.c:194:5:    c->floating = floating;
+lib/actions/actions.c:214:25:                    grabc->geom.width, grabc->geom.height, true);
+lib/actions/actions.c:214:44:                    grabc->geom.width, grabc->geom.height, true);
+lib/actions/actions.c:220:31:            resize(grabc, grabc->geom.x, grabc->geom.y,
+lib/actions/actions.c:220:46:            resize(grabc, grabc->geom.x, grabc->geom.y,
+lib/actions/actions.c:221:44:                    server.cursor->x - grabc->geom.x,
+lib/actions/actions.c:222:44:                    server.cursor->y - grabc->geom.y, true);
+lib/actions/actions.c:232:17:        switch (c->type) {
+lib/actions/actions.c:234:44:                is_popup = !wl_list_empty(&c->surface.xdg->popups);
+lib/actions/actions.c:237:29:                            c->surface.xdg,
+lib/actions/actions.c:240:48:                            server.cursor->x - c->geom.x,
+lib/actions/actions.c:241:48:                            server.cursor->y - c->geom.y,
+lib/actions/actions.c:246:44:                is_popup = !wl_list_empty(&c->surface.layer->popups);
+lib/actions/actions.c:249:29:                            c->surface.layer,
+lib/actions/actions.c:250:48:                            server.cursor->x - c->geom.x,
+lib/actions/actions.c:251:48:                            server.cursor->y - c->geom.y,
+lib/actions/actions.c:265:51:                is_popup = is_popup && surface == c->surface.xdg->surface;
+lib/actions/actions.c:275:40:                    server.cursor->x - c->geom.x,
+lib/actions/actions.c:276:40:                    server.cursor->y - c->geom.y, &sx, &sy);
+lib/actions/actions.c:371:17:            grabc->geom.width, grabc->geom.height, 1);
+lib/actions/actions.c:371:36:            grabc->geom.width, grabc->geom.height, 1);
+lib/actions/actions.c:377:23:    resize(grabc, grabc->geom.x, grabc->geom.y,
+lib/actions/actions.c:377:38:    resize(grabc, grabc->geom.x, grabc->geom.y,
+lib/actions/actions.c:378:36:            server.cursor->x - grabc->geom.x,
+lib/actions/actions.c:379:36:            server.cursor->y - grabc->geom.y, 1);
+lib/actions/actions.c:399:66:            link) if (visibleon(c, selected_monitor->tagset) && !c->floating) {
+lib/actions/actions.c:406:10:    if (&c->link == &clients)
+main.c:56:13:#include "ipc-server.h"
+main.c:216:13:    switch (c->type) {
+main.c:219:17:            if (c->resize && c->resize <= c->surface.xdg->configure_serial) {
+main.c:219:30:            if (c->resize && c->resize <= c->surface.xdg->configure_serial) {
+main.c:219:43:            if (c->resize && c->resize <= c->surface.xdg->configure_serial) {
+main.c:220:17:                c->resize = 0;
+main.c:225:17:            if (c->resize && c->resize <= c->surface.layer->configure_serial)
+main.c:225:30:            if (c->resize && c->resize <= c->surface.layer->configure_serial)
+main.c:225:43:            if (c->resize && c->resize <= c->surface.layer->configure_serial)
+main.c:226:17:                c->resize = 0;
+main.c:278:5:    c->surface.xdg = xdg_surface;
+main.c:279:5:    c->bw = borderPx;
+main.c:280:5:    c->type = XDG_SHELL;
+main.c:283:32:    wlr_xdg_toplevel_set_tiled(c->surface.xdg, WLR_EDGE_TOP |
+main.c:287:5:    c->commit.notify = commitnotify;
+main.c:288:58:    wl_signal_add(&xdg_surface->surface->events.commit, &c->commit);
+main.c:289:5:    c->map.notify = maprequest;
+main.c:290:46:    wl_signal_add(&xdg_surface->events.map, &c->map);
+main.c:291:5:    c->unmap.notify = unmapnotify;
+main.c:292:48:    wl_signal_add(&xdg_surface->events.unmap, &c->unmap);
+main.c:293:5:    c->destroy.notify = destroynotify;
+main.c:294:50:    wl_signal_add(&xdg_surface->events.destroy, &c->destroy);
+main.c:296:5:    c->new_popup.notify = popup_handle_new_popup;
+main.c:297:52:    wl_signal_add(&xdg_surface->events.new_popup, &c->new_popup);
+main.c:309:5:    c->surface.layer = layer_surface;
+main.c:310:5:    c->bw = 0;
+main.c:311:5:    c->type = LAYER_SHELL;
+main.c:314:5:    c->commit.notify = commitnotify;
+main.c:315:60:    wl_signal_add(&layer_surface->surface->events.commit, &c->commit);
+main.c:316:5:    c->map.notify = maprequest;
+main.c:317:48:    wl_signal_add(&layer_surface->events.map, &c->map);
+main.c:318:5:    c->unmap.notify = unmapnotify;
+main.c:319:50:    wl_signal_add(&layer_surface->events.unmap, &c->unmap);
+main.c:320:5:    c->destroy.notify = destroynotify;
+main.c:321:52:    wl_signal_add(&layer_surface->events.destroy, &c->destroy);
+main.c:322:36:    wlr_layer_surface_v1_configure(c->surface.layer, selected_monitor->wlr_output->width, selected_monitor->wlr_output->height);
+main.c:324:5:    c->new_popup.notify = popup_handle_new_popup;
+main.c:325:54:    wl_signal_add(&layer_surface->events.new_popup, &c->new_popup);
+main.c:364:21:    wl_list_remove(&c->map.link);
+main.c:365:21:    wl_list_remove(&c->unmap.link);
+main.c:366:21:    wl_list_remove(&c->destroy.link);
+main.c:367:13:    switch (c->type) {
+main.c:369:29:            wl_list_remove(&c->commit.link);
+main.c:372:29:            wl_list_remove(&c->activate.link);
+main.c:544:5:    c->tagset = create_tagset(&tagNames, selected_monitor->tagset->focusedTag,
+main.c:547:9:    if (c->type == X11_UNMANAGED) {
+main.c:549:40:        wl_list_insert(&independents, &c->link);
+main.c:556:9:    if (c->type != LAYER_SHELL) {
+main.c:557:35:        wl_list_insert(&clients, &c->link);
+main.c:559:38:        wl_list_insert(&layerstack, &c->llink);
+main.c:564:13:    switch (c->type) {
+main.c:566:45:            /* wlr_xdg_surface_get_geometry(c->surface.xdg, &c->geom); */
+main.c:566:62:            /* wlr_xdg_surface_get_geometry(c->surface.xdg, &c->geom); */
+main.c:567:16:            /* c->geom.width += 2 * c->bw; */
+main.c:567:37:            /* c->geom.width += 2 * c->bw; */
+main.c:568:16:            /* c->geom.height += 2 * c->bw; */
+main.c:568:38:            /* c->geom.height += 2 * c->bw; */
+main.c:571:13:            c->geom.x = 0;
+main.c:572:13:            c->geom.y = 0;
+main.c:573:17:            if (c->surface.layer->current.desired_width) {
+main.c:574:17:                c->geom.width = c->surface.layer->current.desired_width;
+main.c:574:33:                c->geom.width = c->surface.layer->current.desired_width;
+main.c:577:17:                c->geom.width = selected_monitor->wlr_output->width;
+main.c:580:17:            if (c->surface.layer->current.desired_height) {
+main.c:581:17:                c->geom.height = c->surface.layer->current.desired_height;
+main.c:581:34:                c->geom.height = c->surface.layer->current.desired_height;
+main.c:584:17:                c->geom.height = selected_monitor->wlr_output->height;
+main.c:589:13:            c->geom.x = c->surface.xwayland->x;
+main.c:589:25:            c->geom.x = c->surface.xwayland->x;
+main.c:590:13:            c->geom.y = c->surface.xwayland->y;
+main.c:590:25:            c->geom.y = c->surface.xwayland->y;
+main.c:591:13:            c->geom.width = c->surface.xwayland->width + 2 * c->bw;
+main.c:591:29:            c->geom.width = c->surface.xwayland->width + 2 * c->bw;
+main.c:591:62:            c->geom.width = c->surface.xwayland->width + 2 * c->bw;
+main.c:592:13:            c->geom.height = c->surface.xwayland->height + 2 * c->bw;
+main.c:592:30:            c->geom.height = c->surface.xwayland->height + 2 * c->bw;
+main.c:592:64:            c->geom.height = c->surface.xwayland->height + 2 * c->bw;
+main.c:892:20:    destroy_tagset(c->tagset);
+main.c:893:13:    switch (c->type) {
+main.c:895:29:            wl_list_remove(&c->flink);
+main.c:896:29:            wl_list_remove(&c->slink);
+main.c:897:29:            wl_list_remove(&c->llink);
+main.c:900:29:            wl_list_remove(&c->flink);
+main.c:901:29:            wl_list_remove(&c->slink);
+main.c:902:29:            wl_list_remove(&c->link);
+main.c:906:29:            wl_list_remove(&c->link);
+main.c:917:12:       if (c->type == X11_MANAGED)
+main.c:918:46:               wlr_xwayland_surface_activate(c->surface.xwayland, 1);
+main.c:928:5:    c->surface.xwayland = xwayland_surface;
+main.c:929:5:    c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
+main.c:930:5:    c->bw = borderPx;
+main.c:933:5:    c->map.notify = maprequest;
+main.c:934:51:    wl_signal_add(&xwayland_surface->events.map, &c->map);
+main.c:935:5:    c->unmap.notify = unmapnotify;
+main.c:936:53:    wl_signal_add(&xwayland_surface->events.unmap, &c->unmap);
+main.c:937:5:    c->activate.notify = activatex11;
+main.c:938:64:    wl_signal_add(&xwayland_surface->events.request_activate, &c->activate);
+main.c:939:5:    c->destroy.notify = destroynotify;
+main.c:940:55:    wl_signal_add(&xwayland_surface->events.destroy, &c->destroy);
+lib/actions/x:3:62:actions.c:164:22:            grabcx = server.cursor->x - grabc->geom.x;
+lib/actions/x:4:62:actions.c:165:22:            grabcy = server.cursor->y - grabc->geom.y;
+lib/actions/x:5:62:actions.c:174:22:            grabcx = server.cursor->x - grabc->geom.x;
+lib/actions/x:6:62:actions.c:175:22:            grabcy = server.cursor->y - grabc->geom.y;
+lib/actions/x:11:61:actions.c:222:21:                    server.cursor->x - grabc->geom.x,
+lib/actions/x:12:61:actions.c:223:21:                    server.cursor->y - grabc->geom.y, true);
+lib/actions/x:13:65:actions.c:241:29:                            server.cursor->x - c->geom.x,
+lib/actions/x:14:65:actions.c:242:29:                            server.cursor->y - c->geom.y,
+lib/actions/x:15:65:actions.c:251:29:                            server.cursor->x - c->geom.x,
+lib/actions/x:16:65:actions.c:252:29:                            server.cursor->y - c->geom.y,
+lib/actions/x:19:57:actions.c:276:21:                    server.cursor->x - c->geom.x,
+lib/actions/x:20:57:actions.c:277:21:                    server.cursor->y - c->geom.y, &sx, &sy);
+lib/actions/x:25:53:actions.c:379:13:            server.cursor->x - grabc->geom.x,
+lib/actions/x:26:53:actions.c:380:13:            server.cursor->y - grabc->geom.y, 1);

@@ -6,7 +6,18 @@
 #include "tagset.h"
 
 struct monitor {
+    /* mons(monitors) list */
     struct wl_list link;
+
+    /* associated with link in container */
+    struct wl_list containers;
+    /* associated with slink in container */
+    struct wl_list stack;
+    /* associated with flink in container */
+    struct wl_list focus_stack;
+    /* associated with llink in container */
+    struct wl_list layer_stack;
+
     struct wlr_output *wlr_output;
     struct wl_listener frame;
     struct wl_listener destroy;
@@ -18,8 +29,11 @@ struct monitor {
 };
 
 void create_monitor(struct wl_listener *listener, void *data);
-void cleanupMonitor(struct wl_listener *listener, void *data);
+void destroy_monitor(struct wl_listener *listener, void *data);
+void focusmon(int i);
 void set_monitor(struct monitor *m);
+
+struct monitor *dirtomon(int dir);
 struct monitor *xytomon(double x, double y);
 
 extern struct wl_list mons;

@@ -1,5 +1,6 @@
 #include "tile/tileTexture.h"
 #include "client.h"
+#include "container.h"
 #include "tagset.h"
 #include "utils/coreUtils.h"
 #include "utils/stringUtils.h"
@@ -94,46 +95,42 @@ void create_new_overlay()
 
 void create_overlay()
 {
-    struct client *c;
+    struct container *con;
 
     char text[NUM_DIGITS];
     int i = 0;
-    wl_list_for_each_reverse(c, &stack, slink) {
-        if (c->hidden || c->type == LAYER_SHELL)
+    wl_list_for_each_reverse(con, &selected_monitor->stack, slink) {
+        if (con->client->type == LAYER_SHELL)
             continue;
 
-        c->position = i;
+        con->position = i;
         i++;
-        intToString(text, c->textPosition+1);
+        intToString(text, con->textPosition+1);
 
         struct posTexture *pTexture =
-            create_textbox(get_absolute_box(selected_monitor->m, c->geom),
-                    overlayColor, textColor, text);
+            create_textbox(con->geom, overlayColor, textColor, text);
         // sync properties
-        pTexture->tagset = c->tagset;
+        pTexture->tagset = con->client->tagset;
         wlr_list_push(&renderData.textures, pTexture);
         wlr_list_push(&renderData.base_textures, pTexture);
     }
 }
 
-void update_client_overlay(struct client *c)
+void update_container_overlay(struct container *con)
 {
     if (overlay) {
-        if (renderData.textures.length >= c->position+1) {
-            wlr_list_del(&renderData.textures, c->position);
+        if (renderData.textures.length >= con->position+1) {
+            wlr_list_del(&renderData.textures, con->position);
         }
 
         char text[NUM_DIGITS];
-        if (c->hidden)
-            return;
 
-        intToString(text, c->textPosition+1);
+        intToString(text, con->textPosition+1);
 
         struct posTexture *pTexture =
-            create_textbox(get_absolute_box(selected_monitor->m, c->geom),
-                    overlayColor, textColor, text);
-        pTexture->tagset = c->tagset;
-        wlr_list_insert(&renderData.textures, c->position, pTexture);
+            create_textbox(con->geom, overlayColor, textColor, text);
+        pTexture->tagset = con->client->tagset;
+        wlr_list_insert(&renderData.textures, con->position, pTexture);
     } else {
         if (&renderData.textures.length > 0)
             wlr_list_clear(&renderData.textures);

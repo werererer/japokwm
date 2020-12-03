@@ -7,7 +7,7 @@
 
 struct xdg_popup {
     struct wlr_xdg_popup *xdg;
-    struct client *toplevel;
+    struct container *toplevel;
     struct wlr_box geom;
     struct wl_listener new_popup;
     struct wl_listener map;

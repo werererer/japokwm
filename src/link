@@ -1,0 +1,80 @@
+container.c:40:25:    if (wl_list_length(&m->focus_stack) >= 2)
+container.c:43:29:            wl_container_of(m->focus_stack.next->next, con, flink);
+container.c:57:34:    if (abs(i) > wl_list_length(&m->focus_stack))
+container.c:63:32:        struct wl_list *pos = &m->focus_stack;
+container.c:71:32:        struct wl_list *pos = &m->focus_stack;
+container.c:86:32:        wl_list_for_each(con, &m->stack, slink) {
+container.c:101:32:        wl_list_for_each(con, &m->stack, slink) {
+container.c:117:28:    wl_list_for_each(con, &m->stack, slink) {
+container.c:130:29:            wl_list_insert(&m->stack, &con->slink);
+container.c:134:36:            wl_list_for_each(con, &m->stack, slink) {
+container.c:139:28:            wl_list_insert(m->stack.prev, &con->slink);
+container.c:148:25:        wl_list_insert(&m->stack, &con->slink);
+container.c:149:25:        wl_list_insert(&m->focus_stack, &con->slink);
+container.c:150:25:        wl_list_insert(&m->containers, &con->link);
+container.c:245:21:    wl_list_insert(&m->focus_stack, &con->slink);
+container.c:264:32:        wl_list_for_each(con, &m->focus_stack, flink)
+root.c:32:14:    root.w = m->m;
+popup.c:52:32:        wl_list_for_each(con, &m->stack, slink) {
+render/render.c:92:36:    wl_list_for_each_reverse(con, &m->stack, slink) {
+render/render.c:95:37:        if (!visibleon(con->client, m->tagset))
+render/render.c:100:56:        wlr_output_layout_output_coords(output_layout, m->wlr_output, &ox, &oy);
+render/render.c:113:35:            scalebox(&borders[i], m->wlr_output->scale);
+render/render.c:115:21:                    m->wlr_output->transform_matrix);
+render/render.c:123:24:        rdata.output = m->wlr_output;
+render/render.c:141:36:    wl_list_for_each_reverse(con, &m->layer_stack, llink) {
+render/render.c:148:37:        if (!visibleon(con->client, m->tagset) || !wlr_output_layout_intersects(
+render/render.c:149:36:                    output_layout, m->wlr_output, &con->geom))
+render/render.c:157:24:        rdata.output = m->wlr_output;
+render/render.c:210:24:        rdata.output = m->wlr_output;
+render/render.c:230:35:    if (!wlr_output_attach_render(m->wlr_output, NULL))
+render/render.c:235:33:        wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
+render/render.c:235:55:        wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
+render/render.c:241:29:        render_independents(m->wlr_output);
+render/render.c:254:44:        wlr_output_render_software_cursors(m->wlr_output, NULL);
+render/render.c:261:23:    wlr_output_commit(m->wlr_output);
+tile/tileUtils.c:27:9:        m->m = *wlr_output_layout_get_box(output_layout, m->wlr_output);
+tile/tileUtils.c:27:58:        m->m = *wlr_output_layout_get_box(output_layout, m->wlr_output);
+tile/tileUtils.c:32:29:        if (selected_layout(m->tagset).funcId) {
+tile/tileUtils.c:36:60:            if (strcmp(prev_layout.symbol, selected_layout(m->tagset).symbol)
+tile/tileUtils.c:38:47:                prev_layout = selected_layout(m->tagset);
+tile/tileUtils.c:39:67:                lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(m->tagset).funcId);
+tile/tileUtils.c:55:36:            wl_list_for_each(con, &m->stack, slink) {
+tile/tileUtils.c:56:45:                if (!visibleon(con->client, m->tagset))
+tile/tileUtils.c:64:36:            wl_list_for_each(con, &m->stack, slink) {
+tile/tileUtils.c:65:45:                if (!visibleon(con->client, m->tagset))
+tile/tileUtils.c:74:36:            wl_list_for_each(con, &m->stack, slink) {
+tile/tileUtils.c:75:45:                if (!visibleon(con->client, m->tagset))
+tile/tileUtils.c:155:47:        printf("length %i\n", wl_list_length(&m->link));
+tile/tileUtils.c:158:32:        wl_list_for_each(con, &m->containers, slink) {
+tile/tileUtils.c:159:37:            if (i < wl_list_length(&m->stack)) {
+tile/tileUtils.c:174:28:    wl_list_for_each(con, &m->stack, slink)
+geom:28:69:render/render.c:94:53:        struct wlr_box box = get_absolute_box(m->m, c->geom);
+geom:43:70:render/render.c:145:53:        struct wlr_box box = get_absolute_box(m->m, c->geom);
+geom:57:67:tile/tileUtils.c:80:17:            if (c->hidden || !visibleon(c, m->tagset))
+geom:59:67:tile/tileUtils.c:89:17:            if (c->hidden || !visibleon(c, m->tagset))
+geom:61:67:tile/tileUtils.c:99:17:            if (c->hidden || !visibleon(c, m->tagset))
+geom:125:80:geom:28:75:render/render.c:94:53:        struct wlr_box box = get_absolute_box(m->m, c->geom);
+geom:156:81:geom:43:76:render/render.c:145:53:        struct wlr_box box = get_absolute_box(m->m, c->geom);
+geom:174:78:geom:57:40:tile/tileUtils.c:80:17:            if (c->hidden || !visibleon(c, m->tagset))
+geom:176:78:geom:59:40:tile/tileUtils.c:89:17:            if (c->hidden || !visibleon(c, m->tagset))
+geom:178:78:geom:61:40:tile/tileUtils.c:99:17:            if (c->hidden || !visibleon(c, m->tagset))
+geom:268:56:client.c:236:16:        return c->tagset->selTags[0] & m->tagset->selTags[0];
+geom:273:60:client.c:260:20:            return c->tagset->selTags[0] & m->tagset->selTags[0];
+client.c:43:40:        return c->tagset->selTags[0] & m->tagset->selTags[0];
+monitor.c:43:19:    wl_list_init(&m->containers);
+monitor.c:44:19:    wl_list_init(&m->stack);
+monitor.c:45:19:    wl_list_init(&m->focus_stack);
+monitor.c:46:19:    wl_list_init(&m->layer_stack);
+monitor.c:47:5:    m->wlr_output = output;
+monitor.c:48:5:    m->tagset = create_tagset(&tagNames, 0, 0);
+monitor.c:49:25:    push_seleceted_tags(m->tagset, TAG_ONE);
+monitor.c:52:13:            m->mfact = r->mfact;
+monitor.c:53:13:            m->nmaster = r->nmaster;
+monitor.c:56:33:            set_selected_layout(m->tagset, *r->lt);
+monitor.c:62:5:    m->frame.notify = render_frame;
+monitor.c:63:43:    wl_signal_add(&output->events.frame, &m->frame);
+monitor.c:64:5:    m->destroy.notify = destroy_monitor;
+monitor.c:65:45:    wl_signal_add(&output->events.destroy, &m->destroy);
+monitor.c:67:28:    wl_list_insert(&mons, &m->link);
+monitor.c:111:21:    wl_list_remove(&m->destroy.link);

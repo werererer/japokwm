@@ -9,198 +9,167 @@
 #include <wlr/types/wlr_xdg_shell.h>
 #include <stdlib.h>
 
-#include "monitor.h"
-#include "tagset.h"
-#include "server.h"
-#include "utils/coreUtils.h"
+#include "container.h"
 #include "parseConfig.h"
+#include "root.h"
+#include "server.h"
+#include "tagset.h"
 #include "tile/tileTexture.h"
+#include "utils/coreUtils.h"
 #include "utils/gapUtils.h"
 #include "utils/parseConfigUtils.h"
-#include "root.h"
 
-struct containers_info containers_info;
-
-/* *
- * the wlr_fbox has includes the window size in percent.
- * It will we mulitiplicated with the screen width and height
- * */
-struct wlr_box get_absolute_box(struct wlr_box box, struct wlr_fbox b)
+void arrange(bool reset)
 {
-    struct wlr_box w = box;
-    w.x = w.width * b.x + w.x;
-    w.y = w.height * b.y + w.y;
-    w.width = w.width * b.width;
-    w.height = w.height * b.height;
-    return w;
-}
+    printf("arrange\n");
+    struct monitor *m;
+    wl_list_for_each(m, &mons, link) {
+        printf("arrange %p\n", m);
+        /* Get effective monitor geometry to use for window area */
+        m->m = *wlr_output_layout_get_box(output_layout, m->wlr_output);
+        set_root_area(m);
 
-struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box b)
-{
-    struct wlr_fbox w;
-    w.x = (float)box.x / b.width;
-    w.y = (float)box.y / b.height;
-    w.width = (float)box.width / b.width;
-    w.height = (float)box.height / b.height;
-    return w;
-}
+        if (!overlay)
+            container_surround_gaps(&root.w, outerGap);
+        if (selected_layout(m->tagset).funcId) {
+            int n = tiled_container_count(m);
+            /* call arrange function
+             * if previous layout is different or reset -> reset layout */
+            if (strcmp(prev_layout.symbol, selected_layout(m->tagset).symbol)
+                    != 0 || reset) {
+                prev_layout = selected_layout(m->tagset);
+                lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(m->tagset).funcId);
+                lua_pushinteger(L, n);
+                lua_pcall(L, 1, 0, 0);
+            }
 
-void arrange(struct monitor *m, bool reset)
-{
-    /* Get effective monitor geometry to use for window area */
-    m->m = *wlr_output_layout_get_box(output_layout, m->wlr_output);
-    set_root_area(m);
-
-    if (!overlay)
-        container_surround_gaps(&root.w, outerGap);
-    if (selected_layout(m->tagset).funcId) {
-        struct client *c = NULL;
-
-        int n = tiled_client_count(m);
-        /* call arrange function
-         * if previous layout is different or reset -> reset layout */
-        if (strcmp(prev_layout.symbol, selected_layout(m->tagset).symbol) != 0 || reset) {
-            prev_layout = selected_layout(m->tagset);
-            lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(m->tagset).funcId);
+            /* update layout aquired from was set with the arrange function */
+            lua_getglobal(L, "update");
             lua_pushinteger(L, n);
-            lua_pcall(L, 1, 0, 0);
+            lua_pcall(L, 1, 1, 0);
+            containers_info.n = lua_rawlen(L, -1);
+            containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
+
+            update_hidden_status();
+
+            int i = 0;
+            struct container *con;
+            wl_list_for_each(con, &m->stack, slink) {
+                if (!visibleon(con->client, m->tagset))
+                    continue;
+                if (con->floating)
+                    continue;
+
+                arrange_container(con, i);
+                i++;
+            }
+            wl_list_for_each(con, &m->stack, slink) {
+                if (!visibleon(con->client, m->tagset))
+                    continue;
+                if (!con->floating)
+                    continue;
+
+                arrange_container(con, i);
+                i++;
+            }
+            i = 0;
+            wl_list_for_each(con, &m->stack, slink) {
+                if (!visibleon(con->client, m->tagset))
+                    continue;
+
+                con->textPosition = i;
+                i++;
+            }
+            update_overlay();
         }
-
-        /* update layout aquired from that was set with the arrange function */
-        lua_getglobal(L, "update");
-        lua_pushinteger(L, n);
-        lua_pcall(L, 1, 1, 0);
-        containers_info.n = lua_rawlen(L, -1);
-        containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
-
-        update_hidden_status(m);
-
-        int i = 0;
-        wl_list_for_each(c, &clients, link) {
-            if (c->hidden || !visibleon(c, m->tagset))
-                continue;
-            if (c->floating)
-                continue;
-
-            arrange_client(c, i);
-            i++;
-        }
-        wl_list_for_each(c, &clients, link) {
-            if (c->hidden || !visibleon(c, m->tagset))
-                continue;
-            if (!c->floating)
-                continue;
-
-            arrange_client(c, i);
-            i++;
-        }
-        i = 0;
-        wl_list_for_each(c, &clients, link) {
-            if (c->hidden || !visibleon(c, m->tagset))
-                continue;
-
-            c->textPosition = i;
-            i++;
-        }
-        update_overlay();
     }
 }
 
-void arrange_client(struct client *c, int i)
+void arrange_container(struct container *con, int i)
 {
-    if (c->hidden)
-        return;
-    c->clientPosition = i;
+    con->clientPosition = i;
 
     // if tiled get tile information from tile function and apply it
-    struct wlr_fbox con;
-    if (!c->floating) {
+    struct wlr_fbox box;
+    if (!con->floating) {
+        printf("not floating\n");
         // get lua container
         lua_rawgeti(L, LUA_REGISTRYINDEX, containers_info.id);
-        lua_rawgeti(L, -1, MIN(c->clientPosition+1, containers_info.n));
+        lua_rawgeti(L, -1, MIN(con->clientPosition+1, containers_info.n));
         lua_rawgeti(L, -1, 1);
-        con.x = luaL_checknumber(L, -1);
+        box.x = luaL_checknumber(L, -1);
         lua_pop(L, 1);
         lua_rawgeti(L, -1, 2);
-        con.y = luaL_checknumber(L, -1);
+        box.y = luaL_checknumber(L, -1);
         lua_pop(L, 1);
         lua_rawgeti(L, -1, 3);
-        con.width = luaL_checknumber(L, -1);
+        box.width = luaL_checknumber(L, -1);
         lua_pop(L, 1);
         lua_rawgeti(L, -1, 4);
-        con.height = luaL_checknumber(L, -1);
+        box.height = luaL_checknumber(L, -1);
         lua_pop(L, 1);
         lua_pop(L, 1);
-        struct wlr_box box = get_absolute_box(root.w, con);
+        con->geom = get_absolute_box(root.w, box);
         if (!overlay)
-            container_surround_gaps(&box, innerGap);
-        resize(c, box.x, box.y, box.width, box.height, false);
+            container_surround_gaps(&con->geom, innerGap);
+        resize(con, con->geom, false);
         containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
     }
 }
 
-void resize(struct client *c, int x, int y, int w, int h, bool interact)
+void resize(struct container *con, struct wlr_box geom, bool interact)
 {
     /*
      * Note that I took some shortcuts here. In a more fleshed-out
      * compositor, you'd wait for the client to prepare a buffer at
      * the new size, then commit any movement that was prepared.
      */
-    struct wlr_box box;
-    // layershell based programs usually don't get borders
-    box.x = x;
-    box.y = y;
-    box.width = w;
-    box.height = h;
-
-    c->geom = get_relative_box(selected_monitor->m, box);
-    applybounds(c, selected_monitor->m);
+    con->geom = geom;
+    applybounds(con, selected_monitor->m);
 
     /* wlroots makes this a no-op if size hasn't changed */
-    switch (c->type) {
+    switch (con->client->type) {
         case XDG_SHELL:
-            c->resize = wlr_xdg_toplevel_set_size(c->surface.xdg,
-                    c->geom.width, c->geom.height);
+            con->client->resize = wlr_xdg_toplevel_set_size(con->client->surface.xdg,
+                    con->geom.width, con->geom.height);
             break;
         case LAYER_SHELL:
-            wlr_layer_surface_v1_configure(c->surface.layer,
-                    c->geom.width, c->geom.height);
+            wlr_layer_surface_v1_configure(con->client->surface.layer,
+                    con->geom.width, con->geom.height);
             break;
         case X11_MANAGED:
         case X11_UNMANAGED:
-            wlr_xwayland_surface_configure(c->surface.xwayland,
-                    c->geom.x, c->geom.y, c->geom.width, c->geom.height);
+            wlr_xwayland_surface_configure(con->client->surface.xwayland,
+                    con->geom.x, con->geom.y, con->geom.width, con->geom.height);
     }
 }
 
-void update_hidden_status(struct monitor *m)
+void update_hidden_status()
 {
-    struct client *c;
-    int i = 0;
-    wl_list_for_each(c, &clients, link) {
-        // floating windows are always visible
-        if (c->floating == true) {
-            c->hidden = false;
-            continue;
-        }
-        if (existon(c, m))
-        {
-            if (i < containers_info.n)
-                c->hidden = false;
-            else
-                c->hidden = true;
-            i++;
+    struct monitor *m;
+    wl_list_for_each(m, &mons, link) {
+        int i = 0;
+        struct container *con;
+        printf("update_hidden_status()\n");
+        wl_list_for_each(con, &m->containers, slink) {
+            printf("update_hidden_status: %p\n", con);
+            if (i < wl_list_length(&m->stack)) {
+                con->hidden = false;
+                i++;
+            } else {
+                con->hidden = true;
+            }
         }
     }
 }
 
-int tiled_client_count(struct monitor *m)
+int tiled_container_count(struct monitor *m)
 {
-    struct client *c;
+    struct container *con;
     int n = 0;
 
-    wl_list_for_each(c, &clients, link)
-        if (existon(c, m) && !c->floating)
+    wl_list_for_each(con, &m->stack, slink)
+        if(con->floating)
             n++;
     return n;
 }

@@ -40,6 +40,16 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     /* Allocates and configures monitor state using configured rules */
     m = output->data = calloc(1, sizeof(struct monitor));
+    wl_list_init(&m->containers);
+    wl_list_init(&m->stack);
+    wl_list_init(&m->focus_stack);
+    wl_list_init(&m->layer_stack);
+
+    struct client *c;
+    wl_list_for_each(c, &clients, link) {
+        create_container(c, m);
+    }
+
     m->wlr_output = output;
     m->tagset = create_tagset(&tagNames, 0, 0);
     push_seleceted_tags(m->tagset, TAG_ONE);
@@ -57,7 +67,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     /* Set up event listeners */
     m->frame.notify = render_frame;
     wl_signal_add(&output->events.frame, &m->frame);
-    m->destroy.notify = cleanupMonitor;
+    m->destroy.notify = destroy_monitor;
     wl_signal_add(&output->events.destroy, &m->destroy);
 
     wl_list_insert(&mons, &m->link);
@@ -83,14 +93,43 @@ void set_monitor(struct monitor *m)
     selected_monitor = m;
 }
 
+void remove_container_from_monitor(struct monitor *m, struct container *con)
+{
+    printf("remove from container\n");
+    if (m && con) {
+        wl_list_remove(&con->slink);
+        wl_list_remove(&con->flink);
+    }
+}
 
-void cleanupMonitor(struct wl_listener *listener, void *data)
+void focusmon(int i)
+{
+    selected_monitor = dirtomon(i);
+    focus_top_container(true);
+}
+
+void destroy_monitor(struct wl_listener *listener, void *data)
 {
     struct wlr_output *wlr_output = data;
     struct monitor *m = wlr_output->data;
 
     wl_list_remove(&m->destroy.link);
     free(m);
+}
+
+struct monitor *dirtomon(int dir)
+{
+    struct monitor *m;
+
+    if (dir > 0) {
+        if (selected_monitor->link.next == &mons)
+            return wl_container_of(mons.next, m, link);
+        return wl_container_of(selected_monitor->link.next, m, link);
+    } else {
+        if (selected_monitor->link.prev == &mons)
+            return wl_container_of(mons.prev, m, link);
+        return wl_container_of(selected_monitor->link.prev, m, link);
+    }
 }
 
 struct monitor *xytomon(double x, double y)

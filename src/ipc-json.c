@@ -9,7 +9,7 @@
 #include "wlr-layer-shell-unstable-v1-protocol.h"
 #include "ipc-json.h"
 #include "server.h"
-#include "client.h"
+#include "container.h"
 
 static json_object *ipc_json_create_rect(struct wlr_box *box) {
     json_object *rect = json_object_new_object();
@@ -94,7 +94,7 @@ json_object *ipc_json_describe_tag(struct tag *tag, bool focused, bool selected)
 }
 
 json_object *ipc_json_describe_node(struct client *c) {
-    bool focused = selected_client() == c;
+    bool focused = selected_container()->client == c;
     char *title = c->title;
 
     struct wlr_box *box;

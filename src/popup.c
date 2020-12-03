@@ -8,14 +8,14 @@
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "xdg-shell-protocol.h"
-#include "tile/tileUtils.h"
+#include "container.h"
 
 struct wl_list popups;
 
 static void popup_handle_new_subpopup(struct wl_listener *listener, void *data);
 
 static struct xdg_popup *create_popup(struct wlr_xdg_popup *xdg_popup,
-        struct wlr_box parent_geom, struct client* toplevel)
+        struct wlr_box parent_geom, struct container* toplevel)
 {
     struct xdg_popup *popup = xdg_popup->base->data =
         calloc(1, sizeof(struct xdg_popup));
@@ -46,10 +46,16 @@ void popup_handle_new_popup(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, new_popup);
     struct wlr_xdg_popup *xdg_popup = data;
 
-    struct xdg_popup *popup =
-        create_popup(xdg_popup, get_absolute_box(selected_monitor->m, c->geom), c);
-
-    wl_list_insert(&popups, &popup->link);
+    struct monitor *m;
+    wl_list_for_each(m, &mons, link) {
+        struct container *con;
+        wl_list_for_each(con, &m->stack, slink) {
+            if (con->client != c)
+                continue;
+            struct xdg_popup *popup = create_popup(xdg_popup, con->geom, con);
+            wl_list_insert(&popups, &popup->link);
+        }
+    }
 }
 
 static void popup_handle_new_subpopup(struct wl_listener *listener, void *data)

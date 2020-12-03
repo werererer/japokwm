@@ -35,7 +35,7 @@ static const struct luaL_Reg action[] =
 static const struct luaL_Reg info[] =
 {
     {"thisTiledClientCount", thisTiledClientCount},
-    {"thisClientPos", thisClientPos},
+    {"thisClientPos", this_container_position},
     {NULL, NULL},
 };
 
