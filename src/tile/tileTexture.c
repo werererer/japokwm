@@ -201,15 +201,15 @@ void write_overlay(struct monitor *m, const char *layout)
             struct posTexture *pTexture = render_data.base_textures.items[j];
             if (postexture_visible_on_flag(pTexture, m, position_to_flag(i))) {
                 // vector from root x/y -> monitor x/y
-                int wdiff = selected_monitor->m.x - root.w.y;
-                int hdiff = selected_monitor->m.y - root.w.y;
+                int wdiff = selected_monitor->geom.x - root.w.y;
+                int hdiff = selected_monitor->geom.y - root.w.y;
                 struct wlr_box container = postexture_to_container(pTexture);
                 // add vector to the container so that it is relative to
                 // monitor again
                 container.x += wdiff;
                 container.y += hdiff;
                 struct wlr_fbox box =
-                    get_relative_box(container, selected_monitor->m);
+                    get_relative_box(container, selected_monitor->geom);
                 write_container_to_file(fd, box);
                 k++;
             }

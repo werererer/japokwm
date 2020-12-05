@@ -71,7 +71,7 @@ struct focus_inactive_data {
 
 json_object *ipc_json_describe_tag(struct tag *tag, bool focused, bool selected) {
     struct wlr_box *box;
-    box = &selected_monitor->m;
+    box = &selected_monitor->geom;
 
     int i = strlen(tag->name) + 1;
     char s[i];
@@ -98,7 +98,7 @@ json_object *ipc_json_describe_node(struct client *c) {
     char *title = c->title;
 
     struct wlr_box *box;
-    box = &selected_monitor->m;
+    box = &selected_monitor->geom;
 
     json_object *focus = json_object_new_array();
 

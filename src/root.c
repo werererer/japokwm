@@ -29,7 +29,7 @@ static void set_layer_shell(struct container *con)
 // TODO: Reduce side effects
 void set_root_area(struct monitor *m)
 {
-    root.w = m->m;
+    root.w = m->geom;
     int maxWidth = 0, maxHeight = 0;
     struct container *con;
     wl_list_for_each(con, &layerstack, llink) {

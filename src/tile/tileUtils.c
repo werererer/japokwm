@@ -24,7 +24,7 @@ void arrange(bool reset)
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
         /* Get effective monitor geometry to use for window area */
-        m->m = *wlr_output_layout_get_box(output_layout, m->wlr_output);
+        m->geom = *wlr_output_layout_get_box(output_layout, m->wlr_output);
         set_root_area(m);
 
         if (!overlay)
@@ -105,7 +105,7 @@ void resize(struct container *con, struct wlr_box geom, bool interact)
      * the new size, then commit any movement that was prepared.
      */
     con->geom = geom;
-    applybounds(con, selected_monitor->m);
+    applybounds(con, selected_monitor->geom);
 
     /* wlroots makes this a no-op if size hasn't changed */
     switch (con->client->type) {
