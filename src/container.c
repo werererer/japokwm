@@ -31,7 +31,7 @@ void destroy_container(struct container *con)
 
 struct container *selected_container()
 {
-    if (wl_list_length(&selected_monitor->focus_stack))
+    if (wl_list_length(&selected_monitor->focus_stack) > 0)
     {
         struct container *con =
             wl_container_of(selected_monitor->focus_stack.next, con, flink);
@@ -164,8 +164,8 @@ void add_container_to_monitor(struct monitor *m, struct container *con)
 struct wlr_box get_absolute_box(struct wlr_box box, struct wlr_fbox b)
 {
     struct wlr_box w;
-    w.x = b.x * box.width - box.x;
-    w.y = b.y * box.height - box.y;
+    w.x = b.x * box.width + box.x;
+    w.y = b.y * box.height + box.y;
     w.width = box.width * b.width;
     w.height = box.height * b.height;
     return w;
@@ -235,8 +235,9 @@ void applyrules(struct container *con)
 
 void focus_container(struct monitor *m, struct container *con, bool lift)
 {
-    if (con == selected_container())
-        return;
+    printf("focus container\n");
+    /* if (con == selected_container()) */
+    /*     return; */
 
     if (lift)
         lift_container(con);
@@ -251,7 +252,7 @@ void focus_container(struct monitor *m, struct container *con, bool lift)
     focus_client(con->client, selected_container()->client);
     /* Put the new client atop the focus stack */
     wl_list_remove(&con->flink);
-    wl_list_insert(&m->focus_stack, &con->slink);
+    wl_list_insert(&m->focus_stack, &con->flink);
 }
 
 void lift_container(struct container *con)

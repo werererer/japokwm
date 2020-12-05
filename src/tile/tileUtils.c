@@ -21,7 +21,6 @@
 
 void arrange(bool reset)
 {
-    printf("arrange\n");
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
         printf("arrange %p\n", m);
@@ -109,10 +108,9 @@ void arrange_container(struct container *con, int i)
         box.height = luaL_checknumber(L, -1);
         lua_pop(L, 1);
         lua_pop(L, 1);
-        con->geom = get_absolute_box(root.w, box);
         if (!overlay)
             container_surround_gaps(&con->geom, innerGap);
-        resize(con, con->geom, false);
+        resize(con, get_absolute_box(root.w, box), false);
         containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
     }
 }
@@ -150,7 +148,6 @@ void update_hidden_status()
     wl_list_for_each(m, &mons, link) {
         int i = 0;
         struct container *con;
-        printf("update_hidden_status()\n");
         wl_list_for_each(con, &m->containers, slink) {
             printf("update_hidden_status: %p\n", con);
             if (i < wl_list_length(&m->stack)) {
@@ -168,8 +165,8 @@ int tiled_container_count(struct monitor *m)
     struct container *con;
     int n = 0;
 
-    wl_list_for_each(con, &m->stack, slink)
-        if(con->floating)
+    wl_list_for_each(con, &m->containers, clink)
+        if(!con->floating)
             n++;
     return n;
 }
