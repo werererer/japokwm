@@ -762,7 +762,7 @@ int setup(void)
     wlr_xdg_output_manager_v1_create(server.display, output_layout);
 
     /* Configure textures */
-    wlr_list_init(&renderData.textures);
+    wlr_list_init(&render_data.textures);
     /* Configure a listener to be notified when new outputs are available on the
      * backend. */
     wl_list_init(&mons);

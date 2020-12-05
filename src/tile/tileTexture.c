@@ -81,15 +81,15 @@ struct posTexture *create_textbox(struct wlr_box box, float boxColor[],
 
 void init_overlay()
 {
-    wlr_list_init(&renderData.textures);
-    wlr_list_init(&renderData.base_textures);
+    wlr_list_init(&render_data.textures);
+    wlr_list_init(&render_data.base_textures);
 }
 
 void create_new_overlay()
 {
     // recreate list
-    wlr_list_clear(&renderData.textures);
-    wlr_list_clear(&renderData.base_textures);
+    wlr_list_clear(&render_data.textures);
+    wlr_list_clear(&render_data.base_textures);
     create_overlay();
 }
 
@@ -111,16 +111,16 @@ void create_overlay()
             create_textbox(con->geom, overlayColor, textColor, text);
         // sync properties
         pTexture->tagset = con->client->tagset;
-        wlr_list_push(&renderData.textures, pTexture);
-        wlr_list_push(&renderData.base_textures, pTexture);
+        wlr_list_push(&render_data.textures, pTexture);
+        wlr_list_push(&render_data.base_textures, pTexture);
     }
 }
 
 void update_container_overlay(struct container *con)
 {
     if (overlay) {
-        if (renderData.textures.length >= con->position+1) {
-            wlr_list_del(&renderData.textures, con->position);
+        if (render_data.textures.length >= con->position+1) {
+            wlr_list_del(&render_data.textures, con->position);
         }
 
         char text[NUM_DIGITS];
@@ -130,21 +130,21 @@ void update_container_overlay(struct container *con)
         struct posTexture *pTexture =
             create_textbox(con->geom, overlayColor, textColor, text);
         pTexture->tagset = con->client->tagset;
-        wlr_list_insert(&renderData.textures, con->position, pTexture);
+        wlr_list_insert(&render_data.textures, con->position, pTexture);
     } else {
-        if (&renderData.textures.length > 0)
-            wlr_list_clear(&renderData.textures);
+        if (&render_data.textures.length > 0)
+            wlr_list_clear(&render_data.textures);
     }
 }
 
 void update_overlay_count(size_t count)
 {
     if (count == 0) {
-        wlr_list_clear(&renderData.textures);
+        wlr_list_clear(&render_data.textures);
     } else {
-        int len = renderData.textures.length;
+        int len = render_data.textures.length;
         for (size_t i = count; i < len; i++) {
-            wlr_list_del(&renderData.textures, count);
+            wlr_list_del(&render_data.textures, count);
         }
     }
 }
@@ -154,7 +154,7 @@ void update_overlay()
     if (overlay) {
         create_new_overlay();
     } else {
-        wlr_list_clear(&renderData.textures);
+        wlr_list_clear(&render_data.textures);
     }
 }
 
@@ -196,9 +196,9 @@ void write_overlay(struct monitor *m, const char *layout)
 
         int k = 0;
 
-        for (int j = renderData.base_textures.length-1; j >= 0; j--) {
+        for (int j = render_data.base_textures.length-1; j >= 0; j--) {
             // TODO: todo fix order
-            struct posTexture *pTexture = renderData.base_textures.items[j];
+            struct posTexture *pTexture = render_data.base_textures.items[j];
             if (postexture_visible_on_flag(pTexture, m, position_to_flag(i))) {
                 // vector from root x/y -> monitor x/y
                 int wdiff = selected_monitor->m.x - root.w.y;

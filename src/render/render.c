@@ -9,12 +9,12 @@
 #include "popup.h"
 
 struct wlr_renderer *drw;
-struct renderData renderData;
+struct renderData render_data;
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data);
 static void render_clients(struct monitor *m);
 static void render_independents(struct wlr_output *output);
-static void renderTexture(void *texture);
+static void render_texture(struct posTexture *texture);
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data)
 {
@@ -136,13 +136,10 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
         if (con->client->surface.layer->current.layer != layer)
             continue;
 
-        /* Only render visible clients which show on this monitor */
+        /* Only render visible clients which are shown on this monitor */
         if (!visibleon(con, m) || !wlr_output_layout_intersects(
                     output_layout, m->wlr_output, &con->geom))
             continue;
-
-        /* This calls our render function for each surface among the
-         * xdg_surface's toplevel and popups. */
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -155,13 +152,15 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
     }
 }
 
-/* will be called foreach texture in renderData */
-static void renderTexture(void *texture)
+static void render_texture(struct posTexture *texture)
 {
-    struct posTexture *text = texture;
-    if (postexture_visible_on_flag(text, selected_monitor, selected_monitor->tagset->selTags[0])) {
-        wlr_render_texture(drw, text->texture, selected_monitor->wlr_output->transform_matrix,
-                text->x, text->y, 1);
+    if (postexture_visible_on_flag(
+                texture,
+                selected_monitor,
+                selected_monitor->tagset->selTags[0])) {
+        wlr_render_texture(drw, texture->texture,
+                selected_monitor->wlr_output->transform_matrix, texture->x,
+                texture->y, 1);
     }
 }
 
@@ -234,7 +233,7 @@ void render_frame(struct wl_listener *listener, void *data)
         render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP);
         render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
 
-        wlr_list_for_each(&renderData.textures, renderTexture);
+        wlr_list_for_each(&render_data.textures, (void*)render_texture);
         render_popups(m);
 
         /* Hardware cursors are rendered by the GPU on a separate plane, and can be

@@ -30,5 +30,5 @@ void render_frame(struct wl_listener *listener, void *data);
 void scalebox(struct wlr_box *box, float scale);
 
 extern struct wlr_renderer *drw;
-extern struct renderData renderData;
+extern struct renderData render_data;
 #endif /* RENDER_H */
