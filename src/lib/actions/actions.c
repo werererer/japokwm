@@ -102,14 +102,9 @@ int focus_on_stack(lua_State *L)
     struct monitor *m = sel->m;
     struct container *con;
     if (i > 0) {
-        printf("\nres: \n");
         wl_list_for_each(con, &sel->mlink, mlink) {
             if (con == sel)
                 continue;
-            printf("con x: %i\n", con->geom.x);
-            printf("con y: %i\n", con->geom.y);
-            printf("con width: %i\n", con->geom.width);
-            printf("con height: %i\n", con->geom.height);
             if (visibleon(con->client, m->tagset)) {
                 found = true;
                 break;

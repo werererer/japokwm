@@ -1,7 +1,7 @@
 require "defaultConfig"
 
 sloppyFocus = true
-borderPx = 50
+borderPx = 2
 rootColor = {0.3, 0.3, 0.3, 1.0}
 borderColor = {0.3, 0.3, 0.3, 1.0}
 focusColor = {1.0, 0.0, 0.0, 0.0}
@@ -10,7 +10,7 @@ textColor = {0.003, 0.003, 0.003, 1.0}
 selOverlayColor = {}
 selTextColor = {}
 outerGap = 10
-innerGap = 49
+innerGap = 50
 
 tagNames = {"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"}
 

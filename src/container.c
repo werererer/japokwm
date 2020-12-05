@@ -24,7 +24,6 @@ struct container *create_container(struct client *c, struct monitor *m)
 
 void destroy_container(struct container *con)
 {
-    printf("destroy_container %p\n", con);
     wl_list_remove(&con->clink);
     wl_list_remove(&con->mlink);
     wl_list_remove(&con->flink);
@@ -240,6 +239,10 @@ void applyrules(struct container *con)
 void focus_container(struct monitor *m, struct container *con, bool lift)
 {
     printf("focus container\n");
+    printf("geom: x: %i\n", con->geom.x);
+    printf("geom: y: %i\n", con->geom.y);
+    printf("geom: width: %i\n", con->geom.width);
+    printf("geom: height: %i\n", con->geom.height);
     /* if (con == selected_container()) */
     /*     return; */
 
@@ -252,8 +255,7 @@ void focus_container(struct monitor *m, struct container *con, bool lift)
         wlr_seat_keyboard_notify_clear_focus(server.seat);
         return;
     }
-
-    focus_client(con->client, selected_container()->client);
+    focus_client(selected_container()->client, con->client);
     /* Put the new client atop the focus stack */
     wl_list_remove(&con->flink);
     wl_list_insert(&m->focus_stack, &con->flink);
