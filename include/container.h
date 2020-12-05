@@ -50,6 +50,7 @@ void focus_container(struct monitor *m, struct container *con, bool lift);
 void focus_top_container(bool lift);
 void lift_container(struct container *con);
 void remove_container_from_monitor(struct monitor *m, struct container *con);
+bool visibleon(struct container *con, struct monitor *m);
 
 extern struct containers_info containers_info;
 #endif /* CONTAINER_H */

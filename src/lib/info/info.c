@@ -17,7 +17,7 @@ int this_container_position(lua_State *L)
     bool handled = false;
 
     wl_list_for_each(con, &selected_monitor->stack, slink) {
-        if (visibleon(con->client, selected_monitor->tagset) &&
+        if (visibleon(con, selected_monitor) &&
                 !con->floating) {
             if (con == selected_container()) {
                 handled = true;

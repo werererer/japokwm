@@ -53,7 +53,7 @@ void arrange(bool reset)
             int i = 0;
             struct container *con;
             wl_list_for_each(con, &m->stack, slink) {
-                if (!visibleon(con->client, m->tagset))
+                if (!visibleon(con, m))
                     continue;
                 arrange_container(con, i);
                 con->textPosition = i;

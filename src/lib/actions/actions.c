@@ -105,7 +105,7 @@ int focus_on_stack(lua_State *L)
         wl_list_for_each(con, &sel->mlink, mlink) {
             if (con == sel)
                 continue;
-            if (visibleon(con->client, m->tagset)) {
+            if (visibleon(con, m)) {
                 found = true;
                 break;
             }
@@ -114,7 +114,7 @@ int focus_on_stack(lua_State *L)
         wl_list_for_each_reverse(con, &sel->mlink, mlink) {
             if (con == sel)
                 continue;
-            if (visibleon(con->client, m->tagset)) {
+            if (visibleon(con, m)) {
                 found = true;
                 break;
             }
@@ -425,7 +425,7 @@ int zoom(lua_State *L)
      * NULL if we pass it along the way */
     struct container *con;
     wl_list_for_each(con, &selected_monitor->stack, slink) {
-        if (visibleon(con->client, selected_monitor->tagset) && !c->floating) {
+        if (visibleon(con, selected_monitor) && !c->floating) {
             if (c != old)
                 break;
             old = NULL;

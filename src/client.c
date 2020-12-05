@@ -45,19 +45,6 @@ bool existon(struct client *c, struct monitor *m)
     return false;
 }
 
-bool visibleon(struct client *c, struct tagset *tagset)
-{
-    // LayerShell based programs are visible on all workspaces
-    if (c && tagset) {
-        if (c->type == LAYER_SHELL) {
-            return true;
-        }
-
-        return c->tagset->selTags[0] & tagset->selTags[0];
-    }
-    return false;
-}
-
 bool visible_on_tag(struct client *c, struct monitor *m, size_t focusedTag)
 {
     if (c) {

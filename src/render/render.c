@@ -81,7 +81,7 @@ static void render_clients(struct monitor *m)
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each_reverse(con, &m->stack, slink) {
         /* Only render visible clients which are shown on this monitor */
-        if (!visibleon(con->client, m->tagset))
+        if (!visibleon(con, m))
             continue;
 
         double ox, oy;
@@ -137,7 +137,7 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
             continue;
 
         /* Only render visible clients which show on this monitor */
-        if (!visibleon(con->client, m->tagset) || !wlr_output_layout_intersects(
+        if (!visibleon(con, m) || !wlr_output_layout_intersects(
                     output_layout, m->wlr_output, &con->geom))
             continue;
 

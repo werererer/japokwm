@@ -41,7 +41,6 @@ struct client {
 /* it ignores bool  hiding which visibleon doesn't */
 bool existon(struct client *c, struct monitor *m);
 bool visible_on_tag(struct client *c, struct monitor *m, size_t focusedTag);
-bool visibleon(struct client *c, struct tagset *tagset);
 void focus_client(struct client *old, struct client *c);
 
 extern struct wl_list clients; /* tiling order */

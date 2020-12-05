@@ -38,7 +38,7 @@ struct container *selected_container()
 
     struct container *con =
         wl_container_of(selected_monitor->focus_stack.next, con, flink);
-    if (!visibleon(con->client, selected_monitor->tagset))
+    if (!visibleon(con, selected_monitor))
         return NULL;
     else
         return con;
@@ -50,7 +50,7 @@ struct container *next_container(struct monitor *m)
     {
         struct container *con =
             wl_container_of(m->focus_stack.next->next, con, flink);
-        if (!visibleon(con->client, selected_monitor->tagset))
+        if (!visibleon(con, selected_monitor))
             return NULL;
         else
             return con;
@@ -89,16 +89,15 @@ struct container *get_container(struct monitor *m, int i)
 
 struct container *first_container(struct monitor *m)
 {
-    if (containers_info.n)
-    {
-        struct container *con;
-        wl_list_for_each(con, &m->stack, slink) {
-            if (!visibleon(con->client, selected_monitor->tagset))
-                continue;
-            return con;
-        }
+    if (containers_info.n <= 0)
+        return NULL;
+
+    struct container *con;
+    wl_list_for_each(con, &m->stack, slink) {
+        if (visibleon(con, selected_monitor))
+            break;
     }
-    return NULL;
+    return con;
 }
 
 struct client *last_client(struct monitor *m)
@@ -108,7 +107,7 @@ struct client *last_client(struct monitor *m)
         struct container *con;
         int i = 1;
         wl_list_for_each(con, &m->stack, slink) {
-            if (!visibleon(con->client, selected_monitor->tagset))
+            if (!visibleon(con, selected_monitor))
                 continue;
             if (i > containers_info.n)
                 return con->client;
@@ -124,7 +123,7 @@ struct container *xytocontainer(double x, double y)
 
     struct container *con;
     wl_list_for_each(con, &m->stack, slink) {
-        if (visibleon(con->client, selected_monitor->tagset)
+        if (visibleon(con, selected_monitor)
                 && wlr_box_contains_point(&con->geom, x, y)) {
             return con;
         }
@@ -238,13 +237,8 @@ void applyrules(struct container *con)
 
 void focus_container(struct monitor *m, struct container *con, bool lift)
 {
-    printf("focus container\n");
-    printf("geom: x: %i\n", con->geom.x);
-    printf("geom: y: %i\n", con->geom.y);
-    printf("geom: width: %i\n", con->geom.width);
-    printf("geom: height: %i\n", con->geom.height);
-    /* if (con == selected_container()) */
-    /*     return; */
+    if (con == selected_container())
+        return;
 
     if (lift)
         lift_container(con);
@@ -255,6 +249,7 @@ void focus_container(struct monitor *m, struct container *con, bool lift)
         wlr_seat_keyboard_notify_clear_focus(server.seat);
         return;
     }
+
     focus_client(selected_container()->client, con->client);
     /* Put the new client atop the focus stack */
     wl_list_remove(&con->flink);
@@ -278,7 +273,7 @@ void focus_top_container(bool lift)
         // focus_stack should not be changed while iterating
         struct container *con;
         wl_list_for_each(con, &m->focus_stack, flink)
-            if (visibleon(con->client, selected_monitor->tagset)) {
+            if (visibleon(con, selected_monitor)) {
                 focus = true;
                 break;
             }
@@ -286,3 +281,20 @@ void focus_top_container(bool lift)
             focus_container(m, con, lift);
     }
 }
+
+bool visibleon(struct container *con, struct monitor *m)
+{
+    if (!con || !m)
+        return false;
+    if (!con->client)
+        return false;
+
+    struct client *c = con->client;
+
+    // LayerShell based programs are visible on all workspaces
+    if (con->client->type == LAYER_SHELL)
+        return true;
+
+    return c->tagset->selTags[0] & m->tagset->selTags[0];
+}
+
