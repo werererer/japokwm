@@ -91,26 +91,45 @@ int update_layout(lua_State *L)
 
 int focus_on_stack(lua_State *L)
 {
-    struct container *con, *sel = selected_container();
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
+
+    struct container *sel = selected_container();
     if (!sel)
         return 0;
+
+    bool found = false;
+    struct monitor *m = sel->m;
+    struct container *con;
     if (i > 0) {
-        int j = 1;
-        wl_list_for_each(con, &con->slink, slink) {
-            if (visibleon(con->client, selected_monitor->tagset))
-                break;  /* found it */
-            j++;
+        printf("\nres: \n");
+        wl_list_for_each(con, &sel->mlink, mlink) {
+            if (con == sel)
+                continue;
+            printf("con x: %i\n", con->geom.x);
+            printf("con y: %i\n", con->geom.y);
+            printf("con width: %i\n", con->geom.width);
+            printf("con height: %i\n", con->geom.height);
+            if (visibleon(con->client, m->tagset)) {
+                found = true;
+                break;
+            }
         }
     } else {
-        wl_list_for_each_reverse(con, &con->slink, slink) {
-            if (visibleon(con->client, selected_monitor->tagset))
-                break;  /* found it */
+        wl_list_for_each_reverse(con, &sel->mlink, mlink) {
+            if (con == sel)
+                continue;
+            if (visibleon(con->client, m->tagset)) {
+                found = true;
+                break;
+            }
         }
     }
-    /* If only one client is visible on selMon, then c == sel */
-    focus_container(selected_monitor, con, true);
+
+    if (found) {
+        /* If only one client is visible on selMon, then c == sel */
+        focus_container(m, con, true);
+    }
     return 0;
 }
 

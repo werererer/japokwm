@@ -16,7 +16,7 @@ struct client {
     /* layer shell based clients */
     struct wl_list llink;
 
-    /* containers that this client */
+    /* containers containing this client */
     struct wl_list containers;
     union {
         struct wlr_xdg_surface *xdg;

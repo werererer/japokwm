@@ -87,7 +87,8 @@ static void render_clients(struct monitor *m)
         double ox, oy;
         int w, h;
         struct wlr_surface *surface = get_wlrsurface(con->client);
-        ox = con->geom.x, oy = con->geom.y;
+        ox = con->geom.x - con->client->bw;
+        oy = con->geom.y - con->client->bw;
         wlr_output_layout_output_coords(output_layout, m->wlr_output, &ox, &oy);
         w = surface->current.width;
         h = surface->current.height;
@@ -116,8 +117,8 @@ static void render_clients(struct monitor *m)
         struct renderData rdata;
         rdata.output = m->wlr_output;
         rdata.when = &now;
-        rdata.x = con->geom.x + con->client->bw;
-        rdata.y = con->geom.y + con->client->bw;
+        rdata.x = con->geom.x;
+        rdata.y = con->geom.y;
 
         render(surface, 0, 0, &rdata);
     }

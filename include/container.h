@@ -6,16 +6,16 @@
 #include "client.h"
 
 struct container {
-    /* container containers */
-    struct wl_list link;
+    /* monitor containers */
+    struct wl_list mlink;
+    /* client containers */
+    struct wl_list clink;
     /* container stack */
     struct wl_list slink;
     /* container focus_stack */
     struct wl_list flink;
     /* layer shell based clients */
     struct wl_list llink;
-    /* client list */
-    struct wl_list clink;
 
     /* layout-relative, includes border */
     struct wlr_box geom;

@@ -23,13 +23,12 @@ void arrange(bool reset)
 {
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
-        printf("arrange %p\n", m);
         /* Get effective monitor geometry to use for window area */
         m->m = *wlr_output_layout_get_box(output_layout, m->wlr_output);
         set_root_area(m);
 
         if (!overlay)
-            container_surround_gaps(&root.w, outerGap);
+            container_surround_gaps(&root.w, outer_gap);
         if (selected_layout(m->tagset).funcId) {
             int n = tiled_container_count(m);
             /* call arrange function
@@ -56,26 +55,7 @@ void arrange(bool reset)
             wl_list_for_each(con, &m->stack, slink) {
                 if (!visibleon(con->client, m->tagset))
                     continue;
-                if (con->floating)
-                    continue;
-
                 arrange_container(con, i);
-                i++;
-            }
-            wl_list_for_each(con, &m->stack, slink) {
-                if (!visibleon(con->client, m->tagset))
-                    continue;
-                if (!con->floating)
-                    continue;
-
-                arrange_container(con, i);
-                i++;
-            }
-            i = 0;
-            wl_list_for_each(con, &m->stack, slink) {
-                if (!visibleon(con->client, m->tagset))
-                    continue;
-
                 con->textPosition = i;
                 i++;
             }
@@ -91,7 +71,6 @@ void arrange_container(struct container *con, int i)
     // if tiled get tile information from tile function and apply it
     struct wlr_fbox box;
     if (!con->floating) {
-        printf("not floating\n");
         // get lua container
         lua_rawgeti(L, LUA_REGISTRYINDEX, containers_info.id);
         lua_rawgeti(L, -1, MIN(con->clientPosition+1, containers_info.n));
@@ -108,9 +87,12 @@ void arrange_container(struct container *con, int i)
         box.height = luaL_checknumber(L, -1);
         lua_pop(L, 1);
         lua_pop(L, 1);
+
+        con->geom = get_absolute_box(root.w, box);
         if (!overlay)
-            container_surround_gaps(&con->geom, innerGap);
-        resize(con, get_absolute_box(root.w, box), false);
+            container_surround_gaps(&con->geom, inner_gap);
+        container_surround_gaps(&con->geom, 2*con->client->bw);
+        resize(con, con->geom, false);
         containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
     }
 }
@@ -149,7 +131,6 @@ void update_hidden_status()
         int i = 0;
         struct container *con;
         wl_list_for_each(con, &m->containers, slink) {
-            printf("update_hidden_status: %p\n", con);
             if (i < wl_list_length(&m->stack)) {
                 con->hidden = false;
                 i++;

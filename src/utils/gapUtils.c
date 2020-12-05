@@ -45,8 +45,8 @@ void container_surround_gaps(struct wlr_box *con, double gap)
      * | x +----+ x |
      * |            |
      * +------------+
-     * therefore x and y need to be 1/2ed and the width has to be decreased by
-     * the whole amound
+     * therefore x and y need to be 1/2ed and the width has to be decreased
+     * by the whole amound
      * */
         containerAddGaps(con, gap/2, WLR_EDGE_TOP | WLR_EDGE_LEFT);
         containerAddGaps(con, gap, WLR_EDGE_RIGHT | WLR_EDGE_BOTTOM);

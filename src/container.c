@@ -11,10 +11,12 @@ static void add_container_to_monitor_stack(struct monitor *m, struct container *
 
 struct container *create_container(struct client *c, struct monitor *m)
 {
+    printf("create_container\n");
     struct container *con = calloc(1, sizeof(struct container));
+    con->m = m;
     con->client = c;
     wl_list_insert(&c->containers, &con->clink);
-    wl_list_insert(&m->containers, &con->clink);
+    wl_list_insert(&m->containers, &con->mlink);
     wl_list_insert(&m->focus_stack, &con->flink);
     add_container_to_monitor_stack(m, con);
     return con;
@@ -22,26 +24,25 @@ struct container *create_container(struct client *c, struct monitor *m)
 
 void destroy_container(struct container *con)
 {
-    printf("destroy %p\n", con);
+    printf("destroy_container %p\n", con);
     wl_list_remove(&con->clink);
+    wl_list_remove(&con->mlink);
     wl_list_remove(&con->flink);
-    wl_list_remove(&con->link);
+    wl_list_remove(&con->slink);
     free(con);
 }
 
 struct container *selected_container()
 {
-    if (wl_list_length(&selected_monitor->focus_stack) > 0)
-    {
-        struct container *con =
-            wl_container_of(selected_monitor->focus_stack.next, con, flink);
-        if (!visibleon(con->client, selected_monitor->tagset))
-            return NULL;
-        else
-            return con;
-    } else {
+    if (wl_list_empty(&selected_monitor->focus_stack))
         return NULL;
-    }
+
+    struct container *con =
+        wl_container_of(selected_monitor->focus_stack.next, con, flink);
+    if (!visibleon(con->client, selected_monitor->tagset))
+        return NULL;
+    else
+        return con;
 }
 
 struct container *next_container(struct monitor *m)
@@ -134,19 +135,22 @@ struct container *xytocontainer(double x, double y)
 
 static void add_container_to_monitor_stack(struct monitor *m, struct container *con)
 {
-    printf("add_container_to_monitor_stack\n");
     if (con) {
         if (con->floating) {
             wl_list_insert(&m->stack, &con->slink);
         } else {
             /* Insert container after the last floating container */
-            struct container *c = NULL;
+            struct container *c;
             wl_list_for_each(c, &m->stack, slink) {
                 if (!c->floating)
                     break;
             }
-            if (c)
+
+            if (!wl_list_empty(&m->stack)) {
                 wl_list_insert(&c->slink, &con->slink);
+            } else {
+                wl_list_insert(&m->stack, &con->slink);
+            }
         }
     }
 }
@@ -155,7 +159,7 @@ void add_container_to_monitor(struct monitor *m, struct container *con)
 {
     printf("add_container_to_monitor\n");
     if (m && con) {
-        wl_list_insert(&m->containers, &con->link);
+        wl_list_insert(&m->containers, &con->mlink);
         add_container_to_monitor_stack(m, con);
         wl_list_insert(&m->focus_stack, &con->flink);
     }

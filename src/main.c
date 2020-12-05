@@ -525,9 +525,9 @@ void maprequest(struct wl_listener *listener, void *data)
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
 
-    wl_list_init(&c->containers);
     c->tagset = create_tagset(&tagNames, selected_monitor->tagset->focusedTag,
             selected_monitor->tagset->selTags[0]);
+    wl_list_init(&c->containers);
     create_container(c, selected_monitor);
 
     if (c->type == X11_UNMANAGED) {

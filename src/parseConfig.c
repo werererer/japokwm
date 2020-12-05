@@ -36,8 +36,8 @@ struct rule rules[MAXLEN];
 
 int repeatRate;
 int repeatDelay;
-int innerGap;
-int outerGap;
+int inner_gap;
+int outer_gap;
 
 struct wlr_list tagNames;
 char *termcmd;
@@ -113,9 +113,9 @@ int update_config(lua_State *L)
     borderPx = get_config_int(L, "borderPx");
 
     /* gaps */
-    innerGap = get_config_int(L, "innerGap");
-    outerGap = get_config_int(L, "outerGap");
-    configure_gaps(&innerGap, &outerGap);
+    inner_gap = get_config_int(L, "innerGap");
+    outer_gap = get_config_int(L, "outerGap");
+    configure_gaps(&inner_gap, &outer_gap);
 
     /* appearance */
     get_config_float_arr(L, root.color, "rootColor");
