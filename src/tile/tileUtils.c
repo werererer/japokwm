@@ -19,7 +19,7 @@
 #include "utils/gapUtils.h"
 #include "utils/parseConfigUtils.h"
 
-void arrange(bool reset)
+void arrange(enum layout_actions action)
 {
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
@@ -37,8 +37,8 @@ void arrange(bool reset)
         int n = tiled_container_count(m);
         /* call arrange function if previous layout is different or reset ->
          * reset layout */
-        if (strcmp(prev_layout.symbol, selected_layout(m->tagset).symbol)
-                != 0 || reset) {
+        if (is_same_layout(prev_layout, selected_layout(m->tagset))
+                || action == LAYOUT_RESET) {
             prev_layout = selected_layout(m->tagset);
             lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(m->tagset).funcId);
             lua_pushinteger(L, n);
@@ -56,7 +56,8 @@ void arrange(bool reset)
 
         int i = 0;
         struct container *con;
-        wl_list_for_each(con, &m->stack, slink) {
+        focus_container(m, selected_container(m), ACTION_NOOP);
+        wl_list_for_each(con, &m->containers, mlink) {
             if (!visibleon(con, m))
                 continue;
             arrange_container(con, i);

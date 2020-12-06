@@ -52,7 +52,7 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
         return;
 
     if (sloppyFocus)
-        focus_container(selected_monitor, con, NO_OP);
+        focus_container(selected_monitor, con, ACTION_NOOP);
 }
 
 int arrange_this(lua_State *L)
@@ -94,12 +94,12 @@ int focus_on_stack(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct container *sel = selected_container();
+    struct monitor *m = selected_monitor;
+    struct container *sel = selected_container(m);
     if (!sel)
         return 0;
 
     bool found = false;
-    struct monitor *m = sel->m;
     struct container *con;
     if (i > 0) {
         wl_list_for_each(con, &sel->mlink, mlink) {
@@ -123,7 +123,7 @@ int focus_on_stack(lua_State *L)
 
     if (found) {
         /* If only one client is visible on selMon, then c == sel */
-        focus_container(m, con, LIFT);
+        focus_container(m, con, ACTION_LIFT);
     }
     return 0;
 }
@@ -133,8 +133,8 @@ int focus_on_hidden_stack(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct container *sel = selected_container();
     struct monitor *m = selected_monitor;
+    struct container *sel = selected_container(m);
 
     if (!sel)
         return 0;
@@ -165,7 +165,7 @@ int focus_on_hidden_stack(lua_State *L)
         wl_list_insert(m->containers.prev, &sel->mlink);
     }
 
-    focus_container(m, con, LIFT);
+    focus_container(m, con, ACTION_LIFT);
     arrange(false);
     return 0;
 }
@@ -255,7 +255,8 @@ void motionnotify(uint32_t time)
 
     bool is_popup = false;
     struct container *con;
-    if ((con = selected_container())) {
+    struct monitor *m = selected_monitor;
+    if ((con = selected_container(m))) {
         switch (con->client->type) {
             case XDG_SHELL:
                 is_popup = !wl_list_empty(&con->client->surface.xdg->popups);
@@ -286,7 +287,7 @@ void motionnotify(uint32_t time)
         // if surface and subsurface exit
         if (!surface) {
             is_popup = false;
-        } else if (surface == selected_container()->client->surface.xdg->surface) {
+        } else if (surface == selected_container(m)->client->surface.xdg->surface) {
             struct container *con = xytocontainer(server.cursor->x, server.cursor->y);
             if (con) {
                 is_popup = is_popup && surface == con->client->surface.xdg->surface;
@@ -326,14 +327,17 @@ int tag(lua_State *L)
 {
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    printf("TAG\n");
+    struct monitor *m = selected_monitor;
+    struct container *sel = selected_container(m);
+
     ipc_event_workspace();
-    struct container *sel = selected_container();
-    if (sel && ui) {
-        toggle_add_tag(sel->client->tagset, position_to_flag(ui));
-        focus_top_container(true);
-        arrange(false);
-    }
+
+    if (!sel || !ui)
+        return 0;
+
+    toggle_add_tag(sel->client->tagset, position_to_flag(ui));
+    focus_top_container(m, ACTION_LIFT);
+    arrange(false);
     return 0;
 }
 
@@ -342,12 +346,12 @@ int toggle_tag(lua_State *L)
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct container *sel = selected_container();
+    struct container *sel = selected_container(selected_monitor);
     if (sel) {
         unsigned int newtags = sel->client->tagset->selTags[0] ^ ui;
         if (newtags) {
             set_selelected_Tags(sel->client->tagset, newtags);
-            focus_top_container(true);
+            focus_top_container(selected_monitor, ACTION_LIFT);
             arrange(false);
         }
     }
@@ -358,9 +362,10 @@ int view(lua_State *L)
 {
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    selected_monitor->tagset->focusedTag = flag_to_position(ui);
-    set_selelected_Tags(selected_monitor->tagset, ui);
-    focus_top_container(false);
+    struct monitor *m = selected_monitor;
+    m->tagset->focusedTag = flag_to_position(ui);
+    set_selelected_Tags(m->tagset, ui);
+    focus_top_container(m, ACTION_NOOP);
     arrange(false);
     return 0;
 }
@@ -369,8 +374,9 @@ int toggle_add_view(lua_State *L)
 {
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    toggle_add_tag(selected_monitor->tagset, ui);
-    focus_top_container(false);
+    struct monitor *m = selected_monitor;
+    toggle_add_tag(m->tagset, ui);
+    focus_top_container(m, ACTION_NOOP);
     arrange(false);
     return 0;
 }
@@ -378,15 +384,16 @@ int toggle_add_view(lua_State *L)
 
 int toggle_view(lua_State *L)
 {
-    toggle_tagset(selected_monitor->tagset);
-    focus_top_container(true);
+    struct monitor *m = selected_monitor;
+    toggle_tagset(m->tagset);
+    focus_top_container(m, ACTION_LIFT);
     arrange(false);
     return 0;
 }
 
 int toggle_floating(lua_State *L)
 {
-    struct container *sel = selected_container();
+    struct container *sel = selected_container(selected_monitor);
     if (!sel)
         return 0;
     set_container_floating(sel, !sel->floating);
@@ -423,7 +430,8 @@ int quit(lua_State *L)
 
 int zoom(lua_State *L)
 {
-    struct container *c, *old = selected_container();
+    struct monitor *m = selected_monitor;
+    struct container *c, *old = selected_container(m);
 
     if (!old || old->floating)
         return 0;
@@ -431,15 +439,15 @@ int zoom(lua_State *L)
     /* Search for the first tiled window that is not sel, marking sel as
      * NULL if we pass it along the way */
     struct container *con;
-    wl_list_for_each(con, &selected_monitor->stack, slink) {
-        if (visibleon(con, selected_monitor) && !c->floating) {
+    wl_list_for_each(con, &m->stack, slink) {
+        if (visibleon(con, m) && !c->floating) {
             if (c != old)
                 break;
             old = NULL;
         }
     }
 
-    focus_container(selected_monitor, con, NO_OP);
+    focus_container(selected_monitor, con, ACTION_NOOP);
     return 0;
 }
 
@@ -503,7 +511,7 @@ int read_overlay(lua_State *L)
 
 int kill_client(lua_State *L)
 {
-    struct client *sel = selected_container()->client;
+    struct client *sel = selected_container(selected_monitor)->client;
     if (sel) {
         switch (sel->type) {
             case XDG_SHELL:

@@ -31,14 +31,13 @@ void destroy_container(struct container *con)
     free(con);
 }
 
-struct container *selected_container()
+struct container *selected_container(struct monitor *m)
 {
-    if (wl_list_empty(&selected_monitor->focus_stack))
+    if (wl_list_empty(&m->focus_stack))
         return NULL;
 
-    struct container *con =
-        wl_container_of(selected_monitor->focus_stack.next, con, flink);
-    if (!visibleon(con, selected_monitor))
+    struct container *con = wl_container_of(m->focus_stack.next, con, flink);
+    if (!visibleon(con, m))
         return NULL;
     else
         return con;
@@ -50,7 +49,7 @@ struct container *next_container(struct monitor *m)
     {
         struct container *con =
             wl_container_of(m->focus_stack.next->next, con, flink);
-        if (!visibleon(con, selected_monitor))
+        if (!visibleon(con, m))
             return NULL;
         else
             return con;
@@ -67,7 +66,7 @@ struct container *get_container(struct monitor *m, int i)
         return NULL;
     if (i == 0)
     {
-        con = selected_container();
+        con = selected_container(m);
     } else if (i > 0) {
         struct wl_list *pos = &m->focus_stack;
         while (i > 0) {
@@ -94,7 +93,7 @@ struct container *first_container(struct monitor *m)
 
     struct container *con;
     wl_list_for_each(con, &m->stack, slink) {
-        if (visibleon(con, selected_monitor))
+        if (visibleon(con, m))
             break;
     }
     return con;
@@ -107,7 +106,7 @@ struct client *last_client(struct monitor *m)
         struct container *con;
         int i = 1;
         wl_list_for_each(con, &m->stack, slink) {
-            if (!visibleon(con, selected_monitor))
+            if (!visibleon(con, m))
                 continue;
             if (i > containers_info.n)
                 return con->client;
@@ -235,19 +234,17 @@ void applyrules(struct container *con)
     }
 }
 
-void focus_container(struct monitor *m, struct container *con, enum action a)
+void focus_container(struct monitor *m, struct container *con, enum focus_actions a)
 {
-    struct container *sel = selected_container();
+    struct container *sel = selected_container(m);
 
-    if (con == selected_container())
-        return;
     if (!con) {
         /* With no client, all we have left is to clear focus */
         wlr_seat_keyboard_notify_clear_focus(server.seat);
         return;
     }
 
-    if (a == LIFT)
+    if (a == ACTION_LIFT)
         lift_container(con);
 
     struct client *c = sel ? sel->client : NULL;
@@ -265,16 +262,15 @@ void lift_container(struct container *con)
     }
 }
 
-void focus_top_container(enum action a)
+void focus_top_container(struct monitor *m, enum focus_actions a)
 {
-    struct monitor *m;
     wl_list_for_each(m, &mons, link) {
         bool focus = false;
 
         // focus_stack should not be changed while iterating
         struct container *con;
         wl_list_for_each(con, &m->focus_stack, flink)
-            if (visibleon(con, selected_monitor)) {
+            if (visibleon(con, m)) {
                 focus = true;
                 break;
             }

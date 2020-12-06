@@ -1,6 +1,8 @@
 #ifndef LAYOUT_H
 #define LAYOUT_H
 
+#include <stdbool.h>
+
 struct layout {
     char *symbol;
     /* this function gets executed when the arrange function is called
@@ -9,8 +11,9 @@ struct layout {
     int funcId;
 };
 
-void layoutCreate(struct layout *lt, const char *symbol, int funcId);
-void layoutDestroy(struct layout *lt);
+void create_layout(struct layout *lt, const char *symbol, int funcId);
+void destroy_layout(struct layout *lt);
+bool is_same_layout(struct layout layout, struct layout layout2);
 
 extern struct layout defaultLayout;
 extern struct layout prev_layout;

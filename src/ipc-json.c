@@ -94,7 +94,7 @@ json_object *ipc_json_describe_tag(struct tag *tag, bool focused, bool selected)
 }
 
 json_object *ipc_json_describe_node(struct client *c) {
-    bool focused = selected_container()->client == c;
+    bool focused = selected_container(selected_monitor)->client == c;
     char *title = c->title;
 
     struct wlr_box *box;

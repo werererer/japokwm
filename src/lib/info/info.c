@@ -19,7 +19,7 @@ int this_container_position(lua_State *L)
     wl_list_for_each(con, &selected_monitor->stack, slink) {
         if (visibleon(con, selected_monitor) &&
                 !con->floating) {
-            if (con == selected_container()) {
+            if (con == selected_container(selected_monitor)) {
                 handled = true;
                 break;
             }

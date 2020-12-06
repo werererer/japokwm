@@ -150,7 +150,7 @@ void buttonpress(struct wl_listener *listener, void *data)
             /* Change focus if the button was _pressed_ over a client */
             struct container *con;
             if ((con = xytocontainer(server.cursor->x, server.cursor->y)))
-                focus_container(selected_monitor, con, NO_OP);
+                focus_container(selected_monitor, con, ACTION_NOOP);
 
             /* Translate libinput to xkbcommon code */
             unsigned sym = event->button + 64985;
@@ -383,7 +383,7 @@ void destroynotify(struct wl_listener *listener, void *data)
     c = NULL;
 
     arrange(false);
-    focus_top_container(false);
+    focus_top_container(selected_monitor, ACTION_NOOP);
 }
 
 void destroyxdeco(struct wl_listener *listener, void *data)
@@ -575,7 +575,7 @@ void maprequest(struct wl_listener *listener, void *data)
     /* } */
 
     arrange(false);
-    focus_top_container(false);
+    focus_top_container(selected_monitor, ACTION_NOOP);
 }
 
 void motionabsolute(struct wl_listener *listener, void *data)

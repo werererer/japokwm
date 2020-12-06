@@ -75,7 +75,7 @@ static void render(struct wlr_surface *surface, int sx, int sy, void *data)
 
 static void render_clients(struct monitor *m)
 {
-    struct container *con, *sel = selected_container();
+    struct container *con, *sel = selected_container(m);
 
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */

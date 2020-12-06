@@ -46,26 +46,24 @@ bool visibleon_tag(struct client *c, size_t focusedTag)
 
 static void unfocusClient(struct client *c)
 {
-    if (c) {
-        switch (c->type) {
-            case XDG_SHELL:
-                wlr_xdg_toplevel_set_activated(c->surface.xdg, false);
-                break;
-            case X11_MANAGED:
-            case X11_UNMANAGED:
-                wlr_xwayland_surface_activate(c->surface.xwayland, false);
-                break;
-            default:
-                break;
-        }
+    if (!c)
+        return;
+
+    switch (c->type) {
+        case XDG_SHELL:
+            wlr_xdg_toplevel_set_activated(c->surface.xdg, false);
+            break;
+        case X11_MANAGED:
+        case X11_UNMANAGED:
+            wlr_xwayland_surface_activate(c->surface.xwayland, false);
+            break;
+        default:
+            break;
     }
 }
 
 void focus_client(struct client *old, struct client *c)
 {
-    if (old == c)
-        return;
-
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
 
     unfocusClient(old);
