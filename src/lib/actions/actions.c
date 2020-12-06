@@ -130,6 +130,7 @@ int focus_on_stack(lua_State *L)
 
 int focus_on_hidden_stack(lua_State *L)
 {
+    printf("focus_on_hidden_stack\n");
     struct client *c, *sel = selected_container()->client;
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
@@ -138,8 +139,8 @@ int focus_on_hidden_stack(lua_State *L)
     if (i > 0) {
         int j = 1;
         wl_list_for_each(c, &sel->link, link) {
-            /* if (hiddenon(c, selected_monitor)) */
-            /*     break;  /1* found it *1/ */
+            if (hiddenon(c, selected_monitor))
+                break;  /* found it */
             j++;
         }
     } else {

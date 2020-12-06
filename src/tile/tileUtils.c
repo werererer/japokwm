@@ -29,13 +29,14 @@ void arrange(bool reset)
 
         if (!overlay)
             container_surround_gaps(&root.w, outer_gap);
+
+        // don't do anything if no tiling function exist
         if (selected_layout(m->tagset).funcId <= 0)
             continue;
 
         int n = tiled_container_count(m);
-        printf("count: %i\n", n);
-        /* call arrange function
-         * if previous layout is different or reset -> reset layout */
+        /* call arrange function if previous layout is different or reset ->
+         * reset layout */
         if (strcmp(prev_layout.symbol, selected_layout(m->tagset).symbol)
                 != 0 || reset) {
             prev_layout = selected_layout(m->tagset);

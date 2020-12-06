@@ -47,10 +47,12 @@ void applyrules(struct container *con);
 void focus_container(struct monitor *m, struct container *con, bool lift);
 /* Find the topmost visible client (if any) at point (x, y), including
  * borders. This relies on stack being ordered from top to bottom. */
+bool existon(struct container *con, struct monitor *m);
+bool hiddenon(struct container *con, struct monitor *m);
+bool visibleon(struct container *con, struct monitor *m);
 void focus_top_container(bool lift);
 void lift_container(struct container *con);
 void remove_container_from_monitor(struct monitor *m, struct container *con);
-bool visibleon(struct container *con, struct monitor *m);
 
 extern struct containers_info containers_info;
 #endif /* CONTAINER_H */

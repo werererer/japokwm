@@ -37,28 +37,11 @@ struct wlr_surface *get_wlrsurface(struct client *c)
     }
 }
 
-bool existon(struct client *c, struct monitor *m)
+bool visibleon_tag(struct client *c, struct monitor *m, size_t focusedTag)
 {
-    if (c) {
-        return c->tagset->selTags[0] & m->tagset->selTags[0];
-    }
-    return false;
-}
-
-bool visible_on_tag(struct client *c, struct monitor *m, size_t focusedTag)
-{
-    if (c) {
-        return c->tagset->selTags[0] & position_to_flag(focusedTag);
-    }
-    return false;
-}
-
-bool client_visible_on_tag(struct client *c, size_t focusedTag)
-{
-    if (c) {
-        return c->tagset->selTags[0] & position_to_flag(focusedTag);
-    }
-    return false;
+    if (!c)
+        return false;
+    return c->tagset->selTags[0] & position_to_flag(focusedTag);
 }
 
 static void unfocusClient(struct client *c)

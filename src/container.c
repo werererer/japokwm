@@ -283,19 +283,57 @@ void focus_top_container(bool lift)
     }
 }
 
-bool visibleon(struct container *con, struct monitor *m)
+bool existon(struct container *con, struct monitor *m)
 {
     if (!con || !m)
         return false;
-    if (!con->client)
+    if (con->m != m)
         return false;
 
     struct client *c = con->client;
 
+    if (!c)
+        return false;
+
+    return c->tagset->selTags[0] & m->tagset->selTags[0];
+}
+
+bool hiddenon(struct container *con, struct monitor *m)
+{
+    if (!con || !m)
+        return false;
+    if (con->m != m)
+        return false;
+    if (!con->hidden)
+        return false;
+
+    struct client *c = con->client;
+
+    if (!c)
+        return false;
     // LayerShell based programs are visible on all workspaces
-    if (con->client->type == LAYER_SHELL)
+    if (c->type == LAYER_SHELL)
         return true;
 
     return c->tagset->selTags[0] & m->tagset->selTags[0];
 }
 
+bool visibleon(struct container *con, struct monitor *m)
+{
+    if (!con || !m)
+        return false;
+    if (con->m != m)
+        return false;
+    if (con->hidden)
+        return false;
+
+    struct client *c = con->client;
+
+    if (!c)
+        return false;
+    // LayerShell based programs are visible on all workspaces
+    if (c->type == LAYER_SHELL)
+        return true;
+
+    return c->tagset->selTags[0] & m->tagset->selTags[0];
+}
