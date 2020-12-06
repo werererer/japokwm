@@ -3,7 +3,7 @@
 
 #include <lua.h>
 
-int thisTiledClientCount(lua_State *L);
+int this_tiled_client_count(lua_State *L);
 int this_container_position(lua_State *L);
 
 #endif /* INFO_H */

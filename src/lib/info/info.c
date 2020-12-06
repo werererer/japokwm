@@ -3,7 +3,7 @@
 #include "container.h"
 #include "tile/tileUtils.h"
 
-int thisTiledClientCount(lua_State *L)
+int this_tiled_client_count(lua_State *L)
 {
     int i = tiled_container_count(selected_monitor);
     lua_pushinteger(L, i);
