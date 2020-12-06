@@ -237,20 +237,21 @@ void applyrules(struct container *con)
 
 void focus_container(struct monitor *m, struct container *con, bool lift)
 {
+    struct container *sel = selected_container();
+
     if (con == selected_container())
         return;
-
-    if (lift)
-        lift_container(con);
-
-    /* Update wlroots' keyboard focus */
     if (!con) {
         /* With no client, all we have left is to clear focus */
         wlr_seat_keyboard_notify_clear_focus(server.seat);
         return;
     }
 
-    focus_client(selected_container()->client, con->client);
+    if (lift)
+        lift_container(con);
+
+    struct client *c = sel ? sel->client : NULL;
+    focus_client(c, con->client);
     /* Put the new client atop the focus stack */
     wl_list_remove(&con->flink);
     wl_list_insert(&m->focus_stack, &con->flink);
