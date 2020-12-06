@@ -235,7 +235,7 @@ void applyrules(struct container *con)
     }
 }
 
-void focus_container(struct monitor *m, struct container *con, bool lift)
+void focus_container(struct monitor *m, struct container *con, enum action a)
 {
     struct container *sel = selected_container();
 
@@ -247,7 +247,7 @@ void focus_container(struct monitor *m, struct container *con, bool lift)
         return;
     }
 
-    if (lift)
+    if (a == LIFT)
         lift_container(con);
 
     struct client *c = sel ? sel->client : NULL;
@@ -265,7 +265,7 @@ void lift_container(struct container *con)
     }
 }
 
-void focus_top_container(bool lift)
+void focus_top_container(enum action a)
 {
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
@@ -279,7 +279,7 @@ void focus_top_container(bool lift)
                 break;
             }
         if (focus)
-            focus_container(m, con, lift);
+            focus_container(m, con, a);
     }
 }
 

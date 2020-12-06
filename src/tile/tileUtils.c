@@ -133,8 +133,11 @@ void update_hidden_status()
     wl_list_for_each(m, &mons, link) {
         int i = 0;
         struct container *con;
-        wl_list_for_each(con, &m->containers, slink) {
-            if (i < wl_list_length(&m->stack)) {
+        wl_list_for_each(con, &m->containers, mlink) {
+            if (!existon(con, m))
+                continue;
+
+            if (i < containers_info.n) {
                 con->hidden = false;
                 i++;
             } else {
@@ -150,7 +153,7 @@ int tiled_container_count(struct monitor *m)
     int n = 0;
 
     wl_list_for_each(con, &m->containers, mlink)
-        if(!con->floating && visibleon(con, m))
+        if(!con->floating && existon(con, m))
             n++;
     return n;
 }

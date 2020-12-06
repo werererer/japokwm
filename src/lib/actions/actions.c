@@ -52,7 +52,7 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
         return;
 
     if (sloppyFocus)
-        focus_container(selected_monitor, con, false);
+        focus_container(selected_monitor, con, NO_OP);
 }
 
 int arrange_this(lua_State *L)
@@ -123,43 +123,49 @@ int focus_on_stack(lua_State *L)
 
     if (found) {
         /* If only one client is visible on selMon, then c == sel */
-        focus_container(m, con, true);
+        focus_container(m, con, LIFT);
     }
     return 0;
 }
 
 int focus_on_hidden_stack(lua_State *L)
 {
-    printf("focus_on_hidden_stack\n");
-    struct client *c, *sel = selected_container()->client;
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
+
+    struct container *sel = selected_container();
+    struct monitor *m = selected_monitor;
+
     if (!sel)
         return 0;
+
+    struct container *con;
     if (i > 0) {
         int j = 1;
-        wl_list_for_each(c, &sel->link, link) {
-            if (hiddenon(c, selected_monitor))
+        wl_list_for_each(con, &sel->mlink, mlink) {
+            if (hiddenon(con, m))
                 break;  /* found it */
             j++;
         }
     } else {
-        wl_list_for_each_reverse(c, &sel->link, link) {
-            /* if (hiddenon(c, selected_monitor)) */
-            /*     break;  /1* found it *1/ */
+        wl_list_for_each_reverse(con, &sel->mlink, mlink) {
+            if (hiddenon(con, m))
+                break;  /* found it */
         }
     }
-    if (sel && c) {
-        if (sel == c)
-            return 0;
+
+    if (sel == con)
+        return 0;
+
+    if (sel && con) {
         // replace current client with a hidden one
-        wl_list_remove(&c->link);
-        wl_list_insert(&sel->link, &c->link);
-        wl_list_remove(&sel->link);
-        wl_list_insert(clients.prev, &sel->link);
+        wl_list_remove(&con->mlink);
+        wl_list_insert(&sel->mlink, &con->mlink);
+        wl_list_remove(&sel->mlink);
+        wl_list_insert(m->containers.prev, &sel->mlink);
     }
-    /* If only one client is visible on selMon, then c == sel */
-    /* focus_container(selected_monitor, con, true); */
+
+    focus_container(m, con, LIFT);
     arrange(false);
     return 0;
 }
@@ -433,7 +439,7 @@ int zoom(lua_State *L)
         }
     }
 
-    focus_container(selected_monitor, con, false);
+    focus_container(selected_monitor, con, NO_OP);
     return 0;
 }
 

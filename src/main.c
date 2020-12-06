@@ -150,7 +150,7 @@ void buttonpress(struct wl_listener *listener, void *data)
             /* Change focus if the button was _pressed_ over a client */
             struct container *con;
             if ((con = xytocontainer(server.cursor->x, server.cursor->y)))
-                focus_container(selected_monitor, con, false);
+                focus_container(selected_monitor, con, NO_OP);
 
             /* Translate libinput to xkbcommon code */
             unsigned sym = event->button + 64985;

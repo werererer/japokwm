@@ -37,7 +37,7 @@ struct wlr_surface *get_wlrsurface(struct client *c)
     }
 }
 
-bool visibleon_tag(struct client *c, struct monitor *m, size_t focusedTag)
+bool visibleon_tag(struct client *c, size_t focusedTag)
 {
     if (!c)
         return false;

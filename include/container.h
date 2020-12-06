@@ -5,6 +5,11 @@
 
 #include "client.h"
 
+enum action {
+    NO_OP,
+    LIFT,
+};
+
 struct container {
     /* monitor containers */
     struct wl_list mlink;
@@ -44,13 +49,13 @@ struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box b);
 void add_container_to_monitor(struct monitor *m, struct container *con);
 void applybounds(struct container *con, struct wlr_box bbox);
 void applyrules(struct container *con);
-void focus_container(struct monitor *m, struct container *con, bool lift);
+void focus_container(struct monitor *m, struct container *con, enum action a);
 /* Find the topmost visible client (if any) at point (x, y), including
  * borders. This relies on stack being ordered from top to bottom. */
 bool existon(struct container *con, struct monitor *m);
 bool hiddenon(struct container *con, struct monitor *m);
 bool visibleon(struct container *con, struct monitor *m);
-void focus_top_container(bool lift);
+void focus_top_container(enum action a);
 void lift_container(struct container *con);
 void remove_container_from_monitor(struct monitor *m, struct container *con);
 
