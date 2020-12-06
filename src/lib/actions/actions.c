@@ -52,7 +52,7 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
         return;
 
     if (sloppyFocus)
-        focus_container(selected_monitor, con, ACTION_NOOP);
+        focus_container(selected_monitor, con, FOCUS_NOOP);
 }
 
 int arrange_this(lua_State *L)
@@ -123,7 +123,7 @@ int focus_on_stack(lua_State *L)
 
     if (found) {
         /* If only one client is visible on selMon, then c == sel */
-        focus_container(m, con, ACTION_LIFT);
+        focus_container(m, con, FOCUS_LIFT);
     }
     return 0;
 }
@@ -165,7 +165,7 @@ int focus_on_hidden_stack(lua_State *L)
         wl_list_insert(m->containers.prev, &sel->mlink);
     }
 
-    focus_container(m, con, ACTION_LIFT);
+    focus_container(m, con, FOCUS_LIFT);
     arrange(false);
     return 0;
 }
@@ -336,7 +336,7 @@ int tag(lua_State *L)
         return 0;
 
     toggle_add_tag(sel->client->tagset, position_to_flag(ui));
-    focus_top_container(m, ACTION_LIFT);
+    focus_top_container(m, FOCUS_LIFT);
     arrange(false);
     return 0;
 }
@@ -351,7 +351,7 @@ int toggle_tag(lua_State *L)
         unsigned int newtags = sel->client->tagset->selTags[0] ^ ui;
         if (newtags) {
             set_selelected_Tags(sel->client->tagset, newtags);
-            focus_top_container(selected_monitor, ACTION_LIFT);
+            focus_top_container(selected_monitor, FOCUS_LIFT);
             arrange(false);
         }
     }
@@ -365,7 +365,7 @@ int view(lua_State *L)
     struct monitor *m = selected_monitor;
     m->tagset->focusedTag = flag_to_position(ui);
     set_selelected_Tags(m->tagset, ui);
-    focus_top_container(m, ACTION_NOOP);
+    focus_top_container(m, FOCUS_NOOP);
     arrange(false);
     return 0;
 }
@@ -376,7 +376,7 @@ int toggle_add_view(lua_State *L)
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
     toggle_add_tag(m->tagset, ui);
-    focus_top_container(m, ACTION_NOOP);
+    focus_top_container(m, FOCUS_NOOP);
     arrange(false);
     return 0;
 }
@@ -386,7 +386,7 @@ int toggle_view(lua_State *L)
 {
     struct monitor *m = selected_monitor;
     toggle_tagset(m->tagset);
-    focus_top_container(m, ACTION_LIFT);
+    focus_top_container(m, FOCUS_LIFT);
     arrange(false);
     return 0;
 }
@@ -447,7 +447,7 @@ int zoom(lua_State *L)
         }
     }
 
-    focus_container(selected_monitor, con, ACTION_NOOP);
+    focus_container(selected_monitor, con, FOCUS_NOOP);
     return 0;
 }
 

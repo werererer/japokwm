@@ -105,7 +105,7 @@ void remove_container_from_monitor(struct monitor *m, struct container *con)
 void focusmon(int i)
 {
     selected_monitor = dirtomon(i);
-    focus_top_container(selected_monitor, ACTION_LIFT);
+    focus_top_container(selected_monitor, FOCUS_LIFT);
 }
 
 void destroy_monitor(struct wl_listener *listener, void *data)

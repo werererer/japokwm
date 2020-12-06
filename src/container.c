@@ -244,7 +244,7 @@ void focus_container(struct monitor *m, struct container *con, enum focus_action
         return;
     }
 
-    if (a == ACTION_LIFT)
+    if (a == FOCUS_LIFT)
         lift_container(con);
 
     struct client *c = sel ? sel->client : NULL;
