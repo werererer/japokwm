@@ -29,38 +29,40 @@ void arrange(bool reset)
 
         if (!overlay)
             container_surround_gaps(&root.w, outer_gap);
-        if (selected_layout(m->tagset).funcId) {
-            int n = tiled_container_count(m);
-            /* call arrange function
-             * if previous layout is different or reset -> reset layout */
-            if (strcmp(prev_layout.symbol, selected_layout(m->tagset).symbol)
-                    != 0 || reset) {
-                prev_layout = selected_layout(m->tagset);
-                lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(m->tagset).funcId);
-                lua_pushinteger(L, n);
-                lua_pcall(L, 1, 0, 0);
-            }
+        if (selected_layout(m->tagset).funcId <= 0)
+            continue;
 
-            /* update layout aquired from was set with the arrange function */
-            lua_getglobal(L, "update");
+        int n = tiled_container_count(m);
+        printf("count: %i\n", n);
+        /* call arrange function
+         * if previous layout is different or reset -> reset layout */
+        if (strcmp(prev_layout.symbol, selected_layout(m->tagset).symbol)
+                != 0 || reset) {
+            prev_layout = selected_layout(m->tagset);
+            lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(m->tagset).funcId);
             lua_pushinteger(L, n);
-            lua_pcall(L, 1, 1, 0);
-            containers_info.n = lua_rawlen(L, -1);
-            containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
-
-            update_hidden_status();
-
-            int i = 0;
-            struct container *con;
-            wl_list_for_each(con, &m->stack, slink) {
-                if (!visibleon(con, m))
-                    continue;
-                arrange_container(con, i);
-                con->textPosition = i;
-                i++;
-            }
-            update_overlay();
+            lua_pcall(L, 1, 0, 0);
         }
+
+        /* update layout aquired from was set with the arrange function */
+        lua_getglobal(L, "update");
+        lua_pushinteger(L, n);
+        lua_pcall(L, 1, 1, 0);
+        containers_info.n = lua_rawlen(L, -1);
+        containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
+
+        update_hidden_status();
+
+        int i = 0;
+        struct container *con;
+        wl_list_for_each(con, &m->stack, slink) {
+            if (!visibleon(con, m))
+                continue;
+            arrange_container(con, i);
+            con->textPosition = i;
+            i++;
+        }
+        update_overlay();
     }
 }
 
@@ -146,8 +148,8 @@ int tiled_container_count(struct monitor *m)
     struct container *con;
     int n = 0;
 
-    wl_list_for_each(con, &m->containers, clink)
-        if(!con->floating)
+    wl_list_for_each(con, &m->containers, mlink)
+        if(!con->floating && visibleon(con, m))
             n++;
     return n;
 }
