@@ -9,7 +9,7 @@ overlayColor = {0.65, 0.65, 0.65, 0.9}
 textColor = {0.003, 0.003, 0.003, 1.0}
 selOverlayColor = {}
 selTextColor = {}
-outerGap = 10
+outerGap = 0
 innerGap = 50
 
 tagNames = {"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"}

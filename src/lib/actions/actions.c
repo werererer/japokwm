@@ -235,7 +235,7 @@ void motionnotify(uint32_t time)
             geom.width = grabc->geom.width;
             geom.height = grabc->geom.height;
             /* Move the grabbed client to the new position. */
-            resize(grabc, geom, true);
+            resize(grabc, geom, LAYOUT_RESET);
             update_container_overlay(grabc);
             return;
             break;
@@ -245,7 +245,7 @@ void motionnotify(uint32_t time)
             geom.y = server.cursor->y - grabcy;
             geom.width = server.cursor->x - grabc->geom.x;
             geom.height = server.cursor->y - grabc->geom.y;
-            resize(grabc, geom, true);
+            resize(grabc, geom, LAYOUT_RESET);
             update_container_overlay(grabc);
             return;
             break;
@@ -407,7 +407,7 @@ int move_client(lua_State *L)
     geom.y = server.cursor->y - grabcy;
     geom.width = grabc->geom.width;
     geom.height = grabc->geom.height;
-    resize(grabc, geom, 1);
+    resize(grabc, geom, LAYOUT_RESET);
     return 0;
 }
 
@@ -418,7 +418,7 @@ int resize_client(lua_State *L)
     geom.y = grabc->geom.y;
     geom.width = server.cursor->x - grabc->geom.x;
     geom.height =  server.cursor->y - grabc->geom.y;
-    resize(grabc, geom, true);
+    resize(grabc, geom, LAYOUT_RESET);
     return 0;
 }
 
@@ -431,22 +431,34 @@ int quit(lua_State *L)
 int zoom(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    struct container *c, *old = selected_container(m);
+    struct container *sel = selected_container(m);
 
-    if (!old || old->floating)
+    if (!sel || sel->floating)
         return 0;
 
-    /* Search for the first tiled window that is not sel, marking sel as
-     * NULL if we pass it along the way */
+    bool found = false;
+    struct container *master = wl_container_of(m->containers.next, master, mlink);
+    /* Search for the first tiled window that is not sel, marking sel as NULL if
+     * we pass it along the way */
     struct container *con;
-    wl_list_for_each(con, &m->stack, slink) {
-        if (visibleon(con, m) && !c->floating) {
-            if (c != old)
-                break;
-            old = NULL;
-        }
-    }
+    // loop from selected monitor to previous item
+    wl_list_for_each(con, sel->mlink.prev, mlink) {
+        printf("con: %p\n", con);
+        if (!visibleon(con, m) || con->floating)
+            continue;
+        if (con == master)
+            continue;
 
+        found = true;
+        break; /* found */
+    }
+    if (!found)
+        return 0;
+
+    wl_list_remove(&con->mlink);
+    wl_list_insert(&m->containers, &con->mlink);
+    arrange(LAYOUT_NOOP);
+    // focus new master window
     focus_container(selected_monitor, con, FOCUS_NOOP);
     return 0;
 }

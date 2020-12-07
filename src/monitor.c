@@ -88,11 +88,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     wlr_output_layout_add_auto(output_layout, output);
 }
 
-void set_monitor(struct monitor *m)
-{
-    selected_monitor = m;
-}
-
 void remove_container_from_monitor(struct monitor *m, struct container *con)
 {
     printf("remove from container\n");

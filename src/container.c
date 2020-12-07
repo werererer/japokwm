@@ -5,8 +5,6 @@
 #include "monitor.h"
 #include <wayland-util.h>
 
-struct containers_info containers_info;
-
 static void add_container_to_monitor_stack(struct monitor *m, struct container *con);
 
 struct container *create_container(struct client *c, struct monitor *m)
@@ -88,7 +86,7 @@ struct container *get_container(struct monitor *m, int i)
 
 struct container *first_container(struct monitor *m)
 {
-    if (containers_info.n <= 0)
+    if (selected_layout(m->tagset)->containers_info.n <= 0)
         return NULL;
 
     struct container *con;
@@ -101,17 +99,17 @@ struct container *first_container(struct monitor *m)
 
 struct client *last_client(struct monitor *m)
 {
-    if (containers_info.n)
-    {
-        struct container *con;
-        int i = 1;
-        wl_list_for_each(con, &m->stack, slink) {
-            if (!visibleon(con, m))
-                continue;
-            if (i > containers_info.n)
-                return con->client;
-            i++;
-        }
+    if (selected_layout(m->tagset)->containers_info.n <= 0)
+        return NULL;
+
+    struct container *con;
+    int i = 1;
+    wl_list_for_each(con, &m->stack, slink) {
+        if (!visibleon(con, m))
+            continue;
+        if (i > selected_layout(m->tagset)->containers_info.n)
+            return con->client;
+        i++;
     }
     return NULL;
 }
@@ -122,7 +120,7 @@ struct container *xytocontainer(double x, double y)
 
     struct container *con;
     wl_list_for_each(con, &m->stack, slink) {
-        if (visibleon(con, selected_monitor)
+        if (visibleon(con, m)
                 && wlr_box_contains_point(&con->geom, x, y)) {
             return con;
         }

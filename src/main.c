@@ -159,7 +159,7 @@ void buttonpress(struct wl_listener *listener, void *data)
             struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
             int mods = wlr_keyboard_get_modifiers(kb);
 
-            buttonPressed(mods, sym);
+            button_pressed(mods, sym);
             break;
         }
     case WLR_BUTTON_RELEASED:
@@ -491,7 +491,7 @@ void keypress(struct wl_listener *listener, void *data)
 
     if (event->state == WLR_KEY_PRESSED) {
         for (i = 0; i < nsyms; i++) {
-            handled = keyPressed(mods, syms[i]);
+            handled = key_pressed(mods, syms[i]);
         }
     }
 
@@ -528,7 +528,11 @@ void maprequest(struct wl_listener *listener, void *data)
     c->tagset = create_tagset(&tagNames, selected_monitor->tagset->focusedTag,
             selected_monitor->tagset->selTags[0]);
     wl_list_init(&c->containers);
-    create_container(c, selected_monitor);
+
+    struct monitor *m;
+    wl_list_for_each(m, &mons, link) {
+        create_container(c, m);
+    }
 
     if (c->type == X11_UNMANAGED) {
         /* Insert this independent into independents lists. */
@@ -678,7 +682,7 @@ void set_cursor(struct wl_listener *listener, void *data)
 /* arg > 1.0 will set mfact absolutely */
 void setmfact(float factor)
 {
-    if (!selected_layout(selected_monitor->tagset).funcId)
+    if (!selected_layout(selected_monitor->tagset)->funcId)
         return;
     factor = factor < 1.0 ? factor + selected_monitor->mfact : factor - 1.0;
     if (factor < 0.1 || factor > 0.9)
@@ -881,8 +885,6 @@ void unmapnotify(struct wl_listener *listener, void *data)
         case X11_UNMANAGED:
             wl_list_remove(&c->link);
     }
-    // TODO why is this here?
-    update_hidden_status();
 }
 
 void activatex11(struct wl_listener *listener, void *data)

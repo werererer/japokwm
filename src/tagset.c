@@ -93,9 +93,9 @@ bool tags_overlap(unsigned int tags, unsigned int tags2)
     return tags & tags2;
 }
 
-struct layout selected_layout(struct tagset *tagset)
+struct layout *selected_layout(struct tagset *tagset)
 {
-    return focused_tag_from_tagset(tagset)->layout;
+    return &focused_tag_from_tagset(tagset)->layout;
 }
 
 void set_selected_layout(struct tagset *tagset, struct layout layout)

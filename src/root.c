@@ -13,8 +13,7 @@ static void set_layer_shell(struct container *con)
     con->geom.y = 0;
     if (con->client->surface.layer->current.desired_width) {
         con->geom.width = con->client->surface.layer->current.desired_width;
-    }
-    else {
+    } else {
         con->geom.width = selected_monitor->wlr_output->width;
     }
 

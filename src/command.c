@@ -49,7 +49,7 @@ void executeCommand(const char *_exec)
             }
         }
         if (handled) {
-            if (keyStateHasModifiers(MOD_SHIFT)) {
+            if (key_state_has_modifiers(MOD_SHIFT)) {
                 toggle_add_tag(tagset, position_to_flag(i));
             } else {
                 push_seleceted_tags(tagset, position_to_flag(i));

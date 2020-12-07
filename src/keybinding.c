@@ -70,7 +70,7 @@ static bool isSameKeybind(const char *bind, const char *bind2)
     return sameKeybind;
 }
 
-static bool processBinding(char *bind, const char *reference)
+static bool process_binding(char *bind, const char *reference)
 {
     bool handled = false;
     lua_getglobal(L, reference);
@@ -82,7 +82,7 @@ static bool processBinding(char *bind, const char *reference)
         lua_pop(L, 1);
         if (isSameKeybind(bind, s)) {
             lua_rawgeti(L, -1, 2);
-            lua_pushinteger(L, containers_info.n);
+            lua_pushinteger(L, selected_layout(selected_monitor->tagset)->containers_info.n);
             lua_pcall(L, 1, 0, 0);
             handled = true;
         }
@@ -92,23 +92,23 @@ static bool processBinding(char *bind, const char *reference)
     return handled;
 }
 
-bool buttonPressed(int mods, int sym)
+bool button_pressed(int mods, int sym)
 {
     char bind[128] = "";
     symToBinding(bind, mods, sym);
-    bool handled = processBinding(bind, "buttons");
+    bool handled = process_binding(bind, "buttons");
     return handled;
 }
 
-bool keyPressed(int mods, int sym)
+bool key_pressed(int mods, int sym)
 {
     char bind[128] = "";
     symToBinding(bind, mods, sym);
-    bool handled = processBinding(bind, "keys");
+    bool handled = process_binding(bind, "keys");
     return handled;
 }
 
-bool keyStateHasModifiers(size_t mods)
+bool key_state_has_modifiers(size_t mods)
 {
     printf("%lu\n", mods);
     return modifiers & mods;

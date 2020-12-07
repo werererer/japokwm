@@ -13,8 +13,8 @@
 #define MOD_SUPER_L (1 << 6)
 #define MOD_ISO_LEVEL3_Shift (1 << 7)
 
-bool buttonPressed(int mod, int sym);
-bool keyPressed(int mod, int sym);
+bool button_pressed(int mod, int sym);
+bool key_pressed(int mod, int sym);
 
-bool keyStateHasModifiers(size_t mods);
+bool key_state_has_modifiers(size_t mods);
 #endif /* KEYBINDING_H */
