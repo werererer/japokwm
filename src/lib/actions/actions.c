@@ -234,7 +234,7 @@ void motionnotify(uint32_t time)
             geom.width = grabc->geom.width;
             geom.height = grabc->geom.height;
             /* Move the grabbed client to the new position. */
-            resize(grabc, geom, LAYOUT_RESET);
+            resize(grabc, geom, false);
             update_container_overlay(grabc);
             return;
             break;
@@ -244,7 +244,7 @@ void motionnotify(uint32_t time)
             geom.y = grabc->geom.y;
             geom.width = server.cursor->x - grabc->geom.x;
             geom.height = server.cursor->y - grabc->geom.y;
-            resize(grabc, geom, LAYOUT_RESET);
+            resize(grabc, geom, false);
             update_container_overlay(grabc);
             return;
             break;
@@ -406,7 +406,7 @@ int move_client(lua_State *L)
     geom.y = server.cursor->y - grabcy;
     geom.width = grabc->geom.width;
     geom.height = grabc->geom.height;
-    resize(grabc, geom, LAYOUT_RESET);
+    resize(grabc, geom, false);
     return 0;
 }
 
@@ -417,7 +417,7 @@ int resize_client(lua_State *L)
     geom.y = grabc->geom.y;
     geom.width = server.cursor->x - grabc->geom.x;
     geom.height =  server.cursor->y - grabc->geom.y;
-    resize(grabc, geom, LAYOUT_RESET);
+    resize(grabc, geom, false);
     return 0;
 }
 
