@@ -241,8 +241,8 @@ void motionnotify(uint32_t time)
             break;
         case CURSOR_RESIZE:
             action = true;
-            geom.x = grabc->geom.y;
-            geom.y = server.cursor->y - grabcy;
+            geom.x = grabc->geom.x;
+            geom.y = grabc->geom.y;
             geom.width = server.cursor->x - grabc->geom.x;
             geom.height = server.cursor->y - grabc->geom.y;
             resize(grabc, geom, LAYOUT_RESET);
