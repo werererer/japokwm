@@ -214,7 +214,6 @@ static void set_container_floating(struct container *con, bool floating)
         return;
     con->floating = floating;
     lift_container(con);
-    arrange(false);
 }
 
 // TODO optimize this function

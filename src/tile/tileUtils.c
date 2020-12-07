@@ -76,7 +76,7 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
     update_overlay();
 }
 
-void arrange_container(struct container *con, int i, bool preserve_ratio)
+void arrange_container(struct container *con, int i, bool preserve)
 {
     con->clientPosition = i;
     if (con->floating || con->hidden)
@@ -105,11 +105,11 @@ void arrange_container(struct container *con, int i, bool preserve_ratio)
     if (!overlay)
         container_surround_gaps(&con->geom, inner_gap);
     container_surround_gaps(&con->geom, 2*con->client->bw);
-    resize(con, con->geom, preserve_ratio);
+    resize(con, con->geom, preserve);
     selected_layout(con->m->tagset)->containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
-void resize(struct container *con, struct wlr_box geom, bool preserve_ratio)
+void resize(struct container *con, struct wlr_box geom, bool preserve)
 {
     /*
      * Note that I took some shortcuts here. In a more fleshed-out
@@ -117,7 +117,7 @@ void resize(struct container *con, struct wlr_box geom, bool preserve_ratio)
      * the new size, then commit any movement that was prepared.
      */
     con->geom = geom;
-    if (preserve_ratio) {
+    if (preserve) {
         printf("preserve\n");
         // if width <= height
         if (con->client->ratio >= 1) {
@@ -126,8 +126,6 @@ void resize(struct container *con, struct wlr_box geom, bool preserve_ratio)
         } else {
             con->geom.width = geom.width;
             con->geom.height = geom.width * con->client->ratio;
-            printf("width: %i\n", con->geom.width);
-            printf("height: %i\n", con->geom.height);
         }
     } else {
         con->client->ratio = calc_ratio(con->geom.width, con->geom.height);
@@ -160,7 +158,7 @@ void update_hidden_status(struct monitor *m)
     int i = 0;
     struct container *con;
     wl_list_for_each(con, &m->containers, mlink) {
-        if (!existon(con, m))
+        if (!existon(con, m) || con->floating)
             continue;
 
         if (i < selected_layout(m->tagset)->containers_info.n) {

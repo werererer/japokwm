@@ -254,10 +254,10 @@ void focus_container(struct monitor *m, struct container *con, enum focus_action
 
 void lift_container(struct container *con)
 {
-    if (con) {
-        wl_list_remove(&con->slink);
-        add_container_to_monitor_stack(con->m, con);
-    }
+    if (!con)
+        return;
+    wl_list_remove(&con->slink);
+    add_container_to_monitor_stack(con->m, con);
 }
 
 void focus_top_container(struct monitor *m, enum focus_actions a)
