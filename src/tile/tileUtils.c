@@ -22,7 +22,10 @@
 void arrange(enum layout_actions action)
 {
     struct monitor *m;
+    arrange_monitor(selected_monitor, action);
     wl_list_for_each(m, &mons, link) {
+        if (m == selected_monitor)
+            continue;
         arrange_monitor(m, action);
     }
 }
@@ -118,14 +121,18 @@ void resize(struct container *con, struct wlr_box geom, bool preserve_ratio)
         printf("preserve\n");
         // if width <= height
         if (con->client->ratio >= 1) {
-            con->geom.width = geom.width;
-            con->geom.height = geom.width * con->client->ratio;
-        } else {
             con->geom.height = geom.height;
             con->geom.width = con->geom.height / con->client->ratio;
+        } else {
+            con->geom.width = geom.width;
+            con->geom.height = geom.width * con->client->ratio;
+            printf("width: %i\n", con->geom.width);
+            printf("height: %i\n", con->geom.height);
         }
     } else {
         con->client->ratio = calc_ratio(con->geom.width, con->geom.height);
+        printf("width: %i\n", con->geom.width);
+        printf("height: %i\n", con->geom.height);
         printf("don't preserve: ratio %f\n", con->client->ratio);
 
         applybounds(con, con->m->geom);
