@@ -436,14 +436,17 @@ int zoom(lua_State *L)
     if (!sel || sel->floating)
         return 0;
 
-    bool found = false;
     struct container *master = wl_container_of(m->containers.next, master, mlink);
-    /* Search for the first tiled window that is not sel, marking sel as NULL if
-     * we pass it along the way */
+    struct container *previous;
+    if (sel == master)
+        previous = wl_container_of(m->containers.next->next, previous, mlink);
+    else
+        previous = wl_container_of(sel->mlink.prev, previous, mlink);
+
+    bool found = false;
     struct container *con;
     // loop from selected monitor to previous item
     wl_list_for_each(con, sel->mlink.prev, mlink) {
-        printf("con: %p\n", con);
         if (!visibleon(con, m) || con->floating)
             continue;
         if (con == master)
@@ -459,7 +462,7 @@ int zoom(lua_State *L)
     wl_list_insert(&m->containers, &con->mlink);
     arrange(LAYOUT_NOOP);
     // focus new master window
-    focus_container(selected_monitor, con, FOCUS_NOOP);
+    focus_container(selected_monitor, previous, FOCUS_NOOP);
     return 0;
 }
 
