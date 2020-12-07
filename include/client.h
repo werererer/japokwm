@@ -16,6 +16,7 @@ struct client {
     /* layer shell based clients */
     struct wl_list llink;
 
+    float ratio;
     /* containers containing this client */
     struct wl_list containers;
     union {
@@ -40,6 +41,7 @@ struct client {
 
 /* it ignores bool  hiding which visibleon doesn't */
 void focus_client(struct client *old, struct client *c);
+float calc_ratio(float width, float height);
 bool visibleon_tag(struct client *c, size_t focusedTag);
 
 extern struct wl_list clients; /* tiling order */

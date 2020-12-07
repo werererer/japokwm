@@ -91,3 +91,8 @@ void focus_client(struct client *old, struct client *c)
             break;
     }
 }
+
+float calc_ratio(float width, float height)
+{
+    return height / width;
+}

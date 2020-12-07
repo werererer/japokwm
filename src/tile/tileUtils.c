@@ -23,51 +23,57 @@ void arrange(enum layout_actions action)
 {
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
-        /* Get effective monitor geometry to use for window area */
-        m->geom = *wlr_output_layout_get_box(output_layout, m->wlr_output);
-        set_root_area(m);
-
-        if (!overlay)
-            container_surround_gaps(&root.w, outer_gap);
-
-        // don't do anything if no tiling function exist
-        if (selected_layout(m->tagset)->funcId <= 0)
-            continue;
-
-        int n = tiled_container_count(m);
-        /* call arrange function if previous layout is different or reset ->
-         * reset layout */
-        if (is_same_layout(prev_layout, *selected_layout(m->tagset))
-                || action == LAYOUT_RESET) {
-            prev_layout = *selected_layout(m->tagset);
-            lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(m->tagset)->funcId);
-            lua_pushinteger(L, n);
-            lua_pcall(L, 1, 0, 0);
-        }
-
-        /* update layout aquired from was set with the arrange function */
-        lua_getglobal(L, "update");
-        lua_pushinteger(L, n);
-        lua_pcall(L, 1, 1, 0);
-        selected_layout(m->tagset)->containers_info.n = lua_rawlen(L, -1);
-        selected_layout(m->tagset)->containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
-        update_hidden_status(m);
-
-        int i = 0;
-        struct container *con;
-        focus_container(m, selected_container(m), FOCUS_NOOP);
-        wl_list_for_each(con, &m->containers, mlink) {
-            if (!visibleon(con, m))
-                continue;
-            arrange_container(con, i);
-            con->textPosition = i;
-            i++;
-        }
-        update_overlay();
+        arrange_monitor(m, action);
     }
 }
 
-void arrange_container(struct container *con, int i)
+void arrange_monitor(struct monitor *m, enum layout_actions action)
+{
+    /* Get effective monitor geometry to use for window area */
+    m->geom = *wlr_output_layout_get_box(output_layout, m->wlr_output);
+    set_root_area(m);
+
+    if (!overlay)
+        container_surround_gaps(&root.w, outer_gap);
+
+    // don't do anything if no tiling function exist
+    if (selected_layout(m->tagset)->funcId <= 0)
+        return;
+
+    int n = tiled_container_count(m);
+    /* call arrange function if previous layout is different or reset ->
+     * reset layout */
+    if (is_same_layout(prev_layout, *selected_layout(m->tagset))
+            || action == LAYOUT_RESET) {
+        prev_layout = *selected_layout(m->tagset);
+        lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(m->tagset)->funcId);
+        lua_pushinteger(L, n);
+        lua_pcall(L, 1, 0, 0);
+    }
+
+    /* update layout aquired from was set with the arrange function */
+    lua_getglobal(L, "update");
+    lua_pushinteger(L, n);
+    lua_pcall(L, 1, 1, 0);
+    selected_layout(m->tagset)->containers_info.n = lua_rawlen(L, -1);
+    selected_layout(m->tagset)->containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
+    update_hidden_status(m);
+
+    int i = 0;
+    struct container *con;
+    focus_container(m, selected_container(m), FOCUS_NOOP);
+    bool preserve = m != selected_monitor;
+    wl_list_for_each(con, &m->containers, mlink) {
+        if (!visibleon(con, m))
+            return;
+        arrange_container(con, i, preserve);
+        con->textPosition = i;
+        i++;
+    }
+    update_overlay();
+}
+
+void arrange_container(struct container *con, int i, bool preserve_ratio)
 {
     con->clientPosition = i;
     if (con->floating || con->hidden)
@@ -96,11 +102,11 @@ void arrange_container(struct container *con, int i)
     if (!overlay)
         container_surround_gaps(&con->geom, inner_gap);
     container_surround_gaps(&con->geom, 2*con->client->bw);
-    resize(con, con->geom, LAYOUT_NOOP);
+    resize(con, con->geom, preserve_ratio);
     selected_layout(con->m->tagset)->containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
-void resize(struct container *con, struct wlr_box geom, bool interact)
+void resize(struct container *con, struct wlr_box geom, bool preserve_ratio)
 {
     /*
      * Note that I took some shortcuts here. In a more fleshed-out
@@ -108,22 +114,37 @@ void resize(struct container *con, struct wlr_box geom, bool interact)
      * the new size, then commit any movement that was prepared.
      */
     con->geom = geom;
-    applybounds(con, con->m->geom);
+    if (preserve_ratio) {
+        printf("preserve\n");
+        // if width <= height
+        if (con->client->ratio >= 1) {
+            con->geom.width = geom.width;
+            con->geom.height = geom.width * con->client->ratio;
+        } else {
+            con->geom.height = geom.height;
+            con->geom.width = con->geom.height / con->client->ratio;
+        }
+    } else {
+        con->client->ratio = calc_ratio(con->geom.width, con->geom.height);
+        printf("don't preserve: ratio %f\n", con->client->ratio);
 
-    /* wlroots makes this a no-op if size hasn't changed */
-    switch (con->client->type) {
-        case XDG_SHELL:
-            con->resize = wlr_xdg_toplevel_set_size(con->client->surface.xdg,
-                    con->geom.width, con->geom.height);
-            break;
-        case LAYER_SHELL:
-            wlr_layer_surface_v1_configure(con->client->surface.layer,
-                    con->geom.width, con->geom.height);
-            break;
-        case X11_MANAGED:
-        case X11_UNMANAGED:
-            wlr_xwayland_surface_configure(con->client->surface.xwayland,
-                    con->geom.x, con->geom.y, con->geom.width, con->geom.height);
+        applybounds(con, con->m->geom);
+
+        /* wlroots makes this a no-op if size hasn't changed */
+        switch (con->client->type) {
+            case XDG_SHELL:
+                con->resize = wlr_xdg_toplevel_set_size(con->client->surface.xdg,
+                        con->geom.width, con->geom.height);
+                break;
+            case LAYER_SHELL:
+                wlr_layer_surface_v1_configure(con->client->surface.layer,
+                        con->geom.width, con->geom.height);
+                break;
+            case X11_MANAGED:
+            case X11_UNMANAGED:
+                wlr_xwayland_surface_configure(con->client->surface.xwayland,
+                        con->geom.x, con->geom.y, con->geom.width, con->geom.height);
+        }
     }
 }
 
