@@ -112,6 +112,16 @@ void destroy_monitor(struct wl_listener *listener, void *data)
     free(m);
 }
 
+void set_selected_monitor(struct monitor *m)
+{
+    if (selected_monitor == m)
+        return;
+
+    printf("monitor changed\n");
+    selected_monitor = m;
+    arrange(LAYOUT_NOOP);
+}
+
 struct monitor *dirtomon(int dir)
 {
     struct monitor *m;

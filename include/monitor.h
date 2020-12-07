@@ -31,6 +31,7 @@ struct monitor {
 void create_monitor(struct wl_listener *listener, void *data);
 void destroy_monitor(struct wl_listener *listener, void *data);
 void focusmon(int i);
+void set_selected_monitor(struct monitor *m);
 
 struct monitor *dirtomon(int dir);
 struct monitor *xytomon(double x, double y);

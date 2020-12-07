@@ -118,7 +118,6 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
      */
     con->geom = geom;
     if (preserve) {
-        printf("preserve\n");
         // if width <= height
         if (con->client->ratio >= 1) {
             con->geom.height = geom.height;
@@ -129,10 +128,6 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
         }
     } else {
         con->client->ratio = calc_ratio(con->geom.width, con->geom.height);
-        printf("width: %i\n", con->geom.width);
-        printf("height: %i\n", con->geom.height);
-        printf("don't preserve: ratio %f\n", con->client->ratio);
-
         applybounds(con, con->m->geom);
 
         /* wlroots makes this a no-op if size hasn't changed */

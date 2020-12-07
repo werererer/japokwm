@@ -170,7 +170,7 @@ void buttonpress(struct wl_listener *listener, void *data)
                     "left_ptr", server.cursor);
             server.cursorMode = CurNormal;
             /* Drop the window off on its new monitor */
-            selected_monitor = xytomon(server.cursor->x, server.cursor->y);
+            set_selected_monitor(xytomon(server.cursor->x, server.cursor->y));
             return;
         }
         break;
@@ -627,7 +627,7 @@ void run(char *startup_cmd)
     wlr_cursor_warp_absolute(server.cursor, NULL, 0.4, 0.3);
     /* Now that outputs are initialized, choose initial selMon based on
      * cursor position, and set default cursor image */
-    selected_monitor = xytomon(server.cursor->x, server.cursor->y);
+    set_selected_monitor(xytomon(server.cursor->x, server.cursor->y));
 
     /* XXX hack to get cursor to display in its initial location (100, 100)
      * instead of (0, 0) and then jumping.  still may not be fully

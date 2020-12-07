@@ -222,7 +222,7 @@ void motionnotify(uint32_t time)
     double sx = 0, sy = 0;
     struct wlr_surface *surface = NULL;
 
-    selected_monitor = xytomon(server.cursor->x, server.cursor->y);
+    set_selected_monitor(xytomon(server.cursor->x, server.cursor->y));
     bool action = false;
     struct wlr_box geom;
     /* If we are currently grabbing the mouse, handle and return */
@@ -416,7 +416,7 @@ int resize_client(lua_State *L)
     geom.x = grabc->geom.x;
     geom.y = grabc->geom.y;
     geom.width = server.cursor->x - grabc->geom.x;
-    geom.height =  server.cursor->y - grabc->geom.y;
+    geom.height = server.cursor->y - grabc->geom.y;
     resize(grabc, geom, false);
     return 0;
 }
