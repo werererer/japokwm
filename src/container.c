@@ -69,10 +69,7 @@ struct container *get_container(struct monitor *m, int i)
 
     if (abs(i) > wl_list_length(&m->containers))
         return NULL;
-    if (i == 0)
-    {
-        con = selected_container(m);
-    } else if (i > 0) {
+    if (i >= 0) {
         struct wl_list *pos = &m->containers;
         while (i > 0) {
             if (pos->next)
@@ -141,7 +138,6 @@ static void add_container_to_monitor_containers(struct container *con, int i)
     if (!con)
         return;
 
-    get_container(m, -1);
     if (!con->floating) {
         /* Insert container container*/
         struct container *con2 = get_container(m, i);
@@ -149,14 +145,18 @@ static void add_container_to_monitor_containers(struct container *con, int i)
             wl_list_insert(&con2->mlink, &con->mlink);
         else
             wl_list_insert(&m->containers, &con->mlink);
-
     } else {
         /* Insert container after the last non floating container */
-        struct container *con2 = get_container(m, -1);
-        if (con2)
-            wl_list_insert(&con2->mlink, &con->mlink);
-        else
+        struct container *con2;
+        wl_list_for_each_reverse(con2, &m->containers, mlink) {
+            if (!con2->floating)
+                break;
+        }
+
+        if (wl_list_empty(&m->containers))
             wl_list_insert(m->containers.prev, &con->mlink);
+        else
+            wl_list_insert(&con2->mlink, &con->mlink);
     }
 }
 
