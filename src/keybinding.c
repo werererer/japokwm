@@ -72,6 +72,8 @@ static bool isSameKeybind(const char *bind, const char *bind2)
 
 static bool process_binding(char *bind, const char *reference)
 {
+    printf("bind: %s\n", bind);
+    printf("ref: %s\n", bind);
     bool handled = false;
     lua_getglobal(L, reference);
     int len = lua_rawlen(L, -1);
@@ -81,6 +83,7 @@ static bool process_binding(char *bind, const char *reference)
         const char *s = luaL_checkstring(L, -1);
         lua_pop(L, 1);
         if (isSameKeybind(bind, s)) {
+            printf("execute\n");
             lua_rawgeti(L, -1, 2);
             lua_pushinteger(L, selected_layout(selected_monitor->tagset)->containers_info.n);
             lua_pcall(L, 1, 0, 0);

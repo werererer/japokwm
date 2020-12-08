@@ -13,8 +13,11 @@ struct container *create_container(struct client *c, struct monitor *m)
     struct container *con = calloc(1, sizeof(struct container));
     con->m = m;
     con->client = c;
+    if (con->client->type == LAYER_SHELL)
+        wl_list_insert(&m->layer_stack, &con->llink);
+    else
+        wl_list_insert(&m->containers, &con->mlink);
     wl_list_insert(&c->containers, &con->clink);
-    wl_list_insert(&m->containers, &con->mlink);
     wl_list_insert(&m->focus_stack, &con->flink);
     add_container_to_monitor_stack(m, con);
     return con;
@@ -23,9 +26,12 @@ struct container *create_container(struct client *c, struct monitor *m)
 void destroy_container(struct container *con)
 {
     wl_list_remove(&con->clink);
-    wl_list_remove(&con->mlink);
     wl_list_remove(&con->flink);
     wl_list_remove(&con->slink);
+    if (con->client->type == LAYER_SHELL)
+        wl_list_remove(&con->llink);
+    else
+        wl_list_remove(&con->mlink);
     free(con);
 }
 

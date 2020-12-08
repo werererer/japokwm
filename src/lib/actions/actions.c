@@ -72,6 +72,7 @@ int toggle_consider_layer_shell(lua_State *L)
 
 int spawn(lua_State *L)
 {
+    printf("spawn\n");
     const char *cmd = luaL_checkstring(L, -1);
     lua_pop(L, 1);
     if (fork() == 0) {
@@ -182,6 +183,7 @@ int move_resize(lua_State *L)
     set_container_floating(grabc, true);
     switch (server.cursorMode = ui) {
         case CURSOR_MOVE:
+            printf("move\n");
             grabcx = server.cursor->x - grabc->geom.x;
             grabcy = server.cursor->y - grabc->geom.y;
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
@@ -190,6 +192,7 @@ int move_resize(lua_State *L)
             arrange(false);
             break;
         case CURSOR_RESIZE:
+            printf("resize\n");
             /* Doesn't work for X11 output - the next absolute motion event
              * returns the cursor to where it started */
             grabcx = server.cursor->x - grabc->geom.x;
@@ -396,6 +399,7 @@ int toggle_floating(lua_State *L)
     if (!sel)
         return 0;
     set_container_floating(sel, !sel->floating);
+    arrange(LAYOUT_NOOP);
     return 0;
 }
 

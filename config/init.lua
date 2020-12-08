@@ -95,3 +95,5 @@ buttons = {
     {mod.." "..btnMiddle,  function(n) action.toggleFloating()    end},
     {mod.." "..btnRight,   function(n) action.moveResize(cursorMode.CurResize) end},
 }
+
+print("init\n")
