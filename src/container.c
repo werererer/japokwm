@@ -5,7 +5,7 @@
 #include "monitor.h"
 #include <wayland-util.h>
 
-static void add_container_to_monitor_containers(struct container *con);
+static void add_container_to_monitor_containers(struct container *con, int i);
 static void add_container_to_monitor_stack(struct monitor *m, struct container *con);
 
 struct container *create_container(struct client *c, struct monitor *m)
@@ -17,7 +17,7 @@ struct container *create_container(struct client *c, struct monitor *m)
         wl_list_insert(&m->layer_stack, &con->llink);
     else
         /* wl_list_insert(&m->containers, &con->mlink); */
-        add_container_to_monitor_containers(con);
+        add_container_to_monitor_containers(con, 0);
     wl_list_insert(&c->containers, &con->clink);
     wl_list_insert(&m->focus_stack, &con->flink);
     add_container_to_monitor_stack(m, con);
@@ -67,26 +67,26 @@ struct container *get_container(struct monitor *m, int i)
 {
     struct container *con;
 
-    if (abs(i) > wl_list_length(&m->focus_stack))
+    if (abs(i) > wl_list_length(&m->containers))
         return NULL;
     if (i == 0)
     {
         con = selected_container(m);
     } else if (i > 0) {
-        struct wl_list *pos = &m->focus_stack;
+        struct wl_list *pos = &m->containers;
         while (i > 0) {
             if (pos->next)
                 pos = pos->next;
             i--;
         }
-        con = wl_container_of(pos, con, flink);
+        con = wl_container_of(pos, con, mlink);
     } else { // i < 0
-        struct wl_list *pos = &m->focus_stack;
+        struct wl_list *pos = &m->containers;
         while (i < 0) {
             pos = pos->prev;
             i++;
         }
-        con = wl_container_of(pos, con, flink);
+        con = wl_container_of(pos, con, mlink);
     }
     return con;
 }
@@ -135,41 +135,28 @@ struct container *xytocontainer(double x, double y)
     return NULL;
 }
 
-static void add_container_to_monitor_containers(struct container *con)
+static void add_container_to_monitor_containers(struct container *con, int i)
 {
     struct monitor *m = con->m;
     if (!con)
         return;
 
+    get_container(m, -1);
     if (!con->floating) {
         /* Insert container container*/
-        bool found = false;
-        struct container *con2;
-        wl_list_for_each_reverse(con2, &m->containers, mlink) {
-            if (!con2->floating) {
-                found = true;
-                break;
-            }
-        }
-        if (found) {
-            printf("found\n");
+        struct container *con2 = get_container(m, i);
+        if (con2)
             wl_list_insert(&con2->mlink, &con->mlink);
-        } else {
-            printf("not found\n");
+        else
             wl_list_insert(&m->containers, &con->mlink);
-        }
+
     } else {
         /* Insert container after the last non floating container */
-        struct container *con2;
-        wl_list_for_each_reverse(con2, &m->containers, mlink) {
-            if (!con2->floating)
-                break;
-        }
-
-        if (wl_list_empty(&m->containers))
-            wl_list_insert(m->containers.prev, &con->mlink);
-        else
+        struct container *con2 = get_container(m, -1);
+        if (con2)
             wl_list_insert(&con2->mlink, &con->mlink);
+        else
+            wl_list_insert(m->containers.prev, &con->mlink);
     }
 }
 
@@ -201,7 +188,7 @@ void add_container_to_monitor(struct monitor *m, struct container *con)
     if (!m || !con)
         return;
 
-    add_container_to_monitor_containers(con);
+    add_container_to_monitor_containers(con, 0);
     add_container_to_monitor_stack(m, con);
     wl_list_insert(&m->focus_stack, &con->flink);
 }
@@ -385,6 +372,6 @@ void set_container_floating(struct container *con, bool floating)
     con->floating = floating;
     lift_container(con);
     wl_list_remove(&con->mlink);
-    add_container_to_monitor_containers(con);
+    add_container_to_monitor_containers(con, -1);
 }
 
