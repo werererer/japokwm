@@ -72,8 +72,6 @@ static bool isSameKeybind(const char *bind, const char *bind2)
 
 static bool process_binding(char *bind, const char *reference)
 {
-    printf("bind: %s\n", bind);
-    printf("ref: %s\n", bind);
     bool handled = false;
     lua_getglobal(L, reference);
     int len = lua_rawlen(L, -1);

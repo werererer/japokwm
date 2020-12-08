@@ -71,8 +71,7 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
             return;
         arrange_container(con, i, preserve);
         con->textPosition = i;
-        if (!con->floating)
-            i++;
+        i++;
     }
     update_overlay();
 }

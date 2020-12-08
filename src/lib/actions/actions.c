@@ -22,7 +22,6 @@
 static struct container *grabc = NULL;
 static int grabcx, grabcy; /* client-relative */
 
-static void set_container_floating(struct container *con, bool floating);
 static void pointer_focus(struct container *con, struct wlr_surface *surface,
         double sx, double sy, uint32_t time);
 
@@ -209,14 +208,6 @@ int move_resize(lua_State *L)
             break;
     }
     return 0;
-}
-
-static void set_container_floating(struct container *con, bool floating)
-{
-    if (con->floating == floating)
-        return;
-    con->floating = floating;
-    lift_container(con);
 }
 
 // TODO optimize this function

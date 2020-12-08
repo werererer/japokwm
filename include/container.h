@@ -60,4 +60,5 @@ bool visibleon(struct container *con, struct monitor *m);
 void focus_top_container(struct monitor *m, enum focus_actions a);
 void lift_container(struct container *con);
 void remove_container_from_monitor(struct monitor *m, struct container *con);
+void set_container_floating(struct container *con, bool floating);
 #endif /* CONTAINER_H */

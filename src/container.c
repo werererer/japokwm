@@ -5,6 +5,7 @@
 #include "monitor.h"
 #include <wayland-util.h>
 
+static void add_container_to_monitor_containers(struct monitor *m,  struct container *con);
 static void add_container_to_monitor_stack(struct monitor *m, struct container *con);
 
 struct container *create_container(struct client *c, struct monitor *m)
@@ -16,7 +17,7 @@ struct container *create_container(struct client *c, struct monitor *m)
     if (con->client->type == LAYER_SHELL)
         wl_list_insert(&m->layer_stack, &con->llink);
     else
-        wl_list_insert(&m->containers, &con->mlink);
+        add_container_to_monitor_containers(m, con);
     wl_list_insert(&c->containers, &con->clink);
     wl_list_insert(&m->focus_stack, &con->flink);
     add_container_to_monitor_stack(m, con);
@@ -134,36 +135,71 @@ struct container *xytocontainer(double x, double y)
     return NULL;
 }
 
+static void add_container_to_monitor_containers(struct monitor *m,  struct container *con)
+{
+    if (!con)
+        return;
+
+    if (!con->floating) {
+        /* Insert container container*/
+        bool found = false;
+        struct container *con2;
+        wl_list_for_each_reverse(con2, &m->containers, mlink) {
+            if (!con2->floating) {
+                found = true;
+                break;
+            }
+        }
+        if (found)
+            wl_list_insert(&con2->mlink, &con->mlink);
+        else
+            wl_list_insert(&m->containers, &con->mlink);
+    } else {
+        /* Insert container after the last non floating container */
+        struct container *con2;
+        wl_list_for_each_reverse(con2, &m->containers, mlink) {
+            if (!con2->floating)
+                break;
+        }
+
+        if (wl_list_empty(&m->containers))
+            wl_list_insert(m->containers.prev, &con->mlink);
+        else
+            wl_list_insert(&con2->mlink, &con->mlink);
+    }
+}
+
 static void add_container_to_monitor_stack(struct monitor *m, struct container *con)
 {
-    if (con) {
-        if (con->floating) {
-            wl_list_insert(&m->stack, &con->slink);
-        } else {
-            /* Insert container after the last floating container */
-            struct container *c;
-            wl_list_for_each(c, &m->stack, slink) {
-                if (!c->floating)
-                    break;
-            }
+    if (!con)
+        return;
 
-            if (!wl_list_empty(&m->stack)) {
-                wl_list_insert(&c->slink, &con->slink);
-            } else {
-                wl_list_insert(&m->stack, &con->slink);
-            }
+    if (con->floating) {
+        wl_list_insert(&m->stack, &con->slink);
+    } else {
+        /* Insert container after the last floating container */
+        struct container *con2;
+        wl_list_for_each(con2, &m->stack, slink) {
+            if (!con2->floating)
+                break;
+        }
+
+        if (!wl_list_empty(&m->stack)) {
+            wl_list_insert(&con2->slink, &con->slink);
+        } else {
+            wl_list_insert(&m->stack, &con->slink);
         }
     }
 }
 
 void add_container_to_monitor(struct monitor *m, struct container *con)
 {
-    printf("add_container_to_monitor\n");
-    if (m && con) {
-        wl_list_insert(&m->containers, &con->mlink);
-        add_container_to_monitor_stack(m, con);
-        wl_list_insert(&m->focus_stack, &con->flink);
-    }
+    if (!m || !con)
+        return;
+
+    add_container_to_monitor_containers(m, con);
+    add_container_to_monitor_stack(m, con);
+    wl_list_insert(&m->focus_stack, &con->flink);
 }
 
 struct wlr_box get_absolute_box(struct wlr_box box, struct wlr_fbox b)
@@ -337,3 +373,14 @@ bool visibleon(struct container *con, struct monitor *m)
 
     return c->tagset->selTags[0] & m->tagset->selTags[0];
 }
+
+void set_container_floating(struct container *con, bool floating)
+{
+    if (con->floating == floating)
+        return;
+    con->floating = floating;
+    lift_container(con);
+    wl_list_remove(&con->mlink);
+    add_container_to_monitor_containers(con->m, con);
+}
+
