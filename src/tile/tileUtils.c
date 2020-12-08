@@ -68,7 +68,7 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
     bool preserve = m != selected_monitor;
     wl_list_for_each(con, &m->containers, mlink) {
         if (!visibleon(con, m))
-            return;
+            continue;
         arrange_container(con, i, preserve);
         con->textPosition = i;
         i++;
