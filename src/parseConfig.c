@@ -99,16 +99,15 @@ void append_to_path(lua_State *L, const char *path)
 
 int update_config(lua_State *L)
 {
+    init_error_file();
     // init
     char *config_path = get_config_dir("init.lua");
     append_to_path(L, config_path);
-    char error_file[NUM_CHARS];
 
-    if (load_config(L, config_path, error_file)) {
+    if (load_config(L, config_path)) {
         wlr_log(WLR_ERROR, "file didn't load correctly");
         return 1;
     }
-    printf("error file: %s\n", error_file);
     free(config_path);
 
     sloppyFocus = get_config_bool(L, "sloppyFocus");
@@ -145,6 +144,7 @@ int update_config(lua_State *L)
     termcmd = get_config_str(L, "termcmd");
     get_config_key_arr(L, keys, "keys");
     get_config_key_arr(L, buttons, "buttons");
+    close_error_file();
     return 0;
 }
 

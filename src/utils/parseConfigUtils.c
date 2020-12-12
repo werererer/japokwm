@@ -8,20 +8,12 @@
 #include <string.h>
 #include <translationLayer.h>
 
-/* static write_error(int fd, const char *msg); */
+static int error_fd = -1;
 
-/* static write_error(int fd, const char *msg) */
-/* { */
-/*     open("/home/jakob/error", ) */
-/*     write_to_file(fd, "hi", ); */
-/* } */
-
-int load_config(lua_State *L, const char *path, char *error_file)
+int load_config(lua_State *L, const char *path)
 {
     char *config_file = calloc(1, strlen(path)+strlen("/init.lua"));
     join_path(config_file, path);
-    strcpy(error_file, config_file);
-    join_path(error_file, "error.msg");
     join_path(config_file, "init.lua");
 
     if (!path) {
@@ -39,9 +31,32 @@ int load_config(lua_State *L, const char *path, char *error_file)
     return 0;
 }
 
+void init_error_file()
+{
+    char *error_file = get_config_file("");
+    const char* name = "error_file";
+    error_file = realloc(error_file, strlen(error_file)+strlen(name));
+    join_path(error_file, name);
+    error_fd = open(error_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    free(error_file);
+}
+
+void close_error_file()
+{
+    close(error_fd);
+    error_fd = -1;
+}
+
 static void handle_error(const char *msg)
 {
-    printf("ERROR: %s\n", msg);
+    // if error file not initialized
+    if (error_fd < 0)
+        return;
+
+    printf("handle_error: %s\n", msg);
+    char output[NUM_CHARS] = "";
+    snprintf(output, NUM_CHARS, "ERROR: %s\n", msg);
+    write_to_file(error_fd, output);
 }
 
 
@@ -110,7 +125,9 @@ static int get_config_array_int(lua_State *L, size_t i)
 {
     lua_rawgeti(L, -1, i);
     if (!lua_isinteger(L, -1)) {
-        printf("ERROR: %lu is not an integer\n", i);
+        char c[NUM_CHARS] = "";
+        snprintf(c, NUM_CHARS, "%lu is not an integer", i);
+        handle_error(c);
         return 0;
     }
     int f = luaL_checknumber(L, -1);
@@ -122,7 +139,9 @@ int get_config_int(lua_State *L, char *name)
 {
     lua_getglobal(L, name);
     if (!lua_isinteger(L, -1)) {
-        printf("ERROR: %s is not an integer\n", name);
+        char c[NUM_CHARS] = "";
+        snprintf(c, NUM_CHARS, "%s is not an integer", name);
+        handle_error(c);
         return 0;
     }
     int i = luaL_checkinteger(L, -1);
@@ -145,7 +164,6 @@ static bool get_config_array_bool(lua_State *L, size_t i)
 bool get_config_bool(lua_State *L, char *name)
 {
     lua_getglobal(L, name);
-    printf("start\n");
     if (!lua_isboolean(L, -1)) {
         char c[NUM_CHARS] = "";
         snprintf(c, NUM_CHARS, "%s is not a boolean", name);

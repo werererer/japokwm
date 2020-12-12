@@ -8,7 +8,9 @@
 
 /* returns 0 if loading file was successful else return 1
  * the error_file argument gets malloced so it has to be freed */
-int load_config(lua_State *L, const char *path, char *error_file);
+int load_config(lua_State *L, const char *path);
+void init_error_file();
+void close_error_file();
 
 Key get_config_key(lua_State *L, char *name);
 struct layout get_config_layout(lua_State *L, char *name);

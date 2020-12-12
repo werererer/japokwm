@@ -4,15 +4,15 @@
 #include <sys/stat.h>
 #include <wlr/util/log.h>
 
-int write_to_file(int fd, char *content)
+int write_to_file(int fd, const char *content)
 {
     if (fd < 0) {
-        printf("ERROR: file didn't open correctly\n");
+        wlr_log(WLR_ERROR, "ERROR: file didn't open correctly");
         return -1;
     }
 
     if (write(fd, content, strlen(content)) != strlen(content)) {
-        printf("ERROR: failed to write content to file\n");
+        wlr_log(WLR_ERROR, "ERROR: failed to write content to file\n");
         return -1;
     }
     return 0;
