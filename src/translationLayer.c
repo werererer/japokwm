@@ -21,6 +21,7 @@ static const struct luaL_Reg action[] =
     {"setOverlay", set_overlay},
     {"spawn", spawn},
     {"tag", tag},
+    {"setFloating", set_floating},
     {"toggleAddView", toggle_add_view},
     {"toggleFloating", toggle_floating},
     {"toggleTag", toggle_tag},

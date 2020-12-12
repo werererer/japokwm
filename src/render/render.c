@@ -7,13 +7,14 @@
 #include <wlr/util/edges.h>
 #include "root.h"
 #include "popup.h"
+#include "server.h"
 
 struct wlr_renderer *drw;
 struct renderData render_data;
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data);
 static void render_clients(struct monitor *m);
-static void render_independents(struct wlr_output *output);
+static void render_independents(struct monitor *m);
 static void render_texture(struct posTexture *texture);
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data)
@@ -167,25 +168,28 @@ static void render_texture(struct posTexture *texture)
 }
 
 
-static void render_independents(struct wlr_output *output)
+static void render_independents(struct monitor *m)
 {
     struct client *c;
     struct renderData rdata;
     struct wlr_box geom;
 
-    wl_list_for_each_reverse(c, &independents, link) {
+    if (c->type == XDG_SHELL || c->type == LAYER_SHELL)
+        return;
+
+    wl_list_for_each_reverse(c, &server.independents, ilink) {
         geom.x = c->surface.xwayland->x;
         geom.y = c->surface.xwayland->y;
         geom.width = c->surface.xwayland->width;
         geom.height = c->surface.xwayland->height;
 
         /* Only render visible clients which show on this output */
-        if (!wlr_output_layout_intersects(output_layout, output, &geom))
+        if (!wlr_output_layout_intersects(output_layout, m->wlr_output, &geom))
             continue;
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
-        rdata.output = output;
+        rdata.output = m->wlr_output;
         rdata.when = &now;
         rdata.x = c->surface.xwayland->x;
         rdata.y = c->surface.xwayland->y;
@@ -231,7 +235,7 @@ void render_frame(struct wl_listener *listener, void *data)
         render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND);
         render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
         render_clients(m);
-        render_independents(m->wlr_output);
+        render_independents(m);
         render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP);
         render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
 

@@ -16,7 +16,6 @@ struct container *create_container(struct client *c, struct monitor *m)
     if (con->client->type == LAYER_SHELL)
         wl_list_insert(&m->layer_stack, &con->llink);
     else
-        /* wl_list_insert(&m->containers, &con->mlink); */
         add_container_to_monitor_containers(con, 0);
     wl_list_insert(&c->containers, &con->clink);
     wl_list_insert(&m->focus_stack, &con->flink);

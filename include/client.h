@@ -15,6 +15,8 @@ struct client {
     struct wl_list link;
     /* layer shell based clients */
     struct wl_list llink;
+    /* independents list */
+    struct wl_list ilink;
 
     float ratio;
     /* containers containing this client */
@@ -45,7 +47,6 @@ float calc_ratio(float width, float height);
 bool visibleon_tag(struct client *c, size_t focusedTag);
 
 extern struct wl_list clients; /* tiling order */
-extern struct wl_list independents;
 extern struct wl_list layerstack;   /* stacking z-order */
 extern struct wlr_output_layout *output_layout;
 

@@ -69,9 +69,19 @@ int toggle_consider_layer_shell(lua_State *L)
     return 0;
 }
 
+int set_floating(lua_State *L)
+{
+    bool b = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+    struct container *sel = selected_container(selected_monitor); if (!sel)
+        return 0;
+    set_container_floating(sel, b);
+    arrange(LAYOUT_NOOP);
+    return 0;
+}
+
 int spawn(lua_State *L)
 {
-    printf("spawn\n");
     const char *cmd = luaL_checkstring(L, -1);
     lua_pop(L, 1);
     if (fork() == 0) {

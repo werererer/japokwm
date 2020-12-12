@@ -4,6 +4,7 @@
 
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
+#include <systemd/sd-bus.h>
 #include <assert.h>
 #include <getopt.h>
 #include <linux/input-event-codes.h>
@@ -530,20 +531,21 @@ void maprequest(struct wl_listener *listener, void *data)
     wl_list_init(&c->containers);
 
     struct monitor *m;
-    wl_list_for_each(m, &mons, link) {
-        create_container(c, m);
-    }
 
-    if (c->type == X11_UNMANAGED) {
-        /* Insert this independent into independents lists. */
-        wl_list_insert(&independents, &c->link);
-        return;
-    }
-
-    if (c->type != LAYER_SHELL) {
-        wl_list_insert(&clients, &c->link);
-    } else {
-        wl_list_insert(&layerstack, &c->llink);
+    switch (c->type) {
+        case XDG_SHELL:
+        case X11_MANAGED:
+            wl_list_insert(&clients, &c->link);
+            wl_list_for_each(m, &mons, link) {
+                create_container(c, m);
+            }
+            break;
+        case LAYER_SHELL:
+            wl_list_insert(&layerstack, &c->llink);
+            break;
+        case X11_UNMANAGED:
+            wl_list_insert(&server.independents, &c->ilink);
+            break;
     }
     struct client *prev = wl_container_of(listener, prev, map);
 
@@ -779,9 +781,9 @@ int setup(void)
      * https://drewdevault.com/2018/07/29/Wayland-shells.html
      */
     wl_list_init(&clients);
-    wl_list_init(&independents);
     wl_list_init(&layerstack);
     wl_list_init(&popups);
+    wl_list_init(&server.independents);
 
     server.xdgShell = wlr_xdg_shell_create(server.display);
     wl_signal_add(&server.xdgShell->events.new_surface, &new_xdg_surface);
@@ -882,8 +884,11 @@ void unmapnotify(struct wl_listener *listener, void *data)
             wl_list_remove(&c->link);
             break;
         case X11_MANAGED:
-        case X11_UNMANAGED:
             wl_list_remove(&c->link);
+            break;
+        case X11_UNMANAGED:
+            wl_list_remove(&c->ilink);
+            break;
     }
 }
 
@@ -906,6 +911,12 @@ void createnotifyx11(struct wl_listener *listener, void *data)
     c->surface.xwayland = xwayland_surface;
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
     c->bw = borderPx;
+    printf("width: %i\n", xwayland_surface->width);
+    printf("height: %i\n", xwayland_surface->height);
+    /* wlr_xwayland_surface_hints */
+    /* xwayland_ */
+
+    wl_list_init(&c->containers);
 
     /* Listen to the various events it can emit */
     c->map.notify = maprequest;

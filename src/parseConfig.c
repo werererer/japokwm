@@ -102,11 +102,13 @@ int update_config(lua_State *L)
     // init
     char *config_path = get_config_dir("init.lua");
     append_to_path(L, config_path);
+    char error_file[NUM_CHARS];
 
-    if (load_config(L, config_path)) {
+    if (load_config(L, config_path, error_file)) {
         wlr_log(WLR_ERROR, "file didn't load correctly");
         return 1;
     }
+    printf("error file: %s\n", error_file);
     free(config_path);
 
     sloppyFocus = get_config_bool(L, "sloppyFocus");

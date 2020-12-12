@@ -4,7 +4,7 @@
 #include <sys/stat.h>
 #include <wlr/util/log.h>
 
-static int write_to_file(int fd, char *content)
+int write_to_file(int fd, char *content)
 {
     if (fd < 0) {
         printf("ERROR: file didn't open correctly\n");

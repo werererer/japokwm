@@ -13,7 +13,6 @@
 
 //global variables
 struct wl_list clients; /* tiling order */
-struct wl_list independents;
 struct wl_list layerstack;   /* stacking z-order */
 struct wlr_output_layout *output_layout;
 

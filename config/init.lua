@@ -1,7 +1,7 @@
 require "defaultConfig"
 
-sloppyFocus = true
-borderPx = 2
+sloppyFocus = "true"
+borderPx = "test"
 rootColor = {0.3, 0.3, 0.3, 1.0}
 borderColor = {0.3, 0.3, 0.3, 1.0}
 focusColor = {1.0, 0.0, 0.0, 0.0}
@@ -9,8 +9,8 @@ overlayColor = {0.65, 0.65, 0.65, 0.9}
 textColor = {0.003, 0.003, 0.003, 1.0}
 selOverlayColor = {}
 selTextColor = {}
-outerGap = 0
-innerGap = 50
+outerGap = 10
+innerGap = 20
 
 tagNames = {"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"}
 
@@ -41,7 +41,7 @@ termcmd = "/usr/bin/termite"
 mod = mod1
 -- maps (between 1 and 4)
 keys = {
-    {mod.." u",           function(n) action.spawn(termcmd) end},
+    {mod..shift.." Return",           function(n) action.spawn(termcmd) end},
     -- {mod.." period",      function(n) focusmon(1) end},
     -- {mod.." comma",       function(n) focusmon(-1) end},
     {mod.." k",           function(n) action.focusOnStack(-1) end},
@@ -50,13 +50,13 @@ keys = {
     {mod.." "..shift.." k",    function(n) action.focusOnHiddenStack(-1) end},
     -- {mod.." d",           function(n) incnmaster(-1) end},
     {mod.." "..shift.." c",           function(n) action.kill() end},
-    {mod.." q",           function(n) action.quit() end},
+    {mod..shift.." q",           function(n) action.quit() end},
     {mod.." p",           function(n) splitThisContainer(1/2) end},
     {mod.." o",           function(n) vsplitThisContainer(1/2) end},
     {mod.." i",           function(n) mergeContainer(1, 1, 2) end},
     {mod.." space",       function(n) setLayout() end},
     {mod.." m",           function(n) setLayout(1) end},
-    {mod.." t",           function(n) setLayout(2) end},
+    {mod.." "..shift.." t",           function(n) setLayout(2) end},
     {mod.." w",           function(n) setLayout(3) end},
     {mod.." b",           function(n) action.toggleConsiderLayerShell() end},
     {mod.." "..shift.." w",           function(n) setLayout(4) end},
@@ -88,11 +88,11 @@ keys = {
     {mod.." "..shift.." 8",    function(n) action.toggleAddView(128) end},
     {mod.." "..shift.." 9",    function(n) action.toggleAddView(256) end},
     {mod.." "..shift.." r",    function(n) config.reload() end},
+    {mod.." t",  function(n) action.setFloating(false)    end},
 }
 
 buttons = {
     {mod.." "..btnLeft,    function(n) action.moveResize(cursorMode.CurMove) end},
-    {mod.." "..btnMiddle,  function(n) action.toggleFloating()    end},
     {mod.." "..btnRight,   function(n) action.moveResize(cursorMode.CurResize) end},
 }
 
