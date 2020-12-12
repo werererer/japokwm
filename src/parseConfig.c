@@ -78,7 +78,7 @@ char *get_config_file(const char *file)
     return NULL;
 }
 
-void append_to_path(lua_State *L, const char *path)
+void append_to_lua_path(lua_State *L, const char *path)
 {
     lua_getglobal(L, "package");
     lua_getfield(L, -1, "path");
@@ -99,10 +99,16 @@ void append_to_path(lua_State *L, const char *path)
 
 int update_config(lua_State *L)
 {
-    init_error_file();
     // init
+    init_error_file();
     char *config_path = get_config_dir("init.lua");
-    append_to_path(L, config_path);
+    // add current path as the priority and all alternatives non prioritized
+    append_to_lua_path(L, config_path);
+    for (int i = 0; i < LENGTH(config_paths); i++) {
+        if (strcmp(config_paths[i], config_path) == 0)
+            continue;
+        append_to_lua_path(L, config_paths[i]);
+    }
 
     if (load_config(L, config_path)) {
         wlr_log(WLR_ERROR, "file didn't load correctly");
@@ -144,6 +150,7 @@ int update_config(lua_State *L)
     termcmd = get_config_str(L, "termcmd");
     get_config_key_arr(L, keys, "keys");
     get_config_key_arr(L, buttons, "buttons");
+
     close_error_file();
     return 0;
 }

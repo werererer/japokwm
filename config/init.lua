@@ -1,7 +1,7 @@
 require "defaultConfig"
 
-sloppyFocus = "true"
-borderPx = "test"
+sloppyFocus = true
+borderPx = 2
 rootColor = {0.3, 0.3, 0.3, 1.0}
 borderColor = {0.3, 0.3, 0.3, 1.0}
 focusColor = {1.0, 0.0, 0.0, 0.0}
