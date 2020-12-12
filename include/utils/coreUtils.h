@@ -58,7 +58,11 @@ struct mon_rule {
 };
 extern struct lua_State *L;
 
-void wlr_list_clear(struct wlr_list *list);
-void join_path(char *base, const char *file);
+bool file_exists(const char *path);
 char last_char(const char *str);
+// returns exactly the same values as strcmp
+int path_compare(const char *path1, const char *path2);
+void join_path(char *base, const char *file);
+
+void wlr_list_clear(struct wlr_list *list);
 #endif

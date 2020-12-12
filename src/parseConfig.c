@@ -13,6 +13,7 @@
 #include "tile/tileUtils.h"
 #include "root.h"
 #include "lib/actions/actions.h"
+#include "stringop.h"
 
 const char *config_paths[] = {
     "$HOME/.config/juliawm/",
@@ -44,10 +45,6 @@ char *termcmd;
 Key *keys = NULL;
 Key *buttons = NULL;
 
-static bool file_exists(const char *path) {
-    return path && access(path, R_OK) != -1;
-}
-
 char *get_config_layout_path()
 {
     return get_config_file("layouts");
@@ -62,19 +59,14 @@ char *get_config_dir(const char *file)
 char *get_config_file(const char *file)
 {
     for (size_t i = 0; i < LENGTH(config_paths); ++i) {
-        wordexp_t p;
-        if (wordexp(config_paths[i], &p, WRDE_UNDEF) == 0) {
-            char *path = malloc(strlen(p.we_wordv[0]) + strlen(file));
-            strcpy(path, p.we_wordv[0]);
-            wordfree(&p);
-            join_path(path, file);
-            if (file_exists(path)) {
-                return path;
-            }
-            free(path);
-        }
+        char *path = strdup(config_paths[i]);
+        expand_path(&path);
+        path = realloc(path, strlen(path) + strlen(file));
+        join_path(path, file);
+        if (file_exists(path))
+            return path;
+        free(path);
     }
-
     return NULL;
 }
 
@@ -104,16 +96,25 @@ int update_config(lua_State *L)
     char *config_path = get_config_dir("init.lua");
     // add current path as the priority and all alternatives non prioritized
     append_to_lua_path(L, config_path);
+    int j = -1;
     for (int i = 0; i < LENGTH(config_paths); i++) {
-        if (strcmp(config_paths[i], config_path) == 0)
+        char *path = strdup(config_paths[i]);
+
+        expand_path(&path);
+        append_to_lua_path(L, path);
+
+        if (path_compare(path, config_path) == 0)
+            j = i;
+        if (j < 0)
             continue;
-        append_to_lua_path(L, config_paths[i]);
+        printf("go\n");
+        if (load_config(L, path)) {
+            wlr_log(WLR_ERROR, "file didn't load correctly");
+            continue;
+        }
+        break;
     }
 
-    if (load_config(L, config_path)) {
-        wlr_log(WLR_ERROR, "file didn't load correctly");
-        return 1;
-    }
     free(config_path);
 
     sloppyFocus = get_config_bool(L, "sloppyFocus");
