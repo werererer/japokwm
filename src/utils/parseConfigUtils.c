@@ -15,8 +15,8 @@ static const char *config_paths[] = {
     "$XDG_CONFIG_HOME/juliawm/",
     "/etc/juliawm/",
 };
-static const char *config_file_global = "init.lua";
-static const char *error_file_global = "error_file";
+static const char *config_file = "init.lua";
+static const char *error_file = "init.err";
 static int error_fd = -1;
 
 static char *get_config_array_str(lua_State *L, size_t i);
@@ -26,15 +26,15 @@ static void handle_error(const char *);
 // returns 0 upon success and 1 upon failure
 static int load_config(lua_State *L, const char *path)
 {
-    char *config_file = calloc(1, strlen(path)+strlen(config_file_global));
-    join_path(config_file, path);
-    join_path(config_file, config_file_global);
+    char *cf = calloc(1, strlen(path)+strlen(config_file));
+    join_path(cf, path);
+    join_path(cf, config_file);
 
     if (!path || !file_exists(path))
         return 1;
     loadLibs(L);
 
-    if (luaL_loadfile(L, config_file)) {
+    if (luaL_loadfile(L, cf)) {
         const char *errmsg = luaL_checkstring(L, -1);
         handle_error(errmsg);
         lua_pop(L, 1);
@@ -93,7 +93,7 @@ void append_to_lua_path(lua_State *L, const char *path)
 // returns 0 upon success and 1 upon failure
 int init_config(lua_State *L)
 {
-    char *config_path = get_config_dir("init.lua");
+    char *config_path = get_config_dir(config_file);
 
     // get the value of the
     int defaultId = 0;
@@ -127,12 +127,11 @@ int init_config(lua_State *L)
 
 void init_error_file()
 {
-    char *error_file = get_config_file("");
-    const char* name = error_file_global;
-    error_file = realloc(error_file, strlen(error_file)+strlen(name));
-    join_path(error_file, name);
-    error_fd = open(error_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    free(error_file);
+    char *ef = get_config_file("");
+    ef = realloc(ef, strlen(ef)+strlen(error_file));
+    join_path(ef, error_file);
+    error_fd = open(ef, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    free(ef);
 }
 
 void close_error_file()
