@@ -245,7 +245,7 @@ void createkeyboard(struct wlr_input_device *device)
     wlr_keyboard_set_keymap(device->keyboard, keymap);
     xkb_keymap_unref(keymap);
     xkb_context_unref(context);
-    wlr_keyboard_set_repeat_info(device->keyboard, repeatRate, repeatDelay);
+    wlr_keyboard_set_repeat_info(device->keyboard, repeat_rate, repeat_delay);
 
     /* Here we set up listeners for keyboard events. */
     kb->modifiers.notify = keypressmod;
@@ -526,7 +526,7 @@ void maprequest(struct wl_listener *listener, void *data)
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
 
-    c->tagset = create_tagset(&tagNames, selected_monitor->tagset->focusedTag,
+    c->tagset = create_tagset(&tag_names, selected_monitor->tagset->focusedTag,
             selected_monitor->tagset->selTags[0]);
     wl_list_init(&c->containers);
 

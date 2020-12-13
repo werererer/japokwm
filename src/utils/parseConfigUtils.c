@@ -4,24 +4,39 @@
 #include <lauxlib.h>
 #include <wlr/util/log.h>
 #include <lua.h>
+#include <libgen.h>
 #include <stdlib.h>
 #include <string.h>
 #include <translationLayer.h>
+#include "stringop.h"
 
+static const char *config_paths[] = {
+    "$HOME/.config/juliawm/",
+    "$XDG_CONFIG_HOME/juliawm/",
+    "/etc/juliawm/",
+};
+static const char *config_file_global = "init.lua";
+static const char *error_file_global = "error_file";
 static int error_fd = -1;
 
-int load_config(lua_State *L, const char *path)
-{
-    char *config_file = calloc(1, strlen(path)+strlen("/init.lua"));
-    join_path(config_file, path);
-    join_path(config_file, "init.lua");
+static char *get_config_array_str(lua_State *L, size_t i);
+static int load_config(lua_State *L, const char *path);
+static void handle_error(const char *);
 
-    if (!path) {
+// returns 0 upon success and 1 upon failure
+static int load_config(lua_State *L, const char *path)
+{
+    char *config_file = calloc(1, strlen(path)+strlen(config_file_global));
+    join_path(config_file, path);
+    join_path(config_file, config_file_global);
+
+    if (!path || !file_exists(path))
         return 1;
-    }
     loadLibs(L);
+
     if (luaL_loadfile(L, config_file)) {
-        wlr_log(WLR_ERROR, "file didn't load %s\n", luaL_checkstring(L, -1));
+        const char *errmsg = luaL_checkstring(L, -1);
+        handle_error(errmsg);
         lua_pop(L, 1);
         return 1;
     }
@@ -31,10 +46,89 @@ int load_config(lua_State *L, const char *path)
     return 0;
 }
 
+char *get_config_file(const char *file)
+{
+    for (size_t i = 0; i < LENGTH(config_paths); ++i) {
+        char *path = strdup(config_paths[i]);
+        expand_path(&path);
+        path = realloc(path, strlen(path) + strlen(file));
+        join_path(path, file);
+        if (file_exists(path))
+            return path;
+        free(path);
+    }
+    return NULL;
+}
+
+char *get_config_layout_path()
+{
+    return get_config_file("layouts");
+}
+
+char *get_config_dir(const char *file)
+{
+    char *abs_file = get_config_file(file);
+    return dirname(abs_file);
+}
+
+void append_to_lua_path(lua_State *L, const char *path)
+{
+    lua_getglobal(L, "package");
+    lua_getfield(L, -1, "path");
+    const char * curr_path = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+    char *path_var = calloc(1,
+            strlen(curr_path) + 1 + strlen(path) + strlen("/?.lua"));
+
+    strcpy(path_var, curr_path);
+    strcat(path_var, ";");
+    strcat(path_var, path);
+    join_path(path_var, "/?.lua");
+    lua_pushstring(L, path_var);
+    lua_setfield(L, -2, "path");
+    lua_pop(L, 1);
+    free(path_var);
+}
+
+// returns 0 upon success and 1 upon failure
+int init_config(lua_State *L)
+{
+    char *config_path = get_config_dir("init.lua");
+
+    // get the value of the
+    int defaultId = 0;
+    for (int i = 0; i < LENGTH(config_paths); i++) {
+        char *path = strdup(config_paths[defaultId]);
+        expand_path(&path);
+        if (path_compare(path, config_path) == 0) {
+            defaultId = i;
+            break;
+        }
+    }
+
+    // repeat loop until the first config file was loaded successfully
+    for (int i = 0; i < LENGTH(config_paths); i++) {
+        if (i < defaultId)
+            continue;
+
+        char *path = strdup(config_paths[i]);
+        expand_path(&path);
+
+        append_to_lua_path(L, config_paths[i]);
+
+        if (load_config(L, path))
+            continue;
+        // when config loaded successfully break;
+        return 0;
+    }
+    free(config_path);
+    return 1;
+}
+
 void init_error_file()
 {
     char *error_file = get_config_file("");
-    const char* name = "error_file";
+    const char* name = error_file_global;
     error_file = realloc(error_file, strlen(error_file)+strlen(name));
     join_path(error_file, name);
     error_fd = open(error_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -53,12 +147,10 @@ static void handle_error(const char *msg)
     if (error_fd < 0)
         return;
 
-    printf("handle_error: %s\n", msg);
-    char output[NUM_CHARS] = "";
-    snprintf(output, NUM_CHARS, "ERROR: %s\n", msg);
-    write_to_file(error_fd, output);
+    wlr_log(WLR_ERROR, "%s", msg);
+    write_to_file(error_fd, msg);
+    write_to_file(error_fd, "\n");
 }
-
 
 static char *get_config_array_str(lua_State *L, size_t i)
 {

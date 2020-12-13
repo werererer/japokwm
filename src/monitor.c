@@ -51,7 +51,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     }
 
     m->wlr_output = output;
-    m->tagset = create_tagset(&tagNames, 0, 0);
+    m->tagset = create_tagset(&tag_names, 0, 0);
     push_seleceted_tags(m->tagset, TAG_ONE);
     for (r = monrules; r < END(monrules); r++) {
         if (!r->name || strstr(output->name, r->name)) {

@@ -12,8 +12,6 @@ struct config {
     char *file;
 };
 
-extern const char *config_paths[];
-
 /* appearance */
 extern char *mainModule;
 extern char *configModule;
@@ -30,21 +28,14 @@ extern float selTextColor[4];
 
 extern struct rule rules[MAXLEN];
 
-extern int repeatRate;
-extern int repeatDelay;
+extern int repeat_rate;
+extern int repeat_delay;
 
 /* commands */
-extern struct wlr_list tagNames;
+extern struct wlr_list tag_names;
 extern char *termcmd;
 extern Key *keys;
 extern Key *buttons;
-
-/* returned char pointer must be freed */
-char *get_config_layout_path();
-/* returned char pointer must be freed */
-char *get_config_file(const char *file);
-/* returned char pointer must be freed */
-char *get_config_dir(const char *file);
 
 /* sets global variables but needs  */
 int update_config(lua_State *L);
