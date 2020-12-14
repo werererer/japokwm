@@ -10,3 +10,5 @@ build
 debug
 .cache/**
 .exrc
+tags
+vgcore*
