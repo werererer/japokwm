@@ -266,13 +266,12 @@ void createnotify(struct wl_listener *listener, void *data)
     /* This event is raised when wlr_xdg_shell receives a new xdg surface from a
      * client, either a toplevel (application window) or popup. */
     struct wlr_xdg_surface *xdg_surface = data;
-    struct client *c;
 
     if (xdg_surface->role != WLR_XDG_SURFACE_ROLE_TOPLEVEL)
         return;
 
     /* Allocate a Client for this surface */
-    c = xdg_surface->data = calloc(1, sizeof(struct client));
+    struct client *c = xdg_surface->data = calloc(1, sizeof(struct client));
     c->surface.xdg = xdg_surface;
     c->bw = borderPx;
     c->type = XDG_SHELL;

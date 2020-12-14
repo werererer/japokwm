@@ -315,7 +315,7 @@ void motionnotify(uint32_t time)
 
         if (!surface && !is_popup) {
             struct xdg_popup *popup, *tmp;
-            wl_list_for_each_safe(popup, tmp, &popups, link) {
+            wl_list_for_each_safe(popup, tmp, &popups, plink) {
                 wlr_xdg_popup_destroy(popup->xdg->base);
             }
             surface = wlr_surface_surface_at(get_wlrsurface(con->client),

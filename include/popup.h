@@ -12,7 +12,7 @@ struct xdg_popup {
     struct wl_listener new_popup;
     struct wl_listener map;
     struct wl_listener destroy;
-    struct wl_list link;
+    struct wl_list plink;
 };
 
 extern struct wl_list popups;

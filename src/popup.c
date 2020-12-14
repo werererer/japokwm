@@ -13,6 +13,9 @@
 struct wl_list popups;
 
 static void popup_handle_new_subpopup(struct wl_listener *listener, void *data);
+static struct xdg_popup *create_popup(struct wlr_xdg_popup *xdg_popup,
+        struct wlr_box parent_geom, struct container* toplevel);
+static void destroy_popup(struct xdg_popup *xdg_popup);
 
 static struct xdg_popup *create_popup(struct wlr_xdg_popup *xdg_popup,
         struct wlr_box parent_geom, struct container* toplevel)
@@ -41,8 +44,15 @@ static struct xdg_popup *create_popup(struct wlr_xdg_popup *xdg_popup,
     return popup;
 }
 
+static void destroy_popup(struct xdg_popup *xdg_popup)
+{
+    free(xdg_popup);
+    xdg_popup = NULL;
+}
+
 void popup_handle_new_popup(struct wl_listener *listener, void *data)
 {
+    printf("new popup\n");
     struct client *c = wl_container_of(listener, c, new_popup);
     struct wlr_xdg_popup *xdg_popup = data;
 
@@ -53,25 +63,26 @@ void popup_handle_new_popup(struct wl_listener *listener, void *data)
             if (con->client != c)
                 continue;
             struct xdg_popup *popup = create_popup(xdg_popup, con->geom, con);
-            wl_list_insert(&popups, &popup->link);
+            wl_list_insert(&popups, &popup->plink);
         }
     }
 }
 
 static void popup_handle_new_subpopup(struct wl_listener *listener, void *data)
 {
+    printf("new popup\n");
     struct xdg_popup *parentPopup =
         wl_container_of(listener, parentPopup, new_popup);
     struct wlr_xdg_popup *xdg_popup = data;
 
     struct xdg_popup *popup =
         create_popup(xdg_popup, parentPopup->geom, parentPopup->toplevel);
-    wl_list_insert(&popups, &popup->link);
+    wl_list_insert(&popups, &popup->plink);
 }
 
 void popup_handle_destroy(struct wl_listener *listener, void *data)
 {
     struct xdg_popup *popup = wl_container_of(listener, popup, destroy);
-    wl_list_remove(&popup->link);
-    free(popup);
+    wl_list_remove(&popup->plink);
+    destroy_popup(popup);
 }
