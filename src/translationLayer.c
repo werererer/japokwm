@@ -8,6 +8,8 @@
 static const struct luaL_Reg action[] =
 {
     {"arrangeThis", arrange_this},
+    {"setTabcount", set_tabcount},
+    {"getTabcount", get_tabcount},
     /* {"createOverlay", create_overlay}, */
     {"focusOnHiddenStack", focus_on_hidden_stack},
     {"toggleConsiderLayerShell", toggle_consider_layer_shell},
@@ -36,7 +38,7 @@ static const struct luaL_Reg action[] =
 static const struct luaL_Reg info[] =
 {
     {"thisTiledClientCount", this_tiled_client_count},
-    {"thisClientPos", this_container_position},
+    {"thisContainerPosition", this_container_position},
     {NULL, NULL},
 };
 

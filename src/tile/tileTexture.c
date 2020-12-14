@@ -29,7 +29,7 @@ bool overlay = false;
 /*     return container; */
 /* } */
 
-struct posTexture *create_textbox(struct wlr_box box, float boxColor[],
+struct pos_texture *create_textbox(struct wlr_box box, float boxColor[],
                                  float textColor[], char* text)
 {
     cairo_format_t cFormat = CAIRO_FORMAT_ARGB32;
@@ -70,12 +70,14 @@ struct posTexture *create_textbox(struct wlr_box box, float boxColor[],
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
 
-    struct posTexture *posTexture = calloc(1, sizeof(*posTexture));
+    struct pos_texture *posTexture = calloc(1, sizeof(*posTexture));
 
     posTexture->texture = cTexture;
     posTexture->dataType = OVERLAY;
     posTexture->x = box.x;
     posTexture->y = box.y;
+    posTexture->mon = selected_monitor;
+    posTexture->tagset = selected_monitor->tagset;
     return posTexture;
 }
 
@@ -107,7 +109,7 @@ void create_overlay()
         i++;
         intToString(text, con->textPosition+1);
 
-        struct posTexture *pTexture =
+        struct pos_texture *pTexture =
             create_textbox(con->geom, overlayColor, textColor, text);
         // sync properties
         pTexture->tagset = con->client->tagset;
@@ -127,7 +129,7 @@ void update_container_overlay(struct container *con)
 
         intToString(text, con->textPosition+1);
 
-        struct posTexture *pTexture =
+        struct pos_texture *pTexture =
             create_textbox(con->geom, overlayColor, textColor, text);
         pTexture->tagset = con->client->tagset;
         wlr_list_insert(&render_data.textures, con->position, pTexture);
@@ -158,7 +160,7 @@ void update_overlay()
     }
 }
 
-bool postexture_visible_on_flag(struct posTexture *pTexture, struct monitor *m, size_t flag)
+bool postexture_visible_on_flag(struct pos_texture *pTexture, struct monitor *m, size_t flag)
 {
     if (m && pTexture) {
         if (pTexture->mon == m) {
@@ -198,7 +200,7 @@ void write_overlay(struct monitor *m, const char *layout)
 
         for (int j = render_data.base_textures.length-1; j >= 0; j--) {
             // TODO: todo fix order
-            struct posTexture *pTexture = render_data.base_textures.items[j];
+            struct pos_texture *pTexture = render_data.base_textures.items[j];
             if (postexture_visible_on_flag(pTexture, m, position_to_flag(i))) {
                 // vector from root x/y -> monitor x/y
                 int wdiff = selected_monitor->geom.x - root.w.y;
@@ -222,7 +224,7 @@ void write_overlay(struct monitor *m, const char *layout)
     }
 }
 
-struct wlr_box postexture_to_container(struct posTexture *pTexture)
+struct wlr_box postexture_to_container(struct pos_texture *pTexture)
 {
     struct wlr_box box;
     if (!pTexture) {

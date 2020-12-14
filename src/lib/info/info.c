@@ -12,17 +12,16 @@ int this_tiled_client_count(lua_State *L)
 
 int this_container_position(lua_State *L)
 {
-    struct container *con;
+    struct container *con, *sel = selected_container(selected_monitor);
     int n = 1;
     bool handled = false;
 
-    wl_list_for_each(con, &selected_monitor->stack, slink) {
-        if (visibleon(con, selected_monitor) &&
-                !con->floating) {
-            if (con == selected_container(selected_monitor)) {
-                handled = true;
-                break;
-            }
+    wl_list_for_each(con, &selected_monitor->containers, mlink) {
+        if (!visibleon(con, selected_monitor) || con->floating)
+            continue;
+        if (con == sel) {
+            handled = true;
+            break;
         }
         n++;
     }

@@ -143,7 +143,8 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
             case X11_MANAGED:
             case X11_UNMANAGED:
                 wlr_xwayland_surface_configure(con->client->surface.xwayland,
-                        con->geom.x, con->geom.y, con->geom.width, con->geom.height);
+                        con->geom.x, con->geom.y,
+                        con->geom.width, con->geom.height);
         }
     }
 }

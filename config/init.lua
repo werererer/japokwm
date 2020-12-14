@@ -1,7 +1,7 @@
 require "defaultConfig"
 
 sloppyFocus = true
-borderPx = 2
+borderPx = 1
 rootColor = {0.3, 0.3, 0.3, 1.0}
 borderColor = {0.3, 0.3, 0.3, 1.0}
 focusColor = {1.0, 0.0, 0.0, 0.0}
@@ -44,6 +44,8 @@ keys = {
     {mod..shift.." Return",           function(n) action.spawn(termcmd) end},
     -- {mod.." period",      function(n) focusmon(1) end},
     -- {mod.." comma",       function(n) focusmon(-1) end},
+    {mod.." a",           function(n) action.setTabcount(action.getTabcount()+1) end},
+    {mod.." x",           function(n) action.setTabcount(action.getTabcount()-1) end},
     {mod.." k",           function(n) action.focusOnStack(-1) end},
     {mod.." j",           function(n) action.focusOnStack(1) end},
     {mod.." "..shift.." j",    function(n) action.focusOnHiddenStack(1) end},
@@ -61,7 +63,7 @@ keys = {
     {mod.." b",           function(n) action.toggleConsiderLayerShell() end},
     {mod.." "..shift.." w",           function(n) setLayout(4) end},
     {mod.." "..shift.." l",           function(n) resizeThisAll(1/10, Direction.RIGHT) end},
-    {mod..""..shift.." h",           function(n) resizeThisAll(1/10, Layouts.LEFT) end},
+    {mod..""..shift.." h",           function(n) resizeThisAll(-(1/10), Direction.RIGHT) end},
     {mod.." "..shift.." s",    function(n) action.writeThisOverlay("tmp") end},
     -- {mod.." parenright",  function(n) tag(~0) end},
     -- {mod.." greater",     function(n) tagmon(1) end},

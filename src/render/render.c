@@ -15,7 +15,7 @@ struct renderData render_data;
 static void render(struct wlr_surface *surface, int sx, int sy, void *data);
 static void render_clients(struct monitor *m);
 static void render_independents(struct monitor *m);
-static void render_texture(struct posTexture *texture);
+static void render_texture(struct pos_texture *texture);
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data)
 {
@@ -155,7 +155,7 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
     }
 }
 
-static void render_texture(struct posTexture *texture)
+static void render_texture(struct pos_texture *texture)
 {
     if (postexture_visible_on_flag(
                 texture,

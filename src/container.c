@@ -3,6 +3,8 @@
 #include "parseConfig.h"
 #include "server.h"
 #include "monitor.h"
+#include "tile/tileTexture.h"
+#include "tile/tileUtils.h"
 #include <wayland-util.h>
 
 static void add_container_to_monitor_containers(struct container *con, int i);
@@ -28,7 +30,8 @@ void destroy_container(struct container *con)
     wl_list_remove(&con->clink);
     wl_list_remove(&con->flink);
     wl_list_remove(&con->slink);
-    if (con->client->type == LAYER_SHELL)
+    struct client *c = con->client;
+    if (c->type == LAYER_SHELL)
         wl_list_remove(&con->llink);
     else
         wl_list_remove(&con->mlink);

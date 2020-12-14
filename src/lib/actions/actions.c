@@ -54,6 +54,22 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
         focus_container(selected_monitor, con, FOCUS_NOOP);
 }
 
+int set_tabcount(lua_State *L)
+{
+    printf("set tabcount\n");
+    /* int i = luaL_checkinteger(L, -1); */
+    lua_pop(L, 1);
+    /* selected_container(selected_monitor)->tabcount = i; */
+    arrange(LAYOUT_NOOP);
+    return 0;
+}
+
+int get_tabcount(lua_State *L)
+{
+    /* lua_pushinteger(L, selected_container(selected_monitor)->tabcount); */
+    return 1;
+}
+
 int arrange_this(lua_State *L)
 {
     bool reset = lua_toboolean(L, -1);

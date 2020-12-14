@@ -107,13 +107,13 @@ Direction = {
 function moveContainer(i, j, n, d)
     container = layoutData[i][j]
     if d == Direction.TOP then
-        layoutData[i][j] = Container(container.x, container.y - n, container.width, container.height)
+        layoutData[i][j] = {container[1], container[2] - n, container[3], container[4]}
     elseif d == Direction.BOTTOM then
-        layoutData[i][j] = Container(container.x, container.y + n, container.width, container.height)
+        layoutData[i][j] = {container[1], container[2] + n, container[3], container[4]}
     elseif d == Direction.LEFT then
-        layoutData[i][j] = Container(container.x - n, container.y, container.width, container.height)
+        layoutData[i][j] = {container[1] - n, container[2], container[3], container[4]}
     elseif d == Direction.RIGHT then
-        layoutData[i][j] = Container(container.x + n, container.y, container.width, container.height)
+        layoutData[i][j] = {container[1] + n, container[2], container[3], container[4]}
     end
 end
 
@@ -127,17 +127,17 @@ end
 function resizeContainer(i, j, n, d)
     container = layoutData[i][j]
     if d == Direction.TOP then
-        layoutData[i][j] = Container(container.x, container.y - n,
-                                     container.width, container.height + n)
+        layoutData[i][j] = {container[0], container[2] - n, container[3],
+        container[4] + n}
     elseif d == Direction.BOTTOM then
-        layoutData[i][j] = Container(container.x, container.y,
-                                     container.width, container.height + n)
+        layoutData[i][j] = {container[1], container[2], container[3],
+        container[4] + n}
     elseif d == Direction.LEFT then
-        layoutData[i][j] = Container(container.x - n, container.y,
-                                     container.width + n, container.height)
+        layoutData[i][j] = {container[1] - n, container[2],
+        container[3] + n, container[4]}
     elseif d == Direction.RIGHT then
-        layoutData[i][j] = Container(container.x, container.y,
-                                     container.width + n, container.height)
+        layoutData[i][j] = {container[1], container[2], container[3] + n,
+        container[4]}
     end
 end
 
@@ -150,21 +150,20 @@ end
 
 function resizeAll(i, j, n, d)
     local container = layoutData[i][j]
-    for j2 in range(1,length(layoutData[i])) do
+    for j2 = 1, #layoutData[i] do
         if j == j2 then
             resizeContainer(i, j, n, d)
         else
             -- resize container[i][j]?
             if d == Direction.TOP then
-                resize =
-                layoutData[i][j2].y + layoutData[i][j2].height <= container.y
+                resize = layoutData[i][j2][2] <= container[2]
             elseif d == Direction.BOTTOM then
-                resize = layoutData[i][j2].y >= container.y + container.width
+                resize = layoutData[i][j2][2] >= container[2]
             elseif d == Direction.LEFT then
-                resize =
-                layoutData[i][j2].x + layoutData[i][j2].width <= container.x
+                resize = layoutData[i][j2][1] <= container[1]
+                n = -n
             elseif d == Direction.RIGHT then
-                resize = layoutData[i][j2].x >= container.x + container.width
+                resize = layoutData[i][j2][1] >= container[1]
             end
 
             if resize then
@@ -175,9 +174,16 @@ function resizeAll(i, j, n, d)
     end
 end
 
+function resizeMainAll(n, d)
+    local i = math.max(math.min(info.thisTiledClientCount(), #layoutData), 1)
+    resizeAll(i, 1, n, d)
+    action.arrangeThis(false)
+end
+
 function resizeThisAll(n, d)
-    local i = max(min(thisTiledClientCount(), length(layoutData)), 1)
-    local j = min(clientPos(), length(layoutData[i]))
+    local i = math.max(math.min(info.thisTiledClientCount(), #layoutData), 1)
+    local j = math.min(info.thisContainerPosition(), #layoutData[i])
+    print(i, j)
     resizeAll(i, j, n, d)
     action.arrangeThis(false)
 end
