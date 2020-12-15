@@ -316,6 +316,7 @@ void createnotifyLayerShell(struct wl_listener *listener, void *data)
     wl_signal_add(&layer_surface->events.unmap, &c->unmap);
     c->destroy.notify = destroynotify;
     wl_signal_add(&layer_surface->events.destroy, &c->destroy);
+    printf("configure\n");
     wlr_layer_surface_v1_configure(c->surface.layer, selected_monitor->wlr_output->width, selected_monitor->wlr_output->height);
     /* popups */
     c->new_popup.notify = popup_handle_new_popup;
@@ -540,44 +541,16 @@ void maprequest(struct wl_listener *listener, void *data)
             }
             break;
         case LAYER_SHELL:
-            wl_list_insert(&layerstack, &c->llink);
+            wl_list_for_each(m, &mons, link) {
+                create_container(c, m);
+            }
             break;
         case X11_UNMANAGED:
             wl_list_insert(&server.independents, &c->ilink);
             break;
     }
     struct client *prev = wl_container_of(listener, prev, map);
-
-    /* switch (c->type) { */
-    /*     case XDG_SHELL: */
-    /*         /1* wlr_xdg_surface_get_geometry(c->surface.xdg, &c->geom); *1/ */
-    /*         /1* c->geom.width += 2 * c->bw; *1/ */
-    /*         /1* c->geom.height += 2 * c->bw; *1/ */
-    /*         break; */
-    /*     case LAYER_SHELL: */
-    /*         c->geom.x = 0; */
-    /*         c->geom.y = 0; */
-    /*         if (c->surface.layer->current.desired_width) { */
-    /*             c->geom.width = c->surface.layer->current.desired_width; */
-    /*         } */
-    /*         else { */
-    /*             c->geom.width = selected_monitor->wlr_output->width; */
-    /*         } */
-
-    /*         if (c->surface.layer->current.desired_height) { */
-    /*             c->geom.height = c->surface.layer->current.desired_height; */
-    /*         } */
-    /*         else { */
-    /*             c->geom.height = selected_monitor->wlr_output->height; */
-    /*         } */
-    /*         break; */
-    /*     case X11_MANAGED: */
-    /*     case X11_UNMANAGED: */
-    /*         c->geom.x = c->surface.xwayland->x; */
-    /*         c->geom.y = c->surface.xwayland->y; */
-    /*         c->geom.width = c->surface.xwayland->width + 2 * c->bw; */
-    /*         c->geom.height = c->surface.xwayland->height + 2 * c->bw; */
-    /* } */
+    printf("arrange\n");
 
     arrange(false);
     focus_top_container(selected_monitor, FOCUS_NOOP);
@@ -780,7 +753,6 @@ int setup(void)
      * https://drewdevault.com/2018/07/29/Wayland-shells.html
      */
     wl_list_init(&clients);
-    wl_list_init(&layerstack);
     wl_list_init(&popups);
     wl_list_init(&server.independents);
 
@@ -877,7 +849,6 @@ void unmapnotify(struct wl_listener *listener, void *data)
     destroy_tagset(c->tagset);
     switch (c->type) {
         case LAYER_SHELL:
-            wl_list_remove(&c->llink);
             break;
         case XDG_SHELL:
             wl_list_remove(&c->link);

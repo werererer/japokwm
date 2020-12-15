@@ -150,6 +150,7 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
         rdata.when = &now;
         rdata.x = con->geom.x + con->client->bw;
         rdata.y = con->geom.y + con->client->bw;
+        printf("con->geom.width: %i\n", get_wlrsurface(con->client)->current.width);
 
         render(get_wlrsurface(con->client), 0, 0, &rdata);
     }

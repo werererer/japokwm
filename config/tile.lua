@@ -41,7 +41,7 @@ end
 
 function splitThisContainer(ratio)
     local i = math.max(math.min(info.thisTiledClientCount(), #layoutData), 1)
-    local j = math.min(info.thisClientPos(), #layoutData[i])
+    local j = math.min(info.thisContainerPosition(), #layoutData[i])
     splitContainer(i, j, ratio)
 end
 
@@ -67,7 +67,7 @@ end
 
 function vsplitThisContainer(ratio)
     local i = math.max(math.min(info.thisTiledClientCount(), #layoutData), 1)
-    local j = math.min(info.thisClientPos(), #layoutData[i])
+    local j = math.min(info.thisContainerPosition(), #layoutData[i])
     vsplitContainer(i, j, ratio)
 end
 

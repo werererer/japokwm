@@ -12,6 +12,7 @@ static void add_container_to_monitor_stack(struct monitor *m, struct container *
 
 struct container *create_container(struct client *c, struct monitor *m)
 {
+    printf("create container\n");
     struct container *con = calloc(1, sizeof(struct container));
     con->m = m;
     con->client = c;

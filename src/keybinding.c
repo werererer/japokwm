@@ -1,6 +1,8 @@
 #include "keybinding.h"
 #include "tile/tileUtils.h"
 #include "utils/parseConfigUtils.h"
+#include "stringop.h"
+#include <string.h>
 
 static size_t modifiers;
 /*
@@ -32,42 +34,29 @@ static void symToBinding(char *res, int mods, int sym)
     strcat(res, XKeysymToString(sym));
 }
 
-// TODO: unittest
-static bool isSameKeybind(const char *bind, const char *bind2)
+static bool is_same_keybind(const char *bind, const char *bind2)
 {
-    bool sameKeybind = true;
+    struct wlr_list bindarr = split_string(bind, " ");
+    struct wlr_list bind2arr = split_string(bind2, " ");
 
-    char *found;
-    const char delim = ' ';
-    char *str = strdup(bind);
-    char *strPtr = str;
-    char *str2 = strdup(bind2);
-    // replace all tokens appearing in bind in bind2 with spaces
-    while ( (found = strsep(&str, &delim)) != NULL ) {
-        char *substring = strstr(str2, found);
-        int len = strlen(found);
-        found[len] = delim;
-        if (substring) {
-            memset(substring, delim, len);
-        } else {
-            sameKeybind = false;
-            break;
-        }
-    }
+    if (bind2arr.length == 0)
+        return false;
+    if (bindarr.length != bind2arr.length)
+        return false;
 
-    if (sameKeybind) {
-        // does str2 only consist of spaces? no -> not sameKeybind
-        for (int i = 0; i < strlen(str2); i++) {
-            if (str2[i] != delim) {
-                sameKeybind = false;
+    // remove all items out of bind2arr found in bindarr
+    for (int i = 0; i < bindarr.length; i++) {
+        for (int j = 0; j < bind2arr.length; j++) {
+            if (strcmp(bindarr.items[i], bind2arr.items[j]) == 0) {
+                wlr_list_del(&bind2arr, j);
                 break;
             }
         }
     }
-    free(str2);
-    free(strPtr);
+    // if no items remain in bind2arr the bind must be correct
+    bool ret = bind2arr.length == 0;
 
-    return sameKeybind;
+    return ret;
 }
 
 static bool process_binding(char *bind, const char *reference)
@@ -78,10 +67,9 @@ static bool process_binding(char *bind, const char *reference)
     for (int i = 1; i <= len; i++) {
         lua_rawgeti(L, -1, i);
         lua_rawgeti(L, -1, 1);
-        const char *s = luaL_checkstring(L, -1);
+        const char *ref = luaL_checkstring(L, -1);
         lua_pop(L, 1);
-        if (isSameKeybind(bind, s)) {
-            printf("execute\n");
+        if (is_same_keybind(bind, ref)) {
             lua_rawgeti(L, -1, 2);
             lua_pushinteger(L, selected_layout(selected_monitor->tagset)->containers_info.n);
             lua_pcall(L, 1, 0, 0);
@@ -111,6 +99,5 @@ bool key_pressed(int mods, int sym)
 
 bool key_state_has_modifiers(size_t mods)
 {
-    printf("%lu\n", mods);
     return modifiers & mods;
 }

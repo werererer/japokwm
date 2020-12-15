@@ -36,23 +36,23 @@ monrules = {
 xkb_rules = {}
 repeatRate = 25
 repeatDelay = 600
-termcmd = "/usr/bin/terminator"
+termcmd = "/usr/bin/termite"
 
 mod = mod1
 -- maps (between 1 and 4)
 keys = {
-    {mod..shift.." Return",           function(n) action.spawn(termcmd) end},
+    {mod.."    "..shift.." Return",           function(n) action.spawn(termcmd) end},
     -- {mod.." period",      function(n) focusmon(1) end},
     -- {mod.." comma",       function(n) focusmon(-1) end},
-    {mod.." a",           function(n) action.setTabcount(action.getTabcount()+1) end},
-    {mod.." x",           function(n) action.setTabcount(action.getTabcount()-1) end},
+    {mod.."     a",           function(n) action.setTabcount(action.getTabcount()+1) end},
+    {mod.."    x",           function(n) action.setTabcount(action.getTabcount()-1) end},
     {mod.." k",           function(n) action.focusOnStack(-1) end},
     {mod.." j",           function(n) action.focusOnStack(1) end},
     {mod.." "..shift.." j",    function(n) action.focusOnHiddenStack(1) end},
     {mod.." "..shift.." k",    function(n) action.focusOnHiddenStack(-1) end},
     -- {mod.." d",           function(n) incnmaster(-1) end},
     {mod.." "..shift.." c",           function(n) action.kill() end},
-    {mod..shift.." q",           function(n) action.quit() end},
+    {mod.." "..shift.." q",           function(n) action.quit() end},
     {mod.." p",           function(n) splitThisContainer(1/2) end},
     {mod.." o",           function(n) vsplitThisContainer(1/2) end},
     {mod.." i",           function(n) mergeContainer(1, 1, 2) end},

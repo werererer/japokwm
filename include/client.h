@@ -13,8 +13,6 @@ enum shell { XDG_SHELL, X11_MANAGED, X11_UNMANAGED, LAYER_SHELL }; /* client typ
 struct client {
     /* clients */
     struct wl_list link;
-    /* layer shell based clients */
-    struct wl_list llink;
     /* independents list */
     struct wl_list ilink;
 
@@ -47,7 +45,6 @@ float calc_ratio(float width, float height);
 bool visibleon_tag(struct client *c, size_t focusedTag);
 
 extern struct wl_list clients; /* tiling order */
-extern struct wl_list layerstack;   /* stacking z-order */
 extern struct wlr_output_layout *output_layout;
 
 struct wlr_surface *get_wlrsurface(struct client *c);
