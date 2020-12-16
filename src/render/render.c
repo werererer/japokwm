@@ -14,7 +14,7 @@ struct renderData render_data;
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data);
 static void render_clients(struct monitor *m);
-static void render_independents(struct monitor *m);
+/* static void render_independents(struct monitor *m); */
 static void render_texture(struct pos_texture *texture);
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data)
@@ -150,7 +150,6 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
         rdata.when = &now;
         rdata.x = con->geom.x + con->client->bw;
         rdata.y = con->geom.y + con->client->bw;
-        printf("con->geom.width: %i\n", get_wlrsurface(con->client)->current.width);
 
         render(get_wlrsurface(con->client), 0, 0, &rdata);
     }
@@ -168,15 +167,11 @@ static void render_texture(struct pos_texture *texture)
     }
 }
 
-
 static void render_independents(struct monitor *m)
 {
     struct client *c;
     struct renderData rdata;
     struct wlr_box geom;
-
-    if (c->type == XDG_SHELL || c->type == LAYER_SHELL)
-        return;
 
     wl_list_for_each_reverse(c, &server.independents, ilink) {
         geom.x = c->surface.xwayland->x;

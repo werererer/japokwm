@@ -76,7 +76,7 @@ typedef struct {
 void axisnotify(struct wl_listener *listener, void *data);
 void buttonpress(struct wl_listener *listener, void *data);
 void chvt(unsigned int ui);
-void cleanup(void);
+void cleanup();
 void cleanupkeyboard(struct wl_listener *listener, void *data);
 void commitnotify(struct wl_listener *listener, void *data);
 void createkeyboard(struct wlr_input_device *device);
@@ -100,7 +100,7 @@ void set_cursor(struct wl_listener *listener, void *data);
 void setpsel(struct wl_listener *listener, void *data);
 void setsel(struct wl_listener *listener, void *data);
 void setmfact(float factor);
-int setup(void);
+int setup();
 void sigchld(int unused);
 void tagmon(int i);
 void unmapnotify(struct wl_listener *listener, void *data);
@@ -187,7 +187,7 @@ void chvt(unsigned int ui)
     wlr_session_change_vt(wlr_backend_get_session(server.backend), ui);
 }
 
-void cleanup(void)
+void cleanup()
 {
     wlr_xwayland_destroy(xwayland);
     wl_display_destroy_clients(server.display);
@@ -266,6 +266,7 @@ void createnotify(struct wl_listener *listener, void *data)
     /* This event is raised when wlr_xdg_shell receives a new xdg surface from a
      * client, either a toplevel (application window) or popup. */
     struct wlr_xdg_surface *xdg_surface = data;
+    printf("createnotify\n");
 
     if (xdg_surface->role != WLR_XDG_SURFACE_ROLE_TOPLEVEL)
         return;
@@ -316,8 +317,9 @@ void createnotifyLayerShell(struct wl_listener *listener, void *data)
     wl_signal_add(&layer_surface->events.unmap, &c->unmap);
     c->destroy.notify = destroynotify;
     wl_signal_add(&layer_surface->events.destroy, &c->destroy);
-    printf("configure\n");
-    wlr_layer_surface_v1_configure(c->surface.layer, selected_monitor->wlr_output->width, selected_monitor->wlr_output->height);
+    // TODO: remove this line
+    wlr_layer_surface_v1_configure(c->surface.layer,
+            selected_monitor->geom.width, selected_monitor->geom.height);
     /* popups */
     c->new_popup.notify = popup_handle_new_popup;
     wl_signal_add(&layer_surface->events.new_popup, &c->new_popup);
@@ -549,9 +551,6 @@ void maprequest(struct wl_listener *listener, void *data)
             wl_list_insert(&server.independents, &c->ilink);
             break;
     }
-    struct client *prev = wl_container_of(listener, prev, map);
-    printf("arrange\n");
-
     arrange(false);
     focus_top_container(selected_monitor, FOCUS_NOOP);
 }
@@ -685,7 +684,7 @@ void setsel(struct wl_listener *listener, void *data)
     wlr_seat_set_selection(server.seat, event->source, event->serial);
 }
 
-int setup(void)
+int setup()
 {
     L = luaL_newstate();
     luaL_openlibs(L);

@@ -16,13 +16,16 @@ struct container *create_container(struct client *c, struct monitor *m)
     struct container *con = calloc(1, sizeof(struct container));
     con->m = m;
     con->client = c;
-    if (con->client->type == LAYER_SHELL)
+    if (con->client->type == LAYER_SHELL) {
+        // layer shell programs aren't pushed to the stack because they use the
+        // layer system to set the correct render position
         wl_list_insert(&m->layer_stack, &con->llink);
-    else
+    } else {
         add_container_to_monitor_containers(con, 0);
+        add_container_to_monitor_stack(m, con);
+    }
     wl_list_insert(&c->containers, &con->clink);
     wl_list_insert(&m->focus_stack, &con->flink);
-    add_container_to_monitor_stack(m, con);
     return con;
 }
 
@@ -126,11 +129,31 @@ struct container *xytocontainer(double x, double y)
     struct monitor *m = xytomon(x, y);
 
     struct container *con;
+    wl_list_for_each(con, &m->layer_stack, llink) {
+        if (con->client->surface.layer->current.layer >
+                ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM)
+            continue;
+        if (!visibleon(con, m) || !wlr_box_contains_point(&con->geom, x, y))
+            continue;
+
+        return con;
+    }
+
     wl_list_for_each(con, &m->stack, slink) {
-        if (visibleon(con, m)
-                && wlr_box_contains_point(&con->geom, x, y)) {
-            return con;
-        }
+        if (!visibleon(con, m) || !wlr_box_contains_point(&con->geom, x, y))
+            continue;
+
+        return con;
+    }
+
+    wl_list_for_each(con, &m->layer_stack, llink) {
+        if (con->client->surface.layer->current.layer <
+                ZWLR_LAYER_SHELL_V1_LAYER_TOP)
+            continue;
+        if (!visibleon(con, m) || !wlr_box_contains_point(&con->geom, x, y))
+            continue;
+
+        return con;
     }
     return NULL;
 }
@@ -170,19 +193,20 @@ static void add_container_to_monitor_stack(struct monitor *m, struct container *
 
     if (con->floating) {
         wl_list_insert(&m->stack, &con->slink);
-    } else {
-        /* Insert container after the last floating container */
-        struct container *con2;
-        wl_list_for_each(con2, &m->stack, slink) {
-            if (!con2->floating)
-                break;
-        }
+        return;
+    }
 
-        if (!wl_list_empty(&m->stack)) {
-            wl_list_insert(&con2->slink, &con->slink);
-        } else {
-            wl_list_insert(&m->stack, &con->slink);
-        }
+    /* Insert container after the last floating container */
+    struct container *con2;
+    wl_list_for_each(con2, &m->stack, slink) {
+        if (!con2->floating)
+            break;
+    }
+
+    if (!wl_list_empty(&m->stack)) {
+        wl_list_insert(&con2->slink, &con->slink);
+    } else {
+        wl_list_insert(&m->stack, &con->slink);
     }
 }
 
@@ -273,6 +297,7 @@ void focus_container(struct monitor *m, struct container *con, enum focus_action
     struct container *sel = selected_container(m);
 
     if (!con) {
+        printf("clear focus\n");
         /* With no client, all we have left is to clear focus */
         wlr_seat_keyboard_notify_clear_focus(server.seat);
         return;
@@ -298,19 +323,16 @@ void lift_container(struct container *con)
 
 void focus_top_container(struct monitor *m, enum focus_actions a)
 {
-    wl_list_for_each(m, &mons, link) {
-        bool focus = false;
-
-        // focus_stack should not be changed while iterating
-        struct container *con;
-        wl_list_for_each(con, &m->focus_stack, flink)
-            if (visibleon(con, m)) {
-                focus = true;
-                break;
-            }
-        if (focus)
-            focus_container(m, con, a);
-    }
+    // focus_stack should not be changed while iterating
+    struct container *con;
+    bool focus = false;
+    wl_list_for_each(con, &m->focus_stack, flink)
+        if (visibleon(con, m)) {
+            focus = true;
+            break;
+        }
+    if (focus)
+        focus_container(m, con, a);
 }
 
 bool existon(struct container *con, struct monitor *m)

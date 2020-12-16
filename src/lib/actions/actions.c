@@ -324,9 +324,9 @@ void motionnotify(uint32_t time)
         }
     }
 
-    /* If there's no client surface under the server.cursor, set the cursor image to a
-     * default. This is what makes the cursor image appear when you move it
-     * off of a client or over its border. */
+    /* If there's no client surface under the server.cursor, set the cursor
+     * image to a default. This is what makes the cursor image appear when you
+     * move it off of a client or over its border. */
     wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
             "left_ptr", server.cursor);
 

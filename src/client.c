@@ -42,7 +42,7 @@ bool visibleon_tag(struct client *c, size_t focusedTag)
     return c->tagset->selTags[0] & position_to_flag(focusedTag);
 }
 
-static void unfocusClient(struct client *c)
+static void unfocus_client(struct client *c)
 {
     if (!c)
         return;
@@ -64,7 +64,7 @@ void focus_client(struct client *old, struct client *c)
 {
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
 
-    unfocusClient(old);
+    unfocus_client(old);
     /* Update wlroots' keyboard focus */
     if (!c) {
         /* With no client, all we have left is to clear focus */

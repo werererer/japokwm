@@ -108,7 +108,7 @@ void destroy_monitor(struct wl_listener *listener, void *data)
     struct wlr_output *wlr_output = data;
     struct monitor *m = wlr_output->data;
 
-    wl_list_remove(&m->destroy.link);
+    wl_list_remove(&m->link);
     free(m);
 }
 

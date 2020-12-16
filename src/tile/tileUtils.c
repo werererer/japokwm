@@ -137,9 +137,9 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
                         con->geom.width, con->geom.height);
                 break;
             case LAYER_SHELL:
-                printf("set LAYER_SHELL\n");
                 wlr_layer_surface_v1_configure(con->client->surface.layer,
-                        con->geom.width, con->geom.height);
+                        selected_monitor->geom.width,
+                        selected_monitor->geom.height);
                 break;
             case X11_MANAGED:
             case X11_UNMANAGED:
