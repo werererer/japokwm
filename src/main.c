@@ -543,6 +543,7 @@ void maprequest(struct wl_listener *listener, void *data)
             }
             break;
         case LAYER_SHELL:
+            wl_list_insert(&clients, &c->link);
             wl_list_for_each(m, &mons, link) {
                 create_container(c, m);
             }
@@ -845,9 +846,11 @@ void unmapnotify(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
+    printf("unmapnotify\n");
     destroy_tagset(c->tagset);
     switch (c->type) {
         case LAYER_SHELL:
+            wl_list_remove(&c->link);
             break;
         case XDG_SHELL:
             wl_list_remove(&c->link);
@@ -859,6 +862,7 @@ void unmapnotify(struct wl_listener *listener, void *data)
             wl_list_remove(&c->ilink);
             break;
     }
+    printf("done\n");
 }
 
 void activatex11(struct wl_listener *listener, void *data)

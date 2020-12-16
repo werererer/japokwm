@@ -33,12 +33,14 @@ void destroy_container(struct container *con)
 {
     wl_list_remove(&con->clink);
     wl_list_remove(&con->flink);
-    wl_list_remove(&con->slink);
     struct client *c = con->client;
-    if (c->type == LAYER_SHELL)
+
+    if (c->type == LAYER_SHELL) {
         wl_list_remove(&con->llink);
-    else
+    } else {
+        wl_list_remove(&con->slink);
         wl_list_remove(&con->mlink);
+    }
     free(con);
 }
 
