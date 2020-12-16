@@ -1,7 +1,7 @@
 require "defaultConfig"
 
 sloppyFocus = true
-borderPx = 5
+borderPx = 2
 rootColor = {0.3, 0.3, 0.3, 1.0}
 borderColor = {0.3, 0.3, 0.3, 1.0}
 focusColor = {1.0, 0.0, 0.0, 0.0}
@@ -20,10 +20,10 @@ rules = {
 }
 
 layouts = {
+    { "gf", function(n) loadLayout("tmp") end },
     {"[M]", function(n) monocle(n) end},
     {"[]=", function(n) tile(n) end},
     {"||", function(n) twoPane(n) end},
-    { "gf", function(n) loadLayout("tmp") end },
 }
 
 defaultLayout = layouts[1]
@@ -63,7 +63,7 @@ keys = {
     {mod.." b",           function(n) action.toggleConsiderLayerShell() end},
     {mod.." "..shift.." w",           function(n) setLayout(4) end},
     {mod.." "..shift.." l",           function(n) resizeThisAll(1/10, Direction.RIGHT) end},
-    {mod..""..shift.." h",           function(n) resizeThisAll(-(1/10), Direction.RIGHT) end},
+    {mod.." "..shift.." h",           function(n) resizeThisAll(-(1/10), Direction.RIGHT) end},
     {mod.." "..shift.." s",    function(n) action.writeThisOverlay("tmp") end},
     -- {mod.." parenright",  function(n) tag(~0) end},
     -- {mod.." greater",     function(n) tagmon(1) end},
