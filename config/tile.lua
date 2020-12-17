@@ -150,11 +150,13 @@ end
 
 function count(i, j, d)
     local container = layoutData[i][j]
-    local k = 0
+    local list = {}
+    -- 100%
+    local startv = container[1] + container[3]
+    local full = 1 - startv
     for j2 = 1, #layoutData[i] do
         local con = layoutData[i][j2]
         local resize = false
-        local nresize = false
 
         if j == j2 then
         else
@@ -170,11 +172,19 @@ function count(i, j, d)
             end
 
             if resize then
-                k = k + 1
+                startv = container[1] + container[3]
+                local d = {con[1]-startv, con[2], con[3], con[4], i, j2}
+                print("x/x2:", con[1], startv, full)
+                d[1] = d[1]/full
+                d[2] = d[2]
+                d[3] = d[3]/full
+                d[4] = d[4]
+                print(d[1], d[2], d[3], d[4])
+                table.insert(list, d)
             end
         end
     end
-    return k
+    return list
 end
 
 function getNextMove(nmove, nresize)
@@ -191,56 +201,32 @@ end
 
 function resizeAll(i, j, n, d)
     local container = layoutData[i][j]
-    local k = count(i, j, d)
     local nmove = 0
 
-    print("K: ", k)
+    local g = count(i, j, d)
+    layoutData[i][j] = moveResize(container, 0, n, d)
+    nmove = getNextMove(0, n)
+    print(g[1], g[2], g[3], g[4])
+
+    local k = #g
     if k < 1 then
         k = 1
     end
-    layoutData[i][j] = moveResize(container, 0, n, d)
-    nmove = getNextMove(0, n)
-    print(nmove)
     local startv = 1
     local endv = #layoutData[i]
     local step = 1
 
-    if d == Direction.LEFT then
-        startv = #layoutData[i]
-        endv = 1
-        step = -1
-    end
-
-    for j2 = startv,endv,step do
-        local con = layoutData[i][j2]
-        local resize = false
-        local nresize = false
-
-        if j2 == j then
-        else
-            -- resize container[i][j]?
-            if d == Direction.TOP then
-                resize = con[2] <= container[2]
-            elseif d == Direction.BOTTOM then
-                resize = con[2] >= container[2]
-            elseif d == Direction.LEFT then
-                nresize = container[1] > con[1]
-            elseif d == Direction.RIGHT then
-                resize = container[1] < con[1]
-            end
-
-            if resize then
-                print("if resize")
-                layoutData[i][j2] = moveResize(con, nmove, -n/k, d)
-                nmove = getNextMove(nmove, -n/k)
-            end
-            if nresize then
-                print("else resize")
-                layoutData[i][j2] = moveResize(con, nmove, -n/k, d)
-                nmove = getNextMove(nmove, -n/k)
-                print(nmove)
-            end
-        end
+    for k = 1,#g do
+        local li = g[k][5]
+        local lj = g[k][6]
+        local startv = layoutData[i][j][1] + layoutData[i][j][3]
+        local newWidth = 1 - startv
+        print("start", li, lj, startv, newWidth)
+        layoutData[li][lj][1] = startv + (g[k][1] * newWidth)
+        print("continue")
+        layoutData[li][lj][2] = g[k][2]
+        layoutData[li][lj][3] = g[k][3] * newWidth
+        layoutData[li][lj][4] = g[k][4]
     end
 end
 

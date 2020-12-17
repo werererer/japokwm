@@ -21,8 +21,8 @@ rules = {
 
 layouts = {
     { "gf", function(n) loadLayout("tmp") end },
-    {"[M]", function(n) monocle(n) end},
     {"[]=", function(n) tile(n) end},
+    {"[M]", function(n) monocle(n) end},
     {"||", function(n) twoPane(n) end},
 }
 
