@@ -10,6 +10,17 @@
 -- function recurse(arr)
 --     a = arr[size(arr)] 
 -- end
+Direction = {
+    TOP = 1,
+    BOTTOM = 2,
+    LEFT = 3,
+    RIGHT = 4,
+}
+
+local X<const> = 1
+local Y<const> = 2
+local WIDTH<const> = 3
+local HEIGHT<const> = 4
 
 layoutData = {
     {
@@ -25,13 +36,13 @@ function splitContainer(i, j, ratio)
     container = layoutData[i][j]
 
     print(i, j)
-    x = container[1]
-    y = container[2]
-    width = container[3]
-    height = container[4]
+    x = container[X]
+    y = container[Y]
+    width = container[WIDTH]
+    height = container[HEIGHT]
 
-    container[4] = height * ratio
-    newContainer = {x, y + container[4], width, height * (1-ratio)}
+    container[HEIGHT] = height * ratio
+    newContainer = {x, y + container[HEIGHT], width, height * (1-ratio)}
 
     table.insert(layoutData[i], newContainer)
     action.arrangeThis(false)
@@ -51,13 +62,13 @@ function vsplitContainer(i, j, ratio)
     container = layoutData[i][j]
 
     print(i, j)
-    x = container[1]
-    y = container[2]
-    width = container[3]
-    height = container[4]
+    x = container[X]
+    y = container[Y]
+    width = container[WIDTH]
+    height = container[HEIGHT]
 
-    container[3] = width * ratio
-    newContainer = {x + container[3], y, width * (1-ratio), height}
+    container[WIDTH] = width * ratio
+    newContainer = {x + container[WIDTH], y, width * (1-ratio), height}
 
     table.insert(layoutData[i], newContainer)
     action.arrangeThis(false)
@@ -83,35 +94,28 @@ function mergeContainer(i, j1, j2)
     local container1 = layoutData[i][j1]
     local container2 = layoutData[i][j2]
 
-    local x = math.min(container1[1], container2[1])
-    local y = math.min(container1[2], container2[2])
-    local width = math.max(container1[1] + container1[3],
-                container2[1] + container2[3]) - x
-    local height = math.max(container1[2] + container1[4],
-                container2[2] + container2[4]) - y
+    local x = math.min(container1[X], container2[X])
+    local y = math.min(container1[Y], container2[Y])
+    local width = math.max(container1[X] + container1[WIDTH],
+                container2[X] + container2[WIDTH]) - x
+    local height = math.max(container1[Y] + container1[HEIGHT],
+                container2[Y] + container2[HEIGHT]) - y
     local newContainer = {x, y, width, height}
 
     layoutData[i][math.min(j1, j2)] = newContainer
     action.arrangeThis(false)
 end
 
-Direction = {
-    TOP = 1,
-    BOTTOM = 2,
-    LEFT = 3,
-    RIGHT = 4,
-}
-
 function moveContainer(container, n, d)
     local con = container
     if d == Direction.TOP then
-        con = {con[1], con[2] - n, con[3], con[4]}
+        con[Y] = con[Y] - n
     elseif d == Direction.BOTTOM then
-        con = {con[1], con[2] + n, con[3], con[4]}
+        con[Y] = con[Y] + n
     elseif d == Direction.LEFT then
-        con = {con[1] + n, con[2], con[3], con[4]}
+        con[X] = con[X] + n
     elseif d == Direction.RIGHT then
-        con = {con[1] + n, con[2], con[3], con[4]}
+        con[X] = con[X] + n
     end
     return con
 end
@@ -119,24 +123,23 @@ end
 function moveThisContainer(n, d)
     local i = max(min(thisTiledClientCount(), length(layoutData)), 1)
     local j = min(clientPos(), length(layoutData[i]))
-    layoutData[i][j] = moveContainer(layoutData[i][j], n, d)
+    local container = layoutData[i][j]
+    layoutData[i][j] = moveContainer(container, n, d)
     arrangeThis(false)
 end
 
 function resizeContainer(container, n, d)
     local con = container
     if d == Direction.TOP then
-        con = {con[1], con[2] - n, con[3],
-        con[4] + n}
+        con[Y] = con[Y] - n
+        con[HEIGHT] = con[HEIGHT] + n
     elseif d == Direction.BOTTOM then
-        con = {con[1], con[2], con[3],
-        con[4] + n}
+        con[HEIGHT] = con[HEIGHT] + n
     elseif d == Direction.LEFT then
-        con = {con[1] + n, con[2],
-        con[3] - n, con[4]}
+        con[X] = con[X] + n
+        con[WIDTH] = con[WIDTH] - n
     elseif d == Direction.RIGHT then
-        con = {con[1], con[2], con[3] + n,
-        con[4]}
+        con[WIDTH] = con[WIDTH] + n
     end
     return con
 end
@@ -148,56 +151,6 @@ function resizeThisContainer(n, d)
     action.arrangeThis(false)
 end
 
-function count(i, j, d)
-    local container = layoutData[i][j]
-    local list = {}
-    local startx, starty, width, height = getStartv(i, j, d)
-    for j2 = 1, #layoutData[i] do
-        local con = layoutData[i][j2]
-        local resize = false
-
-        if j == j2 then
-        else
-            -- resize container[i][j]?
-            if d == Direction.TOP then
-                resize = con[2] < container[2]
-                local left = con[1] >= container[1] + container[3]
-                local right = con[1] + con[3] <= container[1]
-                resize = resize and not (over or under)
-            elseif d == Direction.BOTTOM then
-                resize = con[2] > container[2]
-                local left = con[1] >= container[1] + container[3]
-                local right = con[1] + con[3] <= container[1]
-                resize = resize and not (left or right)
-            elseif d == Direction.LEFT then
-                resize = con[1] < container[1]
-                over = con[2] >= container[2] + container[4]
-                under = con[2] + con[4] <= container[2]
-                resize = resize and not (over or under)
-            elseif d == Direction.RIGHT then
-                resize = con[1] > container[1]
-                over = con[2] >= container[2] + container[4]
-                under = con[2] + con[4] <= container[2]
-                resize = resize and not (over or under)
-            end
-
-            if resize then
-                local d = {con[1], con[2], con[3], con[4], i, j2}
-                d[1] = (d[1]-startx)/width
-                d[2] = (d[2]-starty)/height
-                d[3] = d[3]/width
-                d[4] = d[4]/height
-                table.insert(list, d)
-            end
-        end
-    end
-    return list
-end
-
-function getNextMove(nmove, nresize)
-    return nmove + nresize
-end
-
 function moveResize(container, nmove, nresize, d)
     local con = container
     print("mr:", nmove, nresize)
@@ -206,70 +159,102 @@ function moveResize(container, nmove, nresize, d)
     return con
 end
 
-function getStartv(i, j, d)
-    local startx, starty, width, height = 0, 0, 1, 1
+-- if d == Direction.LEFT then "raytrace" to the left like that and return the
+-- geometry of that area
+-- +--------------------------+
+-- |< - - - - +---------+     |
+-- ||         |         |     |
+-- ||    a    |    o    |     |
+-- ||         |         |     |
+-- |< - - - - +---------+     |
+-- +--------------------------+
+-- where w is the original window and a is the alternative window
+function getAlternativeContainer(container, d)
+    local alt = {0, 0, 1, 1}
     if d == Direction.TOP then
-        starty = 0
-        height = layoutData[i][j][2]
+        alt[Y] = 0
+        alt[HEIGHT] = container[Y]
     elseif d == Direction.BOTTOM then
-        starty = layoutData[i][j][2] + layoutData[i][j][4]
-        height = 1 - starty
+        alt[Y] = container[Y] + container[HEIGHT]
+        alt[HEIGHT] = 1 - container[Y]
     elseif d == Direction.LEFT then
-        startx = 0
-        width = layoutData[i][j][1]
+        alt[X] = 0
+        alt[WIDTH] = container[X]
     elseif d == Direction.RIGHT then
-        startx = layoutData[i][j][1] + layoutData[i][j][3]
-        width = 1 - startx
+        alt[X] = container[X] + container[WIDTH]
+        alt[WIDTH] = 1 - alt[X]
     end
-    return startx, starty, width, height
+    return alt
 end
+
+-- returns whether container2 is effected
+function isEffectedByResizeOf(container, container2, d)
+    local resize = false
+    if d == Direction.TOP then
+        resize = container2[Y] < container[Y]
+        local left = container2[X] >= container[X] + container[WIDTH]
+        local right = container2[X] + container2[WIDTH] <= container[X]
+        resize = resize and not (left or right)
+    elseif d == Direction.BOTTOM then
+        resize = container2[Y] > container[Y]
+        local left = container2[X] >= container[X] + container[WIDTH]
+        local right = container2[X] + container2[WIDTH] <= container[X]
+        resize = resize and not (left or right)
+    elseif d == Direction.LEFT then
+        resize = container2[X] < container[X]
+        local over = container2[Y] >= container[Y] + container[HEIGHT]
+        local under = container2[Y] + container2[HEIGHT] <= container[Y]
+        resize = resize and not (over or under)
+    elseif d == Direction.RIGHT then
+        resize = container[X] > container2[X]
+        local over = container2[Y] >= container[Y] + container[HEIGHT]
+        local under = container2[Y] + container2[HEIGHT] <= container[Y]
+        resize = resize and not (over or under)
+    end
+    return resize
+end
+
+-- finds containers that are effected by the container at i,j
+function getResizeEffectedContainers(i, j, d)
+    local container = layoutData[i][j]
+    local list = {}
+    local altCon = getAlternativeContainer(container, d)
+
+    for j2 = 1, #layoutData[i] do
+        local con = layoutData[i][j2]
+        local resize = false
+
+        if j ~= j2 then
+            if isEffectedByResizeOf(con, container, d) then
+                print("effected")
+                local d = {con[X], con[Y], con[WIDTH], con[HEIGHT], i, j2}
+                d[X] = (d[X]-altCon[X])/altCon[WIDTH]
+                d[Y] = (d[Y]-altCon[Y])/altCon[HEIGHT]
+                d[WIDTH] = d[WIDTH]/altCon[WIDTH]
+                d[HEIGHT] = d[HEIGHT]/altCon[HEIGHT]
+                table.insert(list, d)
+            end
+        end
+    end
+    return list
+end
+
 
 function resizeAll(i, j, n, d)
     local container = layoutData[i][j]
-    local g = count(i, j, d)
+    local resizeContainers = getResizeEffectedContainers(i, j, d)
     layoutData[i][j] = moveResize(container, 0, n, d)
-    local startx, starty, width, height = getStartv(i, j, d)
+    local altCon = getAlternativeContainer(container, d)
 
-    for k = 1,#g do
-        local li = g[k][5]
-        local lj = g[k][6]
-        layoutData[li][lj][1] = startx + (g[k][1] * width)
-        layoutData[li][lj][2] = starty + (g[k][2] * height)
-        layoutData[li][lj][3] = g[k][3] * width
-        layoutData[li][lj][4] = g[k][4] * height
+    for k = 1,#resizeContainers do
+        print("go")
+        local li = resizeContainers[k][5]
+        local lj = resizeContainers[k][6]
+        layoutData[li][lj][X] = altCon[X] + (resizeContainers[k][X] * altCon[WIDTH])
+        layoutData[li][lj][Y] = altCon[Y] + (resizeContainers[k][Y] * altCon[HEIGHT])
+        layoutData[li][lj][WIDTH] = resizeContainers[k][WIDTH] * altCon[WIDTH]
+        layoutData[li][lj][HEIGHT] = resizeContainers[k][HEIGHT] * altCon[HEIGHT]
     end
-    -- layoutData[i][j2] = moveResize(con, nmove, -n/k, d)
-
-    -- for j2 = startv,endv,step do
-    --     local con = layoutData[i][j2]
-    --     local resize = false
-    --     local nresize = false
-
-    --     if j2 == j then
-    --     else
-    --         -- resize container[i][j]?
-    --         if d == Direction.TOP then
-    --             resize = con[2] <= container[2]
-    --         elseif d == Direction.BOTTOM then
-    --             resize = con[2] >= container[2]
-    --         elseif d == Direction.LEFT then
-    --             resize = container[1] > con[1]
-    --         elseif d == Direction.RIGHT then
-    --             resize = container[1] < con[1]
-    --         end
-
-    --         if resize then
-    --             -- print("if resize")
-    --             -- -- k is the number of windows right to this (this
-    --             -- -- window included)
-    --             -- -- layoutData[i][j2] = moveResize(con, nmove, -n/k, d)
-    --             -- layoutData[i][j2] = moveResize(con, nmove, -n/k, d)
-    --             -- -- nmove is the move of the next window right to
-    --             -- -- this
-    --             -- nmove = getNextMove(nmove, -n/k)
-    --         end
-    --     end
-    -- end
 end
 
 function resizeMainAll(n, d)
