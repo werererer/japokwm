@@ -132,8 +132,8 @@ function resizeContainer(container, n, d)
         con = {con[1], con[2], con[3],
         con[4] + n}
     elseif d == Direction.LEFT then
-        con = {con[1], con[2],
-        con[3] + n, con[4]}
+        con = {con[1] + n, con[2],
+        con[3] - n, con[4]}
     elseif d == Direction.RIGHT then
         con = {con[1], con[2], con[3] + n,
         con[4]}
@@ -152,36 +152,25 @@ function count(i, j, d)
     local container = layoutData[i][j]
     local k = 0
     for j2 = 1, #layoutData[i] do
+        local con = layoutData[i][j2]
+        local resize = false
+        local nresize = false
+
         if j == j2 then
         else
             -- resize container[i][j]?
             if d == Direction.TOP then
-                resize = layoutData[i][j2][2] <= container[2]
+                resize = con[2] <= container[2]
             elseif d == Direction.BOTTOM then
-                resize = layoutData[i][j2][2] >= container[2]
+                resize = con[2] >= container[2]
             elseif d == Direction.LEFT then
-                -- resize = layoutData[i][j2][1] < container[1]
-                -- nresize = layoutData[i][j2][1] < container[1]
-                nresize = container[1] < layoutData[i][j2][1]
-                -- r = layoutData[i][j2][2] + layoutData[i][j2][4] <= container[2] or container[2] + container[4] <= layoutData[i][j2][2]
+                nresize = container[1] > con[1]
             elseif d == Direction.RIGHT then
-                nresize = container[1] > layoutData[i][j2][1]
-                resize = container[1] < layoutData[i][j2][1]
-                -- r = layoutData[i][j2][2] + layoutData[i][j2][4] <= container[2]
-                -- resize = layoutData[i][j2][1] > container[1]
-                r = layoutData[i][j2][2] + layoutData[i][j2][4] <= container[2] or container[2] + container[4] <= layoutData[i][j2][2]
-                -- resize = resize || layoutData[i][j2][2] <
+                resize = container[1] < con[1]
             end
 
             if resize then
                 k = k + 1
-            end
-            if nresize then
-                -- resizeContainer(i, j2, -n, d)
-                -- moveContainer(i, j2, -n, d)
-            end
-            if r then
-                -- resizeContainer(i, j2, n, d)
             end
         end
     end
@@ -204,15 +193,21 @@ function resizeAll(i, j, n, d)
     local container = layoutData[i][j]
     local k = count(i, j, d)
     local nmove = 0
+
+    print("K: ", k)
     if k < 1 then
         k = 1
     end
+    layoutData[i][j] = moveResize(container, 0, n, d)
+    nmove = getNextMove(0, n)
+    print(nmove)
+
     for j2 = 1, #layoutData[i] do
         local con = layoutData[i][j2]
+        local resize = false
+        local nresize = false
 
-        if con == container then
-            layoutData[i][j2] = moveResize(con, 0, n, d)
-            nmove = getNextMove(0, n)
+        if j2 == j then
         else
             -- resize container[i][j]?
             if d == Direction.TOP then
@@ -220,29 +215,21 @@ function resizeAll(i, j, n, d)
             elseif d == Direction.BOTTOM then
                 resize = con[2] >= container[2]
             elseif d == Direction.LEFT then
-                -- resize = con[1] < container[1]
-                -- nresize = con[1] < container[1]
-                nresize = container[1] < con[1]
-                -- r = con[2] + con[4] <= container[2] or container[2] + container[4] <= con[2]
-            elseif d == Direction.RIGHT then
                 nresize = container[1] > con[1]
+            elseif d == Direction.RIGHT then
                 resize = container[1] < con[1]
-                -- r = con[2] + con[4] <= container[2]
-                -- resize = con[1] > container[1]
-                r = con[2] + con[4] <= container[2] or container[2] + container[4] <= con[2]
-                -- resize = resize || con[2] <
             end
 
+            print("res:", resize)
             if resize then
+                print("if resize")
                 layoutData[i][j2] = moveResize(con, nmove, -n/k, d)
                 nmove = getNextMove(nmove, -n/k)
             end
             if nresize then
-                moveResize(con, -n, -n, d)
-            end
-            if r then
-                print("resizeContainer")
-                moveResize(con, 0, n, d);
+                print("else resize")
+                layoutData[i][j2] = moveResize(con, -nmove, -n/k, d)
+                nmove = getNextMove(nmove, -n/k)
             end
         end
     end
