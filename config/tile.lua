@@ -151,9 +151,7 @@ end
 function count(i, j, d)
     local container = layoutData[i][j]
     local list = {}
-    -- 100%
-    local startv = container[1] + container[3]
-    local full = 1 - startv
+    local startx, starty, width, height = getStartv(i, j, d)
     for j2 = 1, #layoutData[i] do
         local con = layoutData[i][j2]
         local resize = false
@@ -162,27 +160,33 @@ function count(i, j, d)
         else
             -- resize container[i][j]?
             if d == Direction.TOP then
-                resize = con[2] <= container[2]
+                resize = con[2] < container[2]
+                local left = con[1] >= container[1] + container[3]
+                local right = con[1] + con[3] <= container[1]
+                resize = resize and not (over or under)
             elseif d == Direction.BOTTOM then
-                resize = con[2] >= container[2]
+                resize = con[2] > container[2]
+                local left = con[1] >= container[1] + container[3]
+                local right = con[1] + con[3] <= container[1]
+                resize = resize and not (left or right)
             elseif d == Direction.LEFT then
                 resize = con[1] < container[1]
+                over = con[2] >= container[2] + container[4]
+                under = con[2] + con[4] <= container[2]
+                resize = resize and not (over or under)
             elseif d == Direction.RIGHT then
                 resize = con[1] > container[1]
                 over = con[2] >= container[2] + container[4]
                 under = con[2] + con[4] <= container[2]
                 resize = resize and not (over or under)
-                print(resize, con[2] > container[2] + container[4], con[2] + con[4] < container[2])
             end
 
             if resize then
-                startv = container[1] + container[3]
-                local d = {con[1]-startv, con[2], con[3], con[4], i, j2}
-                d[1] = d[1]/full
-                d[2] = d[2]
-                d[3] = d[3]/full
-                d[4] = d[4]
-                print(d[1], d[2], d[3], d[4])
+                local d = {con[1], con[2], con[3], con[4], i, j2}
+                d[1] = (d[1]-startx)/width
+                d[2] = (d[2]-starty)/height
+                d[3] = d[3]/width
+                d[4] = d[4]/height
                 table.insert(list, d)
             end
         end
@@ -202,32 +206,37 @@ function moveResize(container, nmove, nresize, d)
     return con
 end
 
+function getStartv(i, j, d)
+    local startx, starty, width, height = 0, 0, 1, 1
+    if d == Direction.TOP then
+        starty = 0
+        height = layoutData[i][j][2]
+    elseif d == Direction.BOTTOM then
+        starty = layoutData[i][j][2] + layoutData[i][j][4]
+        height = 1 - starty
+    elseif d == Direction.LEFT then
+        startx = 0
+        width = layoutData[i][j][1]
+    elseif d == Direction.RIGHT then
+        startx = layoutData[i][j][1] + layoutData[i][j][3]
+        width = 1 - startx
+    end
+    return startx, starty, width, height
+end
+
 function resizeAll(i, j, n, d)
     local container = layoutData[i][j]
-    local nmove = 0
-
     local g = count(i, j, d)
     layoutData[i][j] = moveResize(container, 0, n, d)
-    nmove = getNextMove(0, n)
-    print(g[1], g[2], g[3], g[4])
-
-    local k = #g
-    if k < 1 then
-        k = 1
-    end
-    local startv = 1
-    local endv = #layoutData[i]
-    local step = 1
+    local startx, starty, width, height = getStartv(i, j, d)
 
     for k = 1,#g do
         local li = g[k][5]
         local lj = g[k][6]
-        local startv = layoutData[i][j][1] + layoutData[i][j][3]
-        local newWidth = 1 - startv
-        layoutData[li][lj][1] = startv + (g[k][1] * newWidth)
-        layoutData[li][lj][2] = g[k][2]
-        layoutData[li][lj][3] = g[k][3] * newWidth
-        layoutData[li][lj][4] = g[k][4]
+        layoutData[li][lj][1] = startx + (g[k][1] * width)
+        layoutData[li][lj][2] = starty + (g[k][2] * height)
+        layoutData[li][lj][3] = g[k][3] * width
+        layoutData[li][lj][4] = g[k][4] * height
     end
     -- layoutData[i][j2] = moveResize(con, nmove, -n/k, d)
 
