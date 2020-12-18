@@ -10,6 +10,7 @@
 #include "ipc-json.h"
 #include "server.h"
 #include "container.h"
+#include "client.h"
 
 static json_object *ipc_json_create_rect(struct wlr_box *box) {
     json_object *rect = json_object_new_object();
@@ -69,9 +70,9 @@ struct focus_inactive_data {
     json_object *object;
 };
 
-json_object *ipc_json_describe_tag(struct tag *tag, bool focused, bool selected) {
-    struct wlr_box *box;
-    box = &selected_monitor->geom;
+json_object *ipc_json_describe_tag(struct monitor *m, struct tag *tag, bool focused, bool selected) {
+    struct wlr_box box;
+    box = m->geom;
 
     int i = strlen(tag->name) + 1;
     char s[i];
@@ -80,11 +81,11 @@ json_object *ipc_json_describe_tag(struct tag *tag, bool focused, bool selected)
     // TODO expose symbol
     if (focused)
         strcat(s, "*");
-    json_object *object = ipc_json_create_node(0, s, selected, false, NULL, box);
+    json_object *object = ipc_json_create_node(0, s, selected, false, NULL, &box);
     json_object_object_add(object, "num", json_object_new_int(0));
     json_object_object_add(object, "fullscreen_mode", json_object_new_int(0));
-    json_object_object_add(object, "output", selected_monitor->wlr_output ?
-            json_object_new_string(selected_monitor->wlr_output->name) : NULL);
+    json_object_object_add(object, "output", m->wlr_output ?
+            json_object_new_string(m->wlr_output->name) : NULL);
     json_object_object_add(object, "type", json_object_new_string("workspace"));
     json_object_object_add(object, "urgent",
             json_object_new_boolean(false)); 
@@ -93,12 +94,12 @@ json_object *ipc_json_describe_tag(struct tag *tag, bool focused, bool selected)
     return object;
 }
 
-json_object *ipc_json_describe_node(struct client *c) {
-    bool focused = selected_container(selected_monitor)->client == c;
+json_object *ipc_json_describe_node(struct monitor *m, struct client *c) {
+    bool focused = selected_container(m)->client == c;
     char *title = c->title;
 
     struct wlr_box *box;
-    box = &selected_monitor->geom;
+    box = &m->geom;
 
     json_object *focus = json_object_new_array();
 

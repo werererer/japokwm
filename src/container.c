@@ -12,7 +12,6 @@ static void add_container_to_monitor_stack(struct monitor *m, struct container *
 
 struct container *create_container(struct client *c, struct monitor *m)
 {
-    printf("create container\n");
     struct container *con = calloc(1, sizeof(struct container));
     con->m = m;
     con->client = c;
@@ -299,7 +298,6 @@ void focus_container(struct monitor *m, struct container *con, enum focus_action
     struct container *sel = selected_container(m);
 
     if (!con) {
-        printf("clear focus\n");
         /* With no client, all we have left is to clear focus */
         wlr_seat_keyboard_notify_clear_focus(server.seat);
         return;

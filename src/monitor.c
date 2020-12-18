@@ -137,6 +137,19 @@ struct monitor *dirtomon(int dir)
     }
 }
 
+struct monitor *outputtomon(struct wlr_output *output)
+{
+    struct monitor *m;
+    bool found = false;
+    wl_list_for_each(m, &mons, link) {
+        if (m->wlr_output == output) {
+            found = true;
+            break;
+        }
+    }
+    return found ? m : NULL;
+}
+
 struct monitor *xytomon(double x, double y)
 {
     struct wlr_output *o = wlr_output_layout_output_at(output_layout, x, y);

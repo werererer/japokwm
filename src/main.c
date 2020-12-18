@@ -81,7 +81,7 @@ void cleanupkeyboard(struct wl_listener *listener, void *data);
 void commitnotify(struct wl_listener *listener, void *data);
 void createkeyboard(struct wlr_input_device *device);
 void createnotify(struct wl_listener *listener, void *data);
-void createnotifyLayerShell(struct wl_listener *listener, void *data);
+void createnotify_layer_shell(struct wl_listener *listener, void *data);
 void createpointer(struct wlr_input_device *device);
 void createxdeco(struct wl_listener *listener, void *data);
 void cursorframe(struct wl_listener *listener, void *data);
@@ -115,7 +115,7 @@ static struct wl_listener new_input = {.notify = inputdevice};
 static struct wl_listener new_output = {.notify = create_monitor};
 static struct wl_listener new_xdeco = {.notify = createxdeco};
 static struct wl_listener new_xdg_surface = {.notify = createnotify};
-static struct wl_listener new_layer_shell_surface = {.notify = createnotifyLayerShell};
+static struct wl_listener new_layer_shell_surface = {.notify = createnotify_layer_shell};
 static struct wl_listener request_cursor = {.notify = set_cursor};
 static struct wl_listener request_set_psel = {.notify = setpsel};
 static struct wl_listener request_set_sel = {.notify = setsel};
@@ -266,7 +266,6 @@ void createnotify(struct wl_listener *listener, void *data)
     /* This event is raised when wlr_xdg_shell receives a new xdg surface from a
      * client, either a toplevel (application window) or popup. */
     struct wlr_xdg_surface *xdg_surface = data;
-    printf("createnotify\n");
 
     if (xdg_surface->role != WLR_XDG_SURFACE_ROLE_TOPLEVEL)
         return;
@@ -295,7 +294,7 @@ void createnotify(struct wl_listener *listener, void *data)
     wl_signal_add(&xdg_surface->events.new_popup, &c->new_popup);
 }
 
-void createnotifyLayerShell(struct wl_listener *listener, void *data)
+void createnotify_layer_shell(struct wl_listener *listener, void *data)
 {
     /* This event is raised when wlr_xdg_shell receives a new xdg surface from a
      * client, either a toplevel (application window) or popup. */
@@ -320,6 +319,7 @@ void createnotifyLayerShell(struct wl_listener *listener, void *data)
     // TODO: remove this line
     wlr_layer_surface_v1_configure(c->surface.layer,
             selected_monitor->geom.width, selected_monitor->geom.height);
+
     /* popups */
     c->new_popup.notify = popup_handle_new_popup;
     wl_signal_add(&layer_surface->events.new_popup, &c->new_popup);
@@ -528,11 +528,11 @@ void maprequest(struct wl_listener *listener, void *data)
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
 
-    c->tagset = create_tagset(&tag_names, selected_monitor->tagset->focusedTag,
-            selected_monitor->tagset->selTags[0]);
+    printf("maprequest\n");
+    struct monitor *m = selected_monitor;
+    c->tagset = create_tagset(&tag_names, m->tagset->focusedTag,
+            m->tagset->selTags[0]);
     wl_list_init(&c->containers);
-
-    struct monitor *m;
 
     switch (c->type) {
         case XDG_SHELL:
@@ -543,11 +543,13 @@ void maprequest(struct wl_listener *listener, void *data)
             }
             break;
         case LAYER_SHELL:
-            wl_list_insert(&clients, &c->link);
-            wl_list_for_each(m, &mons, link) {
+            {
+                struct monitor *m = outputtomon(c->surface.layer->output);
+                wl_list_insert(&clients, &c->link);
+                wlr_layer_surface_v1_configure(c->surface.layer, m->geom.width, m->geom.height);
                 create_container(c, m);
+                break;
             }
-            break;
         case X11_UNMANAGED:
             wl_list_insert(&server.independents, &c->ilink);
             break;

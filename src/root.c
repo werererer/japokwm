@@ -21,8 +21,8 @@ static void set_layer_shell(struct container *con)
         con->geom.height = con->client->surface.layer->current.desired_height;
     else
         con->geom.height = selected_monitor->wlr_output->height;
-    wlr_layer_surface_v1_configure(con->client->surface.layer, con->geom.width,
-            con->geom.height);
+    /* wlr_layer_surface_v1_configure(con->client->surface.layer, con->geom.width, */
+    /*         con->geom.height); */
     resize(con, con->geom, false);
 }
 

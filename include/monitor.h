@@ -34,6 +34,7 @@ void focusmon(int i);
 void set_selected_monitor(struct monitor *m);
 
 struct monitor *dirtomon(int dir);
+struct monitor *outputtomon(struct wlr_output *output);
 struct monitor *xytomon(double x, double y);
 
 extern struct wl_list mons;

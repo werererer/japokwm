@@ -3,7 +3,7 @@
 #include <json.h>
 #include "client.h"
 
-json_object *ipc_json_describe_tag(struct tag *tag, bool focused, bool selected);
-json_object *ipc_json_describe_node(struct client *c);
+json_object *ipc_json_describe_tag(struct monitor *m, struct tag *tag, bool focused, bool selected);
+json_object *ipc_json_describe_node(struct monitor *m, struct client *c);
 
 #endif

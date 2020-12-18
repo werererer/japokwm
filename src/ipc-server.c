@@ -390,24 +390,29 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
 
     switch (payload_type) {
         case IPC_COMMAND:
-            executeCommand(buf);
+            execute_command(buf);
             ipc_send_reply(client, payload_type, "", strlen(""));
             goto exit_cleanup;
             break;
         case IPC_GET_WORKSPACES:
             {
+                printf("execute IPC_GET_WORKSPACES\n");
                 json_object *array = json_object_new_array();
+
                 struct tagset *tagset = selected_monitor->tagset;
                 for (int i = 0; i < tagset->tags.length; i++) {
-                    json_object_array_add(
-                            array,
-                            ipc_json_describe_tag(
+                    struct monitor *m;
+                    wl_list_for_each(m, &mons, link) {
+                        json_object *tag = ipc_json_describe_tag(
+                                m,
                                 get_tag_from_tagset(tagset, i),
-                                (tagset->focusedTag == i),
-                                (tagset->selTags[0] & position_to_flag(i))
-                                ));
+                                tagset->focusedTag == i,
+                                tagset->selTags[0] & position_to_flag(i));
+                        json_object_array_add(array, tag);
+                    }
                 }
-                const char * json_string = json_object_get_string(array);
+
+                const char *json_string = json_object_get_string(array);
                 ipc_send_reply(client, payload_type, json_string,
                         strlen(json_string));
                 json_object_put(array); // free

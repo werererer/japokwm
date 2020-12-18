@@ -9,7 +9,7 @@
 #include "stringop.h"
 #include "keybinding.h"
 
-void executeCommand(const char *_exec)
+void execute_command(const char *_exec)
 {
     // Split command list
     char *exec = strdup(_exec);
