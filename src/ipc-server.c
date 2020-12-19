@@ -396,7 +396,6 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
             break;
         case IPC_GET_WORKSPACES:
             {
-                printf("execute IPC_GET_WORKSPACES\n");
                 json_object *array = json_object_new_array();
 
                 struct monitor *m;

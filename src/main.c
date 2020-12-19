@@ -528,7 +528,6 @@ void maprequest(struct wl_listener *listener, void *data)
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
 
-    printf("maprequest\n");
     struct monitor *m = selected_monitor;
     c->tagset = create_tagset(&tag_names, m->tagset->focusedTag,
             m->tagset->selTags[0]);
@@ -755,7 +754,6 @@ int setup()
      * https://drewdevault.com/2018/07/29/Wayland-shells.html
      */
     wl_list_init(&clients);
-    wl_list_init(&popups);
     wl_list_init(&server.independents);
 
     server.xdgShell = wlr_xdg_shell_create(server.display);
@@ -848,7 +846,6 @@ void unmapnotify(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
-    printf("unmapnotify\n");
     destroy_tagset(c->tagset);
     switch (c->type) {
         case LAYER_SHELL:

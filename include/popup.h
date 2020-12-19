@@ -13,9 +13,9 @@ struct xdg_popup {
     struct wl_listener map;
     struct wl_listener destroy;
     struct wl_list plink;
+    struct monitor *m;
 };
 
-extern struct wl_list popups;
 void popup_handle_destroy(struct wl_listener *listener, void *data);
 void popup_handle_new_popup(struct wl_listener *listener, void *data);
 #endif /* POPUP_H */

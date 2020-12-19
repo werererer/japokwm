@@ -17,6 +17,8 @@ struct monitor {
     struct wl_list focus_stack;
     /* associated with llink in container */
     struct wl_list layer_stack;
+    /* associated with plink in container  */
+    struct wl_list popups;
 
     struct wlr_output *wlr_output;
     struct wl_listener frame;

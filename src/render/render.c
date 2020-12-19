@@ -196,7 +196,7 @@ static void render_independents(struct monitor *m)
 
 static void render_popups(struct monitor *m) {
     struct xdg_popup *popup;
-    wl_list_for_each_reverse(popup, &popups, plink) {
+    wl_list_for_each_reverse(popup, &m->popups, plink) {
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
         struct renderData rdata;

@@ -43,6 +43,7 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
         wlr_seat_pointer_notify_motion(server.seat, time, sx, sy);
         return;
     }
+    printf("enter\n");
     /* Otherwise, let the client know that the mouse cursor has entered one
      * of its surfaces, and make keyboard focus follow if desired. */
     wlr_seat_pointer_notify_enter(server.seat, surface, sx, sy);
@@ -314,8 +315,8 @@ void motionnotify(uint32_t time)
         }
 
         if (!surface && !is_popup) {
-            if (!wl_list_empty(&popups)) {
-                struct xdg_popup *popup = wl_container_of(popups.next, popup, plink);
+            if (!wl_list_empty(&m->popups)) {
+                struct xdg_popup *popup = wl_container_of(m->popups.next, popup, plink);
                 wlr_xdg_popup_destroy(popup->xdg->base);
             }
             surface = wlr_surface_surface_at(get_wlrsurface(con->client),

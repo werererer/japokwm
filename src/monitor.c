@@ -44,6 +44,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     wl_list_init(&m->stack);
     wl_list_init(&m->focus_stack);
     wl_list_init(&m->layer_stack);
+    wl_list_init(&m->popups);
 
     struct client *c;
     wl_list_for_each(c, &clients, link) {

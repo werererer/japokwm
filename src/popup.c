@@ -10,14 +10,12 @@
 #include "xdg-shell-protocol.h"
 #include "container.h"
 
-struct wl_list popups;
-
 static void popup_handle_new_subpopup(struct wl_listener *listener, void *data);
-static struct xdg_popup *create_popup(struct wlr_xdg_popup *xdg_popup,
+static struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popup,
         struct wlr_box parent_geom, struct container* toplevel);
 static void destroy_popup(struct xdg_popup *xdg_popup);
 
-static struct xdg_popup *create_popup(struct wlr_xdg_popup *xdg_popup,
+static struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popup,
         struct wlr_box parent_geom, struct container* toplevel)
 {
     struct xdg_popup *popup = xdg_popup->base->data =
@@ -26,10 +24,12 @@ static struct xdg_popup *create_popup(struct wlr_xdg_popup *xdg_popup,
     popup->toplevel = toplevel;
 
     // unconstrain
-    struct wlr_box *box = &selected_monitor->geom;
-    box->x = -popup->toplevel->geom.x;
-    box->y = -popup->toplevel->geom.y;
-    wlr_xdg_popup_unconstrain_from_box(popup->xdg, box);
+    struct wlr_box box = popup->xdg->geometry;
+    box.x = 0;
+    box.y = 0;
+    box.width = m->geom.width;
+    box.height = m->geom.height;
+    wlr_xdg_popup_unconstrain_from_box(popup->xdg, &box);
 
     // the root window may be resized. This must be adjusted
     popup->geom.x = popup->xdg->geometry.x + parent_geom.x;
@@ -52,19 +52,16 @@ static void destroy_popup(struct xdg_popup *xdg_popup)
 
 void popup_handle_new_popup(struct wl_listener *listener, void *data)
 {
-    printf("new popup\n");
     struct client *c = wl_container_of(listener, c, new_popup);
     struct wlr_xdg_popup *xdg_popup = data;
 
-    struct monitor *m;
-    wl_list_for_each(m, &mons, link) {
-        struct container *con;
-        wl_list_for_each(con, &m->stack, slink) {
-            if (con->client != c)
-                continue;
-            struct xdg_popup *popup = create_popup(xdg_popup, con->geom, con);
-            wl_list_insert(&popups, &popup->plink);
-        }
+    struct container *con;
+    wl_list_for_each(con, &c->containers, clink) {
+        if (con->m != selected_monitor)
+            continue;
+        struct xdg_popup *popup = create_popup(con->m, xdg_popup, con->geom, con);
+        popup->m = con->m;
+        wl_list_insert(&con->m->popups, &popup->plink);
     }
 }
 
@@ -75,9 +72,9 @@ static void popup_handle_new_subpopup(struct wl_listener *listener, void *data)
         wl_container_of(listener, parentPopup, new_popup);
     struct wlr_xdg_popup *xdg_popup = data;
 
-    struct xdg_popup *popup =
-        create_popup(xdg_popup, parentPopup->geom, parentPopup->toplevel);
-    wl_list_insert(&popups, &popup->plink);
+    struct xdg_popup *popup = create_popup(parentPopup->m, xdg_popup,
+            parentPopup->geom, parentPopup->toplevel);
+    wl_list_insert(&parentPopup->m->popups, &popup->plink);
 }
 
 void popup_handle_destroy(struct wl_listener *listener, void *data)
@@ -86,5 +83,4 @@ void popup_handle_destroy(struct wl_listener *listener, void *data)
     struct xdg_popup *popup = wl_container_of(listener, popup, destroy);
     wl_list_remove(&popup->plink);
     destroy_popup(popup);
-    printf("size: %i\n", wl_list_length(&popups));
 }

@@ -36,7 +36,7 @@ monrules = {
 xkb_rules = {}
 repeatRate = 25
 repeatDelay = 600
-termcmd = "/usr/bin/termite"
+termcmd = "/usr/bin/terminator"
 
 mod = mod1
 -- maps (between 1 and 4)
@@ -97,5 +97,3 @@ buttons = {
     {mod.." "..btnLeft,    function(n) action.moveResize(cursorMode.CurMove) end},
     {mod.." "..btnRight,   function(n) action.moveResize(cursorMode.CurResize) end},
 }
-
-print("init\n")
