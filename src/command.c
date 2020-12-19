@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <wordexp.h>
 #include <wlr/types/wlr_list.h>
-#include "tagset.h"
+#include "workspaceset.h"
 #include "monitor.h"
 #include "stringop.h"
 #include "keybinding.h"
@@ -40,20 +40,19 @@ void execute_command(const char *_exec)
     // execute command
     if (strcmp(argv[0], "workspace") == 0) {
         bool handled = false;
-        struct tagset *tagset = selected_monitor->tagset;
+        struct workspaceset *ws_set = selected_monitor->ws_set;
         int i;
-        for (i = 0; i < tagset->tags.length; i++) {
-            if (strcmp(get_tag_from_tagset(tagset, i)->name, argv[2]) == 0) {
+        for (i = 0; i < ws_set->workspaces.length; i++) {
+            if (strcmp(get_workspace(ws_set, i)->name, argv[2]) == 0) {
                 handled = true;
                 break;
             }
         }
         if (handled) {
             if (key_state_has_modifiers(MOD_SHIFT)) {
-                toggle_add_tag(tagset, position_to_flag(i));
+                set_workspace(ws_set, i);
             } else {
-                push_seleceted_tags(tagset, position_to_flag(i));
-                tagset->focusedTag = i;
+                push_selected_workspace(ws_set, i);
             }
         }
     }

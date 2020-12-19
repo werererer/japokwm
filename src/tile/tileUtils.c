@@ -13,7 +13,7 @@
 #include "parseConfig.h"
 #include "root.h"
 #include "server.h"
-#include "tagset.h"
+#include "workspaceset.h"
 #include "tile/tileTexture.h"
 #include "utils/coreUtils.h"
 #include "utils/gapUtils.h"
@@ -40,16 +40,16 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
         container_surround_gaps(&root.w, outer_gap);
 
     // don't do anything if no tiling function exist
-    if (selected_layout(m->tagset)->funcId <= 0)
+    if (selected_layout(m->ws_set)->funcId <= 0)
         return;
 
     int n = tiled_container_count(m);
     /* call arrange function if previous layout is different or reset ->
      * reset layout */
-    if (is_same_layout(prev_layout, *selected_layout(m->tagset))
+    if (is_same_layout(prev_layout, *selected_layout(m->ws_set))
             || action == LAYOUT_RESET) {
-        prev_layout = *selected_layout(m->tagset);
-        lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(m->tagset)->funcId);
+        prev_layout = *selected_layout(m->ws_set);
+        lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(m->ws_set)->funcId);
         lua_pushinteger(L, n);
         lua_pcall(L, 1, 0, 0);
     }
@@ -58,8 +58,8 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
     lua_getglobal(L, "update");
     lua_pushinteger(L, n);
     lua_pcall(L, 1, 1, 0);
-    selected_layout(m->tagset)->containers_info.n = lua_rawlen(L, -1);
-    selected_layout(m->tagset)->containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
+    selected_layout(m->ws_set)->containers_info.n = lua_rawlen(L, -1);
+    selected_layout(m->ws_set)->containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
     update_hidden_status(m);
 
     int i = 0;
@@ -85,8 +85,8 @@ void arrange_container(struct container *con, int i, bool preserve)
     // if tiled get tile information from tile function and apply it
     struct wlr_fbox box;
     // get lua container
-    lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(con->m->tagset)->containers_info.id);
-    lua_rawgeti(L, -1, MIN(con->clientPosition+1, selected_layout(con->m->tagset)->containers_info.n));
+    lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(con->m->ws_set)->containers_info.id);
+    lua_rawgeti(L, -1, MIN(con->clientPosition+1, selected_layout(con->m->ws_set)->containers_info.n));
     lua_rawgeti(L, -1, 1);
     box.x = luaL_checknumber(L, -1);
     lua_pop(L, 1);
@@ -106,7 +106,7 @@ void arrange_container(struct container *con, int i, bool preserve)
         container_surround_gaps(&con->geom, inner_gap);
     container_surround_gaps(&con->geom, 2*con->client->bw);
     resize(con, con->geom, preserve);
-    selected_layout(con->m->tagset)->containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
+    selected_layout(con->m->ws_set)->containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 void resize(struct container *con, struct wlr_box geom, bool preserve)
@@ -158,7 +158,7 @@ void update_hidden_status(struct monitor *m)
         if (!existon(con, m) || con->floating)
             continue;
 
-        if (i < selected_layout(m->tagset)->containers_info.n) {
+        if (i < selected_layout(m->ws_set)->containers_info.n) {
             con->hidden = false;
             i++;
         } else {

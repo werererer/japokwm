@@ -36,6 +36,7 @@ static struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *x
     popup->geom.y = popup->xdg->geometry.y + parent_geom.y;
     popup->geom.width = popup->xdg->geometry.width;
     popup->geom.height = popup->xdg->geometry.height;
+    popup->m = m;
 
     popup->new_popup.notify = popup_handle_new_subpopup;
     wl_signal_add(&popup->xdg->base->events.new_popup, &popup->new_popup);
@@ -60,7 +61,6 @@ void popup_handle_new_popup(struct wl_listener *listener, void *data)
         if (con->m != selected_monitor)
             continue;
         struct xdg_popup *popup = create_popup(con->m, xdg_popup, con->geom, con);
-        popup->m = con->m;
         wl_list_insert(&con->m->popups, &popup->plink);
     }
 }

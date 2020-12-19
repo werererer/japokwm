@@ -81,7 +81,6 @@ static void render_clients(struct monitor *m)
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each_reverse(con, &m->stack, slink) {
-        /* Only render visible clients which are shown on this monitor */
         if (!visibleon(con, m))
             continue;
 
@@ -157,10 +156,10 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
 
 static void render_texture(struct pos_texture *texture)
 {
-    if (postexture_visible_on_flag(
+    if (postexture_visible_on(
                 texture,
                 selected_monitor,
-                selected_monitor->tagset->selTags[0])) {
+                selected_monitor->ws_set->focused_workspace[0])) {
         wlr_render_texture(drw, texture->texture,
                 selected_monitor->wlr_output->transform_matrix, texture->x,
                 texture->y, 1);

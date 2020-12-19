@@ -3,7 +3,7 @@
 #include <wayland-server.h>
 #include <wlr/types/wlr_box.h>
 
-#include "tagset.h"
+#include "workspaceset.h"
 
 struct monitor {
     /* mons(monitors) list */
@@ -25,7 +25,7 @@ struct monitor {
     struct wl_listener destroy;
     /* monitor area, layout-relative */
     struct wlr_box geom;
-    struct tagset *tagset;
+    struct workspaceset *ws_set;
     double mfact;
     int nmaster;
 };

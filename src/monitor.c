@@ -8,7 +8,7 @@
 #include "parseConfig.h"
 #include "render/render.h"
 #include "server.h"
-#include "tagset.h"
+#include "workspaceset.h"
 #include "tile/tileUtils.h"
 
 /* monitors */
@@ -52,15 +52,14 @@ void create_monitor(struct wl_listener *listener, void *data)
     }
 
     m->wlr_output = output;
-    m->tagset = create_tagset(&tag_names, 0, 0);
-    push_seleceted_tags(m->tagset, TAG_ONE);
+    m->ws_set = create_workspaceset(&tag_names, 1);
     for (r = monrules; r < END(monrules); r++) {
         if (!r->name || strstr(output->name, r->name)) {
             m->mfact = r->mfact;
             m->nmaster = r->nmaster;
             wlr_output_set_scale(output, r->scale);
             wlr_xcursor_manager_load(server.cursorMgr, r->scale);
-            set_selected_layout(m->tagset, *r->lt);
+            set_selected_layout(m->ws_set, *r->lt);
             wlr_output_set_transform(output, r->rr);
             break;
         }

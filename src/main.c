@@ -529,8 +529,7 @@ void maprequest(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
 
     struct monitor *m = selected_monitor;
-    c->tagset = create_tagset(&tag_names, m->tagset->focusedTag,
-            m->tagset->selTags[0]);
+    c->ws_set = create_workspaceset(&tag_names, m->ws_set->focused_workspace[0]);
     wl_list_init(&c->containers);
 
     switch (c->type) {
@@ -657,7 +656,7 @@ void set_cursor(struct wl_listener *listener, void *data)
 /* arg > 1.0 will set mfact absolutely */
 void setmfact(float factor)
 {
-    if (!selected_layout(selected_monitor->tagset)->funcId)
+    if (!selected_layout(selected_monitor->ws_set)->funcId)
         return;
     factor = factor < 1.0 ? factor + selected_monitor->mfact : factor - 1.0;
     if (factor < 0.1 || factor > 0.9)
@@ -846,7 +845,7 @@ void unmapnotify(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
-    destroy_tagset(c->tagset);
+    destroy_workspaceset(c->ws_set);
     switch (c->type) {
         case LAYER_SHELL:
             wl_list_remove(&c->link);

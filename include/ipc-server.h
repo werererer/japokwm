@@ -1,7 +1,7 @@
 #ifndef _SWAY_IPC_SERVER_H
 #define _SWAY_IPC_SERVER_H
 #include <sys/socket.h>
-#include "tagset.h"
+#include "workspaceset.h"
 
 struct sway_server;
 

@@ -19,7 +19,7 @@ struct pos_texture {
     char *id;
     int x, y;
     struct monitor *mon;
-    struct tagset *tagset;
+    struct workspaceset *ws_set;
     struct wlr_texture *texture;
 };
 
@@ -36,7 +36,7 @@ void update_overlay();
 void update_overlay_count(size_t count);
 void write_overlay(struct monitor *m, const char *layout);
 struct wlr_box postexture_to_container(struct pos_texture *pTexture);
-bool postexture_visible_on_flag(struct pos_texture *pTexture, struct monitor *m, size_t focusedTag);
+bool postexture_visible_on(struct pos_texture *pTexture, struct monitor *m, size_t workspace);
 
 extern bool overlay;
 #endif /* TILE_TEXTURE_H */

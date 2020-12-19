@@ -90,11 +90,10 @@ int reloadConfig(lua_State *L)
     wlr_list_finish(&tag_names);
 
     // TODO: only one monitor will reload his tagset
-    unsigned int focusedTag = selected_monitor->tagset->focusedTag;
-    unsigned int selTags = selected_monitor->tagset->selTags[0];
-    destroy_tagset(selected_monitor->tagset);
+    unsigned int workspace = selected_monitor->ws_set->focused_workspace[0];
+    destroy_workspaceset(selected_monitor->ws_set);
     update_config(L);
-    selected_monitor->tagset = create_tagset(&tag_names, focusedTag, selTags);
+    selected_monitor->ws_set = create_workspaceset(&tag_names, workspace);
 
     // reconfigure clients
     struct client *c = NULL;

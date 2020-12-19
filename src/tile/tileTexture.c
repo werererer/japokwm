@@ -1,12 +1,12 @@
 #include "tile/tileTexture.h"
 #include "client.h"
 #include "container.h"
-#include "tagset.h"
+#include "workspaceset.h"
 #include "utils/coreUtils.h"
 #include "utils/stringUtils.h"
 #include "utils/writeFile.h"
 #include "tile/tileUtils.h"
-#include "tagset.h"
+#include "workspaceset.h"
 #include "root.h"
 #include <cairo/cairo.h>
 #include <fcntl.h>
@@ -77,7 +77,7 @@ struct pos_texture *create_textbox(struct wlr_box box, float boxColor[],
     posTexture->x = box.x;
     posTexture->y = box.y;
     posTexture->mon = selected_monitor;
-    posTexture->tagset = selected_monitor->tagset;
+    posTexture->ws_set = selected_monitor->ws_set;
     return posTexture;
 }
 
@@ -112,7 +112,7 @@ void create_overlay()
         struct pos_texture *pTexture =
             create_textbox(con->geom, overlayColor, textColor, text);
         // sync properties
-        pTexture->tagset = con->client->tagset;
+        pTexture->ws_set = con->client->ws_set;
         wlr_list_push(&render_data.textures, pTexture);
         wlr_list_push(&render_data.base_textures, pTexture);
     }
@@ -131,7 +131,7 @@ void update_container_overlay(struct container *con)
 
         struct pos_texture *pTexture =
             create_textbox(con->geom, overlayColor, textColor, text);
-        pTexture->tagset = con->client->tagset;
+        pTexture->ws_set = con->client->ws_set;
         wlr_list_insert(&render_data.textures, con->position, pTexture);
     } else {
         if (&render_data.textures.length > 0)
@@ -160,11 +160,11 @@ void update_overlay()
     }
 }
 
-bool postexture_visible_on_flag(struct pos_texture *pTexture, struct monitor *m, size_t flag)
+bool postexture_visible_on(struct pos_texture *pTexture, struct monitor *m, size_t workspace)
 {
     if (m && pTexture) {
         if (pTexture->mon == m) {
-            return pTexture->tagset->selTags[0] & flag;
+            return pTexture->ws_set->focused_workspace[0] == workspace;
         }
     }
     return false;
@@ -201,7 +201,7 @@ void write_overlay(struct monitor *m, const char *layout)
         for (int j = render_data.base_textures.length-1; j >= 0; j--) {
             // TODO: todo fix order
             struct pos_texture *pTexture = render_data.base_textures.items[j];
-            if (postexture_visible_on_flag(pTexture, m, position_to_flag(i))) {
+            if (postexture_visible_on(pTexture, m, i)) {
                 // vector from root x/y -> monitor x/y
                 int wdiff = selected_monitor->geom.x - root.w.y;
                 int hdiff = selected_monitor->geom.y - root.w.y;

@@ -20,7 +20,7 @@
 #include "ipc-json.h"
 #include "ipc-server.h"
 #include "server.h"
-#include "tagset.h"
+#include "workspaceset.h"
 #include "client.h"
 #include "command.h"
 #include "monitor.h"
@@ -400,13 +400,12 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
 
                 struct monitor *m;
                 wl_list_for_each(m, &mons, link) {
-                    struct tagset *tagset = m->tagset;
-                    for (int i = 0; i < tagset->tags.length; i++) {
-                        json_object *tag = ipc_json_describe_tag(
+                    struct workspaceset *ws_set = m->ws_set;
+                    for (int i = 0; i < ws_set->workspaces.length; i++) {
+                        json_object *tag = ipc_json_describe_workspace(
                                 m,
-                                get_tag_from_tagset(tagset, i),
-                                tagset->focusedTag == i,
-                                tagset->selTags[0] & position_to_flag(i));
+                                get_workspace(ws_set, i),
+                                ws_set->focused_workspace[0] == i);
                         json_object_array_add(array, tag);
                     }
                 }

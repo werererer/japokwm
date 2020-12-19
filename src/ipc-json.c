@@ -70,18 +70,19 @@ struct focus_inactive_data {
     json_object *object;
 };
 
-json_object *ipc_json_describe_tag(struct monitor *m, struct tag *tag, bool focused, bool selected) {
+json_object *ipc_json_describe_workspace(struct monitor *m, struct workspace *ws, bool focused)
+{
     struct wlr_box box;
     box = m->geom;
 
-    int i = strlen(tag->name) + 1;
+    int i = strlen(ws->name) + 1;
     char s[i];
     strcpy(s, "");
-    strcat(s, tag->name);
+    strcat(s, ws->name);
     // TODO expose symbol
     if (focused)
         strcat(s, "*");
-    json_object *object = ipc_json_create_node(0, s, selected, false, NULL, &box);
+    json_object *object = ipc_json_create_node(0, s, focused, false, NULL, &box);
     json_object_object_add(object, "num", json_object_new_int(0));
     json_object_object_add(object, "fullscreen_mode", json_object_new_int(0));
     json_object_object_add(object, "output", m->wlr_output ?

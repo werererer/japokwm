@@ -1,7 +1,7 @@
 #include "root.h"
 #include "client.h"
 #include "container.h"
-#include "tagset.h"
+#include "workspaceset.h"
 #include "utils/coreUtils.h"
 #include "tile/tileUtils.h"
 

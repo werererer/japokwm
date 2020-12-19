@@ -97,7 +97,7 @@ struct container *get_container(struct monitor *m, int i)
 
 struct container *first_container(struct monitor *m)
 {
-    if (selected_layout(m->tagset)->containers_info.n <= 0)
+    if (selected_layout(m->ws_set)->containers_info.n <= 0)
         return NULL;
 
     struct container *con;
@@ -110,7 +110,7 @@ struct container *first_container(struct monitor *m)
 
 struct client *last_client(struct monitor *m)
 {
-    if (selected_layout(m->tagset)->containers_info.n <= 0)
+    if (selected_layout(m->ws_set)->containers_info.n <= 0)
         return NULL;
 
     struct container *con;
@@ -118,7 +118,7 @@ struct client *last_client(struct monitor *m)
     wl_list_for_each(con, &m->stack, slink) {
         if (!visibleon(con, m))
             continue;
-        if (i > selected_layout(m->tagset)->containers_info.n)
+        if (i > selected_layout(m->ws_set)->containers_info.n)
             return con->client;
         i++;
     }
@@ -347,7 +347,7 @@ bool existon(struct container *con, struct monitor *m)
     if (!c)
         return false;
 
-    return c->tagset->selTags[0] & m->tagset->selTags[0];
+    return c->ws_set->focused_workspace[0] == m->ws_set->focused_workspace[0];
 }
 
 bool hiddenon(struct container *con, struct monitor *m)
@@ -367,7 +367,7 @@ bool hiddenon(struct container *con, struct monitor *m)
     if (c->type == LAYER_SHELL)
         return true;
 
-    return c->tagset->selTags[0] & m->tagset->selTags[0];
+    return c->ws_set->focused_workspace[0] & m->ws_set->focused_workspace[0];
 }
 
 bool visibleon(struct container *con, struct monitor *m)
@@ -387,7 +387,7 @@ bool visibleon(struct container *con, struct monitor *m)
     if (c->type == LAYER_SHELL)
         return true;
 
-    return c->tagset->selTags[0] & m->tagset->selTags[0];
+    return c->ws_set->focused_workspace[0] == m->ws_set->focused_workspace[0];
 }
 
 void set_container_floating(struct container *con, bool floating)

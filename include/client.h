@@ -5,7 +5,7 @@
 #include <wlr/xwayland.h>
 
 #include "parseConfig.h"
-#include "tagset.h"
+#include "workspaceset.h"
 #include "monitor.h"
 
 enum shell { XDG_SHELL, X11_MANAGED, X11_UNMANAGED, LAYER_SHELL }; /* client types */
@@ -33,7 +33,7 @@ struct client {
     int bw;
 
     enum shell type;
-    struct tagset *tagset;
+    struct workspaceset *ws_set;
     int id;
     char *title;
     uint32_t resize; /* configure serial of a pending resize */
@@ -42,7 +42,7 @@ struct client {
 /* it ignores bool  hiding which visibleon doesn't */
 void focus_client(struct client *old, struct client *c);
 float calc_ratio(float width, float height);
-bool visibleon_tag(struct client *c, size_t focusedTag);
+bool visibleon_workspace(struct client *c, size_t focusedTag);
 
 extern struct wl_list clients; /* tiling order */
 extern struct wlr_output_layout *output_layout;

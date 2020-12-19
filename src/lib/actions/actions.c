@@ -111,7 +111,7 @@ int spawn(lua_State *L)
 int update_layout(lua_State *L)
 {
     struct layout l = get_config_layout(L, "layout");
-    set_selected_layout(selected_monitor->tagset, l);
+    set_selected_layout(selected_monitor->ws_set, l);
     arrange(true);
     return 0;
 }
@@ -355,7 +355,7 @@ int tag(lua_State *L)
     if (!sel || !ui)
         return 0;
 
-    toggle_add_tag(sel->client->tagset, position_to_flag(ui));
+    set_workspace(sel->client->ws_set, ui);
     focus_top_container(m, FOCUS_LIFT);
     arrange(false);
     return 0;
@@ -367,14 +367,11 @@ int toggle_tag(lua_State *L)
     lua_pop(L, 1);
 
     struct container *sel = selected_container(selected_monitor);
-    if (sel) {
-        unsigned int newtags = sel->client->tagset->selTags[0] ^ ui;
-        if (newtags) {
-            set_selelected_Tags(sel->client->tagset, newtags);
-            focus_top_container(selected_monitor, FOCUS_LIFT);
-            arrange(false);
-        }
-    }
+    if (!sel)
+        return 0;
+    set_workspace(sel->client->ws_set, ui);
+    focus_top_container(selected_monitor, FOCUS_LIFT);
+    arrange(false);
     return 0;
 }
 
@@ -383,8 +380,7 @@ int view(lua_State *L)
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
-    m->tagset->focusedTag = flag_to_position(ui);
-    set_selelected_Tags(m->tagset, ui);
+    set_workspace(m->ws_set, ui);
     focus_top_container(m, FOCUS_NOOP);
     arrange(false);
     return 0;
@@ -395,7 +391,7 @@ int toggle_add_view(lua_State *L)
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
-    toggle_add_tag(m->tagset, ui);
+    set_workspace(m->ws_set, ui);
     focus_top_container(m, FOCUS_NOOP);
     arrange(false);
     return 0;
@@ -405,7 +401,7 @@ int toggle_add_view(lua_State *L)
 int toggle_view(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    toggle_tagset(m->tagset);
+    toggle_tagset(m->ws_set);
     focus_top_container(m, FOCUS_LIFT);
     arrange(false);
     return 0;

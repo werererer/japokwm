@@ -35,11 +35,11 @@ struct wlr_surface *get_wlrsurface(struct client *c)
     }
 }
 
-bool visibleon_tag(struct client *c, size_t focusedTag)
+bool visibleon_workspace(struct client *c, size_t focusedTag)
 {
     if (!c)
         return false;
-    return c->tagset->selTags[0] & position_to_flag(focusedTag);
+    return c->ws_set->focused_workspace[0] == focusedTag;
 }
 
 static void unfocus_client(struct client *c)
