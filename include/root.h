@@ -2,7 +2,6 @@
 #define ROOT_H
 
 #include <wlr/types/wlr_box.h>
-#include "monitor.h"
 
 struct root {
     /* window area(area where windows can tile) */
@@ -11,10 +10,8 @@ struct root {
     /* should anchored layershell programs be taken into consideration */
     bool consider_layer_shell;
 };
-extern struct root root;
 
-/* set the are where windows can be placed in respect to layershell based
- * programs which occupie space
- * The resulting root area is relative to outputs*/
-void set_root_area(struct monitor *m);
+struct root *create_root();
+void destroy_root(struct root *root);
+
 #endif /* ROOT_H */

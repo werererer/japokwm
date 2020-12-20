@@ -405,7 +405,7 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
                         json_object *tag = ipc_json_describe_workspace(
                                 m,
                                 get_workspace(i),
-                                m->focused_workspace[0] == i);
+                                selected_monitor->ws->id == i);
                         json_object_array_add(array, tag);
                     }
                 }

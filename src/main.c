@@ -687,7 +687,8 @@ void setsel(struct wl_listener *listener, void *data)
 
 int setup()
 {
-    printf("setup\n");
+    wl_list_init(&mons);
+
     L = luaL_newstate();
     luaL_openlibs(L);
     if(update_config(L)) {
@@ -745,7 +746,6 @@ int setup()
     wlr_list_init(&render_data.textures);
     /* Configure a listener to be notified when new outputs are available on the
      * backend. */
-    wl_list_init(&mons);
     wl_signal_add(&server.backend->events.new_output, &new_output);
 
     /* Set up our client lists and the xdg-shell. The xdg-shell is a

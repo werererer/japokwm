@@ -12,7 +12,7 @@ enum layout_actions {
 struct client *focustop(struct monitor *m);
 void arrange(enum layout_actions action);
 void arrange_monitor(struct monitor *m, enum layout_actions action);
-void arrange_container(struct container *con, int i, bool preserve_ratio);
+void arrange_container(struct monitor *m, struct container *con, int i, bool preserve);
 void resize(struct container *con, struct wlr_box geom, bool preserve_geometry);
 void update_hidden_status(struct monitor *m);
 int this_tiled_client_count();

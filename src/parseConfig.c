@@ -19,6 +19,7 @@
 
 bool sloppyFocus;
 int borderPx;
+float rootColor[4];
 float borderColor[4];
 float focusColor[4];
 float overlayColor[4];
@@ -54,7 +55,7 @@ int update_config(lua_State *L)
     configure_gaps(&inner_gap, &outer_gap);
 
     /* appearance */
-    get_config_float_arr(L, root.color, "rootColor");
+    get_config_float_arr(L, rootColor, "rootColor");
     get_config_float_arr(L, borderColor, "borderColor");
     get_config_float_arr(L, focusColor, "focusColor");
     get_config_float_arr(L, overlayColor, "overlayColor");

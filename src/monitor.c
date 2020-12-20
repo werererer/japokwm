@@ -27,7 +27,6 @@ struct monitor *selected_monitor = NULL;
 
 void create_monitor(struct wl_listener *listener, void *data)
 {
-    printf("create monitor\n");
     /* This event is raised by the backend when a new output (aka a display or
      * monitor) becomes available. */
     struct wlr_output *output = data;
@@ -54,6 +53,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     }
 
     m->wlr_output = output;
+    m->root = create_root();
     set_next_unoccupied_workspace(m, get_workspace(0));
 
     for (r = monrules; r < END(monrules); r++) {
@@ -110,6 +110,7 @@ void destroy_monitor(struct wl_listener *listener, void *data)
 {
     struct wlr_output *wlr_output = data;
     struct monitor *m = wlr_output->data;
+    destroy_root(m->root);
 
     wl_list_remove(&m->link);
 }
@@ -120,10 +121,54 @@ void set_selected_monitor(struct monitor *m)
         return;
 
     selected_monitor = m;
+    set_workspace(m, m->ws);
     int xcentre = m->geom.x + (float)m->geom.width/2;
     int ycentre = m->geom.y + (float)m->geom.height/2;
     wlr_cursor_warp(server.cursor, NULL, xcentre, ycentre);
     arrange(LAYOUT_NOOP);
+}
+
+static void set_layer_shell(struct container *con)
+{
+    con->geom.x = 0;
+    con->geom.y = 0;
+    if (con->client->surface.layer->current.desired_width)
+        con->geom.width = con->client->surface.layer->current.desired_width;
+    else
+        con->geom.width = selected_monitor->wlr_output->width;
+
+    if (con->client->surface.layer->current.desired_height)
+        con->geom.height = con->client->surface.layer->current.desired_height;
+    else
+        con->geom.height = selected_monitor->wlr_output->height;
+    /* wlr_layer_surface_v1_configure(con->client->surface.layer, con->geom.width, */
+    /*         con->geom.height); */
+    resize(con, con->geom, false);
+}
+
+// TODO: Reduce side effects
+void set_root_area(struct monitor *m)
+{
+    m->root->w = m->geom;
+    int maxWidth = 0, maxHeight = 0;
+    struct container *con;
+    wl_list_for_each(con, &m->layer_stack, llink) {
+        set_layer_shell(con);
+        // if desired_width/height == 0 they are fullscreen and have no effect
+        maxWidth = MAX(maxWidth, con->client->surface.layer->current.desired_width);
+        maxHeight = MAX(maxHeight, con->client->surface.layer->current.desired_height);
+        // move the current window barely out of view
+        if (!m->root->consider_layer_shell) {
+            con->geom.x = -maxWidth;
+            con->geom.y = -maxHeight;
+        }
+    }
+    if (m->root->consider_layer_shell) {
+        m->root->w.x += maxWidth;
+        m->root->w.width -= maxWidth;
+        m->root->w.y += maxHeight;
+        m->root->w.height -= maxHeight;
+    }
 }
 
 struct layout *selected_layout(struct monitor *m)

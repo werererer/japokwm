@@ -20,6 +20,7 @@ extern int borderPx;
 extern int inner_gap;
 extern int outer_gap;
 extern float borderColor[4];
+extern float rootColor[4];
 extern float focusColor[4];
 extern float overlayColor[4];
 extern float textColor[4];

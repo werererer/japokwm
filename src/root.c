@@ -4,49 +4,17 @@
 #include "workspaceset.h"
 #include "utils/coreUtils.h"
 #include "tile/tileUtils.h"
+#include "parseConfig.h"
 
-struct root root = {.consider_layer_shell = true};
-
-// TODO: documentation?
-static void set_layer_shell(struct container *con)
+struct root *create_root()
 {
-    con->geom.x = 0;
-    con->geom.y = 0;
-    if (con->client->surface.layer->current.desired_width)
-        con->geom.width = con->client->surface.layer->current.desired_width;
-    else
-        con->geom.width = selected_monitor->wlr_output->width;
-
-    if (con->client->surface.layer->current.desired_height)
-        con->geom.height = con->client->surface.layer->current.desired_height;
-    else
-        con->geom.height = selected_monitor->wlr_output->height;
-    /* wlr_layer_surface_v1_configure(con->client->surface.layer, con->geom.width, */
-    /*         con->geom.height); */
-    resize(con, con->geom, false);
+    struct root *root = calloc(1, sizeof(struct root));
+    root->consider_layer_shell = true;
+    memcpy(root->color, rootColor, sizeof(root->color));
+    return root;
 }
 
-// TODO: Reduce side effects
-void set_root_area(struct monitor *m)
+void destroy_root(struct root *root)
 {
-    root.w = m->geom;
-    int maxWidth = 0, maxHeight = 0;
-    struct container *con;
-    wl_list_for_each(con, &m->layer_stack, llink) {
-        set_layer_shell(con);
-        // if desired_width/height == 0 they are fullscreen and have no effect
-        maxWidth = MAX(maxWidth, con->client->surface.layer->current.desired_width);
-        maxHeight = MAX(maxHeight, con->client->surface.layer->current.desired_height);
-        // move the current window barely out of view
-        if (!root.consider_layer_shell) {
-            con->geom.x -= maxWidth;
-            con->geom.y -= maxHeight;
-        }
-    }
-    if (root.consider_layer_shell) {
-        root.w.x += maxWidth;
-        root.w.width -= maxWidth;
-        root.w.y += maxHeight;
-        root.w.height -= maxHeight;
-    }
+    free(root);
 }

@@ -82,7 +82,7 @@ int arrange_this(lua_State *L)
 
 int toggle_consider_layer_shell(lua_State *L)
 {
-    root.consider_layer_shell = !root.consider_layer_shell;
+    selected_monitor->root->consider_layer_shell = !selected_monitor->root->consider_layer_shell;
     arrange(false);
     return 0;
 }

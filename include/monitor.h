@@ -3,7 +3,8 @@
 #include <wayland-server.h>
 #include <wlr/types/wlr_box.h>
 
-#include "workspaceset.h"
+#include "workspace.h"
+#include "root.h"
 
 struct monitor {
     /* mons(monitors) list */
@@ -25,6 +26,7 @@ struct monitor {
     struct wl_listener destroy;
     /* monitor area, layout-relative */
     struct wlr_box geom;
+    struct root *root;
     double mfact;
     int nmaster;
     struct workspace *ws;
@@ -35,6 +37,10 @@ void create_monitor(struct wl_listener *listener, void *data);
 void destroy_monitor(struct wl_listener *listener, void *data);
 void focusmon(int i);
 void set_selected_monitor(struct monitor *m);
+/* set the are where windows can be placed in respect to layershell based
+ * programs which occupie space
+ * The resulting root area is relative to outputs*/
+void set_root_area(struct monitor *m);
 
 struct layout *selected_layout(struct monitor *m);
 /* *

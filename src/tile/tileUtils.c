@@ -21,6 +21,7 @@
 
 void arrange(enum layout_actions action)
 {
+    printf("renderAll\n");
     struct monitor *m;
     arrange_monitor(selected_monitor, action);
     wl_list_for_each(m, &mons, link) {
@@ -37,7 +38,7 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
     set_root_area(m);
 
     if (!overlay)
-        container_surround_gaps(&root.w, outer_gap);
+        container_surround_gaps(&m->root->w, outer_gap);
 
     // don't do anything if no tiling function exist
     if (selected_layout(m)->funcId <= 0)
@@ -65,18 +66,17 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
     int i = 0;
     struct container *con;
     focus_container(m, selected_container(m), FOCUS_NOOP);
-    bool preserve = m != selected_monitor;
     wl_list_for_each(con, &m->containers, mlink) {
         if (!visibleon(con, m))
             continue;
-        arrange_container(con, i, preserve);
+        arrange_container(m, con, i, false);
         con->textPosition = i;
         i++;
     }
     update_overlay();
 }
 
-void arrange_container(struct container *con, int i, bool preserve)
+void arrange_container(struct monitor *m, struct container *con, int i, bool preserve)
 {
     con->clientPosition = i;
     if (con->floating || con->hidden)
@@ -101,7 +101,7 @@ void arrange_container(struct container *con, int i, bool preserve)
     lua_pop(L, 1);
     lua_pop(L, 1);
 
-    con->geom = get_absolute_box(root.w, box);
+    con->geom = get_absolute_box(m->root->w, box);
     if (!overlay)
         container_surround_gaps(&con->geom, inner_gap);
     container_surround_gaps(&con->geom, 2*con->client->bw);

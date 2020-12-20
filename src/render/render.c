@@ -225,7 +225,7 @@ void render_frame(struct wl_listener *listener, void *data)
     if (render) {
         /* Begin the renderer (calls glViewport and some other GL sanity checks) */
         wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
-        wlr_renderer_clear(drw, root.color);
+        wlr_renderer_clear(drw, m->root->color);
 
         render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND);
         render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
