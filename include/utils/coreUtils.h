@@ -22,6 +22,10 @@
 #define END(A)                  ((A) + LENGTH(A))
 /* number of chars a string should contain */
 #define ARR_STRING_LENGTH(X) strlen(X) + 2*(strlen("[]") + NUM_DIGITS)
+#define MAXLEN 15
+#define NUM_CHARS 64
+#define NUM_DIGITS 9
+
 
 typedef struct Monitor Monitor;
 

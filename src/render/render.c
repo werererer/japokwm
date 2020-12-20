@@ -159,7 +159,7 @@ static void render_texture(struct pos_texture *texture)
     if (postexture_visible_on(
                 texture,
                 selected_monitor,
-                selected_monitor->ws_set->focused_workspace[0])) {
+                selected_monitor->focused_workspace[0])) {
         wlr_render_texture(drw, texture->texture,
                 selected_monitor->wlr_output->transform_matrix, texture->x,
                 texture->y, 1);

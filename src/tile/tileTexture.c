@@ -77,7 +77,7 @@ struct pos_texture *create_textbox(struct wlr_box box, float boxColor[],
     posTexture->x = box.x;
     posTexture->y = box.y;
     posTexture->mon = selected_monitor;
-    posTexture->ws_set = selected_monitor->ws_set;
+    posTexture->focused_workspace[0] = selected_monitor->focused_workspace[0];
     return posTexture;
 }
 
@@ -112,7 +112,7 @@ void create_overlay()
         struct pos_texture *pTexture =
             create_textbox(con->geom, overlayColor, textColor, text);
         // sync properties
-        pTexture->ws_set = con->client->ws_set;
+        pTexture->focused_workspace[0] = con->client->focused_workspace[0];
         wlr_list_push(&render_data.textures, pTexture);
         wlr_list_push(&render_data.base_textures, pTexture);
     }
@@ -131,7 +131,7 @@ void update_container_overlay(struct container *con)
 
         struct pos_texture *pTexture =
             create_textbox(con->geom, overlayColor, textColor, text);
-        pTexture->ws_set = con->client->ws_set;
+        pTexture->focused_workspace[0] = con->client->focused_workspace[0];
         wlr_list_insert(&render_data.textures, con->position, pTexture);
     } else {
         if (&render_data.textures.length > 0)
@@ -162,12 +162,12 @@ void update_overlay()
 
 bool postexture_visible_on(struct pos_texture *pTexture, struct monitor *m, size_t workspace)
 {
-    if (m && pTexture) {
-        if (pTexture->mon == m) {
-            return pTexture->ws_set->focused_workspace[0] == workspace;
-        }
-    }
-    return false;
+    if (!m || !pTexture)
+        return false;
+    if (pTexture->mon != m)
+        return false;
+
+    return pTexture->focused_workspace[0] == workspace;
 }
 
 void write_overlay(struct monitor *m, const char *layout)
@@ -192,7 +192,7 @@ void write_overlay(struct monitor *m, const char *layout)
         int fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
         wlr_log(WLR_DEBUG, "create file %s", file);
         if (fd == -1) {
-            wlr_log(WLR_ERROR, "file didn't open correctly: %s", file);
+            wlr_log(WLR_INFO, "file didn't open correctly: %s", file);
             return;
         }
 

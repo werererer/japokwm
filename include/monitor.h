@@ -25,15 +25,24 @@ struct monitor {
     struct wl_listener destroy;
     /* monitor area, layout-relative */
     struct wlr_box geom;
-    struct workspaceset *ws_set;
     double mfact;
     int nmaster;
+    struct workspace *ws;
+    unsigned int focused_workspace[2];
 };
 
 void create_monitor(struct wl_listener *listener, void *data);
 void destroy_monitor(struct wl_listener *listener, void *data);
 void focusmon(int i);
 void set_selected_monitor(struct monitor *m);
+
+struct layout *selected_layout(struct monitor *m);
+/* *
+ * selTag[1] = selTag[0] then
+ * selTag[0] = new value
+ * */
+void push_selected_workspace(struct monitor *m, struct workspace *ws);
+struct workspace *get_focused_workspace(struct monitor *m);
 
 struct monitor *dirtomon(int dir);
 struct monitor *outputtomon(struct wlr_output *output);

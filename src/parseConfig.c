@@ -15,6 +15,7 @@
 #include "utils/parseConfigUtils.h"
 #include "lib/actions/actions.h"
 #include "stringop.h"
+#include "workspace.h"
 
 bool sloppyFocus;
 int borderPx;
@@ -89,11 +90,9 @@ int reloadConfig(lua_State *L)
         free(wlr_list_pop(&tag_names));
     wlr_list_finish(&tag_names);
 
-    // TODO: only one monitor will reload his tagset
-    unsigned int workspace = selected_monitor->ws_set->focused_workspace[0];
-    destroy_workspaceset(selected_monitor->ws_set);
+    destroy_workspaces();
     update_config(L);
-    selected_monitor->ws_set = create_workspaceset(&tag_names, workspace);
+    create_workspaces(tag_names);
 
     // reconfigure clients
     struct client *c = NULL;

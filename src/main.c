@@ -64,6 +64,7 @@
 #include "tile/tile.h"
 #include "tile/tileTexture.h"
 #include "tile/tileUtils.h"
+#include "workspace.h"
 
 typedef struct {
     struct wl_listener request_mode;
@@ -191,7 +192,6 @@ void cleanup()
 {
     wlr_xwayland_destroy(xwayland);
     wl_display_destroy_clients(server.display);
-    wl_display_destroy(server.display);
 
     wlr_xcursor_manager_destroy(server.cursorMgr);
     wlr_cursor_destroy(server.cursor);
@@ -529,7 +529,7 @@ void maprequest(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
 
     struct monitor *m = selected_monitor;
-    c->ws_set = create_workspaceset(&tag_names, m->ws_set->focused_workspace[0]);
+    c->focused_workspace[0] = m->focused_workspace[0];
     wl_list_init(&c->containers);
 
     switch (c->type) {
@@ -656,7 +656,7 @@ void set_cursor(struct wl_listener *listener, void *data)
 /* arg > 1.0 will set mfact absolutely */
 void setmfact(float factor)
 {
-    if (!selected_layout(selected_monitor->ws_set)->funcId)
+    if (!selected_layout(selected_monitor)->funcId)
         return;
     factor = factor < 1.0 ? factor + selected_monitor->mfact : factor - 1.0;
     if (factor < 0.1 || factor > 0.9)
@@ -687,6 +687,7 @@ void setsel(struct wl_listener *listener, void *data)
 
 int setup()
 {
+    printf("setup\n");
     L = luaL_newstate();
     luaL_openlibs(L);
     if(update_config(L)) {
@@ -694,6 +695,7 @@ int setup()
         return 1;
     }
     init_overlay();
+    create_workspaces(tag_names);
     /* The Wayland display is managed by libwayland. It handles accepting
      * clients from the Unix socket, manging Wayland globals, and so on. */
     server.display = wl_display_create();
@@ -845,7 +847,6 @@ void unmapnotify(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
-    destroy_workspaceset(c->ws_set);
     switch (c->type) {
         case LAYER_SHELL:
             wl_list_remove(&c->link);

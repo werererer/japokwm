@@ -8,8 +8,9 @@
 #include "parseConfig.h"
 #include "render/render.h"
 #include "server.h"
-#include "workspaceset.h"
+#include "workspace.h"
 #include "tile/tileUtils.h"
+#include "ipc-server.h"
 
 /* monitors */
 static const struct mon_rule monrules[] = {
@@ -26,6 +27,7 @@ struct monitor *selected_monitor = NULL;
 
 void create_monitor(struct wl_listener *listener, void *data)
 {
+    printf("create monitor\n");
     /* This event is raised by the backend when a new output (aka a display or
      * monitor) becomes available. */
     struct wlr_output *output = data;
@@ -52,14 +54,15 @@ void create_monitor(struct wl_listener *listener, void *data)
     }
 
     m->wlr_output = output;
-    m->ws_set = create_workspaceset(&tag_names, 1);
+    set_next_unoccupied_workspace(m, get_workspace(0));
+
     for (r = monrules; r < END(monrules); r++) {
         if (!r->name || strstr(output->name, r->name)) {
             m->mfact = r->mfact;
             m->nmaster = r->nmaster;
             wlr_output_set_scale(output, r->scale);
             wlr_xcursor_manager_load(server.cursorMgr, r->scale);
-            set_selected_layout(m->ws_set, *r->lt);
+            set_selected_layout(m->ws, *r->lt);
             wlr_output_set_transform(output, r->rr);
             break;
         }
@@ -109,7 +112,6 @@ void destroy_monitor(struct wl_listener *listener, void *data)
     struct monitor *m = wlr_output->data;
 
     wl_list_remove(&m->link);
-    free(m);
 }
 
 void set_selected_monitor(struct monitor *m)
@@ -117,9 +119,29 @@ void set_selected_monitor(struct monitor *m)
     if (selected_monitor == m)
         return;
 
-    printf("monitor changed\n");
     selected_monitor = m;
+    wlr_cursor_warp(server.cursor, NULL, m->geom.x + (float)m->geom.width/2, m->geom.y + (float)m->geom.height/2);
     arrange(LAYOUT_NOOP);
+}
+
+struct layout *selected_layout(struct monitor *m)
+{
+    if (!m)
+        return 0;
+    return &get_focused_workspace(m)->layout;
+}
+
+struct workspace *get_focused_workspace(struct monitor *m)
+{
+    return get_workspace(m->focused_workspace[0]);
+}
+
+void push_selected_workspace(struct monitor *m, struct workspace *ws)
+{
+    if (!m || !ws)
+        return;
+    m->focused_workspace[1] = m->focused_workspace[0];
+    set_workspace(m, ws);
 }
 
 struct monitor *dirtomon(int dir)

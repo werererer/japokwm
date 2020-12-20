@@ -33,10 +33,10 @@ struct client {
     int bw;
 
     enum shell type;
-    struct workspaceset *ws_set;
     int id;
     char *title;
     uint32_t resize; /* configure serial of a pending resize */
+    size_t focused_workspace[2];
 };
 
 /* it ignores bool  hiding which visibleon doesn't */

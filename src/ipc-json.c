@@ -11,6 +11,7 @@
 #include "server.h"
 #include "container.h"
 #include "client.h"
+#include "workspace.h"
 
 static json_object *ipc_json_create_rect(struct wlr_box *box) {
     json_object *rect = json_object_new_object();
@@ -75,13 +76,8 @@ json_object *ipc_json_describe_workspace(struct monitor *m, struct workspace *ws
     struct wlr_box box;
     box = m->geom;
 
-    int i = strlen(ws->name) + 1;
-    char s[i];
-    strcpy(s, "");
-    strcat(s, ws->name);
-    // TODO expose symbol
-    if (focused)
-        strcat(s, "*");
+    char *s = strdup(ws->name);
+
     json_object *object = ipc_json_create_node(0, s, focused, false, NULL, &box);
     json_object_object_add(object, "num", json_object_new_int(0));
     json_object_object_add(object, "fullscreen_mode", json_object_new_int(0));
@@ -89,9 +85,9 @@ json_object *ipc_json_describe_workspace(struct monitor *m, struct workspace *ws
             json_object_new_string(m->wlr_output->name) : NULL);
     json_object_object_add(object, "type", json_object_new_string("workspace"));
     json_object_object_add(object, "urgent",
-            json_object_new_boolean(false)); 
+            json_object_new_boolean(false));
 
-    /* if (node->type == N_WORKSPACE) */
+    free(s);
     return object;
 }
 

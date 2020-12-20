@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <wordexp.h>
+#include <stdlib.h>
 
 struct lua_State *L;
 

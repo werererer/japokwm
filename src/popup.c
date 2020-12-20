@@ -4,6 +4,7 @@
 #include <wayland-util.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wayland-server.h>
+#include <stdlib.h>
 #include "root.h"
 #include "server.h"
 #include "utils/coreUtils.h"

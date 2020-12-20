@@ -1,5 +1,6 @@
 #include "tabframe.h"
 #include "tile/tileTexture.h"
+#include <stdlib.h>
 
 struct tabframe *create_tabframe()
 {

@@ -39,7 +39,7 @@ bool visibleon_workspace(struct client *c, size_t focusedTag)
 {
     if (!c)
         return false;
-    return c->ws_set->focused_workspace[0] == focusedTag;
+    return c->focused_workspace[0] == focusedTag;
 }
 
 static void unfocus_client(struct client *c)

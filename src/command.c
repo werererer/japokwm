@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <wordexp.h>
 #include <wlr/types/wlr_list.h>
-#include "workspaceset.h"
+#include "workspace.h"
 #include "monitor.h"
 #include "stringop.h"
 #include "keybinding.h"
@@ -23,36 +23,35 @@ void execute_command(const char *_exec)
         printf("Ignoring empty command.\n");
         return;
     }
-    printf("Handling command '%s'\n", cmd);
-    //TODO better handling of argv
-    int argc;
-    char **argv = split_args(cmd, &argc);
-    if (strcmp(argv[0], "exec") != 0 &&
-            strcmp(argv[0], "exec_always") != 0 &&
-            strcmp(argv[0], "mode") != 0) {
-        for (int i = 1; i < argc; ++i) {
-            if (*argv[i] == '\"' || *argv[i] == '\'') {
-                strip_quotes(argv[i]);
+        printf("Handling command '%s'\n", cmd);
+        //TODO better handling of argv
+        int argc;
+        char **argv = split_args(cmd, &argc);
+        if (strcmp(argv[0], "exec") != 0 &&
+                strcmp(argv[0], "exec_always") != 0 &&
+                strcmp(argv[0], "mode") != 0) {
+            for (int i = 1; i < argc; ++i) {
+                if (*argv[i] == '\"' || *argv[i] == '\'') {
+                    strip_quotes(argv[i]);
+                }
             }
         }
-    }
 
-    // execute command
-    if (strcmp(argv[0], "workspace") == 0) {
-        bool handled = false;
-        struct workspaceset *ws_set = selected_monitor->ws_set;
-        int i;
-        for (i = 0; i < ws_set->workspaces.length; i++) {
-            if (strcmp(get_workspace(ws_set, i)->name, argv[2]) == 0) {
-                handled = true;
-                break;
+        // execute command
+        if (strcmp(argv[0], "workspace") == 0) {
+            bool handled = false;
+            int i;
+            for (i = 0; i < number_of_workspaces(); i++) {
+                if (strcmp(get_workspace(i)->name, argv[2]) == 0) {
+                    handled = true;
+                    break;
+                }
             }
-        }
-        if (handled) {
-            if (key_state_has_modifiers(MOD_SHIFT)) {
-                set_workspace(ws_set, i);
+            if (handled) {
+                if (key_state_has_modifiers(MOD_SHIFT)) {
+                    set_workspace(selected_monitor, get_workspace(i));
             } else {
-                push_selected_workspace(ws_set, i);
+                push_selected_workspace(selected_monitor, get_workspace(i));
             }
         }
     }

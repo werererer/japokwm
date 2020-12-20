@@ -21,6 +21,7 @@ struct pos_texture {
     struct monitor *mon;
     struct workspaceset *ws_set;
     struct wlr_texture *texture;
+    size_t focused_workspace[2];
 };
 
 /* should be called before wlr_begin_renderer() */

@@ -18,6 +18,7 @@
 #include "tile/tileUtils.h"
 #include "utils/stringUtils.h"
 #include "xdg-shell-protocol.h"
+#include "workspace.h"
 
 static struct container *grabc = NULL;
 static int grabcx, grabcy; /* client-relative */
@@ -111,7 +112,7 @@ int spawn(lua_State *L)
 int update_layout(lua_State *L)
 {
     struct layout l = get_config_layout(L, "layout");
-    set_selected_layout(selected_monitor->ws_set, l);
+    set_selected_layout(get_focused_workspace(selected_monitor), l);
     arrange(true);
     return 0;
 }
@@ -352,10 +353,15 @@ int tag(lua_State *L)
 
     ipc_event_workspace();
 
-    if (!sel || !ui)
+    if (!sel)
         return 0;
 
-    set_workspace(sel->client->ws_set, ui);
+    struct workspace *ws = get_workspace(ui);
+    if (is_workspace_occupied(ws)) {
+        set_selected_monitor(ws->m);
+        return 0;
+    }
+    set_next_unoccupied_workspace(m, ws);
     focus_top_container(m, FOCUS_LIFT);
     arrange(false);
     return 0;
@@ -367,10 +373,17 @@ int toggle_tag(lua_State *L)
     lua_pop(L, 1);
 
     struct container *sel = selected_container(selected_monitor);
+    struct monitor *m = selected_monitor;
     if (!sel)
         return 0;
-    set_workspace(sel->client->ws_set, ui);
-    focus_top_container(selected_monitor, FOCUS_LIFT);
+    struct workspace *ws = get_workspace(ui);
+    if (is_workspace_occupied(ws)) {
+        printf("set_selected_monitor\n");
+        set_selected_monitor(ws->m);
+        return 0;
+    }
+    set_next_unoccupied_workspace(m, ws);
+    focus_top_container(m, FOCUS_LIFT);
     arrange(false);
     return 0;
 }
@@ -380,7 +393,12 @@ int view(lua_State *L)
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
-    set_workspace(m->ws_set, ui);
+    struct workspace *ws = get_workspace(ui);
+    if (is_workspace_occupied(ws)) {
+        set_selected_monitor(ws->m);
+        return 0;
+    }
+    set_next_unoccupied_workspace(m, ws);
     focus_top_container(m, FOCUS_NOOP);
     arrange(false);
     return 0;
@@ -391,7 +409,7 @@ int toggle_add_view(lua_State *L)
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
-    set_workspace(m->ws_set, ui);
+    set_workspace(m, get_workspace(ui));
     focus_top_container(m, FOCUS_NOOP);
     arrange(false);
     return 0;
@@ -401,7 +419,6 @@ int toggle_add_view(lua_State *L)
 int toggle_view(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    toggle_tagset(m->ws_set);
     focus_top_container(m, FOCUS_LIFT);
     arrange(false);
     return 0;
