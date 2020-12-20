@@ -120,7 +120,9 @@ void set_selected_monitor(struct monitor *m)
         return;
 
     selected_monitor = m;
-    wlr_cursor_warp(server.cursor, NULL, m->geom.x + (float)m->geom.width/2, m->geom.y + (float)m->geom.height/2);
+    int xcentre = m->geom.x + (float)m->geom.width/2;
+    int ycentre = m->geom.y + (float)m->geom.height/2;
+    wlr_cursor_warp(server.cursor, NULL, xcentre, ycentre);
     arrange(LAYOUT_NOOP);
 }
 
