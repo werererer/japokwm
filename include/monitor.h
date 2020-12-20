@@ -14,8 +14,6 @@ struct monitor {
     struct wl_list containers;
     /* associated with slink in container */
     struct wl_list stack;
-    /* associated with flink in container */
-    struct wl_list focus_stack;
     /* associated with llink in container */
     struct wl_list layer_stack;
     /* associated with plink in container  */
@@ -32,6 +30,9 @@ struct monitor {
     struct workspace *ws;
     unsigned int focused_workspace[2];
 };
+
+/* associated with flink in container */
+extern struct wl_list focus_stack;
 
 void create_monitor(struct wl_listener *listener, void *data);
 void destroy_monitor(struct wl_listener *listener, void *data);

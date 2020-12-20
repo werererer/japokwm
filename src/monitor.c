@@ -12,6 +12,8 @@
 #include "tile/tileUtils.h"
 #include "ipc-server.h"
 
+struct wl_list focus_stack;
+
 /* monitors */
 static const struct mon_rule monrules[] = {
     /* name       mfact nmaster scale layout       rotate/reflect */
@@ -43,7 +45,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     m = output->data = calloc(1, sizeof(struct monitor));
     wl_list_init(&m->containers);
     wl_list_init(&m->stack);
-    wl_list_init(&m->focus_stack);
     wl_list_init(&m->layer_stack);
     wl_list_init(&m->popups);
 
@@ -108,6 +109,7 @@ void focusmon(int i)
 
 void destroy_monitor(struct wl_listener *listener, void *data)
 {
+    printf("destroy_monitor\n");
     struct wlr_output *wlr_output = data;
     struct monitor *m = wlr_output->data;
     destroy_root(m->root);
@@ -125,6 +127,7 @@ void set_selected_monitor(struct monitor *m)
     int xcentre = m->geom.x + (float)m->geom.width/2;
     int ycentre = m->geom.y + (float)m->geom.height/2;
     wlr_cursor_warp(server.cursor, NULL, xcentre, ycentre);
+    focus_container(m, xytocontainer(xcentre, ycentre), FOCUS_NOOP);
     arrange(LAYOUT_NOOP);
 }
 

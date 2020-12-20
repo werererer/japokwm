@@ -25,7 +25,7 @@ struct container *create_container(struct client *c, struct monitor *m)
         add_container_to_monitor_stack(m, con);
     }
     wl_list_insert(&c->containers, &con->clink);
-    wl_list_insert(&m->focus_stack, &con->flink);
+    wl_list_insert(&focus_stack, &con->flink);
     return con;
 }
 
@@ -46,10 +46,10 @@ void destroy_container(struct container *con)
 
 struct container *selected_container(struct monitor *m)
 {
-    if (wl_list_empty(&m->focus_stack))
+    if (wl_list_empty(&focus_stack))
         return NULL;
 
-    struct container *con = wl_container_of(m->focus_stack.next, con, flink);
+    struct container *con = wl_container_of(focus_stack.next, con, flink);
     if (!visibleon(con, m))
         return NULL;
     else
@@ -58,10 +58,10 @@ struct container *selected_container(struct monitor *m)
 
 struct container *next_container(struct monitor *m)
 {
-    if (wl_list_length(&m->focus_stack) >= 2)
+    if (wl_list_length(&focus_stack) >= 2)
     {
         struct container *con =
-            wl_container_of(m->focus_stack.next->next, con, flink);
+            wl_container_of(focus_stack.next->next, con, flink);
         if (!visibleon(con, m))
             return NULL;
         else
@@ -219,7 +219,7 @@ void add_container_to_monitor(struct monitor *m, struct container *con)
 
     add_container_to_monitor_containers(con, 0);
     add_container_to_monitor_stack(m, con);
-    wl_list_insert(&m->focus_stack, &con->flink);
+    wl_list_insert(&focus_stack, &con->flink);
 }
 
 struct wlr_box get_absolute_box(struct wlr_box box, struct wlr_fbox b)
@@ -311,7 +311,7 @@ void focus_container(struct monitor *m, struct container *con, enum focus_action
     focus_client(c, con->client);
     /* Put the new client atop the focus stack */
     wl_list_remove(&con->flink);
-    wl_list_insert(&m->focus_stack, &con->flink);
+    wl_list_insert(&focus_stack, &con->flink);
 }
 
 void lift_container(struct container *con)
@@ -327,7 +327,7 @@ void focus_top_container(struct monitor *m, enum focus_actions a)
     // focus_stack should not be changed while iterating
     struct container *con;
     bool focus = false;
-    wl_list_for_each(con, &m->focus_stack, flink)
+    wl_list_for_each(con, &focus_stack, flink)
         if (visibleon(con, m)) {
             focus = true;
             break;

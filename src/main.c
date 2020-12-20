@@ -688,6 +688,7 @@ void setsel(struct wl_listener *listener, void *data)
 int setup()
 {
     wl_list_init(&mons);
+    wl_list_init(&focus_stack);
 
     L = luaL_newstate();
     luaL_openlibs(L);

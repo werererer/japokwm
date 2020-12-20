@@ -35,6 +35,7 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
 
     /* If surface is NULL, clear pointer focus */
     if (!surface) {
+        printf("clear\n");
         wlr_seat_pointer_notify_clear_focus(server.seat);
         return;
     }
@@ -215,6 +216,7 @@ int move_resize(lua_State *L)
             grabcy = server.cursor->y - grabc->geom.y;
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
                     "fleur", server.cursor);
+            printf("clear2\n");
             wlr_seat_pointer_notify_clear_focus(server.seat);
             arrange(false);
             break;
@@ -229,6 +231,7 @@ int move_resize(lua_State *L)
                     grabc->geom.y + grabc->geom.height);
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
                     "bottom_right_corner", server.cursor);
+            printf("clear3\n");
             wlr_seat_pointer_notify_clear_focus(server.seat);
             arrange(false);
             break;

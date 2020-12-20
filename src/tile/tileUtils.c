@@ -21,7 +21,6 @@
 
 void arrange(enum layout_actions action)
 {
-    printf("renderAll\n");
     struct monitor *m;
     arrange_monitor(selected_monitor, action);
     wl_list_for_each(m, &mons, link) {
@@ -65,7 +64,6 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
 
     int i = 0;
     struct container *con;
-    focus_container(m, selected_container(m), FOCUS_NOOP);
     wl_list_for_each(con, &m->containers, mlink) {
         if (!visibleon(con, m))
             continue;
