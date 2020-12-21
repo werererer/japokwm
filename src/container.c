@@ -16,16 +16,7 @@ struct container *create_container(struct client *c, struct monitor *m)
     struct container *con = calloc(1, sizeof(struct container));
     con->m = m;
     con->client = c;
-    if (con->client->type == LAYER_SHELL) {
-        // layer shell programs aren't pushed to the stack because they use the
-        // layer system to set the correct render position
-        wl_list_insert(&m->layer_stack, &con->llink);
-    } else {
-        add_container_to_monitor_containers(con, 0);
-        add_container_to_monitor_stack(m, con);
-    }
-    wl_list_insert(&c->containers, &con->clink);
-    wl_list_insert(&focus_stack, &con->flink);
+    add_container_to_monitor(m, con);
     return con;
 }
 
@@ -75,10 +66,10 @@ struct container *get_container(struct monitor *m, int i)
 {
     struct container *con;
 
-    if (abs(i) > wl_list_length(&m->containers))
+    if (abs(i) > wl_list_length(&containers))
         return NULL;
     if (i >= 0) {
-        struct wl_list *pos = &m->containers;
+        struct wl_list *pos = &containers;
         while (i > 0) {
             if (pos->next)
                 pos = pos->next;
@@ -86,7 +77,7 @@ struct container *get_container(struct monitor *m, int i)
         }
         con = wl_container_of(pos, con, mlink);
     } else { // i < 0
-        struct wl_list *pos = &m->containers;
+        struct wl_list *pos = &containers;
         while (i < 0) {
             pos = pos->prev;
             i++;
@@ -102,7 +93,7 @@ struct container *first_container(struct monitor *m)
         return NULL;
 
     struct container *con;
-    wl_list_for_each(con, &m->stack, slink) {
+    wl_list_for_each(con, &stack, slink) {
         if (visibleon(con, m))
             break;
     }
@@ -116,7 +107,7 @@ struct client *last_client(struct monitor *m)
 
     struct container *con;
     int i = 1;
-    wl_list_for_each(con, &m->stack, slink) {
+    wl_list_for_each(con, &stack, slink) {
         if (!visibleon(con, m))
             continue;
         if (i > selected_layout(m)->containers_info.n)
@@ -131,7 +122,7 @@ struct container *xytocontainer(double x, double y)
     struct monitor *m = xytomon(x, y);
 
     struct container *con;
-    wl_list_for_each(con, &m->layer_stack, llink) {
+    wl_list_for_each(con, &layer_stack, llink) {
         if (con->client->surface.layer->current.layer >
                 ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM)
             continue;
@@ -141,14 +132,14 @@ struct container *xytocontainer(double x, double y)
         return con;
     }
 
-    wl_list_for_each(con, &m->stack, slink) {
-        if (!visibleon(con, m) || !wlr_box_contains_point(&con->geom, x, y))
+    wl_list_for_each(con, &stack, slink) {
+        if ((!visibleon(con, m) && !con->floating) || !wlr_box_contains_point(&con->geom, x, y))
             continue;
 
         return con;
     }
 
-    wl_list_for_each(con, &m->layer_stack, llink) {
+    wl_list_for_each(con, &layer_stack, llink) {
         if (con->client->surface.layer->current.layer <
                 ZWLR_LAYER_SHELL_V1_LAYER_TOP)
             continue;
@@ -172,17 +163,17 @@ static void add_container_to_monitor_containers(struct container *con, int i)
         if (con2)
             wl_list_insert(&con2->mlink, &con->mlink);
         else
-            wl_list_insert(&m->containers, &con->mlink);
+            wl_list_insert(&containers, &con->mlink);
     } else {
         /* Insert container after the last non floating container */
         struct container *con2;
-        wl_list_for_each_reverse(con2, &m->containers, mlink) {
+        wl_list_for_each_reverse(con2, &containers, mlink) {
             if (!con2->floating)
                 break;
         }
 
-        if (wl_list_empty(&m->containers))
-            wl_list_insert(m->containers.prev, &con->mlink);
+        if (wl_list_empty(&containers))
+            wl_list_insert(containers.prev, &con->mlink);
         else
             wl_list_insert(&con2->mlink, &con->mlink);
     }
@@ -194,22 +185,21 @@ static void add_container_to_monitor_stack(struct monitor *m, struct container *
         return;
 
     if (con->floating) {
-        wl_list_insert(&m->stack, &con->slink);
+        wl_list_insert(&stack, &con->slink);
         return;
     }
 
     /* Insert container after the last floating container */
     struct container *con2;
-    wl_list_for_each(con2, &m->stack, slink) {
+    wl_list_for_each(con2, &stack, slink) {
         if (!con2->floating)
             break;
     }
 
-    if (!wl_list_empty(&m->stack)) {
+    if (!wl_list_empty(&stack))
         wl_list_insert(&con2->slink, &con->slink);
-    } else {
-        wl_list_insert(&m->stack, &con->slink);
-    }
+    else
+        wl_list_insert(&stack, &con->slink);
 }
 
 void add_container_to_monitor(struct monitor *m, struct container *con)
@@ -217,9 +207,36 @@ void add_container_to_monitor(struct monitor *m, struct container *con)
     if (!m || !con)
         return;
 
-    add_container_to_monitor_containers(con, 0);
-    add_container_to_monitor_stack(m, con);
+    if (con->client->type == LAYER_SHELL) {
+        // layer shell programs aren't pushed to the stack because they use the
+        // layer system to set the correct render position
+        wl_list_insert(&layer_stack, &con->llink);
+    } else {
+        add_container_to_monitor_containers(con, 0);
+        add_container_to_monitor_stack(m, con);
+    }
+
+    wl_list_insert(&con->client->containers, &con->clink);
     wl_list_insert(&focus_stack, &con->flink);
+}
+
+void remove_container_from_monitor(struct monitor *m, struct container *con)
+{
+    if (!m || !con)
+        return;
+
+    if (con->client->type == LAYER_SHELL) {
+        // layer shell programs aren't pushed to the stack because they use the
+        // layer system to set the correct render position
+        wl_list_insert(&layer_stack, &con->llink);
+        wl_list_remove(&con->llink);
+    } else {
+        wl_list_remove(&con->mlink);
+        wl_list_remove(&con->slink);
+    }
+
+    wl_list_remove(&con->clink);
+    wl_list_remove(&con->flink);
 }
 
 struct wlr_box get_absolute_box(struct wlr_box box, struct wlr_fbox b)
@@ -348,7 +365,7 @@ bool existon(struct container *con, struct monitor *m)
     if (!c)
         return false;
 
-    return c->focused_workspace[0] == m->focused_workspace[0];
+    return c->ws == m->ws;
 }
 
 bool hiddenon(struct container *con, struct monitor *m)
@@ -368,7 +385,7 @@ bool hiddenon(struct container *con, struct monitor *m)
     if (c->type == LAYER_SHELL)
         return true;
 
-    return c->focused_workspace[0] & m->focused_workspace[0];
+    return c->ws == m->ws;
 }
 
 bool visibleon(struct container *con, struct monitor *m)
@@ -388,7 +405,7 @@ bool visibleon(struct container *con, struct monitor *m)
     if (c->type == LAYER_SHELL)
         return true;
 
-    return c->focused_workspace[0] == m->focused_workspace[0];
+    return c->ws == m->ws;
 }
 
 void set_container_floating(struct container *con, bool floating)
@@ -400,4 +417,3 @@ void set_container_floating(struct container *con, bool floating)
     wl_list_remove(&con->mlink);
     add_container_to_monitor_containers(con, -1);
 }
-

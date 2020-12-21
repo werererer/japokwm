@@ -49,6 +49,7 @@ struct container *last_container(struct monitor *m);
 struct wlr_box get_absolute_box(struct wlr_box box, struct wlr_fbox b);
 struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box b);
 void add_container_to_monitor(struct monitor *m, struct container *con);
+void remove_container_from_monitor(struct monitor *m, struct container *con);
 void applybounds(struct container *con, struct wlr_box bbox);
 void applyrules(struct container *con);
 void focus_container(struct monitor *m, struct container *con, enum focus_actions a);
@@ -59,6 +60,5 @@ bool hiddenon(struct container *con, struct monitor *m);
 bool visibleon(struct container *con, struct monitor *m);
 void focus_top_container(struct monitor *m, enum focus_actions a);
 void lift_container(struct container *con);
-void remove_container_from_monitor(struct monitor *m, struct container *con);
 void set_container_floating(struct container *con, bool floating);
 #endif /* CONTAINER_H */

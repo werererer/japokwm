@@ -191,7 +191,7 @@ int focus_on_hidden_stack(lua_State *L)
         wl_list_remove(&con->mlink);
         wl_list_insert(&sel->mlink, &con->mlink);
         wl_list_remove(&sel->mlink);
-        wl_list_insert(m->containers.prev, &sel->mlink);
+        wl_list_insert(containers.prev, &sel->mlink);
     }
 
     focus_container(m, con, FOCUS_LIFT);
@@ -319,8 +319,8 @@ void motionnotify(uint32_t time)
         }
 
         if (!surface && !is_popup) {
-            if (!wl_list_empty(&m->popups)) {
-                struct xdg_popup *popup = wl_container_of(m->popups.next, popup, plink);
+            if (!wl_list_empty(&popups)) {
+                struct xdg_popup *popup = wl_container_of(popups.next, popup, plink);
                 wlr_xdg_popup_destroy(popup->xdg->base);
             }
             surface = wlr_surface_surface_at(get_wlrsurface(con->client),
@@ -473,10 +473,10 @@ int zoom(lua_State *L)
     if (!sel || sel->floating)
         return 0;
 
-    struct container *master = wl_container_of(m->containers.next, master, mlink);
+    struct container *master = wl_container_of(containers.next, master, mlink);
     struct container *previous;
     if (sel == master)
-        previous = wl_container_of(m->containers.next->next, previous, mlink);
+        previous = wl_container_of(containers.next->next, previous, mlink);
     else
         previous = wl_container_of(sel->mlink.prev, previous, mlink);
 
@@ -496,7 +496,7 @@ int zoom(lua_State *L)
         return 0;
 
     wl_list_remove(&con->mlink);
-    wl_list_insert(&m->containers, &con->mlink);
+    wl_list_insert(&containers, &con->mlink);
     arrange(LAYOUT_NOOP);
     // focus new master window
     focus_container(selected_monitor, previous, FOCUS_NOOP);

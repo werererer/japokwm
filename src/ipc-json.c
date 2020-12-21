@@ -12,6 +12,7 @@
 #include "container.h"
 #include "client.h"
 #include "workspace.h"
+#include "monitor.h"
 
 static json_object *ipc_json_create_rect(struct wlr_box *box) {
     json_object *rect = json_object_new_object();

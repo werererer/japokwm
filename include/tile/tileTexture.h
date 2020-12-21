@@ -21,7 +21,7 @@ struct pos_texture {
     struct monitor *mon;
     struct workspaceset *ws_set;
     struct wlr_texture *texture;
-    size_t focused_workspace[2];
+    struct workspace *ws;
 };
 
 /* should be called before wlr_begin_renderer() */
@@ -37,7 +37,7 @@ void update_overlay();
 void update_overlay_count(size_t count);
 void write_overlay(struct monitor *m, const char *layout);
 struct wlr_box postexture_to_container(struct pos_texture *pTexture);
-bool postexture_visible_on(struct pos_texture *pTexture, struct monitor *m, size_t workspace);
+bool postexture_visible_on(struct pos_texture *pTexture, struct monitor *m, struct workspace *ws);
 
 extern bool overlay;
 #endif /* TILE_TEXTURE_H */

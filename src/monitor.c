@@ -12,7 +12,11 @@
 #include "tile/tileUtils.h"
 #include "ipc-server.h"
 
+struct wl_list stack;
 struct wl_list focus_stack;
+struct wl_list containers;
+struct wl_list layer_stack;
+struct wl_list popups;
 
 /* monitors */
 static const struct mon_rule monrules[] = {
@@ -43,15 +47,6 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     /* Allocates and configures monitor state using configured rules */
     m = output->data = calloc(1, sizeof(struct monitor));
-    wl_list_init(&m->containers);
-    wl_list_init(&m->stack);
-    wl_list_init(&m->layer_stack);
-    wl_list_init(&m->popups);
-
-    struct client *c;
-    wl_list_for_each(c, &clients, link) {
-        create_container(c, m);
-    }
 
     m->wlr_output = output;
     m->root = create_root();
@@ -92,15 +87,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     wlr_output_layout_add_auto(output_layout, output);
 }
 
-void remove_container_from_monitor(struct monitor *m, struct container *con)
-{
-    printf("remove from container\n");
-    if (m && con) {
-        wl_list_remove(&con->slink);
-        wl_list_remove(&con->flink);
-    }
-}
-
 void focusmon(int i)
 {
     selected_monitor = dirtomon(i);
@@ -109,12 +95,15 @@ void focusmon(int i)
 
 void destroy_monitor(struct wl_listener *listener, void *data)
 {
-    printf("destroy_monitor\n");
     struct wlr_output *wlr_output = data;
     struct monitor *m = wlr_output->data;
-    destroy_root(m->root);
 
+    set_workspace(m, NULL);
+    destroy_root(m->root);
     wl_list_remove(&m->link);
+
+    /* m = wl_container_of(&mons.next, m, link); */
+    /* set_selected_monitor(m); */
 }
 
 void set_selected_monitor(struct monitor *m)
@@ -131,10 +120,15 @@ void set_selected_monitor(struct monitor *m)
     arrange(LAYOUT_NOOP);
 }
 
-static void set_layer_shell(struct container *con)
+static void configure_layer_shell_container_geom(struct container *con, struct monitor *m)
 {
-    con->geom.x = 0;
-    con->geom.y = 0;
+    if (!con->client)
+        return;
+    if (con->client->type != LAYER_SHELL)
+        return;
+
+    con->geom.x = m->geom.x;
+    con->geom.y = m->geom.y;
     if (con->client->surface.layer->current.desired_width)
         con->geom.width = con->client->surface.layer->current.desired_width;
     else
@@ -144,33 +138,55 @@ static void set_layer_shell(struct container *con)
         con->geom.height = con->client->surface.layer->current.desired_height;
     else
         con->geom.height = selected_monitor->wlr_output->height;
-    /* wlr_layer_surface_v1_configure(con->client->surface.layer, con->geom.width, */
-    /*         con->geom.height); */
     resize(con, con->geom, false);
 }
 
-// TODO: Reduce side effects
+// TODO fix this to allow placement on all sides on screen
+static struct wlr_box get_max_dimensions(struct monitor *m)
+{
+    struct wlr_box box;
+
+    struct container *con;
+    wl_list_for_each(con, &layer_stack, llink) {
+        if (!visibleon(con, m))
+            continue;
+
+        // desired_width and desired_height are == 0 if nothing is desired
+        int desired_width = con->client->surface.layer->current.desired_width;
+        int desired_height = con->client->surface.layer->current.desired_height;
+
+        box.width = MAX(box.width, desired_width);
+        box.height = MAX(box.height, desired_height);
+    }
+
+    return box;
+}
+
 void set_root_area(struct monitor *m)
 {
-    m->root->w = m->geom;
-    int maxWidth = 0, maxHeight = 0;
+    m->root->geom = m->geom;
+
+    struct wlr_box max_geom = get_max_dimensions(m);
+
+    if (m->root->consider_layer_shell) {
+        m->root->geom.x += max_geom.width;
+        m->root->geom.width -= max_geom.width;
+        m->root->geom.y += max_geom.height;
+        m->root->geom.height -= max_geom.height;
+    }
+
     struct container *con;
-    wl_list_for_each(con, &m->layer_stack, llink) {
-        set_layer_shell(con);
-        // if desired_width/height == 0 they are fullscreen and have no effect
-        maxWidth = MAX(maxWidth, con->client->surface.layer->current.desired_width);
-        maxHeight = MAX(maxHeight, con->client->surface.layer->current.desired_height);
+    wl_list_for_each(con, &layer_stack, llink) {
+        if (!visibleon(con, m))
+            continue;
+
+        configure_layer_shell_container_geom(con, m);
+
         // move the current window barely out of view
         if (!m->root->consider_layer_shell) {
-            con->geom.x = -maxWidth;
-            con->geom.y = -maxHeight;
+            con->geom.x = -max_geom.width;
+            con->geom.y = -max_geom.height;
         }
-    }
-    if (m->root->consider_layer_shell) {
-        m->root->w.x += maxWidth;
-        m->root->w.width -= maxWidth;
-        m->root->w.y += maxHeight;
-        m->root->w.height -= maxHeight;
     }
 }
 
@@ -183,14 +199,13 @@ struct layout *selected_layout(struct monitor *m)
 
 struct workspace *get_focused_workspace(struct monitor *m)
 {
-    return get_workspace(m->focused_workspace[0]);
+    return get_workspace(m->ws->id);
 }
 
 void push_selected_workspace(struct monitor *m, struct workspace *ws)
 {
     if (!m || !ws)
         return;
-    m->focused_workspace[1] = m->focused_workspace[0];
     set_workspace(m, ws);
 }
 

@@ -1,5 +1,6 @@
 #include "render/render.h"
 #include "client.h"
+#include "monitor.h"
 #include "tile/tileUtils.h"
 #include "tile/tileTexture.h"
 #include <stdio.h>
@@ -80,8 +81,8 @@ static void render_clients(struct monitor *m)
 
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    wl_list_for_each_reverse(con, &m->stack, slink) {
-        if (!visibleon(con, m))
+    wl_list_for_each_reverse(con, &stack, slink) {
+        if (!visibleon(con, m) && !con->floating)
             continue;
 
         double ox, oy;
@@ -132,15 +133,14 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
     struct renderData rdata;
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    wl_list_for_each_reverse(con, &m->layer_stack, llink) {
+    wl_list_for_each_reverse(con, &layer_stack, llink) {
         if (con->client->type != LAYER_SHELL)
             continue;
         if (con->client->surface.layer->current.layer != layer)
             continue;
 
         /* Only render visible clients which are shown on this monitor */
-        if (!visibleon(con, m) || !wlr_output_layout_intersects(
-                    output_layout, m->wlr_output, &con->geom))
+        if (!visibleon(con, m))
             continue;
 
         struct timespec now;
@@ -159,7 +159,7 @@ static void render_texture(struct pos_texture *texture)
     if (postexture_visible_on(
                 texture,
                 selected_monitor,
-                selected_monitor->focused_workspace[0])) {
+                selected_monitor->ws)) {
         wlr_render_texture(drw, texture->texture,
                 selected_monitor->wlr_output->transform_matrix, texture->x,
                 texture->y, 1);
@@ -195,7 +195,7 @@ static void render_independents(struct monitor *m)
 
 static void render_popups(struct monitor *m) {
     struct xdg_popup *popup;
-    wl_list_for_each_reverse(popup, &m->popups, plink) {
+    wl_list_for_each_reverse(popup, &popups, plink) {
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
         struct renderData rdata;

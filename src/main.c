@@ -529,16 +529,14 @@ void maprequest(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
 
     struct monitor *m = selected_monitor;
-    c->focused_workspace[0] = m->focused_workspace[0];
+    c->ws = m->ws;
     wl_list_init(&c->containers);
 
     switch (c->type) {
         case XDG_SHELL:
         case X11_MANAGED:
             wl_list_insert(&clients, &c->link);
-            wl_list_for_each(m, &mons, link) {
-                create_container(c, m);
-            }
+            create_container(c, m);
             break;
         case LAYER_SHELL:
             {
@@ -689,6 +687,10 @@ int setup()
 {
     wl_list_init(&mons);
     wl_list_init(&focus_stack);
+    wl_list_init(&stack);
+    wl_list_init(&containers);
+    wl_list_init(&layer_stack);
+    wl_list_init(&popups);
 
     L = luaL_newstate();
     luaL_openlibs(L);

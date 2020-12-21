@@ -22,12 +22,14 @@
 void arrange(enum layout_actions action)
 {
     struct monitor *m;
+    printf("start\n");
     arrange_monitor(selected_monitor, action);
     wl_list_for_each(m, &mons, link) {
         if (m == selected_monitor)
             continue;
         arrange_monitor(m, action);
     }
+    printf("end\n");
 }
 
 void arrange_monitor(struct monitor *m, enum layout_actions action)
@@ -37,7 +39,7 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
     set_root_area(m);
 
     if (!overlay)
-        container_surround_gaps(&m->root->w, outer_gap);
+        container_surround_gaps(&m->root->geom, outer_gap);
 
     // don't do anything if no tiling function exist
     if (selected_layout(m)->funcId <= 0)
@@ -64,7 +66,7 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
 
     int i = 0;
     struct container *con;
-    wl_list_for_each(con, &m->containers, mlink) {
+    wl_list_for_each(con, &containers, mlink) {
         if (!visibleon(con, m))
             continue;
         arrange_container(m, con, i, false);
@@ -99,7 +101,7 @@ void arrange_container(struct monitor *m, struct container *con, int i, bool pre
     lua_pop(L, 1);
     lua_pop(L, 1);
 
-    con->geom = get_absolute_box(m->root->w, box);
+    con->geom = get_absolute_box(m->root->geom, box);
     if (!overlay)
         container_surround_gaps(&con->geom, inner_gap);
     container_surround_gaps(&con->geom, 2*con->client->bw);
@@ -126,7 +128,7 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
         }
     } else {
         con->client->ratio = calc_ratio(con->geom.width, con->geom.height);
-        applybounds(con, con->m->geom);
+        applybounds(con, *wlr_output_layout_get_box(output_layout, NULL));
 
         /* wlroots makes this a no-op if size hasn't changed */
         switch (con->client->type) {
@@ -135,9 +137,9 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
                         con->geom.width, con->geom.height);
                 break;
             case LAYER_SHELL:
-                /* wlr_layer_surface_v1_configure(con->client->surface.layer, */
-                /*         selected_monitor->geom.width, */
-                /*         selected_monitor->geom.height); */
+                wlr_layer_surface_v1_configure(con->client->surface.layer,
+                        selected_monitor->geom.width,
+                        selected_monitor->geom.height);
                 break;
             case X11_MANAGED:
             case X11_UNMANAGED:
@@ -152,7 +154,7 @@ void update_hidden_status(struct monitor *m)
 {
     int i = 0;
     struct container *con;
-    wl_list_for_each(con, &m->containers, mlink) {
+    wl_list_for_each(con, &containers, mlink) {
         if (!existon(con, m) || con->floating)
             continue;
 
@@ -170,7 +172,7 @@ int tiled_container_count(struct monitor *m)
     struct container *con;
     int n = 0;
 
-    wl_list_for_each(con, &m->containers, mlink)
+    wl_list_for_each(con, &containers, mlink)
         if(!con->floating && existon(con, m))
             n++;
     return n;

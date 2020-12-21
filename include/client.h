@@ -5,8 +5,6 @@
 #include <wlr/xwayland.h>
 
 #include "parseConfig.h"
-#include "workspaceset.h"
-#include "monitor.h"
 
 enum shell { XDG_SHELL, X11_MANAGED, X11_UNMANAGED, LAYER_SHELL }; /* client types */
 
@@ -36,13 +34,12 @@ struct client {
     int id;
     char *title;
     uint32_t resize; /* configure serial of a pending resize */
-    size_t focused_workspace[2];
+    struct workspace *ws;
 };
 
 /* it ignores bool  hiding which visibleon doesn't */
 void focus_client(struct client *old, struct client *c);
 float calc_ratio(float width, float height);
-bool visibleon_workspace(struct client *c, size_t focusedTag);
 
 extern struct wl_list clients; /* tiling order */
 extern struct wlr_output_layout *output_layout;

@@ -16,7 +16,7 @@ int this_container_position(lua_State *L)
     int n = 1;
     bool handled = false;
 
-    wl_list_for_each(con, &selected_monitor->containers, mlink) {
+    wl_list_for_each(con, &containers, mlink) {
         if (!visibleon(con, selected_monitor) || con->floating)
             continue;
         if (con == sel) {

@@ -3,21 +3,13 @@
 #include <wayland-server.h>
 #include <wlr/types/wlr_box.h>
 
+#include "container.h"
 #include "workspace.h"
 #include "root.h"
 
 struct monitor {
     /* mons(monitors) list */
     struct wl_list link;
-
-    /* associated with link in container */
-    struct wl_list containers;
-    /* associated with slink in container */
-    struct wl_list stack;
-    /* associated with llink in container */
-    struct wl_list layer_stack;
-    /* associated with plink in container  */
-    struct wl_list popups;
 
     struct wlr_output *wlr_output;
     struct wl_listener frame;
@@ -28,11 +20,19 @@ struct monitor {
     double mfact;
     int nmaster;
     struct workspace *ws;
-    unsigned int focused_workspace[2];
 };
 
+/* associated with slink in container */
+extern struct wl_list stack;
 /* associated with flink in container */
 extern struct wl_list focus_stack;
+/* associated with link in container */
+extern struct wl_list containers;
+/* associated with llink in container */
+extern struct wl_list layer_stack;
+/* associated with plink in container  */
+extern struct wl_list popups;
+
 
 void create_monitor(struct wl_listener *listener, void *data);
 void destroy_monitor(struct wl_listener *listener, void *data);

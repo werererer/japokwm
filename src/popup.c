@@ -10,6 +10,7 @@
 #include "utils/coreUtils.h"
 #include "xdg-shell-protocol.h"
 #include "container.h"
+#include "monitor.h"
 
 static void popup_handle_new_subpopup(struct wl_listener *listener, void *data);
 static struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popup,
@@ -62,7 +63,7 @@ void popup_handle_new_popup(struct wl_listener *listener, void *data)
         if (con->m != selected_monitor)
             continue;
         struct xdg_popup *popup = create_popup(con->m, xdg_popup, con->geom, con);
-        wl_list_insert(&con->m->popups, &popup->plink);
+        wl_list_insert(&popups, &popup->plink);
     }
 }
 
@@ -75,7 +76,7 @@ static void popup_handle_new_subpopup(struct wl_listener *listener, void *data)
 
     struct xdg_popup *popup = create_popup(parentPopup->m, xdg_popup,
             parentPopup->geom, parentPopup->toplevel);
-    wl_list_insert(&parentPopup->m->popups, &popup->plink);
+    wl_list_insert(&popups, &popup->plink);
 }
 
 void popup_handle_destroy(struct wl_listener *listener, void *data)
