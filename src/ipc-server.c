@@ -21,7 +21,6 @@
 #include "ipc-server.h"
 #include "server.h"
 #include "workspace.h"
-#include "workspaceset.h"
 #include "client.h"
 #include "command.h"
 #include "monitor.h"

@@ -11,8 +11,6 @@
 #include <wlr/render/wlr_texture.h>
 #include <lua.h>
 
-#include "workspaceset.h"
-
 /* macros */
 #define BARF(fmt, ...)      do { fprintf(stderr, fmt "\n", ##__VA_ARGS__); exit(EXIT_FAILURE); } while (0)
 #define EBARF(fmt, ...)     BARF(fmt ": %s", ##__VA_ARGS__, strerror(errno))

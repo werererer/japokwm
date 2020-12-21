@@ -1,12 +1,10 @@
 #include "tile/tileTexture.h"
 #include "client.h"
 #include "container.h"
-#include "workspaceset.h"
 #include "utils/coreUtils.h"
 #include "utils/stringUtils.h"
 #include "utils/writeFile.h"
 #include "tile/tileUtils.h"
-#include "workspaceset.h"
 #include "root.h"
 #include <cairo/cairo.h>
 #include <fcntl.h>

@@ -1,9 +1,7 @@
 #ifndef _SWAY_IPC_SERVER_H
 #define _SWAY_IPC_SERVER_H
 #include <sys/socket.h>
-#include "workspaceset.h"
-
-struct sway_server;
+#include <wayland-server.h>
 
 void ipc_init(struct wl_event_loop *wl_event_loop);
 

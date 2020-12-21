@@ -48,7 +48,6 @@ srcs = files(
   'wlr-foreign-toplevel-management-unstable-v1-protocol.c',
   'wlr-layer-shell-unstable-v1-protocol.c',
   'workspace.c',
-  'workspaceset.c',
   'xdg-shell-protocol.c',
   )
 

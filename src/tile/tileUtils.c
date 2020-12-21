@@ -13,7 +13,6 @@
 #include "parseConfig.h"
 #include "root.h"
 #include "server.h"
-#include "workspaceset.h"
 #include "tile/tileTexture.h"
 #include "utils/coreUtils.h"
 #include "utils/gapUtils.h"
