@@ -18,7 +18,7 @@
 #include "workspace.h"
 
 bool sloppyFocus;
-int borderPx;
+int border_px;
 float rootColor[4];
 float borderColor[4];
 float focusColor[4];
@@ -47,7 +47,7 @@ int update_config(lua_State *L)
     init_error_file();
     init_config(L);
     sloppyFocus = get_config_bool(L, "sloppyFocus");
-    borderPx = get_config_int(L, "borderPx");
+    border_px = get_config_int(L, "borderPx");
 
     /* gaps */
     inner_gap = get_config_int(L, "innerGap");
@@ -98,7 +98,7 @@ int reloadConfig(lua_State *L)
     // reconfigure clients
     struct client *c = NULL;
     wl_list_for_each(c, &clients, link) {
-        c->bw = borderPx;
+        c->bw = border_px;
     }
 
     lua_pushboolean(L, true);

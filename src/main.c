@@ -273,7 +273,7 @@ void createnotify(struct wl_listener *listener, void *data)
     /* Allocate a Client for this surface */
     struct client *c = xdg_surface->data = calloc(1, sizeof(struct client));
     c->surface.xdg = xdg_surface;
-    c->bw = borderPx;
+    c->bw = border_px;
     c->type = XDG_SHELL;
 
     /* Tell the client not to try anything fancy */
@@ -880,12 +880,11 @@ void createnotifyx11(struct wl_listener *listener, void *data)
 {
     struct wlr_xwayland_surface *xwayland_surface = data;
     struct client *c;
-
     /* Allocate a Client for this surface */
-    c = xwayland_surface->data = calloc(1, sizeof(*c));
+    c = xwayland_surface->data = calloc(1, sizeof(struct client));
     c->surface.xwayland = xwayland_surface;
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
-    c->bw = borderPx;
+    c->bw = border_px;
     printf("width: %i\n", xwayland_surface->width);
     printf("height: %i\n", xwayland_surface->height);
     /* wlr_xwayland_surface_hints */

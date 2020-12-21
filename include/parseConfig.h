@@ -16,7 +16,7 @@ struct config {
 extern char *mainModule;
 extern char *configModule;
 extern bool sloppyFocus;
-extern int borderPx;
+extern int border_px;
 extern int inner_gap;
 extern int outer_gap;
 extern float borderColor[4];

@@ -144,7 +144,7 @@ static void configure_layer_shell_container_geom(struct container *con, struct m
 // TODO fix this to allow placement on all sides on screen
 static struct wlr_box get_max_dimensions(struct monitor *m)
 {
-    struct wlr_box box;
+    struct wlr_box box = {.x = 0, .y = 0, .width = 0, .height = 0};
 
     struct container *con;
     wl_list_for_each(con, &layer_stack, llink) {

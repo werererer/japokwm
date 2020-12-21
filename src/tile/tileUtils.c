@@ -1,6 +1,5 @@
 #include "tile/tileUtils.h"
 #include <client.h>
-#include <stdio.h>
 #include <string.h>
 #include <sys/param.h>
 #include <wayland-util.h>
@@ -21,14 +20,12 @@
 void arrange(enum layout_actions action)
 {
     struct monitor *m;
-    printf("start\n");
     arrange_monitor(selected_monitor, action);
     wl_list_for_each(m, &mons, link) {
         if (m == selected_monitor)
             continue;
         arrange_monitor(m, action);
     }
-    printf("end\n");
 }
 
 void arrange_monitor(struct monitor *m, enum layout_actions action)
