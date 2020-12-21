@@ -92,7 +92,8 @@ int set_floating(lua_State *L)
 {
     bool b = lua_toboolean(L, -1);
     lua_pop(L, 1);
-    struct container *sel = selected_container(selected_monitor); if (!sel)
+    struct container *sel = selected_container(selected_monitor);
+    if (!sel)
         return 0;
     set_container_floating(sel, b);
     arrange(LAYOUT_NOOP);

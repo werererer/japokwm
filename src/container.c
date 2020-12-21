@@ -41,7 +41,7 @@ struct container *selected_container(struct monitor *m)
         return NULL;
 
     struct container *con = wl_container_of(focus_stack.next, con, flink);
-    if (!visibleon(con, m))
+    if (!visibleon(con, m) && !con->floating)
         return NULL;
     else
         return con;
