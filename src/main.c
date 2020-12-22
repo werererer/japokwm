@@ -524,11 +524,11 @@ void keypressmod(struct wl_listener *listener, void *data)
         &kb->device->keyboard->modifiers);
 }
 
-static bool wants_floating(struct container *con) {
-    if (con->client->type != X11_MANAGED && con->client->type != X11_UNMANAGED) {
+static bool wants_floating(struct client *c) {
+    if (c->type != X11_MANAGED && c->type != X11_UNMANAGED) {
         return false;
     }
-    struct wlr_xwayland_surface *surface = con->client->surface.xwayland;
+    struct wlr_xwayland_surface *surface = c->surface.xwayland;
     struct xwayland xwayland = server.xwayland;
 
     if (surface->modal) {
@@ -554,6 +554,19 @@ static bool wants_floating(struct container *con) {
         return true;
     }
 
+    return false;
+}
+
+static bool is_popup_menu(struct client *c)
+{
+    struct wlr_xwayland_surface *surface = c->surface.xwayland;
+    struct xwayland xwayland = server.xwayland;
+    for (size_t i = 0; i < surface->window_type_len; ++i) {
+        xcb_atom_t type = surface->window_type[i];
+        if (type == xwayland.atoms[NET_WM_WINDOW_TYPE_POPUP_MENU]) {
+            return true;
+        }
+    }
     return false;
 }
 
@@ -604,42 +617,34 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
     c->ws = m->ws;
-    if (c->type == X11_UNMANAGED && c->surface.xwayland->parent) {
-        wl_list_init(&c->containers);
+
+    if (is_popup_menu(c)) {
         wl_list_insert(&server.independents, &c->ilink);
         return;
     }
 
     struct container *con = create_container(c, m);
-
-    if (xwayland_surface->override_redirect)
-        printf("X11_UNMANAGED\n");
-
+    add_container_to_monitor(con, m);
     switch (c->type) {
         case X11_MANAGED:
             {
                 wl_list_insert(&clients, &c->link);
+
                 con->on_top = false;
-                if (wants_floating(con)) {
-                    con->floating = true;
-                    con->geom.x = xwayland_surface->x;
-                    con->geom.y = xwayland_surface->y;
-                    con->geom.width = xwayland_surface->width;
-                    con->geom.height = xwayland_surface->height;
+                if (wants_floating(con->client)) {
+                    set_container_floating(con, true);
+                    resize(con, get_center_box(con->m->geom), false);
                 }
-                add_container_to_monitor(con, m);
                 break;
             }
         case X11_UNMANAGED:
             {
-                con->floating = true;
-                con->geom.x = xwayland_surface->x;
-                con->geom.y = xwayland_surface->y;
-                con->geom.width = xwayland_surface->width;
-                con->geom.height = xwayland_surface->height;
-                con->on_top = true;
+                printf("here\n");
                 wl_list_insert(&server.independents, &c->ilink);
-                add_container_to_monitor(con, m);
+
+                con->on_top = true;
+                set_container_floating(con, true);
+                resize(con, get_center_box(con->m->geom), false);
                 break;
             }
         default:

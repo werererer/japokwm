@@ -276,6 +276,16 @@ void remove_container_from_monitor(struct monitor *m, struct container *con)
     wl_list_remove(&con->flink);
 }
 
+struct wlr_box get_center_box(struct wlr_box ref)
+{
+    return (struct wlr_box) {
+            .x = ref.width/4,
+            .y = ref.height/4,
+            .width = ref.width/2,
+            .height = ref.height/2
+        };
+}
+
 struct wlr_box get_absolute_box(struct wlr_box box, struct wlr_fbox b)
 {
     struct wlr_box w;
@@ -449,10 +459,14 @@ bool visibleon(struct container *con, struct monitor *m)
 
 void set_container_floating(struct container *con, bool floating)
 {
+    if (!con)
+        return;
     if (con->floating == floating)
         return;
     con->floating = floating;
-    lift_container(con);
-    wl_list_remove(&con->mlink);
-    add_container_to_monitor_containers(con, -1);
+    if (con->floating) {
+        lift_container(con);
+        wl_list_remove(&con->mlink);
+        add_container_to_monitor_containers(con, -1);
+    }
 }

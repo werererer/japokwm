@@ -13,7 +13,7 @@ typedef enum {
     WORKSPACES,
 } renderDataType_t;
 
-struct renderData {
+struct render_data {
     struct wlr_output *output;
     struct timespec *when;
     int x, y; /* layout-relative */
@@ -30,5 +30,5 @@ void render_frame(struct wl_listener *listener, void *data);
 void scalebox(struct wlr_box *box, float scale);
 
 extern struct wlr_renderer *drw;
-extern struct renderData render_data;
+extern struct render_data render_data;
 #endif /* RENDER_H */

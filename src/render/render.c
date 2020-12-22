@@ -11,17 +11,17 @@
 #include "server.h"
 
 struct wlr_renderer *drw;
-struct renderData render_data;
+struct render_data render_data;
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data);
 static void render_clients(struct monitor *m);
-/* static void render_independents(struct monitor *m); */
+static void render_independents(struct monitor *m);
 static void render_texture(struct pos_texture *texture);
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data)
 {
     /* This function is called for every surface that needs to be rendered. */
-    struct renderData *rdata = data;
+    struct render_data *rdata = data;
     struct wlr_output *output = rdata->output;
     double ox = 0, oy = 0;
     struct wlr_box obox;
@@ -119,7 +119,7 @@ static void render_clients(struct monitor *m)
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
-        struct renderData rdata;
+        struct render_data rdata;
         rdata.output = m->wlr_output;
         rdata.when = &now;
         rdata.x = con->geom.x;
@@ -132,7 +132,7 @@ static void render_clients(struct monitor *m)
 static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer layer)
 {
     struct container *con;
-    struct renderData rdata;
+    struct render_data rdata;
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each_reverse(con, &layer_stack, llink) {
@@ -171,14 +171,14 @@ static void render_texture(struct pos_texture *texture)
 static void render_independents(struct monitor *m)
 {
     struct client *c;
-    struct renderData rdata;
-    struct wlr_box geom;
 
     wl_list_for_each_reverse(c, &server.independents, ilink) {
-        geom.x = c->surface.xwayland->x;
-        geom.y = c->surface.xwayland->y;
-        geom.width = c->surface.xwayland->width;
-        geom.height = c->surface.xwayland->height;
+        struct wlr_box geom = (struct wlr_box) {
+            .x = c->surface.xwayland->x,
+            .y = c->surface.xwayland->y,
+            .width = c->surface.xwayland->width,
+            .height = c->surface.xwayland->height,
+        };
 
         /* Only render visible clients which show on this output */
         if (!wlr_output_layout_intersects(output_layout, m->wlr_output, &geom))
@@ -186,11 +186,12 @@ static void render_independents(struct monitor *m)
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
-        rdata.output = m->wlr_output;
-        rdata.when = &now;
-        rdata.x = c->surface.xwayland->x;
-        rdata.y = c->surface.xwayland->y;
-
+        struct render_data rdata = (struct render_data) {
+            .output = m->wlr_output,
+            .when = &now,
+            .x = c->surface.xwayland->x,
+            .y = c->surface.xwayland->y,
+        };
         wlr_surface_for_each_surface(c->surface.xwayland->surface, render, &rdata);
     }
 }
@@ -200,7 +201,7 @@ static void render_popups(struct monitor *m) {
     wl_list_for_each_reverse(popup, &popups, plink) {
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
-        struct renderData rdata;
+        struct render_data rdata;
         rdata.output = m->wlr_output;
         rdata.when = &now;
         rdata.x = popup->geom.x;

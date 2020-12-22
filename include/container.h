@@ -41,12 +41,13 @@ struct container {
 struct container *create_container(struct client *c, struct monitor *m);
 void destroy_container(struct container *con);
 
+struct container *first_container(struct monitor *m);
+struct container *get_container(struct monitor *m, int i);
+struct container *last_container(struct monitor *m);
 struct container *next_container(struct monitor *m);
 struct container *selected_container(struct monitor *m);
 struct container *xytocontainer(double x, double y);
-struct container *get_container(struct monitor *m, int i);
-struct container *first_container(struct monitor *m);
-struct container *last_container(struct monitor *m);
+struct wlr_box get_center_box(struct wlr_box ref);
 struct wlr_box get_absolute_box(struct wlr_box box, struct wlr_fbox b);
 struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box b);
 void add_container_to_monitor(struct container *con, struct monitor *m);
