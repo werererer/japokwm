@@ -192,7 +192,15 @@ static void add_container_to_focus_stack(struct container *con)
         wl_list_insert(&focus_stack, &con->flink);
         return;
     }
+    if (wl_list_empty(&focus_stack)) {
+        wl_list_insert(&focus_stack, &con->flink);
+        return;
+    }
 
+    /* find the topmost container that is not on top. If found insert before it
+       so that con becomes the new topmost container. If not found all other
+       containers are on top. Therefore c is the last item and and con needs to
+       be appended*/
     struct container *c;
     bool found = false;
     wl_list_for_each(c, &focus_stack, flink) {
@@ -201,12 +209,10 @@ static void add_container_to_focus_stack(struct container *con)
             break;
         }
     }
-    if (found) {
+    if (found)
         wl_list_insert(c->flink.prev, &con->flink);
-        return;
-    }
-
-    wl_list_insert(&focus_stack, &con->flink);
+    else
+        wl_list_insert(c->flink.next, &con->flink);
 }
 
 static void add_container_to_monitor_stack(struct container *con)

@@ -584,7 +584,8 @@ void maprequest(struct wl_listener *listener, void *data)
                 struct monitor *m = outputtomon(c->surface.layer->output);
                 wl_list_insert(&clients, &c->link);
                 wlr_layer_surface_v1_configure(c->surface.layer, m->geom.width, m->geom.height);
-                create_container(c, m);
+                struct container *con = create_container(c, m);
+                add_container_to_monitor(con, m);
                 break;
             }
         default:
