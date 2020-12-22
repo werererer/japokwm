@@ -5,6 +5,7 @@
 #include <wlr/xcursor.h>
 #include <wayland-server-core.h>
 #include <wlr/types/wlr_xcursor_manager.h>
+#include "xwayland.h"
 
 /* enums */
 enum cursorMode { CurNormal, CURSOR_MOVE, CURSOR_RESIZE }; /* cursor */
@@ -17,6 +18,9 @@ struct server {
     struct wlr_backend *backend;
     struct wlr_compositor *compositor;
     struct wlr_seat *seat;
+
+    struct xwayland xwayland;
+    struct wl_listener xwayland_ready;
 
     struct wlr_xdg_shell *xdgShell;
     struct wlr_layer_shell_v1 *layerShell;

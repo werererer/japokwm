@@ -94,6 +94,7 @@ void inputdevice(struct wl_listener *listener, void *data);
 void keypress(struct wl_listener *listener, void *data);
 void keypressmod(struct wl_listener *listener, void *data);
 void maprequest(struct wl_listener *listener, void *data);
+void maprequestx11(struct wl_listener *listener, void *data);
 void motionabsolute(struct wl_listener *listener, void *data);
 void motionrelative(struct wl_listener *listener, void *data);
 void run(char *startup_cmd);
@@ -105,6 +106,9 @@ int setup();
 void sigchld(int unused);
 void tagmon(int i);
 void unmapnotify(struct wl_listener *listener, void *data);
+void request_move(struct wl_listener *listener, void *data);
+
+/* global variables */
 
 /* global event handlers */
 static struct wl_listener cursor_axis = {.notify = axisnotify};
@@ -123,10 +127,7 @@ static struct wl_listener request_set_sel = {.notify = setsel};
 
 static void activatex11(struct wl_listener *listener, void *data);
 static void createnotifyx11(struct wl_listener *listener, void *data);
-static void xwaylandready(struct wl_listener *listener, void *data);
 static struct wl_listener new_xwayland_surface = {.notify = createnotifyx11};
-static struct wl_listener xwayland_ready = {.notify = xwaylandready};
-static struct wlr_xwayland *xwayland = NULL;
 
 void axisnotify(struct wl_listener *listener, void *data)
 {
@@ -190,7 +191,7 @@ void chvt(unsigned int ui)
 
 void cleanup()
 {
-    wlr_xwayland_destroy(xwayland);
+    wlr_xwayland_destroy(server.xwayland.wlr_xwayland);
     wl_display_destroy_clients(server.display);
 
     wlr_xcursor_manager_destroy(server.cursorMgr);
@@ -523,6 +524,44 @@ void keypressmod(struct wl_listener *listener, void *data)
         &kb->device->keyboard->modifiers);
 }
 
+static bool wants_floating(struct container *con) {
+    if (con->client->type != X11_MANAGED && con->client->type != X11_UNMANAGED) {
+        return false;
+    }
+    struct wlr_xwayland_surface *surface = con->client->surface.xwayland;
+    struct xwayland xwayland = server.xwayland;
+
+    if (surface->modal) {
+        return true;
+    }
+
+    for (size_t i = 0; i < surface->window_type_len; ++i) {
+        xcb_atom_t type = surface->window_type[i];
+        if (type == xwayland.atoms[NET_WM_WINDOW_TYPE_DIALOG] ||
+                type == xwayland.atoms[NET_WM_WINDOW_TYPE_UTILITY] ||
+                type == xwayland.atoms[NET_WM_WINDOW_TYPE_TOOLBAR] ||
+                type == xwayland.atoms[NET_WM_WINDOW_TYPE_POPUP_MENU] ||
+                type == xwayland.atoms[NET_WM_WINDOW_TYPE_SPLASH]) {
+            return true;
+        }
+    }
+
+    struct wlr_xwayland_surface_size_hints *size_hints = surface->size_hints;
+    if (size_hints != NULL &&
+            size_hints->min_width > 0 && size_hints->min_height > 0 &&
+            (size_hints->max_width == size_hints->min_width ||
+            size_hints->max_height == size_hints->min_height)) {
+        return true;
+    }
+
+    return false;
+}
+
+void request_move(struct wl_listener *listener, void *data)
+{
+    printf("request move\n");
+}
+
 void maprequest(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is mapped, or ready to display on-screen. */
@@ -534,9 +573,12 @@ void maprequest(struct wl_listener *listener, void *data)
 
     switch (c->type) {
         case XDG_SHELL:
-        case X11_MANAGED:
-            wl_list_insert(&clients, &c->link);
-            create_container(c, m);
+            {
+                wl_list_insert(&clients, &c->link);
+                struct container *con = create_container(c, m);
+                add_container_to_monitor(con, m);
+                printf("floating?: %i\n", wants_floating(con));
+            }
             break;
         case LAYER_SHELL:
             {
@@ -546,20 +588,64 @@ void maprequest(struct wl_listener *listener, void *data)
                 create_container(c, m);
                 break;
             }
-        case X11_UNMANAGED:
-            wl_list_insert(&server.independents, &c->ilink);
+        default:
             break;
     }
     arrange(false);
     focus_top_container(selected_monitor, FOCUS_NOOP);
 }
 
+void maprequestx11(struct wl_listener *listener, void *data)
+{
+    /* Called when the surface is mapped, or ready to display on-screen. */
+    struct client *c = wl_container_of(listener, c, map);
+    struct wlr_xwayland_surface *xwayland_surface = c->surface.xwayland;
+    struct monitor *m = selected_monitor;
+
+    c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
+
+    c->ws = m->ws;
+    wl_list_init(&c->containers);
+    struct container *con = create_container(c, m);
+    add_container_to_monitor(con, m);
+
+    switch (c->type) {
+        case X11_MANAGED:
+            {
+                wl_list_insert(&clients, &c->link);
+                if (wants_floating(con)) {
+                    con->floating = true;
+                    con->geom.x = xwayland_surface->x;
+                    con->geom.y = xwayland_surface->y;
+                    con->geom.width = xwayland_surface->width;
+                    con->geom.height = xwayland_surface->height;
+                }
+            }
+            break;
+        case X11_UNMANAGED:
+            {
+                con->floating = true;
+                con->geom.x = xwayland_surface->x;
+                con->geom.y = xwayland_surface->y;
+                con->geom.width = xwayland_surface->width;
+                con->geom.height = xwayland_surface->height;
+                wl_list_insert(&server.independents, &c->ilink);
+                break;
+            }
+        default:
+            break;
+    }
+    arrange(false);
+    focus_top_container(selected_monitor, FOCUS_NOOP);
+}
+
+
 void motionabsolute(struct wl_listener *listener, void *data)
 {
     /* This event is forwarded by the cursor when a pointer emits an _absolute_
-     * motion event, from 0..1 on each axis. This happens, for example, when
+     * motion event, from 0..1 on Each axis. This happens, for example, when
      * wlroots is running under a Wayland window rather than KMS+DRM, and you
-     * move the mouse over the window. You could enter the window from any edge,
+     * move the mouse over the Windows. You could enter the window from any edge,
      * so we have to warp the mouse there. There is also some hardware which
      * emits these events. */
     struct wlr_event_pointer_motion_absolute *event = data;
@@ -827,14 +913,15 @@ int setup()
      * Initialise the XWayland X server.
      * It will be started when the first X client is started.
      */
-    xwayland = wlr_xwayland_create(server.display, server.compositor, true);
-    if (xwayland) {
-        wl_signal_add(&xwayland->events.ready, &xwayland_ready);
-        wl_signal_add(&xwayland->events.new_surface, &new_xwayland_surface);
+    server.xwayland.wlr_xwayland = wlr_xwayland_create(server.display, server.compositor, true);
+    if (server.xwayland.wlr_xwayland) {
+        server.xwayland_ready.notify = handle_xwayland_ready;
+        wl_signal_add(&server.xwayland.wlr_xwayland->events.ready, &server.xwayland_ready);
+        wl_signal_add(&server.xwayland.wlr_xwayland->events.new_surface, &new_xwayland_surface);
 
-        setenv("DISPLAY", xwayland->display_name, true);
+        setenv("DISPLAY", server.xwayland.wlr_xwayland->display_name, true);
     } else {
-        fprintf(stderr, "failed to setup XWayland X server, continuing without it\n");
+        wlr_log(WLR_ERROR, "failed to setup XWayland X server, continuing without itn");
     }
     return 0;
 }
@@ -864,7 +951,6 @@ void unmapnotify(struct wl_listener *listener, void *data)
             wl_list_remove(&c->ilink);
             break;
     }
-    printf("done\n");
 }
 
 void activatex11(struct wl_listener *listener, void *data)
@@ -883,17 +969,14 @@ void createnotifyx11(struct wl_listener *listener, void *data)
     /* Allocate a Client for this surface */
     c = xwayland_surface->data = calloc(1, sizeof(struct client));
     c->surface.xwayland = xwayland_surface;
-    c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
+    // set default value will be overriden on maprequest
+    c->type = X11_MANAGED;
     c->bw = border_px;
-    printf("width: %i\n", xwayland_surface->width);
-    printf("height: %i\n", xwayland_surface->height);
-    /* wlr_xwayland_surface_hints */
-    /* xwayland_ */
 
     wl_list_init(&c->containers);
 
     /* Listen to the various events it can emit */
-    c->map.notify = maprequest;
+    c->map.notify = maprequestx11;
     wl_signal_add(&xwayland_surface->events.map, &c->map);
     c->unmap.notify = unmapnotify;
     wl_signal_add(&xwayland_surface->events.unmap, &c->unmap);
@@ -903,20 +986,18 @@ void createnotifyx11(struct wl_listener *listener, void *data)
     wl_signal_add(&xwayland_surface->events.destroy, &c->destroy);
 }
 
-void xwaylandready(struct wl_listener *listener, void *data)
+Atom getatom(xcb_connection_t *xc, const char *name)
 {
-    xcb_connection_t *xc = xcb_connect(xwayland->display_name, NULL);
-    int err = xcb_connection_has_error(xc);
-    if (err) {
-        fprintf(stderr, "xcb_connect to X server failed with code %d\n. "
-                "Continuing with degraded functionality.\n", err);
-        return;
-    }
+    Atom atom = 0;
+    xcb_intern_atom_cookie_t cookie;
+    xcb_intern_atom_reply_t *reply;
 
-    /* assign the one and only seat */
-    wlr_xwayland_set_seat(xwayland, server.seat);
+    cookie = xcb_intern_atom(xc, 0, strlen(name), name);
+    if ((reply = xcb_intern_atom_reply(xc, cookie, NULL)))
+        atom = reply->atom;
+    free(reply);
 
-    xcb_disconnect(xc);
+    return atom;
 }
 
 int main(int argc, char *argv[])

@@ -49,6 +49,7 @@ srcs = files(
   'wlr-layer-shell-unstable-v1-protocol.c',
   'workspace.c',
   'xdg-shell-protocol.c',
+  'xwayland.c',
   )
 
 libName = 'juliawm'

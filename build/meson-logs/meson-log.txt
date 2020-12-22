@@ -1,4 +1,4 @@
-Build started at 2020-12-21T11:59:58.923397
+Build started at 2020-12-21T18:53:06.141757
 Main binary: /usr/bin/python
 Build Options: -Dbackend=ninja
 Python system: Linux
@@ -92,8 +92,8 @@ Build targets in project: 1
 
 Found ninja-1.10.2 at /usr/bin/ninja
 Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpdcu_0wql
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpdcu_0wql/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpdcu_0wql/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmp7ysdqj6n
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmp7ysdqj6n/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmp7ysdqj6n/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
 
 Code:
  

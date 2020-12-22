@@ -153,7 +153,6 @@ end
 
 function moveResize(container, nmove, nresize, d)
     local con = container
-    print("mr:", nmove, nresize)
     con = moveContainer(con, nmove, d)
     con = resizeContainer(con, nresize, d)
     return con

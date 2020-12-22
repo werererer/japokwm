@@ -9,14 +9,15 @@
 #include "tile/tileUtils.h"
 
 static void add_container_to_monitor_containers(struct container *con, int i);
-static void add_container_to_monitor_stack(struct monitor *m, struct container *con);
+static void add_container_to_monitor_focus_stack(struct container *con);
+static void add_container_to_monitor_stack(struct container *con);
+static void add_container_to_client_containers(struct container *con);
 
 struct container *create_container(struct client *c, struct monitor *m)
 {
     struct container *con = calloc(1, sizeof(struct container));
     con->m = m;
     con->client = c;
-    add_container_to_monitor(m, con);
     return con;
 }
 
@@ -179,7 +180,18 @@ static void add_container_to_monitor_containers(struct container *con, int i)
     }
 }
 
-static void add_container_to_monitor_stack(struct monitor *m, struct container *con)
+static void add_container_to_client_containers(struct container *con)
+{
+    wl_list_insert(&con->client->containers, &con->clink);
+}
+
+
+static void add_container_to_monitor_focus_stack(struct container *con)
+{
+    wl_list_insert(&focus_stack, &con->flink);
+}
+
+static void add_container_to_monitor_stack(struct container *con)
 {
     if (!con)
         return;
@@ -202,22 +214,23 @@ static void add_container_to_monitor_stack(struct monitor *m, struct container *
         wl_list_insert(&stack, &con->slink);
 }
 
-void add_container_to_monitor(struct monitor *m, struct container *con)
+void add_container_to_monitor(struct container *con, struct monitor *m)
 {
     if (!m || !con)
         return;
 
+    con->m = m;
     if (con->client->type == LAYER_SHELL) {
         // layer shell programs aren't pushed to the stack because they use the
         // layer system to set the correct render position
         wl_list_insert(&layer_stack, &con->llink);
     } else {
         add_container_to_monitor_containers(con, 0);
-        add_container_to_monitor_stack(m, con);
+        add_container_to_monitor_stack(con);
     }
 
-    wl_list_insert(&con->client->containers, &con->clink);
-    wl_list_insert(&focus_stack, &con->flink);
+    add_container_to_client_containers(con);
+    add_container_to_monitor_focus_stack(con);
 }
 
 void remove_container_from_monitor(struct monitor *m, struct container *con)
@@ -336,7 +349,7 @@ void lift_container(struct container *con)
     if (!con)
         return;
     wl_list_remove(&con->slink);
-    add_container_to_monitor_stack(con->m, con);
+    add_container_to_monitor_stack(con);
 }
 
 void focus_top_container(struct monitor *m, enum focus_actions a)
