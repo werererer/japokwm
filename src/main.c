@@ -603,7 +603,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
     struct monitor *m = selected_monitor;
 
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
-
     c->ws = m->ws;
     wl_list_init(&c->containers);
     struct container *con = create_container(c, m);
@@ -612,17 +611,17 @@ void maprequestx11(struct wl_listener *listener, void *data)
         case X11_MANAGED:
             {
                 wl_list_insert(&clients, &c->link);
+                con->on_top = false;
                 if (wants_floating(con)) {
                     con->floating = true;
                     con->geom.x = xwayland_surface->x;
                     con->geom.y = xwayland_surface->y;
                     con->geom.width = xwayland_surface->width;
                     con->geom.height = xwayland_surface->height;
-                    con->on_top = false;
-                    add_container_to_monitor(con, m);
                 }
+                add_container_to_monitor(con, m);
+                break;
             }
-            break;
         case X11_UNMANAGED:
             {
                 con->floating = true;
