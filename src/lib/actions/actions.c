@@ -45,7 +45,6 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
         wlr_seat_pointer_notify_motion(server.seat, time, sx, sy);
         return;
     }
-    printf("enter\n");
     /* Otherwise, let the client know that the mouse cursor has entered one
      * of its surfaces, and make keyboard focus follow if desired. */
     wlr_seat_pointer_notify_enter(server.seat, surface, sx, sy);

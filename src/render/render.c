@@ -88,6 +88,10 @@ static void render_clients(struct monitor *m)
         double ox, oy;
         int w, h;
         struct wlr_surface *surface = get_wlrsurface(con->client);
+        if (!surface)
+            printf("surface is null\n");
+        if (!con->client)
+            printf("client is null\n");
         ox = con->geom.x - con->client->bw;
         oy = con->geom.y - con->client->bw;
         wlr_output_layout_output_coords(output_layout, m->wlr_output, &ox, &oy);

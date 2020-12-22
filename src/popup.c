@@ -20,6 +20,7 @@ static void destroy_popup(struct xdg_popup *xdg_popup);
 static struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popup,
         struct wlr_box parent_geom, struct container* toplevel)
 {
+    printf("create popup\n");
     struct xdg_popup *popup = xdg_popup->base->data =
         calloc(1, sizeof(struct xdg_popup));
     popup->xdg = xdg_popup;

@@ -604,8 +604,16 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
     c->ws = m->ws;
-    wl_list_init(&c->containers);
+    if (c->type == X11_UNMANAGED && c->surface.xwayland->parent) {
+        wl_list_init(&c->containers);
+        wl_list_insert(&server.independents, &c->ilink);
+        return;
+    }
+
     struct container *con = create_container(c, m);
+
+    if (xwayland_surface->override_redirect)
+        printf("X11_UNMANAGED\n");
 
     switch (c->type) {
         case X11_MANAGED:
@@ -629,10 +637,9 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 con->geom.y = xwayland_surface->y;
                 con->geom.width = xwayland_surface->width;
                 con->geom.height = xwayland_surface->height;
-                wl_list_insert(&server.independents, &c->ilink);
                 con->on_top = true;
+                wl_list_insert(&server.independents, &c->ilink);
                 add_container_to_monitor(con, m);
-                printf("focus_container is: %p\n", con);
                 break;
             }
         default:

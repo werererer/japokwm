@@ -351,7 +351,6 @@ void applyrules(struct container *con)
 void focus_container(struct container *con, struct monitor *m, enum focus_actions a)
 {
     struct container *sel = selected_container(m);
-    printf("focus_container: %p\n", con);
 
     if (!con) {
         /* With no client, all we have left is to clear focus */
@@ -368,7 +367,6 @@ void focus_container(struct container *con, struct monitor *m, enum focus_action
 
     struct container *new = selected_container(m);
     struct client *c = sel ? sel->client : NULL;
-    printf("focus: %p\n", new);
     focus_client(c, new->client);
 }
 
