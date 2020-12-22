@@ -153,7 +153,7 @@ void buttonpress(struct wl_listener *listener, void *data)
             /* Change focus if the button was _pressed_ over a client */
             struct container *con;
             if ((con = xytocontainer(server.cursor->x, server.cursor->y)))
-                focus_container(selected_monitor, con, FOCUS_NOOP);
+                focus_container(con, selected_monitor, FOCUS_NOOP);
 
             /* Translate libinput to xkbcommon code */
             unsigned sym = event->button + 64985;
@@ -577,7 +577,6 @@ void maprequest(struct wl_listener *listener, void *data)
                 wl_list_insert(&clients, &c->link);
                 struct container *con = create_container(c, m);
                 add_container_to_monitor(con, m);
-                printf("floating?: %i\n", wants_floating(con));
             }
             break;
         case LAYER_SHELL:
@@ -607,7 +606,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
     c->ws = m->ws;
     wl_list_init(&c->containers);
     struct container *con = create_container(c, m);
-    add_container_to_monitor(con, m);
 
     switch (c->type) {
         case X11_MANAGED:
@@ -619,6 +617,8 @@ void maprequestx11(struct wl_listener *listener, void *data)
                     con->geom.y = xwayland_surface->y;
                     con->geom.width = xwayland_surface->width;
                     con->geom.height = xwayland_surface->height;
+                    con->on_top = false;
+                    add_container_to_monitor(con, m);
                 }
             }
             break;
@@ -630,6 +630,9 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 con->geom.width = xwayland_surface->width;
                 con->geom.height = xwayland_surface->height;
                 wl_list_insert(&server.independents, &c->ilink);
+                con->on_top = true;
+                add_container_to_monitor(con, m);
+                printf("focus_container is: %p\n", con);
                 break;
             }
         default:
@@ -638,7 +641,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
     arrange(false);
     focus_top_container(selected_monitor, FOCUS_NOOP);
 }
-
 
 void motionabsolute(struct wl_listener *listener, void *data)
 {

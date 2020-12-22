@@ -116,7 +116,7 @@ void set_selected_monitor(struct monitor *m)
     int xcentre = m->geom.x + (float)m->geom.width/2;
     int ycentre = m->geom.y + (float)m->geom.height/2;
     wlr_cursor_warp(server.cursor, NULL, xcentre, ycentre);
-    focus_container(m, xytocontainer(xcentre, ycentre), FOCUS_NOOP);
+    focus_container(xytocontainer(xcentre, ycentre), m, FOCUS_NOOP);
     arrange(LAYOUT_NOOP);
 }
 

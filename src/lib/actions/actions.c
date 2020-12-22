@@ -54,7 +54,7 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
         return;
 
     if (sloppyFocus)
-        focus_container(selected_monitor, con, FOCUS_NOOP);
+        focus_container(con, selected_monitor, FOCUS_NOOP);
 }
 
 int set_tabcount(lua_State *L)
@@ -153,7 +153,7 @@ int focus_on_stack(lua_State *L)
 
     if (found) {
         /* If only one client is visible on selMon, then c == sel */
-        focus_container(m, con, FOCUS_LIFT);
+        focus_container(con, m, FOCUS_LIFT);
     }
     return 0;
 }
@@ -195,7 +195,7 @@ int focus_on_hidden_stack(lua_State *L)
         wl_list_insert(containers.prev, &sel->mlink);
     }
 
-    focus_container(m, con, FOCUS_LIFT);
+    focus_container(con, m, FOCUS_LIFT);
     arrange(false);
     return 0;
 }
@@ -500,7 +500,7 @@ int zoom(lua_State *L)
     wl_list_insert(&containers, &con->mlink);
     arrange(LAYOUT_NOOP);
     // focus new master window
-    focus_container(selected_monitor, previous, FOCUS_NOOP);
+    focus_container(previous, selected_monitor, FOCUS_NOOP);
     return 0;
 }
 

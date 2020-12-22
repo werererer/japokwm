@@ -9,7 +9,7 @@
 #include "tile/tileUtils.h"
 
 static void add_container_to_monitor_containers(struct container *con, int i);
-static void add_container_to_monitor_focus_stack(struct container *con);
+static void add_container_to_focus_stack(struct container *con);
 static void add_container_to_monitor_stack(struct container *con);
 static void add_container_to_client_containers(struct container *con);
 
@@ -186,8 +186,26 @@ static void add_container_to_client_containers(struct container *con)
 }
 
 
-static void add_container_to_monitor_focus_stack(struct container *con)
+static void add_container_to_focus_stack(struct container *con)
 {
+    if (con->on_top) {
+        wl_list_insert(&focus_stack, &con->flink);
+        return;
+    }
+
+    struct container *c;
+    bool found = false;
+    wl_list_for_each(c, &focus_stack, flink) {
+        if (!c->on_top) {
+            found = true;
+            break;
+        }
+    }
+    if (found) {
+        wl_list_insert(c->flink.prev, &con->flink);
+        return;
+    }
+
     wl_list_insert(&focus_stack, &con->flink);
 }
 
@@ -230,7 +248,7 @@ void add_container_to_monitor(struct container *con, struct monitor *m)
     }
 
     add_container_to_client_containers(con);
-    add_container_to_monitor_focus_stack(con);
+    add_container_to_focus_stack(con);
 }
 
 void remove_container_from_monitor(struct monitor *m, struct container *con)
@@ -324,9 +342,10 @@ void applyrules(struct container *con)
     }
 }
 
-void focus_container(struct monitor *m, struct container *con, enum focus_actions a)
+void focus_container(struct container *con, struct monitor *m, enum focus_actions a)
 {
     struct container *sel = selected_container(m);
+    printf("focus_container: %p\n", con);
 
     if (!con) {
         /* With no client, all we have left is to clear focus */
@@ -337,11 +356,14 @@ void focus_container(struct monitor *m, struct container *con, enum focus_action
     if (a == FOCUS_LIFT)
         lift_container(con);
 
-    struct client *c = sel ? sel->client : NULL;
-    focus_client(c, con->client);
     /* Put the new client atop the focus stack */
     wl_list_remove(&con->flink);
-    wl_list_insert(&focus_stack, &con->flink);
+    add_container_to_focus_stack(con);
+
+    struct container *new = selected_container(m);
+    struct client *c = sel ? sel->client : NULL;
+    printf("focus: %p\n", new);
+    focus_client(c, new->client);
 }
 
 void lift_container(struct container *con)
@@ -363,7 +385,7 @@ void focus_top_container(struct monitor *m, enum focus_actions a)
             break;
         }
     if (focus)
-        focus_container(m, con, a);
+        focus_container(con, m, a);
 }
 
 bool existon(struct container *con, struct monitor *m)

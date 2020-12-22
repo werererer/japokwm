@@ -29,6 +29,7 @@ struct container {
     struct monitor *m;
     bool floating;
     bool hidden;
+    bool on_top;
     // if position -1 it is floating
     int position;
     int clientPosition;
@@ -52,7 +53,7 @@ void add_container_to_monitor(struct container *con, struct monitor *m);
 void remove_container_from_monitor(struct monitor *m, struct container *con);
 void applybounds(struct container *con, struct wlr_box bbox);
 void applyrules(struct container *con);
-void focus_container(struct monitor *m, struct container *con, enum focus_actions a);
+void focus_container(struct container *con, struct monitor *m, enum focus_actions a);
 /* Find the topmost visible client (if any) at point (x, y), including
  * borders. This relies on stack being ordered from top to bottom. */
 bool existon(struct container *con, struct monitor *m);
