@@ -74,7 +74,13 @@ int update_config(lua_State *L)
     repeat_rate = get_config_int(L, "repeatRate");
     repeat_delay = get_config_int(L, "repeatDelay");
     defaultLayout = get_config_layout(L, "defaultLayout");
-    prev_layout = (struct layout){.symbol = "", .funcId = 0, .nmaster = 1};
+    prev_layout = (struct layout) {
+        .symbol = "",
+        .funcId = 0,
+        .nmaster = 1,
+        .n = 0,
+        .id = 0,
+    };
 
     /* commands */
     termcmd = get_config_str(L, "termcmd");

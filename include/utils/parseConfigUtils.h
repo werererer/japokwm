@@ -32,7 +32,7 @@ int get_config_int(lua_State *L, char *name);
 bool get_config_bool(lua_State *L, char *name);
 int get_config_func_id(lua_State *L, char *name);
 void call_arrange_func(lua_State *L, int funcId, int n);
-void call_function(lua_State *L, struct containers_info cInfo);
+void call_function(lua_State *L, struct layout lt);
 
 // get array values
 void get_config_str_arr(lua_State *L, struct wlr_list *resArr, char *name);

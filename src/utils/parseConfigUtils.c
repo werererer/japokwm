@@ -299,10 +299,10 @@ void call_arrange_func(lua_State *L, int funcId, int n)
     lua_pcall(L, 0, 0, 0);
 }
 
-void call_function(lua_State *L, struct containers_info cInfo)
+void call_function(lua_State *L, struct layout lt)
 {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, cInfo.id);
-    lua_pushinteger(L, cInfo.n);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt.id);
+    lua_pushinteger(L, lt.n);
     lua_pcall(L, 1, 0, 0);
     luaL_ref(L, LUA_REGISTRYINDEX);
 }
@@ -324,6 +324,8 @@ struct layout get_config_layout(lua_State *L, char *name)
     layout.symbol = get_config_array_str(L, 1);
     layout.funcId = get_config_array_func_id(L, 2);
     layout.nmaster = 1;
+    layout.n = 0;
+    layout.id = 0;
     lua_pop(L, 1);
     return layout;
 }

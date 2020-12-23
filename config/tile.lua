@@ -231,7 +231,7 @@ function getResizeEffectedContainers(i, j, d)
 
         if j ~= j2 then
             if isAffectedByResizeOf(con, container, d) then
-                -- convert relative to absolute
+                -- convert relative to absolute box
                 local d = {con[X], con[Y], con[WIDTH], con[HEIGHT], i, j2}
                 d[X] = (d[X]-altCon[X])/altCon[WIDTH]
                 d[Y] = (d[Y]-altCon[Y])/altCon[HEIGHT]
@@ -288,7 +288,6 @@ function twoPane()
 end
 
 function loadLayout(layout)
-    print("LOAD LAYOUT")
     layoutData = action.read_layout(layout)
 end
 

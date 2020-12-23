@@ -34,8 +34,8 @@ static void update_layout(int n, struct monitor *m)
     lua_getglobal(L, "update_layout");
     lua_pushinteger(L, n);
     lua_pcall(L, 1, 1, 0);
-    m->ws->layout.containers_info.n = lua_rawlen(L, -1);
-    m->ws->layout.containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
+    m->ws->layout.n = lua_rawlen(L, -1);
+    m->ws->layout.id = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 void arrange_monitor(struct monitor *m, enum layout_actions action)
@@ -87,8 +87,8 @@ void arrange_container(struct container *con, int i, bool preserve)
     // if tiled get tile information from tile function and apply it
     struct wlr_fbox box;
     // get lua container
-    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.containers_info.id);
-    lua_rawgeti(L, -1, MIN(con->clientPosition+1, m->ws->layout.containers_info.n));
+    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.id);
+    lua_rawgeti(L, -1, MIN(con->clientPosition+1, m->ws->layout.n));
     lua_rawgeti(L, -1, 1);
     box.x = luaL_checknumber(L, -1);
     lua_pop(L, 1);
@@ -108,7 +108,7 @@ void arrange_container(struct container *con, int i, bool preserve)
         container_surround_gaps(&con->geom, inner_gap);
     container_surround_gaps(&con->geom, 2*con->client->bw);
     resize(con, con->geom, preserve);
-    m->ws->layout.containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
+    m->ws->layout.id = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 void resize(struct container *con, struct wlr_box geom, bool preserve)
@@ -160,7 +160,7 @@ void update_hidden_status(struct monitor *m)
         if (!existon(con, m) || con->floating)
             continue;
 
-        if (i < m->ws->layout.containers_info.n) {
+        if (i < m->ws->layout.n) {
             con->hidden = false;
             i++;
         } else {
