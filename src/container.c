@@ -8,6 +8,7 @@
 #include "tile/tileTexture.h"
 #include "tile/tileUtils.h"
 
+static void add_container_to_monitor(struct container *con, struct monitor *m);
 static void add_container_to_monitor_containers(struct container *con, int i);
 static void add_container_to_focus_stack(struct container *con);
 static void add_container_to_monitor_stack(struct container *con);
@@ -18,6 +19,7 @@ struct container *create_container(struct client *c, struct monitor *m)
     struct container *con = calloc(1, sizeof(struct container));
     con->m = m;
     con->client = c;
+    add_container_to_monitor(con, con->m);
     return con;
 }
 
@@ -238,7 +240,7 @@ static void add_container_to_monitor_stack(struct container *con)
         wl_list_insert(&stack, &con->slink);
 }
 
-void add_container_to_monitor(struct container *con, struct monitor *m)
+static void add_container_to_monitor(struct container *con, struct monitor *m)
 {
     if (!m || !con)
         return;
@@ -255,25 +257,6 @@ void add_container_to_monitor(struct container *con, struct monitor *m)
 
     add_container_to_client_containers(con);
     add_container_to_focus_stack(con);
-}
-
-void remove_container_from_monitor(struct monitor *m, struct container *con)
-{
-    if (!m || !con)
-        return;
-
-    if (con->client->type == LAYER_SHELL) {
-        // layer shell programs aren't pushed to the stack because they use the
-        // layer system to set the correct render position
-        wl_list_insert(&layer_stack, &con->llink);
-        wl_list_remove(&con->llink);
-    } else {
-        wl_list_remove(&con->mlink);
-        wl_list_remove(&con->slink);
-    }
-
-    wl_list_remove(&con->clink);
-    wl_list_remove(&con->flink);
 }
 
 struct wlr_box get_center_box(struct wlr_box ref)

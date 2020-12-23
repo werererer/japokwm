@@ -367,11 +367,6 @@ void destroynotify(struct wl_listener *listener, void *data)
     wl_list_remove(&c->unmap.link);
     wl_list_remove(&c->destroy.link);
 
-    struct container *tmp, *con;
-    wl_list_for_each_safe(con, tmp, &c->containers, clink) {
-        destroy_container(con);
-    }
-
     switch (c->type) {
         case XDG_SHELL:
             wl_list_remove(&c->commit.link);
@@ -561,9 +556,11 @@ static bool is_popup_menu(struct client *c)
 {
     struct wlr_xwayland_surface *surface = c->surface.xwayland;
     struct xwayland xwayland = server.xwayland;
+    printf("start\n");
     for (size_t i = 0; i < surface->window_type_len; ++i) {
         xcb_atom_t type = surface->window_type[i];
         if (type == xwayland.atoms[NET_WM_WINDOW_TYPE_POPUP_MENU]) {
+            printf("is popuptrue\n");
             return true;
         }
     }
@@ -588,8 +585,7 @@ void maprequest(struct wl_listener *listener, void *data)
         case XDG_SHELL:
             {
                 wl_list_insert(&clients, &c->link);
-                struct container *con = create_container(c, m);
-                add_container_to_monitor(con, m);
+                create_container(c, m);
             }
             break;
         case LAYER_SHELL:
@@ -597,8 +593,7 @@ void maprequest(struct wl_listener *listener, void *data)
                 struct monitor *m = outputtomon(c->surface.layer->output);
                 wl_list_insert(&clients, &c->link);
                 wlr_layer_surface_v1_configure(c->surface.layer, m->geom.width, m->geom.height);
-                struct container *con = create_container(c, m);
-                add_container_to_monitor(con, m);
+                create_container(c, m);
                 break;
             }
         default:
@@ -624,7 +619,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
     }
 
     struct container *con = create_container(c, m);
-    add_container_to_monitor(con, m);
     switch (c->type) {
         case X11_MANAGED:
             {
@@ -639,7 +633,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
             }
         case X11_UNMANAGED:
             {
-                printf("here\n");
                 wl_list_insert(&server.independents, &c->ilink);
 
                 con->on_top = true;
@@ -949,8 +942,13 @@ void sigchld(int unused)
 
 void unmapnotify(struct wl_listener *listener, void *data)
 {
+    printf("unmapnotify\n");
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
+    struct container *con, *tmp;
+    wl_list_for_each_safe(con, tmp, &c->containers, clink) {
+        destroy_container(con);
+    }
     switch (c->type) {
         case LAYER_SHELL:
             wl_list_remove(&c->link);
