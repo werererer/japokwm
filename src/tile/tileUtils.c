@@ -38,6 +38,54 @@ static void update_layout(int n, struct monitor *m)
     m->ws->layout.id = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
+static struct wlr_fbox lua_unbox_layout(struct lua_State *L, int i) {
+    struct wlr_fbox geom;
+    lua_rawgeti(L, -1, i);
+
+    lua_rawgeti(L, -1, 1);
+    geom.x = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+    lua_rawgeti(L, -1, 2);
+    geom.y = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+    lua_rawgeti(L, -1, 3);
+    geom.width = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+    lua_rawgeti(L, -1, 4);
+    geom.height = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+
+    lua_pop(L, 1);
+    return geom;
+}
+
+/* update layout and was set in the arrange function */
+// TODO: rename function
+/* static struct wlr_box update_nmaster(int n, struct monitor *m, struct wlr_box outer_box) */
+/* { */
+/*     struct layout *lt = &m->ws->layout; */
+/*     printf("n: %i nmaster: %i\n", n, lt->nmaster); */
+/*     if (n >= lt->nmaster) */
+/*         return outer_box; */
+
+
+/*     lua_getglobal(L, "update_nmaster"); */
+
+/*     lua_pushinteger(L, n); */
+/*     lua_pcall(L, 1, 1, 0); */
+/*     struct wlr_fbox geom = lua_unbox_layout(L, lt->nmaster); */
+/*     lua_pop(L, 1); */
+
+/*     struct wlr_box obox = outer_box; */
+/*     obox.x = 0; */
+/*     obox.y = 0; */
+/*     obox = get_absolute_box(geom, outer_box); */
+
+/*     obox.x = outer_box.x; */
+/*     obox.y = outer_box.y; */
+/*     return obox; */
+/* } */
+
 void arrange_monitor(struct monitor *m, enum layout_actions action)
 {
     /* Get effective monitor geometry to use for window area */
@@ -84,31 +132,17 @@ void arrange_container(struct container *con, int i, bool preserve)
     if (con->floating || con->hidden)
         return;
 
-    // if tiled get tile information from tile function and apply it
-    struct wlr_fbox box;
-    // get lua container
     lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.id);
-    lua_rawgeti(L, -1, MIN(con->clientPosition+1, m->ws->layout.n));
-    lua_rawgeti(L, -1, 1);
-    box.x = luaL_checknumber(L, -1);
-    lua_pop(L, 1);
-    lua_rawgeti(L, -1, 2);
-    box.y = luaL_checknumber(L, -1);
-    lua_pop(L, 1);
-    lua_rawgeti(L, -1, 3);
-    box.width = luaL_checknumber(L, -1);
-    lua_pop(L, 1);
-    lua_rawgeti(L, -1, 4);
-    box.height = luaL_checknumber(L, -1);
-    lua_pop(L, 1);
-    lua_pop(L, 1);
+    int n = MIN(con->clientPosition+1, m->ws->layout.n);
+    struct wlr_fbox box = lua_unbox_layout(L, n);
+    m->ws->layout.id = luaL_ref(L, LUA_REGISTRYINDEX);
 
-    con->geom = get_absolute_box(m->root->geom, box);
+    struct wlr_box outer_box = get_absolute_box(box, m->root->geom);
+    con->geom = outer_box;
     if (!overlay)
         container_surround_gaps(&con->geom, inner_gap);
     container_surround_gaps(&con->geom, 2*con->client->bw);
     resize(con, con->geom, preserve);
-    m->ws->layout.id = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 void resize(struct container *con, struct wlr_box geom, bool preserve)

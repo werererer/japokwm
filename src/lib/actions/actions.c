@@ -103,6 +103,7 @@ int set_nmaster(lua_State *L)
 {
     selected_monitor->ws->layout.nmaster = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
+    printf("set maseter: %i\n", selected_monitor->ws->layout.nmaster);
     return 0;
 }
 

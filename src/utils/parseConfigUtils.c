@@ -40,9 +40,10 @@ static int load_config(lua_State *L, const char *path)
         lua_pop(L, 1);
         return 1;
     }
-    wlr_log(WLR_DEBUG, "load file %s", path);
-    lua_pcall(L, 0, LUA_MULTRET, 0);
 
+    wlr_log(WLR_DEBUG, "load file %s", path);
+    lua_pcall(L, 0, 0, 0);
+    lua_pop(L, 1);
     return 0;
 }
 
@@ -106,6 +107,7 @@ int init_config(lua_State *L)
         }
     }
 
+    int success = 1;
     // repeat loop until the first config file was loaded successfully
     for (int i = 0; i < LENGTH(config_paths); i++) {
         if (i < defaultId)
@@ -114,15 +116,18 @@ int init_config(lua_State *L)
         char *path = strdup(config_paths[i]);
         expand_path(&path);
 
+        printf("update_config: %i\n", lua_gettop(L));
         append_to_lua_path(L, config_paths[i]);
 
         if (load_config(L, path))
             continue;
+
         // when config loaded successfully break;
-        return 0;
+        success = 0;
+        break;
     }
     free(config_path);
-    return 1;
+    return success;
 }
 
 void init_error_file()

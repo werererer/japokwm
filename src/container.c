@@ -269,7 +269,7 @@ struct wlr_box get_center_box(struct wlr_box ref)
         };
 }
 
-struct wlr_box get_absolute_box(struct wlr_box box, struct wlr_fbox ref)
+struct wlr_box get_absolute_box(struct wlr_fbox ref, struct wlr_box box)
 {
     struct wlr_box b;
     b.x = ref.x * box.width + box.x;

@@ -30,7 +30,8 @@ layoutData = {
 
 masterLayoutData = {
     {
-        {0, 0, 1, 1}
+        {0, 0, 1, 0.5},
+        {0, 0.5, 1, 0.5},
     }
 }
 
@@ -296,4 +297,10 @@ function update_layout(n)
     local i = math.max(math.min(#layoutData, n), 1)
     print("update_layout:", i)
     return layoutData[i]
+end
+
+-- TODO: improve function name not representing what it does
+function update_nmaster(n)
+    local i = math.max(math.min(#masterLayoutData, n), 1)
+    return masterLayoutData[i]
 end
