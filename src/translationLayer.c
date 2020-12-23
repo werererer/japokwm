@@ -19,7 +19,7 @@ static const struct luaL_Reg action[] =
     {"moveResize", move_resize},
     {"moveResize", move_resize},
     {"quit", quit},
-    {"readOverlay", read_overlay},
+    {"readLayout", read_layout},
     {"setOverlay", set_overlay},
     {"spawn", spawn},
     {"tag", tag},

@@ -92,7 +92,7 @@ struct container *get_container(struct monitor *m, int i)
 
 struct container *first_container(struct monitor *m)
 {
-    if (selected_layout(m)->containers_info.n <= 0)
+    if (m->ws->layout.containers_info.n <= 0)
         return NULL;
 
     struct container *con;
@@ -105,7 +105,7 @@ struct container *first_container(struct monitor *m)
 
 struct client *last_client(struct monitor *m)
 {
-    if (selected_layout(m)->containers_info.n <= 0)
+    if (m->ws->layout.containers_info.n <= 0)
         return NULL;
 
     struct container *con;
@@ -113,7 +113,7 @@ struct client *last_client(struct monitor *m)
     wl_list_for_each(con, &stack, slink) {
         if (!visibleon(con, m))
             continue;
-        if (i > selected_layout(m)->containers_info.n)
+        if (i > m->ws->layout.containers_info.n)
             return con->client;
         i++;
     }
@@ -269,24 +269,24 @@ struct wlr_box get_center_box(struct wlr_box ref)
         };
 }
 
-struct wlr_box get_absolute_box(struct wlr_box box, struct wlr_fbox b)
+struct wlr_box get_absolute_box(struct wlr_box box, struct wlr_fbox ref)
 {
-    struct wlr_box w;
-    w.x = b.x * box.width + box.x;
-    w.y = b.y * box.height + box.y;
-    w.width = box.width * b.width;
-    w.height = box.height * b.height;
-    return w;
+    struct wlr_box b;
+    b.x = ref.x * box.width + box.x;
+    b.y = ref.y * box.height + box.y;
+    b.width = box.width * ref.width;
+    b.height = box.height * ref.height;
+    return b;
 }
 
-struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box b)
+struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box ref)
 {
-    struct wlr_fbox w;
-    w.x = (float)box.x / b.width;
-    w.y = (float)box.y / b.height;
-    w.width = (float)box.width / b.width;
-    w.height = (float)box.height / b.height;
-    return w;
+    struct wlr_fbox b;
+    b.x = (float)box.x / ref.width;
+    b.y = (float)box.y / ref.height;
+    b.width = (float)box.width / ref.width;
+    b.height = (float)box.height / ref.height;
+    return b;
 }
 
 void applybounds(struct container *con, struct wlr_box bbox)

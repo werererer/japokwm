@@ -43,13 +43,11 @@ void set_selected_monitor(struct monitor *m);
  * The resulting root area is relative to outputs*/
 void set_root_area(struct monitor *m);
 
-struct layout *selected_layout(struct monitor *m);
 /* *
  * selTag[1] = selTag[0] then
  * selTag[0] = new value
  * */
 void push_selected_workspace(struct monitor *m, struct workspace *ws);
-struct workspace *get_focused_workspace(struct monitor *m);
 
 struct monitor *dirtomon(int dir);
 struct monitor *outputtomon(struct wlr_output *output);

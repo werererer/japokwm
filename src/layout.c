@@ -8,8 +8,8 @@ struct layout prev_layout;
 void create_layout(struct layout *lt, const char *symbol, int funcId)
 {
     lt = malloc(sizeof(struct layout));
-    lt->symbol = calloc(strlen(symbol), sizeof(char));
-    strcpy(lt->symbol, symbol);
+    lt->symbol = strdup(symbol);
+    lt->nmaster = 1;
     lt->funcId = funcId;
 }
 

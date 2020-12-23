@@ -190,18 +190,6 @@ void set_root_area(struct monitor *m)
     }
 }
 
-struct layout *selected_layout(struct monitor *m)
-{
-    if (!m)
-        return 0;
-    return &get_focused_workspace(m)->layout;
-}
-
-struct workspace *get_focused_workspace(struct monitor *m)
-{
-    return get_workspace(m->ws->id);
-}
-
 void push_selected_workspace(struct monitor *m, struct workspace *ws)
 {
     if (!m || !ws)

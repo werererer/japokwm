@@ -113,7 +113,7 @@ int spawn(lua_State *L)
 int update_layout(lua_State *L)
 {
     struct layout l = get_config_layout(L, "layout");
-    set_selected_layout(get_focused_workspace(selected_monitor), l);
+    set_selected_layout(selected_monitor->ws, l);
     arrange(true);
     return 0;
 }
@@ -211,7 +211,6 @@ int move_resize(lua_State *L)
     set_container_floating(grabc, true);
     switch (server.cursorMode = ui) {
         case CURSOR_MOVE:
-            printf("move\n");
             grabcx = server.cursor->x - grabc->geom.x;
             grabcy = server.cursor->y - grabc->geom.y;
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
@@ -221,7 +220,6 @@ int move_resize(lua_State *L)
             arrange(false);
             break;
         case CURSOR_RESIZE:
-            printf("resize\n");
             /* Doesn't work for X11 output - the next absolute motion event
              * returns the cursor to where it started */
             grabcx = server.cursor->x - grabc->geom.x;
@@ -503,8 +501,9 @@ int zoom(lua_State *L)
     return 0;
 }
 
-int read_overlay(lua_State *L)
+int read_layout(lua_State *L)
 {
+    printf("read_layout\n");
     char file[NUM_CHARS];
     char filename[NUM_DIGITS];
     const char *layout = luaL_checkstring(L, -1);

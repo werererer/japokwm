@@ -28,6 +28,12 @@ layoutData = {
     },
 }
 
+masterLayoutData = {
+    {
+        {0, 0, 1, 1}
+    }
+}
+
 -- set: which window conf set
 -- client: current window
 function splitContainer(i, j, ratio)
@@ -225,7 +231,6 @@ function getResizeEffectedContainers(i, j, d)
 
         if j ~= j2 then
             if isEffectedByResizeOf(con, container, d) then
-                print("effected")
                 local d = {con[X], con[Y], con[WIDTH], con[HEIGHT], i, j2}
                 d[X] = (d[X]-altCon[X])/altCon[WIDTH]
                 d[Y] = (d[Y]-altCon[Y])/altCon[HEIGHT]
@@ -246,7 +251,6 @@ function resizeAll(i, j, n, d)
     local altCon = getAlternativeContainer(container, d)
 
     for k = 1,#resizeContainers do
-        print("go")
         local li = resizeContainers[k][5]
         local lj = resizeContainers[k][6]
         layoutData[li][lj][X] = altCon[X] + (resizeContainers[k][X] * altCon[WIDTH])
@@ -270,22 +274,25 @@ function resizeThisAll(n, d)
 end
 
 function tile()
-    layoutData = action.readOverlay("tile")
+    layoutData = action.readLayout("tile")
 end
 
 function monocle()
-    layoutData = action.readOverlay("monocle")
+    layoutData = action.readLayout("monocle")
 end
 
 function twoPane()
-    layoutData = action.readOverlay("twoPane")
+    layoutData = action.readLayout("twoPane")
 end
 
 function loadLayout(layout)
-    layoutData = action.readOverlay(layout)
+    layoutData = action.readLayout(layout)
 end
 
-function update(n)
+-- TODO: improve function name not representing what it does
+function update_layout(n)
     local i = math.max(math.min(#layoutData, n), 1)
     return layoutData[i]
 end
+
+-- 

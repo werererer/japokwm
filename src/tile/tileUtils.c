@@ -28,6 +28,16 @@ void arrange(enum layout_actions action)
     }
 }
 
+/* update layout and was set in the arrange function */
+static void update_layout(int n, struct monitor *m)
+{
+    lua_getglobal(L, "update_layout");
+    lua_pushinteger(L, n);
+    lua_pcall(L, 1, 1, 0);
+    m->ws->layout.containers_info.n = lua_rawlen(L, -1);
+    m->ws->layout.containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
+}
+
 void arrange_monitor(struct monitor *m, enum layout_actions action)
 {
     /* Get effective monitor geometry to use for window area */
@@ -38,42 +48,38 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
         container_surround_gaps(&m->root->geom, outer_gap);
 
     // don't do anything if no tiling function exist
-    if (selected_layout(m)->funcId <= 0)
+    if (m->ws->layout.funcId <= 0)
         return;
 
     int n = tiled_container_count(m);
     /* call arrange function if previous layout is different or reset ->
      * reset layout */
-    if (is_same_layout(prev_layout, *selected_layout(m))
+    if (is_same_layout(prev_layout, m->ws->layout)
             || action == LAYOUT_RESET) {
-        prev_layout = *selected_layout(m);
-        lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(m)->funcId);
+        prev_layout = m->ws->layout;
+        lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.funcId);
         lua_pushinteger(L, n);
         lua_pcall(L, 1, 0, 0);
     }
 
-    /* update layout aquired from was set with the arrange function */
-    lua_getglobal(L, "update");
-    lua_pushinteger(L, n);
-    lua_pcall(L, 1, 1, 0);
-    selected_layout(m)->containers_info.n = lua_rawlen(L, -1);
-    selected_layout(m)->containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
-    update_hidden_status(m);
+    update_layout(n, m);
 
     int i = 0;
     struct container *con;
     wl_list_for_each(con, &containers, mlink) {
         if (!visibleon(con, m))
             continue;
-        arrange_container(m, con, i, false);
+        arrange_container(con, i, false);
         con->textPosition = i;
         i++;
     }
     update_overlay();
 }
 
-void arrange_container(struct monitor *m, struct container *con, int i, bool preserve)
+void arrange_container(struct container *con, int i, bool preserve)
 {
+    struct monitor *m = con->m;
+
     con->clientPosition = i;
     if (con->floating || con->hidden)
         return;
@@ -81,8 +87,8 @@ void arrange_container(struct monitor *m, struct container *con, int i, bool pre
     // if tiled get tile information from tile function and apply it
     struct wlr_fbox box;
     // get lua container
-    lua_rawgeti(L, LUA_REGISTRYINDEX, selected_layout(con->m)->containers_info.id);
-    lua_rawgeti(L, -1, MIN(con->clientPosition+1, selected_layout(con->m)->containers_info.n));
+    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.containers_info.id);
+    lua_rawgeti(L, -1, MIN(con->clientPosition+1, m->ws->layout.containers_info.n));
     lua_rawgeti(L, -1, 1);
     box.x = luaL_checknumber(L, -1);
     lua_pop(L, 1);
@@ -102,7 +108,7 @@ void arrange_container(struct monitor *m, struct container *con, int i, bool pre
         container_surround_gaps(&con->geom, inner_gap);
     container_surround_gaps(&con->geom, 2*con->client->bw);
     resize(con, con->geom, preserve);
-    selected_layout(con->m)->containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
+    m->ws->layout.containers_info.id = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 void resize(struct container *con, struct wlr_box geom, bool preserve)
@@ -154,7 +160,7 @@ void update_hidden_status(struct monitor *m)
         if (!existon(con, m) || con->floating)
             continue;
 
-        if (i < selected_layout(m)->containers_info.n) {
+        if (i < m->ws->layout.containers_info.n) {
             con->hidden = false;
             i++;
         } else {

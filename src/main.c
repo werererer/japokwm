@@ -556,11 +556,9 @@ static bool is_popup_menu(struct client *c)
 {
     struct wlr_xwayland_surface *surface = c->surface.xwayland;
     struct xwayland xwayland = server.xwayland;
-    printf("start\n");
     for (size_t i = 0; i < surface->window_type_len; ++i) {
         xcb_atom_t type = surface->window_type[i];
         if (type == xwayland.atoms[NET_WM_WINDOW_TYPE_POPUP_MENU]) {
-            printf("is popuptrue\n");
             return true;
         }
     }
@@ -747,7 +745,7 @@ void set_cursor(struct wl_listener *listener, void *data)
 /* arg > 1.0 will set mfact absolutely */
 void setmfact(float factor)
 {
-    if (!selected_layout(selected_monitor)->funcId)
+    if (!selected_monitor->ws->layout.funcId)
         return;
     factor = factor < 1.0 ? factor + selected_monitor->mfact : factor - 1.0;
     if (factor < 0.1 || factor > 0.9)

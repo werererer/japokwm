@@ -15,7 +15,7 @@ int focus_on_stack(lua_State *L);
 int move_client(lua_State *L);
 int move_resize(lua_State *L);
 int quit(lua_State *L);
-int read_overlay(lua_State *L);
+int read_layout(lua_State *L);
 int toggle_consider_layer_shell(lua_State *L);
 int resize_client(lua_State *L);
 int set_floating(lua_State *L);

@@ -7,6 +7,7 @@ struct tabframe {
     int tabcount;
     int selected_count;
     struct wlr_list bar_items;
+
     struct wlr_list containers;
     struct wlr_box geom;
 };
