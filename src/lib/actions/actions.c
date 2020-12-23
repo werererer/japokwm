@@ -99,6 +99,13 @@ int set_floating(lua_State *L)
     return 0;
 }
 
+int set_nmaster(lua_State *L)
+{
+    selected_monitor->ws->layout.nmaster = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    return 0;
+}
+
 int spawn(lua_State *L)
 {
     const char *cmd = luaL_checkstring(L, -1);
@@ -112,6 +119,7 @@ int spawn(lua_State *L)
 
 int update_layout(lua_State *L)
 {
+    printf("set layout\n");
     struct layout l = get_config_layout(L, "layout");
     set_selected_layout(selected_monitor->ws, l);
     arrange(true);
@@ -155,6 +163,12 @@ int focus_on_stack(lua_State *L)
         focus_container(con, m, FOCUS_LIFT);
     }
     return 0;
+}
+
+int get_nmaster(lua_State *L)
+{
+    lua_pushinteger(L, selected_monitor->ws->layout.nmaster);
+    return 1;
 }
 
 int focus_on_hidden_stack(lua_State *L)
@@ -405,18 +419,6 @@ int view(lua_State *L)
     return 0;
 }
 
-int toggle_add_view(lua_State *L)
-{
-    unsigned int ui = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-    struct monitor *m = selected_monitor;
-    set_workspace(m, get_workspace(ui));
-    focus_top_container(m, FOCUS_NOOP);
-    arrange(false);
-    return 0;
-}
-
-
 int toggle_view(lua_State *L)
 {
     struct monitor *m = selected_monitor;
@@ -503,7 +505,6 @@ int zoom(lua_State *L)
 
 int read_layout(lua_State *L)
 {
-    printf("read_layout\n");
     char file[NUM_CHARS];
     char filename[NUM_DIGITS];
     const char *layout = luaL_checkstring(L, -1);

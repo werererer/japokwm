@@ -39,15 +39,16 @@ function setLayout()
 end
 
 function setLayout(i)
+    print("set layout")
     layoutId = i
     layout = layouts[i]
-    action.updateLayout()
+    action.update_layout()
 end
 
 function toggleOverlay()
-    overlay = action.getOverlay()
-    action.setOverlay(not overlay)
-    action.arrangeThis(false);
+    overlay = action.get_overlay()
+    action.set_overlay(not overlay)
+    action.arrange_this(false);
 end
 
 -- default

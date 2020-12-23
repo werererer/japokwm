@@ -403,12 +403,6 @@ void getxdecomode(struct wl_listener *listener, void *data)
             WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
 }
 
-void incnmaster(int i)
-{
-    selected_monitor->nmaster = MAX(selected_monitor->nmaster + i, 0);
-    arrange(false);
-}
-
 void inputdevice(struct wl_listener *listener, void *data)
 {
     /* This event is raised by the backend when a new input device becomes

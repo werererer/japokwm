@@ -7,44 +7,44 @@
 
 static const struct luaL_Reg action[] =
 {
-    {"arrangeThis", arrange_this},
-    {"setTabcount", set_tabcount},
-    {"getTabcount", get_tabcount},
-    /* {"createOverlay", create_overlay}, */
-    {"focusOnHiddenStack", focus_on_hidden_stack},
-    {"toggleConsiderLayerShell", toggle_consider_layer_shell},
-    {"focusOnStack", focus_on_stack},
-    {"getOverlay", get_overlay},
+    {"arrange_this", arrange_this},
+    {"set_tabcount", set_tabcount},
+    {"set_nmaster", set_nmaster},
+    {"get_nmaster", get_nmaster},
+    {"get_tabcount", get_tabcount},
+    /* {"create_overlay", create_overlay}, */
+    {"focus_on_hidden_stack", focus_on_hidden_stack},
+    {"toggle_consider_layer_shell", toggle_consider_layer_shell},
+    {"focus_on_stack", focus_on_stack},
+    {"get_overlay", get_overlay},
     {"kill", kill_client},
-    {"moveResize", move_resize},
-    {"moveResize", move_resize},
+    {"move_resize", move_resize},
     {"quit", quit},
-    {"readLayout", read_layout},
-    {"setOverlay", set_overlay},
+    {"read_layout", read_layout},
+    {"set_overlay", set_overlay},
     {"spawn", spawn},
     {"tag", tag},
-    {"setFloating", set_floating},
-    {"toggleAddView", toggle_add_view},
-    {"toggleFloating", toggle_floating},
-    {"toggleTag", toggle_tag},
-    {"toggleView", toggle_view},
-    {"updateLayout", update_layout},
+    {"set_floating", set_floating},
+    {"toggle_floating", toggle_floating},
+    {"toggle_tag", toggle_tag},
+    {"toggle_view", toggle_view},
+    {"update_layout", update_layout},
     {"view", view},
-    {"writeThisOverlay", write_this_overlay},
+    {"write_this_overlay", write_this_overlay},
     {"zoom", zoom},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg info[] =
 {
-    {"thisTiledClientCount", this_tiled_client_count},
-    {"thisContainerPosition", this_container_position},
+    {"this_tiled_client_count", this_tiled_client_count},
+    {"this_container_position", this_container_position},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg config[] = 
 {
-    {"reload", reloadConfig},
+    {"reload", reload_config},
     {NULL, NULL},
 };
 

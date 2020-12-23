@@ -18,7 +18,6 @@ struct monitor {
     struct wlr_box geom;
     struct root *root;
     double mfact;
-    int nmaster;
     struct workspace *ws;
 };
 

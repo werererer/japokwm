@@ -55,7 +55,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     for (r = monrules; r < END(monrules); r++) {
         if (!r->name || strstr(output->name, r->name)) {
             m->mfact = r->mfact;
-            m->nmaster = r->nmaster;
             wlr_output_set_scale(output, r->scale);
             wlr_xcursor_manager_load(server.cursorMgr, r->scale);
             set_selected_layout(m->ws, *r->lt);

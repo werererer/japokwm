@@ -74,7 +74,7 @@ int update_config(lua_State *L)
     repeat_rate = get_config_int(L, "repeatRate");
     repeat_delay = get_config_int(L, "repeatDelay");
     defaultLayout = get_config_layout(L, "defaultLayout");
-    prev_layout = (struct layout){.symbol = "", .funcId = 0};
+    prev_layout = (struct layout){.symbol = "", .funcId = 0, .nmaster = 1};
 
     /* commands */
     termcmd = get_config_str(L, "termcmd");
@@ -85,7 +85,7 @@ int update_config(lua_State *L)
     return 0;
 }
 
-int reloadConfig(lua_State *L)
+int reload_config(lua_State *L)
 {
     for (int i = 0; i < tag_names.length; i++)
         free(wlr_list_pop(&tag_names));

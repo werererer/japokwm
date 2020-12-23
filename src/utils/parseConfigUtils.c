@@ -323,6 +323,7 @@ struct layout get_config_layout(lua_State *L, char *name)
     lua_getglobal(L, name);
     layout.symbol = get_config_array_str(L, 1);
     layout.funcId = get_config_array_func_id(L, 2);
+    layout.nmaster = 1;
     lua_pop(L, 1);
     return layout;
 }

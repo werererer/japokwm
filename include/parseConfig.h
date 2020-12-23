@@ -40,6 +40,6 @@ extern Key *buttons;
 
 /* sets global variables but needs  */
 int update_config(lua_State *L);
-int reloadConfig(lua_State *L);
+int reload_config(lua_State *L);
 void init_config_paths();
 #endif /* PARSE_CONFIG_H */

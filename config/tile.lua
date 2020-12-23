@@ -24,7 +24,7 @@ local HEIGHT<const> = 4
 
 layoutData = {
     {
-        {0, 0, 1, 1},
+        {0.3, 0, 0.4, 1},
     },
 }
 
@@ -51,12 +51,12 @@ function splitContainer(i, j, ratio)
     newContainer = {x, y + container[HEIGHT], width, height * (1-ratio)}
 
     table.insert(layoutData[i], newContainer)
-    action.arrangeThis(false)
+    action.arrange_this(false)
 end
 
 function splitThisContainer(ratio)
-    local i = math.max(math.min(info.thisTiledClientCount(), #layoutData), 1)
-    local j = math.min(info.thisContainerPosition(), #layoutData[i])
+    local i = math.max(math.min(info.this_tiled_client_count(), #layoutData), 1)
+    local j = math.min(info.this_container_position(), #layoutData[i])
     splitContainer(i, j, ratio)
 end
 
@@ -77,12 +77,12 @@ function vsplitContainer(i, j, ratio)
     newContainer = {x + container[WIDTH], y, width * (1-ratio), height}
 
     table.insert(layoutData[i], newContainer)
-    action.arrangeThis(false)
+    action.arrange_this(false)
 end
 
 function vsplitThisContainer(ratio)
-    local i = math.max(math.min(info.thisTiledClientCount(), #layoutData), 1)
-    local j = math.min(info.thisContainerPosition(), #layoutData[i])
+    local i = math.max(math.min(info.this_tiled_client_count(), #layoutData), 1)
+    local j = math.min(info.this_container_position(), #layoutData[i])
     vsplitContainer(i, j, ratio)
 end
 
@@ -109,7 +109,7 @@ function mergeContainer(i, j1, j2)
     local newContainer = {x, y, width, height}
 
     layoutData[i][math.min(j1, j2)] = newContainer
-    action.arrangeThis(false)
+    action.arrange_this(false)
 end
 
 function moveContainer(container, n, d)
@@ -127,7 +127,7 @@ function moveContainer(container, n, d)
 end
 
 function moveThisContainer(n, d)
-    local i = max(min(thisTiledClientCount(), length(layoutData)), 1)
+    local i = max(min(this_tiled_client_count(), length(layoutData)), 1)
     local j = min(clientPos(), length(layoutData[i]))
     local container = layoutData[i][j]
     layoutData[i][j] = moveContainer(container, n, d)
@@ -151,10 +151,10 @@ function resizeContainer(container, n, d)
 end
 
 function resizeThisContainer(n, d)
-    local i = max(min(thisTiledClientCount(), length(layoutData)), 1)
+    local i = max(min(this_tiled_client_count(), length(layoutData)), 1)
     local j = min(clientPos(), length(layoutData[i]))
     layoutData[i][j] = resizeContainer(layoutData[i][j], n, d)
-    action.arrangeThis(false)
+    action.arrange_this(false)
 end
 
 function moveResize(container, nmove, nresize, d)
@@ -193,7 +193,7 @@ function getAlternativeContainer(container, d)
 end
 
 -- returns whether container2 is effected
-function isEffectedByResizeOf(container, container2, d)
+function isAffectedByResizeOf(container, container2, d)
     local resize = false
     if d == Direction.TOP then
         resize = container2[Y] < container[Y]
@@ -230,7 +230,8 @@ function getResizeEffectedContainers(i, j, d)
         local resize = false
 
         if j ~= j2 then
-            if isEffectedByResizeOf(con, container, d) then
+            if isAffectedByResizeOf(con, container, d) then
+                -- convert relative to absolute
                 local d = {con[X], con[Y], con[WIDTH], con[HEIGHT], i, j2}
                 d[X] = (d[X]-altCon[X])/altCon[WIDTH]
                 d[Y] = (d[Y]-altCon[Y])/altCon[HEIGHT]
@@ -261,38 +262,39 @@ function resizeAll(i, j, n, d)
 end
 
 function resizeMainAll(n, d)
-    local i = math.max(math.min(info.thisTiledClientCount(), #layoutData), 1)
+    local i = math.max(math.min(info.this_tiled_client_count(), #layoutData), 1)
     resizeAll(i, 1, n, d)
-    action.arrangeThis(false)
+    action.arrange_this(false)
 end
 
 function resizeThisAll(n, d)
-    local i = math.max(math.min(info.thisTiledClientCount(), #layoutData), 1)
-    local j = math.min(info.thisContainerPosition(), #layoutData[i])
+    local i = math.max(math.min(info.this_tiled_client_count(), #layoutData), 1)
+    local j = math.min(info.this_container_position(), #layoutData[i])
     resizeAll(i, j, n, d)
-    action.arrangeThis(false)
+    action.arrange_this(false)
 end
 
 function tile()
-    layoutData = action.readLayout("tile")
+    layoutData = action.read_layout("tile")
 end
 
 function monocle()
-    layoutData = action.readLayout("monocle")
+    layoutData = action.read_layout("monocle")
+    print("monocle")
 end
 
 function twoPane()
-    layoutData = action.readLayout("twoPane")
+    layoutData = action.read_layout("two_pane")
 end
 
 function loadLayout(layout)
-    layoutData = action.readLayout(layout)
+    print("LOAD LAYOUT")
+    layoutData = action.read_layout(layout)
 end
 
 -- TODO: improve function name not representing what it does
 function update_layout(n)
     local i = math.max(math.min(#layoutData, n), 1)
+    print("update_layout:", i)
     return layoutData[i]
 end
-
--- 
