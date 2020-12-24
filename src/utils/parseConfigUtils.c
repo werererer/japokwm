@@ -116,7 +116,6 @@ int init_config(lua_State *L)
         char *path = strdup(config_paths[i]);
         expand_path(&path);
 
-        printf("update_config: %i\n", lua_gettop(L));
         append_to_lua_path(L, config_paths[i]);
 
         if (load_config(L, path))

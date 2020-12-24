@@ -103,7 +103,7 @@ int set_nmaster(lua_State *L)
 {
     selected_monitor->ws->layout.nmaster = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    printf("set maseter: %i\n", selected_monitor->ws->layout.nmaster);
+    arrange(LAYOUT_NOOP);
     return 0;
 }
 
@@ -123,7 +123,7 @@ int update_layout(lua_State *L)
     printf("set layout\n");
     struct layout l = get_config_layout(L, "layout");
     set_selected_layout(selected_monitor->ws, l);
-    arrange(true);
+    arrange(LAYOUT_RESET);
     return 0;
 }
 
@@ -210,7 +210,7 @@ int focus_on_hidden_stack(lua_State *L)
     }
 
     focus_container(con, m, FOCUS_LIFT);
-    arrange(false);
+    arrange(LAYOUT_NOOP);
     return 0;
 }
 

@@ -30,9 +30,12 @@ layoutData = {
 
 masterLayoutData = {
     {
+        {0, 0, 1, 1},
+    },
+    {
         {0, 0, 1, 0.5},
         {0, 0.5, 1, 0.5},
-    }
+    },
 }
 
 -- set: which window conf set
@@ -295,7 +298,6 @@ end
 -- TODO: improve function name not representing what it does
 function update_layout(n)
     local i = math.max(math.min(#layoutData, n), 1)
-    print("update_layout:", i)
     return layoutData[i]
 end
 

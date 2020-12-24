@@ -19,6 +19,7 @@
 
 void arrange(enum layout_actions action)
 {
+    printf("\n");
     struct monitor *m;
     arrange_monitor(selected_monitor, action);
     wl_list_for_each(m, &mons, link) {
@@ -61,30 +62,27 @@ static struct wlr_fbox lua_unbox_layout(struct lua_State *L, int i) {
 
 /* update layout and was set in the arrange function */
 // TODO: rename function
-/* static struct wlr_box update_nmaster(int n, struct monitor *m, struct wlr_box outer_box) */
-/* { */
-/*     struct layout *lt = &m->ws->layout; */
-/*     printf("n: %i nmaster: %i\n", n, lt->nmaster); */
-/*     if (n >= lt->nmaster) */
-/*         return outer_box; */
+static struct wlr_box update_nmaster(int i, int count, struct layout lt, struct wlr_box outer_box)
+{
+    if (i > lt.nmaster)
+        return outer_box;
 
+    lua_getglobal(L, "update_nmaster");
+    int g;
+    if (count > lt.nmaster)
+        g = lt.nmaster;
+    else
+        g = count;
+    lua_pushinteger(L, g);
+    lua_pcall(L, 1, 1, 0);
+    int k = MIN(i, g);
+    struct wlr_fbox geom = lua_unbox_layout(L, k);
+    lua_pop(L, 1);
 
-/*     lua_getglobal(L, "update_nmaster"); */
-
-/*     lua_pushinteger(L, n); */
-/*     lua_pcall(L, 1, 1, 0); */
-/*     struct wlr_fbox geom = lua_unbox_layout(L, lt->nmaster); */
-/*     lua_pop(L, 1); */
-
-/*     struct wlr_box obox = outer_box; */
-/*     obox.x = 0; */
-/*     obox.y = 0; */
-/*     obox = get_absolute_box(geom, outer_box); */
-
-/*     obox.x = outer_box.x; */
-/*     obox.y = outer_box.y; */
-/*     return obox; */
-/* } */
+    struct wlr_box obox = outer_box;
+    obox = get_absolute_box(geom, outer_box);
+    return obox;
+}
 
 void arrange_monitor(struct monitor *m, enum layout_actions action)
 {
@@ -99,7 +97,10 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
     if (m->ws->layout.funcId <= 0)
         return;
 
-    int n = tiled_container_count(m);
+    int n = tiled_container_count(m) - (m->ws->layout.nmaster - 1);
+    update_layout(n, m);
+    /* update_hidden_status(m); */
+
     /* call arrange function if previous layout is different or reset ->
      * reset layout */
     if (is_same_layout(prev_layout, m->ws->layout)
@@ -110,35 +111,44 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
         lua_pcall(L, 1, 0, 0);
     }
 
-    update_layout(n, m);
-
     int i = 0;
     struct container *con;
     wl_list_for_each(con, &containers, mlink) {
         if (!visibleon(con, m))
             continue;
-        arrange_container(con, i, false);
+        arrange_container(con, i, tiled_container_count(m), false);
         con->textPosition = i;
         i++;
     }
     update_overlay();
 }
 
-void arrange_container(struct container *con, int i, bool preserve)
+void arrange_container(struct container *con, int i, int count, bool preserve)
 {
+    printf("arrange_container: %i\n", i);
     struct monitor *m = con->m;
+    struct layout lt = m->ws->layout;
 
     con->clientPosition = i;
     if (con->floating || con->hidden)
         return;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.id);
-    int n = MIN(con->clientPosition+1, m->ws->layout.n);
-    struct wlr_fbox box = lua_unbox_layout(L, n);
+
+    int n;
+    if (i < lt.nmaster) {
+        n = 1;
+    } else {
+        n = MIN(i + 1 - (lt.nmaster-1), lt.n + lt.nmaster - 1);
+    }
+
+    printf("n: %i nmaster: %i\n", n, lt.nmaster);
+    struct wlr_fbox box;
+    box = lua_unbox_layout(L, n);
     m->ws->layout.id = luaL_ref(L, LUA_REGISTRYINDEX);
 
     struct wlr_box outer_box = get_absolute_box(box, m->root->geom);
-    con->geom = outer_box;
+    con->geom = update_nmaster(con->clientPosition + 1, count, lt, outer_box);
     if (!overlay)
         container_surround_gaps(&con->geom, inner_gap);
     container_surround_gaps(&con->geom, 2*con->client->bw);
