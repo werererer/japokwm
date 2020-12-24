@@ -31,9 +31,8 @@ struct container {
     bool hidden;
     bool on_top;
     // if position -1 it is floating
+    int stack_position;
     int position;
-    int clientPosition;
-    int textPosition;
     int resize;
     float scale;
 };

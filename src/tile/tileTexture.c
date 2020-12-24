@@ -103,9 +103,9 @@ void create_overlay()
         if (con->client->type == LAYER_SHELL)
             continue;
 
-        con->position = i;
+        con->stack_position = i;
         i++;
-        intToString(text, con->textPosition+1);
+        intToString(text, con->position);
 
         struct pos_texture *pTexture =
             create_textbox(con->geom, overlayColor, textColor, text);
@@ -119,18 +119,18 @@ void create_overlay()
 void update_container_overlay(struct container *con)
 {
     if (overlay) {
-        if (render_data.textures.length >= con->position+1) {
-            wlr_list_del(&render_data.textures, con->position);
+        if (render_data.textures.length >= con->stack_position+1) {
+            wlr_list_del(&render_data.textures, con->stack_position);
         }
 
         char text[NUM_DIGITS];
 
-        intToString(text, con->textPosition+1);
+        intToString(text, con->position);
 
         struct pos_texture *pTexture =
             create_textbox(con->geom, overlayColor, textColor, text);
         pTexture->ws = con->client->ws;
-        wlr_list_insert(&render_data.textures, con->position, pTexture);
+        wlr_list_insert(&render_data.textures, con->stack_position, pTexture);
     } else {
         if (&render_data.textures.length > 0)
             wlr_list_clear(&render_data.textures);

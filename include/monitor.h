@@ -37,10 +37,6 @@ void create_monitor(struct wl_listener *listener, void *data);
 void destroy_monitor(struct wl_listener *listener, void *data);
 void focusmon(int i);
 void set_selected_monitor(struct monitor *m);
-/* set the are where windows can be placed in respect to layershell based
- * programs which occupie space
- * The resulting root area is relative to outputs*/
-void set_root_area(struct monitor *m);
 
 /* *
  * selTag[1] = selTag[0] then

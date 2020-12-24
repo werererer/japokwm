@@ -62,33 +62,57 @@ static struct wlr_fbox lua_unbox_layout(struct lua_State *L, int i) {
 
 /* update layout and was set in the arrange function */
 // TODO: rename function
-static struct wlr_box update_nmaster(int i, int count, struct layout lt, struct wlr_box outer_box)
+static struct wlr_box apply_nmaster_transformation(struct container *con, int count)
 {
-    if (i > lt.nmaster)
-        return outer_box;
+    struct layout lt = con->m->ws->layout;
+    if (con->position > lt.nmaster)
+        return con->geom;
 
     lua_getglobal(L, "update_nmaster");
-    int g;
-    if (count > lt.nmaster)
-        g = lt.nmaster;
-    else
-        g = count;
+    int g = count > lt.nmaster ? lt.nmaster : count;
     lua_pushinteger(L, g);
     lua_pcall(L, 1, 1, 0);
-    int k = MIN(i, g);
+    int k = MIN(con->position, g);
     struct wlr_fbox geom = lua_unbox_layout(L, k);
     lua_pop(L, 1);
 
-    struct wlr_box obox = outer_box;
-    obox = get_absolute_box(geom, outer_box);
+    struct wlr_box obox = get_absolute_box(geom, con->geom);
     return obox;
+}
+
+static inline int get_slave_container_count(struct monitor *m)
+{
+    struct layout lt = m->ws->layout;
+    int abs_count = tiled_container_count(m);
+    return MAX(abs_count - lt.nmaster, 0);
+}
+
+static inline int get_master_container_count(struct monitor *m)
+{
+    int abs_count = tiled_container_count(m);
+    int slave_container_count = get_slave_container_count(m);
+    return MAX(abs_count - slave_container_count, 0);
+}
+
+// amount of slave containers plus the one master area
+static int get_default_container_count(struct monitor *m)
+{
+    return get_slave_container_count(m) + 1;
+}
+
+static void reset_layout(struct monitor *m)
+{
+    prev_layout = m->ws->layout;
+    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.funcId);
+    lua_pushinteger(L, m->ws->layout.n);
+    lua_pcall(L, 1, 0, 0);
 }
 
 void arrange_monitor(struct monitor *m, enum layout_actions action)
 {
     /* Get effective monitor geometry to use for window area */
     m->geom = *wlr_output_layout_get_box(output_layout, m->wlr_output);
-    set_root_area(m);
+    set_root_area(m->root, m->geom);
 
     if (!overlay)
         container_surround_gaps(&m->root->geom, outer_gap);
@@ -97,61 +121,47 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
     if (m->ws->layout.funcId <= 0)
         return;
 
-    int n = tiled_container_count(m) - (m->ws->layout.nmaster - 1);
-    update_layout(n, m);
-    /* update_hidden_status(m); */
+    int container_count = get_master_container_count(m);
+    int default_container_count = get_default_container_count(m);
+    update_layout(default_container_count, m);
+    update_hidden_containers(m);
 
-    /* call arrange function if previous layout is different or reset ->
-     * reset layout */
-    if (is_same_layout(prev_layout, m->ws->layout)
-            || action == LAYOUT_RESET) {
-        prev_layout = m->ws->layout;
-        lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.funcId);
-        lua_pushinteger(L, n);
-        lua_pcall(L, 1, 0, 0);
-    }
+    if (is_same_layout(prev_layout, m->ws->layout) || action == LAYOUT_RESET)
+        reset_layout(m);
 
-    int i = 0;
+    int position = 1;
     struct container *con;
     wl_list_for_each(con, &containers, mlink) {
         if (!visibleon(con, m))
             continue;
-        arrange_container(con, i, tiled_container_count(m), false);
-        con->textPosition = i;
-        i++;
+
+        con->position = position;
+        arrange_container(con, container_count, false);
+        position++;
     }
+
     update_overlay();
 }
 
-void arrange_container(struct container *con, int i, int count, bool preserve)
+void arrange_container(struct container *con, int container_count, bool preserve)
 {
-    printf("arrange_container: %i\n", i);
-    struct monitor *m = con->m;
-    struct layout lt = m->ws->layout;
-
-    con->clientPosition = i;
     if (con->floating || con->hidden)
         return;
 
+    struct monitor *m = con->m;
+    struct layout lt = m->ws->layout;
+    // add one which represents the master area
+    int n = MAX(0, con->position - lt.nmaster) + 1;
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.id);
-
-    int n;
-    if (i < lt.nmaster) {
-        n = 1;
-    } else {
-        n = MIN(i + 1 - (lt.nmaster-1), lt.n + lt.nmaster - 1);
-    }
-
-    printf("n: %i nmaster: %i\n", n, lt.nmaster);
-    struct wlr_fbox box;
-    box = lua_unbox_layout(L, n);
+    struct wlr_fbox rel_geom = lua_unbox_layout(L, n);
+    con->geom = get_absolute_box(rel_geom, m->root->geom);
+    con->geom = apply_nmaster_transformation(con, container_count);
     m->ws->layout.id = luaL_ref(L, LUA_REGISTRYINDEX);
 
-    struct wlr_box outer_box = get_absolute_box(box, m->root->geom);
-    con->geom = update_nmaster(con->clientPosition + 1, count, lt, outer_box);
     if (!overlay)
         container_surround_gaps(&con->geom, inner_gap);
-    container_surround_gaps(&con->geom, 2*con->client->bw);
+
     resize(con, con->geom, preserve);
 }
 
@@ -182,8 +192,7 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
                 con->resize = wlr_xdg_toplevel_set_size(con->client->surface.xdg,
                         con->geom.width, con->geom.height);
                 break;
-            case LAYER_SHELL:
-                wlr_layer_surface_v1_configure(con->client->surface.layer,
+            case LAYER_SHELL: wlr_layer_surface_v1_configure(con->client->surface.layer,
                         selected_monitor->geom.width,
                         selected_monitor->geom.height);
                 break;
@@ -196,7 +205,7 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
     }
 }
 
-void update_hidden_status(struct monitor *m)
+void update_hidden_containers(struct monitor *m)
 {
     int i = 0;
     struct container *con;
@@ -204,7 +213,7 @@ void update_hidden_status(struct monitor *m)
         if (!existon(con, m) || con->floating)
             continue;
 
-        if (i < m->ws->layout.n) {
+        if (i < tiled_container_count(m)) {
             con->hidden = false;
             i++;
         } else {
