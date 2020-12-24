@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct layout defaultLayout;
+struct layout default_layout;
 struct layout prev_layout;
 
 void create_layout(struct layout *lt, const char *symbol, int funcId)

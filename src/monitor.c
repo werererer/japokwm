@@ -25,7 +25,7 @@ static const struct mon_rule monrules[] = {
     { "eDP-1",    0.5,  1,      2,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL },
     */
     /* defaults */
-    { NULL, 0.55, 1, 1, &defaultLayout, WL_OUTPUT_TRANSFORM_NORMAL },
+    { NULL, 0.55, 1, 1, &default_layout, WL_OUTPUT_TRANSFORM_NORMAL },
 };
 
 struct wl_list mons;

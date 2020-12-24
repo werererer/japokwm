@@ -10,42 +10,42 @@ mod3 = mods[2]
 mod4 = mods[7]
 -- also known as Alt Gr
 mod5 = mods[8]
-btnLeft = "Pointer_Button1"
-btnRight = "Pointer_Button2"
-btnMiddle = "Pointer_Button3"
+btn_left = "Pointer_Button1"
+btn_right = "Pointer_Button2"
+btn_middle = "Pointer_Button3"
 shift = mods[1]
 ctrl = mods[3]
 
-cursorMode = {
-    CurNormal = 0,
-    CurMove = 1,
-    CurResize = 2,
+cursor_mode = {
+    CUR_NORMAL = 0,
+    CUR_MOVE = 1,
+    CUR_RESIZE = 2,
 }
 
 layouts = {
     { "[M]", function() monocle() end },
-    { "[]=", function() twoPane() end },
+    { "[]=", function() two_pane() end },
     { "><>", function() floating() end },
-    { "gf", function() loadLayout("tmp") end },
+    { "gf", function() load_layout("tmp") end },
 }
-layout = layouts[layoutId]
+layout = layouts[layout_id]
 
-function setLayout()
-    layoutId = layoutId + 1
-    if layoutId > #layouts then
-        layoutId = 1
+function set_layout()
+    layout_id = layout_id + 1
+    if layout_id > #layouts then
+        layout_id = 1
     end
-    mylib.updateLayout()
+    mylib.update_layout()
 end
 
-function setLayout(i)
+function set_layout(i)
     print("set layout")
-    layoutId = i
+    layout_id = i
     layout = layouts[i]
     action.update_layout()
 end
 
-function toggleOverlay()
+function toggle_overlay()
     overlay = action.get_overlay()
     action.set_overlay(not overlay)
     action.arrange_this(false);

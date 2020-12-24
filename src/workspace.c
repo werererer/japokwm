@@ -26,7 +26,7 @@ void create_workspaces(struct wlr_list tagNames)
 {
     wlr_list_init(&workspaces);
     for (int i = 0; i < tagNames.length; i++) {
-        struct workspace *ws = create_workspace(tagNames.items[i], i, defaultLayout);
+        struct workspace *ws = create_workspace(tagNames.items[i], i, default_layout);
         wlr_list_push(&workspaces, ws);
     }
 }

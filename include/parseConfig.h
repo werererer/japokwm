@@ -13,19 +13,19 @@ struct config {
 };
 
 /* appearance */
-extern char *mainModule;
-extern char *configModule;
-extern bool sloppyFocus;
+extern char *main_module;
+extern char *config_module;
+extern bool sloppy_focus;
 extern int border_px;
 extern int inner_gap;
 extern int outer_gap;
-extern float borderColor[4];
-extern float rootColor[4];
-extern float focusColor[4];
-extern float overlayColor[4];
-extern float textColor[4];
-extern float selOverlayColor[4];
-extern float selTextColor[4];
+extern float border_color[4];
+extern float root_color[4];
+extern float focus_color[4];
+extern float overlay_color[4];
+extern float text_color[4];
+extern float sel_overlay_color[4];
+extern float sel_text_color[4];
 
 extern struct rule rules[MAXLEN];
 

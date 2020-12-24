@@ -17,15 +17,15 @@
 #include "stringop.h"
 #include "workspace.h"
 
-bool sloppyFocus;
+bool sloppy_focus;
 int border_px;
-float rootColor[4];
-float borderColor[4];
-float focusColor[4];
-float overlayColor[4];
-float textColor[4];
-float selOverlayColor[4];
-float selTextColor[4];
+float root_color[4];
+float border_color[4];
+float focus_color[4];
+float overlay_color[4];
+float text_color[4];
+float sel_overlay_color[4];
+float sel_text_color[4];
 
 struct wlr_list tag_names;
 struct rule rules[MAXLEN];
@@ -46,34 +46,34 @@ int update_config(lua_State *L)
 {
     init_error_file();
     init_config(L);
-    sloppyFocus = get_config_bool(L, "sloppyFocus");
-    border_px = get_config_int(L, "borderPx");
+    sloppy_focus = get_config_bool(L, "sloppy_focus");
+    border_px = get_config_int(L, "border_px");
 
     /* gaps */
-    inner_gap = get_config_int(L, "innerGap");
-    outer_gap = get_config_int(L, "outerGap");
+    inner_gap = get_config_int(L, "inner_gap");
+    outer_gap = get_config_int(L, "outer_gap");
     configure_gaps(&inner_gap, &outer_gap);
 
     /* appearance */
-    get_config_float_arr(L, rootColor, "rootColor");
-    get_config_float_arr(L, borderColor, "borderColor");
-    get_config_float_arr(L, focusColor, "focusColor");
-    get_config_float_arr(L, overlayColor, "overlayColor");
-    get_config_float_arr(L, textColor, "textColor");
-    get_config_float_arr(L, selOverlayColor, "overlayColor");
-    get_config_float_arr(L, selTextColor, "textColor");
+    get_config_float_arr(L, root_color, "root_color");
+    get_config_float_arr(L, border_color, "border_color");
+    get_config_float_arr(L, focus_color, "focus_color");
+    get_config_float_arr(L, overlay_color, "overlay_color");
+    get_config_float_arr(L, text_color, "text_color");
+    get_config_float_arr(L, sel_overlay_color, "sel_overlay_color");
+    get_config_float_arr(L, sel_text_color, "sel_text_color");
 
     wlr_list_init(&tag_names);
-    get_config_str_arr(L, &tag_names, "tagNames");
+    get_config_str_arr(L, &tag_names, "tag_names");
     get_config_rule_arr(L, rules, "rules");
 
     /* monitors */
-    //getConfigMonRuleArr(monrules, "monrules");
+    //get_config_mon_rule_arr(monrules, "monrules");
 
     /* keyboard */
-    repeat_rate = get_config_int(L, "repeatRate");
-    repeat_delay = get_config_int(L, "repeatDelay");
-    defaultLayout = get_config_layout(L, "defaultLayout");
+    repeat_rate = get_config_int(L, "repeat_rate");
+    repeat_delay = get_config_int(L, "repeat_delay");
+    default_layout = get_config_layout(L, "default_layout");
     prev_layout = (struct layout) {
         .symbol = "",
         .funcId = 0,

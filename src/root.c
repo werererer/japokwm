@@ -9,7 +9,7 @@ struct root *create_root(struct monitor *m)
 {
     struct root *root = calloc(1, sizeof(struct root));
     root->consider_layer_shell = true;
-    memcpy(root->color, rootColor, sizeof(float)*4);
+    memcpy(root->color, root_color, sizeof(float)*4);
     root->m = m;
     return root;
 }

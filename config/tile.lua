@@ -1,10 +1,10 @@
 
 -- function add(box)
---     ccall((:addBox, corePath), Cvoid, (Cint, Cint, Cint, Cint), 3, 3, 4, 5)
+--     ccall((:add_box, core_path), Cvoid, (Cint, Cint, Cint, Cint), 3, 3, 4, 5)
 -- end
 
 -- function del()
---     ccall((:del, corePath), Cvoid, (Cint,), 3)
+--     ccall((:del, core_path), Cvoid, (Cint,), 3)
 -- end
 
 -- function recurse(arr)
@@ -22,13 +22,13 @@ local Y<const> = 2
 local WIDTH<const> = 3
 local HEIGHT<const> = 4
 
-layoutData = {
+layout_data = {
     {
         {0.3, 0, 0.4, 1},
     },
 }
 
-masterLayoutData = {
+master_layout_data = {
     {
         {0, 0, 1, 1},
     },
@@ -40,10 +40,10 @@ masterLayoutData = {
 
 -- set: which window conf set
 -- client: current window
-function splitContainer(i, j, ratio)
-    local i = math.min(i, #layoutData)
-    local j = math.min(j, #layoutData[i])
-    container = layoutData[i][j]
+function split_container(i, j, ratio)
+    local i = math.min(i, #layout_data)
+    local j = math.min(j, #layout_data[i])
+    container = layout_data[i][j]
 
     print(i, j)
     x = container[X]
@@ -52,24 +52,24 @@ function splitContainer(i, j, ratio)
     height = container[HEIGHT]
 
     container[HEIGHT] = height * ratio
-    newContainer = {x, y + container[HEIGHT], width, height * (1-ratio)}
+    new_container = {x, y + container[HEIGHT], width, height * (1-ratio)}
 
-    table.insert(layoutData[i], newContainer)
+    table.insert(layout_data[i], new_container)
     action.arrange_this(false)
 end
 
-function splitThisContainer(ratio)
-    local i = math.max(math.min(info.this_tiled_client_count(), #layoutData), 1)
-    local j = math.min(info.this_container_position(), #layoutData[i])
-    splitContainer(i, j, ratio)
+function split_this_container(ratio)
+    local i = math.max(math.min(info.this_tiled_client_count(), #layout_data), 1)
+    local j = math.min(info.this_container_position(), #layout_data[i])
+    split_container(i, j, ratio)
 end
 
 -- set: which window conf set
 -- client: current window
-function vsplitContainer(i, j, ratio)
-    local i = math.min(i, #layoutData)
-    local j = math.min(j, #layoutData[i])
-    container = layoutData[i][j]
+function vsplit_container(i, j, ratio)
+    local i = math.min(i, #layout_data)
+    local j = math.min(j, #layout_data[i])
+    container = layout_data[i][j]
 
     print(i, j)
     x = container[X]
@@ -78,31 +78,31 @@ function vsplitContainer(i, j, ratio)
     height = container[HEIGHT]
 
     container[WIDTH] = width * ratio
-    newContainer = {x + container[WIDTH], y, width * (1-ratio), height}
+    new_container = {x + container[WIDTH], y, width * (1-ratio), height}
 
-    table.insert(layoutData[i], newContainer)
+    table.insert(layout_data[i], new_container)
     action.arrange_this(false)
 end
 
-function vsplitThisContainer(ratio)
-    local i = math.max(math.min(info.this_tiled_client_count(), #layoutData), 1)
-    local j = math.min(info.this_container_position(), #layoutData[i])
-    vsplitContainer(i, j, ratio)
+function vsplit_this_container(ratio)
+    local i = math.max(math.min(info.this_tiled_client_count(), #layout_data), 1)
+    local j = math.min(info.this_container_position(), #layout_data[i])
+    vsplit_container(i, j, ratio)
 end
 
-function mergeContainer(i, j1, j2)
-    if i > #layoutData then
+function merge_container(i, j1, j2)
+    if i > #layout_data then
         return
     end
-    if math.max(j1, j2) > #layoutData[i] then
+    if math.max(j1, j2) > #layout_data[i] then
         return
     end
 
-    local i = math.min(i, #layoutData)
-    local j1 = math.min(j1, #layoutData[i])
-    local j2 = math.min(j2, #layoutData[i])
-    local container1 = layoutData[i][j1]
-    local container2 = layoutData[i][j2]
+    local i = math.min(i, #layout_data)
+    local j1 = math.min(j1, #layout_data[i])
+    local j2 = math.min(j2, #layout_data[i])
+    local container1 = layout_data[i][j1]
+    local container2 = layout_data[i][j2]
 
     local x = math.min(container1[X], container2[X])
     local y = math.min(container1[Y], container2[Y])
@@ -110,13 +110,13 @@ function mergeContainer(i, j1, j2)
                 container2[X] + container2[WIDTH]) - x
     local height = math.max(container1[Y] + container1[HEIGHT],
                 container2[Y] + container2[HEIGHT]) - y
-    local newContainer = {x, y, width, height}
+    local new_container = {x, y, width, height}
 
-    layoutData[i][math.min(j1, j2)] = newContainer
+    layout_data[i][math.min(j1, j2)] = new_container
     action.arrange_this(false)
 end
 
-function moveContainer(container, n, d)
+function move_container(container, n, d)
     local con = container
     if d == Direction.TOP then
         con[Y] = con[Y] - n
@@ -130,15 +130,15 @@ function moveContainer(container, n, d)
     return con
 end
 
-function moveThisContainer(n, d)
-    local i = max(min(this_tiled_client_count(), length(layoutData)), 1)
-    local j = min(clientPos(), length(layoutData[i]))
-    local container = layoutData[i][j]
-    layoutData[i][j] = moveContainer(container, n, d)
-    arrangeThis(false)
+function move_this_container(n, d)
+    local i = max(min(this_tiled_client_count(), length(layout_data)), 1)
+    local j = min(client_pos(), length(layout_data[i]))
+    local container = layout_data[i][j]
+    layout_data[i][j] = move_container(container, n, d)
+    arrange_this(false)
 end
 
-function resizeContainer(container, n, d)
+function resize_container(container, n, d)
     local con = container
     if d == Direction.TOP then
         con[Y] = con[Y] - n
@@ -154,17 +154,17 @@ function resizeContainer(container, n, d)
     return con
 end
 
-function resizeThisContainer(n, d)
-    local i = max(min(this_tiled_client_count(), length(layoutData)), 1)
-    local j = min(clientPos(), length(layoutData[i]))
-    layoutData[i][j] = resizeContainer(layoutData[i][j], n, d)
+function resize_this_container(n, d)
+    local i = max(min(this_tiled_client_count(), length(layout_data)), 1)
+    local j = min(client_pos(), length(layout_data[i]))
+    layout_data[i][j] = resize_container(layout_data[i][j], n, d)
     action.arrange_this(false)
 end
 
-function moveResize(container, nmove, nresize, d)
+function move_resize(container, nmove, nresize, d)
     local con = container
-    con = moveContainer(con, nmove, d)
-    con = resizeContainer(con, nresize, d)
+    con = move_container(con, nmove, d)
+    con = resize_container(con, nresize, d)
     return con
 end
 
@@ -178,7 +178,7 @@ end
 -- |< - - - - +---------+     |
 -- +--------------------------+
 -- where w is the original window and a is the alternative window
-function getAlternativeContainer(container, d)
+function get_alternative_container(container, d)
     local alt = {0, 0, 1, 1}
     if d == Direction.TOP then
         alt[Y] = 0
@@ -197,7 +197,7 @@ function getAlternativeContainer(container, d)
 end
 
 -- returns whether container2 is effected
-function isAffectedByResizeOf(container, container2, d)
+function is_affected_by_resize_of(container, container2, d)
     local resize = false
     if d == Direction.TOP then
         resize = container2[Y] < container[Y]
@@ -224,23 +224,23 @@ function isAffectedByResizeOf(container, container2, d)
 end
 
 -- finds containers that are effected by the container at i,j
-function getResizeEffectedContainers(i, j, d)
-    local container = layoutData[i][j]
+function get_resize_effected_containers(i, j, d)
+    local container = layout_data[i][j]
     local list = {}
-    local altCon = getAlternativeContainer(container, d)
+    local alt_con = get_alternative_container(container, d)
 
-    for j2 = 1, #layoutData[i] do
-        local con = layoutData[i][j2]
+    for j2 = 1, #layout_data[i] do
+        local con = layout_data[i][j2]
         local resize = false
 
         if j ~= j2 then
-            if isAffectedByResizeOf(con, container, d) then
+            if is_affected_by_resize_of(con, container, d) then
                 -- convert relative to absolute box
                 local d = {con[X], con[Y], con[WIDTH], con[HEIGHT], i, j2}
-                d[X] = (d[X]-altCon[X])/altCon[WIDTH]
-                d[Y] = (d[Y]-altCon[Y])/altCon[HEIGHT]
-                d[WIDTH] = d[WIDTH]/altCon[WIDTH]
-                d[HEIGHT] = d[HEIGHT]/altCon[HEIGHT]
+                d[X] = (d[X]-alt_con[X])/alt_con[WIDTH]
+                d[Y] = (d[Y]-alt_con[Y])/alt_con[HEIGHT]
+                d[WIDTH] = d[WIDTH]/alt_con[WIDTH]
+                d[HEIGHT] = d[HEIGHT]/alt_con[HEIGHT]
                 table.insert(list, d)
             end
         end
@@ -249,60 +249,60 @@ function getResizeEffectedContainers(i, j, d)
 end
 
 
-function resizeAll(i, j, n, d)
-    local container = layoutData[i][j]
-    local resizeContainers = getResizeEffectedContainers(i, j, d)
-    layoutData[i][j] = moveResize(container, 0, n, d)
-    local altCon = getAlternativeContainer(container, d)
+function resize_all(i, j, n, d)
+    local container = layout_data[i][j]
+    local resize_containers = get_resize_effected_containers(i, j, d)
+    layout_data[i][j] = move_resize(container, 0, n, d)
+    local alt_con = get_alternative_container(container, d)
 
-    for k = 1,#resizeContainers do
-        local li = resizeContainers[k][5]
-        local lj = resizeContainers[k][6]
-        layoutData[li][lj][X] = altCon[X] + (resizeContainers[k][X] * altCon[WIDTH])
-        layoutData[li][lj][Y] = altCon[Y] + (resizeContainers[k][Y] * altCon[HEIGHT])
-        layoutData[li][lj][WIDTH] = resizeContainers[k][WIDTH] * altCon[WIDTH]
-        layoutData[li][lj][HEIGHT] = resizeContainers[k][HEIGHT] * altCon[HEIGHT]
+    for k = 1,#resize_containers do
+        local li = resize_containers[k][5]
+        local lj = resize_containers[k][6]
+        layout_data[li][lj][X] = alt_con[X] + (resize_containers[k][X] * alt_con[WIDTH])
+        layout_data[li][lj][Y] = alt_con[Y] + (resize_containers[k][Y] * alt_con[HEIGHT])
+        layout_data[li][lj][WIDTH] = resize_containers[k][WIDTH] * alt_con[WIDTH]
+        layout_data[li][lj][HEIGHT] = resize_containers[k][HEIGHT] * alt_con[HEIGHT]
     end
 end
 
-function resizeMainAll(n, d)
-    local i = math.max(math.min(info.this_tiled_client_count(), #layoutData), 1)
-    resizeAll(i, 1, n, d)
+function resize_main_all(n, d)
+    local i = math.max(math.min(info.this_tiled_client_count(), #layout_data), 1)
+    resize_all(i, 1, n, d)
     action.arrange_this(false)
 end
 
-function resizeThisAll(n, d)
-    local i = math.max(math.min(info.this_tiled_client_count(), #layoutData), 1)
-    local j = math.min(info.this_container_position(), #layoutData[i])
-    resizeAll(i, j, n, d)
+function resize_this_all(n, d)
+    local i = math.max(math.min(info.this_tiled_client_count(), #layout_data), 1)
+    local j = math.min(info.this_container_position(), #layout_data[i])
+    resize_all(i, j, n, d)
     action.arrange_this(false)
 end
 
 function tile()
-    layoutData = action.read_layout("tile")
+    layout_data = action.read_layout("tile")
 end
 
 function monocle()
-    layoutData = action.read_layout("monocle")
+    layout_data = action.read_layout("monocle")
     print("monocle")
 end
 
-function twoPane()
-    layoutData = action.read_layout("two_pane")
+function two_pane()
+    layout_data = action.read_layout("two_pane")
 end
 
-function loadLayout(layout)
-    layoutData = action.read_layout(layout)
+function load_layout(layout)
+    layout_data = action.read_layout(layout)
 end
 
 -- TODO: improve function name not representing what it does
 function update_layout(n)
-    local i = math.max(math.min(#layoutData, n), 1)
-    return layoutData[i]
+    local i = math.max(math.min(#layout_data, n), 1)
+    return layout_data[i]
 end
 
 -- TODO: improve function name not representing what it does
 function update_nmaster(n)
-    local i = math.max(math.min(#masterLayoutData, n), 1)
-    return masterLayoutData[i]
+    local i = math.max(math.min(#master_layout_data, n), 1)
+    return master_layout_data[i]
 end

@@ -1,18 +1,18 @@
 require "defaultConfig"
 
-sloppyFocus = true
-borderPx = 2
-rootColor = {0.3, 0.3, 0.3, 1.0}
-borderColor = {0.3, 0.3, 0.3, 1.0}
-focusColor = {1.0, 0.0, 0.0, 0.0}
-overlayColor = {0.65, 0.65, 0.65, 0.9}
-textColor = {0.003, 0.003, 0.003, 1.0}
-selOverlayColor = {}
-selTextColor = {}
-outerGap = 20
-innerGap = 20
+sloppy_focus = true
+border_px = 2
+root_color = {0.3, 0.3, 0.3, 1.0}
+border_color = {0.3, 0.3, 0.3, 1.0}
+focus_color = {1.0, 0.0, 0.0, 0.0}
+overlay_color = {0.65, 0.65, 0.65, 0.9}
+text_color = {0.003, 0.003, 0.003, 1.0}
+sel_overlay_color = {}
+sel_text_color = {}
+outer_gap = 20
+inner_gap = 20
 
-tagNames = {"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"}
+tag_names = {"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"}
 
 -- where to put things
 rules = {
@@ -20,13 +20,13 @@ rules = {
 }
 
 layouts = {
-    { "gf", function(n) loadLayout("tmp") end },
+    { "gf", function(n) load_layout("tmp") end },
     {"[]=", function(n) tile(n) end},
     {"[M]", function(n) monocle(n) end},
-    {"||", function(n) twoPane(n) end},
+    {"||", function(n) two_pane(n) end},
 }
 
-defaultLayout = layouts[1]
+default_layout = layouts[1]
 
 monrules = {
     -- name mfact nmaster scale layout transform
@@ -34,8 +34,8 @@ monrules = {
 }
 
 xkb_rules = {}
-repeatRate = 25
-repeatDelay = 600
+repeat_rate = 25
+repeat_delay = 600
 termcmd = "/usr/bin/termite"
 
 mod = mod1
@@ -55,17 +55,17 @@ keys = {
     -- {mod.." d",           function(n) incnmaster(-1) end},
     {mod.." "..shift.." c",           function(n) action.kill() end},
     {mod.." "..shift.." q",           function(n) action.quit() end},
-    {mod.." p",           function(n) splitThisContainer(1/2) end},
-    {mod.." o",           function(n) vsplitThisContainer(1/2) end},
-    {mod.." i",           function(n) mergeContainer(1, 1, 2) end},
-    {mod.." space",       function(n) setLayout() end},
-    {mod.." m",           function(n) setLayout(1) end},
-    {mod.." "..shift.." t",           function(n) setLayout(2) end},
-    {mod.." w",           function(n) setLayout(3) end},
+    {mod.." p",           function(n) split_this_container(1/2) end},
+    {mod.." o",           function(n) vsplit_this_container(1/2) end},
+    {mod.." i",           function(n) merge_container(1, 1, 2) end},
+    {mod.." space",       function(n) set_layout() end},
+    {mod.." m",           function(n) set_layout(1) end},
+    {mod.." "..shift.." t",           function(n) set_layout(2) end},
+    {mod.." w",           function(n) set_layout(3) end},
     {mod.." b",           function(n) action.toggle_consider_layer_shell() end},
-    {mod.." "..shift.." w",           function(n) setLayout(4) end},
-    {mod.." "..shift.." l",           function(n) resizeMainAll(1/10, Direction.RIGHT) end},
-    {mod.." "..shift.." h",           function(n) resizeMainAll(-(1/10), Direction.RIGHT) end},
+    {mod.." "..shift.." w",           function(n) set_layout(4) end},
+    {mod.." "..shift.." l",           function(n) resize_main_all(1/10, Direction.RIGHT) end},
+    {mod.." "..shift.." h",           function(n) resize_main_all(-(1/10), Direction.RIGHT) end},
     {mod.." "..shift.." s",    function(n) action.write_this_overlay("tmp") end},
     -- {mod.." parenright",  function(n) tag(~0) end},
     -- {mod.." greater",     function(n) tagmon(1) end},

@@ -107,7 +107,7 @@ static void render_clients(struct monitor *m)
         };
 
         /* Draw window borders */
-        const float *color = (con == sel) ? focusColor : borderColor;
+        const float *color = (con == sel) ? focus_color : border_color;
         for (int i = 0; i < 4; i++) {
             scalebox(&borders[i], m->wlr_output->scale);
             wlr_render_rect(drw, &borders[i], color,
