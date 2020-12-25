@@ -20,8 +20,8 @@ rules = {
 }
 
 layouts = {
-    { "gf", function(n) load_layout("tmp") end },
     {"[]=", function(n) tile(n) end},
+    { "gf", function(n) load_layout("tmp") end },
     {"[M]", function(n) monocle(n) end},
     {"||", function(n) two_pane(n) end},
 }

@@ -7,9 +7,6 @@
 --     ccall((:del, core_path), Cvoid, (Cint,), 3)
 -- end
 
--- function recurse(arr)
---     a = arr[size(arr)] 
--- end
 Direction = {
     TOP = 1,
     BOTTOM = 2,
@@ -22,10 +19,18 @@ local Y<const> = 2
 local WIDTH<const> = 3
 local HEIGHT<const> = 4
 
+-- current layout_data
+-- layout_data = 2 layouts where layout[1] = nmaster layout and layout[2] =
+-- current layout
+-- layout = layout item list
+-- container list = layout item
+-- list of 4 floats = container
 layout_data = {
     {
-        {0.3, 0, 0.4, 1},
-    },
+        {
+            {0.3, 0, 0.4, 1},
+        },
+    }
 }
 
 master_layout_data = {
@@ -36,6 +41,16 @@ master_layout_data = {
         {0, 0, 1, 0.5},
         {0, 0.5, 1, 0.5},
     },
+}
+
+boxes = {
+    {1},
+    {2, 3, 4, 5},
+}
+
+-- transformations are saved and are reapplied when a new thing loads
+transformations = {
+    {action, con1, con2, ratio, direction}
 }
 
 -- set: which window conf set
@@ -267,8 +282,19 @@ end
 
 function resize_main_all(n, d)
     local i = math.max(math.min(info.this_tiled_client_count(), #layout_data), 1)
-    resize_all(i, 1, n, d)
-    action.arrange_this(false)
+    local max = math.max(#layout_data, 1)
+
+    for g=1,#boxes do
+        for h=1,#boxes[g] do
+            if i == boxes[g][h] then
+                for j=1,#boxes[g] do
+                    resize_all(boxes[g][j], 1, n, d)
+                    action.arrange_this(false)
+                end
+                break
+            end
+        end
+    end
 end
 
 function resize_this_all(n, d)
@@ -279,20 +305,33 @@ function resize_this_all(n, d)
 end
 
 function tile()
-    layout_data = action.read_layout("tile")
+    local layout, master_layout
+    layout, master_layout = action.read_layout("tile")
+    if layout then
+        layout_data = layout
+    end
+    if master_layout then
+        master_layout_data = master_layout
+    end
+    print(master_layout_data[1][1][1])
+    print(master_layout_data[1][1][1])
+    print(master_layout_data[1][1][1])
+    print(master_layout_data[1][1][1])
+    print(#layout_data, #master_layout_data)
+    print("tile")
 end
 
 function monocle()
-    layout_data = action.read_layout("monocle")
-    print("monocle")
+    layout_data, master_layout_data = action.read_layout("monocle")
 end
 
 function two_pane()
-    layout_data = action.read_layout("two_pane")
+    layout_data, master_layout_data = action.read_layout("two_pane")
 end
 
 function load_layout(layout)
-    layout_data = action.read_layout(layout)
+    print("load layout")
+    layout_data, master_layout_data = action.read_layout(layout)
 end
 
 -- TODO: improve function name not representing what it does

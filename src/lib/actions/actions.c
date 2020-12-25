@@ -1,5 +1,6 @@
 #include "lib/actions/actions.h"
 
+#include <inttypes.h>
 #include <lua.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -504,10 +505,80 @@ int zoom(lua_State *L)
     return 0;
 }
 
+static struct wlr_fbox string_to_wlr_fbox(const char *str)
+{
+    struct wlr_fbox box;
+    char *pend;
+    box.x = strtof(str, &pend);
+    box.y = strtof(pend, &pend);
+    box.width = strtof(pend, &pend);
+    box.height = strtof(pend, NULL);
+    return box;
+}
+
+static void lua_push_wlr_fbox(struct wlr_fbox box)
+{
+    // create inner array for each number in file
+    lua_newtable(L);
+    lua_pushnumber(L, box.x);
+    lua_pushnumber(L, box.y);
+    lua_pushnumber(L, box.width);
+    lua_pushnumber(L, box.height);
+    lua_rawseti(L, -5, 4);
+    lua_rawseti(L, -4, 3);
+    lua_rawseti(L, -3, 2);
+    lua_rawseti(L, -2, 1);
+}
+
 int read_layout(lua_State *L)
 {
-    char file[NUM_CHARS];
-    char filename[NUM_DIGITS];
+    const char *layout = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+
+    // create array for each file
+    lua_newtable(L);
+
+    char *config_path = get_config_file("layouts");
+    // workspaces are counted up from 1
+    for (int i = 1; i <= 9; i++) {
+        char filename[NUM_DIGITS];
+        intToString(filename, i);
+
+        char file[NUM_CHARS];
+        strcpy(file, "");
+        join_path(file, config_path);
+        join_path(file, layout);
+        join_path(file, filename);
+
+        FILE *fp;
+        if ( (fp = fopen(file, "r")) == NULL)
+            break; // failed to open
+
+        lua_newtable(L);
+        int j = 1;
+        size_t g;
+        char *line = NULL;
+        while ((getline(&line, &g, fp)) != -1) {
+            struct wlr_fbox box = string_to_wlr_fbox(line);
+            lua_push_wlr_fbox(box);
+            lua_rawseti(L, -2, j);
+            j++;
+        }
+        lua_rawseti(L, -2, i);
+        fclose(fp);
+    }
+
+    free(config_path);
+
+    lua_pushstring(L, layout);
+    int nret = read_master_layout(L);
+
+    printf("top: %i\n", lua_gettop(L));
+    return 1 + nret;
+}
+
+int read_master_layout(lua_State *L)
+{
     const char *layout = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
@@ -516,9 +587,14 @@ int read_layout(lua_State *L)
     // create array for each file
     lua_newtable(L);
 
-    // tags are counted from 1
+/*     // workspaces are counted up from 1 */
     for (int i = 1; i <= 9; i++) {
+
+
+        char filename[NUM_DIGITS];
         intToString(filename, i);
+
+        char file[NUM_CHARS];
         strcpy(file, "");
         join_path(file, config_path);
         join_path(file, layout);
@@ -526,31 +602,15 @@ int read_layout(lua_State *L)
 
         FILE *fp;
         if ( (fp = fopen(file, "r")) == NULL)
-            break;
-        // create inner array for each line
+            break; // failed to open
+
         lua_newtable(L);
         int j = 1;
         size_t g;
         char *line = NULL;
         while ((getline(&line, &g, fp)) != -1) {
-            // create inner array for each number in file
-            lua_newtable(L);
-
-            struct wlr_fbox box;
-            char *pend;
-            box.x = strtof(line, &pend);
-            box.y = strtof(pend, &pend);
-            box.width = strtof(pend, &pend);
-            box.height = strtof(pend, NULL);
-            lua_pushnumber(L, box.x);
-            lua_pushnumber(L, box.y);
-            lua_pushnumber(L, box.width);
-            lua_pushnumber(L, box.height);
-            lua_rawseti(L, -5, 4);
-            lua_rawseti(L, -4, 3);
-            lua_rawseti(L, -3, 2);
-            lua_rawseti(L, -2, 1);
-
+            struct wlr_fbox box = string_to_wlr_fbox(line);
+            lua_push_wlr_fbox(box);
             lua_rawseti(L, -2, j);
             j++;
         }
