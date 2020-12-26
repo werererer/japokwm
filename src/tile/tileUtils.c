@@ -151,6 +151,7 @@ void arrange_container(struct container *con, int container_count, bool preserve
     struct layout lt = m->ws->layout;
     // add one which represents the master area
     int n = MAX(0, con->position - lt.nmaster) + 1;
+    printf("n: %i\n", n);
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.id);
     struct wlr_fbox rel_geom = lua_unbox_layout(L, n);
@@ -208,11 +209,12 @@ void update_hidden_containers(struct monitor *m)
 {
     int i = 0;
     struct container *con;
+    int count = m->ws->layout.n + m->ws->layout.nmaster-1;
     wl_list_for_each(con, &containers, mlink) {
         if (!existon(con, m) || con->floating)
             continue;
 
-        if (i < tiled_container_count(m)) {
+        if (i < count) {
             con->hidden = false;
             i++;
         } else {

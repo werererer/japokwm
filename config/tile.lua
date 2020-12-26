@@ -20,17 +20,13 @@ local WIDTH<const> = 3
 local HEIGHT<const> = 4
 
 -- current layout_data
--- layout_data = 2 layouts where layout[1] = nmaster layout and layout[2] =
--- current layout
--- layout = layout item list
+-- layout_data = layout item list
 -- container list = layout item
 -- list of 4 floats = container
 layout_data = {
     {
-        {
-            {0.3, 0, 0.4, 1},
-        },
-    }
+        {0.3, 0, 0.4, 1},
+    },
 }
 
 master_layout_data = {
@@ -305,36 +301,34 @@ function resize_this_all(n, d)
 end
 
 function tile()
-    print("tile")
     load_layout("tile")
 end
 
 function monocle()
-    print("monocle")
     load_layout("monocle")
 end
 
 function two_pane()
-    print("two_pane")
     load_layout("two_pane")
 end
 
 function load_layout(layout_name)
     local layout, master_layout, boxes
-    print(layout_name)
     layout, master_layout, boxes = action.read_layout(layout_name)
     if layout then
+        print(#layout_data[1], #layout[1])
         layout_data = layout
     end
     if master_layout then
         master_layout_data = master_layout
     end
     if boxes then
+        print(#boxes)
         box_data = boxes
     end
 end
 
--- TODO: improve function name not representing what it does
+-- TODO: improve function name which doesn't representing what it does
 function update_layout(n)
     local i = math.max(math.min(#layout_data, n), 1)
     return layout_data[i]

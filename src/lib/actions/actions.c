@@ -640,10 +640,10 @@ int read_boxes(lua_State *L)
     join_path(file, layout);
     join_path(file, filename);
 
-    lua_newtable(L);
     FILE *fp;
     if ( (fp = fopen(file, "r")) == NULL)
         return 0; // failed to open
+    lua_newtable(L);
 
     int i = 1;
     size_t g;
