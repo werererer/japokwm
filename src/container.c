@@ -360,7 +360,8 @@ void focus_container(struct container *con, struct monitor *m, enum focus_action
 
     struct container *new = selected_container(m);
     struct client *c = sel ? sel->client : NULL;
-    focus_client(c, new->client);
+    struct client *c2 = new ? new->client : NULL;
+    focus_client(c, c2);
 }
 
 void lift_container(struct container *con)
