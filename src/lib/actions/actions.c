@@ -18,6 +18,7 @@
 #include "stringop.h"
 #include "tile/tileTexture.h"
 #include "tile/tileUtils.h"
+#include "translationLayer.h"
 #include "utils/stringUtils.h"
 #include "workspace.h"
 #include "xdg-shell-protocol.h"
@@ -535,47 +536,57 @@ int read_layout(lua_State *L)
     const char *layout = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    // create array for each file
-    lua_newtable(L);
+    /* // create array for each file */
+    /* lua_newtable(L); */
 
     char *config_path = get_config_file("layouts");
-    // workspaces are counted up from 1
-    for (int i = 1; i <= 9; i++) {
-        char filename[NUM_DIGITS];
-        intToString(filename, i);
+    /* // workspaces are counted up from 1 */
+    /* for (int i = 1; i <= 9; i++) { */
+    /*     char filename[NUM_DIGITS]; */
+    /*     intToString(filename, i); */
 
         char file[NUM_CHARS];
         strcpy(file, "");
         join_path(file, config_path);
         join_path(file, layout);
-        join_path(file, filename);
+        join_path(file, "layout.lua");
 
-        FILE *fp;
-        if ( (fp = fopen(file, "r")) == NULL)
-            break; // failed to open
+    /*     FILE *fp; */
+    /*     if ( (fp = fopen(file, "r")) == NULL) */
+    /*         break; // failed to open */
 
-        lua_newtable(L);
-        int j = 1;
-        size_t g;
-        char *line = NULL;
-        while ((getline(&line, &g, fp)) != -1) {
-            struct wlr_fbox box = string_to_wlr_fbox(line);
-            lua_push_wlr_fbox(box);
-            lua_rawseti(L, -2, j);
-            j++;
-        }
-        lua_rawseti(L, -2, i);
-        fclose(fp);
+    /*     lua_newtable(L); */
+    /*     int j = 1; */
+    /*     size_t g; */
+    /*     char *line = NULL; */
+    /*     while ((getline(&line, &g, fp)) != -1) { */
+    /*         struct wlr_fbox box = string_to_wlr_fbox(line); */
+    /*         lua_push_wlr_fbox(box); */
+    /*         lua_rawseti(L, -2, j); */
+    /*         j++; */
+    /*     } */
+    /*     lua_rawseti(L, -2, i); */
+    /*     fclose(fp); */
+    /* } */
+
+    /* free(config_path); */
+
+    /* lua_pushstring(L, layout); */
+    /* int nret = read_master_layout(L); */
+    /* lua_pushstring(L, layout); */
+    /* int nret2 = read_boxes(L); */
+
+    if (!file_exists(file))
+        return 0;
+
+    if (luaL_loadfile(L, file)) {
+        lua_pop(L, 1);
+        return 0;
     }
 
-    free(config_path);
-
-    lua_pushstring(L, layout);
-    int nret = read_master_layout(L);
-    lua_pushstring(L, layout);
-    int nret2 = read_boxes(L);
-
-    return 1 + nret + nret2;
+    lua_pcall(L, 0, 0, 0);
+    lua_pop(L, 1);
+    return 0;
 }
 
 int read_master_layout(lua_State *L)

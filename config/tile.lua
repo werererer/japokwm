@@ -314,12 +314,11 @@ end
 
 function load_layout(layout_name)
     local layout, master_layout, boxes
-    layout, master_layout, boxes = action.read_layout(layout_name)
+    action.read_layout(layout_name)
     if layout then
         layout_data = layout
     end
     if master_layout then
-        print("master_layout", #master_layout)
         master_layout_data = master_layout
     end
     if boxes then
