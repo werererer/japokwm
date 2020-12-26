@@ -22,8 +22,8 @@ rules = {
 layouts = {
     {"[M]", function(n) monocle(n) end},
     {"[]=", function(n) tile(n) end},
-    { "gf", function(n) load_layout("tmp") end },
-    {"||", function(n) two_pane(n) end},
+    {"||",  function(n) two_pane(n) end},
+    {"gf",  function(n) load_layout("tmp") end },
 }
 
 default_layout = layouts[1]

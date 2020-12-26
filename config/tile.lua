@@ -316,16 +316,16 @@ function load_layout(layout_name)
     local layout, master_layout, boxes
     layout, master_layout, boxes = action.read_layout(layout_name)
     if layout then
-        print(#layout_data[1], #layout[1])
         layout_data = layout
     end
     if master_layout then
+        print("master_layout", #master_layout)
         master_layout_data = master_layout
     end
     if boxes then
-        print(#boxes)
         box_data = boxes
     end
+    action.arrange_this(false);
 end
 
 -- TODO: improve function name which doesn't representing what it does

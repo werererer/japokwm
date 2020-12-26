@@ -122,7 +122,6 @@ int spawn(lua_State *L)
 
 int update_layout(lua_State *L)
 {
-    printf("set layout\n");
     struct layout l = get_config_layout(L, "layout");
     set_selected_layout(selected_monitor->ws, l);
     arrange(LAYOUT_RESET);
@@ -586,10 +585,18 @@ int read_master_layout(lua_State *L)
 
     char *config_path = get_config_file("layouts");
 
+    char f[NUM_CHARS];
+    strcpy(f, "");
+    join_path(f, config_path);
+    join_path(f, layout);
+    join_path(f, "m1");
+    if (!file_exists(f))
+        return 0;
+
     // create array for each file
     lua_newtable(L);
 
-/*     // workspaces are counted up from 1 */
+    // workspaces are counted up from 1
     for (int i = 1; i <= 9; i++) {
         char number[NUM_DIGITS];
         intToString(number, i);
