@@ -35,7 +35,7 @@ layout_data = {
 
 master_layout_data = {
     {
-        {0, 0, 1, 1},
+        {0, 0, 0.8, 1},
     },
     {
         {0, 0, 1, 0.5},
@@ -43,7 +43,7 @@ master_layout_data = {
     },
 }
 
-boxes = {
+box_data = {
     {1},
     {2, 3, 4, 5},
 }
@@ -284,11 +284,11 @@ function resize_main_all(n, d)
     local i = math.max(math.min(info.this_tiled_client_count(), #layout_data), 1)
     local max = math.max(#layout_data, 1)
 
-    for g=1,#boxes do
-        for h=1,#boxes[g] do
-            if i == boxes[g][h] then
-                for j=1,#boxes[g] do
-                    resize_all(boxes[g][j], 1, n, d)
+    for g=1,#box_data do
+        for h=1,#box_data[g] do
+            if i == box_data[g][h] then
+                for j=1,#box_data[g] do
+                    resize_all(box_data[g][j], 1, n, d)
                     action.arrange_this(false)
                 end
                 break
@@ -305,20 +305,20 @@ function resize_this_all(n, d)
 end
 
 function tile()
-    local layout, master_layout
-    layout, master_layout = action.read_layout("tile")
+    local layout, master_layout, boxes
+    print("tile1")
+    layout, master_layout, boxes = action.read_layout("tile")
+    print("tile2")
     if layout then
         layout_data = layout
     end
     if master_layout then
         master_layout_data = master_layout
     end
-    print(master_layout_data[1][1][1])
-    print(master_layout_data[1][1][1])
-    print(master_layout_data[1][1][1])
-    print(master_layout_data[1][1][1])
+    if boxes then
+        box_data = boxes
+    end
     print(#layout_data, #master_layout_data)
-    print("tile")
 end
 
 function monocle()

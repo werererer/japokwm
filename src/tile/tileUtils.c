@@ -74,6 +74,10 @@ static struct wlr_box apply_nmaster_transformation(struct container *con, int co
     lua_pcall(L, 1, 1, 0);
     int k = MIN(con->position, g);
     struct wlr_fbox geom = lua_unbox_layout(L, k);
+    printf("geom.x: %f\n", geom.x);
+    printf("geom.y: %f\n", geom.y);
+    printf("geom.width: %f\n", geom.width);
+    printf("geom.height: %f\n", geom.height);
     lua_pop(L, 1);
 
     struct wlr_box obox = get_absolute_box(geom, con->geom);

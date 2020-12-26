@@ -15,11 +15,12 @@
 #include "popup.h"
 #include "root.h"
 #include "server.h"
+#include "stringop.h"
 #include "tile/tileTexture.h"
 #include "tile/tileUtils.h"
 #include "utils/stringUtils.h"
-#include "xdg-shell-protocol.h"
 #include "workspace.h"
+#include "xdg-shell-protocol.h"
 
 static struct container *grabc = NULL;
 static int grabcx, grabcy; /* client-relative */
@@ -572,9 +573,11 @@ int read_layout(lua_State *L)
 
     lua_pushstring(L, layout);
     int nret = read_master_layout(L);
+    lua_pushstring(L, layout);
+    int nret2 = read_boxes(L);
+    printf("top: %i:%i\n", lua_gettop(L), 1 + nret + nret2);
 
-    printf("top: %i\n", lua_gettop(L));
-    return 1 + nret;
+    return 1 + nret + nret2;
 }
 
 int read_master_layout(lua_State *L)
@@ -589,10 +592,11 @@ int read_master_layout(lua_State *L)
 
 /*     // workspaces are counted up from 1 */
     for (int i = 1; i <= 9; i++) {
-
-
-        char filename[NUM_DIGITS];
-        intToString(filename, i);
+        char number[NUM_DIGITS];
+        intToString(number, i);
+        char filename[NUM_DIGITS + NUM_CHARS];
+        strcpy(filename, "m");
+        strcat(filename, number);
 
         char file[NUM_CHARS];
         strcpy(file, "");
@@ -617,6 +621,49 @@ int read_master_layout(lua_State *L)
         lua_rawseti(L, -2, i);
         fclose(fp);
     }
+
+    free(config_path);
+    return 1;
+}
+
+int read_boxes(lua_State *L)
+{
+    const char *layout = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+
+    char *config_path = get_config_file("layouts");
+
+    char filename[NUM_CHARS];
+    strcpy(filename, "r");
+
+    char file[NUM_CHARS]; strcpy(file, "");
+    join_path(file, config_path);
+    join_path(file, layout);
+    join_path(file, filename);
+
+    lua_newtable(L);
+    FILE *fp;
+    if ( (fp = fopen(file, "r")) == NULL)
+        return 0; // failed to open
+
+    int i = 1;
+    size_t g;
+    char *line = NULL;
+    while ((getline(&line, &g, fp)) != -1) {
+
+        lua_newtable(L);
+        struct wlr_list b = split_string(line, " ");
+        printf("length: %zu\n", b.length);
+        for (int j = 0; j < b.length; j++) {
+            int k = strtol(b.items[j], NULL, 10);
+            lua_pushinteger(L, k);
+            lua_rawseti(L, -2, j+1);
+        }
+
+        lua_rawseti(L, -2, i);
+        i++;
+    }
+    fclose(fp);
 
     free(config_path);
     return 1;
