@@ -305,10 +305,24 @@ function resize_this_all(n, d)
 end
 
 function tile()
+    print("tile")
+    load_layout("tile")
+end
+
+function monocle()
+    print("monocle")
+    load_layout("monocle")
+end
+
+function two_pane()
+    print("two_pane")
+    load_layout("two_pane")
+end
+
+function load_layout(layout_name)
     local layout, master_layout, boxes
-    print("tile1")
-    layout, master_layout, boxes = action.read_layout("tile")
-    print("tile2")
+    print(layout_name)
+    layout, master_layout, boxes = action.read_layout(layout_name)
     if layout then
         layout_data = layout
     end
@@ -318,20 +332,6 @@ function tile()
     if boxes then
         box_data = boxes
     end
-    print(#layout_data, #master_layout_data)
-end
-
-function monocle()
-    layout_data, master_layout_data = action.read_layout("monocle")
-end
-
-function two_pane()
-    layout_data, master_layout_data = action.read_layout("two_pane")
-end
-
-function load_layout(layout)
-    print("load layout")
-    layout_data, master_layout_data = action.read_layout(layout)
 end
 
 -- TODO: improve function name not representing what it does

@@ -575,7 +575,6 @@ int read_layout(lua_State *L)
     int nret = read_master_layout(L);
     lua_pushstring(L, layout);
     int nret2 = read_boxes(L);
-    printf("top: %i:%i\n", lua_gettop(L), 1 + nret + nret2);
 
     return 1 + nret + nret2;
 }
@@ -653,7 +652,6 @@ int read_boxes(lua_State *L)
 
         lua_newtable(L);
         struct wlr_list b = split_string(line, " ");
-        printf("length: %zu\n", b.length);
         for (int j = 0; j < b.length; j++) {
             int k = strtol(b.items[j], NULL, 10);
             lua_pushinteger(L, k);
