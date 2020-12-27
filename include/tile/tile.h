@@ -4,13 +4,8 @@
 #include <wayland-util.h>
 #include <wlr/backend.h>
 #include <wlr/types/wlr_xdg_shell.h>
+#include <lua.h>
 
-/*
- * This file is used by julia to tile windows
-*/
+int resize_main_all(lua_State *L);
 
-//relative position
-void create(Monitor *m);
-void tile(Monitor *m);
-void addClient(struct client *c, int x1, int y1, int x2, int y2, Monitor *m);
 #endif /* TILE_H */

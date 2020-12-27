@@ -26,7 +26,7 @@ layouts = {
     { "[M]", function() monocle() end },
     { "[]=", function() two_pane() end },
     { "><>", function() floating() end },
-    { "gf", function() load_layout("tmp") end },
+    { "gf", function() Load_layout("tmp") end },
 }
 layout = layouts[layout_id]
 
@@ -35,11 +35,10 @@ function set_layout()
     if layout_id > #layouts then
         layout_id = 1
     end
-    mylib.update_layout()
+    action.update_layout()
 end
 
 function set_layout(i)
-    print("set layout")
     layout_id = i
     layout = layouts[i]
     action.update_layout()

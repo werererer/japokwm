@@ -315,7 +315,7 @@ static struct layout get_config_array_layout(lua_State *L, size_t i)
 {
     struct layout layout;
     lua_rawgeti(L, -1, i);
-    layout.symbol = get_config_array_str(L, 1);
+    layout.name = get_config_array_str(L, 1);
     layout.funcId = get_config_array_func_id(L, 2);
     lua_pop(L, 1);
     return layout;
@@ -325,7 +325,7 @@ struct layout get_config_layout(lua_State *L, char *name)
 {
     struct layout layout;
     lua_getglobal(L, name);
-    layout.symbol = get_config_array_str(L, 1);
+    layout.name = get_config_array_str(L, 1);
     layout.funcId = get_config_array_func_id(L, 2);
     layout.nmaster = 1;
     layout.n = 0;
@@ -429,7 +429,7 @@ void get_config_layout_arr(lua_State *L, struct layout *layouts, char *name)
     layouts = malloc(sizeof(struct layout)*len);
     for (int i = 1; i <= len; i++) {
         lt = get_config_array_layout(L, 1);
-        layouts[i-1].symbol = lt.symbol;
+        layouts[i-1].name = lt.name;
         layouts[i-1].funcId = 4;
     }
     lua_pop(L, 1);

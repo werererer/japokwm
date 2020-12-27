@@ -32,7 +32,7 @@ void arrange(enum layout_actions action)
 /* update layout and was set in the arrange function */
 static void update_layout(int n, struct monitor *m)
 {
-    lua_getglobal(L, "update_layout");
+    lua_getglobal(L, "Update_layout");
     lua_pushinteger(L, n);
     lua_pcall(L, 1, 1, 0);
     m->ws->layout.n = lua_rawlen(L, -1);
@@ -67,7 +67,7 @@ static struct wlr_box apply_nmaster_transformation(struct container *con, int co
     if (con->position > lt.nmaster)
         return con->geom;
 
-    lua_getglobal(L, "update_nmaster");
+    lua_getglobal(L, "Update_nmaster");
     int g = count > lt.nmaster ? lt.nmaster : count;
     lua_pushinteger(L, g);
     lua_pcall(L, 1, 1, 0);

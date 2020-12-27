@@ -4,7 +4,8 @@
 #include <stdbool.h>
 
 struct layout {
-    char *symbol;
+    const char *symbol;
+    const char *name;
     /* this function gets executed when the arrange function is called
      * usually this function will read the data about the layout from a
      * file.*/

@@ -123,8 +123,12 @@ int spawn(lua_State *L)
 
 int update_layout(lua_State *L)
 {
-    struct layout l = get_config_layout(L, "layout");
-    set_selected_layout(selected_monitor->ws, l);
+    struct layout lt = get_config_layout(L, "layout");
+
+    lua_pushstring(L, prev_layout.name);
+    unload_layout(L);
+
+    set_selected_layout(selected_monitor->ws, lt);
     arrange(LAYOUT_RESET);
     return 0;
 }
@@ -506,75 +510,18 @@ int zoom(lua_State *L)
     return 0;
 }
 
-static struct wlr_fbox string_to_wlr_fbox(const char *str)
-{
-    struct wlr_fbox box;
-    char *pend;
-    box.x = strtof(str, &pend);
-    box.y = strtof(pend, &pend);
-    box.width = strtof(pend, &pend);
-    box.height = strtof(pend, NULL);
-    return box;
-}
-
-static void lua_push_wlr_fbox(struct wlr_fbox box)
-{
-    // create inner array for each number in file
-    lua_newtable(L);
-    lua_pushnumber(L, box.x);
-    lua_pushnumber(L, box.y);
-    lua_pushnumber(L, box.width);
-    lua_pushnumber(L, box.height);
-    lua_rawseti(L, -5, 4);
-    lua_rawseti(L, -4, 3);
-    lua_rawseti(L, -3, 2);
-    lua_rawseti(L, -2, 1);
-}
-
-int read_layout(lua_State *L)
+int load_layout(lua_State *L)
 {
     const char *layout = luaL_checkstring(L, -1);
     lua_pop(L, 1);
-
-    /* // create array for each file */
-    /* lua_newtable(L); */
+    selected_monitor->ws->layout.name = layout;
 
     char *config_path = get_config_file("layouts");
-    /* // workspaces are counted up from 1 */
-    /* for (int i = 1; i <= 9; i++) { */
-    /*     char filename[NUM_DIGITS]; */
-    /*     intToString(filename, i); */
-
-        char file[NUM_CHARS];
-        strcpy(file, "");
-        join_path(file, config_path);
-        join_path(file, layout);
-        join_path(file, "layout.lua");
-
-    /*     FILE *fp; */
-    /*     if ( (fp = fopen(file, "r")) == NULL) */
-    /*         break; // failed to open */
-
-    /*     lua_newtable(L); */
-    /*     int j = 1; */
-    /*     size_t g; */
-    /*     char *line = NULL; */
-    /*     while ((getline(&line, &g, fp)) != -1) { */
-    /*         struct wlr_fbox box = string_to_wlr_fbox(line); */
-    /*         lua_push_wlr_fbox(box); */
-    /*         lua_rawseti(L, -2, j); */
-    /*         j++; */
-    /*     } */
-    /*     lua_rawseti(L, -2, i); */
-    /*     fclose(fp); */
-    /* } */
-
-    /* free(config_path); */
-
-    /* lua_pushstring(L, layout); */
-    /* int nret = read_master_layout(L); */
-    /* lua_pushstring(L, layout); */
-    /* int nret2 = read_boxes(L); */
+    char file[NUM_CHARS];
+    strcpy(file, "");
+    join_path(file, config_path);
+    join_path(file, layout);
+    join_path(file, "enter.lua");
 
     if (!file_exists(file))
         return 0;
@@ -589,101 +536,31 @@ int read_layout(lua_State *L)
     return 0;
 }
 
-int read_master_layout(lua_State *L)
+int unload_layout(lua_State *L)
 {
     const char *layout = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
     char *config_path = get_config_file("layouts");
-
-    char f[NUM_CHARS];
-    strcpy(f, "");
-    join_path(f, config_path);
-    join_path(f, layout);
-    join_path(f, "m1");
-    if (!file_exists(f))
-        return 0;
-
-    // create array for each file
-    lua_newtable(L);
-
-    // workspaces are counted up from 1
-    for (int i = 1; i <= 9; i++) {
-        char number[NUM_DIGITS];
-        intToString(number, i);
-        char filename[NUM_DIGITS + NUM_CHARS];
-        strcpy(filename, "m");
-        strcat(filename, number);
-
-        char file[NUM_CHARS];
-        strcpy(file, "");
-        join_path(file, config_path);
-        join_path(file, layout);
-        join_path(file, filename);
-
-        FILE *fp;
-        if ( (fp = fopen(file, "r")) == NULL)
-            break; // failed to open
-
-        lua_newtable(L);
-        int j = 1;
-        size_t g;
-        char *line = NULL;
-        while ((getline(&line, &g, fp)) != -1) {
-            struct wlr_fbox box = string_to_wlr_fbox(line);
-            lua_push_wlr_fbox(box);
-            lua_rawseti(L, -2, j);
-            j++;
-        }
-        lua_rawseti(L, -2, i);
-        fclose(fp);
-    }
-
-    free(config_path);
-    return 1;
-}
-
-int read_boxes(lua_State *L)
-{
-    const char *layout = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-
-    char *config_path = get_config_file("layouts");
-
-    char filename[NUM_CHARS];
-    strcpy(filename, "r");
-
-    char file[NUM_CHARS]; strcpy(file, "");
+    char file[NUM_CHARS];
+    strcpy(file, "");
     join_path(file, config_path);
     join_path(file, layout);
-    join_path(file, filename);
+    join_path(file, "leave.lua");
 
-    FILE *fp;
-    if ( (fp = fopen(file, "r")) == NULL)
-        return 0; // failed to open
-    lua_newtable(L);
+    if (!file_exists(file))
+        return 0;
 
-    int i = 1;
-    size_t g;
-    char *line = NULL;
-    while ((getline(&line, &g, fp)) != -1) {
-
-        lua_newtable(L);
-        struct wlr_list b = split_string(line, " ");
-        for (int j = 0; j < b.length; j++) {
-            int k = strtol(b.items[j], NULL, 10);
-            lua_pushinteger(L, k);
-            lua_rawseti(L, -2, j+1);
-        }
-
-        lua_rawseti(L, -2, i);
-        i++;
+    if (luaL_loadfile(L, file)) {
+        lua_pop(L, 1);
+        return 0;
     }
-    fclose(fp);
 
-    free(config_path);
-    return 1;
+    lua_pcall(L, 0, 0, 0);
+    lua_pop(L, 1);
+    return 0;
 }
+
 
 int kill_client(lua_State *L)
 {

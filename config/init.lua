@@ -20,10 +20,10 @@ rules = {
 }
 
 layouts = {
-    {"[]=", function(n) tile(n) end},
-    {"[M]", function(n) monocle(n) end},
-    {"||",  function(n) two_pane(n) end},
-    {"gf",  function(n) load_layout("tmp") end },
+    {"[M]", function(n) Load_layout("master") end},
+    {"[]=", function(n) Load_layout("two_pane") end},
+    {"||",  function(n) Load_layout("two_pane") end},
+    {"gf",  function(n) Load_layout("tmp") end },
 }
 
 default_layout = layouts[1]
@@ -41,7 +41,7 @@ termcmd = "/usr/bin/termite"
 mod = mod1
 -- maps (between 1 and 4)
 keys = {
-    {mod.."    "..shift.." Return",           function(n) action.spawn(termcmd) end},
+    {mod.." "..shift.." Return",           function(n) action.spawn(termcmd) end},
     -- {mod.." period",      function(n) focusmon(1) end},
     -- {mod.." comma",       function(n) focusmon(-1) end},
     {mod.." a",           function(n) action.set_nmaster(2) end},
@@ -55,23 +55,20 @@ keys = {
     -- {mod.." d",           function(n) incnmaster(-1) end},
     {mod.." "..shift.." c",           function(n) action.kill() end},
     {mod.." "..shift.." q",           function(n) action.quit() end},
-    {mod.." p",           function(n) split_this_container(1/2) end},
-    {mod.." o",           function(n) vsplit_this_container(1/2) end},
-    {mod.." i",           function(n) merge_container(1, 1, 2) end},
     {mod.." space",       function(n) set_layout() end},
     {mod.." m",           function(n) set_layout(1) end},
     {mod.." "..shift.." t",           function(n) set_layout(2) end},
     {mod.." w",           function(n) set_layout(3) end},
     {mod.." b",           function(n) action.toggle_consider_layer_shell() end},
     {mod.." "..shift.." w",           function(n) set_layout(4) end},
-    {mod.." "..shift.." l",           function(n) resize_main_all(1/10, Direction.RIGHT) end},
-    {mod.." "..shift.." h",           function(n) resize_main_all(-(1/10), Direction.RIGHT) end},
+    {mod.." "..shift.." l",           function(n) Resize_main_all(1/10) end},
+    {mod.." "..shift.." h",           function(n) Resize_main_all(-(1/10)) end},
     {mod.." "..shift.." s",    function(n) action.write_this_overlay("tmp") end},
     -- {mod.." parenright",  function(n) tag(~0) end},
     -- {mod.." greater",     function(n) tagmon(1) end},
     -- {mod.." less",        function(n) tagmon(-1) end},
     {mod.." Return",      function(n) action.zoom() end},
-    {mod.." s",           function(n) toggleOverlay() end},
+    {mod.." s",           function(n) toggle_overlay() end},
     {mod.." 1",           function(n) action.view(0) end},
     {mod.." 2",           function(n) action.view(1) end},
     {mod.." 3",           function(n) action.view(2) end},

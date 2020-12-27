@@ -75,7 +75,8 @@ int update_config(lua_State *L)
     repeat_delay = get_config_int(L, "repeat_delay");
     default_layout = get_config_layout(L, "default_layout");
     prev_layout = (struct layout) {
-        .symbol = "",
+        .symbol = "", 
+        .name = "",
         .funcId = 0,
         .nmaster = 1,
         .n = 0,
