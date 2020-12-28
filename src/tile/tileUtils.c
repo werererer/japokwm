@@ -183,7 +183,7 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
         }
     } else {
         con->client->ratio = calc_ratio(con->geom.width, con->geom.height);
-        applybounds(con, *wlr_output_layout_get_box(output_layout, NULL));
+        apply_bounds(con, *wlr_output_layout_get_box(output_layout, NULL));
 
         /* wlroots makes this a no-op if size hasn't changed */
         switch (con->client->type) {

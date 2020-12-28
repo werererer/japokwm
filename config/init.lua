@@ -1,5 +1,14 @@
 require "defaultConfig"
 
+Min_width = 0
+Max_width = 1
+Min_height = 0
+Max_height = 1
+Min_main_width = 0.1
+Max_main_width = 1
+Min_main_height = 0.1
+Max_main_height = 1
+
 sloppy_focus = true
 border_px = 2
 root_color = {0.3, 0.3, 0.3, 1.0}
@@ -61,8 +70,8 @@ keys = {
     {mod.." w",           function(n) set_layout(3) end},
     {mod.." b",           function(n) action.toggle_consider_layer_shell() end},
     {mod.." "..shift.." w",           function(n) set_layout(4) end},
-    {mod.." "..shift.." k",           function(n) Resize_main_all(1/10, Resize_direction) end},
-    {mod.." "..shift.." j",           function(n) Resize_main_all(-(1/10), Resize_direction) end},
+    {mod.." "..shift.." h",           function(n) Resize_main_all(1/10, Resize_direction) end},
+    {mod.." "..shift.." l",           function(n) Resize_main_all(-(1/10), Resize_direction) end},
     {mod.." "..shift.." s",    function(n) action.write_this_overlay("tmp") end},
     -- {mod.." parenright",  function(n) tag(~0) end},
     -- {mod.." greater",     function(n) tagmon(1) end},

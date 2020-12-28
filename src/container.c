@@ -289,11 +289,11 @@ struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box ref)
     return b;
 }
 
-void applybounds(struct container *con, struct wlr_box bbox)
+void apply_bounds(struct container *con, struct wlr_box bbox)
 {
     /* set minimum possible */
-    con->geom.width = MAX(30, con->geom.width);
-    con->geom.height = MAX(30, con->geom.height);
+    con->geom.width = MAX(1, con->geom.width);
+    con->geom.height = MAX(1, con->geom.height);
 
     if (con->geom.x >= bbox.x + bbox.width)
         con->geom.x = bbox.x + bbox.width - con->geom.width;
