@@ -22,7 +22,7 @@ rules = {
 layouts = {
     {"[M]", function(n) Load_layout("master") end},
     {"[]=", function(n) Load_layout("two_pane") end},
-    {"||",  function(n) Load_layout("two_pane") end},
+    {"||",  function(n) Load_layout("monocle") end},
     {"gf",  function(n) Load_layout("tmp") end },
 }
 
@@ -61,8 +61,8 @@ keys = {
     {mod.." w",           function(n) set_layout(3) end},
     {mod.." b",           function(n) action.toggle_consider_layer_shell() end},
     {mod.." "..shift.." w",           function(n) set_layout(4) end},
-    {mod.." "..shift.." l",           function(n) Resize_main_all(1/10) end},
-    {mod.." "..shift.." h",           function(n) Resize_main_all(-(1/10)) end},
+    {mod.." "..shift.." k",           function(n) Resize_main_all(1/10, Resize_direction) end},
+    {mod.." "..shift.." j",           function(n) Resize_main_all(-(1/10), Resize_direction) end},
     {mod.." "..shift.." s",    function(n) action.write_this_overlay("tmp") end},
     -- {mod.." parenright",  function(n) tag(~0) end},
     -- {mod.." greater",     function(n) tagmon(1) end},
