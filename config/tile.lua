@@ -88,7 +88,7 @@ function Move_resize(container, nmove, nresize, d)
     local con = container
     con = Move_container(con, nmove, d)
     con = Resize_container(con, nresize, d)
-    return con
+    return con, con[WIDTH] <= 0.1 or con[HEIGHT] <= 0.1
 end
 
 -- n: number
@@ -121,44 +121,74 @@ function Get_current_container(container, d)
     return alt
 end
 
+function Is_container_right_to(con, con2)
+    local right = con2[X] > con[X] + con[WIDTH]
+    right = right or Is_approx_equal(con2[X], con[X] + con[WIDTH])
+    return right
+end
+
+function Is_container_left_to(con, con2)
+    local left = con2[X] + con2[WIDTH] < con[X]
+    left = left or Is_approx_equal(con2[X] + con2[WIDTH], con[X])
+    return left
+end
+
+function Is_container_over(con, con2)
+    local over = con2[Y] + con2[HEIGHT] < con[Y]
+    over = over or Is_approx_equal(con2[Y] + con2[HEIGHT], con[Y])
+    return over
+end
+
+function Is_container_under(con, con2)
+    local under = con2[Y] > con[Y] + con[HEIGHT]
+    under = under or Is_approx_equal(con2[Y], con[Y] + con[HEIGHT])
+    return under
+end
+
 -- returns whether container2 is effected
-function Is_affected_by_resize_of(container, container2, d)
+function Is_effected_by_resize_of(container, container2, d)
     local resize = false
+
     if d == Direction.TOP then
-        resize = container2[Y] > container[Y]
-        local right = container2[X] > container[X] + container[WIDTH] or Is_approx_equal(container2[X], container[X] + container[WIDTH])
-        local left = container2[X] + container2[WIDTH] < container[X] or Is_approx_equal(container2[X] + container2[WIDTH], container[X])
-        resize = resize and not (left or right)
+        local right = Is_container_right_to(container, container2)
+        local left = Is_container_left_to(container, container2)
+        local container_is_higher = Is_container_over(container, container2)
+
+        resize = container_is_higher and not (left or right)
     elseif d == Direction.BOTTOM then
-        resize = container2[Y] < container[Y]
-        local right = container2[X] > container[X] + container[WIDTH] or Is_approx_equal(container2[X], container[X] + container[WIDTH])
-        local left = container2[X] + container2[WIDTH] < container[X] or Is_approx_equal(container2[X] + container2[WIDTH], container[X])
-        resize = resize and not (left or right)
+        local right = Is_container_right_to(container, container2)
+        local left = Is_container_left_to(container, container2)
+        local container_is_lower = Is_container_under(container, container2)
+
+        resize = container_is_lower and not (left or right)
     elseif d == Direction.LEFT then
-        resize = container2[X] > container[X]
-        local over = container2[Y] > container[Y] + container[HEIGHT] or Is_approx_equal(container2[Y], container[Y] + container[HEIGHT])
-        local under = container2[Y] + container2[HEIGHT] < container[Y] or Is_approx_equal(container2[Y] + container2[HEIGHT], container[Y])
-        resize = resize and not (over or under)
+        local over = Is_container_over(container, container2)
+        local under = Is_container_under(container, container2)
+        local container_is_left = Is_container_left_to(container, container2)
+
+        resize = container_is_left and not (over or under)
     elseif d == Direction.RIGHT then
-        resize = container2[X] < container[X]
-        local over = container2[Y] > container[Y] + container[HEIGHT] or Is_approx_equal(container2[Y], container[Y] + container[HEIGHT])
-        local under = container2[Y] + container2[HEIGHT] < container[Y] or Is_approx_equal(container2[Y] + container2[HEIGHT], container[Y])
-        resize = resize and not (over or under)
+        local over = Is_container_over(container, container2)
+        local under = Is_container_under(container, container2)
+        local container_is_right = Is_container_right_to(container, container2)
+
+        resize = container_is_right and not (over or under)
     end
+
     return resize
 end
 
 function Is_equally_affected_by_resize_of(container, container2, d)
     local resize = false
     if d == Direction.TOP then
-        resize = math.abs((container2[Y]) - (container[Y])) < 0.001
+        resize = Is_approx_equal(container2[Y], container[Y])
     elseif d == Direction.BOTTOM then
         -- if equal (because of rounding issues it has to be written like that)
-        resize = math.abs(container2[Y] + container2[HEIGHT] - (container[Y] + container[HEIGHT])) < 0.001
+        resize = Is_approx_equal(container2[Y] + container2[HEIGHT], container[Y] + container[HEIGHT])
     elseif d == Direction.LEFT then
-        resize = math.abs((container2[X]) - (container[X])) < 0.001
+        resize = Is_approx_equal(container2[X], container[X])
     elseif d == Direction.RIGHT then
-        resize = math.abs((container2[X] + container2[WIDTH]) - (container[X] + container[WIDTH])) < 0.001
+        resize = Is_approx_equal(container2[X] + container2[WIDTH], container[X] + container[WIDTH])
     end
     return resize
 end
@@ -173,21 +203,14 @@ function Get_resize_effected_containers(i, j, d)
         local alt_con = Get_alternative_container(container, d)
 
         if j ~= j2 then
-            print("con1:", con[Y])
-            print("con2:", container[Y])
-            if Is_affected_by_resize_of(con, container, d) then
-                print("yes")
+            if Is_effected_by_resize_of(container, con, d) then
                 -- convert relative to absolute box
-                print("alt_con[X]", alt_con[X])
-                print("alt_con[Y]", alt_con[Y])
-                print("alt_con[WIDTH]", alt_con[WIDTH])
-                print("alt_con[HEIGHT]", alt_con[HEIGHT])
-                local c = {con[X], con[Y], con[WIDTH], con[HEIGHT], i, j2}
-                c[X] = (c[X]-alt_con[X])/alt_con[WIDTH]
-                c[Y] = (c[Y]-alt_con[Y])/alt_con[HEIGHT]
-                c[WIDTH] = c[WIDTH]/alt_con[WIDTH]
-                c[HEIGHT] = c[HEIGHT]/alt_con[HEIGHT]
-                table.insert(list, c)
+                local ret_con = {con[X], con[Y], con[WIDTH], con[HEIGHT], i, j2}
+                ret_con[X] = (ret_con[X]-alt_con[X])/alt_con[WIDTH]
+                ret_con[Y] = (ret_con[Y]-alt_con[Y])/alt_con[HEIGHT]
+                ret_con[WIDTH] = ret_con[WIDTH]/alt_con[WIDTH]
+                ret_con[HEIGHT] = ret_con[HEIGHT]/alt_con[HEIGHT]
+                table.insert(list, ret_con)
             end
         end
     end
@@ -289,6 +312,7 @@ function Get_main_container(container, d)
     return con
 end
 
+-- put all directions into a list
 function Get_directions(d)
     list = {}
     if d >= 8 then
@@ -322,7 +346,11 @@ function Resize_all(i, j, n, d)
         for k = 1,#resize_main_containers do
             local li = resize_main_containers[k][5]
             local lj = resize_main_containers[k][6]
-            Layout_data[li][lj] = Move_resize(Layout_data[li][lj], 0, n, dir)
+            local lock = false
+            Layout_data[li][lj],lock = Move_resize(Layout_data[li][lj], 0, n, dir)
+            if lock then
+                print("locked")
+            end
         end
 
         local alt_con = Get_alternative_container(container, dir)
@@ -341,7 +369,6 @@ end
 
 function Resize_main_all(n, d)
     local i = math.max(math.min(info.this_tiled_client_count(), #Layout_data), 1)
-    local max = math.max(#Layout_data, 1)
 
     for g=1,#Box_data do
         for h=1,#Box_data[g] do
