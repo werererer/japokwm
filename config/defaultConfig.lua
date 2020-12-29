@@ -1,3 +1,4 @@
+require "tilehooked"
 require "tile"
 
 -- TODO: config files must print error messages

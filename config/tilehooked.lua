@@ -1,18 +1,11 @@
 require "tileutils"
 
-Direction = {
-    TOP = 1,
-    BOTTOM = 2,
-    LEFT = 4,
-    RIGHT = 8,
-}
+Resize_direction = Direction.BOTTOM
 
 local X<const> = 1
 local Y<const> = 2
 local WIDTH<const> = 3
 local HEIGHT<const> = 4
-
-Resize_direction = Direction.BOTTOM
 
 -- current layout_data
 -- layout_data = layout item list
@@ -39,40 +32,21 @@ Box_data = {
     {2, 3, 4, 5},
 }
 
-function Is_equally_affected_by_resize_of(container, container2, d)
+function Is_equally_affected_by_resize_of_hooked(container, container2, d)
     local resize = false
     if d == Direction.TOP then
-        resize = Is_approx_equal(container2[Y] + container2[HEIGHT], container[Y] + container[HEIGHT])
-        resize = resize or container2[Y] + container2[HEIGHT] > container[Y] + container[HEIGHT]
+        resize = Is_approx_equal(container2[Y], container[Y])
     elseif d == Direction.BOTTOM then
         resize = Is_approx_equal(container2[Y] + container2[HEIGHT], container[Y] + container[HEIGHT])
-        resize = resize or container2[Y] + container2[HEIGHT] < container[Y] + container[HEIGHT]
     elseif d == Direction.LEFT then
-        resize = Is_approx_equal(container2[X] + container2[WIDTH], container[X] + container[WIDTH])
-        resize = resize or container2[X] + container2[WIDTH] > container[X] + container[WIDTH]
+        resize = Is_approx_equal(container2[X], container[X])
     elseif d == Direction.RIGHT then
         resize = Is_approx_equal(container2[X] + container2[WIDTH], container[X] + container[WIDTH])
-        resize = resize or container2[X] + container2[WIDTH] < container[X] + container[WIDTH]
     end
     return resize
 end
 
-function Is_edge_affected_by_resize_of(container, container2, d)
-    local resize = false
-    resize = not Is_approx_equal(container2[WIDTH], 1)
-    if d == Direction.TOP then
-        resize = resize and container2[Y] + container2[HEIGHT] < container[Y] + container[HEIGHT]
-    elseif d == Direction.BOTTOM then
-        resize = resize and container2[Y] + container2[HEIGHT] > container[Y] + container[HEIGHT]
-    elseif d == Direction.LEFT then
-        resize = resize and container2[X] > container[X] + container[WIDTH]
-    elseif d == Direction.RIGHT then
-        resize = resize and (container2[X] + container2[WIDTH] > container[X] + container[WIDTH])
-    end
-    return resize
-end
-
-function Resize_all(i, j, n, d)
+function Resize_all_hooked(i, j, n, d)
     local directions = Get_directions(d)
     local container = Layout_data[i][j]
 
@@ -111,18 +85,10 @@ function Resize_all(i, j, n, d)
     -- apply
     for x = 1,#directions do
         local dir = directions[x]
-        local resize_edge_containers = Get_resize_affected_containers(i, j, dir, Get_edge_container, Is_edge_affected_by_resize_of)
-        local resize_main_containers = Get_resize_affected_containers(i, j, dir, Get_main_container, Is_equally_affected_by_resize_of)
+        local resize_main_containers = Get_resize_affected_containers(i, j, dir, Get_main_container, Is_equally_affected_by_resize_of_hooked)
         local resize_containers = Get_resize_affected_containers(i, j, dir, Get_alternative_container, Is_affected_by_resize_of)
         local main_con = Move_resize(container, 0, n, dir)
         local alt_con = Get_alternative_container(main_con, dir)
-
-        print("edge: ", #resize_edge_containers)
-        for k = 1,#resize_edge_containers do
-            local li = resize_edge_containers[k][5]
-            local lj = resize_edge_containers[k][6]
-            Layout_data[li][lj] = Move_resize(Layout_data[li][lj], n, -n, dir)
-        end
 
         for k = 1,#resize_containers do
             local li = resize_containers[k][5]
@@ -149,15 +115,14 @@ function Resize_all(i, j, n, d)
     end
 end
 
-function Resize_main_all(n, d)
-    print("works")
+function Resize_main_all_hooked(n, d)
     local i = math.max(math.min(info.this_tiled_client_count(), #Layout_data), 1)
 
     for g=1,#Box_data do
         for h=1,#Box_data[g] do
             if i == Box_data[g][h] then
                 for j=1,#Box_data[g] do
-                    Resize_all(Box_data[g][j], 1, n, d)
+                    Resize_all_hooked(Box_data[g][j], 1, n, d)
                     action.arrange_this(false)
                 end
                 break
