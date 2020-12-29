@@ -79,16 +79,16 @@ static struct wlr_box apply_nmaster_transformation(struct container *con, int co
     return obox;
 }
 
-static inline int get_slave_container_count(struct monitor *m)
+int get_slave_container_count(struct monitor *m)
 {
     struct layout lt = m->ws->layout;
-    int abs_count = tiled_container_count(m);
+    int abs_count = get_tiled_container_count(m);
     return MAX(abs_count - lt.nmaster, 0);
 }
 
-static inline int get_master_container_count(struct monitor *m)
+int get_master_container_count(struct monitor *m)
 {
-    int abs_count = tiled_container_count(m);
+    int abs_count = get_tiled_container_count(m);
     int slave_container_count = get_slave_container_count(m);
     return MAX(abs_count - slave_container_count, 0);
 }
@@ -222,7 +222,7 @@ void update_hidden_containers(struct monitor *m)
     }
 }
 
-int tiled_container_count(struct monitor *m)
+int get_tiled_container_count(struct monitor *m)
 {
     struct container *con;
     int n = 0;

@@ -29,10 +29,10 @@ rules = {
 }
 
 layouts = {
-    {"[M]", function(n) Load_layout("master") end},
-    {"[]=", function(n) Load_layout("two_pane") end},
-    {"||",  function(n) Load_layout("monocle") end},
-    {"gf",  function(n) Load_layout("tmp") end },
+    {"[M]", function() Load_layout("master") end},
+    {"[]=", function() Load_layout("two_pane") end},
+    {"||",  function() Load_layout("monocle") end},
+    {"gf",  function() Load_layout("tmp") end },
 }
 
 default_layout = layouts[1]
