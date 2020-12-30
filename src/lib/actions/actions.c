@@ -531,7 +531,7 @@ int load_layout(lua_State *L)
         return 0;
     }
 
-    lua_pcall(L, 0, 0, 0);
+    lua_call_safe(L, 0, 0, 0);
     lua_pop(L, 1);
     return 0;
 }
@@ -556,7 +556,7 @@ int unload_layout(lua_State *L)
         return 0;
     }
 
-    lua_pcall(L, 0, 0, 0);
+    lua_call_safe(L, 0, 0, 0);
     lua_pop(L, 1);
     return 0;
 }

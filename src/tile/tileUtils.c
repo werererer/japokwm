@@ -19,7 +19,6 @@
 
 void arrange(enum layout_actions action)
 {
-    printf("\n");
     struct monitor *m;
     arrange_monitor(selected_monitor, action);
     wl_list_for_each(m, &mons, link) {
@@ -34,7 +33,7 @@ static void update_layout(int n, struct monitor *m)
 {
     lua_getglobal(L, "Update_layout");
     lua_pushinteger(L, n);
-    lua_pcall(L, 1, 1, 0);
+    lua_call_safe(L, 1, 1, 0);
     m->ws->layout.n = lua_rawlen(L, -1);
     m->ws->layout.id = luaL_ref(L, LUA_REGISTRYINDEX);
 }
@@ -70,7 +69,7 @@ static struct wlr_box apply_nmaster_transformation(struct container *con, int co
     lua_getglobal(L, "Update_nmaster");
     int g = count > lt.nmaster ? lt.nmaster : count;
     lua_pushinteger(L, g);
-    lua_pcall(L, 1, 1, 0);
+    lua_call_safe(L, 1, 1, 0);
     int k = MIN(con->position, g);
     struct wlr_fbox geom = lua_unbox_layout(L, k);
     lua_pop(L, 1);
@@ -104,7 +103,7 @@ static void reset_layout(struct monitor *m)
     prev_layout = m->ws->layout;
     lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.funcId);
     lua_pushinteger(L, m->ws->layout.n);
-    lua_pcall(L, 1, 0, 0);
+    lua_call_safe(L, 1, 0, 0);
 }
 
 void arrange_monitor(struct monitor *m, enum layout_actions action)

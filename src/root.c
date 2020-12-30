@@ -80,7 +80,10 @@ void set_root_area(struct root *root, struct wlr_box geom)
         if (!visibleon(con, root->m))
             continue;
 
-        configure_layer_shell_container_geom(con, root->geom);
+        struct wlr_box geom = root->geom;
+        geom.x = 0;
+        geom.y = 0;
+        configure_layer_shell_container_geom(con, geom);
 
         // move the current window barely out of view
         if (!root->consider_layer_shell) {

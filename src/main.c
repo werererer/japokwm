@@ -570,6 +570,7 @@ void maprequest(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
 
     struct monitor *m = selected_monitor;
+    printf("selected_monitor: %p\n", selected_monitor);
     c->ws = m->ws;
     wl_list_init(&c->containers);
 
@@ -578,8 +579,8 @@ void maprequest(struct wl_listener *listener, void *data)
             {
                 wl_list_insert(&clients, &c->link);
                 create_container(c, m);
+                break;
             }
-            break;
         case LAYER_SHELL:
             {
                 struct monitor *m = outputtomon(c->surface.layer->output);

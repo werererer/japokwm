@@ -72,7 +72,7 @@ static bool process_binding(char *bind, const char *reference)
         if (is_same_keybind(bind, ref)) {
             lua_rawgeti(L, -1, 2);
             lua_pushinteger(L, selected_monitor->ws->layout.n);
-            lua_pcall(L, 1, 0, 0);
+            lua_call_safe(L, 1, 0, 0);
             handled = true;
         }
         lua_pop(L, 1);

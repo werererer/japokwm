@@ -32,7 +32,7 @@ static int load_config(lua_State *L, const char *path)
 
     if (!path || !file_exists(path))
         return 1;
-    loadLibs(L);
+    load_libs(L);
 
     if (luaL_loadfile(L, cf)) {
         const char *errmsg = luaL_checkstring(L, -1);
@@ -42,9 +42,10 @@ static int load_config(lua_State *L, const char *path)
     }
 
     wlr_log(WLR_DEBUG, "load file %s", path);
-    lua_pcall(L, 0, 0, 0);
+
+    int ret = lua_call_safe(L, 0, 0, 0);
     lua_pop(L, 1);
-    return 0;
+    return ret;
 }
 
 char *get_config_file(const char *file)
@@ -142,6 +143,17 @@ void close_error_file()
 {
     close(error_fd);
     error_fd = -1;
+}
+
+int lua_call_safe(lua_State *L, int nargs, int nresults, int msgh)
+{
+    int lua_status = lua_pcall(L, nargs, nresults, msgh);
+    if (lua_status != LUA_OK) {
+        const char *errmsg = luaL_checkstring(L, -1);
+        handle_error(errmsg);
+        lua_pop(L, 1);
+    }
+    return lua_status;
 }
 
 static void handle_error(const char *msg)
@@ -300,14 +312,14 @@ void call_arrange_func(lua_State *L, int funcId, int n)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, funcId);
     lua_pushinteger(L, n);
-    lua_pcall(L, 0, 0, 0);
+    lua_call_safe(L, 1, 0, 0);
 }
 
 void call_function(lua_State *L, struct layout lt)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt.id);
     lua_pushinteger(L, lt.n);
-    lua_pcall(L, 1, 0, 0);
+    lua_call_safe(L, 1, 0, 0);
     luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
@@ -462,5 +474,5 @@ void get_config_mon_rule_arr(lua_State *L, struct mon_rule *monrules, char *name
 void call_func(int funcid)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, funcid);
-    lua_pcall(L, 0, 0, 0);
+    lua_call_safe(L, 0, 0, 0);
 }

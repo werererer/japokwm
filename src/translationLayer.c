@@ -48,7 +48,7 @@ static const struct luaL_Reg config[] =
     {NULL, NULL},
 };
 
-void loadLibs(lua_State *L)
+void load_libs(lua_State *L)
 {
     luaL_newlib(L, action);
     lua_setglobal(L, "action");
