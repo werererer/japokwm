@@ -1,4 +1,4 @@
-Build started at 2020-12-29T16:30:00.187280
+Build started at 2020-12-31T02:15:02.485638
 Main binary: /usr/bin/python
 Build Options: -Dbackend=ninja
 Python system: Linux
@@ -83,6 +83,7 @@ Dependency xcb found: YES 1.14 (cached)
 Dependency xkbcommon found: YES 1.0.3 (cached)
 Dependency wayland-server found: YES 1.18.0 (cached)
 Dependency wayland-egl found: YES 18.1.0 (cached)
+Dependency pixman-1 found: YES 0.40.0 (cached)
 Dependency wlroots found: YES 0.12.0 (cached)
 Dependency cairo found: YES 1.17.3 (cached)
 Dependency lua found: YES 5.4.2 (cached)
@@ -92,8 +93,8 @@ Build targets in project: 1
 
 Found ninja-1.10.2 at /usr/bin/ninja
 Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpe2y40250
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpe2y40250/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpe2y40250/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpnl5rubhe
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpnl5rubhe/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpnl5rubhe/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
 
 Code:
  

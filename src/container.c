@@ -20,6 +20,7 @@ struct container *create_container(struct client *c, struct monitor *m)
     con->m = m;
     con->client = c;
     add_container_to_monitor(con, con->m);
+    output_damage_surface(m, get_wlrsurface(c), 0, 0, true);
     return con;
 }
 

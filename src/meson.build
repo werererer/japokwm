@@ -6,6 +6,7 @@ deps = [\
     dependency('xkbcommon'),
     dependency('wayland-server'),
     dependency('wayland-egl'),
+    dependency('pixman-1'),
     dependency('wlroots'),
     dependency('cairo'),
     dependency('lua'),

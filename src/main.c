@@ -48,8 +48,10 @@
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/util/log.h>
 #include <wlr/xwayland.h>
+#include <wlr/types/wlr_output_damage.h>
 #include <xkbcommon/xkbcommon.h>
 #include <xkbcommon/xkbcommon.h>
+
 #include "client.h"
 #include "container.h"
 #include "ipc-server.h"
@@ -196,7 +198,7 @@ void cleanup()
 
     wlr_xcursor_manager_destroy(server.cursorMgr);
     wlr_cursor_destroy(server.cursor);
-    wlr_output_layout_destroy(output_layout);
+    wlr_output_layout_destroy(server.output_layout);
 }
 
 void cleanupkeyboard(struct wl_listener *listener, void *data)
@@ -226,6 +228,16 @@ void commitnotify(struct wl_listener *listener, void *data)
             break;
         default:
             break;
+    }
+
+    struct container *con;
+    wl_list_for_each(con, &c->containers, clink) {
+        pixman_region32_t damage;
+        pixman_region32_init(&damage);
+        wlr_surface_get_effective_damage(get_wlrsurface(c), &damage);
+        pixman_region32_translate(&damage, con->geom.x, con->geom.y);
+        wlr_output_set_damage(selected_monitor->wlr_output, &damage);
+        wlr_output_damage_add(selected_monitor->damage, &selected_monitor->damage->current);
     }
 }
 
@@ -276,6 +288,7 @@ void createnotify(struct wl_listener *listener, void *data)
     c->surface.xdg = xdg_surface;
     c->bw = border_px;
     c->type = XDG_SHELL;
+    wl_list_init(&c->containers);
 
     /* Tell the client not to try anything fancy */
     wlr_xdg_toplevel_set_tiled(c->surface.xdg, WLR_EDGE_TOP |
@@ -307,6 +320,7 @@ void createnotify_layer_shell(struct wl_listener *listener, void *data)
     c->surface.layer = layer_surface;
     c->bw = 0;
     c->type = LAYER_SHELL;
+    wl_list_init(&c->containers);
 
     /* Listen to the various events it can emit */
     c->commit.notify = commitnotify;
@@ -430,7 +444,7 @@ void inputdevice(struct wl_listener *listener, void *data)
     wlr_seat_set_capabilities(server.seat, caps);
 }
 
-static bool handleVTKeys(struct keyboard *kb, uint32_t keycode)
+static bool handle_VT_keys(struct keyboard *kb, uint32_t keycode)
 {
     const xkb_keysym_t *syms;
     int nsyms =
@@ -479,7 +493,7 @@ void keypress(struct wl_listener *listener, void *data)
     /* uint32_t mods = wlr_keyboard_get_modifiers(kb->device->keyboard); */
     /* On _press_, attempt to process a compositor keybinding. */
 
-    if (handleVTKeys(kb, keycode))
+    if (handle_VT_keys(kb, keycode))
         return;
 
     if (event->state == WLR_KEY_PRESSED) {
@@ -572,7 +586,6 @@ void maprequest(struct wl_listener *listener, void *data)
     struct monitor *m = selected_monitor;
     printf("selected_monitor: %p\n", selected_monitor);
     c->ws = m->ws;
-    wl_list_init(&c->containers);
 
     switch (c->type) {
         case XDG_SHELL:
@@ -828,8 +841,8 @@ int setup()
 
     /* Creates an output layout, which a wlroots utility for working with an
      * arrangement of screens in a physical layout. */
-    output_layout = wlr_output_layout_create();
-    wlr_xdg_output_manager_v1_create(server.display, output_layout);
+    server.output_layout = wlr_output_layout_create();
+    wlr_xdg_output_manager_v1_create(server.display, server.output_layout);
 
     /* Configure textures */
     wlr_list_init(&render_data.textures);
@@ -866,7 +879,7 @@ int setup()
      * image shown on screen.
      */
     server.cursor = wlr_cursor_create();
-    wlr_cursor_attach_output_layout(server.cursor, output_layout);
+    wlr_cursor_attach_output_layout(server.cursor, server.output_layout);
 
     /* Creates an xcursor manager, another wlroots utility which loads up
      * Xcursor themes to source cursor images from and makes sure that cursor
@@ -977,7 +990,6 @@ void createnotifyx11(struct wl_listener *listener, void *data)
     // set default value will be overriden on maprequest
     c->type = X11_MANAGED;
     c->bw = border_px;
-
     wl_list_init(&c->containers);
 
     /* Listen to the various events it can emit */

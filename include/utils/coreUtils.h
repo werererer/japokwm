@@ -2,13 +2,14 @@
 #define COREUTILS
 
 #include <wayland-server-core.h>
-#include <wayland-util.h>
 #include <wayland-server-protocol.h>
-#include <wlr/types/wlr_xdg_shell.h>
+#include <wayland-util.h>
 #include <wlr/backend.h>
+#include <wlr/render/wlr_texture.h>
+#include <wlr/types/wlr_list.h>
 #include <wlr/types/wlr_output_layout.h>
 #include <wlr/types/wlr_seat.h>
-#include <wlr/render/wlr_texture.h>
+#include <wlr/types/wlr_xdg_shell.h>
 #include <lua.h>
 
 /* macros */

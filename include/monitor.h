@@ -2,6 +2,7 @@
 #define MONITOR_H
 #include <wayland-server.h>
 #include <wlr/types/wlr_box.h>
+#include <wlr/types/wlr_output_damage.h>
 
 #include "container.h"
 #include "workspace.h"
@@ -12,7 +13,10 @@ struct monitor {
     struct wl_list link;
 
     struct wlr_output *wlr_output;
-    struct wl_listener frame;
+    struct wlr_output_damage *damage;
+
+    struct wl_listener transform;
+    struct wl_listener damage_frame;
     struct wl_listener destroy;
     /* monitor area, layout-relative */
     struct wlr_box geom;

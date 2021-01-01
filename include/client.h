@@ -42,7 +42,6 @@ void focus_client(struct client *old, struct client *c);
 float calc_ratio(float width, float height);
 
 extern struct wl_list clients; /* tiling order */
-extern struct wlr_output_layout *output_layout;
 
 struct wlr_surface *get_wlrsurface(struct client *c);
 #endif

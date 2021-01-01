@@ -29,6 +29,7 @@ struct server {
     struct wlr_cursor *cursor;
     struct wlr_xcursor_manager *cursorMgr;
 
+    struct wlr_output_layout *output_layout;
     struct wl_list keyboards;
     enum cursorMode cursorMode;
 };

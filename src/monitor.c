@@ -4,6 +4,7 @@
 #include <wlr/types/wlr_list.h>
 #include <stdlib.h>
 #include <wlr/util/log.h>
+#include <wlr/types/wlr_output_damage.h>
 
 #include "parseConfig.h"
 #include "render/render.h"
@@ -30,6 +31,8 @@ static const struct mon_rule monrules[] = {
 
 struct wl_list mons;
 struct monitor *selected_monitor = NULL;
+
+static void handle_output_damage_frame(struct wl_listener *listener, void *data);
 
 void create_monitor(struct wl_listener *listener, void *data)
 {
@@ -63,10 +66,11 @@ void create_monitor(struct wl_listener *listener, void *data)
         }
     }
     /* Set up event listeners */
-    m->frame.notify = render_frame;
-    wl_signal_add(&output->events.frame, &m->frame);
+    m->damage_frame.notify = handle_output_damage_frame;
+    wl_signal_add(&output->events.frame, &m->damage_frame);
     m->destroy.notify = destroy_monitor;
     wl_signal_add(&output->events.destroy, &m->destroy);
+    m->damage = wlr_output_damage_create(m->wlr_output);
 
     wl_list_insert(&mons, &m->link);
 
@@ -83,7 +87,35 @@ void create_monitor(struct wl_listener *listener, void *data)
      * display, which Wayland clients can see to find out information about the
      * output (such as DPI, scale factor, manufacturer, etc).
      */
-    wlr_output_layout_add_auto(output_layout, output);
+    wlr_output_layout_add_auto(server.output_layout, output);
+}
+
+static void handle_output_damage_frame(struct wl_listener *listener, void *data)
+{
+    struct monitor *m = wl_container_of(listener, m, damage_frame);
+
+    if (!m->wlr_output->enabled) {
+        return;
+    }
+
+    /* Check if we can scan-out the primary view. */
+    bool needs_frame;
+    pixman_region32_t damage;
+    pixman_region32_init(&damage);
+    if (!wlr_output_damage_attach_render(m->damage, &needs_frame, &damage)) {
+        return;
+    }
+
+    if (!needs_frame) {
+        wlr_output_rollback(m->wlr_output);
+        goto damage_finish;
+    }
+
+    printf("render\n");
+    render_frame(m, &damage);
+
+damage_finish:
+    pixman_region32_fini(&damage);
 }
 
 void focusmon(int i)
@@ -107,6 +139,7 @@ void destroy_monitor(struct wl_listener *listener, void *data)
 
 void set_selected_monitor(struct monitor *m)
 {
+    printf("set_selected_monitor\n");
     if (selected_monitor == m)
         return;
 
@@ -156,6 +189,6 @@ struct monitor *outputtomon(struct wlr_output *output)
 
 struct monitor *xytomon(double x, double y)
 {
-    struct wlr_output *o = wlr_output_layout_output_at(output_layout, x, y);
+    struct wlr_output *o = wlr_output_layout_output_at(server.output_layout, x, y);
     return o ? o->data : NULL;
 }

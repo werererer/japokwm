@@ -109,7 +109,7 @@ static void reset_layout(struct monitor *m)
 void arrange_monitor(struct monitor *m, enum layout_actions action)
 {
     /* Get effective monitor geometry to use for window area */
-    m->geom = *wlr_output_layout_get_box(output_layout, m->wlr_output);
+    m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     set_root_area(m->root, m->geom);
 
     if (!overlay)
@@ -182,7 +182,7 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
         }
     } else {
         con->client->ratio = calc_ratio(con->geom.width, con->geom.height);
-        apply_bounds(con, *wlr_output_layout_get_box(output_layout, NULL));
+        apply_bounds(con, *wlr_output_layout_get_box(server.output_layout, NULL));
 
         /* wlroots makes this a no-op if size hasn't changed */
         switch (con->client->type) {

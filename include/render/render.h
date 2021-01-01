@@ -2,6 +2,7 @@
 #define RENDER_H
 #include "utils/coreUtils.h"
 #include "client.h"
+#include "monitor.h"
 #include <wayland-util.h>
 #include <wlr/types/wlr_matrix.h>
 #include <wlr/render/wlr_texture.h>
@@ -26,8 +27,20 @@ struct render_data {
     struct wlr_list base_textures;
 };
 
-void render_frame(struct wl_listener *listener, void *data);
-void scalebox(struct wlr_box *box, float scale);
+struct surface_iterator_data {
+    wlr_surface_iterator_func_t user_iterator;
+    void *user_data;
+
+    struct monitor *m;
+
+    /* Output-local coordinates. */
+    double ox, oy;
+};
+
+void render_frame(struct monitor *m, pixman_region32_t *damage);
+void scale_box(struct wlr_box *box, float scale);
+void output_damage_surface(struct monitor *m, struct wlr_surface *surface,
+        double lx, double ly, bool whole);
 
 extern struct wlr_renderer *drw;
 extern struct render_data render_data;
