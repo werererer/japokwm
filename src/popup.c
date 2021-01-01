@@ -59,13 +59,11 @@ void popup_handle_new_popup(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, new_popup);
     struct wlr_xdg_popup *xdg_popup = data;
 
-    struct container *con;
-    wl_list_for_each(con, &c->containers, clink) {
-        if (con->m != selected_monitor)
-            continue;
-        struct xdg_popup *popup = create_popup(con->m, xdg_popup, con->geom, con);
-        wl_list_insert(&popups, &popup->plink);
-    }
+    struct container *con = c->con;
+    if (con->m != selected_monitor)
+        return;
+    struct xdg_popup *popup = create_popup(con->m, xdg_popup, con->geom, con);
+    wl_list_insert(&popups, &popup->plink);
 }
 
 static void popup_handle_new_subpopup(struct wl_listener *listener, void *data)

@@ -13,8 +13,6 @@ enum focus_actions {
 struct container {
     /* monitor containers */
     struct wl_list mlink;
-    /* client containers */
-    struct wl_list clink;
     /* container stack */
     struct wl_list slink;
     /* container focus_stack */

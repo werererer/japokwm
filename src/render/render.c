@@ -166,24 +166,15 @@ static void render_containers(struct monitor *m)
 {
     struct container *con, *sel = selected_container(m);
 
-    printf("mon: %p\n", m);
-    printf("size: %i\n", wl_list_length(&stack));
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each_reverse(con, &stack, slink) {
-        printf("c->mon: %p\n", con->m);
-        printf("c->geom->x: %d\n", con->geom.x);
         if (!visibleon(con, m) && !con->floating)
             continue;
-        printf("visible\n");
 
         double ox, oy;
         int w, h;
         struct wlr_surface *surface = get_wlrsurface(con->client);
-        if (!surface)
-            printf("surface is null\n");
-        if (!con->client)
-            printf("client is null\n");
         ox = con->geom.x - con->client->bw;
         oy = con->geom.y - con->client->bw;
         wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
@@ -354,8 +345,6 @@ static void render_popups(struct monitor *m) {
 
 void render_frame(struct monitor *m, pixman_region32_t *damage)
 {
-    bool render = true;
-
     /* This function is called every time an output is ready to display a frame,
      * generally at the output's refresh rate (e.g. 60Hz). */
     struct timespec now;
@@ -365,33 +354,31 @@ void render_frame(struct monitor *m, pixman_region32_t *damage)
     if (!wlr_output_attach_render(m->wlr_output, NULL))
         return;
 
-    if (render) {
-        /* Begin the renderer (calls glViewport and some other GL sanity checks) */
-        wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
-        wlr_renderer_clear(drw, m->root->color);
+    /* Begin the renderer (calls glViewport and some other GL sanity checks) */
+    wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
+    wlr_renderer_clear(drw, m->root->color);
 
-        render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND);
-        render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
-        render_containers(m);
-        render_independents(m);
-        render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP);
-        render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
+    render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND);
+    render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
+    render_containers(m);
+    render_independents(m);
+    render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP);
+    render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
 
-        wlr_list_for_each(&render_data.textures, (void*)render_texture);
-        render_popups(m);
+    wlr_list_for_each(&render_data.textures, (void*)render_texture);
+    render_popups(m);
 
-        /* Hardware cursors are rendered by the GPU on a separate plane, and can be
-         * moved around without re-rendering what's beneath them - which is more
-         * efficient. However, not all hardware supports hardware cursors. For this
-         * reason, wlroots provides a software fallback, which we ask it to render
-         * here. wlr_cursor handles configuring hardware vs software cursors for you,
-         * and this function is a no-op when hardware cursors are in use. */
-        wlr_output_render_software_cursors(m->wlr_output, &m->damage->current);
+    /* Hardware cursors are rendered by the GPU on a separate plane, and can be
+     * moved around without re-rendering what's beneath them - which is more
+     * efficient. However, not all hardware supports hardware cursors. For this
+     * reason, wlroots provides a software fallback, which we ask it to render
+     * here. wlr_cursor handles configuring hardware vs software cursors for you,
+     * and this function is a no-op when hardware cursors are in use. */
+    wlr_output_render_software_cursors(m->wlr_output, &m->damage->current);
 
-        /* Conclude rendering and swap the buffers, showing the final frame
-         * on-screen. */
-        wlr_renderer_end(drw);
-    }
+    /* Conclude rendering and swap the buffers, showing the final frame
+     * on-screen. */
+    wlr_renderer_end(drw);
 
     wlr_output_commit(m->wlr_output);
 }

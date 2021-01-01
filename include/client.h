@@ -16,7 +16,7 @@ struct client {
 
     float ratio;
     /* containers containing this client */
-    struct wl_list containers;
+    struct container *con;
     union {
         struct wlr_xdg_surface *xdg;
         struct wlr_layer_surface_v1 *layer;

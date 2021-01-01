@@ -136,6 +136,12 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
         con->position = position;
         arrange_container(con, container_count, false);
         position++;
+
+        pixman_region32_t damage;
+        pixman_region32_init(&damage);
+        wlr_surface_get_effective_damage(get_wlrsurface(con->client), &damage);
+        pixman_region32_translate(&damage, con->geom.x, con->geom.y);
+        wlr_output_set_damage(m->wlr_output, &damage);
     }
 
     update_overlay();

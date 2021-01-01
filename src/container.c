@@ -12,21 +12,19 @@ static void add_container_to_monitor(struct container *con, struct monitor *m);
 static void add_container_to_monitor_containers(struct container *con, int i);
 static void add_container_to_focus_stack(struct container *con);
 static void add_container_to_monitor_stack(struct container *con);
-static void add_container_to_client_containers(struct container *con);
 
 struct container *create_container(struct client *c, struct monitor *m)
 {
     struct container *con = calloc(1, sizeof(struct container));
     con->m = m;
     con->client = c;
+    c->con = con;
     add_container_to_monitor(con, con->m);
-    output_damage_surface(m, get_wlrsurface(c), 0, 0, true);
     return con;
 }
 
 void destroy_container(struct container *con)
 {
-    wl_list_remove(&con->clink);
     wl_list_remove(&con->flink);
     struct client *c = con->client;
 
@@ -183,12 +181,6 @@ static void add_container_to_monitor_containers(struct container *con, int i)
     }
 }
 
-static void add_container_to_client_containers(struct container *con)
-{
-    wl_list_insert(&con->client->containers, &con->clink);
-}
-
-
 static void add_container_to_focus_stack(struct container *con)
 {
     if (con->on_top) {
@@ -256,7 +248,6 @@ static void add_container_to_monitor(struct container *con, struct monitor *m)
         add_container_to_monitor_stack(con);
     }
 
-    add_container_to_client_containers(con);
     add_container_to_focus_stack(con);
 }
 

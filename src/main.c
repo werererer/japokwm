@@ -4,7 +4,6 @@
 
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
-#include <systemd/sd-bus.h>
 #include <assert.h>
 #include <getopt.h>
 #include <linux/input-event-codes.h>
@@ -14,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <systemd/sd-bus.h>
 #include <tgmath.h>
 #include <time.h>
 #include <unistd.h>
@@ -35,12 +35,14 @@
 #include <wlr/types/wlr_keyboard.h>
 #include <wlr/types/wlr_matrix.h>
 #include <wlr/types/wlr_output.h>
+#include <wlr/types/wlr_output_damage.h>
 #include <wlr/types/wlr_output_layout.h>
 #include <wlr/types/wlr_pointer.h>
 #include <wlr/types/wlr_primary_selection.h>
 #include <wlr/types/wlr_primary_selection_v1.h>
 #include <wlr/types/wlr_screencopy_v1.h>
 #include <wlr/types/wlr_server_decoration.h>
+#include <wlr/types/wlr_surface.h>
 #include <wlr/types/wlr_viewporter.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/types/wlr_xdg_decoration_v1.h>
@@ -48,7 +50,6 @@
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/util/log.h>
 #include <wlr/xwayland.h>
-#include <wlr/types/wlr_output_damage.h>
 #include <xkbcommon/xkbcommon.h>
 #include <xkbcommon/xkbcommon.h>
 
@@ -213,6 +214,8 @@ void cleanupkeyboard(struct wl_listener *listener, void *data)
 void commitnotify(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, commit);
+    if (!c->con)
+        return;
 
     switch (c->type) {
         case XDG_SHELL:
@@ -230,15 +233,12 @@ void commitnotify(struct wl_listener *listener, void *data)
             break;
     }
 
-    struct container *con;
-    wl_list_for_each(con, &c->containers, clink) {
-        pixman_region32_t damage;
-        pixman_region32_init(&damage);
-        wlr_surface_get_effective_damage(get_wlrsurface(c), &damage);
-        pixman_region32_translate(&damage, con->geom.x, con->geom.y);
-        wlr_output_set_damage(selected_monitor->wlr_output, &damage);
-        wlr_output_damage_add(selected_monitor->damage, &selected_monitor->damage->current);
-    }
+    pixman_region32_t damage;
+    pixman_region32_init(&damage);
+    wlr_surface_get_effective_damage(get_wlrsurface(c), &damage);
+    pixman_region32_translate(&damage, c->con->geom.x, c->con->geom.y);
+    wlr_output_set_damage(selected_monitor->wlr_output, &damage);
+    wlr_output_damage_add(selected_monitor->damage, &damage);
 }
 
 void createkeyboard(struct wlr_input_device *device)
@@ -288,7 +288,6 @@ void createnotify(struct wl_listener *listener, void *data)
     c->surface.xdg = xdg_surface;
     c->bw = border_px;
     c->type = XDG_SHELL;
-    wl_list_init(&c->containers);
 
     /* Tell the client not to try anything fancy */
     wlr_xdg_toplevel_set_tiled(c->surface.xdg, WLR_EDGE_TOP |
@@ -320,7 +319,6 @@ void createnotify_layer_shell(struct wl_listener *listener, void *data)
     c->surface.layer = layer_surface;
     c->bw = 0;
     c->type = LAYER_SHELL;
-    wl_list_init(&c->containers);
 
     /* Listen to the various events it can emit */
     c->commit.notify = commitnotify;
@@ -374,7 +372,6 @@ void cursorframe(struct wl_listener *listener, void *data)
 
 void destroynotify(struct wl_listener *listener, void *data)
 {
-    printf("destroynotify\n");
     /* Called when the surface is destroyed and should never be shown again. */
     struct client *c = wl_container_of(listener, c, destroy);
     wl_list_remove(&c->map.link);
@@ -948,13 +945,9 @@ void sigchld(int unused)
 
 void unmapnotify(struct wl_listener *listener, void *data)
 {
-    printf("unmapnotify\n");
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
-    struct container *con, *tmp;
-    wl_list_for_each_safe(con, tmp, &c->containers, clink) {
-        destroy_container(con);
-    }
+    destroy_container(c->con);
     switch (c->type) {
         case LAYER_SHELL:
             wl_list_remove(&c->link);
@@ -990,7 +983,6 @@ void createnotifyx11(struct wl_listener *listener, void *data)
     // set default value will be overriden on maprequest
     c->type = X11_MANAGED;
     c->bw = border_px;
-    wl_list_init(&c->containers);
 
     /* Listen to the various events it can emit */
     c->map.notify = maprequestx11;
