@@ -49,6 +49,7 @@
 #include <wlr/types/wlr_xdg_output_v1.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <wlr/util/log.h>
+#include <wlr/util/region.h>
 #include <wlr/xwayland.h>
 #include <xkbcommon/xkbcommon.h>
 #include <xkbcommon/xkbcommon.h>
@@ -109,7 +110,6 @@ int setup();
 void sigchld(int unused);
 void tagmon(int i);
 void unmapnotify(struct wl_listener *listener, void *data);
-void request_move(struct wl_listener *listener, void *data);
 
 /* global variables */
 
@@ -213,6 +213,7 @@ void cleanupkeyboard(struct wl_listener *listener, void *data)
 
 void commitnotify(struct wl_listener *listener, void *data)
 {
+    printf("commitnotify\n");
     struct client *c = wl_container_of(listener, c, commit);
     if (!c->con)
         return;
@@ -233,12 +234,22 @@ void commitnotify(struct wl_listener *listener, void *data)
             break;
     }
 
+    struct monitor *m = c->con->m;
+    struct wlr_surface *surface = get_wlrsurface(c);
+
     pixman_region32_t damage;
     pixman_region32_init(&damage);
-    wlr_surface_get_effective_damage(get_wlrsurface(c), &damage);
+
+    wlr_surface_get_effective_damage(surface, &damage);
+    wlr_region_scale(&damage, &damage, m->wlr_output->scale);
+    if (ceil(m->wlr_output->scale) > surface->current.scale) {
+        /* When scaling up a surface it'll become
+           blurry, so we need to expand the damage
+           region. */
+        wlr_region_expand(&damage, &damage, ceil(m->wlr_output->scale) - surface->current.scale);
+    }
     pixman_region32_translate(&damage, c->con->geom.x, c->con->geom.y);
-    wlr_output_set_damage(selected_monitor->wlr_output, &damage);
-    wlr_output_damage_add(selected_monitor->damage, &damage);
+    wlr_output_damage_add(m->damage, &damage);
 }
 
 void createkeyboard(struct wlr_input_device *device)
@@ -570,18 +581,12 @@ static bool is_popup_menu(struct client *c)
     return false;
 }
 
-void request_move(struct wl_listener *listener, void *data)
-{
-    printf("request move\n");
-}
-
 void maprequest(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
 
     struct monitor *m = selected_monitor;
-    printf("selected_monitor: %p\n", selected_monitor);
     c->ws = m->ws;
 
     switch (c->type) {
@@ -604,6 +609,8 @@ void maprequest(struct wl_listener *listener, void *data)
     }
     arrange(false);
     focus_top_container(selected_monitor, FOCUS_NOOP);
+
+    wlr_output_damage_add_whole(m->damage);
 }
 
 void maprequestx11(struct wl_listener *listener, void *data)
@@ -962,6 +969,9 @@ void unmapnotify(struct wl_listener *listener, void *data)
             wl_list_remove(&c->ilink);
             break;
     }
+
+    struct monitor *m = c->con->m;
+    wlr_output_damage_add_whole(m->damage);
 }
 
 void activatex11(struct wl_listener *listener, void *data)

@@ -19,10 +19,10 @@ struct wlr_renderer *drw;
 struct render_data render_data;
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data);
-static void render_containers(struct monitor *m);
+static void render_containers(struct monitor *m, pixman_region32_t *output_damage);
 static void render_independents(struct monitor *m);
 static void render_texture(struct pos_texture *texture);
-/* static void render_t(struct wlr_output *wlr_output, pixman_region32_t *output_damage, struct wlr_texture *texture, */
+/* static void render_t(struct monitor *m, pixman_region32_t *output_damage, struct wlr_texture *texture, */
 /*            const struct wlr_box *box, const float matrix[static 9]); */
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data)
@@ -162,7 +162,26 @@ void output_damage_surface(struct monitor *m, struct wlr_surface *surface, doubl
     /* output_surface_for_each_surface(m, surface, ox, oy, damage_surface_iterator, &whole); */
 }
 
-static void render_containers(struct monitor *m)
+static void scissor_output(struct wlr_output *output, pixman_box32_t *rect)
+{
+    struct wlr_renderer *renderer = wlr_backend_get_renderer(output->backend);
+
+    struct wlr_box box = {
+        .x = rect->x1,
+        .y = rect->y1,
+        .width = rect->x2 - rect->x1,
+        .height = rect->y2 - rect->y1,
+    };
+
+    int output_width, output_height;
+    wlr_output_transformed_resolution(output, &output_width, &output_height);
+    enum wl_output_transform transform = wlr_output_transform_invert(output->transform);
+    wlr_box_transform(&box, &box, transform, output_width, output_height);
+
+    wlr_renderer_scissor(renderer, &box);
+}
+
+static void render_containers(struct monitor *m, pixman_region32_t *output_damage)
 {
     struct container *con, *sel = selected_container(m);
 
@@ -200,18 +219,42 @@ static void render_containers(struct monitor *m)
         /* This calls our render function for each surface among the
          * xdg_surface's toplevel and popups. */
 
-        /* wlr_surface_get_effective_damage(get_wlrsurface(con->client), &damage_region); */
-        /* render_t(m->wlr_output, &m->damage->current, wlr_surface_get_texture(get_wlrsurface(con->client)), &m->geom, m->wlr_output->transform_matrix); */
+        /* struct timespec now; */
+        /* clock_gettime(CLOCK_MONOTONIC, &now); */
+        /* struct render_data rdata; */
+        /* rdata.output = m->wlr_output; */
+        /* rdata.when = &now; */
+        /* rdata.x = con->geom.x; */
+        /* rdata.y = con->geom.y; */
+
+        /* render(surface, 0, 0, &rdata); */
+
+        pixman_region32_t damage;
+        pixman_region32_init(&damage);
+        pixman_region32_union_rect(&damage, &damage, con->geom.x, con->geom.y, con->geom.width, con->geom.height);
+        pixman_region32_intersect(&damage, &damage, output_damage);
+        if (!pixman_region32_not_empty(&damage)) {
+            pixman_region32_fini(&damage);
+            return;
+        }
+        struct wlr_texture *texture = wlr_surface_get_texture(get_wlrsurface(con->client));
+
+        float matrix[9];
+        enum wl_output_transform transform = wlr_output_transform_invert(surface->current.transform);
+        wlr_matrix_project_box(matrix, &con->geom, transform, 0.0f, m->wlr_output->transform_matrix);
+
+        struct wlr_renderer *renderer = wlr_backend_get_renderer(m->wlr_output->backend);
+
+        int nrects;
+        pixman_box32_t *rects = pixman_region32_rectangles(&damage, &nrects);
+        for (int i = 0; i < nrects; i++) {
+            scissor_output(m->wlr_output, &rects[i]);
+            wlr_render_texture_with_matrix(renderer, texture, matrix, 1.0f);
+        }
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
-        struct render_data rdata;
-        rdata.output = m->wlr_output;
-        rdata.when = &now;
-        rdata.x = con->geom.x;
-        rdata.y = con->geom.y;
-
-        render(surface, 0, 0, &rdata);
+        wlr_surface_send_frame_done(surface, &now);
     }
 }
 
@@ -254,51 +297,27 @@ static void render_texture(struct pos_texture *texture)
     }
 }
 
-/* static void scissor_output(struct wlr_output *wlr_output, */
-/*         pixman_box32_t *rect) { */
-/*     struct wlr_renderer *renderer = wlr_backend_get_renderer(wlr_output->backend); */
-/*     assert(renderer); */
-
-/*     struct wlr_box box = { */
-/*         .x = rect->x1, */
-/*         .y = rect->y1, */
-/*         .width = rect->x2 - rect->x1, */
-/*         .height = rect->y2 - rect->y1, */
-/*     }; */
-
-/*     int ow, oh; */
-/*     wlr_output_transformed_resolution(wlr_output, &ow, &oh); */
-
-/*     enum wl_output_transform transform = */
-/*         wlr_output_transform_invert(wlr_output->transform); */
-/*     wlr_box_transform(&box, &box, transform, ow, oh); */
-
-/*     wlr_renderer_scissor(renderer, &box); */
-/* } */
-
-/* static void */
-/* render_t(struct wlr_output *wlr_output, pixman_region32_t *output_damage, struct wlr_texture *texture, */
-/*            const struct wlr_box *box, const float matrix[static 9]) */
+/* static void render_t(struct monitor *m, pixman_region32_t *output_damage, */
+/*         struct wlr_texture *texture, const struct wlr_box *box, */
+/*         const float matrix[static 9]) */
 /* { */
-/*     struct wlr_renderer *renderer = wlr_backend_get_renderer(wlr_output->backend); */
+/*     struct wlr_renderer *renderer = wlr_backend_get_renderer(m->wlr_output->backend); */
 
-/*     pixman_region32_t damage; */
-/*     pixman_region32_init(&damage); */
-/*     pixman_region32_union_rect(&damage, &damage, box->x, box->y, box->width, box->height); */
-/*     pixman_region32_intersect(&damage, &damage, output_damage); */
+/*     pixman_region32_t damage = m->damage->current; */
 /*     if (!pixman_region32_not_empty(&damage)) { */
-/*         goto damage_finish; */
+/*         pixman_region32_fini(&damage); */
+/*         return; */
 /*     } */
 
 /*     int nrects; */
 /*     pixman_box32_t *rects = pixman_region32_rectangles(&damage, &nrects); */
+
+/*     printf("number: %i\n", nrects); */
 /*     for (int i = 0; i < nrects; i++) { */
-/*         scissor_output(wlr_output, &rects[i]); */
+/*         scissor_output(m->wlr_output, &rects[i]); */
+/*         printf("render texture\n"); */
 /*         wlr_render_texture_with_matrix(renderer, texture, matrix, 1.0f); */
 /*     } */
-
-/* damage_finish: */
-/*     pixman_region32_fini(&damage); */
 /* } */
 
 static void render_independents(struct monitor *m)
@@ -329,7 +348,8 @@ static void render_independents(struct monitor *m)
     }
 }
 
-static void render_popups(struct monitor *m) {
+static void render_popups(struct monitor *m)
+{
     struct xdg_popup *popup;
     wl_list_for_each_reverse(popup, &popups, plink) {
         struct timespec now;
@@ -341,6 +361,18 @@ static void render_popups(struct monitor *m) {
         rdata.y = popup->geom.y;
         render(popup->xdg->base->surface, 0, 0, &rdata);
     }
+}
+
+static void clear_frame(struct monitor *m, float color[4], pixman_region32_t *damage)
+{
+    struct wlr_renderer *renderer = wlr_backend_get_renderer(server.backend);
+
+/*     int nrects; */
+/*     /1* pixman_box32_t *rects = pixman_region32_rectangles(damage, &nrects); *1/ */
+/*     for (int i = 0; i < nrects; i++) { */
+/*         /1* scissor_output(m->wlr_output, &rects[i]); *1/ */
+/*     } */
+    wlr_renderer_clear(renderer, color);
 }
 
 void render_frame(struct monitor *m, pixman_region32_t *damage)
@@ -356,11 +388,11 @@ void render_frame(struct monitor *m, pixman_region32_t *damage)
 
     /* Begin the renderer (calls glViewport and some other GL sanity checks) */
     wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
-    wlr_renderer_clear(drw, m->root->color);
 
+    clear_frame(m, m->root->color, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
-    render_containers(m);
+    render_containers(m, damage);
     render_independents(m);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);

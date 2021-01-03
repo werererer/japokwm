@@ -66,11 +66,13 @@ void create_monitor(struct wl_listener *listener, void *data)
         }
     }
     /* Set up event listeners */
-    m->damage_frame.notify = handle_output_damage_frame;
-    wl_signal_add(&output->events.frame, &m->damage_frame);
     m->destroy.notify = destroy_monitor;
     wl_signal_add(&output->events.destroy, &m->destroy);
+
+    /* damage events */
     m->damage = wlr_output_damage_create(m->wlr_output);
+    m->damage_frame.notify = handle_output_damage_frame;
+    wl_signal_add(&m->damage->events.frame, &m->damage_frame);
 
     wl_list_insert(&mons, &m->link);
 
@@ -92,6 +94,7 @@ void create_monitor(struct wl_listener *listener, void *data)
 
 static void handle_output_damage_frame(struct wl_listener *listener, void *data)
 {
+    /* printf("handle_output_damage_frame\n"); */
     struct monitor *m = wl_container_of(listener, m, damage_frame);
 
     if (!m->wlr_output->enabled) {
@@ -112,7 +115,6 @@ static void handle_output_damage_frame(struct wl_listener *listener, void *data)
         return;
     }
 
-    printf("render\n");
     render_frame(m, &damage);
 }
 
@@ -137,7 +139,6 @@ void destroy_monitor(struct wl_listener *listener, void *data)
 
 void set_selected_monitor(struct monitor *m)
 {
-    printf("set_selected_monitor\n");
     if (selected_monitor == m)
         return;
 

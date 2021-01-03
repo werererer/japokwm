@@ -400,7 +400,6 @@ int toggle_tag(lua_State *L)
         return 0;
     struct workspace *ws = get_workspace(ui);
     if (is_workspace_occupied(ws)) {
-        printf("set_selected_monitor\n");
         set_selected_monitor(ws->m);
         return 0;
     }
