@@ -82,74 +82,88 @@ static void render(struct wlr_surface *surface, int sx, int sy, void *data)
     wlr_surface_send_frame_done(surface, rdata->when);
 }
 
-/* static void */
-/* damage_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct wlr_box *box, void *user_data) */
-/* { */
-/*     struct wlr_output *wlr_output = m->wlr_output; */
-/*     bool whole = *(bool *) user_data; */
+static void
+damage_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct wlr_box *box, void *user_data)
+{
+    struct wlr_output *wlr_output = m->wlr_output;
+    bool whole = *(bool *) user_data;
 
-/*     scale_box(box, m->wlr_output->scale); */
+    scale_box(box, m->wlr_output->scale);
 
-/*     if (whole) { */
-/*         wlr_output_damage_add_box(m->damage, box); */
-/*     } else if (pixman_region32_not_empty(&surface->buffer_damage)) { */
-/*         pixman_region32_t damage; */
-/*         pixman_region32_init(&damage); */
-/*         wlr_surface_get_effective_damage(surface, &damage); */
+    if (whole) {
+        wlr_output_damage_add_box(m->damage, box);
+    } else if (pixman_region32_not_empty(&surface->buffer_damage)) {
+        pixman_region32_t damage;
+        pixman_region32_init(&damage);
+        wlr_surface_get_effective_damage(surface, &damage);
 
-/*         wlr_region_scale(&damage, &damage, wlr_output->scale); */
-/*         if (ceil(wlr_output->scale) > surface->current.scale) { */
-/*             /1* When scaling up a surface it'll become */
-/*                blurry, so we need to expand the damage */
-/*                region. *1/ */
-/*             wlr_region_expand(&damage, &damage, ceil(wlr_output->scale) - surface->current.scale); */
-/*         } */
-/*         pixman_region32_translate(&damage, box->x, box->y); */
-/*         wlr_output_damage_add(m->damage, &damage); */
-/*         pixman_region32_fini(&damage); */
-/*     } */
-/* } */
+        wlr_region_scale(&damage, &damage, wlr_output->scale);
+        if (ceil(wlr_output->scale) > surface->current.scale) {
+            /* When scaling up a surface it'll become
+               blurry, so we need to expand the damage
+               region. */
+            wlr_region_expand(&damage, &damage, ceil(wlr_output->scale) - surface->current.scale);
+        }
+        pixman_region32_translate(&damage, box->x, box->y);
+        wlr_output_damage_add(m->damage, &damage);
+        pixman_region32_fini(&damage);
+    }
+}
 
-/* static void */
-/* output_for_each_surface_iterator(struct wlr_surface *surface, int sx, int sy, void *user_data) */
-/* { */
-/*     /1* struct surface_iterator_data *data = user_data; *1/ */
-/*     /1* struct monitor *m = data->m; *1/ */
+static bool intersects_with_output(struct monitor *m, struct wlr_output_layout *output_layout, struct wlr_box *surface_box)
+{
+    /* Since the surface_box's x- and y-coordinates are already output local,
+     * the x- and y-coordinates of this box need to be 0 for this function to
+     * work correctly. */
+    struct wlr_box output_box = {0};
+    wlr_output_effective_resolution(m->wlr_output, &output_box.width, &output_box.height);
 
-/*     /1* if (!wlr_surface_has_buffer(surface)) { *1/ */
-/*     /1*     return; *1/ */
-/*     /1* } *1/ */
+    struct wlr_box intersection;
+    return wlr_box_intersection(&intersection, &output_box, surface_box);
+}
 
-/*     /1* struct wlr_box surface_box = { *1/ */
-/*     /1*     .x = data->ox + sx + surface->sx, *1/ */
-/*     /1*     .y = data->oy + sy + surface->sy, *1/ */
-/*     /1*     .width = surface->current.width, *1/ */
-/*     /1*     .height = surface->current.height, *1/ */
-/*     /1* }; *1/ */
 
-/*     /1* if (!intersects_with_output(output, output->server->output_layout, &surface_box)) { *1/ */
-/*     /1*     return; *1/ */
-/*     /1* } *1/ */
+static void
+output_for_each_surface_iterator(struct wlr_surface *surface, int sx, int sy, void *user_data)
+{
+    struct surface_iterator_data *data = user_data;
+    struct monitor *m = data->m;
+    printf("output_for_each_surface_iterator\n");
 
-/*     /1* data->user_iterator(data->m, surface, &surface_box, data->user_data); *1/ */
-/* } */
+    if (!wlr_surface_has_buffer(surface)) {
+        return;
+    }
+
+    struct wlr_box surface_box = {
+        .x = data->ox + sx + surface->sx,
+        .y = data->oy + sy + surface->sy,
+        .width = surface->current.width,
+        .height = surface->current.height,
+    };
+
+    if (!intersects_with_output(m, server.output_layout, &surface_box)) {
+        return;
+    }
+
+    data->user_iterator(data->m, surface, &surface_box, data->user_data);
+}
 
 
 void output_surface_for_each_surface(struct monitor *m, struct wlr_surface *surface,
-        double ox, double oy, wlr_surface_iterator_func_t iterator,
+        double ox, double oy, surface_iterator_func_t iterator,
         void *user_data)
 {
-    /* struct surface_iterator_data data = { */
-    /*     .user_iterator = iterator, */
-    /*     .user_data = user_data, */
-    /*     .m = m, */
-    /*     .ox = ox, */
-    /*     .oy = oy, */
-    /* }; */
+    struct surface_iterator_data data = {
+        .user_iterator = iterator,
+        .user_data = user_data,
+        .m = m,
+        .ox = ox,
+        .oy = oy,
+    };
 
-    /* wlr_surface_for_each_surface(surface, output_for_each_surface_iterator, &data); */
+    printf("for each surface\n");
+    wlr_surface_for_each_surface(surface, output_for_each_surface_iterator, &data);
 }
-
 
 void output_damage_surface(struct monitor *m, struct wlr_surface *surface, double lx, double ly, bool whole)
 {
@@ -159,7 +173,7 @@ void output_damage_surface(struct monitor *m, struct wlr_surface *surface, doubl
 
     double ox = lx, oy = ly;
     wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
-    /* output_surface_for_each_surface(m, surface, ox, oy, damage_surface_iterator, &whole); */
+    output_surface_for_each_surface(m, surface, ox, oy, damage_surface_iterator, &whole);
 }
 
 static void scissor_output(struct wlr_output *output, pixman_box32_t *rect)
@@ -367,12 +381,16 @@ static void clear_frame(struct monitor *m, float color[4], pixman_region32_t *da
 {
     struct wlr_renderer *renderer = wlr_backend_get_renderer(server.backend);
 
-/*     int nrects; */
-/*     /1* pixman_box32_t *rects = pixman_region32_rectangles(damage, &nrects); *1/ */
-/*     for (int i = 0; i < nrects; i++) { */
-/*         /1* scissor_output(m->wlr_output, &rects[i]); *1/ */
-/*     } */
-    wlr_renderer_clear(renderer, color);
+    // debug stuff
+    /* float color2[4] = {0.4f, 0.1f, 0.0f, 1.0f}; */
+    /* wlr_renderer_clear(renderer, color2); */
+
+    int nrects;
+    pixman_box32_t *rects = pixman_region32_rectangles(damage, &nrects);
+    for (int i = 0; i < nrects; i++) {
+        scissor_output(m->wlr_output, &rects[i]);
+        wlr_renderer_clear(renderer, color);
+    }
 }
 
 void render_frame(struct monitor *m, pixman_region32_t *damage)

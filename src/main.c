@@ -213,7 +213,6 @@ void cleanupkeyboard(struct wl_listener *listener, void *data)
 
 void commitnotify(struct wl_listener *listener, void *data)
 {
-    printf("commitnotify\n");
     struct client *c = wl_container_of(listener, c, commit);
     if (!c->con)
         return;
@@ -234,22 +233,10 @@ void commitnotify(struct wl_listener *listener, void *data)
             break;
     }
 
-    struct monitor *m = c->con->m;
-    struct wlr_surface *surface = get_wlrsurface(c);
-
-    pixman_region32_t damage;
-    pixman_region32_init(&damage);
-
-    wlr_surface_get_effective_damage(surface, &damage);
-    wlr_region_scale(&damage, &damage, m->wlr_output->scale);
-    if (ceil(m->wlr_output->scale) > surface->current.scale) {
-        /* When scaling up a surface it'll become
-           blurry, so we need to expand the damage
-           region. */
-        wlr_region_expand(&damage, &damage, ceil(m->wlr_output->scale) - surface->current.scale);
+    struct container *con;
+    wl_list_for_each(con, &stack, slink) {
+        container_damage_part(con);
     }
-    pixman_region32_translate(&damage, c->con->geom.x, c->con->geom.y);
-    wlr_output_damage_add(m->damage, &damage);
 }
 
 void createkeyboard(struct wlr_input_device *device)
@@ -610,7 +597,7 @@ void maprequest(struct wl_listener *listener, void *data)
     arrange(false);
     focus_top_container(selected_monitor, FOCUS_NOOP);
 
-    wlr_output_damage_add_whole(m->damage);
+    container_damage_whole(c->con);
 }
 
 void maprequestx11(struct wl_listener *listener, void *data)
@@ -954,7 +941,10 @@ void unmapnotify(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
+
+    container_damage_whole(c->con);
     destroy_container(c->con);
+
     switch (c->type) {
         case LAYER_SHELL:
             wl_list_remove(&c->link);
@@ -970,8 +960,7 @@ void unmapnotify(struct wl_listener *listener, void *data)
             break;
     }
 
-    struct monitor *m = c->con->m;
-    wlr_output_damage_add_whole(m->damage);
+    container_damage_part(c->con);
 }
 
 void activatex11(struct wl_listener *listener, void *data)

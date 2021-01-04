@@ -6,14 +6,18 @@
 #include "client.h"
 
 struct xdg_popup {
+    struct wl_list plink;
+
     struct wlr_xdg_popup *xdg;
     struct container *toplevel;
     struct wlr_box geom;
-    struct wl_listener new_popup;
-    struct wl_listener map;
-    struct wl_listener destroy;
-    struct wl_list plink;
     struct monitor *m;
+
+    struct wl_listener map;
+    struct wl_listener unmap;
+    struct wl_listener destroy;
+    struct wl_listener commit;
+    struct wl_listener new_popup;
 };
 
 void popup_handle_destroy(struct wl_listener *listener, void *data);

@@ -27,8 +27,11 @@ struct render_data {
     struct wlr_list base_textures;
 };
 
+typedef void (*surface_iterator_func_t)(struct monitor *m, struct
+        wlr_surface *surface, struct wlr_box *box, void *user_data);
+
 struct surface_iterator_data {
-    wlr_surface_iterator_func_t user_iterator;
+    surface_iterator_func_t user_iterator;
     void *user_data;
 
     struct monitor *m;

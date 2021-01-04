@@ -37,6 +37,23 @@ void destroy_container(struct container *con)
     free(con);
 }
 
+void container_damage_whole(struct container *con)
+{
+    struct monitor *m;
+    wl_list_for_each (m, &mons, link) {
+        output_damage_surface(m, get_wlrsurface(con->client), con->geom.x, con->geom.y, true);
+    }
+}
+
+void container_damage_part(struct container *con)
+{
+    struct monitor *m;
+    wl_list_for_each (m, &mons, link) {
+        output_damage_surface(m, get_wlrsurface(con->client), con->geom.x, con->geom.y, false);
+    }
+}
+
+
 struct container *selected_container(struct monitor *m)
 {
     if (wl_list_empty(&focus_stack))

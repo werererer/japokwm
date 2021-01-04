@@ -45,7 +45,7 @@ monrules = {
 xkb_rules = {}
 repeat_rate = 25
 repeat_delay = 600
-termcmd = "/usr/bin/termite"
+termcmd = "/usr/bin/terminator"
 
 mod = mod1
 -- maps (between 1 and 4)

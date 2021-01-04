@@ -49,6 +49,8 @@ struct wlr_box get_absolute_box(struct wlr_fbox ref, struct wlr_box box);
 struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box ref);
 void apply_bounds(struct container *con, struct wlr_box bbox);
 void applyrules(struct container *con);
+void container_damage_part(struct container *con);
+void container_damage_whole(struct container *con);
 void focus_container(struct container *con, struct monitor *m, enum focus_actions a);
 /* Find the topmost visible client (if any) at point (x, y), including
  * borders. This relies on stack being ordered from top to bottom. */
