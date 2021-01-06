@@ -158,7 +158,6 @@ function Resize_all(i, j, n, d)
         return
     end
 
-    print("start resize")
     -- apply
     for x = 1,#directions do
         local dir = directions[x]
@@ -187,12 +186,10 @@ function Resize_all(i, j, n, d)
             Layout_data[li][lj] = Move_resize(Layout_data[li][lj], 0, n, dir)
         end
     end
-    print("end resize")
 end
 
 function Resize_main_all(n, d)
     local i = math.max(math.min(info.get_this_container_count(), #Layout_data), 1) 
-    print("i: ", i)
     for g=1,#Box_data do
         for h=1,#Box_data[g] do
             if i == Box_data[g][h] then

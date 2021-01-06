@@ -295,12 +295,6 @@ static void render_container(struct monitor *m, pixman_region32_t *output_damage
                 {ox, oy + con->client->bw + h, w + 2 * con->client->bw, con->client->bw}, /* bottom */
         };
 
-        printf("x: %d\n", borders[1].x);
-        printf("y: %d\n", borders[1].y);
-        printf("width: %d\n", borders[1].width);
-        printf("height: %d\n", borders[1].height);
-        printf("start\n");
-
         /* Draw window borders */
         const float *color = (con == sel) ? focus_color : border_color;
         for (int i = 0; i < 4; i++) {

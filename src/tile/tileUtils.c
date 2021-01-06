@@ -60,22 +60,23 @@ static struct wlr_fbox lua_unbox_layout(struct lua_State *L, int i) {
 }
 
 /* update layout and was set in the arrange function */
-static struct wlr_box apply_nmaster_transformation(struct container *con, int count)
+static void apply_nmaster_transformation(struct wlr_box *box, struct monitor *m, int position, int count)
 {
-    struct layout lt = con->m->ws->layout;
-    if (con->position > lt.nmaster)
-        return con->geom;
+    struct layout lt = m->ws->layout;
+
+    if (position > lt.nmaster)
+        return;
 
     lua_getglobal(L, "Update_nmaster");
     int g = count > lt.nmaster ? lt.nmaster : count;
     lua_pushinteger(L, g);
     lua_call_safe(L, 1, 1, 0);
-    int k = MIN(con->position, g);
+    int k = MIN(position, g);
     struct wlr_fbox geom = lua_unbox_layout(L, k);
     lua_pop(L, 1);
 
-    struct wlr_box obox = get_absolute_box(geom, con->geom);
-    return obox;
+    struct wlr_box obox = get_absolute_box(geom, *box);
+    memcpy(box, &obox, sizeof(struct wlr_box));
 }
 
 int get_slave_container_count(struct monitor *m)
@@ -153,24 +154,30 @@ void arrange_container(struct container *con, int container_count, bool preserve
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.id);
     struct wlr_fbox rel_geom = lua_unbox_layout(L, n);
-    con->geom = get_absolute_box(rel_geom, m->root->geom);
-    con->geom = apply_nmaster_transformation(con, container_count);
+
+    struct wlr_box box = get_absolute_box(rel_geom, m->root->geom);
+    // TODO fix this function, hard to read
+    apply_nmaster_transformation(&box, con->m, con->position, container_count);
     m->ws->layout.id = luaL_ref(L, LUA_REGISTRYINDEX);
 
     if (!overlay)
-        container_surround_gaps(&con->geom, inner_gap);
+        container_surround_gaps(&box, inner_gap);
 
-    resize(con, con->geom, preserve);
+    resize(con, box, preserve);
 }
 
 void resize(struct container *con, struct wlr_box geom, bool preserve)
 {
-    printf("start resize func\n");
     /*
      * Note that I took some shortcuts here. In a more fleshed-out
      * compositor, you'd wait for the client to prepare a buffer at
      * the new size, then commit any movement that was prepared.
      */
+    printf("geom0: x: %i\n", con->geom.x);
+    printf("geom0: y: %i\n", con->geom.y);
+    printf("geom0: width: %i\n", con->geom.width);
+    printf("geom0: height: %i\n", con->geom.height);
+    container_damage_whole(con);
     con->geom = geom;
     if (preserve) {
         // if width <= height
@@ -202,10 +209,11 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
                         con->geom.height);
         }
     }
-
-    wlr_output_damage_add_whole(con->m->damage);
-    printf("resize: %i\n", con->geom.width);
-    printf("end resize func\n");
+    printf("geom1: x: %i\n", con->geom.x);
+    printf("geom1: y: %i\n", con->geom.y);
+    printf("geom1: width: %i\n", con->geom.width);
+    printf("geom1: height: %i\n", con->geom.height);
+    container_damage_whole(con);
 }
 
 void update_hidden_containers(struct monitor *m)
