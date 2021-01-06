@@ -19,11 +19,139 @@ struct wlr_renderer *drw;
 struct render_data render_data;
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data);
-static void render_containers(struct monitor *m, pixman_region32_t *output_damage);
+static void render_container(struct monitor *m, pixman_region32_t *output_damage);
 static void render_independents(struct monitor *m);
 static void render_texture(struct pos_texture *texture);
-/* static void render_t(struct monitor *m, pixman_region32_t *output_damage, struct wlr_texture *texture, */
-/*            const struct wlr_box *box, const float matrix[static 9]); */
+static void scissor_output(struct wlr_output *output, pixman_box32_t *rect);
+static void render_t(struct wlr_output *wlr_output, pixman_region32_t *output_damage,
+        struct wlr_texture *texture, const struct wlr_box *box,
+        const float matrix[static 9]);
+
+// _box.x and .y are expected to be layout-local
+// _box.width and .height are expected to be output-buffer-local
+void render_rect(struct monitor *m, pixman_region32_t *output_damage,
+        const struct wlr_box *_box, const float color[static 4]) {
+    struct wlr_output *wlr_output = m->wlr_output;
+    struct wlr_renderer *renderer =
+        wlr_backend_get_renderer(wlr_output->backend);
+
+    struct wlr_box box;
+    memcpy(&box, _box, sizeof(struct wlr_box));
+    box.x -= m->geom.x * wlr_output->scale;
+    box.y -= m->geom.y * wlr_output->scale;
+
+    pixman_region32_t damage;
+    pixman_region32_init(&damage);
+    pixman_region32_union_rect(&damage, &damage, box.x, box.y,
+        box.width, box.height);
+    pixman_region32_intersect(&damage, &damage, output_damage);
+    bool damaged = pixman_region32_not_empty(&damage);
+    if (!damaged) {
+        pixman_region32_fini(&damage);
+        return;
+    }
+
+    int nrects;
+    pixman_box32_t *rects = pixman_region32_rectangles(&damage, &nrects);
+    for (int i = 0; i < nrects; ++i) {
+        scissor_output(wlr_output, &rects[i]);
+        wlr_render_rect(renderer, &box, color,
+            wlr_output->transform_matrix);
+    }
+}
+
+static bool intersects_with_output(struct monitor *m,
+        struct wlr_output_layout *output_layout, struct wlr_box *surface_box)
+{
+        /* Since the surface_box's x- and y-coordinates are already output local,
+         * the x- and y-coordinates of this box need to be 0 for this function to
+         * work correctly. */
+        struct wlr_box output_box = {0};
+        wlr_output_effective_resolution(m->wlr_output, &output_box.width, &output_box.height);
+
+        struct wlr_box intersection;
+        return wlr_box_intersection(&intersection, &output_box, surface_box);
+}
+
+static void output_for_each_surface_iterator(struct wlr_surface *surface, int sx, int sy, void *user_data)
+{
+        struct surface_iterator_data *data = user_data;
+        struct monitor *m = data->m;
+
+        if (!wlr_surface_has_buffer(surface)) {
+                return;
+        }
+
+        struct wlr_box surface_box = {
+                .x = data->ox + sx + surface->sx,
+                .y = data->oy + sy + surface->sy,
+                .width = surface->current.width,
+                .height = surface->current.height,
+        };
+
+        if (!intersects_with_output(m, server.output_layout, &surface_box)) {
+                return;
+        }
+
+        data->user_iterator(data->m, surface, &surface_box, data->user_data);
+}
+
+
+void output_surface_for_each_surface(struct monitor *m, struct wlr_surface
+        *surface, double ox, double oy, surface_iterator_func_t iterator,
+        void *user_data)
+{
+    struct surface_iterator_data data = {
+        .user_iterator = iterator,
+        .user_data = user_data,
+        .m = m,
+        .ox = ox,
+        .oy = oy,
+    };
+
+    wlr_surface_for_each_surface(surface, output_for_each_surface_iterator, &data);
+}
+
+static void render_t(struct wlr_output *wlr_output,
+        pixman_region32_t *output_damage, struct wlr_texture *texture,
+        const struct wlr_box *box, const float matrix[static 9])
+{
+    struct wlr_renderer *renderer = wlr_backend_get_renderer(wlr_output->backend);
+
+    pixman_region32_t damage;
+    pixman_region32_init(&damage);
+    pixman_region32_union_rect(&damage, &damage, box->x, box->y, box->width, box->height);
+    pixman_region32_intersect(&damage, &damage, output_damage);
+    if (!pixman_region32_not_empty(&damage)) {
+        pixman_region32_fini(&damage);
+        return;
+    }
+
+    int nrects;
+    pixman_box32_t *rects = pixman_region32_rectangles(&damage, &nrects);
+    for (int i = 0; i < nrects; i++) {
+        scissor_output(wlr_output, &rects[i]);
+        wlr_render_texture_with_matrix(renderer, texture, matrix, 1.0f);
+    }
+}
+
+static void render_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct wlr_box *box, pixman_region32_t *output_damage)
+{
+    struct wlr_texture *texture = wlr_surface_get_texture(surface);
+    struct wlr_output *wlr_output = m->wlr_output;
+
+    if (!texture) {
+        return;
+    }
+
+    scale_box(box, m->wlr_output->scale);
+
+    float matrix[9];
+    enum wl_output_transform transform = wlr_output_transform_invert(surface->current.transform);
+    wlr_matrix_project_box(matrix, box, transform, 0.0f, wlr_output->transform_matrix);
+
+    render_t(wlr_output, output_damage, texture, box, matrix);
+}
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data)
 {
@@ -88,7 +216,7 @@ damage_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct w
     struct wlr_output *wlr_output = m->wlr_output;
     bool whole = *(bool *) user_data;
 
-    scale_box(box, m->wlr_output->scale);
+    scale_box(box, wlr_output->scale);
 
     if (whole) {
         wlr_output_damage_add_box(m->damage, box);
@@ -108,61 +236,6 @@ damage_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct w
         wlr_output_damage_add(m->damage, &damage);
         pixman_region32_fini(&damage);
     }
-}
-
-static bool intersects_with_output(struct monitor *m, struct wlr_output_layout *output_layout, struct wlr_box *surface_box)
-{
-    /* Since the surface_box's x- and y-coordinates are already output local,
-     * the x- and y-coordinates of this box need to be 0 for this function to
-     * work correctly. */
-    struct wlr_box output_box = {0};
-    wlr_output_effective_resolution(m->wlr_output, &output_box.width, &output_box.height);
-
-    struct wlr_box intersection;
-    return wlr_box_intersection(&intersection, &output_box, surface_box);
-}
-
-
-static void
-output_for_each_surface_iterator(struct wlr_surface *surface, int sx, int sy, void *user_data)
-{
-    struct surface_iterator_data *data = user_data;
-    struct monitor *m = data->m;
-    printf("output_for_each_surface_iterator\n");
-
-    if (!wlr_surface_has_buffer(surface)) {
-        return;
-    }
-
-    struct wlr_box surface_box = {
-        .x = data->ox + sx + surface->sx,
-        .y = data->oy + sy + surface->sy,
-        .width = surface->current.width,
-        .height = surface->current.height,
-    };
-
-    if (!intersects_with_output(m, server.output_layout, &surface_box)) {
-        return;
-    }
-
-    data->user_iterator(data->m, surface, &surface_box, data->user_data);
-}
-
-
-void output_surface_for_each_surface(struct monitor *m, struct wlr_surface *surface,
-        double ox, double oy, surface_iterator_func_t iterator,
-        void *user_data)
-{
-    struct surface_iterator_data data = {
-        .user_iterator = iterator,
-        .user_data = user_data,
-        .m = m,
-        .ox = ox,
-        .oy = oy,
-    };
-
-    printf("for each surface\n");
-    wlr_surface_for_each_surface(surface, output_for_each_surface_iterator, &data);
 }
 
 void output_damage_surface(struct monitor *m, struct wlr_surface *surface, double lx, double ly, bool whole)
@@ -195,7 +268,7 @@ static void scissor_output(struct wlr_output *output, pixman_box32_t *rect)
     wlr_renderer_scissor(renderer, &box);
 }
 
-static void render_containers(struct monitor *m, pixman_region32_t *output_damage)
+static void render_container(struct monitor *m, pixman_region32_t *output_damage)
 {
     struct container *con, *sel = selected_container(m);
 
@@ -211,8 +284,8 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
         ox = con->geom.x - con->client->bw;
         oy = con->geom.y - con->client->bw;
         wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
-        w = surface->current.width;
-        h = surface->current.height;
+        w = con->geom.width;
+        h = con->geom.height;
 
         struct wlr_box *borders;
         borders = (struct wlr_box[4]) {
@@ -222,49 +295,23 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
                 {ox, oy + con->client->bw + h, w + 2 * con->client->bw, con->client->bw}, /* bottom */
         };
 
+        printf("x: %d\n", borders[1].x);
+        printf("y: %d\n", borders[1].y);
+        printf("width: %d\n", borders[1].width);
+        printf("height: %d\n", borders[1].height);
+        printf("start\n");
+
         /* Draw window borders */
         const float *color = (con == sel) ? focus_color : border_color;
         for (int i = 0; i < 4; i++) {
             scale_box(&borders[i], m->wlr_output->scale);
-            wlr_render_rect(drw, &borders[i], color,
-                    m->wlr_output->transform_matrix);
+            render_rect(m, output_damage, &borders[i], color);
         }
 
         /* This calls our render function for each surface among the
          * xdg_surface's toplevel and popups. */
 
-        /* struct timespec now; */
-        /* clock_gettime(CLOCK_MONOTONIC, &now); */
-        /* struct render_data rdata; */
-        /* rdata.output = m->wlr_output; */
-        /* rdata.when = &now; */
-        /* rdata.x = con->geom.x; */
-        /* rdata.y = con->geom.y; */
-
-        /* render(surface, 0, 0, &rdata); */
-
-        pixman_region32_t damage;
-        pixman_region32_init(&damage);
-        pixman_region32_union_rect(&damage, &damage, con->geom.x, con->geom.y, con->geom.width, con->geom.height);
-        pixman_region32_intersect(&damage, &damage, output_damage);
-        if (!pixman_region32_not_empty(&damage)) {
-            pixman_region32_fini(&damage);
-            return;
-        }
-        struct wlr_texture *texture = wlr_surface_get_texture(get_wlrsurface(con->client));
-
-        float matrix[9];
-        enum wl_output_transform transform = wlr_output_transform_invert(surface->current.transform);
-        wlr_matrix_project_box(matrix, &con->geom, transform, 0.0f, m->wlr_output->transform_matrix);
-
-        struct wlr_renderer *renderer = wlr_backend_get_renderer(m->wlr_output->backend);
-
-        int nrects;
-        pixman_box32_t *rects = pixman_region32_rectangles(&damage, &nrects);
-        for (int i = 0; i < nrects; i++) {
-            scissor_output(m->wlr_output, &rects[i]);
-            wlr_render_texture_with_matrix(renderer, texture, matrix, 1.0f);
-        }
+        render_surface_iterator(m, get_wlrsurface(con->client), &con->geom, output_damage);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -311,29 +358,6 @@ static void render_texture(struct pos_texture *texture)
     }
 }
 
-/* static void render_t(struct monitor *m, pixman_region32_t *output_damage, */
-/*         struct wlr_texture *texture, const struct wlr_box *box, */
-/*         const float matrix[static 9]) */
-/* { */
-/*     struct wlr_renderer *renderer = wlr_backend_get_renderer(m->wlr_output->backend); */
-
-/*     pixman_region32_t damage = m->damage->current; */
-/*     if (!pixman_region32_not_empty(&damage)) { */
-/*         pixman_region32_fini(&damage); */
-/*         return; */
-/*     } */
-
-/*     int nrects; */
-/*     pixman_box32_t *rects = pixman_region32_rectangles(&damage, &nrects); */
-
-/*     printf("number: %i\n", nrects); */
-/*     for (int i = 0; i < nrects; i++) { */
-/*         scissor_output(m->wlr_output, &rects[i]); */
-/*         printf("render texture\n"); */
-/*         wlr_render_texture_with_matrix(renderer, texture, matrix, 1.0f); */
-/*     } */
-/* } */
-
 static void render_independents(struct monitor *m)
 {
     struct client *c;
@@ -362,18 +386,16 @@ static void render_independents(struct monitor *m)
     }
 }
 
-static void render_popups(struct monitor *m)
+static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
 {
     struct xdg_popup *popup;
     wl_list_for_each_reverse(popup, &popups, plink) {
+        struct wlr_surface *surface = popup->xdg->base->surface;
+        render_surface_iterator(m, surface, &popup->geom, output_damage);
+
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
-        struct render_data rdata;
-        rdata.output = m->wlr_output;
-        rdata.when = &now;
-        rdata.x = popup->geom.x;
-        rdata.y = popup->geom.y;
-        render(popup->xdg->base->surface, 0, 0, &rdata);
+        wlr_surface_send_frame_done(surface, &now);
     }
 }
 
@@ -410,13 +432,13 @@ void render_frame(struct monitor *m, pixman_region32_t *damage)
     clear_frame(m, m->root->color, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
-    render_containers(m, damage);
+    render_container(m, damage);
     render_independents(m);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
 
     wlr_list_for_each(&render_data.textures, (void*)render_texture);
-    render_popups(m);
+    render_popups(m, damage);
 
     /* Hardware cursors are rendered by the GPU on a separate plane, and can be
      * moved around without re-rendering what's beneath them - which is more
@@ -424,7 +446,7 @@ void render_frame(struct monitor *m, pixman_region32_t *damage)
      * reason, wlroots provides a software fallback, which we ask it to render
      * here. wlr_cursor handles configuring hardware vs software cursors for you,
      * and this function is a no-op when hardware cursors are in use. */
-    wlr_output_render_software_cursors(m->wlr_output, &m->damage->current);
+    wlr_output_render_software_cursors(m->wlr_output, damage);
 
     /* Conclude rendering and swap the buffers, showing the final frame
      * on-screen. */

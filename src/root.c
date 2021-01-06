@@ -47,18 +47,18 @@ static void configure_layer_shell_container_geom(struct container *con, struct w
     if (con->client->type != LAYER_SHELL)
         return;
 
-    con->geom.x = ref.x;
-    con->geom.y = ref.y;
-    if (con->client->surface.layer->current.desired_width)
-        con->geom.width = con->client->surface.layer->current.desired_width;
-    else
-        con->geom.width = selected_monitor->wlr_output->width;
+    struct monitor *m = con->m;
+    int desired_width = con->client->surface.layer->current.desired_width;
+    int desired_height = con->client->surface.layer->current.desired_height;
 
-    if (con->client->surface.layer->current.desired_height)
-        con->geom.height = con->client->surface.layer->current.desired_height;
-    else
-        con->geom.height = selected_monitor->wlr_output->height;
-    resize(con, con->geom, false);
+    struct wlr_box geom = {
+        .x = ref.x,
+        .y = ref.y,
+        .width = desired_width != 0 ? desired_width : m->geom.width,
+        .height = desired_height != 0 ? desired_height : m->geom.height,
+    };
+
+    resize(con, geom, false);
 }
 
 

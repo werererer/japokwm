@@ -165,6 +165,7 @@ void arrange_container(struct container *con, int container_count, bool preserve
 
 void resize(struct container *con, struct wlr_box geom, bool preserve)
 {
+    printf("start resize func\n");
     /*
      * Note that I took some shortcuts here. In a more fleshed-out
      * compositor, you'd wait for the client to prepare a buffer at
@@ -191,8 +192,8 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
                         con->geom.width, con->geom.height);
                 break;
             case LAYER_SHELL: wlr_layer_surface_v1_configure(con->client->surface.layer,
-                        selected_monitor->geom.width,
-                        selected_monitor->geom.height);
+                        con->m->geom.width,
+                        con->m->geom.height);
                 break;
             case X11_MANAGED:
             case X11_UNMANAGED:
@@ -201,6 +202,10 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
                         con->geom.height);
         }
     }
+
+    wlr_output_damage_add_whole(con->m->damage);
+    printf("resize: %i\n", con->geom.width);
+    printf("end resize func\n");
 }
 
 void update_hidden_containers(struct monitor *m)

@@ -94,7 +94,6 @@ void create_monitor(struct wl_listener *listener, void *data)
 
 static void handle_output_damage_frame(struct wl_listener *listener, void *data)
 {
-    /* printf("handle_output_damage_frame\n"); */
     struct monitor *m = wl_container_of(listener, m, damage_frame);
 
     if (!m->wlr_output->enabled) {
@@ -117,6 +116,7 @@ static void handle_output_damage_frame(struct wl_listener *listener, void *data)
     }
 
     render_frame(m, &damage);
+    pixman_region32_fini(&damage);
 }
 
 void focusmon(int i)

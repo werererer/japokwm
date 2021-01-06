@@ -39,20 +39,59 @@ void destroy_container(struct container *con)
 
 void container_damage_whole(struct container *con)
 {
-    struct monitor *m;
-    wl_list_for_each (m, &mons, link) {
-        output_damage_surface(m, get_wlrsurface(con->client), con->geom.x, con->geom.y, true);
+    struct monitor *m = con->m;
+    output_damage_surface(m, get_wlrsurface(con->client), con->geom.x, con->geom.y, true);
+
+    double ox, oy;
+    int w, h;
+    struct wlr_surface *surface = get_wlrsurface(con->client);
+    ox = con->geom.x - con->client->bw;
+    oy = con->geom.y - con->client->bw;
+    wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
+    w = surface->current.width;
+    h = surface->current.height;
+
+    struct wlr_box *borders;
+    borders = (struct wlr_box[4]) {
+        {ox, oy, w + 2 * con->client->bw, con->client->bw},             /* top */
+            {ox, oy + con->client->bw, con->client->bw, h},                 /* left */
+            {ox + con->client->bw + w, oy + con->client->bw, con->client->bw, h},     /* right */
+            {ox, oy + con->client->bw + h, w + 2 * con->client->bw, con->client->bw}, /* bottom */
+    };
+
+    for (int i = 0; i < 4; i++) {
+        scale_box(&borders[i], m->wlr_output->scale);
+        wlr_output_damage_add_box(m->damage, &borders[i]);
     }
 }
 
 void container_damage_part(struct container *con)
 {
-    struct monitor *m;
-    wl_list_for_each (m, &mons, link) {
-        output_damage_surface(m, get_wlrsurface(con->client), con->geom.x, con->geom.y, false);
+    struct monitor *m = con->m;
+    output_damage_surface(m, get_wlrsurface(con->client), con->geom.x, con->geom.y, false);
+
+    double ox, oy;
+    int w, h;
+    struct wlr_surface *surface = get_wlrsurface(con->client);
+    ox = con->geom.x - con->client->bw;
+    oy = con->geom.y - con->client->bw;
+    wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
+    w = surface->current.width;
+    h = surface->current.height;
+
+    struct wlr_box *borders;
+    borders = (struct wlr_box[4]) {
+        {ox, oy, w + 2 * con->client->bw, con->client->bw},             /* top */
+            {ox, oy + con->client->bw, con->client->bw, h},                 /* left */
+            {ox + con->client->bw + w, oy + con->client->bw, con->client->bw, h},     /* right */
+            {ox, oy + con->client->bw + h, w + 2 * con->client->bw, con->client->bw}, /* bottom */
+    };
+
+    for (int i = 0; i < 4; i++) {
+        scale_box(&borders[i], m->wlr_output->scale);
+        wlr_output_damage_add_box(m->damage, &borders[i]);
     }
 }
-
 
 struct container *selected_container(struct monitor *m)
 {

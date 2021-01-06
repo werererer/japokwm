@@ -236,7 +236,6 @@ int move_resize(lua_State *L)
             grabcy = server.cursor->y - grabc->geom.y;
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
                     "fleur", server.cursor);
-            printf("clear2\n");
             wlr_seat_pointer_notify_clear_focus(server.seat);
             arrange(false);
             break;
@@ -250,7 +249,6 @@ int move_resize(lua_State *L)
                     grabc->geom.y + grabc->geom.height);
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
                     "bottom_right_corner", server.cursor);
-            printf("clear3\n");
             wlr_seat_pointer_notify_clear_focus(server.seat);
             arrange(false);
             break;
@@ -260,7 +258,30 @@ int move_resize(lua_State *L)
     return 0;
 }
 
-// TODO optimize this function
+static struct wlr_surface *container_get_popup_at(struct container *con, double x, double y, double *sx, double *sy)
+{
+    struct wlr_surface *surface;
+
+    /* absolute mouse position to relative in regards to
+     * the client */
+    int lx = x - con->geom.x;
+    int ly = y - con->geom.y;
+    switch (con->client->type) {
+        case XDG_SHELL:
+            surface = wlr_xdg_surface_surface_at(con->client->surface.xdg, lx, ly, sx, sy);
+            break;
+        case LAYER_SHELL:
+            surface = wlr_layer_surface_v1_surface_at(con->client->surface.layer, lx, ly, sx, sy);
+            break;
+        default:
+            surface = NULL;
+            break;
+    }
+
+    return surface;
+}
+
+// TODO optimize this function (REWRITE)
 void motionnotify(uint32_t time)
 {
     double sx = 0, sy = 0;
@@ -300,31 +321,10 @@ void motionnotify(uint32_t time)
     struct container *con;
     struct monitor *m = selected_monitor;
     if ((con = selected_container(m))) {
-        switch (con->client->type) {
-            case XDG_SHELL:
-                is_popup = !wl_list_empty(&con->client->surface.xdg->popups);
-                if (is_popup) {
-                    surface = wlr_xdg_surface_surface_at(
-                            con->client->surface.xdg,
-                            /* absolute mouse position to relative in regards to
-                             * the client */
-                            server.cursor->x - con->geom.x,
-                            server.cursor->y - con->geom.y,
-                            &sx, &sy);
-                }
-                break;
-            case LAYER_SHELL:
-                is_popup = !wl_list_empty(&con->client->surface.layer->popups);
-                if (is_popup) {
-                    surface = wlr_layer_surface_v1_surface_at(
-                            con->client->surface.layer,
-                            server.cursor->x - con->geom.x,
-                            server.cursor->y - con->geom.y,
-                            &sx, &sy);
-                }
-                break;
-            default:
-                break;
+        is_popup = !wl_list_empty(&con->client->surface.xdg->popups);
+        if (is_popup) {
+            surface = container_get_popup_at(con, server.cursor->x, server.cursor->y,
+                    &sx, &sy);
         }
 
         // if surface and subsurface exit

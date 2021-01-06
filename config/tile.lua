@@ -151,15 +151,14 @@ function Is_affected_by_resize_of(container, container2, d)
 end
 
 function Resize_all(i, j, n, d)
-    print("start")
     local directions = Get_directions(d)
     local container = Layout_data[i][j]
 
-    print("is locked", Is_resize_locked(i, j, n, directions))
     if Is_resize_locked(i, j, n, directions) then
         return
     end
 
+    print("start resize")
     -- apply
     for x = 1,#directions do
         local dir = directions[x]
@@ -168,7 +167,6 @@ function Resize_all(i, j, n, d)
         local main_con = Move_resize(container, 0, n, dir)
         local alt_con = Get_alternative_container(main_con, dir)
 
-        print("resize_containers: ", #resize_containers)
         for k = 1,#resize_containers do
             local li = resize_containers[k][5]
             local lj = resize_containers[k][6]
@@ -183,18 +181,17 @@ function Resize_all(i, j, n, d)
         Layout_data[i][j][Y] = main_con[Y]
         Layout_data[i][j][WIDTH] = main_con[WIDTH]
         Layout_data[i][j][HEIGHT] = main_con[HEIGHT]
-        print("resize_main_containers: ", #resize_main_containers)
         for k = 1,#resize_main_containers do
             local li = resize_main_containers[k][5]
             local lj = resize_main_containers[k][6]
             Layout_data[li][lj] = Move_resize(Layout_data[li][lj], 0, n, dir)
         end
     end
+    print("end resize")
 end
 
 function Resize_main_all(n, d)
-    local i = math.max(math.min(info.get_this_container_count(), #Layout_data), 1)
-
+    local i = math.max(math.min(info.get_this_container_count(), #Layout_data), 1) 
     print("i: ", i)
     for g=1,#Box_data do
         for h=1,#Box_data[g] do

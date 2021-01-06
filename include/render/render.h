@@ -25,6 +25,7 @@ struct render_data {
     /* The textures before doing any kind of transformations
      * */
     struct wlr_list base_textures;
+    pixman_region32_t *damage;
 };
 
 typedef void (*surface_iterator_func_t)(struct monitor *m, struct

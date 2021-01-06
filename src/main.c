@@ -143,7 +143,6 @@ void axisnotify(struct wl_listener *listener, void *data)
             event->delta_discrete, event->source);
 }
 
-//TODO: rewrite
 void buttonpress(struct wl_listener *listener, void *data)
 {
     struct wlr_event_pointer_button *event = data;
@@ -597,7 +596,7 @@ void maprequest(struct wl_listener *listener, void *data)
     arrange(false);
     focus_top_container(selected_monitor, FOCUS_NOOP);
 
-    container_damage_whole(c->con);
+    container_damage_part(c->con);
 }
 
 void maprequestx11(struct wl_listener *listener, void *data)
@@ -959,8 +958,6 @@ void unmapnotify(struct wl_listener *listener, void *data)
             wl_list_remove(&c->ilink);
             break;
     }
-
-    container_damage_part(c->con);
 }
 
 void activatex11(struct wl_listener *listener, void *data)
