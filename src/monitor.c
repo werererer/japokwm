@@ -108,7 +108,6 @@ static void handle_output_damage_frame(struct wl_listener *listener, void *data)
         return;
     }
 
-    wlr_output_set_damage(m->wlr_output, &damage);
     if (!needs_frame) {
         wlr_output_rollback(m->wlr_output);
         pixman_region32_fini(&damage);
@@ -116,6 +115,7 @@ static void handle_output_damage_frame(struct wl_listener *listener, void *data)
     }
 
     render_frame(m, &damage);
+
     pixman_region32_fini(&damage);
 }
 
