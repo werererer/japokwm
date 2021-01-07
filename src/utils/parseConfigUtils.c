@@ -36,15 +36,14 @@ static int load_config(lua_State *L, const char *path)
 
     if (luaL_loadfile(L, cf)) {
         const char *errmsg = luaL_checkstring(L, -1);
-        handle_error(errmsg);
         lua_pop(L, 1);
+        handle_error(errmsg);
         return 1;
     }
 
     wlr_log(WLR_DEBUG, "load file %s", path);
 
     int ret = lua_call_safe(L, 0, 0, 0);
-    lua_pop(L, 1);
     return ret;
 }
 
@@ -119,6 +118,7 @@ int init_config(lua_State *L)
 
         append_to_lua_path(L, config_paths[i]);
 
+        printf("outerstack0: %i\n", lua_gettop(L));
         if (load_config(L, path))
             continue;
 
@@ -126,6 +126,7 @@ int init_config(lua_State *L)
         success = 0;
         break;
     }
+    printf("outerstackend0: %i\n", lua_gettop(L));
     free(config_path);
     return success;
 }
@@ -339,8 +340,8 @@ struct layout get_config_layout(lua_State *L, char *name)
     lua_getglobal(L, name);
     layout.name = get_config_array_str(L, 1);
     layout.funcId = get_config_array_func_id(L, 2);
+    layout.n = 1;
     layout.nmaster = 1;
-    layout.n = 0;
     layout.id = 0;
     lua_pop(L, 1);
     return layout;

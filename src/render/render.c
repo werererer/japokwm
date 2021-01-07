@@ -19,7 +19,7 @@ struct wlr_renderer *drw;
 struct render_data render_data;
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data);
-static void render_container(struct monitor *m, pixman_region32_t *output_damage);
+static void render_containers(struct monitor *m, pixman_region32_t *output_damage);
 static void render_independents(struct monitor *m);
 static void render_texture(struct pos_texture *texture);
 static void scissor_output(struct wlr_output *output, pixman_box32_t *rect);
@@ -150,7 +150,24 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
     enum wl_output_transform transform = wlr_output_transform_invert(surface->current.transform);
     wlr_matrix_project_box(matrix, box, transform, 0.0f, wlr_output->transform_matrix);
 
-    render_t(wlr_output, output_damage, texture, box, matrix);
+    /* The client has a position in layout coordinates. If you have two displays,
+     * one next to the other, both 1080p, a client on the rightmost display might
+     * have layout coordinates of 2000,100. We need to translate that to
+     * output-local coordinates, or (2000 - 1920). */
+    double ox, oy;
+    wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
+    printf("ox: %f:%d\n", ox, box->x);
+
+    struct wlr_box obox = {
+        /* We also have to apply the scale factor for HiDPI outputs. This is only
+         * part of the puzzle, dwl does not fully support HiDPI. */
+        .x = box->x + ox,
+        .y = box->y + oy,
+        .width = surface->current.width,
+        .height = surface->current.height,
+    };
+
+    render_t(wlr_output, output_damage, texture, &obox, matrix);
 }
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data)
@@ -158,7 +175,6 @@ static void render(struct wlr_surface *surface, int sx, int sy, void *data)
     /* This function is called for every surface that needs to be rendered. */
     struct render_data *rdata = data;
     struct wlr_output *output = rdata->output;
-    double ox = 0, oy = 0;
     struct wlr_box obox;
     float matrix[9];
     enum wl_output_transform transform;
@@ -172,6 +188,7 @@ static void render(struct wlr_surface *surface, int sx, int sy, void *data)
     if (!texture)
         return;
 
+    double ox = 0, oy = 0;
     /* The client has a position in layout coordinates. If you have two displays,
      * one next to the other, both 1080p, a client on the rightmost display might
      * have layout coordinates of 2000,100. We need to translate that to
@@ -268,13 +285,15 @@ static void scissor_output(struct wlr_output *output, pixman_box32_t *rect)
     wlr_renderer_scissor(renderer, &box);
 }
 
-static void render_container(struct monitor *m, pixman_region32_t *output_damage)
+static void render_containers(struct monitor *m, pixman_region32_t *output_damage)
 {
     struct container *con, *sel = selected_container(m);
 
+    printf("size: %i\n", wl_list_length(&stack));
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each_reverse(con, &stack, slink) {
+        printf("con: %p con->mon: %p : visible: %i, hidden: %i\n", con, con->m, visibleon(con, m), con->hidden);
         if (!visibleon(con, m) && !con->floating)
             continue;
 
@@ -418,11 +437,11 @@ void render_frame(struct monitor *m, pixman_region32_t *damage)
     /* Begin the renderer (calls glViewport and some other GL sanity checks) */
     wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
 
-    printf("render frame\n");
+    printf("render frame monitor: %p\n", m);
     clear_frame(m, m->root->color, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM, damage);
-    render_container(m, damage);
+    render_containers(m, damage);
     render_independents(m);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY, damage);

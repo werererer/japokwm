@@ -10,7 +10,9 @@ struct layout {
      * usually this function will read the data about the layout from a
      * file.*/
     int funcId;
+    // the amount of slave windows plus the master are (+1)
     int n;
+    // the amount master windows
     int nmaster;
     int id;
 };

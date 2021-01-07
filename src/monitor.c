@@ -142,6 +142,7 @@ void set_selected_monitor(struct monitor *m)
     if (selected_monitor == m)
         return;
 
+    printf("set selected_monitor: %p\n", m);
     selected_monitor = m;
     set_workspace(m, m->ws);
     int xcentre = m->geom.x + (float)m->geom.width/2;

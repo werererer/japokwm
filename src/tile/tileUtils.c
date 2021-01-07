@@ -31,6 +31,7 @@ void arrange(enum layout_actions action)
 /* update layout and was set in the arrange function */
 static void update_layout(int n, struct monitor *m)
 {
+    printf("stack0: %i\n", lua_gettop(L));
     lua_getglobal(L, "Update_layout");
     lua_pushinteger(L, n);
     lua_call_safe(L, 1, 1, 0);
@@ -211,19 +212,21 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
 
 void update_hidden_containers(struct monitor *m)
 {
-    int i = 0;
+    int i = 1;
     struct container *con;
+    // because the master are is included in n aswell as nmaster we have to
+    // subtract the solution by one to count
+    printf("n: %i: nmaster: %i\n", m->ws->layout.n, m->ws->layout.nmaster);
     int count = m->ws->layout.n + m->ws->layout.nmaster-1;
+    printf("count: %i\n", count);
     wl_list_for_each(con, &containers, mlink) {
+        printf("m: %p con: %p existon: %i\n", m, con->m, existon(con, m));
         if (!existon(con, m) || con->floating)
             continue;
 
-        if (i < count) {
-            con->hidden = false;
-            i++;
-        } else {
-            con->hidden = true;
-        }
+        con->hidden = i > count;
+        printf("set hidden: %i\n", con->hidden);
+        i++;
     }
 }
 

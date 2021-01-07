@@ -15,6 +15,7 @@ static void add_container_to_monitor_stack(struct container *con);
 
 struct container *create_container(struct client *c, struct monitor *m)
 {
+    printf("create container - selected_monitor: %p : %p\n", m, selected_monitor);
     struct container *con = calloc(1, sizeof(struct container));
     con->m = m;
     con->client = c;
@@ -68,6 +69,7 @@ void container_damage_whole(struct container *con)
 void container_damage_part(struct container *con)
 {
     struct monitor *m = con->m;
+    printf("damage: %p\n", m);
     output_damage_surface(m, get_wlrsurface(con->client), con->geom.x, con->geom.y, false);
 
     double ox, oy;
@@ -91,6 +93,7 @@ void container_damage_part(struct container *con)
         scale_box(&borders[i], m->wlr_output->scale);
         wlr_output_damage_add_box(m->damage, &borders[i]);
     }
+    wlr_output_damage_add_whole(m->damage);
 }
 
 struct container *selected_container(struct monitor *m)
