@@ -397,7 +397,7 @@ static void clear_frame(struct monitor *m, float color[4], pixman_region32_t *da
 {
     struct wlr_renderer *renderer = wlr_backend_get_renderer(server.backend);
 
-    // debug stuff
+    /* // debug stuff */
     /* float color2[4] = {0.4f, 0.1f, 0.0f, 1.0f}; */
     /* wlr_renderer_clear(renderer, color2); */
 
@@ -423,6 +423,7 @@ void render_frame(struct monitor *m, pixman_region32_t *damage)
     /* Begin the renderer (calls glViewport and some other GL sanity checks) */
     wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
 
+    printf("render frame\n");
     clear_frame(m, m->root->color, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);

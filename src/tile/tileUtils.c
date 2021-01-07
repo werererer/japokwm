@@ -173,12 +173,9 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
      * compositor, you'd wait for the client to prepare a buffer at
      * the new size, then commit any movement that was prepared.
      */
-    printf("geom0: x: %i\n", con->geom.x);
-    printf("geom0: y: %i\n", con->geom.y);
-    printf("geom0: width: %i\n", con->geom.width);
-    printf("geom0: height: %i\n", con->geom.height);
     container_damage_whole(con);
     con->geom = geom;
+
     if (preserve) {
         // if width <= height
         if (con->client->ratio >= 1) {
@@ -209,11 +206,6 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
                         con->geom.height);
         }
     }
-    printf("geom1: x: %i\n", con->geom.x);
-    printf("geom1: y: %i\n", con->geom.y);
-    printf("geom1: width: %i\n", con->geom.width);
-    printf("geom1: height: %i\n", con->geom.height);
-    container_damage_whole(con);
 }
 
 void update_hidden_containers(struct monitor *m)

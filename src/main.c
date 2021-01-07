@@ -232,10 +232,7 @@ void commitnotify(struct wl_listener *listener, void *data)
             break;
     }
 
-    struct container *con;
-    wl_list_for_each(con, &stack, slink) {
-        container_damage_part(con);
-    }
+    container_damage_part(c->con);
 }
 
 void createkeyboard(struct wlr_input_device *device)
