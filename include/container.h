@@ -31,7 +31,6 @@ struct container {
     // if position -1 it is floating
     int stack_position;
     int position;
-    int resize;
     float scale;
 };
 

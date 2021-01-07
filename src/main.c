@@ -213,26 +213,12 @@ void cleanupkeyboard(struct wl_listener *listener, void *data)
 void commitnotify(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, commit);
-    if (!c->con)
+    struct container *con = c->con;
+
+    if (!con)
         return;
 
-    switch (c->type) {
-        case XDG_SHELL:
-            /* mark a pending resize as completed */
-            if (c->resize && c->resize <= c->surface.xdg->configure_serial) {
-                c->resize = 0;
-            }
-            break;
-        case LAYER_SHELL:
-            /* mark a pending resize as completed */
-            if (c->resize && c->resize <= c->surface.layer->configure_serial)
-                c->resize = 0;
-            break;
-        default:
-            break;
-    }
-
-    container_damage_part(c->con);
+    container_damage_part(con);
 }
 
 void createkeyboard(struct wlr_input_device *device)

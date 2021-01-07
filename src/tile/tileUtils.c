@@ -192,10 +192,11 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
         /* wlroots makes this a no-op if size hasn't changed */
         switch (con->client->type) {
             case XDG_SHELL:
-                con->resize = wlr_xdg_toplevel_set_size(con->client->surface.xdg,
+                wlr_xdg_toplevel_set_size(con->client->surface.xdg,
                         con->geom.width, con->geom.height);
                 break;
-            case LAYER_SHELL: wlr_layer_surface_v1_configure(con->client->surface.layer,
+            case LAYER_SHELL:
+                wlr_layer_surface_v1_configure(con->client->surface.layer,
                         con->m->geom.width,
                         con->m->geom.height);
                 break;

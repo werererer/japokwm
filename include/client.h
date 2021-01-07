@@ -33,7 +33,6 @@ struct client {
     enum shell type;
     int id;
     char *title;
-    uint32_t resize; /* configure serial of a pending resize */
     struct workspace *ws;
 };
 

@@ -313,10 +313,9 @@ static void render_container(struct monitor *m, pixman_region32_t *output_damage
     }
 }
 
-static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer layer)
+static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer layer, pixman_region32_t *output_damage)
 {
     struct container *con;
-    struct render_data rdata;
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each_reverse(con, &layer_stack, llink) {
@@ -325,18 +324,13 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
         if (con->client->surface.layer->current.layer != layer)
             continue;
 
-        /* Only render visible clients which are shown on this monitor */
-        if (!visibleon(con, m))
-            continue;
+        con->geom.width = get_wlrsurface(con->client)->current.width;
+        con->geom.height = get_wlrsurface(con->client)->current.height;
+        render_surface_iterator(m, get_wlrsurface(con->client), &con->geom, output_damage);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
-        rdata.output = m->wlr_output;
-        rdata.when = &now;
-        rdata.x = con->geom.x + con->client->bw;
-        rdata.y = con->geom.y + con->client->bw;
-
-        render(get_wlrsurface(con->client), 0, 0, &rdata);
+        wlr_surface_send_frame_done(get_wlrsurface(con->client), &now);
     }
 }
 
@@ -425,12 +419,12 @@ void render_frame(struct monitor *m, pixman_region32_t *damage)
 
     printf("render frame\n");
     clear_frame(m, m->root->color, damage);
-    render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND);
-    render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
+    render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND, damage);
+    render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM, damage);
     render_container(m, damage);
     render_independents(m);
-    render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP);
-    render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
+    render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP, damage);
+    render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY, damage);
 
     wlr_list_for_each(&render_data.textures, (void*)render_texture);
     render_popups(m, damage);
