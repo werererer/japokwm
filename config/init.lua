@@ -92,6 +92,6 @@ keys = {
 }
 
 buttons = {
-    {mod.." "..btn_left,    function(n) action.move_resize(cursor_mode._cur_move) end},
-    {mod.." "..btn_right,   function(n) action.move_resize(cursor_mode._cur_resize) end},
+    {mod.." "..btn_left,    function(n) action.move_resize(cursor_mode.CUR_MOVE) end},
+    {mod.." "..btn_right,   function(n) action.move_resize(cursor_mode.CUR_RESIZE) end},
 }

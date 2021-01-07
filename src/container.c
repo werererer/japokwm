@@ -276,17 +276,26 @@ static void add_container_to_monitor_stack(struct container *con)
         return;
     }
 
+    if (wl_list_empty(&stack)) {
+        wl_list_insert(&stack, &con->slink);
+        return;
+    }
+
     /* Insert container after the last floating container */
     struct container *con2;
+    int stack_length = wl_list_length(&stack);
+    int i = 0;
     wl_list_for_each(con2, &stack, slink) {
         if (!con2->floating)
             break;
+        i++;
+        // needs to break early because wl_list_for_each will mess up con2 if
+        // it continues after reaching the last item in stack
+        if (i >= stack_length)
+            break;
     }
 
-    if (!wl_list_empty(&stack))
-        wl_list_insert(&con2->slink, &con->slink);
-    else
-        wl_list_insert(&stack, &con->slink);
+    wl_list_insert(&con2->slink, &con->slink);
 }
 
 static void add_container_to_monitor(struct container *con, struct monitor *m)

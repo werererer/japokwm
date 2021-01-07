@@ -53,6 +53,13 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     m->wlr_output = output;
     m->root = create_root();
+
+    /* damage tracking must be initialized before setting the workspace because
+     * it to damage a region */
+    m->damage = wlr_output_damage_create(m->wlr_output);
+    m->damage_frame.notify = handle_output_damage_frame;
+    wl_signal_add(&m->damage->events.frame, &m->damage_frame);
+
     set_next_unoccupied_workspace(m, get_workspace(0));
 
     for (r = monrules; r < END(monrules); r++) {
@@ -68,11 +75,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     /* Set up event listeners */
     m->destroy.notify = destroy_monitor;
     wl_signal_add(&output->events.destroy, &m->destroy);
-
-    /* damage events */
-    m->damage = wlr_output_damage_create(m->wlr_output);
-    m->damage_frame.notify = handle_output_damage_frame;
-    wl_signal_add(&m->damage->events.frame, &m->damage_frame);
 
     wl_list_insert(&mons, &m->link);
 
@@ -133,9 +135,6 @@ void destroy_monitor(struct wl_listener *listener, void *data)
     set_workspace(m, NULL);
     destroy_root(m->root);
     wl_list_remove(&m->link);
-
-    /* m = wl_container_of(&mons.next, m, link); */
-    /* set_selected_monitor(m); */
 }
 
 void set_selected_monitor(struct monitor *m)

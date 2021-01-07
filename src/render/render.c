@@ -370,6 +370,7 @@ static void render_independents(struct monitor *m)
             .x = c->surface.xwayland->x,
             .y = c->surface.xwayland->y,
         };
+    if (false)
         wlr_surface_for_each_surface(c->surface.xwayland->surface, render, &rdata);
     }
 }

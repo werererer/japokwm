@@ -1,7 +1,10 @@
 #include "workspace.h"
-#include <wayland-server.h>
+
+#include <assert.h>
 #include <string.h>
+#include <wayland-server.h>
 #include <wlr/util/log.h>
+
 #include "ipc-server.h"
 #include "monitor.h"
 
@@ -90,6 +93,8 @@ void set_workspace(struct monitor *m, struct workspace *ws)
 {
     if (!m || !ws)
         return;
+    assert(m->damage != NULL);
+
     ipc_event_workspace();
 
     // unset old workspace
@@ -98,5 +103,5 @@ void set_workspace(struct monitor *m, struct workspace *ws)
 
     m->ws = ws;
     ws->m = m;
+    root_damage_whole(m->root);
 }
-

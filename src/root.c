@@ -93,3 +93,7 @@ void set_root_area(struct root *root, struct wlr_box geom)
     }
 }
 
+void root_damage_whole(struct root *root)
+{
+    wlr_output_damage_add_box(root->m->damage, &root->geom);
+}

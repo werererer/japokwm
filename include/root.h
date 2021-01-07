@@ -18,5 +18,6 @@ void destroy_root(struct root *root);
  * programs which occupie space
  * The resulting root area is relative to outputs*/
 void set_root_area(struct root *root, struct wlr_box geom);
+void root_damage_whole(struct root *root);
 
 #endif /* ROOT_H */
