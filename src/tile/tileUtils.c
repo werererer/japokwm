@@ -105,9 +105,7 @@ static int get_default_container_count(struct monitor *m)
 static void lua_reset_layout(struct monitor *m)
 {
     // TODO: resolve hidden recursion!!!
-    // Load_layout calls c again which calls arrange
-    printf("lua -- %s\n", m->ws->layout.name);
-    printf("lua -- %s\n", prev_layout.name);
+    // Load_layout calls c again by calling arrange
     prev_layout = m->ws->layout;
     lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.lua_func_index);
     lua_pushinteger(L, m->ws->layout.n);
@@ -116,6 +114,7 @@ static void lua_reset_layout(struct monitor *m)
 
 void arrange_monitor(struct monitor *m, enum layout_actions action)
 {
+    printf("start arrange mon\n");
     /* Get effective monitor geometry to use for window area */
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     set_root_area(m->root, m->geom);

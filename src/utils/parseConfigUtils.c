@@ -329,7 +329,6 @@ static struct layout get_config_array_layout(lua_State *L, size_t i)
     lua_rawgeti(L, -1, i);
     struct layout layout = {
         .symbol = get_config_array_str(L, 1),
-        .name = "",
         .lua_func_index = get_config_array_func_id(L, 2),
         .n = 1,
         .nmaster = 1,
@@ -344,7 +343,6 @@ struct layout get_config_layout(lua_State *L, char *name)
     lua_getglobal(L, name);
     struct layout layout = {
         .symbol = get_config_array_str(L, 1),
-        .name = "",
         .lua_func_index = get_config_array_func_id(L, 2),
         .n = 1,
         .nmaster = 1,
@@ -386,7 +384,8 @@ static struct mon_rule get_config_array_monrule(lua_State *L, size_t i)
     monrule.mfact = get_config_array_float(L, 2);
     monrule.nmaster = get_config_array_int(L, 3);
     monrule.scale = get_config_array_float(L, 4);
-    *monrule.lt = get_config_array_layout(L, 5);
+    monrule.lt = get_config_array_layout(L, 5);
+    monrule.rr = get_config_array_int(L, 6);
     return monrule;
 }
 
@@ -399,7 +398,7 @@ struct mon_rule get_config_monrule(lua_State *L, char *name)
     monrule.mfact = get_config_array_float(L, 2);
     monrule.nmaster = get_config_array_int(L, 3);
     monrule.scale = get_config_array_float(L, 4);
-    *monrule.lt = get_config_array_layout(L, 5);
+    monrule.lt = get_config_array_layout(L, 5);
     return monrule;
 }
 
@@ -441,18 +440,18 @@ void get_config_float_arr(lua_State *L, float resArr[], char *name)
 
 void get_config_layout_arr(lua_State *L, struct layout *layouts, char *name)
 {
-    lua_getglobal(L, name);
-    size_t len = lua_rawlen(L, -1);
+    // TODO: debug or remove
+    /* lua_getglobal(L, name); */
+    /* size_t len = lua_rawlen(L, -1); */
 
-    struct layout lt;
-    // TODO: cleanup malloc?
-    layouts = malloc(sizeof(struct layout)*len);
-    for (int i = 1; i <= len; i++) {
-        lt = get_config_array_layout(L, 1);
-        layouts[i-1].name = lt.name;
-        layouts[i-1].lua_func_index = 4;
-    }
-    lua_pop(L, 1);
+    /* struct layout lt; */
+    /* // TODO: cleanup malloc? */
+    /* layouts = malloc(sizeof(struct layout)*len); */
+    /* for (int i = 1; i <= len; i++) { */
+    /*     lt = get_config_array_layout(L, 1); */
+    /*     layouts[i-1].lua_func_index = 0; */
+    /* } */
+    /* lua_pop(L, 1); */
 }
 
 void get_config_key_arr(lua_State *L, Key *keys, char *name)

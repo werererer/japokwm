@@ -25,7 +25,7 @@ tag_names = {"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"}
 
 -- where to put things
 rules = {
-    {"Gimp", "title", 1, true, 3}
+    {"termite", "termite", 1, true, 3}
 }
 
 layouts = {
@@ -45,7 +45,7 @@ monrules = {
 xkb_rules = {}
 repeat_rate = 25
 repeat_delay = 600
-termcmd = "/usr/bin/terminator"
+termcmd = "/usr/bin/termite"
 
 mod = mod1
 -- maps (between 1 and 4)

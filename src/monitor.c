@@ -19,15 +19,15 @@ struct wl_list containers;
 struct wl_list layer_stack;
 struct wl_list popups;
 
-/* monitors */
-static const struct mon_rule monrules[] = {
-    /* name       mfact nmaster scale layout       rotate/reflect */
-    /* example of a HiDPI laptop monitor:
-    { "eDP-1",    0.5,  1,      2,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL },
-    */
-    /* defaults */
-    { NULL, 0.55, 1, 1, &default_layout, WL_OUTPUT_TRANSFORM_NORMAL },
-};
+// /* monitors */
+// static const struct mon_rule monrules[] = {
+//     /* name       mfact nmaster scale layout       rotate/reflect */
+//     /* example of a HiDPI laptop monitor:
+//     { "eDP-1",    0.5,  1,      2,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL },
+//     */
+//     /* defaults */
+//     { NULL, 0.55, 1, 1, &default_layout, WL_OUTPUT_TRANSFORM_NORMAL },
+// };
 
 struct wl_list mons;
 struct monitor *selected_monitor = NULL;
@@ -67,7 +67,7 @@ void create_monitor(struct wl_listener *listener, void *data)
             m->mfact = r->mfact;
             wlr_output_set_scale(output, r->scale);
             wlr_xcursor_manager_load(server.cursorMgr, r->scale);
-            set_selected_layout(m->ws, *r->lt);
+            set_selected_layout(m->ws, r->lt);
             wlr_output_set_transform(output, r->rr);
             break;
         }
@@ -142,7 +142,6 @@ void set_selected_monitor(struct monitor *m)
     if (selected_monitor == m)
         return;
 
-    printf("set selected_monitor: %p\n", m);
     selected_monitor = m;
     set_workspace(m, m->ws);
     int xcentre = m->geom.x + (float)m->geom.width/2;

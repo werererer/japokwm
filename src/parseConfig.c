@@ -30,7 +30,7 @@ float sel_text_color[4];
 struct wlr_list tag_names;
 struct rule rules[MAXLEN];
 
-//MonitorRule monrules[MAXLEN];
+struct mon_rule monrules[MAXLEN];
 
 int repeat_rate;
 int repeat_delay;
@@ -44,6 +44,7 @@ Key *buttons = NULL;
 
 int update_config(lua_State *L)
 {
+    printf("start\n");
     init_error_file();
     init_config(L);
     sloppy_focus = get_config_bool(L, "sloppy_focus");
@@ -68,15 +69,14 @@ int update_config(lua_State *L)
     get_config_rule_arr(L, rules, "rules");
 
     /* monitors */
-    //get_config_mon_rule_arr(monrules, "monrules");
+    get_config_mon_rule_arr(L, monrules, "monrules");
 
     /* keyboard */
     repeat_rate = get_config_int(L, "repeat_rate");
     repeat_delay = get_config_int(L, "repeat_delay");
     default_layout = get_config_layout(L, "default_layout");
     prev_layout = (struct layout) {
-        .symbol = "", 
-        .name = "",
+        .symbol = "",
         .lua_func_index = 0,
         .nmaster = 1,
         .n = 0,

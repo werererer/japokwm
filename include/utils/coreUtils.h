@@ -11,6 +11,7 @@
 #include <wlr/types/wlr_seat.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <lua.h>
+#include "layout.h"
 
 /* macros */
 #define BARF(fmt, ...)      do { fprintf(stderr, fmt "\n", ##__VA_ARGS__); exit(EXIT_FAILURE); } while (0)
@@ -56,7 +57,7 @@ struct mon_rule {
     float mfact;
     int nmaster;
     float scale;
-    struct layout *lt;
+    struct layout lt;
     enum wl_output_transform rr;
 };
 extern struct lua_State *L;

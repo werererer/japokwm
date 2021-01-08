@@ -576,13 +576,12 @@ void maprequest(struct wl_listener *listener, void *data)
         default:
             break;
     }
-    printf("call test\n");
-    lua_getglobal(L, "Test");
-    lua_call_safe(L, 0, 0, 0);
     arrange(false);
     focus_top_container(selected_monitor, FOCUS_NOOP);
 
-    container_damage_part(c->con);
+    struct container *con = c->con;
+    container_damage_part(con);
+    applyrules(con);
 }
 
 void maprequestx11(struct wl_listener *listener, void *data)

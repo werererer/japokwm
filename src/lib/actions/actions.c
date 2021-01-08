@@ -129,7 +129,8 @@ int update_layout(lua_State *L)
 {
     struct layout lt = get_config_layout(L, "layout");
 
-    lua_pushstring(L, prev_layout.name);
+    // TODO: what does this function do?
+    /* lua_pushstring(L, prev_layout.name); */
     unload_layout(L);
 
     set_selected_layout(selected_monitor->ws, lt);
@@ -517,7 +518,6 @@ int load_layout(lua_State *L)
 {
     const char *layout = luaL_checkstring(L, -1);
     lua_pop(L, 1);
-    selected_monitor->ws->layout.name = layout;
 
     char *config_path = get_config_file("layouts");
     char file[NUM_CHARS];

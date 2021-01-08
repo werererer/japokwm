@@ -365,34 +365,35 @@ void apply_bounds(struct container *con, struct wlr_box bbox)
 
 void applyrules(struct container *con)
 {
-    const char *appid, *title;
+    const char *app_id, *title;
     unsigned int newtags = 0;
     const struct rule *r;
     /* rule matching */
     con->floating = false;
     switch (con->client->type) {
         case XDG_SHELL:
-            appid = con->client->surface.xdg->toplevel->app_id;
+            app_id = con->client->surface.xdg->toplevel->app_id;
+            title = con->client->surface.xdg->toplevel->title;
             title = con->client->surface.xdg->toplevel->title;
             break;
         case LAYER_SHELL:
-            appid = "test";
+            app_id = "test";
             title = "test";
             break;
         case X11_MANAGED:
         case X11_UNMANAGED:
-            appid = con->client->surface.xwayland->class;
+            app_id = con->client->surface.xwayland->class;
             title = con->client->surface.xwayland->title;
             break;
     }
-    if (!appid)
-        appid = "broken";
+    if (!app_id)
+        app_id = "broken";
     if (!title)
         title = "broken";
 
     for (r = rules; r < END(rules); r++) {
         if ((!r->title || strstr(title, r->title))
-                && (!r->id || strstr(appid, r->id))) {
+                && (!r->id || strstr(app_id, r->id))) {
             con->floating = r->floating;
             newtags |= r->tags;
         }

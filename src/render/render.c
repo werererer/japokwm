@@ -156,7 +156,6 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
      * output-local coordinates, or (2000 - 1920). */
     double ox, oy;
     wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
-    printf("ox: %f:%d\n", ox, box->x);
 
     struct wlr_box obox = {
         /* We also have to apply the scale factor for HiDPI outputs. This is only
@@ -289,11 +288,9 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
 {
     struct container *con, *sel = selected_container(m);
 
-    printf("size: %i\n", wl_list_length(&stack));
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each_reverse(con, &stack, slink) {
-        printf("con: %p con->mon: %p : visible: %i, hidden: %i\n", con, con->m, visibleon(con, m), con->hidden);
         if (!visibleon(con, m) && !con->floating)
             continue;
 
@@ -437,7 +434,6 @@ void render_frame(struct monitor *m, pixman_region32_t *damage)
     /* Begin the renderer (calls glViewport and some other GL sanity checks) */
     wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
 
-    printf("render frame monitor: %p\n", m);
     clear_frame(m, m->root->color, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM, damage);
