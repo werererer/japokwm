@@ -187,8 +187,9 @@ function Does_container_not_intersect_with(ref_con, con)
     or Is_container_over(ref_con, con)
 end
 
-function Load_layout(layout_name)
+function Reset_layout(layout_name)
     local layout, master_layout, boxes
+    -- calls enter file
     action.load_layout(layout_name)
     if layout then
         Layout_data = layout
@@ -199,6 +200,10 @@ function Load_layout(layout_name)
     if boxes then
         Box_data = boxes
     end
+end
+
+function Load_layout(layout_name)
+    Reset_layout(layout_name)
     action.arrange_this(false);
 end
 
@@ -292,6 +297,7 @@ end
 
 -- TODO: improve function name which doesn't representing what it does
 function Update_layout(n)
+    print("start")
     local i = math.max(math.min(#Layout_data, n), 1)
     print("LAYOUT_DATA0: ", Layout_data)
     print("LAYOUT_DATA1: ", #Layout_data)

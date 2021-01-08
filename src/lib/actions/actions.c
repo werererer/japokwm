@@ -77,9 +77,13 @@ int get_tabcount(lua_State *L)
 
 int arrange_this(lua_State *L)
 {
+    lua_getglobal(L, "Test");
+    lua_call_safe(L, 0, 0, 0);
     bool reset = lua_toboolean(L, -1);
     lua_pop(L, 1);
+    printf("start arrange\n");
     arrange(reset);
+    printf("end arrange\n");
     return 0;
 }
 

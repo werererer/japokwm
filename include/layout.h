@@ -9,12 +9,12 @@ struct layout {
     /* this function gets executed when the arrange function is called
      * usually this function will read the data about the layout from a
      * file.*/
-    int funcId;
+    int lua_func_index;
     // the amount of slave windows plus the master are (+1)
     int n;
     // the amount master windows
     int nmaster;
-    int id;
+    int lua_index;
 };
 
 void create_layout(struct layout *lt, const char *symbol, int funcId);

@@ -118,7 +118,6 @@ int init_config(lua_State *L)
 
         append_to_lua_path(L, config_paths[i]);
 
-        printf("outerstack0: %i\n", lua_gettop(L));
         if (load_config(L, path))
             continue;
 
@@ -126,7 +125,6 @@ int init_config(lua_State *L)
         success = 0;
         break;
     }
-    printf("outerstackend0: %i\n", lua_gettop(L));
     free(config_path);
     return success;
 }
@@ -151,19 +149,21 @@ int lua_call_safe(lua_State *L, int nargs, int nresults, int msgh)
     int lua_status = lua_pcall(L, nargs, nresults, msgh);
     if (lua_status != LUA_OK) {
         const char *errmsg = luaL_checkstring(L, -1);
-        handle_error(errmsg);
         lua_pop(L, 1);
+        printf("error: %s\n", errmsg);
+        handle_error(errmsg);
     }
     return lua_status;
 }
 
 static void handle_error(const char *msg)
 {
+    wlr_log(WLR_ERROR, "%s", msg);
+
     // if error file not initialized
     if (error_fd < 0)
         return;
 
-    wlr_log(WLR_ERROR, "%s", msg);
     write_to_file(error_fd, msg);
     write_to_file(error_fd, "\n");
 }
@@ -318,7 +318,7 @@ void call_arrange_func(lua_State *L, int funcId, int n)
 
 void call_function(lua_State *L, struct layout lt)
 {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt.id);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt.lua_index);
     lua_pushinteger(L, lt.n);
     lua_call_safe(L, 1, 0, 0);
     luaL_ref(L, LUA_REGISTRYINDEX);
@@ -326,23 +326,30 @@ void call_function(lua_State *L, struct layout lt)
 
 static struct layout get_config_array_layout(lua_State *L, size_t i)
 {
-    struct layout layout;
     lua_rawgeti(L, -1, i);
-    layout.name = get_config_array_str(L, 1);
-    layout.funcId = get_config_array_func_id(L, 2);
+    struct layout layout = {
+        .symbol = get_config_array_str(L, 1),
+        .name = "",
+        .lua_func_index = get_config_array_func_id(L, 2),
+        .n = 1,
+        .nmaster = 1,
+        .lua_index = 0,
+    };
     lua_pop(L, 1);
     return layout;
 }
 
 struct layout get_config_layout(lua_State *L, char *name)
 {
-    struct layout layout;
     lua_getglobal(L, name);
-    layout.name = get_config_array_str(L, 1);
-    layout.funcId = get_config_array_func_id(L, 2);
-    layout.n = 1;
-    layout.nmaster = 1;
-    layout.id = 0;
+    struct layout layout = {
+        .symbol = get_config_array_str(L, 1),
+        .name = "",
+        .lua_func_index = get_config_array_func_id(L, 2),
+        .n = 1,
+        .nmaster = 1,
+        .lua_index = 0,
+    };
     lua_pop(L, 1);
     return layout;
 }
@@ -443,7 +450,7 @@ void get_config_layout_arr(lua_State *L, struct layout *layouts, char *name)
     for (int i = 1; i <= len; i++) {
         lt = get_config_array_layout(L, 1);
         layouts[i-1].name = lt.name;
-        layouts[i-1].funcId = 4;
+        layouts[i-1].lua_func_index = 4;
     }
     lua_pop(L, 1);
 }

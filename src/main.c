@@ -576,6 +576,9 @@ void maprequest(struct wl_listener *listener, void *data)
         default:
             break;
     }
+    printf("call test\n");
+    lua_getglobal(L, "Test");
+    lua_call_safe(L, 0, 0, 0);
     arrange(false);
     focus_top_container(selected_monitor, FOCUS_NOOP);
 
@@ -726,7 +729,7 @@ void set_cursor(struct wl_listener *listener, void *data)
 /* arg > 1.0 will set mfact absolutely */
 void setmfact(float factor)
 {
-    if (!selected_monitor->ws->layout.funcId)
+    if (!selected_monitor->ws->layout.lua_func_index)
         return;
     factor = factor < 1.0 ? factor + selected_monitor->mfact : factor - 1.0;
     if (factor < 0.1 || factor > 0.9)

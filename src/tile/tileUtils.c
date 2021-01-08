@@ -29,14 +29,16 @@ void arrange(enum layout_actions action)
 }
 
 /* update layout and was set in the arrange function */
-static void update_layout(int n, struct monitor *m)
+static void update_layout(lua_State *L, int n, struct monitor *m)
 {
-    printf("stack0: %i\n", lua_gettop(L));
     lua_getglobal(L, "Update_layout");
     lua_pushinteger(L, n);
     lua_call_safe(L, 1, 1, 0);
     m->ws->layout.n = lua_rawlen(L, -1);
-    m->ws->layout.id = luaL_ref(L, LUA_REGISTRYINDEX);
+    if (m->ws->layout.lua_index >= 0) {
+        luaL_unref(L, LUA_REGISTRYINDEX, m->ws->layout.lua_index);
+    }
+    m->ws->layout.lua_index = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 static struct wlr_fbox lua_unbox_layout(struct lua_State *L, int i) {
@@ -100,10 +102,14 @@ static int get_default_container_count(struct monitor *m)
     return get_slave_container_count(m) + 1;
 }
 
-static void reset_layout(struct monitor *m)
+static void lua_reset_layout(struct monitor *m)
 {
+    // TODO: resolve hidden recursion!!!
+    // Load_layout calls c again which calls arrange
+    printf("lua -- %s\n", m->ws->layout.name);
+    printf("lua -- %s\n", prev_layout.name);
     prev_layout = m->ws->layout;
-    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.funcId);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.lua_func_index);
     lua_pushinteger(L, m->ws->layout.n);
     lua_call_safe(L, 1, 0, 0);
 }
@@ -118,16 +124,20 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
         container_surround_gaps(&m->root->geom, outer_gap);
 
     // don't do anything if no tiling function exist
-    if (m->ws->layout.funcId <= 0)
+    if (m->ws->layout.lua_func_index <= 0)
         return;
 
     int container_count = get_master_container_count(m);
     int default_container_count = get_default_container_count(m);
-    update_layout(default_container_count, m);
+    update_layout(L, default_container_count, m);
     update_hidden_containers(m);
 
-    if (is_same_layout(prev_layout, m->ws->layout) || action == LAYOUT_RESET)
-        reset_layout(m);
+    // first reset layout in lua
+    if (is_same_layout(prev_layout, m->ws->layout) || action == LAYOUT_RESET) {
+        printf("start reset\n");
+        lua_reset_layout(m);
+        printf("end reset\n");
+    }
 
     int position = 1;
     struct container *con;
@@ -136,6 +146,7 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
             continue;
 
         con->position = position;
+        // then use the layout that may have been reseted
         arrange_container(con, container_count, false);
         position++;
     }
@@ -153,13 +164,13 @@ void arrange_container(struct container *con, int container_count, bool preserve
     // add one which represents the master area
     int n = MAX(0, con->position - lt.nmaster) + 1;
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.id);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.lua_index);
     struct wlr_fbox rel_geom = lua_unbox_layout(L, n);
 
     struct wlr_box box = get_absolute_box(rel_geom, m->root->geom);
     // TODO fix this function, hard to read
     apply_nmaster_transformation(&box, con->m, con->position, container_count);
-    m->ws->layout.id = luaL_ref(L, LUA_REGISTRYINDEX);
+    m->ws->layout.lua_index = luaL_ref(L, LUA_REGISTRYINDEX);
 
     if (!overlay)
         container_surround_gaps(&box, inner_gap);
@@ -216,16 +227,12 @@ void update_hidden_containers(struct monitor *m)
     struct container *con;
     // because the master are is included in n aswell as nmaster we have to
     // subtract the solution by one to count
-    printf("n: %i: nmaster: %i\n", m->ws->layout.n, m->ws->layout.nmaster);
     int count = m->ws->layout.n + m->ws->layout.nmaster-1;
-    printf("count: %i\n", count);
     wl_list_for_each(con, &containers, mlink) {
-        printf("m: %p con: %p existon: %i\n", m, con->m, existon(con, m));
         if (!existon(con, m) || con->floating)
             continue;
 
         con->hidden = i > count;
-        printf("set hidden: %i\n", con->hidden);
         i++;
     }
 }
