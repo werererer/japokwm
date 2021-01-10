@@ -286,7 +286,7 @@ static void ipc_send_event(const char *json_string, enum ipc_command_type event)
 }
 
 void ipc_event_workspace() {
-  ipc_send_event("", IPC_EVENT_WORKSPACE);
+    ipc_send_event("", IPC_EVENT_WORKSPACE);
 }
 
 int ipc_client_handle_writable(int client_fd, uint32_t mask, void *data) {

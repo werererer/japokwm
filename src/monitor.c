@@ -137,6 +137,16 @@ void destroy_monitor(struct wl_listener *listener, void *data)
     wl_list_remove(&m->link);
 }
 
+void center_mouse_in_monitor(struct monitor *m)
+{
+    if (!m)
+        return;
+
+    int xcenter = m->geom.x + m->geom.width/2;
+    int ycenter = m->geom.y + m->geom.height/2;
+    wlr_cursor_warp(server.cursor, NULL, xcenter, ycenter);
+}
+
 void set_selected_monitor(struct monitor *m)
 {
     if (selected_monitor == m)
@@ -145,12 +155,10 @@ void set_selected_monitor(struct monitor *m)
 
     selected_monitor = m;
     set_workspace(m, m->ws);
-    /* int xcentre = m->geom.x + (float)m->geom.width/2; */
-    /* int ycentre = m->geom.y + (float)m->geom.height/2; */
-    int xcentre = server.cursor->x;
-    int ycentre = server.cursor->y;
-    /* wlr_cursor_warp(server.cursor, NULL, xcentre, ycentre); */
-    focus_container(xytocontainer(xcentre, ycentre), m, FOCUS_NOOP);
+    int x = server.cursor->x;
+    int y = server.cursor->x;
+
+    focus_container(xytocontainer(x, y), m, FOCUS_NOOP);
     arrange(LAYOUT_NOOP);
 }
 

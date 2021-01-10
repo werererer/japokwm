@@ -8,17 +8,17 @@ static size_t modifiers;
 /*
  * convert mod to mask
  */
-inline static unsigned int modMask(unsigned int x)
+inline static unsigned int mod_to_mask(unsigned int x)
 {
     return 1 << x;
 }
 
-static void modToString(char *res, unsigned int mod)
+static void mod_to_string(char *res, unsigned int mod)
 {
     lua_getglobal(L, "mods");
     for (int i = 0; i < 7; i++) {
         modifiers = mod;
-        if ((mod & modMask(i)) != 0) {
+        if ((mod & mod_to_mask(i)) != 0) {
             lua_rawgeti(L, -1, i+1);
             strcat(res, luaL_checkstring(L, -1));
             strcat(res, " ");
@@ -28,9 +28,9 @@ static void modToString(char *res, unsigned int mod)
     lua_pop(L, 1);
 }
 
-static void symToBinding(char *res, int mods, int sym)
+static void sym_to_binding(char *res, int mods, int sym)
 {
-    modToString(res, mods);
+    mod_to_string(res, mods);
     strcat(res, XKeysymToString(sym));
 }
 
@@ -84,7 +84,7 @@ static bool process_binding(char *bind, const char *reference)
 bool button_pressed(int mods, int sym)
 {
     char bind[128] = "";
-    symToBinding(bind, mods, sym);
+    sym_to_binding(bind, mods, sym);
     bool handled = process_binding(bind, "buttons");
     return handled;
 }
@@ -92,7 +92,7 @@ bool button_pressed(int mods, int sym)
 bool key_pressed(int mods, int sym)
 {
     char bind[128] = "";
-    symToBinding(bind, mods, sym);
+    sym_to_binding(bind, mods, sym);
     bool handled = process_binding(bind, "keys");
     return handled;
 }

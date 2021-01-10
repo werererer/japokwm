@@ -37,6 +37,7 @@ extern struct wl_list layer_stack;
 extern struct wl_list popups;
 
 
+void center_mouse_in_monitor(struct monitor *m);
 void create_monitor(struct wl_listener *listener, void *data);
 void destroy_monitor(struct wl_listener *listener, void *data);
 void focusmon(int i);

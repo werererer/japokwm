@@ -381,6 +381,7 @@ int tag(lua_State *L)
     struct container *sel = selected_container(m);
 
     ipc_event_workspace();
+    center_mouse_in_monitor(selected_monitor);
 
     if (!sel)
         return 0;
@@ -422,10 +423,16 @@ int view(lua_State *L)
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
     struct workspace *ws = get_workspace(ui);
+
     if (is_workspace_occupied(ws)) {
+        if (ws->m == selected_monitor)
+            return 0;
+
         set_selected_monitor(ws->m);
+        center_mouse_in_monitor(selected_monitor);
         return 0;
     }
+
     set_next_unoccupied_workspace(m, ws);
     focus_top_container(m, FOCUS_NOOP);
     arrange(false);
