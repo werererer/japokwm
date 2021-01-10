@@ -52,8 +52,8 @@ static void configure_layer_shell_container_geom(struct container *con, struct w
     int desired_height = con->client->surface.layer->current.desired_height;
 
     struct wlr_box geom = {
-        .x = ref.x,
-        .y = ref.y,
+        .x = ref.x + m->geom.x,
+        .y = ref.y + m->geom.y,
         .width = desired_width != 0 ? desired_width : m->geom.width,
         .height = desired_height != 0 ? desired_height : m->geom.height,
     };

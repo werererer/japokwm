@@ -21,6 +21,8 @@ struct render_data render_data;
 static void render(struct wlr_surface *surface, int sx, int sy, void *data);
 static void render_containers(struct monitor *m, pixman_region32_t *output_damage);
 static void render_independents(struct monitor *m);
+static void render_layershell(struct monitor *m,
+        enum zwlr_layer_shell_v1_layer layer, pixman_region32_t *output_damage);
 static void scissor_output(struct wlr_output *output, pixman_box32_t *rect);
 static void render_texture(struct wlr_output *wlr_output, pixman_region32_t *output_damage,
         struct wlr_texture *texture, const struct wlr_box *box);
@@ -313,13 +315,7 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
         /* This calls our render function for each surface among the
          * xdg_surface's toplevel and popups. */
 
-        struct wlr_box box = {
-            .x = con->geom.x,
-            .y = con->geom.y,
-            .width = con->geom.width,
-            .height = con->geom.height,
-        };
-        render_surface_iterator(m, get_wlrsurface(con->client), &box, output_damage);
+        render_surface_iterator(m, get_wlrsurface(con->client), &con->geom, output_damage);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);

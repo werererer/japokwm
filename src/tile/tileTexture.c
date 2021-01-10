@@ -16,16 +16,6 @@
 #include <stdlib.h>
 
 bool overlay = false;
-// TODO: rewrite getPosition
-/* static struct wlr_box getPosition(struct posTexture *ptexture) */
-/* { */
-/*     struct wlr_box container; */
-/*     container.x = ptexture->x; */
-/*     container.y = ptexture->y; */
-/*     container.width = ptexture->texture->width; */
-/*     container.height = ptexture->texture->height; */
-/*     return container; */
-/* } */
 
 struct pos_texture *create_textbox(struct wlr_box box, float box_color[],
                                  float text_color[], char* text)
