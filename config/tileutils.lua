@@ -299,8 +299,6 @@ end
 function Update_layout(n)
     print("start")
     local i = math.max(math.min(#Layout_data, n), 1)
-    print("LAYOUT_DATA0: ", Layout_data)
-    print("LAYOUT_DATA1: ", #Layout_data)
 
     if Update then
       Update(i)

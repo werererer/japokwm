@@ -369,6 +369,8 @@ void motionnotify(uint32_t time)
     if (!action && con) {
         pointer_focus(con, surface, sx, sy, time);
     }
+    printf("damage: %p\n", selected_monitor);
+    wlr_output_damage_add_whole(selected_monitor->damage);
 }
 
 int tag(lua_State *L)

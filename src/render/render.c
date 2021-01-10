@@ -24,8 +24,64 @@ static void render_independents(struct monitor *m);
 static void render_texture(struct pos_texture *texture);
 static void scissor_output(struct wlr_output *output, pixman_box32_t *rect);
 static void render_t(struct wlr_output *wlr_output, pixman_region32_t *output_damage,
-        struct wlr_texture *texture, const struct wlr_box *box,
-        const float matrix[static 9]);
+        struct wlr_texture *texture, const struct wlr_box *box);
+
+static void render(struct wlr_surface *surface, int sx, int sy, void *data)
+{
+    /* This function is called for every surface that needs to be rendered. */
+    struct render_data *rdata = data;
+    struct wlr_output *output = rdata->output;
+    double ox = 0, oy = 0;
+    struct wlr_box obox;
+    float matrix[9];
+    enum wl_output_transform transform;
+
+    /* We first obtain a wlr_texture, which is a GPU resource. wlroots
+     * automatically handles negotiating these with the client. The underlying
+     * resource could be an opaque handle passed from the client, or the client
+     * could have sent a pixel buffer which we copied to the GPU, or a few other
+     * means. You don't have to worry about this, wlroots takes care of it. */
+    struct wlr_texture *texture = wlr_surface_get_texture(surface);
+    if (!texture)
+        return;
+
+    /* The client has a position in layout coordinates. If you have two displays,
+     * one next to the other, both 1080p, a client on the rightmost display might
+     * have layout coordinates of 2000,100. We need to translate that to
+     * output-local coordinates, or (2000 - 1920). */
+    wlr_output_layout_output_coords(server.output_layout, output, &ox, &oy);
+
+    /* We also have to apply the scale factor for HiDPI outputs. This is only
+     * part of the puzzle, dwl does not fully support HiDPI. */
+    obox.x = ox + rdata->x + sx;
+    obox.y = oy + rdata->y + sy;
+    obox.width = surface->current.width;
+    obox.height = surface->current.height;
+    scale_box(&obox, output->scale);
+
+    /*
+     * Those familiar with OpenGL are also familiar with the role of matrices
+     * in graphics programming. We need to prepare a matrix to render the
+     * client with. wlr_matrix_project_box is a helper which takes a box with
+     * a desired x, y coordinates, width and height, and an output geometry,
+     * then prepares an orthographic projection and multiplies the necessary
+     * transforms to produce a model-view-projection matrix.
+     *
+     * Naturally you can do this any way you like, for example to make a 3D
+     * compositor.
+     */
+    transform = wlr_output_transform_invert(surface->current.transform);
+    wlr_matrix_project_box(matrix, &obox, transform, 0,
+        output->transform_matrix);
+
+    /* This takes our matrix, the texture, and an alpha, and performs the actual
+     * rendering on the GPU. */
+    wlr_render_texture_with_matrix(drw, texture, matrix, 1);
+
+    /* This lets the client know that we've displayed that frame and it can
+     * prepare another one now if it likes. */
+    wlr_surface_send_frame_done(surface, rdata->when);
+}
 
 // _box.x and .y are expected to be layout-local
 // _box.width and .height are expected to be output-buffer-local
@@ -37,8 +93,6 @@ void render_rect(struct monitor *m, pixman_region32_t *output_damage,
 
     struct wlr_box box;
     memcpy(&box, _box, sizeof(struct wlr_box));
-    box.x -= m->geom.x * wlr_output->scale;
-    box.y -= m->geom.y * wlr_output->scale;
 
     pixman_region32_t damage;
     pixman_region32_init(&damage);
@@ -114,7 +168,7 @@ void output_surface_for_each_surface(struct monitor *m, struct wlr_surface
 
 static void render_t(struct wlr_output *wlr_output,
         pixman_region32_t *output_damage, struct wlr_texture *texture,
-        const struct wlr_box *box, const float matrix[static 9])
+        const struct wlr_box *box)
 {
     struct wlr_renderer *renderer = wlr_backend_get_renderer(wlr_output->backend);
 
@@ -122,17 +176,20 @@ static void render_t(struct wlr_output *wlr_output,
     pixman_region32_init(&damage);
     pixman_region32_union_rect(&damage, &damage, box->x, box->y, box->width, box->height);
     pixman_region32_intersect(&damage, &damage, output_damage);
-    if (!pixman_region32_not_empty(&damage)) {
-        pixman_region32_fini(&damage);
-        return;
-    }
+    if (!pixman_region32_not_empty(&damage))
+        goto finish_damage;
 
+    printf("render start\n");
     int nrects;
     pixman_box32_t *rects = pixman_region32_rectangles(&damage, &nrects);
     for (int i = 0; i < nrects; i++) {
         scissor_output(wlr_output, &rects[i]);
-        wlr_render_texture_with_matrix(renderer, texture, matrix, 1.0f);
+        wlr_render_texture(renderer, texture, wlr_output->transform_matrix, box->x, box->y, 1.0f);
     }
+    printf("render end\n");
+
+finish_damage:
+    pixman_region32_fini(&damage);
 }
 
 static void render_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct wlr_box *box, pixman_region32_t *output_damage)
@@ -140,90 +197,29 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
     struct wlr_texture *texture = wlr_surface_get_texture(surface);
     struct wlr_output *wlr_output = m->wlr_output;
 
-    if (!texture) {
+    if (!texture)
         return;
-    }
 
-    scale_box(box, m->wlr_output->scale);
-
-    float matrix[9];
-    enum wl_output_transform transform = wlr_output_transform_invert(surface->current.transform);
-    wlr_matrix_project_box(matrix, box, transform, 0.0f, wlr_output->transform_matrix);
+    scale_box(box, wlr_output->scale);
 
     /* The client has a position in layout coordinates. If you have two displays,
      * one next to the other, both 1080p, a client on the rightmost display might
      * have layout coordinates of 2000,100. We need to translate that to
      * output-local coordinates, or (2000 - 1920). */
-    double ox, oy;
-    wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
+    double ox = box->x;
+    double oy = box->y;
+    wlr_output_layout_output_coords(server.output_layout, wlr_output, &ox, &oy);
 
     struct wlr_box obox = {
         /* We also have to apply the scale factor for HiDPI outputs. This is only
          * part of the puzzle, dwl does not fully support HiDPI. */
-        .x = box->x + ox,
-        .y = box->y + oy,
+        .x = ox,
+        .y = oy,
         .width = surface->current.width,
         .height = surface->current.height,
     };
 
-    render_t(wlr_output, output_damage, texture, &obox, matrix);
-}
-
-static void render(struct wlr_surface *surface, int sx, int sy, void *data)
-{
-    /* This function is called for every surface that needs to be rendered. */
-    struct render_data *rdata = data;
-    struct wlr_output *output = rdata->output;
-    struct wlr_box obox;
-    float matrix[9];
-    enum wl_output_transform transform;
-
-    /* We first obtain a wlr_texture, which is a GPU resource. wlroots
-     * automatically handles negotiating these with the client. The underlying
-     * resource could be an opaque handle passed from the client, or the client
-     * could have sent a pixel buffer which we copied to the GPU, or a few other
-     * means. You don't have to worry about this, wlroots takes care of it. */
-    struct wlr_texture *texture = wlr_surface_get_texture(surface);
-    if (!texture)
-        return;
-
-    double ox = 0, oy = 0;
-    /* The client has a position in layout coordinates. If you have two displays,
-     * one next to the other, both 1080p, a client on the rightmost display might
-     * have layout coordinates of 2000,100. We need to translate that to
-     * output-local coordinates, or (2000 - 1920). */
-    wlr_output_layout_output_coords(server.output_layout, output, &ox, &oy);
-
-    /* We also have to apply the scale factor for HiDPI outputs. This is only
-     * part of the puzzle, dwl does not fully support HiDPI. */
-    obox.x = ox + rdata->x + sx;
-    obox.y = oy + rdata->y + sy;
-    obox.width = surface->current.width;
-    obox.height = surface->current.height;
-    scale_box(&obox, output->scale);
-
-    /*
-     * Those familiar with OpenGL are also familiar with the role of matrices
-     * in graphics programming. We need to prepare a matrix to render the
-     * client with. wlr_matrix_project_box is a helper which takes a box with
-     * a desired x, y coordinates, width and height, and an output geometry,
-     * then prepares an orthographic projection and multiplies the necessary
-     * transforms to produce a model-view-projection matrix.
-     *
-     * Naturally you can do this any way you like, for example to make a 3D
-     * compositor.
-     */
-    transform = wlr_output_transform_invert(surface->current.transform);
-    wlr_matrix_project_box(matrix, &obox, transform, 0,
-        output->transform_matrix);
-
-    /* This takes our matrix, the texture, and an alpha, and performs the actual
-     * rendering on the GPU. */
-    wlr_render_texture_with_matrix(drw, texture, matrix, 1);
-
-    /* This lets the client know that we've displayed that frame and it can
-     * prepare another one now if it likes. */
-    wlr_surface_send_frame_done(surface, rdata->when);
+    render_t(wlr_output, output_damage, texture, &obox);
 }
 
 static void
@@ -256,9 +252,8 @@ damage_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct w
 
 void output_damage_surface(struct monitor *m, struct wlr_surface *surface, double lx, double ly, bool whole)
 {
-    if (!m->wlr_output->enabled) {
+    if (!m->wlr_output->enabled)
         return;
-    }
 
     double ox = lx, oy = ly;
     wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
@@ -321,7 +316,13 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
         /* This calls our render function for each surface among the
          * xdg_surface's toplevel and popups. */
 
-        render_surface_iterator(m, get_wlrsurface(con->client), &con->geom, output_damage);
+        struct wlr_box box = {
+            .x = con->geom.x,
+            .y = con->geom.y,
+            .width = con->geom.width,
+            .height = con->geom.height,
+        };
+        render_surface_iterator(m, get_wlrsurface(con->client), &box, output_damage);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);

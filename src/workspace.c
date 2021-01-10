@@ -103,5 +103,6 @@ void set_workspace(struct monitor *m, struct workspace *ws)
 
     m->ws = ws;
     ws->m = m;
+    // TODO is wlr_output_damage_whole better? because of floating windows
     root_damage_whole(m->root);
 }
