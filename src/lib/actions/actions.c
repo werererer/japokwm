@@ -77,13 +77,9 @@ int get_tabcount(lua_State *L)
 
 int arrange_this(lua_State *L)
 {
-    lua_getglobal(L, "Test");
-    lua_call_safe(L, 0, 0, 0);
     bool reset = lua_toboolean(L, -1);
     lua_pop(L, 1);
-    printf("start arrange\n");
     arrange(reset);
-    printf("end arrange\n");
     return 0;
 }
 
@@ -128,11 +124,9 @@ int spawn(lua_State *L)
 int update_layout(lua_State *L)
 {
     struct layout lt = get_config_layout(L, "layout");
-
-    // TODO: what does this function do?
-    /* lua_pushstring(L, prev_layout.name); */
+    // deselect
+    lua_pushstring(L, lt.name);
     unload_layout(L);
-
     set_selected_layout(selected_monitor->ws, lt);
     arrange(LAYOUT_RESET);
     return 0;
@@ -241,6 +235,7 @@ int move_resize(lua_State *L)
             grabcy = server.cursor->y - grabc->geom.y;
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
                     "fleur", server.cursor);
+            printf("clear2\n");
             wlr_seat_pointer_notify_clear_focus(server.seat);
             arrange(false);
             break;
@@ -254,6 +249,7 @@ int move_resize(lua_State *L)
                     grabc->geom.y + grabc->geom.height);
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
                     "bottom_right_corner", server.cursor);
+            printf("clear3\n");
             wlr_seat_pointer_notify_clear_focus(server.seat);
             arrange(false);
             break;
@@ -263,30 +259,7 @@ int move_resize(lua_State *L)
     return 0;
 }
 
-static struct wlr_surface *container_get_popup_at(struct container *con, double x, double y, double *sx, double *sy)
-{
-    struct wlr_surface *surface;
-
-    /* absolute mouse position to relative in regards to
-     * the client */
-    int lx = x - con->geom.x;
-    int ly = y - con->geom.y;
-    switch (con->client->type) {
-        case XDG_SHELL:
-            surface = wlr_xdg_surface_surface_at(con->client->surface.xdg, lx, ly, sx, sy);
-            break;
-        case LAYER_SHELL:
-            surface = wlr_layer_surface_v1_surface_at(con->client->surface.layer, lx, ly, sx, sy);
-            break;
-        default:
-            surface = NULL;
-            break;
-    }
-
-    return surface;
-}
-
-// TODO optimize this function (REWRITE)
+// TODO optimize this function
 void motionnotify(uint32_t time)
 {
     double sx = 0, sy = 0;
@@ -326,10 +299,31 @@ void motionnotify(uint32_t time)
     struct container *con;
     struct monitor *m = selected_monitor;
     if ((con = selected_container(m))) {
-        is_popup = !wl_list_empty(&con->client->surface.xdg->popups);
-        if (is_popup) {
-            surface = container_get_popup_at(con, server.cursor->x, server.cursor->y,
-                    &sx, &sy);
+        switch (con->client->type) {
+            case XDG_SHELL:
+                is_popup = !wl_list_empty(&con->client->surface.xdg->popups);
+                if (is_popup) {
+                    surface = wlr_xdg_surface_surface_at(
+                            con->client->surface.xdg,
+                            /* absolute mouse position to relative in regards to
+                             * the client */
+                            server.cursor->x - con->geom.x,
+                            server.cursor->y - con->geom.y,
+                            &sx, &sy);
+                }
+                break;
+            case LAYER_SHELL:
+                is_popup = !wl_list_empty(&con->client->surface.layer->popups);
+                if (is_popup) {
+                    surface = wlr_layer_surface_v1_surface_at(
+                            con->client->surface.layer,
+                            server.cursor->x - con->geom.x,
+                            server.cursor->y - con->geom.y,
+                            &sx, &sy);
+                }
+                break;
+            default:
+                break;
         }
 
         // if surface and subsurface exit
@@ -369,8 +363,6 @@ void motionnotify(uint32_t time)
     if (!action && con) {
         pointer_focus(con, surface, sx, sy, time);
     }
-    printf("damage: %p\n", selected_monitor);
-    wlr_output_damage_add_whole(selected_monitor->damage);
 }
 
 int tag(lua_State *L)
@@ -381,7 +373,6 @@ int tag(lua_State *L)
     struct container *sel = selected_container(m);
 
     ipc_event_workspace();
-    center_mouse_in_monitor(selected_monitor);
 
     if (!sel)
         return 0;
@@ -408,6 +399,7 @@ int toggle_tag(lua_State *L)
         return 0;
     struct workspace *ws = get_workspace(ui);
     if (is_workspace_occupied(ws)) {
+        printf("set_selected_monitor\n");
         set_selected_monitor(ws->m);
         return 0;
     }
@@ -423,16 +415,10 @@ int view(lua_State *L)
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
     struct workspace *ws = get_workspace(ui);
-
     if (is_workspace_occupied(ws)) {
-        if (ws->m == selected_monitor)
-            return 0;
-
         set_selected_monitor(ws->m);
-        center_mouse_in_monitor(selected_monitor);
         return 0;
     }
-
     set_next_unoccupied_workspace(m, ws);
     focus_top_container(m, FOCUS_NOOP);
     arrange(false);
@@ -527,6 +513,7 @@ int load_layout(lua_State *L)
 {
     const char *layout = luaL_checkstring(L, -1);
     lua_pop(L, 1);
+    selected_monitor->ws->layout.name = layout;
 
     char *config_path = get_config_file("layouts");
     char file[NUM_CHARS];
@@ -543,7 +530,7 @@ int load_layout(lua_State *L)
         return 0;
     }
 
-    lua_call_safe(L, 0, 0, 0);
+    lua_pcall(L, 0, 0, 0);
     lua_pop(L, 1);
     return 0;
 }
@@ -568,7 +555,7 @@ int unload_layout(lua_State *L)
         return 0;
     }
 
-    lua_call_safe(L, 0, 0, 0);
+    lua_pcall(L, 0, 0, 0);
     lua_pop(L, 1);
     return 0;
 }

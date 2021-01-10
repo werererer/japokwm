@@ -170,14 +170,6 @@ void arrange_container(struct container *con, int container_count, bool preserve
     // TODO fix this function, hard to read
     apply_nmaster_transformation(&box, con->m, con->position, container_count);
     m->ws->layout.lua_index = luaL_ref(L, LUA_REGISTRYINDEX);
-    printf("rel_geom.x: %f\n", rel_geom.x);
-    printf("rel_geom.y: %f\n", rel_geom.y);
-    printf("rel_geom.width: %f\n", rel_geom.width);
-    printf("rel_geom.height: %f\n", rel_geom.height);
-    printf("m->root->geom.x: %i\n", m->root->geom.x);
-    printf("m->root->geom.y: %i\n", m->root->geom.y);
-    printf("m->root->geom.width: %i\n", m->root->geom.width);
-    printf("m->root->geom.height: %i\n", m->root->geom.height);
     printf("box.x: %i\n", box.x);
     printf("box.y: %i\n", box.y);
     printf("box.width: %i\n", box.width);
