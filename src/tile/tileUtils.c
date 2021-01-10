@@ -20,12 +20,14 @@
 void arrange(enum layout_actions action)
 {
     struct monitor *m;
+    printf("start arrange\n");
     arrange_monitor(selected_monitor, action);
     wl_list_for_each(m, &mons, link) {
         if (m == selected_monitor)
             continue;
         arrange_monitor(m, action);
     }
+    printf("end arrange\n");
 }
 
 /* update layout and was set in the arrange function */
@@ -114,7 +116,6 @@ static void lua_reset_layout(struct monitor *m)
 
 void arrange_monitor(struct monitor *m, enum layout_actions action)
 {
-    printf("start arrange mon\n");
     /* Get effective monitor geometry to use for window area */
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     set_root_area(m->root, m->geom);
@@ -133,13 +134,12 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
 
     // first reset layout in lua
     if (is_same_layout(prev_layout, m->ws->layout) || action == LAYOUT_RESET) {
-        printf("start reset\n");
         lua_reset_layout(m);
-        printf("end reset\n");
     }
 
     int position = 1;
     struct container *con;
+    printf("con count: %i\n", wl_list_length(&containers));
     wl_list_for_each(con, &containers, mlink) {
         if (!visibleon(con, m))
             continue;
@@ -160,7 +160,7 @@ void arrange_container(struct container *con, int container_count, bool preserve
 
     struct monitor *m = con->m;
     struct layout lt = m->ws->layout;
-    // add one which represents the master area
+    // the 1 added represents the master area
     int n = MAX(0, con->position - lt.nmaster) + 1;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.lua_index);
@@ -170,6 +170,18 @@ void arrange_container(struct container *con, int container_count, bool preserve
     // TODO fix this function, hard to read
     apply_nmaster_transformation(&box, con->m, con->position, container_count);
     m->ws->layout.lua_index = luaL_ref(L, LUA_REGISTRYINDEX);
+    printf("rel_geom.x: %f\n", rel_geom.x);
+    printf("rel_geom.y: %f\n", rel_geom.y);
+    printf("rel_geom.width: %f\n", rel_geom.width);
+    printf("rel_geom.height: %f\n", rel_geom.height);
+    printf("m->root->geom.x: %i\n", m->root->geom.x);
+    printf("m->root->geom.y: %i\n", m->root->geom.y);
+    printf("m->root->geom.width: %i\n", m->root->geom.width);
+    printf("m->root->geom.height: %i\n", m->root->geom.height);
+    printf("box.x: %i\n", box.x);
+    printf("box.y: %i\n", box.y);
+    printf("box.width: %i\n", box.width);
+    printf("box.height: %i\n", box.height);
 
     if (!overlay)
         container_surround_gaps(&box, inner_gap);

@@ -179,14 +179,12 @@ static void render_t(struct wlr_output *wlr_output,
     if (!pixman_region32_not_empty(&damage))
         goto finish_damage;
 
-    printf("render start\n");
     int nrects;
     pixman_box32_t *rects = pixman_region32_rectangles(&damage, &nrects);
     for (int i = 0; i < nrects; i++) {
         scissor_output(wlr_output, &rects[i]);
         wlr_render_texture(renderer, texture, wlr_output->transform_matrix, box->x, box->y, 1.0f);
     }
-    printf("render end\n");
 
 finish_damage:
     pixman_region32_fini(&damage);

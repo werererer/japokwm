@@ -925,6 +925,7 @@ void unmapnotify(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
+    printf("unmapnotify\n");
 
     container_damage_whole(c->con);
     destroy_container(c->con);

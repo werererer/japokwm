@@ -490,11 +490,23 @@ void set_container_floating(struct container *con, bool floating)
         return;
     if (con->floating == floating)
         return;
-    con->m = selected_monitor;
+
     con->floating = floating;
+
     if (con->floating) {
         lift_container(con);
         wl_list_remove(&con->mlink);
         add_container_to_monitor_containers(con, -1);
+    } else {
+        set_container_monitor(con, selected_monitor);
     }
+}
+
+void set_container_monitor(struct container *con, struct monitor *m)
+{
+    if (con->m == m)
+        return;
+
+    con->m = m;
+    con->client->ws = m->ws;
 }
