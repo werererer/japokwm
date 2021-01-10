@@ -21,9 +21,8 @@ struct render_data render_data;
 static void render(struct wlr_surface *surface, int sx, int sy, void *data);
 static void render_containers(struct monitor *m, pixman_region32_t *output_damage);
 static void render_independents(struct monitor *m);
-static void render_texture(struct pos_texture *texture);
 static void scissor_output(struct wlr_output *output, pixman_box32_t *rect);
-static void render_t(struct wlr_output *wlr_output, pixman_region32_t *output_damage,
+static void render_texture(struct wlr_output *wlr_output, pixman_region32_t *output_damage,
         struct wlr_texture *texture, const struct wlr_box *box);
 
 static void render(struct wlr_surface *surface, int sx, int sy, void *data)
@@ -166,7 +165,7 @@ void output_surface_for_each_surface(struct monitor *m, struct wlr_surface
     wlr_surface_for_each_surface(surface, output_for_each_surface_iterator, &data);
 }
 
-static void render_t(struct wlr_output *wlr_output,
+static void render_texture(struct wlr_output *wlr_output,
         pixman_region32_t *output_damage, struct wlr_texture *texture,
         const struct wlr_box *box)
 {
@@ -217,7 +216,7 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
         .height = surface->current.height,
     };
 
-    render_t(wlr_output, output_damage, texture, &obox);
+    render_texture(wlr_output, output_damage, texture, &obox);
 }
 
 static void
@@ -346,18 +345,6 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
         wlr_surface_send_frame_done(get_wlrsurface(con->client), &now);
-    }
-}
-
-static void render_texture(struct pos_texture *texture)
-{
-    if (postexture_visible_on(
-                texture,
-                selected_monitor,
-                selected_monitor->ws)) {
-        wlr_render_texture(drw, texture->texture,
-                selected_monitor->wlr_output->transform_matrix, texture->x,
-                texture->y, 1);
     }
 }
 
