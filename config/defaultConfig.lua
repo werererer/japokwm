@@ -10,29 +10,30 @@ Mod3 = Mods[2]
 Mod4 = Mods[7]
 -- also known as Alt Gr
 Mod5 = Mods[8]
-btn_left = "Pointer_Button1"
-btn_right = "Pointer_Button2"
-btn_middle = "Pointer_Button3"
-shift = Mods[1]
-ctrl = Mods[3]
+Btn_left = "Pointer_Button1"
+Btn_right = "Pointer_Button2"
+Btn_middle = "Pointer_Button3"
+Shift = Mods[1]
+Ctrl = Mods[3]
 
-cursor_mode = {
+Cursor_mode = {
     CUR_NORMAL = 0,
     CUR_MOVE = 1,
     CUR_RESIZE = 2,
 }
 
-layouts = {
+Layouts = {
     { "[M]", function() monocle() end },
     { "[]=", function() two_pane() end },
     { "><>", function() floating() end },
     { "gf", function() Load_layout("tmp") end },
 }
-layout = layouts[layout_id]
+-- TODO why can't I rename this variable?
+layout = Layouts[layout_id]
 
 function set_layout()
     layout_id = layout_id + 1
-    if layout_id > #layouts then
+    if layout_id > #Layouts then
         layout_id = 1
     end
     action.update_layout()
@@ -40,7 +41,7 @@ end
 
 function set_layout(i)
     layout_id = i
-    layout = layouts[i]
+    layout = Layouts[i]
     layout[2]()
     action.update_layout()
     action.arrange_this(false)
