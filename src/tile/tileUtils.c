@@ -20,14 +20,12 @@
 void arrange(enum layout_actions action)
 {
     struct monitor *m;
-    printf("start arrange\n");
     arrange_monitor(selected_monitor, action);
     wl_list_for_each(m, &mons, link) {
         if (m == selected_monitor)
             continue;
         arrange_monitor(m, action);
     }
-    printf("end arrange\n");
 }
 
 /* update layout and was set in the arrange function */
@@ -197,8 +195,8 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
                         con->m->geom.width,
                         con->m->geom.height);
                 break;
-            case X11_MANAGED:
             case X11_UNMANAGED:
+            case X11_MANAGED:
                 wlr_xwayland_surface_configure(con->client->surface.xwayland,
                         con->geom.x, con->geom.y, con->geom.width,
                         con->geom.height);

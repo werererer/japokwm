@@ -11,8 +11,6 @@ enum shell { XDG_SHELL, X11_MANAGED, X11_UNMANAGED, LAYER_SHELL }; /* client typ
 struct client {
     /* clients */
     struct wl_list link;
-    /* independents list */
-    struct wl_list ilink;
 
     float ratio;
     /* containers containing this client */

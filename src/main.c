@@ -215,6 +215,7 @@ void commitnotify(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, commit);
     struct container *con = c->con;
 
+    printf("type: %i\n", c->type);
     if (!con)
         return;
 
@@ -591,15 +592,19 @@ void maprequestx11(struct wl_listener *listener, void *data)
     struct wlr_xwayland_surface *xwayland_surface = c->surface.xwayland;
     struct monitor *m = selected_monitor;
 
+    c->commit.notify = commitnotify;
+    wl_signal_add(&xwayland_surface->surface->events.commit, &c->commit);
+
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
     c->ws = m->ws;
 
+    struct container *con = create_container(c, m);
+
     if (is_popup_menu(c)) {
-        wl_list_insert(&server.independents, &c->ilink);
+        wl_list_insert(&server.independents, &con->ilink);
         return;
     }
 
-    struct container *con = create_container(c, m);
     switch (c->type) {
         case X11_MANAGED:
             {
@@ -614,7 +619,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
             }
         case X11_UNMANAGED:
             {
-                wl_list_insert(&server.independents, &c->ilink);
+                wl_list_insert(&server.independents, &con->ilink);
 
                 con->on_top = true;
                 set_container_floating(con, true);
@@ -941,7 +946,8 @@ void unmapnotify(struct wl_listener *listener, void *data)
             wl_list_remove(&c->link);
             break;
         case X11_UNMANAGED:
-            wl_list_remove(&c->ilink);
+            // TODO
+            wl_list_remove(&c->con->ilink);
             break;
     }
 }

@@ -18,74 +18,16 @@
 struct wlr_renderer *drw;
 struct render_data render_data;
 
-static void render(struct wlr_surface *surface, int sx, int sy, void *data);
 static void render_containers(struct monitor *m, pixman_region32_t *output_damage);
-static void render_independents(struct monitor *m);
+static void render_independents(struct monitor *m, pixman_region32_t *output_damage);
 static void render_layershell(struct monitor *m,
         enum zwlr_layer_shell_v1_layer layer, pixman_region32_t *output_damage);
 static void scissor_output(struct wlr_output *output, pixman_box32_t *rect);
 static void render_texture(struct wlr_output *wlr_output, pixman_region32_t *output_damage,
         struct wlr_texture *texture, const struct wlr_box *box);
 
-static void render(struct wlr_surface *surface, int sx, int sy, void *data)
-{
-    /* This function is called for every surface that needs to be rendered. */
-    struct render_data *rdata = data;
-    struct wlr_output *output = rdata->output;
-    double ox = 0, oy = 0;
-    struct wlr_box obox;
-    float matrix[9];
-    enum wl_output_transform transform;
-
-    /* We first obtain a wlr_texture, which is a GPU resource. wlroots
-     * automatically handles negotiating these with the client. The underlying
-     * resource could be an opaque handle passed from the client, or the client
-     * could have sent a pixel buffer which we copied to the GPU, or a few other
-     * means. You don't have to worry about this, wlroots takes care of it. */
-    struct wlr_texture *texture = wlr_surface_get_texture(surface);
-    if (!texture)
-        return;
-
-    /* The client has a position in layout coordinates. If you have two displays,
-     * one next to the other, both 1080p, a client on the rightmost display might
-     * have layout coordinates of 2000,100. We need to translate that to
-     * output-local coordinates, or (2000 - 1920). */
-    wlr_output_layout_output_coords(server.output_layout, output, &ox, &oy);
-
-    /* We also have to apply the scale factor for HiDPI outputs. This is only
-     * part of the puzzle, dwl does not fully support HiDPI. */
-    obox.x = ox + rdata->x + sx;
-    obox.y = oy + rdata->y + sy;
-    obox.width = surface->current.width;
-    obox.height = surface->current.height;
-    scale_box(&obox, output->scale);
-
-    /*
-     * Those familiar with OpenGL are also familiar with the role of matrices
-     * in graphics programming. We need to prepare a matrix to render the
-     * client with. wlr_matrix_project_box is a helper which takes a box with
-     * a desired x, y coordinates, width and height, and an output geometry,
-     * then prepares an orthographic projection and multiplies the necessary
-     * transforms to produce a model-view-projection matrix.
-     *
-     * Naturally you can do this any way you like, for example to make a 3D
-     * compositor.
-     */
-    transform = wlr_output_transform_invert(surface->current.transform);
-    wlr_matrix_project_box(matrix, &obox, transform, 0,
-        output->transform_matrix);
-
-    /* This takes our matrix, the texture, and an alpha, and performs the actual
-     * rendering on the GPU. */
-    wlr_render_texture_with_matrix(drw, texture, matrix, 1);
-
-    /* This lets the client know that we've displayed that frame and it can
-     * prepare another one now if it likes. */
-    wlr_surface_send_frame_done(surface, rdata->when);
-}
-
-// _box.x and .y are expected to be layout-local
-// _box.width and .height are expected to be output-buffer-local
+/* _box.x and .y are expected to be layout-local
+   _box.width and .height are expected to be output-buffer-local */
 void render_rect(struct monitor *m, pixman_region32_t *output_damage,
         const struct wlr_box *_box, const float color[static 4]) {
     struct wlr_output *wlr_output = m->wlr_output;
@@ -214,8 +156,8 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
          * part of the puzzle, dwl does not fully support HiDPI. */
         .x = ox,
         .y = oy,
-        .width = surface->current.width,
-        .height = surface->current.height,
+        .width = box->width,
+        .height = box->height,
     };
 
     render_texture(wlr_output, output_damage, texture, &obox);
@@ -344,32 +286,17 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
     }
 }
 
-static void render_independents(struct monitor *m)
+static void render_independents(struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct client *c;
+    struct container *con;
 
-    wl_list_for_each_reverse(c, &server.independents, ilink) {
-        struct wlr_box geom = (struct wlr_box) {
-            .x = c->surface.xwayland->x,
-            .y = c->surface.xwayland->y,
-            .width = c->surface.xwayland->width,
-            .height = c->surface.xwayland->height,
-        };
-
-        /* Only render visible clients which show on this output */
-        if (!wlr_output_layout_intersects(server.output_layout, m->wlr_output, &geom))
-            continue;
+    wl_list_for_each_reverse(con, &server.independents, ilink) {
+        struct wlr_surface *surface = get_wlrsurface(con->client);
+        render_surface_iterator(m, surface, &con->geom, output_damage);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
-        struct render_data rdata = (struct render_data) {
-            .output = m->wlr_output,
-            .when = &now,
-            .x = c->surface.xwayland->x,
-            .y = c->surface.xwayland->y,
-        };
-    if (false)
-        wlr_surface_for_each_surface(c->surface.xwayland->surface, render, &rdata);
+        wlr_surface_send_frame_done(surface, &now);
     }
 }
 
@@ -420,7 +347,7 @@ void render_frame(struct monitor *m, pixman_region32_t *damage)
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM, damage);
     render_containers(m, damage);
-    render_independents(m);
+    render_independents(m, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY, damage);
 

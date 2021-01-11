@@ -19,6 +19,8 @@ struct container {
     struct wl_list flink;
     /* layer shell based clients */
     struct wl_list llink;
+    /* independents list */
+    struct wl_list ilink;
 
     /* layout-relative, includes border */
     struct wlr_box geom;
