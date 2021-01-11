@@ -15,7 +15,7 @@ inline static unsigned int mod_to_mask(unsigned int x)
 
 static void mod_to_string(char *res, unsigned int mod)
 {
-    lua_getglobal(L, "mods");
+    lua_getglobal(L, "Mods");
     for (int i = 0; i < 7; i++) {
         modifiers = mod;
         if ((mod & mod_to_mask(i)) != 0) {
@@ -85,7 +85,8 @@ bool button_pressed(int mods, int sym)
 {
     char bind[128] = "";
     sym_to_binding(bind, mods, sym);
-    bool handled = process_binding(bind, "buttons");
+    // TODO make this safer
+    bool handled = process_binding(bind, "Buttons");
     return handled;
 }
 
@@ -93,7 +94,7 @@ bool key_pressed(int mods, int sym)
 {
     char bind[128] = "";
     sym_to_binding(bind, mods, sym);
-    bool handled = process_binding(bind, "keys");
+    bool handled = process_binding(bind, "Keys");
     return handled;
 }
 

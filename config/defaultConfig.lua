@@ -2,19 +2,19 @@ require "tile"
 
 -- TODO: config files must print error messages
 -- you can find names in keysym.jl
-mods = {"Shift_L", "Caps_Lock", "Control_L", "Alt_L", "", "", "Super_L", "ISO_Level3_Shift"}
-mod1 = mods[4]
+Mods = {"Shift_L", "Caps_Lock", "Control_L", "Alt_L", "", "", "Super_L", "ISO_Level3_Shift"}
+mod1 = Mods[4]
 -- TODO what position in mods array?
 mod2 = "Num_Lock"
-mod3 = mods[2]
-mod4 = mods[7]
+mod3 = Mods[2]
+mod4 = Mods[7]
 -- also known as Alt Gr
-mod5 = mods[8]
+mod5 = Mods[8]
 btn_left = "Pointer_Button1"
 btn_right = "Pointer_Button2"
 btn_middle = "Pointer_Button3"
-shift = mods[1]
-ctrl = mods[3]
+shift = Mods[1]
+ctrl = Mods[3]
 
 cursor_mode = {
     CUR_NORMAL = 0,

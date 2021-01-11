@@ -49,7 +49,7 @@ termcmd = "/usr/bin/termite"
 
 mod = mod1
 -- maps (between 1 and 4)
-keys = {
+Keys = {
     {mod.." "..shift.." Return",           function(n) action.spawn(termcmd) end},
     -- {mod.." period",      function(n) focusmon(1) end},
     -- {mod.." comma",       function(n) focusmon(-1) end},
@@ -91,7 +91,7 @@ keys = {
     {mod.." t",  function(n) action.set_floating(false)    end},
 }
 
-buttons = {
+Buttons = {
     {mod.." "..btn_left,    function(n) action.move_resize(cursor_mode.CUR_MOVE) end},
     {mod.." "..btn_right,   function(n) action.move_resize(cursor_mode.CUR_RESIZE) end},
 }
