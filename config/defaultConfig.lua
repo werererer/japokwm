@@ -23,24 +23,26 @@ Cursor_mode = {
 }
 
 Layouts = {
-    { "[M]", function() monocle() end },
-    { "[]=", function() two_pane() end },
-    { "><>", function() floating() end },
-    { "gf", function() Load_layout("tmp") end },
+    {"[M]", function() Load_layout("master") end},
+    {"[]=", function() Load_layout("two_pane") end},
+    {"||",  function() Load_layout("monocle") end},
+    {"--",  function() Load_layout("tmp") end },
 }
--- TODO why can't I rename this variable?
-layout = Layouts[layout_id]
 
-function set_layout()
-    layout_id = layout_id + 1
-    if layout_id > #Layouts then
-        layout_id = 1
+Layout_id = 1
+-- TODO why can't I rename this variable?
+layout = Layouts[Layout_id]
+
+function Set_layout()
+    Layout_id = Layout_id + 1
+    if Layout_id > #Layouts then
+        Layout_id = 1
     end
     action.update_layout()
 end
 
-function set_layout(i)
-    layout_id = i
+function Set_layout(i)
+    Layout_id = i
     layout = Layouts[i]
     layout[2]()
     action.update_layout()
@@ -48,4 +50,4 @@ function set_layout(i)
 end
 
 -- default
-mod = Mod1
+Mod = Mod1
