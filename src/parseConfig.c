@@ -76,6 +76,7 @@ int update_config(lua_State *L)
     repeat_delay = get_config_int(L, "repeat_delay");
     default_layout = get_config_layout(L, "default_layout");
     prev_layout = (struct layout) {
+        .name = "",
         .symbol = "",
         .lua_func_index = 0,
         .nmaster = 1,
@@ -100,7 +101,7 @@ int reload_config(lua_State *L)
 
     destroy_workspaces();
     update_config(L);
-    create_workspaces(tag_names);
+    create_workspaces(tag_names, default_layout);
 
     // reconfigure clients
     struct client *c = NULL;

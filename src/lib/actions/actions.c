@@ -123,12 +123,14 @@ int spawn(lua_State *L)
 
 int update_layout(lua_State *L)
 {
+    printf("update_layout\n");
     struct layout lt = get_config_layout(L, "layout");
     // deselect
-    lua_pushstring(L, lt.name);
+    lua_pushstring(L, prev_layout.name);
     unload_layout(L);
     set_selected_layout(selected_monitor->ws, lt);
     arrange(LAYOUT_RESET);
+    printf("finished uploading\n");
     return 0;
 }
 
@@ -511,6 +513,7 @@ int zoom(lua_State *L)
 
 int load_layout(lua_State *L)
 {
+    printf("load_layout\n");
     const char *layout = luaL_checkstring(L, -1);
     lua_pop(L, 1);
     selected_monitor->ws->layout.name = layout;
@@ -530,6 +533,7 @@ int load_layout(lua_State *L)
         return 0;
     }
 
+    printf("load_layout end\n");
     lua_pcall(L, 0, 0, 0);
     lua_pop(L, 1);
     return 0;
@@ -556,6 +560,7 @@ int unload_layout(lua_State *L)
     }
 
     lua_pcall(L, 0, 0, 0);
+
     lua_pop(L, 1);
     return 0;
 }

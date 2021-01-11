@@ -342,6 +342,7 @@ struct layout get_config_layout(lua_State *L, char *name)
 {
     lua_getglobal(L, name);
     struct layout layout = {
+        .name = "",
         .symbol = get_config_array_str(L, 1),
         .lua_func_index = get_config_array_func_id(L, 2),
         .n = 1,

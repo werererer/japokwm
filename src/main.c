@@ -773,7 +773,7 @@ int setup()
         return 1;
     }
     init_overlay();
-    create_workspaces(tag_names);
+    create_workspaces(tag_names, default_layout);
     /* The Wayland display is managed by libwayland. It handles accepting
      * clients from the Unix socket, manging Wayland globals, and so on. */
     server.display = wl_display_create();

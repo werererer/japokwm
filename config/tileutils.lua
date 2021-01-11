@@ -187,24 +187,19 @@ function Does_container_not_intersect_with(ref_con, con)
     or Is_container_over(ref_con, con)
 end
 
-function Reset_layout(layout_name)
-    local layout, master_layout, boxes
-    -- calls enter file
-    action.load_layout(layout_name)
-    if layout then
-        Layout_data = layout
-    end
-    if master_layout then
-        Master_layout_data = master_layout
-    end
-    if boxes then
-        Box_data = boxes
-    end
-end
-
 function Load_layout(layout_name)
-    Reset_layout(layout_name)
-    action.arrange_this(false);
+  local layout, master_layout, boxes
+  -- calls enter file
+  action.load_layout(layout_name)
+  if layout then
+    Layout_data = layout
+  end
+  if master_layout then
+    Master_layout_data = master_layout
+  end
+  if boxes then
+    Box_data = boxes
+  end
 end
 
 -- put all directions into a list

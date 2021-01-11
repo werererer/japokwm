@@ -188,12 +188,6 @@ function Resize_all(i, j, n, d)
     end
 end
 
-G = 4
-
-function Test()
-    print(debug.traceback())
-end
-
 function Resize_main_all(n, d)
     local i = math.max(math.min(info.get_this_container_count(), #Layout_data), 1) 
     for g=1,#Box_data do

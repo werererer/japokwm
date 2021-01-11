@@ -19,16 +19,6 @@ struct wl_list containers;
 struct wl_list layer_stack;
 struct wl_list popups;
 
-// /* monitors */
-// static const struct mon_rule monrules[] = {
-//     /* name       mfact nmaster scale layout       rotate/reflect */
-//     /* example of a HiDPI laptop monitor:
-//     { "eDP-1",    0.5,  1,      2,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL },
-//     */
-//     /* defaults */
-//     { NULL, 0.55, 1, 1, &default_layout, WL_OUTPUT_TRANSFORM_NORMAL },
-// };
-
 struct wl_list mons;
 struct monitor *selected_monitor = NULL;
 

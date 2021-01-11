@@ -41,7 +41,9 @@ end
 function set_layout(i)
     layout_id = i
     layout = layouts[i]
+    layout[2]()
     action.update_layout()
+    action.arrange_this(false)
 end
 
 function toggle_overlay()

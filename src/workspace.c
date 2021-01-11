@@ -10,7 +10,7 @@
 
 struct wlr_list workspaces;
 
-struct workspace *create_workspace(char *name, size_t id, struct layout lt)
+struct workspace *create_workspace(const char *name, size_t id, struct layout lt)
 {
     struct workspace *ws = malloc(sizeof(struct workspace));
     ws->name = name;
@@ -25,7 +25,7 @@ void destroy_workspace(struct workspace *ws)
     free(ws);
 }
 
-void create_workspaces(struct wlr_list tagNames)
+void create_workspaces(struct wlr_list tagNames, struct layout default_layout)
 {
     wlr_list_init(&workspaces);
     for (int i = 0; i < tagNames.length; i++) {
