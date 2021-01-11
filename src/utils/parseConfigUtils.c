@@ -150,10 +150,22 @@ int lua_call_safe(lua_State *L, int nargs, int nresults, int msgh)
     if (lua_status != LUA_OK) {
         const char *errmsg = luaL_checkstring(L, -1);
         lua_pop(L, 1);
-        printf("error: %s\n", errmsg);
         handle_error(errmsg);
     }
     return lua_status;
+}
+
+int lua_getglobal_safe(lua_State *L, const char *name)
+{
+    lua_getglobal(L, name);
+    if (lua_isnil(L, -1))
+    {
+        char c[NUM_CHARS] = "";
+        snprintf(c, NUM_CHARS, "ERROR: getglobal: %s == nil", name);
+        handle_error(c);
+        return LUA_ERRRUN;
+    }
+    return LUA_OK;
 }
 
 static void handle_error(const char *msg)
@@ -186,7 +198,7 @@ static char *get_config_array_str(lua_State *L, size_t i)
 
 char *get_config_str(lua_State *L, char *name)
 {
-    lua_getglobal(L, name);
+    lua_getglobal_safe(L, name);
     if (!lua_isstring(L, -1)) {
         char c[NUM_CHARS] = "";
         snprintf(c, NUM_CHARS, "%s is not a string", name);
@@ -216,7 +228,7 @@ static float get_config_array_float(lua_State *L, size_t i)
 
 float get_config_float(lua_State *L, char *name)
 {
-    lua_getglobal(L, name);
+    lua_getglobal_safe(L, name);
     if (!lua_isnumber(L, -1)) {
         /* write_to_file(fd, "ERROR: %s is not a number\n"); */
         char c[NUM_CHARS] = "";
@@ -245,7 +257,7 @@ static int get_config_array_int(lua_State *L, size_t i)
 
 int get_config_int(lua_State *L, char *name)
 {
-    lua_getglobal(L, name);
+    lua_getglobal_safe(L, name);
     if (!lua_isinteger(L, -1)) {
         char c[NUM_CHARS] = "";
         snprintf(c, NUM_CHARS, "%s is not an integer", name);
@@ -271,7 +283,7 @@ static bool get_config_array_bool(lua_State *L, size_t i)
 
 bool get_config_bool(lua_State *L, char *name)
 {
-    lua_getglobal(L, name);
+    lua_getglobal_safe(L, name);
     if (!lua_isboolean(L, -1)) {
         char c[NUM_CHARS] = "";
         snprintf(c, NUM_CHARS, "%s is not a boolean", name);
@@ -298,7 +310,7 @@ static int get_config_array_func_id(lua_State *L, size_t i)
 
 int get_config_func_id(lua_State *L, char *name)
 {
-    lua_getglobal(L, name);
+    lua_getglobal_safe(L, name);
     if (!lua_isfunction(L, -1)) {
         char c[NUM_CHARS] = "";
         snprintf(c, NUM_CHARS, "%s is not a function", name);
@@ -340,7 +352,7 @@ static struct layout get_config_array_layout(lua_State *L, size_t i)
 
 struct layout get_config_layout(lua_State *L, char *name)
 {
-    lua_getglobal(L, name);
+    lua_getglobal_safe(L, name);
     struct layout layout = {
         .name = "",
         .symbol = get_config_array_str(L, 1),
@@ -393,7 +405,7 @@ static struct mon_rule get_config_array_monrule(lua_State *L, size_t i)
 struct mon_rule get_config_monrule(lua_State *L, char *name)
 {
     struct mon_rule monrule;
-    lua_getglobal(L, name);
+    lua_getglobal_safe(L, name);
 
     monrule.name = get_config_array_str(L, 1);
     monrule.mfact = get_config_array_float(L, 2);
@@ -412,7 +424,7 @@ Key get_config_key(lua_State *L, char *name)
 void get_config_str_arr(lua_State *L, struct wlr_list *resArr, char *name)
 {
     //TODO cleanup !!!
-    lua_getglobal(L, name);
+    lua_getglobal_safe(L, name);
     size_t len = lua_rawlen(L, -1);
 
     for (int i = 1; i <= len; i++)
@@ -422,7 +434,7 @@ void get_config_str_arr(lua_State *L, struct wlr_list *resArr, char *name)
 
 void get_config_int_arr(lua_State *L, int resArr[], char *name)
 {
-    lua_getglobal(L, name);
+    lua_getglobal_safe(L, name);
     size_t len = lua_rawlen(L, -1);
 
     for (int i = 0; i < len; i++)
@@ -431,7 +443,7 @@ void get_config_int_arr(lua_State *L, int resArr[], char *name)
 
 void get_config_float_arr(lua_State *L, float resArr[], char *name)
 {
-    lua_getglobal(L, name);
+    lua_getglobal_safe(L, name);
     size_t len = lua_rawlen(L, -1);
 
     for (int i = 1; i <= len; i++)
@@ -442,7 +454,7 @@ void get_config_float_arr(lua_State *L, float resArr[], char *name)
 void get_config_layout_arr(lua_State *L, struct layout *layouts, char *name)
 {
     // TODO: debug or remove
-    /* lua_getglobal(L, name); */
+    /* lua_getglobal_safe(L, name); */
     /* size_t len = lua_rawlen(L, -1); */
 
     /* struct layout lt; */
@@ -462,7 +474,7 @@ void get_config_key_arr(lua_State *L, Key *keys, char *name)
 
 void get_config_rule_arr(lua_State *L, struct rule *rules, char *name)
 {
-    lua_getglobal(L, name);
+    lua_getglobal_safe(L, name);
     size_t len = lua_rawlen(L, -1);
 
     for (int i = 1; i <= len; i++)
@@ -472,7 +484,7 @@ void get_config_rule_arr(lua_State *L, struct rule *rules, char *name)
 
 void get_config_mon_rule_arr(lua_State *L, struct mon_rule *monrules, char *name)
 {
-    lua_getglobal(L, name);
+    lua_getglobal_safe(L, name);
     size_t len = lua_rawlen(L, -1);
 
     for (int i = 0; i < len; i++)

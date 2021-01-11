@@ -15,7 +15,7 @@ inline static unsigned int mod_to_mask(unsigned int x)
 
 static void mod_to_string(char *res, unsigned int mod)
 {
-    lua_getglobal(L, "Mods");
+    lua_getglobal_safe(L, "Mods");
     for (int i = 0; i < 7; i++) {
         modifiers = mod;
         if ((mod & mod_to_mask(i)) != 0) {
@@ -62,7 +62,7 @@ static bool is_same_keybind(const char *bind, const char *bind2)
 static bool process_binding(char *bind, const char *reference)
 {
     bool handled = false;
-    lua_getglobal(L, reference);
+    lua_getglobal_safe(L, reference);
     int len = lua_rawlen(L, -1);
     for (int i = 1; i <= len; i++) {
         lua_rawgeti(L, -1, i);
@@ -71,8 +71,7 @@ static bool process_binding(char *bind, const char *reference)
         lua_pop(L, 1);
         if (is_same_keybind(bind, ref)) {
             lua_rawgeti(L, -1, 2);
-            lua_pushinteger(L, selected_monitor->ws->layout.n);
-            lua_call_safe(L, 1, 0, 0);
+            lua_call_safe(L, 0, 0, 0);
             handled = true;
         }
         lua_pop(L, 1);
