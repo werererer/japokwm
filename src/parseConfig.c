@@ -86,8 +86,6 @@ int update_config(lua_State *L)
 
     /* commands */
     termcmd = get_config_str(L, "Termcmd");
-    get_config_key_arr(L, keys, "Keys");
-    get_config_key_arr(L, buttons, "Buttons");
 
     close_error_file();
     return 0;

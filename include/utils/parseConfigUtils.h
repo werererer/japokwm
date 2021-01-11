@@ -22,7 +22,6 @@ char *get_config_dir(const char *file);
 void append_to_lua_path(lua_State *L, const char *path);
 
 // get values
-Key get_config_key(lua_State *L, char *name);
 bool get_config_bool(lua_State *L, char *name);
 char* get_config_str(lua_State *L, char *name);
 float get_config_float(lua_State *L, char *name);
@@ -40,8 +39,6 @@ void call_function(lua_State *L, struct layout lt);
 void get_config_str_arr(lua_State *L, struct wlr_list *resArr, char *name);
 void get_config_float_arr(lua_State *L, float *resArr, char *name);
 void get_config_int_arr(lua_State *L, int *resArr, char *name);
-void get_config_layout_arr(lua_State *L, struct layout *layouts, char *name);
-void get_config_key_arr(lua_State *L, Key *keys, char *name);
 void get_config_rule_arr(lua_State *L, struct rule *rules, char *name);
 void get_config_mon_rule_arr(lua_State *L, struct mon_rule *monrules, char *name);
 

@@ -451,27 +451,6 @@ void get_config_float_arr(lua_State *L, float resArr[], char *name)
     lua_pop(L, 1);
 }
 
-void get_config_layout_arr(lua_State *L, struct layout *layouts, char *name)
-{
-    // TODO: debug or remove
-    /* lua_getglobal_safe(L, name); */
-    /* size_t len = lua_rawlen(L, -1); */
-
-    /* struct layout lt; */
-    /* // TODO: cleanup malloc? */
-    /* layouts = malloc(sizeof(struct layout)*len); */
-    /* for (int i = 1; i <= len; i++) { */
-    /*     lt = get_config_array_layout(L, 1); */
-    /*     layouts[i-1].lua_func_index = 0; */
-    /* } */
-    /* lua_pop(L, 1); */
-}
-
-void get_config_key_arr(lua_State *L, Key *keys, char *name)
-{
-    get_config_layout_arr(L, keys, name);
-}
-
 void get_config_rule_arr(lua_State *L, struct rule *rules, char *name)
 {
     lua_getglobal_safe(L, name);
