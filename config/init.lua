@@ -47,7 +47,7 @@ repeat_rate = 25
 repeat_delay = 600
 termcmd = "/usr/bin/termite"
 
-mod = mod1
+mod = Mod1
 -- maps (between 1 and 4)
 Keys = {
     {mod.." "..shift.." Return",           function(n) action.spawn(termcmd) end},
