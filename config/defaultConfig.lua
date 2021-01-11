@@ -47,11 +47,5 @@ function set_layout(i)
     action.arrange_this(false)
 end
 
-function toggle_overlay()
-    overlay = action.get_overlay()
-    action.set_overlay(not overlay)
-    action.arrange_this(false);
-end
-
 -- default
 mod = Mod1
