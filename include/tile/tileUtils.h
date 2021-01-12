@@ -10,8 +10,8 @@ enum layout_actions {
 };
 
 struct client *focustop(struct monitor *m);
-void arrange(enum layout_actions action);
-void arrange_monitor(struct monitor *m, enum layout_actions action);
+void arrange();
+void arrange_monitor(struct monitor *m);
 void arrange_container(struct container *con, int count, bool preserve);
 void resize(struct container *con, struct wlr_box geom, bool preserve_geometry);
 void update_hidden_containers(struct monitor *m);

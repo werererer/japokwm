@@ -24,6 +24,7 @@ struct wl_list mons;
 struct monitor *selected_monitor = NULL;
 
 static void handle_output_damage_frame(struct wl_listener *listener, void *data);
+static void handle_output_mode(struct wl_listener *listener, void *data);
 
 void create_monitor(struct wl_listener *listener, void *data)
 {
@@ -66,6 +67,8 @@ void create_monitor(struct wl_listener *listener, void *data)
     /* Set up event listeners */
     m->destroy.notify = destroy_monitor;
     wl_signal_add(&output->events.destroy, &m->destroy);
+    m->mode.notify = handle_output_mode;
+    wl_signal_add(&output->events.mode, &m->mode);
 
     wl_list_insert(&mons, &m->link);
 
@@ -112,6 +115,12 @@ damage_finish:
     pixman_region32_fini(&damage);
 }
 
+static void handle_output_mode(struct wl_listener *listener, void *data)
+{
+    struct monitor *m = wl_container_of(listener, m, mode);
+    arrange_monitor(m);
+}
+
 void focusmon(int i)
 {
     selected_monitor = dirtomon(i);
@@ -120,8 +129,7 @@ void focusmon(int i)
 
 void destroy_monitor(struct wl_listener *listener, void *data)
 {
-    struct wlr_output *wlr_output = data;
-    struct monitor *m = wlr_output->data;
+    struct monitor *m = wl_container_of(listener, m, destroy);
 
     set_workspace(m, NULL);
     destroy_root(m->root);
@@ -143,8 +151,6 @@ void set_selected_monitor(struct monitor *m)
     assert(m);
     if (selected_monitor == m)
         return;
-
-    printf("update_selected_monitor\n");
 
     selected_monitor = m;
     set_workspace(m, m->ws);

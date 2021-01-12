@@ -176,7 +176,6 @@ void buttonpress(struct wl_listener *listener, void *data)
             server.cursorMode = CurNormal;
             /* Drop the window off on its new monitor */
             struct monitor *m = xytomon(server.cursor->x, server.cursor->y);
-            printf("button_pressed -- set_selected_monitor\n");
             set_selected_monitor(m);
             return;
         }
@@ -682,7 +681,6 @@ void run(char *startup_cmd)
     /* Now that outputs are initialized, choose initial selMon based on
      * cursor position, and set default cursor image */
     struct monitor *m = xytomon(server.cursor->x, server.cursor->y);
-    printf("run -- xytomon\n");
     set_selected_monitor(m);
 
     /* XXX hack to get cursor to display in its initial location (100, 100)

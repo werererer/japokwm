@@ -47,17 +47,12 @@ function Set_layout()
 end
 
 function Set_layout(i)
-    print("set Layout")
     Layout_id = i
     layout = Layouts[i]
     local layout_name = layout[2]
-    print("layout_name: ", layout_name)
     Load_layout(layout_name)
-    print("works1")
     action.update_layout()
-    print("works2")
     action.arrange_this(false)
-    print("works3")
 end
 
 -- default

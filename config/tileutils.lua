@@ -292,7 +292,6 @@ end
 
 -- TODO: improve function name which doesn't representing what it does
 function Update_layout(n)
-    print("start")
     local i = math.max(math.min(#Layout_data, n), 1)
 
     if Update then
