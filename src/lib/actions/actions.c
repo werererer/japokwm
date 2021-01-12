@@ -265,6 +265,7 @@ void motionnotify(uint32_t time)
     double sx = 0, sy = 0;
     struct wlr_surface *surface = NULL;
 
+    printf("motionnotify -- set_selected_monitor\n");
     set_selected_monitor(xytomon(server.cursor->x, server.cursor->y));
     bool action = false;
     struct wlr_box geom;
@@ -379,6 +380,7 @@ int tag(lua_State *L)
 
     struct workspace *ws = get_workspace(ui);
     if (is_workspace_occupied(ws)) {
+        printf("tag -- set_selected_monitor\n");
         set_selected_monitor(ws->m);
         return 0;
     }
@@ -416,6 +418,7 @@ int view(lua_State *L)
     struct monitor *m = selected_monitor;
     struct workspace *ws = get_workspace(ui);
     if (is_workspace_occupied(ws)) {
+        printf("view -- set_selected_monitor\n");
         set_selected_monitor(ws->m);
         return 0;
     }
@@ -512,9 +515,11 @@ int zoom(lua_State *L)
 int load_layout(lua_State *L)
 {
     printf("load_layout\n");
+    printf("works1\n");
     const char *layout = luaL_checkstring(L, -1);
     lua_pop(L, 1);
     selected_monitor->ws->layout.name = layout;
+    printf("works2\n");
 
     char *config_path = get_config_file("layouts");
     char file[NUM_CHARS];
@@ -522,6 +527,7 @@ int load_layout(lua_State *L)
     join_path(file, config_path);
     join_path(file, layout);
     join_path(file, "enter.lua");
+    printf("works3\n");
 
     if (!file_exists(file))
         return 0;

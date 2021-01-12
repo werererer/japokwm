@@ -175,7 +175,9 @@ void buttonpress(struct wl_listener *listener, void *data)
                     "left_ptr", server.cursor);
             server.cursorMode = CurNormal;
             /* Drop the window off on its new monitor */
-            set_selected_monitor(xytomon(server.cursor->x, server.cursor->y));
+            struct monitor *m = xytomon(server.cursor->x, server.cursor->y);
+            printf("button_pressed -- set_selected_monitor\n");
+            set_selected_monitor(m);
             return;
         }
         break;
@@ -679,7 +681,9 @@ void run(char *startup_cmd)
     wlr_cursor_warp_absolute(server.cursor, NULL, 0.4, 0.3);
     /* Now that outputs are initialized, choose initial selMon based on
      * cursor position, and set default cursor image */
-    set_selected_monitor(xytomon(server.cursor->x, server.cursor->y));
+    struct monitor *m = xytomon(server.cursor->x, server.cursor->y);
+    printf("run -- xytomon\n");
+    set_selected_monitor(m);
 
     /* XXX hack to get cursor to display in its initial location (100, 100)
      * instead of (0, 0) and then jumping.  still may not be fully
@@ -777,9 +781,11 @@ int setup()
         wlr_log(WLR_ERROR, "failed updating config");
         return 1;
     }
-    printf("default layout name: %s\n", default_layout.name);
-    printf("default layout symbol: %s\n", default_layout.symbol);
+
+    /* lua_pushstring(L, default_layout.name); */
+    /* printf("content: %s\n", default_layout.name); */
     /* load_layout(L); */
+
     init_overlay();
     create_workspaces(tag_names, default_layout);
     /* The Wayland display is managed by libwayland. It handles accepting

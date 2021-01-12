@@ -163,6 +163,7 @@ int lua_getglobal_safe(lua_State *L, const char *name)
         char c[NUM_CHARS] = "";
         snprintf(c, NUM_CHARS, "ERROR: getglobal: %s == nil", name);
         handle_error(c);
+        lua_pop(L, 1);
         return LUA_ERRRUN;
     }
     return LUA_OK;
@@ -327,8 +328,8 @@ static struct layout get_config_array_layout(lua_State *L, size_t i)
 {
     lua_rawgeti(L, -1, i);
     struct layout layout = {
-        .name = get_config_array_str(L, 2),
         .symbol = get_config_array_str(L, 1),
+        .name = get_config_array_str(L, 2),
         .n = 1,
         .nmaster = 1,
         .lua_index = 0,
@@ -355,11 +356,13 @@ static struct rule get_config_array_rule(lua_State *L, size_t i)
 {
     struct rule rule;
     lua_rawgeti(L, -1, i);
+
     rule.id  = get_config_array_str(L, 1);
     rule.title  = get_config_array_str(L, 2);
     rule.tags  = get_config_array_int(L, 3);
     rule.floating  = get_config_array_bool(L, 4);
     rule.monitor  = get_config_array_int(L, 5);
+
     lua_pop(L, 1);
     return rule;
 }
@@ -379,12 +382,16 @@ struct rule get_config_rule(lua_State *L, char *name)
 static struct mon_rule get_config_array_monrule(lua_State *L, size_t i)
 {
     struct mon_rule monrule;
+    lua_rawgeti(L, -1, i);
+
     monrule.name = get_config_array_str(L, 1);
     monrule.mfact = get_config_array_float(L, 2);
     monrule.nmaster = get_config_array_int(L, 3);
     monrule.scale = get_config_array_float(L, 4);
     monrule.lt = get_config_array_layout(L, 5);
     monrule.rr = get_config_array_int(L, 6);
+
+    lua_pop(L, 1);
     return monrule;
 }
 
@@ -447,13 +454,18 @@ void get_config_rule_arr(lua_State *L, struct rule *rules, char *name)
     lua_pop(L, 1);
 }
 
-void get_config_mon_rule_arr(lua_State *L, struct mon_rule *monrules, char *name)
+void get_config_mon_rule_arr(lua_State *L, struct mon_rule **monrules, size_t *monrule_count, char *name)
 {
     lua_getglobal_safe(L, name);
     size_t len = lua_rawlen(L, -1);
+    *monrule_count = len;
+    *monrules = calloc(len, sizeof(struct mon_rule));
 
-    for (int i = 0; i < len; i++)
-        monrules[i] = get_config_array_monrule(L, i);
+    for (int i = 1; i <= len; i++) {
+        *monrules[i-1] = get_config_array_monrule(L, i);
+    }
+
+    lua_pop(L, 1);
 }
 
 void call_func(int funcid)

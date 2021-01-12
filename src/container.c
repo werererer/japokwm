@@ -19,6 +19,7 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     con->m = m;
     con->client = c;
     con->has_border = has_border;
+    con->focusable = true;
     c->con = con;
     add_container_to_monitor(con, con->m);
     return con;
@@ -167,6 +168,8 @@ struct container *xytocontainer(double x, double y)
 
     struct container *con;
     wl_list_for_each(con, &layer_stack, llink) {
+        if (!con->focusable)
+            continue;
         if (con->client->surface.layer->current.layer >
                 ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM)
             continue;
@@ -177,6 +180,8 @@ struct container *xytocontainer(double x, double y)
     }
 
     wl_list_for_each(con, &stack, slink) {
+        if (!con->focusable)
+            continue;
         if ((!visibleon(con, m) && !con->floating) || !wlr_box_contains_point(&con->geom, x, y))
             continue;
 
@@ -184,6 +189,8 @@ struct container *xytocontainer(double x, double y)
     }
 
     wl_list_for_each(con, &layer_stack, llink) {
+        if (!con->focusable)
+            continue;
         if (con->client->surface.layer->current.layer <
                 ZWLR_LAYER_SHELL_V1_LAYER_TOP)
             continue;
@@ -227,6 +234,10 @@ static void add_container_to_focus_stack(struct container *con)
 {
     if (con->on_top) {
         wl_list_insert(&focus_stack, &con->flink);
+        return;
+    }
+    if (!con->focusable) {
+        wl_list_insert(focus_stack.prev, &con->flink);
         return;
     }
     if (wl_list_empty(&focus_stack)) {
@@ -304,6 +315,8 @@ static void add_container_to_monitor(struct container *con, struct monitor *m)
             break;
     }
 
+    if (con->client->type == LAYER_SHELL)
+        con->focusable = con->client->surface.layer->current.layer != ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND;
     add_container_to_focus_stack(con);
 }
 
@@ -392,13 +405,15 @@ void applyrules(struct container *con)
 
 void focus_container(struct container *con, struct monitor *m, enum focus_actions a)
 {
-    struct container *sel = selected_container(m);
-
     if (!con) {
         /* With no client, all we have left is to clear focus */
         wlr_seat_keyboard_notify_clear_focus(server.seat);
         return;
     }
+    if (!con->focusable)
+        return;
+
+    struct container *sel = selected_container(m);
 
     if (a == FOCUS_LIFT)
         lift_container(con);

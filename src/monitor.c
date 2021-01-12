@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <wlr/util/log.h>
 #include <wlr/types/wlr_output_damage.h>
+#include <assert.h>
 
 #include "parseConfig.h"
 #include "render/render.h"
@@ -30,7 +31,6 @@ void create_monitor(struct wl_listener *listener, void *data)
      * monitor) becomes available. */
     struct wlr_output *output = data;
     struct monitor *m;
-    const struct mon_rule *r;
 
     /* The mode is a tuple of (width, height, refresh rate), and each
      * monitor supports only a specific set of modes. We just pick the
@@ -52,13 +52,14 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     set_next_unoccupied_workspace(m, get_workspace(0));
 
-    for (r = monrules; r < END(monrules); r++) {
-        if (!r->name || strstr(output->name, r->name)) {
-            m->mfact = r->mfact;
-            wlr_output_set_scale(output, r->scale);
-            wlr_xcursor_manager_load(server.cursorMgr, r->scale);
-            set_selected_layout(m->ws, r->lt);
-            wlr_output_set_transform(output, r->rr);
+    for (int i = 0; i < monrule_count; i++) {
+        struct mon_rule r = monrules[i];
+        if (!r.name || strstr(output->name, r.name)) {
+            m->mfact = r.mfact;
+            wlr_output_set_scale(output, r.scale);
+            wlr_xcursor_manager_load(server.cursorMgr, r.scale);
+            set_selected_layout(m->ws, r.lt);
+            wlr_output_set_transform(output, WL_OUTPUT_TRANSFORM_NORMAL);
             break;
         }
     }
@@ -139,8 +140,10 @@ void center_mouse_in_monitor(struct monitor *m)
 
 void set_selected_monitor(struct monitor *m)
 {
+    assert(m);
     if (selected_monitor == m)
         return;
+
     printf("update_selected_monitor\n");
 
     selected_monitor = m;

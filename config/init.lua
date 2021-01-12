@@ -39,7 +39,7 @@ Default_layout = Layouts[1]
 
 Monrules = {
     -- name mfact nmaster scale layout transform
-    { "rule", 0.55, 1, 1, Layouts[1], NORMAL },
+    { "", 0.55, 1, 1, Layouts[1], Monitor_transformation.NORMAL },
 }
 
 Xkb_rules = {}

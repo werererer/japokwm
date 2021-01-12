@@ -31,6 +31,7 @@ struct container {
     bool hidden;
     bool on_top;
     bool has_border;
+    bool focusable;
     // if position -1 it is floating
     int stack_position;
     int position;

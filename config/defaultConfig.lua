@@ -22,6 +22,11 @@ Cursor_mode = {
     CUR_RESIZE = 2,
 }
 
+-- TODO complete transformations
+Monitor_transformation = {
+    NORMAL = 0,
+}
+
 Layouts = {
     {"[M]", "master"},
     {"[]=", "two_pane"},

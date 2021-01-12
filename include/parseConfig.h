@@ -28,7 +28,8 @@ extern float sel_overlay_color[4];
 extern float sel_text_color[4];
 
 extern struct rule rules[MAXLEN];
-extern struct mon_rule monrules[MAXLEN];
+extern struct mon_rule *monrules;
+extern size_t monrule_count;
 
 extern int repeat_rate;
 extern int repeat_delay;
