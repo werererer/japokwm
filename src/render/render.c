@@ -230,34 +230,38 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
         if (!visibleon(con, m) && !con->floating)
             continue;
 
-        double ox, oy;
-        int w, h;
         struct wlr_surface *surface = get_wlrsurface(con->client);
-        ox = con->geom.x - con->client->bw;
-        oy = con->geom.y - con->client->bw;
-        wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
-        w = con->geom.width;
-        h = con->geom.height;
+        if (con->has_border) {
+            double ox, oy;
+            int w, h;
+            ox = con->geom.x - con->client->bw;
+            oy = con->geom.y - con->client->bw;
+            wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
+            w = con->geom.width;
+            h = con->geom.height;
 
-        struct wlr_box *borders;
-        borders = (struct wlr_box[4]) {
-            {ox, oy, w + 2 * con->client->bw, con->client->bw},             /* top */
-                {ox, oy + con->client->bw, con->client->bw, h},                 /* left */
-                {ox + con->client->bw + w, oy + con->client->bw, con->client->bw, h},     /* right */
-                {ox, oy + con->client->bw + h, w + 2 * con->client->bw, con->client->bw}, /* bottom */
-        };
+            struct wlr_box *borders;
+            borders = (struct wlr_box[4]) {
+                {ox, oy, w + 2 * con->client->bw, con->client->bw},             /* top */
+                    {ox, oy + con->client->bw, con->client->bw, h},                 /* left */
+                    {ox + con->client->bw + w, oy + con->client->bw, con->client->bw, h},     /* right */
+                    {ox, oy + con->client->bw + h, w + 2 * con->client->bw, con->client->bw}, /* bottom */
+            };
 
-        /* Draw window borders */
-        const float *color = (con == sel) ? focus_color : border_color;
-        for (int i = 0; i < 4; i++) {
-            scale_box(&borders[i], m->wlr_output->scale);
-            render_rect(m, output_damage, &borders[i], color);
+            /* Draw window borders */
+            const float *color = (con == sel) ? focus_color : border_color;
+            for (int i = 0; i < 4; i++) {
+                scale_box(&borders[i], m->wlr_output->scale);
+                render_rect(m, output_damage, &borders[i], color);
+            }
         }
 
         /* This calls our render function for each surface among the
          * xdg_surface's toplevel and popups. */
 
-        render_surface_iterator(m, get_wlrsurface(con->client), &con->geom, output_damage);
+        con->geom.width = surface->current.width;
+        con->geom.height = surface->current.height;
+        render_surface_iterator(m, surface, &con->geom, output_damage);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -276,13 +280,14 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
         if (con->client->surface.layer->current.layer != layer)
             continue;
 
-        con->geom.width = get_wlrsurface(con->client)->current.width;
-        con->geom.height = get_wlrsurface(con->client)->current.height;
-        render_surface_iterator(m, get_wlrsurface(con->client), &con->geom, output_damage);
+        struct wlr_surface *surface = get_wlrsurface(con->client);
+        con->geom.width = surface->current.width;
+        con->geom.height = surface->current.height;
+        render_surface_iterator(m, surface, &con->geom, output_damage);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
-        wlr_surface_send_frame_done(get_wlrsurface(con->client), &now);
+        wlr_surface_send_frame_done(surface, &now);
     }
 }
 
@@ -292,6 +297,9 @@ static void render_independents(struct monitor *m, pixman_region32_t *output_dam
 
     wl_list_for_each_reverse(con, &server.independents, ilink) {
         struct wlr_surface *surface = get_wlrsurface(con->client);
+
+        con->geom.width = surface->current.width;
+        con->geom.height = surface->current.height;
         render_surface_iterator(m, surface, &con->geom, output_damage);
 
         struct timespec now;

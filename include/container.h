@@ -30,13 +30,14 @@ struct container {
     bool floating;
     bool hidden;
     bool on_top;
+    bool has_border;
     // if position -1 it is floating
     int stack_position;
     int position;
     float scale;
 };
 
-struct container *create_container(struct client *c, struct monitor *m);
+struct container *create_container(struct client *c, struct monitor *m, bool has_border);
 void destroy_container(struct container *con);
 
 struct container *first_container(struct monitor *m);

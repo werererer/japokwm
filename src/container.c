@@ -13,11 +13,12 @@ static void add_container_to_monitor_containers(struct container *con, int i);
 static void add_container_to_focus_stack(struct container *con);
 static void add_container_to_monitor_stack(struct container *con);
 
-struct container *create_container(struct client *c, struct monitor *m)
+struct container *create_container(struct client *c, struct monitor *m, bool has_border)
 {
     struct container *con = calloc(1, sizeof(struct container));
     con->m = m;
     con->client = c;
+    con->has_border = has_border;
     c->con = con;
     add_container_to_monitor(con, con->m);
     return con;
@@ -289,13 +290,18 @@ static void add_container_to_monitor(struct container *con, struct monitor *m)
         return;
 
     con->m = m;
-    if (con->client->type == LAYER_SHELL) {
-        // layer shell programs aren't pushed to the stack because they use the
-        // layer system to set the correct render position
-        wl_list_insert(&layer_stack, &con->llink);
-    } else {
-        add_container_to_monitor_containers(con, 0);
-        add_container_to_monitor_stack(con);
+    switch (con->client->type) {
+        case LAYER_SHELL:
+            // layer shell programs aren't pushed to the stack because they use the
+            // layer system to set the correct render position
+            wl_list_insert(&layer_stack, &con->llink);
+            break;
+        case XDG_SHELL:
+        case X11_MANAGED:
+        case X11_UNMANAGED:
+            add_container_to_monitor_containers(con, 0);
+            add_container_to_monitor_stack(con);
+            break;
     }
 
     add_container_to_focus_stack(con);

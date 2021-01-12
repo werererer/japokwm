@@ -219,6 +219,17 @@ void commitnotify(struct wl_listener *listener, void *data)
     if (!con)
         return;
 
+    if (c->type == X11_UNMANAGED) {
+        printf("width: %i\n", c->con->geom.width);
+        printf("height: %i\n", c->con->geom.height);
+        printf("width: %i\n", c->con->geom.width);
+        printf("height: %i\n", get_wlrsurface(c)->current.buffer_width);
+        printf("height: %i\n", get_wlrsurface(c)->current.buffer_height);
+        /* struct wlr_xwayland_surface_size_hints *size_hints = c->surface.xwayland->size_hints; */
+        /* printf("min width: %i\n", size_hints->min_width); */
+        /* printf("min height: %i\n", size_hints->min_height); */
+        /* printf("width: %i\n", c->surface.xwayland->size_hints); */
+    }
     container_damage_part(con);
 }
 
@@ -532,6 +543,7 @@ static bool wants_floating(struct client *c) {
             size_hints->min_width > 0 && size_hints->min_height > 0 &&
             (size_hints->max_width == size_hints->min_width ||
             size_hints->max_height == size_hints->min_height)) {
+        printf("size hints\n");
         return true;
     }
 
@@ -563,7 +575,7 @@ void maprequest(struct wl_listener *listener, void *data)
         case XDG_SHELL:
             {
                 wl_list_insert(&clients, &c->link);
-                create_container(c, m);
+                create_container(c, m, true);
                 break;
             }
         case LAYER_SHELL:
@@ -571,7 +583,7 @@ void maprequest(struct wl_listener *listener, void *data)
                 struct monitor *m = outputtomon(c->surface.layer->output);
                 wl_list_insert(&clients, &c->link);
                 wlr_layer_surface_v1_configure(c->surface.layer, m->geom.width, m->geom.height);
-                create_container(c, m);
+                create_container(c, m, true);
                 break;
             }
         default:
@@ -598,7 +610,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
     c->ws = m->ws;
 
-    struct container *con = create_container(c, m);
+    struct container *con = create_container(c, m, true);
 
     if (is_popup_menu(c)) {
         wl_list_insert(&server.independents, &con->ilink);
@@ -622,6 +634,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 wl_list_insert(&server.independents, &con->ilink);
 
                 con->on_top = true;
+                con->has_border = false;
                 set_container_floating(con, true);
                 resize(con, get_center_box(con->m->geom), false);
                 break;
