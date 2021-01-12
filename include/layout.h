@@ -6,10 +6,6 @@
 struct layout {
     const char *name;
     const char *symbol;
-    /* this function gets executed when the arrange function is called
-     * usually this function will read the data about the layout from a
-     * file.*/
-    int lua_func_index;
     // the amount of slave windows plus the master are (+1)
     int n;
     // the amount master windows
@@ -17,7 +13,7 @@ struct layout {
     int lua_index;
 };
 
-void create_layout(struct layout *lt, const char *symbol, int funcId);
+void create_layout(struct layout *lt, const char *name, const char *symbol);
 void destroy_layout(struct layout *lt);
 
 bool is_same_layout(struct layout layout, struct layout layout2);

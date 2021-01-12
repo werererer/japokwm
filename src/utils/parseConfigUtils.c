@@ -295,19 +295,6 @@ bool get_config_bool(lua_State *L, char *name)
     return b;
 }
 
-static int get_config_array_func_id(lua_State *L, size_t i)
-{
-    lua_rawgeti(L, -1, i);
-    if (!lua_isfunction(L, -1)) {
-        char c[NUM_CHARS] = "";
-        snprintf(c, NUM_CHARS, "%lu is not a function", i);
-        handle_error(c);
-        return 0;
-    }
-    int r = luaL_ref(L, LUA_REGISTRYINDEX);
-    return r;
-}
-
 int get_config_func_id(lua_State *L, char *name)
 {
     lua_getglobal_safe(L, name);
@@ -340,8 +327,8 @@ static struct layout get_config_array_layout(lua_State *L, size_t i)
 {
     lua_rawgeti(L, -1, i);
     struct layout layout = {
+        .name = get_config_array_str(L, 2),
         .symbol = get_config_array_str(L, 1),
-        .lua_func_index = get_config_array_func_id(L, 2),
         .n = 1,
         .nmaster = 1,
         .lua_index = 0,
@@ -354,9 +341,8 @@ struct layout get_config_layout(lua_State *L, char *name)
 {
     lua_getglobal_safe(L, name);
     struct layout layout = {
-        .name = "",
         .symbol = get_config_array_str(L, 1),
-        .lua_func_index = get_config_array_func_id(L, 2),
+        .name = get_config_array_str(L, 2),
         .n = 1,
         .nmaster = 1,
         .lua_index = 0,

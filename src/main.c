@@ -215,21 +215,9 @@ void commitnotify(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, commit);
     struct container *con = c->con;
 
-    printf("type: %i\n", c->type);
     if (!con)
         return;
 
-    if (c->type == X11_UNMANAGED) {
-        printf("width: %i\n", c->con->geom.width);
-        printf("height: %i\n", c->con->geom.height);
-        printf("width: %i\n", c->con->geom.width);
-        printf("height: %i\n", get_wlrsurface(c)->current.buffer_width);
-        printf("height: %i\n", get_wlrsurface(c)->current.buffer_height);
-        /* struct wlr_xwayland_surface_size_hints *size_hints = c->surface.xwayland->size_hints; */
-        /* printf("min width: %i\n", size_hints->min_width); */
-        /* printf("min height: %i\n", size_hints->min_height); */
-        /* printf("width: %i\n", c->surface.xwayland->size_hints); */
-    }
     container_damage_part(con);
 }
 
@@ -746,8 +734,6 @@ void set_cursor(struct wl_listener *listener, void *data)
 /* arg > 1.0 will set mfact absolutely */
 void setmfact(float factor)
 {
-    if (!selected_monitor->ws->layout.lua_func_index)
-        return;
     factor = factor < 1.0 ? factor + selected_monitor->mfact : factor - 1.0;
     if (factor < 0.1 || factor > 0.9)
         return;
@@ -775,6 +761,7 @@ void setsel(struct wl_listener *listener, void *data)
     wlr_seat_set_selection(server.seat, event->source, event->serial);
 }
 
+// TODO: set up initial layout
 int setup()
 {
     wl_list_init(&mons);
@@ -790,6 +777,9 @@ int setup()
         wlr_log(WLR_ERROR, "failed updating config");
         return 1;
     }
+    printf("default layout name: %s\n", default_layout.name);
+    printf("default layout symbol: %s\n", default_layout.symbol);
+    /* load_layout(L); */
     init_overlay();
     create_workspaces(tag_names, default_layout);
     /* The Wayland display is managed by libwayland. It handles accepting
@@ -927,8 +917,9 @@ int setup()
 
         setenv("DISPLAY", server.xwayland.wlr_xwayland->display_name, true);
     } else {
-        wlr_log(WLR_ERROR, "failed to setup XWayland X server, continuing without itn");
+        wlr_log(WLR_ERROR, "failed to setup XWayland X server, continuing without it");
     }
+
     return 0;
 }
 

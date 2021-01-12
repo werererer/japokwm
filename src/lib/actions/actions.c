@@ -123,14 +123,12 @@ int spawn(lua_State *L)
 
 int update_layout(lua_State *L)
 {
-    printf("update_layout\n");
     struct layout lt = get_config_layout(L, "layout");
     // deselect
     lua_pushstring(L, prev_layout.name);
     unload_layout(L);
     set_selected_layout(selected_monitor->ws, lt);
     arrange(LAYOUT_RESET);
-    printf("finished uploading\n");
     return 0;
 }
 

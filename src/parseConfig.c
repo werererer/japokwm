@@ -78,7 +78,6 @@ int update_config(lua_State *L)
     prev_layout = (struct layout) {
         .name = "",
         .symbol = "",
-        .lua_func_index = 0,
         .nmaster = 1,
         .n = 0,
         .lua_index = 0,

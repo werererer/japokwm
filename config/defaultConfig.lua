@@ -23,10 +23,10 @@ Cursor_mode = {
 }
 
 Layouts = {
-    {"[M]", function() Load_layout("master") end},
-    {"[]=", function() Load_layout("two_pane") end},
-    {"||",  function() Load_layout("monocle") end},
-    {"--",  function() Load_layout("tmp") end },
+    {"[M]", "master"},
+    {"[]=", "two_pane"},
+    {"||",  "monocle"},
+    {"--",  "tmp"},
 }
 
 Layout_id = 1
@@ -42,11 +42,17 @@ function Set_layout()
 end
 
 function Set_layout(i)
+    print("set Layout")
     Layout_id = i
     layout = Layouts[i]
-    layout[2]()
+    local layout_name = layout[2]
+    print("layout_name: ", layout_name)
+    Load_layout(layout_name)
+    print("works1")
     action.update_layout()
+    print("works2")
     action.arrange_this(false)
+    print("works3")
 end
 
 -- default

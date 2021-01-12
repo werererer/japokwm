@@ -6,13 +6,12 @@
 struct layout default_layout;
 struct layout prev_layout;
 
-void create_layout(struct layout *lt, const char *symbol, int funcId)
+void create_layout(struct layout *lt, const char *name, const char *symbol)
 {
     lt = malloc(sizeof(struct layout));
 
     lt->nmaster = 1;
-    lt->lua_func_index = funcId;
-    lt->name = "";
+    lt->name = name;
     lt->symbol = symbol;
 }
 

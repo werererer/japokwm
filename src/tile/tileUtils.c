@@ -111,10 +111,6 @@ void arrange_monitor(struct monitor *m, enum layout_actions action)
     if (!overlay)
         container_surround_gaps(&m->root->geom, outer_gap);
 
-    // don't do anything if no tiling function exist
-    if (m->ws->layout.lua_func_index <= 0)
-        return;
-
     int container_count = get_master_container_count(m);
     int default_container_count = get_default_container_count(m);
     update_layout(L, default_container_count, m);
