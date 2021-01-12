@@ -7,12 +7,13 @@
 #include <wlr/types/wlr_output_damage.h>
 #include <assert.h>
 
+#include "ipc-server.h"
 #include "parseConfig.h"
 #include "render/render.h"
 #include "server.h"
-#include "workspace.h"
 #include "tile/tileUtils.h"
-#include "ipc-server.h"
+#include "workspace.h"
+#include "lib/actions/actions.h"
 
 struct wl_list stack;
 struct wl_list focus_stack;
@@ -70,7 +71,11 @@ void create_monitor(struct wl_listener *listener, void *data)
     m->mode.notify = handle_output_mode;
     wl_signal_add(&output->events.mode, &m->mode);
 
+    bool is_first_monitor = wl_list_empty(&mons);
     wl_list_insert(&mons, &m->link);
+    if (is_first_monitor)
+        set_selected_monitor(m);
+    load_default_layout(L, m);
 
     wlr_output_enable(output, 1);
     if (!wlr_output_commit(output))
@@ -155,10 +160,9 @@ void set_selected_monitor(struct monitor *m)
     selected_monitor = m;
     set_workspace(m, m->ws);
     int x = server.cursor->x;
-    int y = server.cursor->x;
+    int y = server.cursor->y;
 
     focus_container(xytocontainer(x, y), m, FOCUS_NOOP);
-    arrange(LAYOUT_NOOP);
 }
 
 void push_selected_workspace(struct monitor *m, struct workspace *ws)
@@ -200,4 +204,30 @@ struct monitor *xytomon(double x, double y)
 {
     struct wlr_output *o = wlr_output_layout_output_at(server.output_layout, x, y);
     return o ? o->data : NULL;
+}
+
+void load_layout(lua_State *L, struct monitor *m, const char *layout_name) {
+    m->ws->layout.name = layout_name;
+
+    char *config_path = get_config_file("layouts");
+    char file[NUM_CHARS];
+    strcpy(file, "");
+    join_path(file, config_path);
+    join_path(file, layout_name);
+    join_path(file, "enter.lua");
+
+    if (!file_exists(file))
+        return;
+
+    if (luaL_loadfile(L, file)) {
+        lua_pop(L, 1);
+        return;
+    }
+    lua_pcall(L, 0, 0, 0);
+    lua_pop(L, 1);
+}
+
+void load_default_layout(lua_State *L, struct monitor *m)
+{
+    load_layout(L, m, default_layout.name);
 }

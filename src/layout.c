@@ -1,7 +1,11 @@
 #include "layout.h"
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <lua.h>
+
+#include "utils/coreUtils.h"
 
 struct layout default_layout;
 struct layout prev_layout;

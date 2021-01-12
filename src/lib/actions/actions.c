@@ -506,29 +506,13 @@ int zoom(lua_State *L)
     return 0;
 }
 
-int load_layout(lua_State *L)
+int load_layout_lib(lua_State *L)
 {
     const char *layout = luaL_checkstring(L, -1);
     lua_pop(L, 1);
-    selected_monitor->ws->layout.name = layout;
 
-    char *config_path = get_config_file("layouts");
-    char file[NUM_CHARS];
-    strcpy(file, "");
-    join_path(file, config_path);
-    join_path(file, layout);
-    join_path(file, "enter.lua");
+    load_layout(L, selected_monitor, layout);
 
-    if (!file_exists(file))
-        return 0;
-
-    if (luaL_loadfile(L, file)) {
-        lua_pop(L, 1);
-        return 0;
-    }
-
-    lua_pcall(L, 0, 0, 0);
-    lua_pop(L, 1);
     return 0;
 }
 

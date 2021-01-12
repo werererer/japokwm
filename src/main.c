@@ -780,10 +780,6 @@ int setup()
         return 1;
     }
 
-    /* lua_pushstring(L, default_layout.name); */
-    /* printf("content: %s\n", default_layout.name); */
-    /* load_layout(L); */
-
     init_overlay();
     create_workspaces(tag_names, default_layout);
     /* The Wayland display is managed by libwayland. It handles accepting
@@ -1030,6 +1026,7 @@ int main(int argc, char *argv[])
         wlr_log(WLR_ERROR, "didn't find file");
         return EXIT_FAILURE;
     }
+
     run(startup_cmd);
     cleanup();
     return EXIT_SUCCESS;

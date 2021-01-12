@@ -42,6 +42,8 @@ void create_monitor(struct wl_listener *listener, void *data);
 void destroy_monitor(struct wl_listener *listener, void *data);
 void focusmon(int i);
 void set_selected_monitor(struct monitor *m);
+void load_layout(lua_State *L, struct monitor *m, const char *layout_name);
+void load_default_layout(lua_State *L, struct monitor *m);
 
 /* *
  * selTag[1] = selTag[0] then

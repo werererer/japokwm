@@ -20,7 +20,7 @@ static const struct luaL_Reg action[] =
     {"kill", kill_client},
     {"move_resize", move_resize},
     {"quit", quit},
-    {"load_layout", load_layout},
+    {"load_layout", load_layout_lib},
     {"set_overlay", set_overlay},
     {"spawn", spawn},
     {"tag", tag},

@@ -16,7 +16,7 @@ int move_client(lua_State *L);
 int move_resize(lua_State *L);
 int quit(lua_State *L);
 int read_boxes(lua_State *L);
-int load_layout(lua_State *L);
+int load_layout_lib(lua_State *L);
 int unload_layout(lua_State *L);
 int read_master_layout(lua_State *L);
 int resize_client(lua_State *L);
