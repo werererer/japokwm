@@ -422,9 +422,8 @@ void focus_container(struct container *con, struct monitor *m, enum focus_action
     wl_list_remove(&con->flink);
     add_container_to_focus_stack(con);
 
-    struct container *new = selected_container(m);
     struct client *c = sel ? sel->client : NULL;
-    struct client *c2 = new ? new->client : NULL;
+    struct client *c2 = con ? con->client : NULL;
     focus_client(c, c2);
 }
 
