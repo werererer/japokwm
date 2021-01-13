@@ -19,6 +19,7 @@ static const struct luaL_Reg action[] =
     {"get_overlay", get_overlay},
     {"kill", kill_client},
     {"move_resize", move_resize},
+    {"move_container_to_workspace", move_container_to_workspace},
     {"quit", quit},
     {"load_layout", load_layout_lib},
     {"set_overlay", set_overlay},

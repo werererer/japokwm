@@ -451,6 +451,26 @@ int move_client(lua_State *L)
     return 0;
 }
 
+// TODO optimize
+int move_container_to_workspace(lua_State *L)
+{
+    unsigned int ui = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = get_workspace(ui);
+    struct container *con = selected_container(m);
+
+    if (!con || con->client->type == LAYER_SHELL)
+        return 0;
+
+    con->client->ws = ws;
+    arrange();
+
+    container_damage_whole(con);
+
+    return 0;
+}
+
 int resize_client(lua_State *L)
 {
     struct wlr_box geom;
