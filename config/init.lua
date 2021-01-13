@@ -47,6 +47,8 @@ Repeat_rate = 25
 Repeat_delay = 600
 Termcmd = "/usr/bin/termite"
 
+-- TODO
+
 Mod = Mod1
 -- maps (between 1 and 4)
 Keys = {

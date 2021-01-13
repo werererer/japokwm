@@ -77,10 +77,6 @@ void create_monitor(struct wl_listener *listener, void *data)
         set_selected_monitor(m);
     load_default_layout(L, m);
 
-    wlr_output_enable(output, 1);
-    if (!wlr_output_commit(output))
-        return;
-
     /* Adds this to the output layout. The add_auto function arranges outputs
      * from left-to-right in the order they appear. A more sophisticated
      * compositor would let the user configure the arrangement of outputs in the
@@ -91,6 +87,11 @@ void create_monitor(struct wl_listener *listener, void *data)
      * output (such as DPI, scale factor, manufacturer, etc).
      */
     wlr_output_layout_add_auto(server.output_layout, output);
+
+    wlr_output_enable(output, 1);
+
+    if (!wlr_output_commit(output))
+        return;
 }
 
 static void handle_output_damage_frame(struct wl_listener *listener, void *data)
@@ -123,6 +124,9 @@ damage_finish:
 static void handle_output_mode(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, mode);
+    printf("handle_output_mode: %p\n", m);
+    if (!m)
+        return;
     arrange_monitor(m);
 }
 

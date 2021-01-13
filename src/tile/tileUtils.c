@@ -19,6 +19,7 @@
 
 void arrange()
 {
+    printf("start arrange\n");
     struct monitor *m;
     arrange_monitor(selected_monitor);
     wl_list_for_each(m, &mons, link) {
