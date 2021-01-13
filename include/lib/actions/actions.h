@@ -15,7 +15,7 @@ int get_tabcount(lua_State *L);
 int kill_client(lua_State *L);
 int load_layout_lib(lua_State *L);
 int move_client(lua_State *L);
-int move_container_to_workspace(lua_State *L);
+int move_client_to_workspace(lua_State *L);
 int move_resize(lua_State *L);
 int quit(lua_State *L);
 int read_boxes(lua_State *L);

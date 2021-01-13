@@ -452,7 +452,7 @@ int move_client(lua_State *L)
 }
 
 // TODO optimize
-int move_container_to_workspace(lua_State *L)
+int move_client_to_workspace(lua_State *L)
 {
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
