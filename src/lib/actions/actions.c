@@ -465,6 +465,7 @@ int move_container_to_workspace(lua_State *L)
 
     con->client->ws = ws;
     arrange();
+    focus_top_container(m, FOCUS_NOOP);
 
     container_damage_whole(con);
 
