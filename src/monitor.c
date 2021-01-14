@@ -124,7 +124,6 @@ damage_finish:
 static void handle_output_mode(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, mode);
-    printf("handle_output_mode: %p\n", m);
     if (!m)
         return;
     arrange_monitor(m);
@@ -139,6 +138,7 @@ void focusmon(int i)
 void destroy_monitor(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, destroy);
+    printf("destroy_monitor\n");
 
     set_workspace(m, NULL);
     destroy_root(m->root);

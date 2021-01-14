@@ -47,9 +47,7 @@ typedef uint32_t xkb_keysym_t;
 struct rule {
     char *id;
     char *title;
-    int tags;
-    int floating;
-    int monitor;
+    int lua_func_ref;
 };
 
 struct mon_rule {

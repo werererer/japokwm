@@ -1,4 +1,5 @@
 #include "container.h"
+#include <lua.h>
 #include <stdlib.h>
 #include <wayland-util.h>
 #include "client.h"
@@ -369,8 +370,6 @@ void apply_bounds(struct container *con, struct wlr_box bbox)
 void applyrules(struct container *con)
 {
     const char *app_id, *title;
-    unsigned int newtags = 0;
-    const struct rule *r;
     /* rule matching */
     con->floating = false;
     switch (con->client->type) {
@@ -394,13 +393,22 @@ void applyrules(struct container *con)
     if (!title)
         title = "broken";
 
-    for (r = rules; r < END(rules); r++) {
-        if ((!r->title || strstr(title, r->title))
-                && (!r->id || strstr(app_id, r->id))) {
-            con->floating = r->floating;
-            newtags |= r->tags;
+    printf("start rules\n");
+    printf("title: %s\n", title);
+    printf("app_id: %s\n", app_id);
+    for (int i = 0; i < rule_count; i++) {
+        const struct rule r = rules[i];
+        bool same_id = strcmp(app_id, r.id) == 0;
+        bool id_empty = strcmp(title, "") == 0;
+        bool same_title = strcmp(title, r.title) == 0;
+        bool title_empty = strcmp(title, "") == 0;
+        if ((same_id || id_empty) && (same_title || title_empty)) {
+            lua_geti(L, LUA_REGISTRYINDEX, r.lua_func_ref);
+            lua_pushinteger(L, con->position);
+            lua_call_safe(L, 1, 0, 0);
         }
     }
+    printf("end rules\n");
 }
 
 void focus_container(struct container *con, struct monitor *m, enum focus_actions a)

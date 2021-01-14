@@ -39,7 +39,7 @@ void call_function(lua_State *L, struct layout lt);
 void get_config_str_arr(lua_State *L, struct wlr_list *resArr, char *name);
 void get_config_float_arr(lua_State *L, float *resArr, char *name);
 void get_config_int_arr(lua_State *L, int *resArr, char *name);
-void get_config_rule_arr(lua_State *L, struct rule *rules, char *name);
+void get_config_rule_arr(lua_State *L, struct rule **rules, size_t *rule_count, char *name);
 void get_config_mon_rule_arr(lua_State *L, struct mon_rule **monrules, size_t *monrule_count, char *name);
 
 #endif /* PARSE_CONFIG_UTILS_H */

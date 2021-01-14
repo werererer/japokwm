@@ -270,17 +270,17 @@ int get_config_int(lua_State *L, char *name)
     return i;
 }
 
-static bool get_config_array_bool(lua_State *L, size_t i)
-{
-    lua_rawgeti(L, -1, i);
-    if (!lua_isboolean(L, -1)) {
-        printf("ERROR: %lu is not a boolean\n", i);
-        return false;
-    }
-    bool f = lua_toboolean(L, -1);
-    lua_pop(L, 1);
-    return f;
-}
+/* static bool get_config_array_bool(lua_State *L, size_t i) */
+/* { */
+/*     lua_rawgeti(L, -1, i); */
+/*     if (!lua_isboolean(L, -1)) { */
+/*         printf("ERROR: %lu is not a boolean\n", i); */
+/*         return false; */
+/*     } */
+/*     bool f = lua_toboolean(L, -1); */
+/*     lua_pop(L, 1); */
+/*     return f; */
+/* } */
 
 bool get_config_bool(lua_State *L, char *name)
 {
@@ -308,6 +308,22 @@ int get_config_func_id(lua_State *L, char *name)
     int f = luaL_ref(L, LUA_REGISTRYINDEX);
     return f;
 }
+
+static int get_config_array_func_id(lua_State *L, int i)
+{
+    lua_rawgeti(L, -1, i);
+    if (!lua_isfunction(L, -1)) {
+        char c[NUM_CHARS] = "";
+        snprintf(c, NUM_CHARS, "%i is not a function", i);
+        handle_error(c);
+        return 0;
+    }
+    int f = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_pop(L, 1);
+
+    return f;
+}
+
 
 void call_arrange_func(lua_State *L, int funcId, int n)
 {
@@ -359,9 +375,7 @@ static struct rule get_config_array_rule(lua_State *L, size_t i)
 
     rule.id  = get_config_array_str(L, 1);
     rule.title  = get_config_array_str(L, 2);
-    rule.tags  = get_config_array_int(L, 3);
-    rule.floating  = get_config_array_bool(L, 4);
-    rule.monitor  = get_config_array_int(L, 5);
+    rule.lua_func_ref = get_config_array_func_id(L, 3);
 
     lua_pop(L, 1);
     return rule;
@@ -373,9 +387,7 @@ struct rule get_config_rule(lua_State *L, char *name)
     struct rule rule;
     rule.id  = get_config_array_str(L, 1);
     rule.title  = get_config_array_str(L, 2);
-    rule.tags  = get_config_array_int(L, 3);
-    rule.floating  = get_config_array_float(L, 4);
-    rule.monitor  = get_config_array_int(L, 5);
+    rule.lua_func_ref = get_config_array_func_id(L, 3);
     return rule;
 }
 
@@ -444,13 +456,16 @@ void get_config_float_arr(lua_State *L, float resArr[], char *name)
     lua_pop(L, 1);
 }
 
-void get_config_rule_arr(lua_State *L, struct rule *rules, char *name)
+void get_config_rule_arr(lua_State *L, struct rule **rules, size_t *rule_count, char *name)
 {
     lua_getglobal_safe(L, name);
     size_t len = lua_rawlen(L, -1);
+    *rule_count = len;
+    *rules = calloc(len, sizeof(struct rule));
 
     for (int i = 1; i <= len; i++)
-        rules[i-1] = get_config_array_rule(L, i);
+        *rules[i-1] = get_config_array_rule(L, i);
+
     lua_pop(L, 1);
 }
 

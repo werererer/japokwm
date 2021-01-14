@@ -28,7 +28,8 @@ float sel_overlay_color[4];
 float sel_text_color[4];
 
 struct wlr_list tag_names;
-struct rule rules[MAXLEN];
+struct rule *rules;
+size_t rule_count;
 struct mon_rule *monrules;
 size_t monrule_count;
 
@@ -65,9 +66,8 @@ int update_config(lua_State *L)
 
     wlr_list_init(&tag_names);
     get_config_str_arr(L, &tag_names, "Tag_names");
-    get_config_rule_arr(L, rules, "Rules");
 
-    /* monitors */
+    get_config_rule_arr(L, &rules, &rule_count, "Rules");
     get_config_mon_rule_arr(L, &monrules, &monrule_count, "Monrules");
 
     /* keyboard */
