@@ -1,7 +1,9 @@
 #include "container.h"
+
 #include <lua.h>
 #include <stdlib.h>
 #include <wayland-util.h>
+
 #include "client.h"
 #include "parseConfig.h"
 #include "server.h"
@@ -71,14 +73,25 @@ static void container_damage(struct container *con, bool whole)
     }
 }
 
+void container_damage_part(struct container *con)
+{
+    container_damage(con, false);
+}
+
 void container_damage_whole(struct container *con)
 {
     container_damage(con, true);
 }
 
-void container_damage_part(struct container *con)
+struct container *container_position_to_container(int position)
 {
-    container_damage(con, false);
+    // TODO debug
+    struct container *con;
+    wl_list_for_each(con, &containers, mlink) {
+        if (con->position == position)
+            return con;
+    }
+    return NULL;
 }
 
 struct container *selected_container(struct monitor *m)
@@ -468,6 +481,8 @@ bool existon(struct container *con, struct monitor *m)
 
     if (!c)
         return false;
+    if (c->sticky)
+        return true;
 
     return c->ws == m->ws;
 }
@@ -488,6 +503,8 @@ bool hiddenon(struct container *con, struct monitor *m)
     // LayerShell based programs are visible on all workspaces
     if (c->type == LAYER_SHELL)
         return true;
+    if (c->sticky)
+        return true;
 
     return c->ws == m->ws;
 }
@@ -507,6 +524,8 @@ bool visibleon(struct container *con, struct monitor *m)
         return false;
     // LayerShell based programs are visible on all workspaces
     if (c->type == LAYER_SHELL)
+        return true;
+    if (c->sticky)
         return true;
 
     return c->ws == m->ws;

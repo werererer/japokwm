@@ -82,6 +82,11 @@ void focus_client(struct client *old, struct client *c)
     }
 }
 
+void client_setsticky(struct client *c, bool sticky)
+{
+    c->sticky = sticky;
+}
+
 float calc_ratio(float width, float height)
 {
     return height / width;

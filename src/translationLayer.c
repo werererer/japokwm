@@ -1,5 +1,6 @@
 #include "translationLayer.h"
 #include "lib/actions/actions.h"
+#include "lib/actions/libcontainer.h"
 #include "lib/info/info.h"
 #include "parseConfig.h"
 #include "tile/tile.h"
@@ -36,6 +37,11 @@ static const struct luaL_Reg action[] =
     {NULL, NULL},
 };
 
+static const struct luaL_Reg container[] =
+{
+    {"container_setsticky", container_setsticky}
+};
+
 static const struct luaL_Reg info[] =
 {
     {"get_this_container_count", get_this_container_count},
@@ -53,6 +59,8 @@ void load_libs(lua_State *L)
 {
     luaL_newlib(L, action);
     lua_setglobal(L, "action");
+    luaL_newlib(L, container);
+    lua_setglobal(L, "container");
     luaL_newlib(L, info);
     lua_setglobal(L, "info");
     luaL_newlib(L, config);

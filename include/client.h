@@ -31,11 +31,13 @@ struct client {
     enum shell type;
     int id;
     char *title;
+    bool sticky;
     struct workspace *ws;
 };
 
 /* it ignores bool  hiding which visibleon doesn't */
 void focus_client(struct client *old, struct client *c);
+void client_setsticky(struct client *c, bool sticky);
 float calc_ratio(float width, float height);
 
 extern struct wl_list clients; /* tiling order */

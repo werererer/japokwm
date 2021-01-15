@@ -21,6 +21,8 @@ struct container {
     struct wl_list llink;
     /* independents list */
     struct wl_list ilink;
+    /* sticky containers */
+    struct wl_list stlink;
 
     /* layout-relative, includes border */
     struct wlr_box geom;
@@ -28,10 +30,10 @@ struct container {
 
     struct monitor *m;
     bool floating;
+    bool focusable;
+    bool has_border;
     bool hidden;
     bool on_top;
-    bool has_border;
-    bool focusable;
     // if position -1 it is floating
     int stack_position;
     int position;
@@ -54,6 +56,7 @@ void apply_bounds(struct container *con, struct wlr_box bbox);
 void applyrules(struct container *con);
 void container_damage_part(struct container *con);
 void container_damage_whole(struct container *con);
+struct container *container_position_to_container(int position);
 void focus_container(struct container *con, struct monitor *m, enum focus_actions a);
 /* Find the topmost visible client (if any) at point (x, y), including
  * borders. This relies on stack being ordered from top to bottom. */

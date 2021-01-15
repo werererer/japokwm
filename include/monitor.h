@@ -35,7 +35,8 @@ extern struct wl_list containers;
 extern struct wl_list layer_stack;
 /* associated with plink in container  */
 extern struct wl_list popups;
-
+/* associated with stlink in container  */
+extern struct wl_list sticky_stack;
 
 void center_mouse_in_monitor(struct monitor *m);
 void create_monitor(struct wl_listener *listener, void *data);

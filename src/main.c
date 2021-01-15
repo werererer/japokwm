@@ -773,6 +773,7 @@ int setup()
     wl_list_init(&containers);
     wl_list_init(&layer_stack);
     wl_list_init(&popups);
+    wl_list_init(&sticky_stack);
 
     L = luaL_newstate();
     luaL_openlibs(L);

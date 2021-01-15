@@ -20,6 +20,7 @@ struct wl_list focus_stack;
 struct wl_list containers;
 struct wl_list layer_stack;
 struct wl_list popups;
+struct wl_list sticky_stack;
 
 struct wl_list mons;
 struct monitor *selected_monitor = NULL;

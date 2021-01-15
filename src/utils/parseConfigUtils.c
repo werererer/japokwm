@@ -15,6 +15,7 @@ static const char *config_paths[] = {
     "$XDG_CONFIG_HOME/juliawm/",
     "/etc/juliawm/",
 };
+
 static const char *config_file = "init.lua";
 static const char *error_file = "init.err";
 static int error_fd = -1;

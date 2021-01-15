@@ -95,6 +95,11 @@ void set_workspace(struct monitor *m, struct workspace *ws)
         return;
     assert(m->damage != NULL);
 
+    struct container *con;
+    wl_list_for_each(con, &sticky_stack, stlink) {
+        con->client->ws = ws;
+    }
+
     ipc_event_workspace();
 
     // unset old workspace
