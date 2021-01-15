@@ -35,10 +35,10 @@ static void update_layout(lua_State *L, int n, struct monitor *m)
     lua_pushinteger(L, n);
     lua_call_safe(L, 1, 1, 0);
     m->ws->layout.n = lua_rawlen(L, -1);
-    if (m->ws->layout.lua_index >= 0) {
-        luaL_unref(L, LUA_REGISTRYINDEX, m->ws->layout.lua_index);
+    if (m->ws->layout.lua_layout_index >= 0) {
+        luaL_unref(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_index);
     }
-    m->ws->layout.lua_index = luaL_ref(L, LUA_REGISTRYINDEX);
+    m->ws->layout.lua_layout_index = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 static struct wlr_fbox lua_unbox_layout(struct lua_State *L, int i) {
@@ -139,13 +139,13 @@ void arrange_container(struct container *con, int container_count, bool preserve
     // the 1 added represents the master area
     int n = MAX(0, con->position - lt.nmaster) + 1;
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.lua_index);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_index);
     struct wlr_fbox rel_geom = lua_unbox_layout(L, n);
 
     struct wlr_box box = get_absolute_box(rel_geom, m->root->geom);
     // TODO fix this function, hard to read
     apply_nmaster_transformation(&box, con->m, con->position, container_count);
-    m->ws->layout.lua_index = luaL_ref(L, LUA_REGISTRYINDEX);
+    m->ws->layout.lua_layout_index = luaL_ref(L, LUA_REGISTRYINDEX);
 
     if (!overlay)
         container_surround_gaps(&box, inner_gap);

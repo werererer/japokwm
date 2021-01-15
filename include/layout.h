@@ -10,7 +10,7 @@ struct layout {
     int n;
     // the amount master windows
     int nmaster;
-    int lua_index;
+    int lua_layout_index;
 };
 
 void create_layout(struct layout *lt, const char *name, const char *symbol);
