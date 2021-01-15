@@ -1,5 +1,6 @@
 #include "tile/tileUtils.h"
 #include <client.h>
+#include <execinfo.h>
 #include <string.h>
 #include <sys/param.h>
 #include <wayland-util.h>
@@ -19,6 +20,7 @@
 
 void arrange()
 {
+    printf("start arrange\n");
     struct monitor *m;
     arrange_monitor(selected_monitor);
     wl_list_for_each(m, &mons, link) {
@@ -26,19 +28,21 @@ void arrange()
             continue;
         arrange_monitor(m);
     }
+    printf("end arrange\n");
 }
 
 /* update layout and was set in the arrange function */
 static void update_layout(lua_State *L, int n, struct monitor *m)
 {
+    printf("update_layout\n");
     lua_getglobal_safe(L, "Update_layout");
     lua_pushinteger(L, n);
     lua_call_safe(L, 1, 1, 0);
     m->ws->layout.n = lua_rawlen(L, -1);
-    if (m->ws->layout.lua_layout_index >= 0) {
-        luaL_unref(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_index);
+    if (m->ws->layout.lua_layout_data_index >= 0) {
+        luaL_unref(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_data_index);
     }
-    m->ws->layout.lua_layout_index = luaL_ref(L, LUA_REGISTRYINDEX);
+    m->ws->layout.lua_layout_data_index = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 static struct wlr_fbox lua_unbox_layout(struct lua_State *L, int i) {
@@ -104,6 +108,7 @@ static int get_default_container_count(struct monitor *m)
 
 void arrange_monitor(struct monitor *m)
 {
+    printf("arrange_monitor\n");
     /* Get effective monitor geometry to use for window area */
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     set_root_area(m->root, m->geom);
@@ -139,13 +144,13 @@ void arrange_container(struct container *con, int container_count, bool preserve
     // the 1 added represents the master area
     int n = MAX(0, con->position - lt.nmaster) + 1;
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_index);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_data_index);
     struct wlr_fbox rel_geom = lua_unbox_layout(L, n);
 
     struct wlr_box box = get_absolute_box(rel_geom, m->root->geom);
     // TODO fix this function, hard to read
     apply_nmaster_transformation(&box, con->m, con->position, container_count);
-    m->ws->layout.lua_layout_index = luaL_ref(L, LUA_REGISTRYINDEX);
+    m->ws->layout.lua_layout_data_index = luaL_ref(L, LUA_REGISTRYINDEX);
 
     if (!overlay)
         container_surround_gaps(&box, inner_gap);

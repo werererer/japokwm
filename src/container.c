@@ -18,6 +18,7 @@ static void add_container_to_monitor_stack(struct container *con);
 
 struct container *create_container(struct client *c, struct monitor *m, bool has_border)
 {
+    printf("create_monitor\n");
     struct container *con = calloc(1, sizeof(struct container));
     con->m = m;
     con->client = c;
@@ -30,6 +31,7 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 
 void destroy_container(struct container *con)
 {
+    printf("destroy_container\n");
     wl_list_remove(&con->flink);
     struct client *c = con->client;
 

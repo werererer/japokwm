@@ -65,7 +65,8 @@ int set_tabcount(lua_State *L)
     /* int i = luaL_checkinteger(L, -1); */
     lua_pop(L, 1);
     /* selected_container(selected_monitor)->tabcount = i; */
-    arrange(LAYOUT_NOOP);
+    printf("set_tabcount\n");
+    arrange();
     return 0;
 }
 
@@ -77,16 +78,16 @@ int get_tabcount(lua_State *L)
 
 int arrange_this(lua_State *L)
 {
-    bool reset = lua_toboolean(L, -1);
-    lua_pop(L, 1);
-    arrange(reset);
+    printf("arrange_this\n");
+    arrange();
     return 0;
 }
 
 int toggle_consider_layer_shell(lua_State *L)
 {
     selected_monitor->root->consider_layer_shell = !selected_monitor->root->consider_layer_shell;
-    arrange(false);
+    printf("toggle_consider_layer_shell\n");
+    arrange();
     return 0;
 }
 
@@ -98,7 +99,8 @@ int set_floating(lua_State *L)
     if (!sel)
         return 0;
     set_container_floating(sel, b);
-    arrange(LAYOUT_NOOP);
+    printf("set_floating\n");
+    arrange();
     return 0;
 }
 
@@ -106,7 +108,8 @@ int set_nmaster(lua_State *L)
 {
     selected_monitor->ws->layout.nmaster = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    arrange(LAYOUT_NOOP);
+    printf("set_nmaster\n");
+    arrange();
     return 0;
 }
 
@@ -128,7 +131,8 @@ int update_layout(lua_State *L)
     lua_pushstring(L, prev_layout.name);
     unload_layout(L);
     set_selected_layout(selected_monitor->ws, lt);
-    arrange(LAYOUT_RESET);
+    printf("update_layout\n");
+    arrange();
     return 0;
 }
 
@@ -215,7 +219,8 @@ int focus_on_hidden_stack(lua_State *L)
     }
 
     focus_container(con, m, FOCUS_LIFT);
-    arrange(LAYOUT_NOOP);
+    printf("focus_on_hidden_stack\n");
+    arrange();
     return 0;
 }
 
@@ -236,7 +241,8 @@ int move_resize(lua_State *L)
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
                     "fleur", server.cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
-            arrange(false);
+            printf("move_resize\n");
+            arrange();
             break;
         case CURSOR_RESIZE:
             /* Doesn't work for X11 output - the next absolute motion event
@@ -249,7 +255,8 @@ int move_resize(lua_State *L)
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
                     "bottom_right_corner", server.cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
-            arrange(false);
+            printf("move_resize\n");
+            arrange();
             break;
         default:
             break;

@@ -373,7 +373,8 @@ void destroynotify(struct wl_listener *listener, void *data)
     free(c);
     c = NULL;
 
-    arrange(false);
+    printf("destroynotify\n");
+    arrange();
     focus_top_container(selected_monitor, FOCUS_NOOP);
 }
 
@@ -430,20 +431,24 @@ static bool handle_VT_keys(struct keyboard *kb, uint32_t keycode)
     bool handled = false;
 
     for (int i = 0; i < nsyms; i++) {
-        if (syms[i] >= XKB_KEY_XF86Switch_VT_1
-                && syms[i] <= XKB_KEY_XF86Switch_VT_12) {
-            /* if required switch to different virtual terminal */
-            if (wlr_backend_is_multi(server.backend)) {
-                struct wlr_session *session =
-                    wlr_backend_get_session(server.backend);
-                if (session) {
-                    int vt = syms[i] - XKB_KEY_XF86Switch_VT_1 + 1;
-                    wlr_session_change_vt(session, vt);
-                    handled = true;
-                    break;
-                }
-            }
-        }
+        if (syms[i] < XKB_KEY_XF86Switch_VT_1 || syms[i] > XKB_KEY_XF86Switch_VT_12)
+            continue;
+        if (!wlr_backend_is_multi(server.backend))
+            continue;
+
+        /* if required switch to different virtual terminal */
+        struct wlr_session *session =
+            wlr_backend_get_session(server.backend);
+        if (!session)
+            continue;
+
+        int vt = syms[i] - XKB_KEY_XF86Switch_VT_1 + 1;
+        printf("change vt\n");
+        printf("session: %p\n", session);
+        printf("active: %i\n", session->active);
+        printf("vt: %i\n", vt);
+        wlr_session_change_vt(session, vt);
+        handled = true;
     }
     return handled;
 }
@@ -578,7 +583,8 @@ void maprequest(struct wl_listener *listener, void *data)
         default:
             break;
     }
-    arrange(false);
+    printf("maprequest\n");
+    arrange();
     focus_top_container(selected_monitor, FOCUS_NOOP);
 
     struct container *con = c->con;
@@ -631,7 +637,8 @@ void maprequestx11(struct wl_listener *listener, void *data)
         default:
             break;
     }
-    arrange(false);
+    printf("maprequestx11\n");
+    arrange();
     focus_top_container(selected_monitor, FOCUS_NOOP);
     applyrules(con);
 }
@@ -741,7 +748,8 @@ void setmfact(float factor)
     if (factor < 0.1 || factor > 0.9)
         return;
     selected_monitor->mfact = factor;
-    arrange(false);
+    printf("setmfact\n");
+    arrange();
 }
 
 void setpsel(struct wl_listener *listener, void *data)
@@ -767,6 +775,7 @@ void setsel(struct wl_listener *listener, void *data)
 // TODO: set up initial layout
 int setup()
 {
+    printf("setup\n");
     wl_list_init(&mons);
     wl_list_init(&focus_stack);
     wl_list_init(&stack);
@@ -934,6 +943,7 @@ void sigchld(int unused)
 
 void unmapnotify(struct wl_listener *listener, void *data)
 {
+    printf("unmapnotify\n");
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
 

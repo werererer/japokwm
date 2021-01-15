@@ -79,7 +79,7 @@ int update_config(lua_State *L)
         .symbol = "",
         .nmaster = 1,
         .n = 0,
-        .lua_layout_index = 0,
+        .lua_layout_data_index = 0,
     };
 
     /* commands */
@@ -105,7 +105,7 @@ int reload_config(lua_State *L)
         c->bw = border_px;
     }
 
-    lua_pushboolean(L, true);
-    arrange_this(L);
+    printf("reload_config\n");
+    arrange();
     return 0;
 }
