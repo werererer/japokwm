@@ -20,7 +20,7 @@ static const char *config_file = "init.lua";
 static const char *error_file = "init.err";
 static int error_fd = -1;
 
-static char *get_config_array_str(lua_State *L, size_t i);
+static char *get_config_array_str(lua_State *L, const char *name, size_t i);
 static int load_config(lua_State *L, const char *path);
 static void handle_error(const char *);
 
@@ -182,12 +182,12 @@ static void handle_error(const char *msg)
     write_to_file(error_fd, "\n");
 }
 
-static char *get_config_array_str(lua_State *L, size_t i)
+static char *get_config_array_str(lua_State *L, const char *name, size_t i)
 {
     lua_rawgeti(L, -1, i);
     if (!lua_isstring(L, -1)) {
         char c[NUM_CHARS] = "";
-        snprintf(c, NUM_CHARS, "%lu is not a string", i);
+        snprintf(c, NUM_CHARS, "%s[%lu] is not a string", name, i);
         handle_error(c);
         return "";
     }
@@ -214,12 +214,12 @@ char *get_config_str(lua_State *L, char *name)
     return termcmd;
 }
 
-static float get_config_array_float(lua_State *L, size_t i)
+static float get_config_array_float(lua_State *L, const char *name, size_t i)
 {
     lua_rawgeti(L, -1, i);
     if (!lua_isnumber(L, -1)) {
         char c[NUM_CHARS] = "";
-        snprintf(c, NUM_CHARS, "%lu is not a number", i);
+        snprintf(c, NUM_CHARS, "%s[%lu] is not a number", name, i);
         handle_error(c);
         return 0;
     }
@@ -243,12 +243,12 @@ float get_config_float(lua_State *L, char *name)
     return f;
 }
 
-static int get_config_array_int(lua_State *L, size_t i)
+static int get_config_array_int(lua_State *L, const char *name, size_t i)
 {
     lua_rawgeti(L, -1, i);
     if (!lua_isinteger(L, -1)) {
         char c[NUM_CHARS] = "";
-        snprintf(c, NUM_CHARS, "%lu is not an integer", i);
+        snprintf(c, NUM_CHARS, "%s[%lu] is not an integer", name, i);
         handle_error(c);
         return 0;
     }
@@ -310,12 +310,12 @@ int get_config_func_id(lua_State *L, char *name)
     return f;
 }
 
-static int get_config_array_func_id(lua_State *L, int i)
+static int get_config_array_func_id(lua_State *L, const char *name, int i)
 {
     lua_rawgeti(L, -1, i);
     if (!lua_isfunction(L, -1)) {
         char c[NUM_CHARS] = "";
-        snprintf(c, NUM_CHARS, "%i is not a function", i);
+        snprintf(c, NUM_CHARS, "%s[%i] is not a function", name, i);
         handle_error(c);
         return 0;
     }
@@ -341,12 +341,12 @@ void call_function(lua_State *L, struct layout lt)
     luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
-static struct layout get_config_array_layout(lua_State *L, size_t i)
+static struct layout get_config_array_layout(lua_State *L, const char *name, size_t i)
 {
     lua_rawgeti(L, -1, i);
     struct layout layout = {
-        .symbol = get_config_array_str(L, 1),
-        .name = get_config_array_str(L, 2),
+        .symbol = get_config_array_str(L, name, 1),
+        .name = get_config_array_str(L, name, 2),
         .n = 1,
         .nmaster = 1,
         .lua_layout_data_index = 0,
@@ -359,8 +359,8 @@ struct layout get_config_layout(lua_State *L, char *name)
 {
     lua_getglobal_safe(L, name);
     struct layout layout = {
-        .symbol = get_config_array_str(L, 1),
-        .name = get_config_array_str(L, 2),
+        .symbol = get_config_array_str(L, name, 1),
+        .name = get_config_array_str(L, name, 2),
         .n = 1,
         .nmaster = 1,
         .lua_layout_data_index = 0,
@@ -369,14 +369,14 @@ struct layout get_config_layout(lua_State *L, char *name)
     return layout;
 }
 
-static struct rule get_config_array_rule(lua_State *L, size_t i)
+static struct rule get_config_array_rule(lua_State *L, const char* name, size_t i)
 {
     struct rule rule;
     lua_rawgeti(L, -1, i);
 
-    rule.id  = get_config_array_str(L, 1);
-    rule.title  = get_config_array_str(L, 2);
-    rule.lua_func_ref = get_config_array_func_id(L, 3);
+    rule.id  = get_config_array_str(L, name, 1);
+    rule.title  = get_config_array_str(L, name, 2);
+    rule.lua_func_ref = get_config_array_func_id(L, name, 3);
 
     lua_pop(L, 1);
     return rule;
@@ -386,23 +386,23 @@ static struct rule get_config_array_rule(lua_State *L, size_t i)
 struct rule get_config_rule(lua_State *L, char *name)
 {
     struct rule rule;
-    rule.id  = get_config_array_str(L, 1);
-    rule.title  = get_config_array_str(L, 2);
-    rule.lua_func_ref = get_config_array_func_id(L, 3);
+    rule.id  = get_config_array_str(L, name, 1);
+    rule.title  = get_config_array_str(L, name, 2);
+    rule.lua_func_ref = get_config_array_func_id(L, name, 3);
     return rule;
 }
 
-static struct mon_rule get_config_array_monrule(lua_State *L, size_t i)
+static struct mon_rule get_config_array_monrule(lua_State *L, const char* name, size_t i)
 {
     struct mon_rule monrule;
     lua_rawgeti(L, -1, i);
 
-    monrule.name = get_config_array_str(L, 1);
-    monrule.mfact = get_config_array_float(L, 2);
-    monrule.nmaster = get_config_array_int(L, 3);
-    monrule.scale = get_config_array_float(L, 4);
-    monrule.lt = get_config_array_layout(L, 5);
-    monrule.rr = get_config_array_int(L, 6);
+    monrule.name = get_config_array_str(L, name, 1);
+    monrule.mfact = get_config_array_float(L, name, 2);
+    monrule.nmaster = get_config_array_int(L, name, 3);
+    monrule.scale = get_config_array_float(L, name, 4);
+    monrule.lt = get_config_array_layout(L, name, 5);
+    monrule.rr = get_config_array_int(L, name, 6);
 
     lua_pop(L, 1);
     return monrule;
@@ -413,11 +413,11 @@ struct mon_rule get_config_monrule(lua_State *L, char *name)
     struct mon_rule monrule;
     lua_getglobal_safe(L, name);
 
-    monrule.name = get_config_array_str(L, 1);
-    monrule.mfact = get_config_array_float(L, 2);
-    monrule.nmaster = get_config_array_int(L, 3);
-    monrule.scale = get_config_array_float(L, 4);
-    monrule.lt = get_config_array_layout(L, 5);
+    monrule.name = get_config_array_str(L, name, 1);
+    monrule.mfact = get_config_array_float(L, name, 2);
+    monrule.nmaster = get_config_array_int(L, name, 3);
+    monrule.scale = get_config_array_float(L, name, 4);
+    monrule.lt = get_config_array_layout(L, name, 5);
     return monrule;
 }
 
@@ -434,7 +434,7 @@ void get_config_str_arr(lua_State *L, struct wlr_list *resArr, char *name)
     size_t len = lua_rawlen(L, -1);
 
     for (int i = 1; i <= len; i++)
-        wlr_list_push(resArr, get_config_array_str(L, i));
+        wlr_list_push(resArr, get_config_array_str(L, name, i));
     lua_pop(L, 1);
 }
 
@@ -444,7 +444,7 @@ void get_config_int_arr(lua_State *L, int resArr[], char *name)
     size_t len = lua_rawlen(L, -1);
 
     for (int i = 0; i < len; i++)
-        resArr[i] = get_config_array_int(L, i);
+        resArr[i] = get_config_array_int(L, name, i);
 }
 
 void get_config_float_arr(lua_State *L, float resArr[], char *name)
@@ -453,7 +453,7 @@ void get_config_float_arr(lua_State *L, float resArr[], char *name)
     size_t len = lua_rawlen(L, -1);
 
     for (int i = 1; i <= len; i++)
-        resArr[i-1] = get_config_array_float(L, i);
+        resArr[i-1] = get_config_array_float(L, name, i);
     lua_pop(L, 1);
 }
 
@@ -465,7 +465,7 @@ void get_config_rule_arr(lua_State *L, struct rule **rules, size_t *rule_count, 
     *rules = calloc(len, sizeof(struct rule));
 
     for (int i = 1; i <= len; i++)
-        *rules[i-1] = get_config_array_rule(L, i);
+        *rules[i-1] = get_config_array_rule(L, name, i);
 
     lua_pop(L, 1);
 }
@@ -478,7 +478,7 @@ void get_config_mon_rule_arr(lua_State *L, struct mon_rule **monrules, size_t *m
     *monrules = calloc(len, sizeof(struct mon_rule));
 
     for (int i = 1; i <= len; i++) {
-        *monrules[i-1] = get_config_array_monrule(L, i);
+        *monrules[i-1] = get_config_array_monrule(L, name, i);
     }
 
     lua_pop(L, 1);
