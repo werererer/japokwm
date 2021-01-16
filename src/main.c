@@ -204,10 +204,12 @@ void cleanup()
 
 void cleanupkeyboard(struct wl_listener *listener, void *data)
 {
+    printf("cleanup_keyboard\n");
     struct wlr_input_device *device = data;
     struct keyboard *kb = device->data;
 
     wl_list_remove(&kb->destroy.link);
+    wl_list_remove(&kb->link);
     free(kb);
 }
 
