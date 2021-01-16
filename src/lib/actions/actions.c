@@ -383,6 +383,9 @@ int tag(lua_State *L)
         return 0;
 
     struct workspace *ws = get_workspace(ui);
+    if (!ws)
+        return 0;
+
     if (is_workspace_occupied(ws)) {
         set_selected_monitor(ws->m);
         return 0;
@@ -417,8 +420,15 @@ int view(lua_State *L)
 {
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
+
     struct monitor *m = selected_monitor;
+    if (!m)
+        return 0;
+
     struct workspace *ws = get_workspace(ui);
+    if (!ws)
+        return 0;
+
     if (is_workspace_occupied(ws)) {
         set_selected_monitor(ws->m);
         return 0;

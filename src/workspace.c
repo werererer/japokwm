@@ -43,6 +43,8 @@ void destroy_workspaces()
 
 bool is_workspace_occupied(struct workspace *ws)
 {
+    assert(ws);
+
     return ws->m ? true : false;
 }
 
@@ -55,6 +57,8 @@ struct workspace *find_next_unoccupied_workspace(struct workspace *ws)
 {
     for (int i = ws ? ws->id : 0; i < number_of_workspaces(); i++) {
         struct workspace *w = get_workspace(i);
+        if (!w)
+            break;
         if (!is_workspace_occupied(w))
             return w;
     }
@@ -63,6 +67,9 @@ struct workspace *find_next_unoccupied_workspace(struct workspace *ws)
 
 struct workspace *get_workspace(size_t i)
 {
+    if (i >= workspaces.length)
+        return NULL;
+
     return workspaces.items[i];
 }
 
