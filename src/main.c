@@ -84,7 +84,7 @@ void chvt(unsigned int ui);
 void cleanup();
 void cleanupkeyboard(struct wl_listener *listener, void *data);
 void commitnotify(struct wl_listener *listener, void *data);
-void createkeyboard(struct wlr_input_device *device);
+void create_keyboard(struct wlr_input_device *device);
 void createnotify(struct wl_listener *listener, void *data);
 void createnotify_layer_shell(struct wl_listener *listener, void *data);
 void createpointer(struct wlr_input_device *device);
@@ -222,13 +222,14 @@ void commitnotify(struct wl_listener *listener, void *data)
     container_damage_part(con);
 }
 
-void createkeyboard(struct wlr_input_device *device)
+void create_keyboard(struct wlr_input_device *device)
 {
+    printf("create_keyboard\n");
     struct xkb_context *context;
     struct xkb_keymap *keymap;
     struct keyboard *kb;
 
-    kb = device->data = calloc(1, sizeof(*kb));
+    kb = device->data = calloc(1, sizeof(struct keyboard));
     kb->device = device;
 
     /* Prepare an XKB keymap and assign it to the keyboard. */
@@ -253,6 +254,7 @@ void createkeyboard(struct wlr_input_device *device)
 
     /* And add the keyboard to our list of server.keyboards */
     wl_list_insert(&server.keyboards, &kb->link);
+    printf("end_keyboard\n");
 }
 
 void createnotify(struct wl_listener *listener, void *data)
@@ -404,7 +406,7 @@ void inputdevice(struct wl_listener *listener, void *data)
     uint32_t caps;
     switch (device->type) {
     case WLR_INPUT_DEVICE_KEYBOARD:
-        createkeyboard(device);
+        create_keyboard(device);
         break;
     case WLR_INPUT_DEVICE_POINTER:
         createpointer(device);
@@ -1025,6 +1027,9 @@ int main(int argc, char *argv[])
     }
     if (optind < argc)
         goto usage;
+
+    // TODO delete to increase performance
+    setbuf(stdout, NULL);
 
     // Wayland requires XDG_RUNTIME_DIR for creating its communications
     // socket
