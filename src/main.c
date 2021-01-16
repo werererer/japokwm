@@ -204,7 +204,6 @@ void cleanup()
 
 void cleanupkeyboard(struct wl_listener *listener, void *data)
 {
-    printf("cleanup_keyboard\n");
     struct wlr_input_device *device = data;
     struct keyboard *kb = device->data;
 
@@ -226,7 +225,6 @@ void commitnotify(struct wl_listener *listener, void *data)
 
 void create_keyboard(struct wlr_input_device *device)
 {
-    printf("create_keyboard\n");
     struct xkb_context *context;
     struct xkb_keymap *keymap;
     struct keyboard *kb;
@@ -256,7 +254,6 @@ void create_keyboard(struct wlr_input_device *device)
 
     /* And add the keyboard to our list of server.keyboards */
     wl_list_insert(&server.keyboards, &kb->link);
-    printf("end_keyboard\n");
 }
 
 void createnotify(struct wl_listener *listener, void *data)
@@ -377,7 +374,6 @@ void destroynotify(struct wl_listener *listener, void *data)
     free(c);
     c = NULL;
 
-    printf("destroynotify\n");
     arrange();
     focus_top_container(selected_monitor, FOCUS_NOOP);
 }
@@ -447,10 +443,6 @@ static bool handle_VT_keys(struct keyboard *kb, uint32_t keycode)
             continue;
 
         int vt = syms[i] - XKB_KEY_XF86Switch_VT_1 + 1;
-        printf("change vt\n");
-        printf("session: %p\n", session);
-        printf("active: %i\n", session->active);
-        printf("vt: %i\n", vt);
         wlr_session_change_vt(session, vt);
         handled = true;
     }
@@ -541,7 +533,6 @@ static bool wants_floating(struct client *c) {
             size_hints->min_width > 0 && size_hints->min_height > 0 &&
             (size_hints->max_width == size_hints->min_width ||
             size_hints->max_height == size_hints->min_height)) {
-        printf("size hints\n");
         return true;
     }
 
@@ -587,7 +578,6 @@ void maprequest(struct wl_listener *listener, void *data)
         default:
             break;
     }
-    printf("maprequest\n");
     arrange();
     focus_top_container(selected_monitor, FOCUS_NOOP);
 
@@ -641,7 +631,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
         default:
             break;
     }
-    printf("maprequestx11\n");
     arrange();
     focus_top_container(selected_monitor, FOCUS_NOOP);
     applyrules(con);
@@ -752,7 +741,6 @@ void setmfact(float factor)
     if (factor < 0.1 || factor > 0.9)
         return;
     selected_monitor->mfact = factor;
-    printf("setmfact\n");
     arrange();
 }
 
