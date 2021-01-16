@@ -55,7 +55,7 @@ int number_of_workspaces()
 
 struct workspace *find_next_unoccupied_workspace(struct workspace *ws)
 {
-    for (int i = ws ? ws->id : 0; i < number_of_workspaces(); i++) {
+    for (size_t i = ws ? ws->id : 0; i < number_of_workspaces(); i++) {
         struct workspace *w = get_workspace(i);
         if (!w)
             break;
