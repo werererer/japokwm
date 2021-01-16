@@ -400,18 +400,12 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
 
                 struct monitor *m;
                 wl_list_for_each(m, &mons, link) {
-                    for (int i = 0; i < number_of_workspaces(); i++) {
+                    for (int i = 0; i < workspace_count(); i++) {
                         struct workspace *ws = get_workspace(i);
 
-                        // TODO put this paragraph into a function called
-                        // something like count clients in workspace
+                        bool has_clients = workspace_has_clients(ws);
                         bool is_workspace_selected = selected_monitor->ws->id == i;
-                        struct client *c;
-                        int count = 0;
-                        wl_list_for_each(c, &clients, link) {
-                            count = (c->ws == ws) ? count + 1 : count;
-                        }
-                        if (count <= 0 && !is_workspace_selected)
+                        if (!has_clients && !is_workspace_selected) 
                             continue;
 
                         json_object *tag = ipc_json_describe_workspace(m, ws, is_workspace_selected);

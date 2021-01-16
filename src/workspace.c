@@ -36,7 +36,7 @@ void create_workspaces(struct wlr_list tagNames, struct layout default_layout)
 
 void destroy_workspaces()
 {
-    for (int i = 0; i < number_of_workspaces(); i++)
+    for (int i = 0; i < workspace_count(); i++)
         destroy_workspace(wlr_list_pop(&workspaces));
     wlr_list_finish(&workspaces);
 }
@@ -48,14 +48,29 @@ bool is_workspace_occupied(struct workspace *ws)
     return ws->m ? true : false;
 }
 
-int number_of_workspaces()
+bool workspace_has_clients(struct workspace *ws)
+{
+    if (!ws)
+        return 0;
+
+    int count = 0;
+
+    struct client *c;
+    wl_list_for_each(c, &clients, link)
+        if (c->ws == ws)
+            count++;
+
+    return count > 0;
+}
+
+int workspace_count()
 {
     return workspaces.length;
 }
 
 struct workspace *find_next_unoccupied_workspace(struct workspace *ws)
 {
-    for (size_t i = ws ? ws->id : 0; i < number_of_workspaces(); i++) {
+    for (size_t i = ws ? ws->id : 0; i < workspace_count(); i++) {
         struct workspace *w = get_workspace(i);
         if (!w)
             break;

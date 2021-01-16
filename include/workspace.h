@@ -21,7 +21,8 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
 void destroy_workspace(struct workspace *ws);
 
 bool is_workspace_occupied(struct workspace *ws);
-int number_of_workspaces();
+bool workspace_has_clients(struct workspace *ws);
+int workspace_count();
 struct workspace *find_next_unoccupied_workspace(struct workspace *ws);
 struct workspace *get_workspace(size_t i);
 void create_workspaces(struct wlr_list tagNames, struct layout default_layout);

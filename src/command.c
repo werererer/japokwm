@@ -41,7 +41,7 @@ void execute_command(const char *_exec)
         if (strcmp(argv[0], "workspace") == 0) {
             bool handled = false;
             int i;
-            for (i = 0; i < number_of_workspaces(); i++) {
+            for (i = 0; i < workspace_count(); i++) {
                 if (strcmp(get_workspace(i)->name, argv[2]) == 0) {
                     handled = true;
                     break;
