@@ -5,8 +5,6 @@ Direction = {
     RIGHT = 8,
 }
 
-Original_layout_data = {}
-
 local X<const> = 1
 local Y<const> = 2
 local WIDTH<const> = 3
@@ -71,20 +69,20 @@ function Move_container(container, n, d)
     return con
 end
 
-function Is_resize_locked(i, j, n, directions)
-    local container = Layout_data[i][j]
+function Is_resize_locked(layout_data, i, j, n, directions)
+    local container = layout_data[i][j]
     local lock = false
 
     for x = 1,#directions do
         local dir = directions[x]
-        local resize_containers = Get_resize_affected_containers(i, j, dir, Get_alternative_container, Is_affected_by_resize_of)
+        local resize_containers = Get_resize_affected_containers(layout_data, i, j, dir, Get_alternative_container, Is_affected_by_resize_of)
         local main_con = Move_resize(container, 0, n, dir)
         local alt_con = Get_alternative_container(main_con, dir)
 
         lock = lock or main_con[WIDTH] < Min_main_width or main_con[HEIGHT] < Min_main_height
         lock = lock or main_con[WIDTH] > Max_main_width
         lock = lock or main_con[HEIGHT] > Max_main_height
-        local con = Deep_copy(Layout_data)
+        local con = Deep_copy(layout_data)
         for k = 1,#resize_containers do
             local li = resize_containers[k][5]
             local lj = resize_containers[k][6]

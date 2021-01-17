@@ -47,9 +47,7 @@ static void update_layout(lua_State *L, int n, struct monitor *m)
     lua_call_safe(L, 1, 0, 0);
 
     m->ws->layout.n = lua_rawlen(L, -1);
-    if (m->ws->layout.lua_layout_index >= 0) {
-        luaL_unref(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_index);
-    }
+    luaL_unref(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_index);
     m->ws->layout.lua_layout_index = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 

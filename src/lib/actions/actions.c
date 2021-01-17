@@ -74,9 +74,17 @@ int set_layout(lua_State *L)
 {
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
-    printf("set_layout\n");
-    printf("layout len: %lli\n", luaL_len(L, -1));
     ws->layout.lua_layout_copy_data_index = lua_copy_table(L);
+    /* ws->layout.lua_resize_dir = ; */
+        /* arrange_monitor(selected_monitor); */
+    return 0;
+}
+
+int set_resize_direction(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws;
+    ws->layout.resize_dir = luaL_checkinteger(L, -1);
     return 0;
 }
 
@@ -97,6 +105,27 @@ int toggle_consider_layer_shell(lua_State *L)
 {
     selected_monitor->root->consider_layer_shell = !selected_monitor->root->consider_layer_shell;
     printf("toggle_consider_layer_shell\n");
+    arrange();
+    return 0;
+}
+
+int resize_main(lua_State *L)
+{
+    float n = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws;
+    struct layout *lt = &ws->layout;
+    int d = lt->resize_dir;
+
+    lua_getglobal_safe(L, "Resize_main_all");
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_index);
+    lua_pushnumber(L, n);
+    lua_pushinteger(L, d);
+    lua_call_safe(L, 3, 1, 0);
+
+    lt->lua_layout_copy_data_index = lua_copy_table(L);
     arrange();
     return 0;
 }

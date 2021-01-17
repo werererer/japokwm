@@ -12,6 +12,7 @@ struct layout {
     int n;
     // the amount master windows
     int nmaster;
+    int resize_dir;
     int lua_layout_index;
     int lua_layout_copy_data_index;
     int test;

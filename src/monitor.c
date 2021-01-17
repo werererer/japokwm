@@ -23,7 +23,7 @@ struct wl_list popups;
 struct wl_list sticky_stack;
 
 struct wl_list mons;
-struct monitor *selected_monitor = NULL;
+struct monitor *selected_monitor;
 
 static void handle_output_damage_frame(struct wl_listener *listener, void *data);
 static void handle_output_mode(struct wl_listener *listener, void *data);

@@ -12,6 +12,8 @@ static const struct luaL_Reg action[] =
     {"set_tabcount", set_tabcount},
     {"set_nmaster", set_nmaster},
     {"set_layout", set_layout},
+    {"set_resize_direction", set_resize_direction},
+    {"resize_main", resize_main},
     {"get_nmaster", get_nmaster},
     {"get_tabcount", get_tabcount},
     /* {"create_overlay", create_overlay}, */
