@@ -77,12 +77,27 @@ static void apply_nmaster_transformation(struct wlr_box *box, struct monitor *m,
     if (position > lt.nmaster)
         return;
 
-    lua_getglobal_safe(L, "Update_nmaster");
-    int g = count > lt.nmaster ? lt.nmaster : count;
-    lua_pushinteger(L, g);
-    lua_call_safe(L, 1, 1, 0);
+/*     lua_getglobal_safe(L, "Update_nmaster"); */
+/*     int g = count > lt.nmaster ? lt.nmaster : count; */
+/*     lua_pushinteger(L, g); */
+/*     lua_call_safe(L, 1, 1, 0); */
+/*     int k = MIN(position, g); */
+/*     struct wlr_fbox geom = lua_unbox_layout(L, k); */
+/*     lua_pop(L, 1); */
+
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt.lua_layout_master_copy_data_index);
+    printf("works0\n");
+    printf("index: %i\n", lt.lua_layout_master_copy_data_index);
+    int len = luaL_len(L, -1);
+    printf("\nlen: %i\n", len);
+    int g = MIN(count, lt.nmaster);
+    g = MAX(MIN(len, g), 1);
+    lua_rawgeti(L, -1, g);
+    printf("len2: %lli\n", luaL_len(L, -1));
     int k = MIN(position, g);
     struct wlr_fbox geom = lua_unbox_layout(L, k);
+    lua_pop(L, 1);
     lua_pop(L, 1);
 
     struct wlr_box obox = get_absolute_box(geom, *box);

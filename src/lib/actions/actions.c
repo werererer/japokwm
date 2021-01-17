@@ -72,8 +72,10 @@ int set_tabcount(lua_State *L)
 
 int set_layout(lua_State *L)
 {
+    printf("set layout\n");
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
+    ws->layout.lua_layout_master_copy_data_index = lua_copy_table(L);
     ws->layout.lua_layout_copy_data_index = lua_copy_table(L);
     lua_rawgeti(L, LUA_REGISTRYINDEX, ws->layout.lua_layout_copy_data_index);
     ws->layout.lua_layout_original_copy_data_index = lua_copy_table(L);

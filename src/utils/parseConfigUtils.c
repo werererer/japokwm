@@ -366,6 +366,7 @@ struct layout get_config_layout(lua_State *L, char *name)
         .lua_layout_index = 0,
         .lua_layout_copy_data_index = 0,
         .lua_layout_original_copy_data_index = 0,
+        .lua_layout_master_copy_data_index = 0,
     };
     lua_pop(L, 1);
     return layout;

@@ -14,11 +14,15 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
 {
     struct workspace *ws = malloc(sizeof(struct workspace));
     ws->name = name;
+
     ws->layout = lt;
     lua_getglobal(L, "Layout_data");
     ws->layout.lua_layout_copy_data_index = lua_copy_table(L);
     lua_createtable(L, 0, 0);
     ws->layout.lua_layout_index = lua_copy_table(L);
+    lua_getglobal(L, "Master_layout_data");
+    ws->layout.lua_layout_master_copy_data_index = lua_copy_table(L);
+
     ws->id = id;
     ws->m = NULL;
     return ws;

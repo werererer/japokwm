@@ -69,11 +69,11 @@ function Move_container(container, n, d)
     return con
 end
 
+-- TODO this is a mess fix it!!
 function Is_resize_locked(layout_data, o_layout_data, i, j, n, directions)
     local container = layout_data[i][j]
     local lock = false
 
-    print("works0")
     for x = 1,#directions do
         local dir = directions[x]
         local resize_containers = Get_resize_affected_containers(layout_data, o_layout_data, i, j, dir, Get_alternative_container, Is_affected_by_resize_of)
