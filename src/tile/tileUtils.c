@@ -20,7 +20,6 @@
 
 void arrange()
 {
-    printf("start arrange\n");
     struct monitor *m;
     arrange_monitor(selected_monitor);
     wl_list_for_each(m, &mons, link) {
@@ -28,21 +27,30 @@ void arrange()
             continue;
         arrange_monitor(m);
     }
-    printf("end arrange\n");
 }
 
 /* update layout and was set in the arrange function */
 static void update_layout(lua_State *L, int n, struct monitor *m)
 {
-    printf("update_layout\n");
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_copy_data_index);
+
+    printf("works1\n");
+    int len = luaL_len(L, -1);
+    printf("len: %i\n", len);
+    n = MAX(MIN(len, n), 1);
+    printf("n: %i\n", n);
+    lua_rawgeti(L, -1, n);
+
     lua_getglobal_safe(L, "Update_layout");
     lua_pushinteger(L, n);
-    lua_call_safe(L, 1, 1, 0);
+    lua_call_safe(L, 1, 0, 0);
+
     m->ws->layout.n = lua_rawlen(L, -1);
-    if (m->ws->layout.lua_layout_data_index >= 0) {
-        luaL_unref(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_data_index);
+    if (m->ws->layout.lua_layout_index >= 0) {
+        luaL_unref(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_index);
     }
-    m->ws->layout.lua_layout_data_index = luaL_ref(L, LUA_REGISTRYINDEX);
+    m->ws->layout.lua_layout_index = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 static struct wlr_fbox lua_unbox_layout(struct lua_State *L, int i) {
@@ -118,6 +126,7 @@ void arrange_monitor(struct monitor *m)
 
     int container_count = get_master_container_count(m);
     int default_container_count = get_default_container_count(m);
+    printf("arrange1\n");
     update_layout(L, default_container_count, m);
     update_hidden_containers(m);
 
@@ -132,6 +141,7 @@ void arrange_monitor(struct monitor *m)
         arrange_container(con, container_count, false);
         position++;
     }
+    printf("arrange monitor done\n");
 }
 
 void arrange_container(struct container *con, int container_count, bool preserve)
@@ -144,13 +154,14 @@ void arrange_container(struct container *con, int container_count, bool preserve
     // the 1 added represents the master area
     int n = MAX(0, con->position - lt.nmaster) + 1;
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_data_index);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_index);
+    printf("layout index: %i\n", m->ws->layout.lua_layout_index);
     struct wlr_fbox rel_geom = lua_unbox_layout(L, n);
 
     struct wlr_box box = get_absolute_box(rel_geom, m->root->geom);
     // TODO fix this function, hard to read
     apply_nmaster_transformation(&box, con->m, con->position, container_count);
-    m->ws->layout.lua_layout_data_index = luaL_ref(L, LUA_REGISTRYINDEX);
+    m->ws->layout.lua_layout_index = luaL_ref(L, LUA_REGISTRYINDEX);
 
     if (!overlay)
         container_surround_gaps(&box, inner_gap);

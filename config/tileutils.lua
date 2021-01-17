@@ -49,7 +49,7 @@ local function _copy(obj, target)
     end
 end
 
-function Deepcopy(obj, target)
+function Deep_copy(obj, target)
     target = target or {}
     _copy(obj, target)
     return target
@@ -84,7 +84,7 @@ function Is_resize_locked(i, j, n, directions)
         lock = lock or main_con[WIDTH] < Min_main_width or main_con[HEIGHT] < Min_main_height
         lock = lock or main_con[WIDTH] > Max_main_width
         lock = lock or main_con[HEIGHT] > Max_main_height
-        local con = Deepcopy(Layout_data)
+        local con = Deep_copy(Layout_data)
         for k = 1,#resize_containers do
             local li = resize_containers[k][5]
             local lj = resize_containers[k][6]
@@ -120,7 +120,7 @@ function Resize_container(container, n, d)
 end
 
 function Move_resize(container, nmove, nresize, d)
-    local con = Deepcopy(container)
+    local con = Deep_copy(container)
     con = Move_container(con, nmove, d)
     con = Resize_container(con, nresize, d)
     return con
@@ -292,12 +292,13 @@ end
 
 -- TODO: improve function name which doesn't representing what it does
 function Update_layout(n)
-    local i = math.max(math.min(#Layout_data, n), 1)
+    if n > #Layout_data then
+        return
+    end
 
     if Update then
-      Update(i)
+        Update(n)
     end
-    return Layout_data[i]
 end
 
 -- TODO: improve function name not representing what it does

@@ -24,6 +24,7 @@ int resize_client(lua_State *L);
 int set_floating(lua_State *L);
 int set_nmaster(lua_State *L);
 int set_tabcount(lua_State *L);
+int set_layout(lua_State *L);
 int spawn(lua_State *L);
 int tag(lua_State *L);
 int toggle_consider_layer_shell(lua_State *L);

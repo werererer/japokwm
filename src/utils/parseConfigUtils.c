@@ -271,11 +271,11 @@ int get_config_int(lua_State *L, char *name)
     return i;
 }
 
-/* static bool get_config_array_bool(lua_State *L, size_t i) */
+/* static bool get_config_array_bool(lua_State *L, const char *name, size_t i) */
 /* { */
 /*     lua_rawgeti(L, -1, i); */
 /*     if (!lua_isboolean(L, -1)) { */
-/*         printf("ERROR: %lu is not a boolean\n", i); */
+/*         printf("ERROR: %s[%lu] is not a boolean\n", name, i); */
 /*         return false; */
 /*     } */
 /*     bool f = lua_toboolean(L, -1); */
@@ -335,7 +335,7 @@ void call_arrange_func(lua_State *L, int funcId, int n)
 
 void call_function(lua_State *L, struct layout lt)
 {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt.lua_layout_data_index);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt.lua_layout_index);
     lua_pushinteger(L, lt.n);
     lua_call_safe(L, 1, 0, 0);
     luaL_ref(L, LUA_REGISTRYINDEX);
@@ -349,7 +349,7 @@ static struct layout get_config_array_layout(lua_State *L, const char *name, siz
         .name = get_config_array_str(L, name, 2),
         .n = 1,
         .nmaster = 1,
-        .lua_layout_data_index = 0,
+        .lua_layout_index = 0,
     };
     lua_pop(L, 1);
     return layout;
@@ -363,7 +363,8 @@ struct layout get_config_layout(lua_State *L, char *name)
         .name = get_config_array_str(L, name, 2),
         .n = 1,
         .nmaster = 1,
-        .lua_layout_data_index = 0,
+        .lua_layout_index = 0,
+        .lua_layout_copy_data_index = 0,
     };
     lua_pop(L, 1);
     return layout;

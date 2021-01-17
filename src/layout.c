@@ -6,22 +6,17 @@
 #include <lua.h>
 
 #include "utils/coreUtils.h"
+#include "utils/parseConfigUtils.h"
 
 struct layout default_layout;
 struct layout prev_layout;
 
-void create_layout(struct layout *lt, const char *name, const char *symbol)
+int lua_copy_table(lua_State *L)
 {
-    lt = malloc(sizeof(struct layout));
-
-    lt->nmaster = 1;
-    lt->name = name;
-    lt->symbol = symbol;
-}
-
-void destroy_layout(struct layout *lt)
-{
-    free(lt);
+    lua_getglobal_safe(L, "Deep_copy");
+    lua_insert(L, -2);
+    lua_call_safe(L, 1, 1, 0);
+    return luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 bool is_same_layout(struct layout layout, struct layout layout2)

@@ -79,7 +79,8 @@ int update_config(lua_State *L)
         .symbol = "",
         .nmaster = 1,
         .n = 0,
-        .lua_layout_data_index = 0,
+        .lua_layout_index = 0,
+        .lua_layout_copy_data_index = 0,
     };
 
     /* commands */

@@ -70,6 +70,16 @@ int set_tabcount(lua_State *L)
     return 0;
 }
 
+int set_layout(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws;
+    printf("set_layout\n");
+    printf("layout len: %lli\n", luaL_len(L, -1));
+    ws->layout.lua_layout_copy_data_index = lua_copy_table(L);
+    return 0;
+}
+
 int get_tabcount(lua_State *L)
 {
     /* lua_pushinteger(L, selected_container(selected_monitor)->tabcount); */
@@ -126,12 +136,7 @@ int spawn(lua_State *L)
 
 int update_layout(lua_State *L)
 {
-    struct layout lt = get_config_layout(L, "layout");
-    // deselect
-    lua_pushstring(L, prev_layout.name);
-    unload_layout(L);
-    set_selected_layout(selected_monitor->ws, lt);
-    printf("update_layout\n");
+    // TODO improve this
     arrange();
     return 0;
 }

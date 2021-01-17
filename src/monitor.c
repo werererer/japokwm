@@ -55,17 +55,19 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     set_next_unoccupied_workspace(m, get_workspace(0));
 
-    for (int i = 0; i < monrule_count; i++) {
-        struct mon_rule r = monrules[i];
-        if (!r.name || strstr(output->name, r.name)) {
-            m->mfact = r.mfact;
-            wlr_output_set_scale(output, r.scale);
-            wlr_xcursor_manager_load(server.cursorMgr, r.scale);
-            set_selected_layout(m->ws, r.lt);
-            wlr_output_set_transform(output, WL_OUTPUT_TRANSFORM_NORMAL);
-            break;
-        }
-    }
+    // TODO fix this
+    /* for (int i = 0; i < monrule_count; i++) { */
+    /*     struct mon_rule r = monrules[i]; */
+    /*     if (!r.name || strstr(output->name, r.name)) { */
+    /*         m->mfact = r.mfact; */
+    /*         wlr_output_set_scale(output, r.scale); */
+    /*         wlr_xcursor_manager_load(server.cursorMgr, r.scale); */
+    /*         printf("create monitor\n"); */
+    /*         set_selected_layout(m->ws, r.lt); */
+    /*         wlr_output_set_transform(output, WL_OUTPUT_TRANSFORM_NORMAL); */
+    /*         break; */
+    /*     } */
+    /* } */
     /* Set up event listeners */
     m->destroy.notify = destroy_monitor;
     wl_signal_add(&output->events.destroy, &m->destroy);
