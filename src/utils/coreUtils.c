@@ -48,3 +48,25 @@ void join_path(char *base, const char *file)
     }
     strcat(base, file);
 }
+
+void lua_get_basic_layout()
+{
+    lua_createtable(L, 1, 0);
+
+    lua_createtable(L, 1, 0);
+
+    lua_createtable(L, 4, 0);
+    lua_pushinteger(L, 0);
+
+    lua_rawseti(L, -2, 1);
+    lua_pushinteger(L, 0);
+    lua_rawseti(L, -2, 2);
+    lua_pushinteger(L, 1);
+    lua_rawseti(L, -2, 3);
+    lua_pushinteger(L, 1);
+    lua_rawseti(L, -2, 4);
+
+    lua_rawseti(L, -2, 1);
+
+    lua_rawseti(L, -2, 1);
+}

@@ -26,7 +26,6 @@
 #define NUM_CHARS 64
 #define NUM_DIGITS 9
 
-
 typedef struct Monitor Monitor;
 
 struct keyboard {
@@ -65,6 +64,16 @@ char last_char(const char *str);
 // returns exactly the same values as strcmp
 int path_compare(const char *path1, const char *path2);
 void join_path(char *base, const char *file);
+
+/*
+ * create a basic lua table that looks like that:
+ * {
+ *   {
+ *     {0, 0, 1, 1}
+ *   }
+ * }
+ */
+void lua_get_basic_layout();
 
 void wlr_list_clear(struct wlr_list *list);
 #endif
