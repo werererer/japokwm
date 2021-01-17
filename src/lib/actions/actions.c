@@ -75,8 +75,8 @@ int set_layout(lua_State *L)
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
     ws->layout.lua_layout_copy_data_index = lua_copy_table(L);
-    /* ws->layout.lua_resize_dir = ; */
-        /* arrange_monitor(selected_monitor); */
+    lua_rawgeti(L, LUA_REGISTRYINDEX, ws->layout.lua_layout_copy_data_index);
+    ws->layout.lua_layout_original_copy_data_index = lua_copy_table(L);
     return 0;
 }
 
@@ -121,9 +121,11 @@ int resize_main(lua_State *L)
 
     lua_getglobal_safe(L, "Resize_main_all");
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_index);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_original_copy_data_index);
+    printf("length: %lli\n", luaL_len(L, -1));
     lua_pushnumber(L, n);
     lua_pushinteger(L, d);
-    lua_call_safe(L, 3, 1, 0);
+    lua_call_safe(L, 4, 1, 0);
 
     lt->lua_layout_copy_data_index = lua_copy_table(L);
     arrange();

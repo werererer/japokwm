@@ -35,11 +35,8 @@ static void update_layout(lua_State *L, int n, struct monitor *m)
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_copy_data_index);
 
-    printf("works1\n");
     int len = luaL_len(L, -1);
-    printf("len: %i\n", len);
     n = MAX(MIN(len, n), 1);
-    printf("n: %i\n", n);
     lua_rawgeti(L, -1, n);
 
     lua_getglobal_safe(L, "Update_layout");

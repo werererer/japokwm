@@ -1,7 +1,5 @@
 require "tileutils"
 
-Resize_direction = Direction.BOTTOM
-
 local X<const> = 1
 local Y<const> = 2
 local WIDTH<const> = 3
@@ -58,17 +56,16 @@ function Resize_this_all(n, d)
 end
 
 -- finds containers that are affected by the container at i,j
-function Get_resize_affected_containers(layout_data, i, j, d, get_container_func, is_effected_by_func)
+function Get_resize_affected_containers(layout_data, o_layout_data, i, j, d, get_container_func, is_effected_by_func)
     local container = layout_data[i][j]
     local list = {}
-    print("layout_data", #layout_data)
 
     for j2 = 1, #layout_data[i] do
         local con = layout_data[i][j2]
         local alt_con = get_container_func(container, d)
 
         if j ~= j2 then
-            if is_effected_by_func(container, con, d) then
+            if is_effected_by_func(o_layout_data[i][j], o_layout_data[i][j2], d) then
                 -- convert relative to absolute box
                 local ret_con = {con[X], con[Y], con[WIDTH], con[HEIGHT], i, j2}
                 ret_con[X] = (ret_con[X]-alt_con[X])/alt_con[WIDTH]
@@ -131,24 +128,20 @@ function Is_affected_by_resize_of(container, container2, d)
     return resize
 end
 
-function Resize_all(lt_data, i, j, n, d)
+function Resize_all(lt_data, o_layout_data, i, j, n, d)
     local directions = Get_directions(d)
-    print("table length", #lt_data)
     local layout_data = Deep_copy(lt_data)
     local container = layout_data[i][j]
 
-    if Is_resize_locked(layout_data, i, j, n, directions) then
+    if Is_resize_locked(layout_data, o_layout_data, i, j, n, directions) then
         return layout_data
     end
 
     -- apply
     for x = 1,#directions do
         local dir = directions[x]
-        local resize_main_containers = Get_resize_affected_containers(layout_data, i, j, dir, Get_main_container, Is_equally_affected_by_resize_of)
-        local resize_containers = Get_resize_affected_containers(layout_data, i, j, dir, Get_alternative_container, Is_affected_by_resize_of)
-        print("")
-        print("containers", #resize_containers)
-        print("main containers", #resize_main_containers)
+        local resize_main_containers = Get_resize_affected_containers(layout_data, o_layout_data, i, j, dir, Get_main_container, Is_equally_affected_by_resize_of)
+        local resize_containers = Get_resize_affected_containers(layout_data, o_layout_data, i, j, dir, Get_alternative_container, Is_affected_by_resize_of)
         local main_con = Move_resize(container, 0, n, dir)
         local alt_con = Get_alternative_container(main_con, dir)
 
@@ -176,18 +169,18 @@ function Resize_all(lt_data, i, j, n, d)
     return layout_data
 end
 
-function Resize_main_all(layout_data, n, d)
-    local i = math.max(math.min(info.get_this_container_count(), #Layout_data), 1)
+function Resize_main_all(layout_data, o_layout_data, n, d)
+    local i = math.max(math.min(info.get_this_container_count(), #o_layout_data), 1)
     for g=1,#Box_data do
         for h=1,#Box_data[g] do
             if i == Box_data[g][h] then
                 for j=1,#Box_data[g] do
-                    layout_data = Resize_all(layout_data, Box_data[g][j], 1, n, d)
-                    action.arrange_this(false)
+                    layout_data = Resize_all(layout_data, o_layout_data, Box_data[g][j], 1, n, d)
                 end
                 break
             end
         end
     end
+    action.arrange_this(false)
     return layout_data
 end

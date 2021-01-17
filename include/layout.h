@@ -15,6 +15,7 @@ struct layout {
     int resize_dir;
     int lua_layout_index;
     int lua_layout_copy_data_index;
+    int lua_layout_original_copy_data_index;
     int test;
 };
 
