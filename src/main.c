@@ -767,7 +767,6 @@ void setsel(struct wl_listener *listener, void *data)
 // TODO: set up initial layout
 int setup()
 {
-    printf("setup\n");
     wl_list_init(&mons);
     wl_list_init(&focus_stack);
     wl_list_init(&stack);
@@ -783,8 +782,7 @@ int setup()
         return 1;
     }
 
-    init_overlay();
-    create_workspaces(tag_names, default_layout);
+    init_workspaces();
     /* The Wayland display is managed by libwayland. It handles accepting
      * clients from the Unix socket, manging Wayland globals, and so on. */
     server.display = wl_display_create();

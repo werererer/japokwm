@@ -26,6 +26,7 @@ int set_floating(lua_State *L);
 int set_nmaster(lua_State *L);
 int set_tabcount(lua_State *L);
 int set_layout(lua_State *L);
+int set_arrange_by_focus(lua_State *L);
 int set_resize_direction(lua_State *L);
 int spawn(lua_State *L);
 int tag(lua_State *L);
@@ -33,8 +34,6 @@ int toggle_consider_layer_shell(lua_State *L);
 int toggle_floating(lua_State *L);
 int toggle_tag(lua_State *L);
 int toggle_view(lua_State *L);
-int unload_layout(lua_State *L);
-int update_layout(lua_State *L);
 int view(lua_State *L);
 int zoom(lua_State *L);
 

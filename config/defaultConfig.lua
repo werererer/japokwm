@@ -43,7 +43,7 @@ function Set_layout()
     if Layout_id > #Layouts then
         Layout_id = 1
     end
-    action.update_layout()
+    action.arrange_this()
 end
 
 function Set_layout(i)
@@ -51,8 +51,7 @@ function Set_layout(i)
     layout = Layouts[i]
     local layout_name = layout[2]
     Load_layout(layout_name)
-    action.update_layout()
-    action.arrange_this(false)
+    action.arrange_this()
 end
 
 -- default

@@ -53,8 +53,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     m->damage_frame.notify = handle_output_damage_frame;
     wl_signal_add(&m->damage->events.frame, &m->damage_frame);
 
-    set_next_unoccupied_workspace(m, get_workspace(0));
-
     // TODO fix this
     /* for (int i = 0; i < monrule_count; i++) { */
     /*     struct mon_rule r = monrules[i]; */
@@ -76,9 +74,14 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     bool is_first_monitor = wl_list_empty(&mons);
     wl_list_insert(&mons, &m->link);
-    if (is_first_monitor)
+    if (is_first_monitor) {
         set_selected_monitor(m);
-    load_default_layout(L, m);
+        create_workspaces(tag_names, default_layout);
+    }
+    set_next_unoccupied_workspace(m, get_workspace(0));
+    load_default_layout(L, &m->ws->layout);
+    copy_layout_from_selected_workspace();
+
 
     /* Adds this to the output layout. The add_auto function arranges outputs
      * from left-to-right in the order they appear. A more sophisticated
@@ -213,8 +216,9 @@ struct monitor *xytomon(double x, double y)
     return o ? o->data : NULL;
 }
 
-void load_layout(lua_State *L, struct monitor *m, const char *layout_name) {
-    m->ws->layout.name = layout_name;
+void load_layout(lua_State *L, struct layout *lt, const char *layout_name)
+{
+    lt->name = layout_name;
 
     char *config_path = get_config_file("layouts");
     char file[NUM_CHARS];
@@ -230,11 +234,31 @@ void load_layout(lua_State *L, struct monitor *m, const char *layout_name) {
         lua_pop(L, 1);
         return;
     }
-    lua_pcall(L, 0, 0, 0);
-    lua_pop(L, 1);
+    lua_call_safe(L, 0, 0, 0);
 }
 
-void load_default_layout(lua_State *L, struct monitor *m)
+void unload_layout(lua_State *L, struct monitor *m, const char *layout_name)
 {
-    load_layout(L, m, default_layout.name);
+    printf("unload layout: %s\n", layout_name);
+    char *config_path = get_config_file("layouts");
+    char file[NUM_CHARS];
+    strcpy(file, "");
+    join_path(file, config_path);
+    join_path(file, layout_name);
+    join_path(file, "leave.lua");
+
+    if (!file_exists(file))
+        return;
+
+    if (luaL_loadfile(L, file)) {
+        lua_pop(L, 1);
+        return;
+    }
+    lua_call_safe(L, 0, 0, 0);
+}
+
+void load_default_layout(lua_State *L, struct layout *lt)
+{
+    printf("load default layout\n");
+    load_layout(L, lt, default_layout.name);
 }

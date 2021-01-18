@@ -18,7 +18,6 @@ static void add_container_to_monitor_stack(struct container *con);
 
 struct container *create_container(struct client *c, struct monitor *m, bool has_border)
 {
-    printf("create_monitor\n");
     struct container *con = calloc(1, sizeof(struct container));
     con->m = m;
     con->client = c;
@@ -408,9 +407,6 @@ void applyrules(struct container *con)
     if (!title)
         title = "broken";
 
-    printf("start rules\n");
-    printf("title: %s\n", title);
-    printf("app_id: %s\n", app_id);
     for (int i = 0; i < rule_count; i++) {
         const struct rule r = rules[i];
         bool same_id = strcmp(app_id, r.id) == 0;
@@ -423,7 +419,6 @@ void applyrules(struct container *con)
             lua_call_safe(L, 1, 0, 0);
         }
     }
-    printf("end rules\n");
 }
 
 void focus_container(struct container *con, struct monitor *m, enum focus_actions a)

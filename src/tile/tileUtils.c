@@ -32,7 +32,6 @@ void arrange()
 /* update layout and was set in the arrange function */
 static void update_layout(lua_State *L, int n, struct monitor *m)
 {
-
     lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_copy_data_index);
 
     int len = luaL_len(L, -1);
@@ -87,14 +86,10 @@ static void apply_nmaster_transformation(struct wlr_box *box, struct monitor *m,
 
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt.lua_layout_master_copy_data_index);
-    printf("works0\n");
-    printf("index: %i\n", lt.lua_layout_master_copy_data_index);
     int len = luaL_len(L, -1);
-    printf("\nlen: %i\n", len);
     int g = MIN(count, lt.nmaster);
     g = MAX(MIN(len, g), 1);
     lua_rawgeti(L, -1, g);
-    printf("len2: %lli\n", luaL_len(L, -1));
     int k = MIN(position, g);
     struct wlr_fbox geom = lua_unbox_layout(L, k);
     lua_pop(L, 1);
@@ -126,7 +121,6 @@ static int get_default_container_count(struct monitor *m)
 
 void arrange_monitor(struct monitor *m)
 {
-    printf("arrange_monitor\n");
     /* Get effective monitor geometry to use for window area */
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     set_root_area(m->root, m->geom);
@@ -136,22 +130,32 @@ void arrange_monitor(struct monitor *m)
 
     int container_count = get_master_container_count(m);
     int default_container_count = get_default_container_count(m);
-    printf("arrange1\n");
     update_layout(L, default_container_count, m);
     update_hidden_containers(m);
 
     int position = 1;
     struct container *con;
-    wl_list_for_each(con, &containers, mlink) {
-        if (!visibleon(con, m))
-            continue;
+    if (m->ws->layout.arrange_by_focus) {
+        wl_list_for_each(con, &focus_stack, flink) {
+            if (!visibleon(con, m))
+                continue;
 
-        con->position = position;
-        // then use the layout that may have been reseted
-        arrange_container(con, container_count, false);
-        position++;
+            con->position = position;
+            // then use the layout that may have been reseted
+            arrange_container(con, container_count, false);
+            position++;
+        }
+    } else {
+        wl_list_for_each(con, &containers, mlink) {
+            if (!visibleon(con, m))
+                continue;
+
+            con->position = position;
+            // then use the layout that may have been reseted
+            arrange_container(con, container_count, false);
+            position++;
+        }
     }
-    printf("arrange monitor done\n");
 }
 
 void arrange_container(struct container *con, int container_count, bool preserve)
@@ -165,7 +169,6 @@ void arrange_container(struct container *con, int container_count, bool preserve
     int n = MAX(0, con->position - lt.nmaster) + 1;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_index);
-    printf("layout index: %i\n", m->ws->layout.lua_layout_index);
     struct wlr_fbox rel_geom = lua_unbox_layout(L, n);
 
     struct wlr_box box = get_absolute_box(rel_geom, m->root->geom);

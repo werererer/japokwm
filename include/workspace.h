@@ -25,11 +25,13 @@ bool workspace_has_clients(struct workspace *ws);
 int workspace_count();
 struct workspace *find_next_unoccupied_workspace(struct workspace *ws);
 struct workspace *get_workspace(size_t i);
+void init_workspaces();
 void create_workspaces(struct wlr_list tagNames, struct layout default_layout);
 void workspace_assign_monitor(struct workspace *ws, struct monitor *m);
 void destroy_workspaces();
 void set_selected_layout(struct workspace *ws, struct layout layout);
 void set_next_unoccupied_workspace(struct monitor *m, struct workspace *ws);
+void copy_layout_from_selected_workspace();
 /* sets the value of selTag[0] */
 void set_workspace(struct monitor *m, struct workspace *ws);
 

@@ -75,6 +75,7 @@ int set_layout(lua_State *L)
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
 
+    printf("start set_layout\n");
     // 2. argument
     ws->layout.lua_layout_master_copy_data_index = lua_copy_table(L);
     // 1.argument
@@ -82,6 +83,17 @@ int set_layout(lua_State *L)
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, ws->layout.lua_layout_copy_data_index);
     ws->layout.lua_layout_original_copy_data_index = lua_copy_table(L);
+    printf("end set_layout\n");
+    return 0;
+}
+
+int set_arrange_by_focus(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws;
+
+    // 2. argument
+    ws->layout.arrange_by_focus = lua_toboolean(L, -1);
     return 0;
 }
 
@@ -101,7 +113,6 @@ int get_tabcount(lua_State *L)
 
 int arrange_this(lua_State *L)
 {
-    printf("arrange_this\n");
     arrange();
     return 0;
 }
@@ -127,7 +138,6 @@ int resize_main(lua_State *L)
     lua_getglobal_safe(L, "Resize_main_all");
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_index);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_original_copy_data_index);
-    printf("length: %lli\n", luaL_len(L, -1));
     lua_pushnumber(L, n);
     lua_pushinteger(L, d);
     lua_call_safe(L, 4, 1, 0);
@@ -167,13 +177,6 @@ int spawn(lua_State *L)
         setsid();
         execl("/bin/sh", "/bin/sh", "-c", cmd, (void *)NULL);
     }
-    return 0;
-}
-
-int update_layout(lua_State *L)
-{
-    // TODO improve this
-    arrange();
     return 0;
 }
 
@@ -587,40 +590,18 @@ int zoom(lua_State *L)
 
 int load_layout_lib(lua_State *L)
 {
+    printf("load_layout_lib\n");
     const char *layout = luaL_checkstring(L, -1);
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws;
+    struct layout *lt = &ws->layout;
     lua_pop(L, 1);
 
-    load_layout(L, selected_monitor, layout);
+    unload_layout(L, m, lt->name);
+    load_layout(L, &m->ws->layout, layout);
 
     return 0;
 }
-
-int unload_layout(lua_State *L)
-{
-    const char *layout = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-
-    char *config_path = get_config_file("layouts");
-    char file[NUM_CHARS];
-    strcpy(file, "");
-    join_path(file, config_path);
-    join_path(file, layout);
-    join_path(file, "leave.lua");
-
-    if (!file_exists(file))
-        return 0;
-
-    if (luaL_loadfile(L, file)) {
-        lua_pop(L, 1);
-        return 0;
-    }
-
-    lua_pcall(L, 0, 0, 0);
-
-    lua_pop(L, 1);
-    return 0;
-}
-
 
 int kill_client(lua_State *L)
 {

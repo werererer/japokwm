@@ -8,7 +8,7 @@
 #include "ipc-server.h"
 #include "monitor.h"
 
-struct wlr_list workspaces;
+static struct wlr_list workspaces;
 
 struct workspace *create_workspace(const char *name, size_t id, struct layout lt)
 {
@@ -34,9 +34,13 @@ void destroy_workspace(struct workspace *ws)
     free(ws);
 }
 
-void create_workspaces(struct wlr_list tagNames, struct layout default_layout)
+void init_workspaces()
 {
     wlr_list_init(&workspaces);
+}
+
+void create_workspaces(struct wlr_list tagNames, struct layout default_layout)
+{
     for (int i = 0; i < tagNames.length; i++) {
         struct workspace *ws = create_workspace(tagNames.items[i], i, default_layout);
         wlr_list_push(&workspaces, ws);
@@ -142,4 +146,18 @@ void set_workspace(struct monitor *m, struct workspace *ws)
     ws->m = m;
     // TODO is wlr_output_damage_whole better? because of floating windows
     root_damage_whole(m->root);
+}
+
+void copy_layout_from_selected_workspace()
+{
+    for (int i = 0; i < workspaces.length; i++) {
+        struct workspace *ws = workspaces.items[i];
+        struct layout *dest = &ws->layout;
+        struct layout *src = &selected_monitor->ws->layout;
+
+        if (dest == src)
+            continue;
+
+        copy_layout(dest, src);
+    }
 }

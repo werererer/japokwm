@@ -26,3 +26,18 @@ bool is_same_layout(struct layout layout, struct layout layout2)
     // same string means same layout
     return strcmp(c, c2) != 0;
 }
+
+void copy_layout(struct layout *dest, struct layout *src)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, src->lua_layout_copy_data_index);
+    dest->lua_layout_copy_data_index = lua_copy_table(L);
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, src->lua_layout_index);
+    dest->lua_layout_index = lua_copy_table(L);
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, src->lua_layout_master_copy_data_index);
+    dest->lua_layout_master_copy_data_index = lua_copy_table(L);
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, src->lua_layout_original_copy_data_index);
+    dest->lua_layout_original_copy_data_index = lua_copy_table(L);
+}

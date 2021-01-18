@@ -17,11 +17,12 @@ struct layout {
     int lua_layout_copy_data_index;
     int lua_layout_original_copy_data_index;
     int lua_layout_master_copy_data_index;
-    int test;
+    bool arrange_by_focus;
 };
 
 bool is_same_layout(struct layout layout, struct layout layout2);
 int lua_copy_table(lua_State *L);
+void copy_layout(struct layout *dest, struct layout *src);
 
 extern struct layout default_layout;
 extern struct layout prev_layout;
