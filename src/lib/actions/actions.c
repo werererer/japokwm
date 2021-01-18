@@ -585,6 +585,11 @@ int zoom(lua_State *L)
     arrange(LAYOUT_NOOP);
     // focus new master window
     focus_container(previous, selected_monitor, FOCUS_NOOP);
+
+    if (selected_monitor->ws->layout.arrange_by_focus) {
+        focus_top_container(m, FOCUS_NOOP);
+        arrange();
+    }
     return 0;
 }
 
