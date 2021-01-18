@@ -425,9 +425,9 @@ struct mon_rule get_config_monrule(lua_State *L, char *name)
     return monrule;
 }
 
-Key get_config_key(lua_State *L, char *name)
+struct layout get_config_key(lua_State *L, char *name)
 {
-    Key key = (Key)get_config_layout(L, name);
+    struct layout key = (struct layout)get_config_layout(L, name);
     return key;
 }
 

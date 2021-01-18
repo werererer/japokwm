@@ -777,10 +777,13 @@ int setup()
 
     L = luaL_newstate();
     luaL_openlibs(L);
+
+    // TODO replace
     if(update_config(L)) {
         wlr_log(WLR_ERROR, "failed updating config");
         return 1;
     }
+    server.options = get_default_options();
 
     init_workspaces();
     /* The Wayland display is managed by libwayland. It handles accepting

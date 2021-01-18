@@ -1,9 +1,9 @@
-Build started at 2021-01-15T10:29:11.649821
+Build started at 2021-01-18T23:44:39.512237
 Main binary: /usr/bin/python
 Build Options: -Dbackend=ninja
 Python system: Linux
 The Meson build system
-Version: 0.56.0
+Version: 0.56.2
 Source dir: /home/jakob/git/juliawm
 Build dir: /home/jakob/git/juliawm/build
 Build type: native build
@@ -93,8 +93,8 @@ Build targets in project: 1
 
 Found ninja-1.10.2 at /usr/bin/ninja
 Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmp5y87bjru
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmp5y87bjru/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmp5y87bjru/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
+Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpmldpm5gr
+Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpmldpm5gr/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpmldpm5gr/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
 
 Code:
  

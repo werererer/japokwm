@@ -16,6 +16,7 @@
 #include "lib/actions/actions.h"
 #include "stringop.h"
 #include "workspace.h"
+#include "server.h"
 
 bool sloppy_focus;
 int border_px;
@@ -35,13 +36,11 @@ size_t monrule_count;
 
 int repeat_rate;
 int repeat_delay;
-int inner_gap;
-int outer_gap;
 
 struct wlr_list tag_names;
 char *termcmd;
-Key *keys = NULL;
-Key *buttons = NULL;
+struct layout *keys = NULL;
+struct layout *buttons = NULL;
 
 int update_config(lua_State *L)
 {
@@ -49,11 +48,6 @@ int update_config(lua_State *L)
     init_config(L);
     sloppy_focus = get_config_bool(L, "Sloppy_focus");
     border_px = get_config_int(L, "Border_px");
-
-    /* gaps */
-    inner_gap = get_config_int(L, "Inner_gap");
-    outer_gap = get_config_int(L, "Outer_gap");
-    configure_gaps(&inner_gap, &outer_gap);
 
     /* appearance */
     get_config_float_arr(L, root_color, "Root_color");

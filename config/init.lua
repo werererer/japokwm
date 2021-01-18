@@ -18,8 +18,8 @@ Overlay_color = {0.65, 0.65, 0.65, 0.9}
 Text_color = {0.003, 0.003, 0.003, 1.0}
 Sel_overlay_color = {}
 Sel_text_color = {}
-Outer_gap = 20
-Inner_gap = 20
+
+config.set_gaps(20, 20)
 
 Tag_names = {"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"}
 

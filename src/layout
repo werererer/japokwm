@@ -1,0 +1,41 @@
+workspace.c:16:5:    ws->name = name;
+workspace.c:17:5:    ws->layout = lt;
+workspace.c:18:26:    copy_layout_data(L, &ws->layout);
+workspace.c:19:13:    printf("ws->layout: %i\n", ws->layout.lua_layout_copy_data_index);
+workspace.c:19:32:    printf("ws->layout: %i\n", ws->layout.lua_layout_copy_data_index);
+workspace.c:20:5:    ws->id = id;
+workspace.c:21:5:    ws->m = NULL;
+workspace.c:50:12:    return ws->m ? true : false;
+workspace.c:75:26:    for (size_t i = ws ? ws->id : 0; i < workspace_count(); i++) {
+workspace.c:95:5:    ws->m = m;
+workspace.c:103:16:    if (strcmp(ws->name, "") == 0) {
+workspace.c:107:5:    ws->layout = layout;
+workspace.c:131:12:        m->ws->m = NULL;
+workspace.c:134:5:    ws->m = m;
+tile/tileUtils.c:36:42:    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_copy_data_index);
+tile/tileUtils.c:37:45:    printf("lua layout copy data: %i\n", m->ws->layout.lua_layout_copy_data_index);
+tile/tileUtils.c:48:8:    m->ws->layout.n = lua_rawlen(L, -1);
+tile/tileUtils.c:49:12:    if (m->ws->layout.lua_layout_index >= 0) {
+tile/tileUtils.c:50:45:        luaL_unref(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_index);
+tile/tileUtils.c:52:8:    m->ws->layout.lua_layout_index = luaL_ref(L, LUA_REGISTRYINDEX);
+tile/tileUtils.c:79:27:    struct layout lt = m->ws->layout;
+tile/tileUtils.c:98:27:    struct layout lt = m->ws->layout;
+tile/tileUtils.c:150:27:    struct layout lt = m->ws->layout;
+tile/tileUtils.c:154:42:    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_index);
+tile/tileUtils.c:155:37:    printf("layout index: %i\n", m->ws->layout.lua_layout_index);
+tile/tileUtils.c:161:8:    m->ws->layout.lua_layout_index = luaL_ref(L, LUA_REGISTRYINDEX);
+tile/tileUtils.c:218:20:    int count = m->ws->layout.n + m->ws->layout.nmaster-1;
+tile/tileUtils.c:218:38:    int count = m->ws->layout.n + m->ws->layout.nmaster-1;
+ipc-json.c:80:22:    char *s = strdup(ws->name);
+ipc-json.c:85:46:    json_object_object_add(object, "output", ws->m ?
+ipc-json.c:86:36:            json_object_new_string(ws->m->wlr_output->name) : json_object_new_string(m->wlr_output->name));
+container.c:153:12:    if (m->ws->layout.n <= 0)
+container.c:166:12:    if (m->ws->layout.n <= 0)
+container.c:174:20:        if (i > m->ws->layout.n)
+monitor.c:215:8:    m->ws->layout.name = layout_name;
+ipc-server.c:407:72:                        bool is_workspace_selected = selected_monitor->ws->id == i;
+lib/actions/actions.c:109:23:    selected_monitor->ws->layout.nmaster = luaL_checkinteger(L, -1);
+lib/actions/actions.c:180:42:    lua_pushinteger(L, selected_monitor->ws->layout.nmaster);
+lib/actions/actions.c:390:30:        set_selected_monitor(ws->m);
+lib/actions/actions.c:410:30:        set_selected_monitor(ws->m);
+lib/actions/actions.c:433:30:        set_selected_monitor(ws->m);

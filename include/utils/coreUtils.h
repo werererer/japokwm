@@ -37,9 +37,6 @@ struct keyboard {
     struct wl_listener destroy;
 };
 
-typedef struct layout Key;
-typedef struct layout Button;
-
 typedef uint32_t xkb_keysym_t;
 
 /* rules */

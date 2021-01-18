@@ -6,6 +6,7 @@
 #include <wayland-server-core.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 #include "xwayland.h"
+#include "options.h"
 
 /* enums */
 enum cursorMode { CurNormal, CURSOR_MOVE, CURSOR_RESIZE }; /* cursor */
@@ -32,6 +33,8 @@ struct server {
     struct wlr_output_layout *output_layout;
     struct wl_list keyboards;
     enum cursorMode cursorMode;
+
+    struct options options;
 };
 
 extern struct server server;

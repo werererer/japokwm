@@ -17,8 +17,6 @@ extern char *main_module;
 extern char *config_module;
 extern bool sloppy_focus;
 extern int border_px;
-extern int inner_gap;
-extern int outer_gap;
 extern float border_color[4];
 extern float root_color[4];
 extern float focus_color[4];
@@ -38,8 +36,8 @@ extern int repeat_delay;
 /* commands */
 extern struct wlr_list tag_names;
 extern char *termcmd;
-extern Key *keys;
-extern Key *buttons;
+extern struct layout *keys;
+extern struct layout *buttons;
 
 /* sets global variables but needs  */
 int update_config(lua_State *L);

@@ -52,6 +52,8 @@ srcs = files(
   'wlr-foreign-toplevel-management-unstable-v1-protocol.c',
   'root.c',
   'lib/actions/libcontainer.c',
+  'options.c',
+  'lib/config/config.c',
   )
 
 libName = 'juliawm'

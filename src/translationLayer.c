@@ -1,6 +1,7 @@
 #include "translationLayer.h"
 #include "lib/actions/actions.h"
 #include "lib/actions/libcontainer.h"
+#include "lib/config/config.h"
 #include "lib/info/info.h"
 #include "parseConfig.h"
 #include "tile/tile.h"
@@ -55,6 +56,7 @@ static const struct luaL_Reg info[] =
 static const struct luaL_Reg config[] = 
 {
     {"reload", reload_config},
+    {"set_gaps", set_gaps},
     {NULL, NULL},
 };
 
