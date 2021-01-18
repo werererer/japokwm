@@ -55,7 +55,7 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
     if (con->client->type == X11_UNMANAGED)
         return;
 
-    if (sloppy_focus)
+    if (server.options.sloppy_focus)
         focus_container(con, selected_monitor, FOCUS_NOOP);
 }
 

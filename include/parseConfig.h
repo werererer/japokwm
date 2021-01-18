@@ -15,8 +15,6 @@ struct config {
 /* appearance */
 extern char *main_module;
 extern char *config_module;
-extern bool sloppy_focus;
-extern int border_px;
 extern float border_color[4];
 extern float root_color[4];
 extern float focus_color[4];

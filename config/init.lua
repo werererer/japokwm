@@ -9,8 +9,6 @@ Max_main_width = 1
 Min_main_height = 0.1
 Max_main_height = 1
 
-Sloppy_focus = true
-Border_px = 2
 Root_color = {0.3, 0.3, 0.3, 1.0}
 Border_color = {0.0, 0.0, 1.0, 1.0}
 Focus_color = {1.0, 0.0, 0.0, 0.0}
@@ -19,6 +17,8 @@ Text_color = {0.003, 0.003, 0.003, 1.0}
 Sel_overlay_color = {}
 Sel_text_color = {}
 
+config.set_sloppy_focus(true)
+config.set_borderpx(2)
 config.set_gaps(20, 20)
 
 Tag_names = {"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"}

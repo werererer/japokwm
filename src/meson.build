@@ -36,7 +36,6 @@ srcs = files(
   'lib/info/info.c',
   'lib/actions/overlay.c',
   'lib/actions/actions.c',
-  'lib/actions/config.c',
   'tabframe.c',
   'translationLayer.c',
   'container.c',

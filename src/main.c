@@ -268,7 +268,7 @@ void createnotify(struct wl_listener *listener, void *data)
     /* Allocate a Client for this surface */
     struct client *c = xdg_surface->data = calloc(1, sizeof(struct client));
     c->surface.xdg = xdg_surface;
-    c->bw = border_px;
+    c->bw = server.options.border_px;
     c->type = XDG_SHELL;
 
     /* Tell the client not to try anything fancy */
@@ -779,11 +779,11 @@ int setup()
     luaL_openlibs(L);
 
     // TODO replace
+    server.options = get_default_options();
     if(update_config(L)) {
         wlr_log(WLR_ERROR, "failed updating config");
         return 1;
     }
-    server.options = get_default_options();
 
     init_workspaces();
     /* The Wayland display is managed by libwayland. It handles accepting
@@ -978,7 +978,7 @@ void createnotifyx11(struct wl_listener *listener, void *data)
     c->surface.xwayland = xwayland_surface;
     // set default value will be overriden on maprequest
     c->type = X11_MANAGED;
-    c->bw = border_px;
+    c->bw = server.options.border_px;
 
     /* Listen to the various events it can emit */
     c->map.notify = maprequestx11;

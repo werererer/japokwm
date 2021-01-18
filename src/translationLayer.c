@@ -57,6 +57,8 @@ static const struct luaL_Reg config[] =
 {
     {"reload", reload_config},
     {"set_gaps", set_gaps},
+    {"set_borderpx", set_borderpx},
+    {"set_sloppy_focus", set_sloppy_focus},
     {NULL, NULL},
 };
 

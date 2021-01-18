@@ -18,8 +18,6 @@
 #include "workspace.h"
 #include "server.h"
 
-bool sloppy_focus;
-int border_px;
 float root_color[4];
 float border_color[4];
 float focus_color[4];
@@ -46,8 +44,6 @@ int update_config(lua_State *L)
 {
     init_error_file();
     init_config(L);
-    sloppy_focus = get_config_bool(L, "Sloppy_focus");
-    border_px = get_config_int(L, "Border_px");
 
     /* appearance */
     get_config_float_arr(L, root_color, "Root_color");
@@ -99,7 +95,7 @@ int reload_config(lua_State *L)
     // reconfigure clients
     struct client *c = NULL;
     wl_list_for_each(c, &clients, link) {
-        c->bw = border_px;
+        c->bw = server.options.border_px;
     }
 
     printf("reload_config\n");
