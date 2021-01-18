@@ -36,6 +36,7 @@ struct container {
     bool on_top;
     // if position -1 it is floating
     int stack_position;
+    int focus_stack_position;
     int position;
     float scale;
 };

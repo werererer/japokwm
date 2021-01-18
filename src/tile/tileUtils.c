@@ -119,6 +119,34 @@ static int get_default_container_count(struct monitor *m)
     return get_slave_container_count(m) + 1;
 }
 
+static void update_container_positions(struct monitor *m)
+{
+    struct container *con;
+    int position = 1;
+    wl_list_for_each(con, &containers, mlink) {
+        if (!visibleon(con, m))
+            continue;
+
+        con->position = position;
+        // then use the layout that may have been reseted
+        position++;
+    }
+}
+
+static void update_container_focus_stack_positions(struct monitor *m)
+{
+    int position = 1;
+    struct container *con;
+    wl_list_for_each(con, &focus_stack, flink) {
+        if (!visibleon(con, m))
+            continue;
+
+        con->focus_stack_position = position;
+        // then use the layout that may have been reseted
+        position++;
+    }
+}
+
 void arrange_monitor(struct monitor *m)
 {
     /* Get effective monitor geometry to use for window area */
@@ -131,34 +159,31 @@ void arrange_monitor(struct monitor *m)
     int container_count = get_master_container_count(m);
     int default_container_count = get_default_container_count(m);
     update_layout(L, default_container_count, m);
-    update_hidden_containers(m);
 
-    int position = 1;
+    update_hidden_containers(m);
+    update_container_focus_stack_positions(m);
+    update_container_positions(m);
+
     struct container *con;
     if (m->ws->layout.arrange_by_focus) {
+        printf("arrange by focus\n");
         wl_list_for_each(con, &focus_stack, flink) {
             if (!visibleon(con, m))
                 continue;
 
-            con->position = position;
-            // then use the layout that may have been reseted
-            arrange_container(con, container_count, false);
-            position++;
+            arrange_container(con, con->focus_stack_position, container_count, false);
         }
     } else {
         wl_list_for_each(con, &containers, mlink) {
             if (!visibleon(con, m))
                 continue;
 
-            con->position = position;
-            // then use the layout that may have been reseted
-            arrange_container(con, container_count, false);
-            position++;
+            arrange_container(con, con->position, container_count, false);
         }
     }
 }
 
-void arrange_container(struct container *con, int container_count, bool preserve)
+void arrange_container(struct container *con, int arrange_position, int container_count, bool preserve)
 {
     if (con->floating || con->hidden)
         return;
@@ -166,14 +191,14 @@ void arrange_container(struct container *con, int container_count, bool preserve
     struct monitor *m = con->m;
     struct layout lt = m->ws->layout;
     // the 1 added represents the master area
-    int n = MAX(0, con->position - lt.nmaster) + 1;
+    int n = MAX(0, arrange_position - lt.nmaster) + 1;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_index);
     struct wlr_fbox rel_geom = lua_unbox_layout(L, n);
 
     struct wlr_box box = get_absolute_box(rel_geom, m->root->geom);
     // TODO fix this function, hard to read
-    apply_nmaster_transformation(&box, con->m, con->position, container_count);
+    apply_nmaster_transformation(&box, con->m, arrange_position, container_count);
     m->ws->layout.lua_layout_index = luaL_ref(L, LUA_REGISTRYINDEX);
 
     if (!overlay)
@@ -227,17 +252,27 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
 
 void update_hidden_containers(struct monitor *m)
 {
-    int i = 1;
     struct container *con;
     // because the master are is included in n aswell as nmaster we have to
     // subtract the solution by one to count
     int count = m->ws->layout.n + m->ws->layout.nmaster-1;
-    wl_list_for_each(con, &containers, mlink) {
-        if (!existon(con, m) || con->floating)
-            continue;
+    int i = 1;
+    if (m->ws->layout.arrange_by_focus) {
+        wl_list_for_each(con, &focus_stack, flink) {
+            if (!existon(con, m) || con->floating)
+                continue;
 
-        con->hidden = i > count;
-        i++;
+            con->hidden = i > count;
+            i++;
+        }
+    } else {
+        wl_list_for_each(con, &containers, mlink) {
+            if (!existon(con, m) || con->floating)
+                continue;
+
+            con->hidden = i > count;
+            i++;
+        }
     }
 }
 
