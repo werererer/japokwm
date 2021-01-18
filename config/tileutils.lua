@@ -100,8 +100,6 @@ function Is_resize_locked(layout_data, o_layout_data, i, j, n, directions)
             lock = lock or c[HEIGHT] > Max_height
         end
     end
-    print("lock", lock)
-    print(#directions)
     return lock
 end
 

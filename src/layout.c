@@ -40,4 +40,6 @@ void copy_layout(struct layout *dest, struct layout *src)
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, src->lua_layout_original_copy_data_index);
     dest->lua_layout_original_copy_data_index = lua_copy_table(L);
+
+    dest->resize_dir = src->resize_dir;
 }

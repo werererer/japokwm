@@ -165,7 +165,6 @@ function Resize_all(lt_data, o_layout_data, i, j, n, d)
             layout_data[li][lj] = Move_resize(layout_data[li][lj], 0, n, dir)
         end
     end
-    print("works2")
     return layout_data
 end
 

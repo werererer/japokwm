@@ -75,7 +75,6 @@ int set_layout(lua_State *L)
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
 
-    printf("start set_layout\n");
     // 2. argument
     ws->layout.lua_layout_master_copy_data_index = lua_copy_table(L);
     // 1.argument
@@ -83,7 +82,6 @@ int set_layout(lua_State *L)
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, ws->layout.lua_layout_copy_data_index);
     ws->layout.lua_layout_original_copy_data_index = lua_copy_table(L);
-    printf("end set_layout\n");
     return 0;
 }
 
@@ -102,6 +100,7 @@ int set_resize_direction(lua_State *L)
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
     ws->layout.resize_dir = luaL_checkinteger(L, -1);
+    printf("set resize direction: %i\n", ws->layout.resize_dir);
     return 0;
 }
 
