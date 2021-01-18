@@ -17,6 +17,7 @@ struct layout {
     int lua_layout_copy_data_index;
     int lua_layout_original_copy_data_index;
     int lua_layout_master_copy_data_index;
+    int lua_box_data_index;
     bool arrange_by_focus;
 };
 

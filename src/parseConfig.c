@@ -81,6 +81,7 @@ int update_config(lua_State *L)
         .n = 0,
         .lua_layout_index = 0,
         .lua_layout_copy_data_index = 0,
+        .lua_box_data_index = 0,
         .arrange_by_focus = false,
     };
 

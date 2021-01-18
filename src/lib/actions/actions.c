@@ -75,6 +75,8 @@ int set_layout(lua_State *L)
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
 
+    // 3. argument
+    ws->layout.lua_box_data_index = lua_copy_table(L);
     // 2. argument
     ws->layout.lua_layout_master_copy_data_index = lua_copy_table(L);
     // 1.argument
@@ -137,9 +139,11 @@ int resize_main(lua_State *L)
     lua_getglobal_safe(L, "Resize_main_all");
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_index);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_original_copy_data_index);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_box_data_index);
     lua_pushnumber(L, n);
     lua_pushinteger(L, d);
-    lua_call_safe(L, 4, 1, 0);
+
+    lua_call_safe(L, 5, 1, 0);
 
     lt->lua_layout_copy_data_index = lua_copy_table(L);
     arrange();

@@ -168,18 +168,17 @@ function Resize_all(lt_data, o_layout_data, i, j, n, d)
     return layout_data
 end
 
-function Resize_main_all(layout_data, o_layout_data, n, d)
+function Resize_main_all(layout_data, o_layout_data, box_data, n, d)
     local i = math.max(math.min(info.get_this_container_count(), #o_layout_data), 1)
-    for g=1,#Box_data do
-        for h=1,#Box_data[g] do
-            if i == Box_data[g][h] then
-                for j=1,#Box_data[g] do
-                    layout_data = Resize_all(layout_data, o_layout_data, Box_data[g][j], 1, n, d)
+    for g=1,#box_data do
+        for h=1,#box_data[g] do
+            if i == box_data[g][h] then
+                for j=1,#box_data[g] do
+                    layout_data = Resize_all(layout_data, o_layout_data, box_data[g][j], 1, n, d)
                 end
                 break
             end
         end
     end
-    action.arrange_this(false)
     return layout_data
 end
