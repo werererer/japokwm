@@ -1,4 +1,4 @@
-# japokwm - tiling made easy [![CircleCI](https://circleci.com/gh/werererer/juliawm.svg?style=svg)](https://app.circleci.com/pipelines/github/werererer)
+# japokwm - tiling made easy [![CircleCI](https://circleci.com/gh/werererer/japokwm.svg?style=svg)](https://app.circleci.com/pipelines/github/werererer)
 
 - very flexible and easy to configure layouts 
 - very flexible configuration
