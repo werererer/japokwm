@@ -1,14 +1,5 @@
 require "defaultConfig"
 
-Min_width = 0
-Max_width = 1
-Min_height = 0
-Max_height = 1
-Min_main_width = 0.1
-Max_main_width = 1
-Min_main_height = 0.1
-Max_main_height = 1
-
 config.set_sloppy_focus(true)
 config.set_borderpx(2)
 config.set_gaps(20, 20)
@@ -42,58 +33,56 @@ Repeat_rate = 25
 Repeat_delay = 600
 Termcmd = "/usr/bin/termite"
 
--- TODO
-
 Mod = Mod1
 -- maps (between 1 and 4)
 Keys = {
-    {Mod.." "..Shift.." Return",   function() action.spawn(Termcmd) end},
-    -- {mod.." period",            function() focusmon(1) end},
-    -- {mod.." comma",             function() focusmon(-1) end},
-    {Mod.." a",                    function() action.set_nmaster(2) end},
-    {Mod.." x",                    function() action.set_nmaster(1) end},
-    -- {mod.." a",                 function() action.set_tabcount(action.get_tabcount()+1) end},
-    -- {mod.." x",                 function() action.set_tabcount(action.get_tabcount()-1) end},
-    {Mod.." k",                    function() action.focus_on_stack(-1) end},
-    {Mod.." j",                    function() action.focus_on_stack(1) end},
-    {Mod.." "..Shift.." j",        function() action.focus_on_hidden_stack(1) end},
-    {Mod.." "..Shift.." k",        function() action.focus_on_hidden_stack(-1) end},
-    -- {mod.." d",                 function() incnmaster(-1) end},
-    {Mod.." "..Shift.." c",        function() action.kill() end},
-    {Mod.." "..Shift.." q",        function() action.quit() end},
-    {Mod.." space",                function() Set_layout() end},
-    {Mod.." m",                    function() Set_layout(1) end},
-    {Mod.." "..Shift.." t",        function() Set_layout(2) end},
-    {Mod.." w",                    function() Set_layout(3) end},
-    {Mod.." b",                    function() action.toggle_consider_layer_shell() end},
-    {Mod.." "..Shift.." w",        function() Set_layout(4) end},
-    {Mod.." "..Shift.." h",        function() action.resize_main(-1/10) end},
-    {Mod.." "..Shift.." l",        function() action.resize_main(1/10) end},
-    {Mod.." "..Shift.." s",        function() action.write_this_overlay("tmp") end},
-    -- {mod.." parenright",        function() tag(~0) end},
-    -- {mod.." greater",           function() tagmon(1) end},
-    -- {mod.." less",              function() tagmon(-1) end},
-    {Mod.." Return",               function() action.zoom() end},
-    {Mod.." 1",                    function() action.view(0) end},
-    {Mod.." 2",                    function() action.view(1) end},
-    {Mod.." 3",                    function() action.view(2) end},
-    {Mod.." 4",                    function() action.view(3) end},
-    {Mod.." 5",                    function() action.view(4) end},
-    {Mod.." 6",                    function() action.view(5) end},
-    {Mod.." 7",                    function() action.view(6) end},
-    {Mod.." 8",                    function() action.view(7) end},
-    {Mod.." 9",                    function() action.view(8) end},
-    {Mod.." "..Shift.." 1",        function() action.move_client_to_workspace(0) end},
-    {Mod.." "..Shift.." 2",        function() action.move_client_to_workspace(1) end},
-    {Mod.." "..Shift.." 3",        function() action.move_client_to_workspace(2) end},
-    {Mod.." "..Shift.." 4",        function() action.move_client_to_workspace(3) end},
-    {Mod.." "..Shift.." 5",        function() action.move_client_to_workspace(4) end},
-    {Mod.." "..Shift.." 6",        function() action.move_client_to_workspace(5) end},
-    {Mod.." "..Shift.." 7",        function() action.move_client_to_workspace(6) end},
-    {Mod.." "..Shift.." 8",        function() action.move_client_to_workspace(7) end},
-    {Mod.." "..Shift.." 9",        function() action.move_client_to_workspace(8) end},
-    {Mod.." "..Shift.." r",        function() config.reload() end},
-    {Mod.." t",                    function() action.set_floating(false)    end},
+    {"mod-S-Return",   function() action.spawn(Termcmd) end},
+    {"mod-a",          function() action.set_nmaster(2) end},
+    {"mod-x",          function() action.set_nmaster(1) end},
+    {"mod-k",          function() action.focus_on_stack(-1) end},
+    {"mod-j",          function() action.focus_on_stack(1) end},
+    {"mod-S-j",        function() action.focus_on_hidden_stack(1) end},
+    {"mod-S-k",        function() action.focus_on_hidden_stack(-1) end},
+    {"mod-S-c",        function() action.kill() end},
+    {"mod-S-q",        function() action.quit() end},
+    {"mod-space",      function() Set_layout() end},
+    {"mod-m",          function() Set_layout(1) end},
+    {"mod-S-t",        function() Set_layout(2) end},
+    {"mod-w",          function() Set_layout(3) end},
+    {"mod-b",          function() action.toggle_consider_layer_shell() end},
+    {"mod-S-w",        function() Set_layout(4) end},
+    {"mod-S-h",        function() action.resize_main(-1/10) end},
+    {"mod-S-l",        function() action.resize_main(1/10) end},
+    {"mod-S-s",        function() action.write_this_overlay("tmp") end},
+    {"mod-Return",     function() action.zoom() end},
+    {"mod-1",          function() action.view(0) end},
+    {"mod-2",          function() action.view(1) end},
+    {"mod-3",          function() action.view(2) end},
+    {"mod-4",          function() action.view(3) end},
+    {"mod-5",          function() action.view(4) end},
+    {"mod-6",          function() action.view(5) end},
+    {"mod-7",          function() action.view(6) end},
+    {"mod-8",          function() action.view(7) end},
+    {"mod-9",          function() action.view(8) end},
+    {"mod-S-1",        function() action.move_client_to_workspace(0) end},
+    {"mod-S-2",        function() action.move_client_to_workspace(1) end},
+    {"mod-S-3",        function() action.move_client_to_workspace(2) end},
+    {"mod-S-4",        function() action.move_client_to_workspace(3) end},
+    {"mod-S-5",        function() action.move_client_to_workspace(4) end},
+    {"mod-S-6",        function() action.move_client_to_workspace(5) end},
+    {"mod-S-7",        function() action.move_client_to_workspace(6) end},
+    {"mod-S-8",        function() action.move_client_to_workspace(7) end},
+    {"mod-S-9",        function() action.move_client_to_workspace(8) end},
+    {"mod-r",          function() config.reload() end},
+    {"mod-t",          function() action.set_floating(false)    end},
+    -- {"m-period",            function() focusmon(1) end},
+    -- {"m-comma",             function() focusmon(-1) end},
+    -- {"m-a",                 function() action.set_tabcount(action.get_tabcount()+1) end},
+    -- {"m-x",                 function() action.set_tabcount(action.get_tabcount()-1) end},
+    -- {"m-d",                 function() incnmaster(-1) end},
+    -- {"m-parenright",        function() tag(~0) end},
+    -- {"m-greater",           function() tagmon(1) end},
+    -- {"m-less",              function() tagmon(-1) end},
 }
 
 Buttons = {

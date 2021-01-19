@@ -103,6 +103,8 @@ local box_data = {
     {6, 7, 8, 9},
 }
 
-action.set_layout(layout_data, master_layout_data, box_data)
+print("works")
+layout.set(layout_data, master_layout_data, box_data)
+print("works2")
 lconfig.set_gaps(10, 50)
 lconfig.set_border_color{0.0, 1.0, 1.0, 1.0}

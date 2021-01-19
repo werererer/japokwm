@@ -23,7 +23,7 @@ local box_data = {
     {1},
 }
 
-action.set_layout(layout_data, master_layout_data, box_data)
+layout.set(layout_data, master_layout_data, box_data)
 action.set_arrange_by_focus(true);
 lconfig.set_borderpx(0)
 lconfig.set_gaps(0, 0)

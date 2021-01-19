@@ -27,13 +27,6 @@ Monitor_transformation = {
     NORMAL = 0,
 }
 
-Layouts = {
-    {"[M]", "master"},
-    {"[]=", "two_pane"},
-    {"||",  "monocle"},
-    {"--",  "tmp"},
-}
-
 Layout_id = 1
 
 function Set_layout()

@@ -77,12 +77,6 @@ int set_resize_direction(lua_State *L)
     return 0;
 }
 
-int get_tabcount(lua_State *L)
-{
-    /* lua_pushinteger(L, selected_container(selected_monitor)->tabcount); */
-    return 1;
-}
-
 int lib_arrange(lua_State *L)
 {
     printf("arrange\n");
@@ -385,52 +379,6 @@ void motionnotify(uint32_t time)
     if (!action && con) {
         pointer_focus(con, surface, sx, sy, time);
     }
-}
-
-int tag(lua_State *L)
-{
-    unsigned int ui = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-    struct monitor *m = selected_monitor;
-    struct container *sel = selected_container(m);
-
-    ipc_event_workspace();
-
-    if (!sel)
-        return 0;
-
-    struct workspace *ws = get_workspace(ui);
-    if (!ws)
-        return 0;
-
-    if (is_workspace_occupied(ws)) {
-        set_selected_monitor(ws->m);
-        return 0;
-    }
-    set_next_unoccupied_workspace(m, ws);
-    focus_top_container(m, FOCUS_LIFT);
-    arrange(false);
-    return 0;
-}
-
-int toggle_tag(lua_State *L)
-{
-    unsigned int ui = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-
-    struct container *sel = selected_container(selected_monitor);
-    struct monitor *m = selected_monitor;
-    if (!sel)
-        return 0;
-    struct workspace *ws = get_workspace(ui);
-    if (is_workspace_occupied(ws)) {
-        set_selected_monitor(ws->m);
-        return 0;
-    }
-    set_next_unoccupied_workspace(m, ws);
-    focus_top_container(m, FOCUS_LIFT);
-    arrange(false);
-    return 0;
 }
 
 int view(lua_State *L)

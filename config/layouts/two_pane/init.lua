@@ -27,4 +27,4 @@ local box_data = {
     {2},
 }
 
-action.set_layout(layout_data, master_layout_data, box_data)
+layout.set(layout_data, master_layout_data, box_data)

@@ -107,7 +107,6 @@ void setsel(struct wl_listener *listener, void *data);
 void setmfact(float factor);
 int setup();
 void sigchld(int unused);
-void tagmon(int i);
 void unmapnotify(struct wl_listener *listener, void *data);
 
 /* global variables */
