@@ -228,27 +228,7 @@ void load_layout(lua_State *L, struct layout *lt, const char *layout_name)
     strcpy(file, "");
     join_path(file, config_path);
     join_path(file, layout_name);
-    join_path(file, "enter.lua");
-
-    if (!file_exists(file))
-        return;
-
-    if (luaL_loadfile(L, file)) {
-        lua_pop(L, 1);
-        return;
-    }
-    lua_call_safe(L, 0, 0, 0);
-}
-
-void unload_layout(lua_State *L, struct monitor *m, const char *layout_name)
-{
-    printf("unload layout: %s\n", layout_name);
-    char *config_path = get_config_file("layouts");
-    char file[NUM_CHARS];
-    strcpy(file, "");
-    join_path(file, config_path);
-    join_path(file, layout_name);
-    join_path(file, "leave.lua");
+    join_path(file, "init.lua");
 
     if (!file_exists(file))
         return;

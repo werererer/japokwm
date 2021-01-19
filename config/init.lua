@@ -9,11 +9,6 @@ Max_main_width = 1
 Min_main_height = 0.1
 Max_main_height = 1
 
-Overlay_color = {0.65, 0.65, 0.65, 0.9}
-Text_color = {0.003, 0.003, 0.003, 1.0}
-Sel_overlay_color = {}
-Sel_text_color = {}
-
 config.set_sloppy_focus(true)
 config.set_borderpx(2)
 config.set_gaps(20, 20)

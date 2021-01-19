@@ -1,1 +1,1 @@
-print("destroy")
+print("leave")

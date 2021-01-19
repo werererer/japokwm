@@ -517,7 +517,7 @@ int move_client(lua_State *L)
 }
 
 // TODO optimize
-int move_client_to_workspace(lua_State *L)
+int lib_move_client_to_workspace(lua_State *L)
 {
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
@@ -537,7 +537,7 @@ int move_client_to_workspace(lua_State *L)
     return 0;
 }
 
-int resize_client(lua_State *L)
+int lib_resize_client(lua_State *L)
 {
     struct wlr_box geom;
     geom.x = grabc->geom.x;
@@ -548,13 +548,13 @@ int resize_client(lua_State *L)
     return 0;
 }
 
-int quit(lua_State *L)
+int lib_quit(lua_State *L)
 {
     wl_display_terminate(server.display);
     return 0;
 }
 
-int zoom(lua_State *L)
+int lib_zoom(lua_State *L)
 {
     struct monitor *m = selected_monitor;
     struct container *sel = selected_container(m);
@@ -597,22 +597,21 @@ int zoom(lua_State *L)
     return 0;
 }
 
-int load_layout_lib(lua_State *L)
+int lib_load_layout(lua_State *L)
 {
     printf("load_layout_lib\n");
     const char *layout = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
     struct layout *lt = &ws->layout;
-    lua_pop(L, 1);
 
-    unload_layout(L, m, lt->name);
-    load_layout(L, &m->ws->layout, layout);
+    load_layout(L, lt, layout);
 
     return 0;
 }
 
-int kill_client(lua_State *L)
+int lib_kill_client(lua_State *L)
 {
     struct client *sel = selected_container(selected_monitor)->client;
     if (sel) {

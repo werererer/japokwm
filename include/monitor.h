@@ -44,7 +44,6 @@ void destroy_monitor(struct wl_listener *listener, void *data);
 void focusmon(int i);
 void set_selected_monitor(struct monitor *m);
 void load_layout(lua_State *L, struct layout *lt, const char *layout_name);
-void unload_layout(lua_State *L, struct monitor *m, const char *layout_name);
 void load_default_layout(lua_State *L, struct layout *lt);
 
 /* *
