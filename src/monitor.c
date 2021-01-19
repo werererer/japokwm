@@ -45,7 +45,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     m = output->data = calloc(1, sizeof(struct monitor));
 
     m->wlr_output = output;
-    m->root = create_root();
 
     /* damage tracking must be initialized before setting the workspace because
      * it to damage a region */
@@ -53,19 +52,19 @@ void create_monitor(struct wl_listener *listener, void *data)
     m->damage_frame.notify = handle_output_damage_frame;
     wl_signal_add(&m->damage->events.frame, &m->damage_frame);
 
-    // TODO fix this
-    /* for (int i = 0; i < monrule_count; i++) { */
-    /*     struct mon_rule r = monrules[i]; */
-    /*     if (!r.name || strstr(output->name, r.name)) { */
-    /*         m->mfact = r.mfact; */
-    /*         wlr_output_set_scale(output, r.scale); */
-    /*         wlr_xcursor_manager_load(server.cursorMgr, r.scale); */
-    /*         printf("create monitor\n"); */
-    /*         set_selected_layout(m->ws, r.lt); */
-    /*         wlr_output_set_transform(output, WL_OUTPUT_TRANSFORM_NORMAL); */
-    /*         break; */
-    /*     } */
-    /* } */
+    for (int i = 0; i < monrule_count; i++) {
+        struct mon_rule r = monrules[i];
+        if (!r.name || strstr(output->name, r.name)) {
+            m->mfact = r.mfact;
+            wlr_output_set_scale(output, r.scale);
+            wlr_xcursor_manager_load(server.cursorMgr, r.scale);
+            printf("create monitor\n");
+            set_selected_layout(m->ws, r.lt);
+            wlr_output_set_transform(output, WL_OUTPUT_TRANSFORM_NORMAL);
+            break;
+        }
+    }
+
     /* Set up event listeners */
     m->destroy.notify = destroy_monitor;
     wl_signal_add(&output->events.destroy, &m->destroy);
@@ -78,9 +77,13 @@ void create_monitor(struct wl_listener *listener, void *data)
         set_selected_monitor(m);
         create_workspaces(tag_names, default_layout);
     }
+
+    m->root = create_root(m);
+
     set_next_unoccupied_workspace(m, get_workspace(0));
     load_default_layout(L, &m->ws->layout);
     copy_layout_from_selected_workspace();
+    set_root_color(m->root, m->ws->layout.options.root_color);
 
 
     /* Adds this to the output layout. The add_auto function arranges outputs

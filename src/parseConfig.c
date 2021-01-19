@@ -18,9 +18,6 @@
 #include "workspace.h"
 #include "server.h"
 
-float root_color[4];
-float border_color[4];
-float focus_color[4];
 float overlay_color[4];
 float text_color[4];
 float sel_overlay_color[4];
@@ -46,9 +43,6 @@ int update_config(lua_State *L)
     init_config(L);
 
     /* appearance */
-    get_config_float_arr(L, root_color, "Root_color");
-    get_config_float_arr(L, border_color, "Border_color");
-    get_config_float_arr(L, focus_color, "Focus_color");
     get_config_float_arr(L, overlay_color, "Overlay_color");
     get_config_float_arr(L, text_color, "Text_color");
     get_config_float_arr(L, sel_overlay_color, "Sel_overlay_color");

@@ -248,8 +248,9 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
                     {ox, oy + con->client->bw + h, w + 2 * con->client->bw, con->client->bw}, /* bottom */
             };
 
+            struct layout *lt = &m->ws->layout;
             /* Draw window borders */
-            const float *color = (con == sel) ? focus_color : border_color;
+            const float *color = (con == sel) ? lt->options.focus_color : lt->options.border_color;
             for (int i = 0; i < 4; i++) {
                 scale_box(&borders[i], m->wlr_output->scale);
                 render_rect(m, output_damage, &borders[i], color);

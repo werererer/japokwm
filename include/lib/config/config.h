@@ -6,8 +6,11 @@
 #include <lua.h>
 
 // TODO add other stuff
-int set_gaps(lua_State *L);
-int set_borderpx(lua_State *L);
-int set_sloppy_focus(lua_State *L);
+int lib_set_borderpx(lua_State *L);
+int lib_set_gaps(lua_State *L);
+int lib_set_root_color(lua_State *L);
+int lib_set_sloppy_focus(lua_State *L);
+int lib_set_focus_color(lua_State *L);
+int lib_set_border_color(lua_State *L);
 
 #endif /* CONFIG_H */

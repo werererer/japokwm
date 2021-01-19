@@ -9,7 +9,6 @@ struct root *create_root(struct monitor *m)
 {
     struct root *root = calloc(1, sizeof(struct root));
     root->consider_layer_shell = true;
-    memcpy(root->color, root_color, sizeof(float)*4);
     root->m = m;
     return root;
 }
@@ -83,6 +82,10 @@ static void configure_layer_shell_container_geom(struct container *con, struct w
     resize(con, geom, false);
 }
 
+void set_root_color(struct root *root, float color[static 4])
+{
+    memcpy(root->color, color, sizeof(float)*4);
+}
 
 void set_root_area(struct root *root, struct wlr_box geom)
 {
