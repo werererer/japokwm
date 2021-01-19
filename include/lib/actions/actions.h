@@ -7,7 +7,7 @@
 #include "monitor.h"
 #include "client.h"
 
-int arrange_this(lua_State *L);
+int lib_arrange(lua_State *L);
 int focus_on_hidden_stack(lua_State *L);
 int focus_on_stack(lua_State *L);
 int get_nmaster(lua_State *L);
@@ -24,8 +24,6 @@ int lib_resize_client(lua_State *L);
 int resize_main(lua_State *L);
 int set_floating(lua_State *L);
 int set_nmaster(lua_State *L);
-int set_tabcount(lua_State *L);
-int set_layout(lua_State *L);
 int set_arrange_by_focus(lua_State *L);
 int set_resize_direction(lua_State *L);
 int spawn(lua_State *L);

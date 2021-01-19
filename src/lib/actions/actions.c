@@ -58,38 +58,6 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
         focus_container(con, selected_monitor, FOCUS_NOOP);
 }
 
-int set_tabcount(lua_State *L)
-{
-    printf("set tabcount\n");
-    /* int i = luaL_checkinteger(L, -1); */
-    lua_pop(L, 1);
-    /* selected_container(selected_monitor)->tabcount = i; */
-    printf("set_tabcount\n");
-    arrange();
-    return 0;
-}
-
-int set_layout(lua_State *L)
-{
-    struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws;
-    struct layout *lt = &ws->layout;
-
-    // reset options
-    copy_options(&lt->options, &server.options);
-
-    // 3. argument
-    lt->lua_box_data_index = lua_copy_table(L);
-    // 2. argument
-    lt->lua_layout_master_copy_data_index = lua_copy_table(L);
-    // 1.argument
-    lt->lua_layout_copy_data_index = lua_copy_table(L);
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_index);
-    lt->lua_layout_original_copy_data_index = lua_copy_table(L);
-    return 0;
-}
-
 int set_arrange_by_focus(lua_State *L)
 {
     struct monitor *m = selected_monitor;
@@ -115,8 +83,9 @@ int get_tabcount(lua_State *L)
     return 1;
 }
 
-int arrange_this(lua_State *L)
+int lib_arrange(lua_State *L)
 {
+    printf("arrange\n");
     arrange();
     return 0;
 }

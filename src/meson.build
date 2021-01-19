@@ -51,6 +51,7 @@ srcs = files(
     'workspace.c',
     'wlr-foreign-toplevel-management-unstable-v1-protocol.c',
     'root.c',
+    'lib/layout/lib_layout.c',
   )
 
 libName = 'juliawm'

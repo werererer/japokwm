@@ -3,16 +3,15 @@
 #include "lib/actions/libcontainer.h"
 #include "lib/config/config.h"
 #include "lib/config/localconfig.h"
+#include "lib/layout/lib_layout.h"
 #include "lib/info/info.h"
 #include "parseConfig.h"
 #include "tile/tile.h"
 
 static const struct luaL_Reg action[] =
 {
-    {"arrange_this", arrange_this},
-    {"set_tabcount", set_tabcount},
+    {"arrange", lib_arrange},
     {"set_nmaster", set_nmaster},
-    {"set_layout", set_layout},
     {"set_arrange_by_focus", set_arrange_by_focus},
     {"set_resize_direction", set_resize_direction},
     {"resize_main", resize_main},
@@ -72,6 +71,12 @@ static const struct luaL_Reg localconfig[] =
     {NULL, NULL},
 };
 
+static const struct luaL_Reg layout[] =
+{
+    {"set", set_layout},
+    {NULL, NULL},
+};
+
 void load_libs(lua_State *L)
 {
     luaL_newlib(L, action);
@@ -84,4 +89,6 @@ void load_libs(lua_State *L)
     lua_setglobal(L, "config");
     luaL_newlib(L, localconfig);
     lua_setglobal(L, "lconfig");
+    luaL_newlib(L, layout);
+    lua_setglobal(L, "layout");
 }

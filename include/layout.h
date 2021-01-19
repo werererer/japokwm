@@ -6,6 +6,13 @@
 #include <lauxlib.h>
 #include "options.h"
 
+struct bounds {
+    float min_width;
+    float max_width;
+    float min_height;
+    float max_height;
+};
+
 struct layout {
     const char *name;
     const char *symbol;
@@ -20,6 +27,10 @@ struct layout {
     int lua_layout_master_copy_data_index;
     int lua_box_data_index;
     bool arrange_by_focus;
+
+    struct bounds layout_bounds;
+    struct bounds master_bounds;
+
     struct options options;
 };
 

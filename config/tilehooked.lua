@@ -92,7 +92,7 @@ function Resize_main_all_hooked(n, d)
             if i == Box_data[g][h] then
                 for j=1,#Box_data[g] do
                     Resize_all_hooked(Box_data[g][j], 1, n, d)
-                    action.arrange_this(false)
+                    action.arrange()
                 end
                 break
             end

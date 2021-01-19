@@ -52,7 +52,7 @@ function Resize_this_all(n, d)
     local i = math.max(math.min(info.get_this_container_count(), #Layout_data), 1)
     local j = math.min(info.this_container_position(), #Layout_data[i])
     Resize_all(Layout_data, i, j, n, d)
-    action.arrange_this(false)
+    action.arrange()
 end
 
 -- finds containers that are affected by the container at i,j
@@ -84,14 +84,14 @@ function Move_this_container(n, d)
     local j = math.min(info.this_container_position(), #Layout_data[i])
     local container = Layout_data[i][j]
     Layout_data[i][j] = Move_container(container, n, d)
-    action.arrange_this(false)
+    action.arrange()
 end
 
 function Resize_this_container(n, d)
     local i = math.max(math.min(action.get_this_container_count(), #Layout_data), 1)
     local j = math.min(action.client_pos(), #Layout_data[i])
     Layout_data[i][j] = Resize_container(Layout_data[i][j], n, d)
-    action.arrange_this(false)
+    action.arrange()
 end
 
 --

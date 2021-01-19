@@ -35,23 +35,21 @@ Layouts = {
 }
 
 Layout_id = 1
--- TODO why can't I rename this variable?
-layout = Layouts[Layout_id]
 
 function Set_layout()
     Layout_id = Layout_id + 1
     if Layout_id > #Layouts then
         Layout_id = 1
     end
-    action.arrange_this()
+    action.arrange()
 end
 
 function Set_layout(i)
     Layout_id = i
-    layout = Layouts[i]
+    local layout = Layouts[i]
     local layout_name = layout[2]
     Load_layout(layout_name)
-    action.arrange_this()
+    action.arrange()
 end
 
 -- default
