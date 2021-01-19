@@ -153,8 +153,10 @@ void arrange_monitor(struct monitor *m)
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     set_root_area(m->root, m->geom);
 
+    struct layout *lt = &m->ws->layout;
+
     if (!overlay)
-        container_surround_gaps(&m->root->geom, server.options.outer_gap);
+        container_surround_gaps(&m->root->geom, lt->options.outer_gap);
 
     int container_count = get_master_container_count(m);
     int default_container_count = get_default_container_count(m);
@@ -165,7 +167,7 @@ void arrange_monitor(struct monitor *m)
     update_container_positions(m);
 
     struct container *con;
-    if (m->ws->layout.arrange_by_focus) {
+    if (lt->arrange_by_focus) {
         printf("arrange by focus\n");
         wl_list_for_each(con, &focus_stack, flink) {
             if (!visibleon(con, m))
@@ -202,7 +204,7 @@ void arrange_container(struct container *con, int arrange_position, int containe
     m->ws->layout.lua_layout_index = luaL_ref(L, LUA_REGISTRYINDEX);
 
     if (!overlay)
-        container_surround_gaps(&box, server.options.inner_gap);
+        container_surround_gaps(&box, lt.options.inner_gap);
 
     resize(con, box, preserve);
 }

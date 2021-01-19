@@ -73,4 +73,5 @@ void join_path(char *base, const char *file);
 void lua_get_basic_layout();
 
 void wlr_list_clear(struct wlr_list *list);
+void copy_options(struct options *dest_option, struct options *src_option);
 #endif

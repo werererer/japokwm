@@ -55,7 +55,7 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
     if (con->client->type == X11_UNMANAGED)
         return;
 
-    if (server.options.sloppy_focus)
+    if (con->m->ws->layout.options.sloppy_focus)
         focus_container(con, selected_monitor, FOCUS_NOOP);
 }
 
@@ -74,16 +74,20 @@ int set_layout(lua_State *L)
 {
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
+    struct layout *lt = &ws->layout;
+
+    // reset options
+    copy_options(&lt->options, &server.options);
 
     // 3. argument
-    ws->layout.lua_box_data_index = lua_copy_table(L);
+    lt->lua_box_data_index = lua_copy_table(L);
     // 2. argument
-    ws->layout.lua_layout_master_copy_data_index = lua_copy_table(L);
+    lt->lua_layout_master_copy_data_index = lua_copy_table(L);
     // 1.argument
-    ws->layout.lua_layout_copy_data_index = lua_copy_table(L);
+    lt->lua_layout_copy_data_index = lua_copy_table(L);
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, ws->layout.lua_layout_copy_data_index);
-    ws->layout.lua_layout_original_copy_data_index = lua_copy_table(L);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_index);
+    lt->lua_layout_original_copy_data_index = lua_copy_table(L);
     return 0;
 }
 

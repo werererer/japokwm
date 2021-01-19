@@ -2,6 +2,7 @@
 #include "lib/actions/actions.h"
 #include "lib/actions/libcontainer.h"
 #include "lib/config/config.h"
+#include "lib/config/localconfig.h"
 #include "lib/info/info.h"
 #include "parseConfig.h"
 #include "tile/tile.h"
@@ -62,6 +63,14 @@ static const struct luaL_Reg config[] =
     {NULL, NULL},
 };
 
+static const struct luaL_Reg localconfig[] = 
+{
+    {"set_borderpx", local_set_borderpx},
+    {"set_gaps", local_set_gaps},
+    {"set_sloppy_focus", local_set_sloppy_focus},
+    {NULL, NULL},
+};
+
 void load_libs(lua_State *L)
 {
     luaL_newlib(L, action);
@@ -72,4 +81,6 @@ void load_libs(lua_State *L)
     lua_setglobal(L, "info");
     luaL_newlib(L, config);
     lua_setglobal(L, "config");
+    luaL_newlib(L, localconfig);
+    lua_setglobal(L, "lconfig");
 }

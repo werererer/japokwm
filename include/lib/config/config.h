@@ -2,6 +2,8 @@
 #define CONFIG_H
 
 #include "options.h"
+#include <lauxlib.h>
+#include <lua.h>
 
 // TODO add other stuff
 int set_gaps(lua_State *L);

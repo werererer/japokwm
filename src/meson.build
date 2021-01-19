@@ -53,6 +53,7 @@ srcs = files(
   'lib/actions/libcontainer.c',
   'options.c',
   'lib/config/config.c',
+  'lib/config/localconfig.c',
   )
 
 libName = 'juliawm'

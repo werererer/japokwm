@@ -152,12 +152,12 @@ void copy_layout_from_selected_workspace()
 {
     for (int i = 0; i < workspaces.length; i++) {
         struct workspace *ws = workspaces.items[i];
-        struct layout *dest = &ws->layout;
-        struct layout *src = &selected_monitor->ws->layout;
+        struct layout *dest_lt = &ws->layout;
+        struct layout *src_lt = &selected_monitor->ws->layout;
 
-        if (dest == src)
+        if (dest_lt == src_lt)
             continue;
 
-        copy_layout(dest, src);
+        copy_layout(dest_lt, src_lt);
     }
 }

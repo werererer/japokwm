@@ -267,8 +267,12 @@ void createnotify(struct wl_listener *listener, void *data)
 
     /* Allocate a Client for this surface */
     struct client *c = xdg_surface->data = calloc(1, sizeof(struct client));
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws;
+    struct layout *lt = &ws->layout;
+
     c->surface.xdg = xdg_surface;
-    c->bw = server.options.border_px;
+    c->bw = lt->options.border_px;
     c->type = XDG_SHELL;
 
     /* Tell the client not to try anything fancy */
@@ -978,7 +982,11 @@ void createnotifyx11(struct wl_listener *listener, void *data)
     c->surface.xwayland = xwayland_surface;
     // set default value will be overriden on maprequest
     c->type = X11_MANAGED;
-    c->bw = server.options.border_px;
+
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws;
+    struct layout *lt = &ws->layout;
+    c->bw = lt->options.border_px;
 
     /* Listen to the various events it can emit */
     c->map.notify = maprequestx11;

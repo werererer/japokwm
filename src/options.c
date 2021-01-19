@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include "client.h"
+
 struct options get_default_options()
 {
     return (struct options) {
@@ -16,4 +18,11 @@ struct options get_default_options()
         .rule_count = 0,
         .rules = NULL,
     };
+}
+
+void copy_options(struct options *dest_option, struct options *src_option)
+{
+    memcpy(dest_option, src_option, sizeof(struct options));
+
+    reset_client_borders(dest_option->border_px);
 }

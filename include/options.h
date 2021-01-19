@@ -5,16 +5,11 @@
 #include <stdlib.h>
 #include <wlr/types/wlr_list.h>
 
-#include "layout.h"
-
 #define BLACK {0.0f, 0.0f, 0.0f, 1.0f}
 #define WHITE {1.0f, 1.0f, 1.0f, 1.0f}
 #define RED {1.0f, 0.0f, 0.0f, 1.0f}
 #define GREEN {0.0f, 1.0f, 0.0f, 1.0f}
 #define BLUE {0.0f, 0.0f, 1.0f, 1.0f}
-
-typedef struct layout Key;
-typedef struct layout Button;
 
 struct options {
     bool sloppy_focus;
@@ -41,5 +36,6 @@ struct options {
 };
 
 struct options get_default_options();
+void copy_options(struct options *dest_option, struct options *src_option);
 
 #endif /* OPTIONS_H */

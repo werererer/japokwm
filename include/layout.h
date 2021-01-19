@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <lua.h>
 #include <lauxlib.h>
+#include "options.h"
 
 struct layout {
     const char *name;
@@ -19,6 +20,7 @@ struct layout {
     int lua_layout_master_copy_data_index;
     int lua_box_data_index;
     bool arrange_by_focus;
+    struct options options;
 };
 
 bool is_same_layout(struct layout layout, struct layout layout2);
