@@ -6,7 +6,6 @@
 #include "lib/info/info.h"
 #include "parseConfig.h"
 #include "tile/tile.h"
-#include "lib/actions/overlay.h"
 
 static const struct luaL_Reg action[] =
 {
@@ -23,13 +22,11 @@ static const struct luaL_Reg action[] =
     {"focus_on_hidden_stack", focus_on_hidden_stack},
     {"toggle_consider_layer_shell", toggle_consider_layer_shell},
     {"focus_on_stack", focus_on_stack},
-    {"get_overlay", get_overlay},
     {"kill", kill_client},
     {"move_resize", move_resize},
     {"move_client_to_workspace", move_client_to_workspace},
     {"quit", quit},
     {"load_layout", load_layout_lib},
-    {"set_overlay", set_overlay},
     {"spawn", spawn},
     {"tag", tag},
     {"set_floating", set_floating},
@@ -37,7 +34,6 @@ static const struct luaL_Reg action[] =
     {"toggle_tag", toggle_tag},
     {"toggle_view", toggle_view},
     {"view", view},
-    {"write_this_overlay", write_this_overlay},
     {"zoom", zoom},
     {NULL, NULL},
 };

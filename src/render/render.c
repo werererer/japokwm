@@ -4,7 +4,6 @@
 #include "popup.h"
 #include "root.h"
 #include "server.h"
-#include "tile/tileTexture.h"
 #include "tile/tileUtils.h"
 
 #include <assert.h>

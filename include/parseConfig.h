@@ -15,7 +15,6 @@ struct config {
 /* appearance */
 extern char *main_module;
 extern char *config_module;
-extern float overlay_color[4];
 extern float text_color[4];
 extern float sel_overlay_color[4];
 extern float sel_text_color[4];

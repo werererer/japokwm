@@ -9,7 +9,6 @@ Max_main_width = 1
 Min_main_height = 0.1
 Max_main_height = 1
 
-Border_color = {0.0, 0.0, 1.0, 1.0}
 Overlay_color = {0.65, 0.65, 0.65, 0.9}
 Text_color = {0.003, 0.003, 0.003, 1.0}
 Sel_overlay_color = {}

@@ -9,11 +9,6 @@
 #include <wlr/types/wlr_box.h>
 #include <wlr/util/edges.h>
 
-typedef enum {
-    OVERLAY,
-    WORKSPACES,
-} renderDataType_t;
-
 struct render_data {
     struct wlr_output *output;
     struct timespec *when;

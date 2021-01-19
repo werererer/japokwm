@@ -66,7 +66,6 @@
 #include "root.h"
 #include "server.h"
 #include "tile/tile.h"
-#include "tile/tileTexture.h"
 #include "tile/tileUtils.h"
 #include "workspace.h"
 

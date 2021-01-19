@@ -1,5 +1,4 @@
 #include "utils/parseConfigUtils.h"
-#include "tile/tileTexture.h"
 #include "utils/writeFile.h"
 #include <lauxlib.h>
 #include <wlr/util/log.h>

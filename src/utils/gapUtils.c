@@ -1,5 +1,4 @@
 #include "utils/gapUtils.h"
-#include "tile/tileTexture.h"
 #include <math.h>
 
 static void containerAddGapLeft(struct wlr_box *con, float gap)

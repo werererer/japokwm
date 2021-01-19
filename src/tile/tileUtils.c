@@ -13,7 +13,6 @@
 #include "parseConfig.h"
 #include "root.h"
 #include "server.h"
-#include "tile/tileTexture.h"
 #include "utils/coreUtils.h"
 #include "utils/gapUtils.h"
 #include "utils/parseConfigUtils.h"
@@ -155,8 +154,7 @@ void arrange_monitor(struct monitor *m)
 
     struct layout *lt = &m->ws->layout;
 
-    if (!overlay)
-        container_surround_gaps(&m->root->geom, lt->options.outer_gap);
+    container_surround_gaps(&m->root->geom, lt->options.outer_gap);
 
     int container_count = get_master_container_count(m);
     int default_container_count = get_default_container_count(m);
@@ -203,8 +201,7 @@ void arrange_container(struct container *con, int arrange_position, int containe
     apply_nmaster_transformation(&box, con->m, arrange_position, container_count);
     m->ws->layout.lua_layout_index = luaL_ref(L, LUA_REGISTRYINDEX);
 
-    if (!overlay)
-        container_surround_gaps(&box, lt.options.inner_gap);
+    container_surround_gaps(&box, lt.options.inner_gap);
 
     resize(con, box, preserve);
 }

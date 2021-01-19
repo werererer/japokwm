@@ -16,7 +16,6 @@
 #include "root.h"
 #include "server.h"
 #include "stringop.h"
-#include "tile/tileTexture.h"
 #include "tile/tileUtils.h"
 #include "translationLayer.h"
 #include "utils/stringUtils.h"
@@ -334,7 +333,6 @@ void motionnotify(uint32_t time)
             geom.height = grabc->geom.height;
             /* Move the grabbed client to the new position. */
             resize(grabc, geom, false);
-            update_container_overlay(grabc);
             return;
             break;
         case CURSOR_RESIZE:
@@ -344,7 +342,6 @@ void motionnotify(uint32_t time)
             geom.width = server.cursor->x - grabc->geom.x;
             geom.height = server.cursor->y - grabc->geom.y;
             resize(grabc, geom, false);
-            update_container_overlay(grabc);
             return;
             break;
         default:
