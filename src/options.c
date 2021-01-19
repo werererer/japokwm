@@ -10,6 +10,8 @@ struct options get_default_options()
         .root_color = {0.3f, 0.3f, 0.3f, 1.0f},
         .focus_color = {1.0f, 0.0f, 0.0f, 1.0f},
         .border_color = {0.0f, 0.0f, 1.0f, 1.0f},
+        .repeat_rate = 25,
+        .repeat_delay = 600,
         .border_px = 3,
         .inner_gap = 10,
         .outer_gap = 10,
@@ -17,6 +19,8 @@ struct options get_default_options()
         .monrules = NULL,
         .rule_count = 0,
         .rules = NULL,
+        .modkey = 0,
+        .arrange_by_focus = false,
     };
 }
 

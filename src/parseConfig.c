@@ -24,9 +24,6 @@ size_t rule_count;
 struct mon_rule *monrules;
 size_t monrule_count;
 
-int repeat_rate;
-int repeat_delay;
-
 struct wlr_list tag_names;
 char *termcmd;
 struct layout *keys = NULL;
@@ -44,9 +41,6 @@ int update_config(lua_State *L)
     get_config_rule_arr(L, &rules, &rule_count, "Rules");
     get_config_mon_rule_arr(L, &monrules, &monrule_count, "Monrules");
 
-    /* keyboard */
-    repeat_rate = get_config_int(L, "Repeat_rate");
-    repeat_delay = get_config_int(L, "Repeat_delay");
     default_layout = get_config_layout(L, "Default_layout");
     prev_layout = (struct layout) {
         .name = "",
@@ -56,7 +50,6 @@ int update_config(lua_State *L)
         .lua_layout_index = 0,
         .lua_layout_copy_data_index = 0,
         .lua_box_data_index = 0,
-        .arrange_by_focus = false,
     };
 
     /* commands */

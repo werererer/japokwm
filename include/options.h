@@ -14,6 +14,7 @@
 struct options {
     bool sloppy_focus;
     int border_px;
+    int modkey;
     float root_color[4];
     float border_color[4];
     float focus_color[4];
@@ -32,7 +33,7 @@ struct options {
     int inner_gap;
     int outer_gap;
 
-    char *termcmd;
+    bool arrange_by_focus;
 };
 
 struct options get_default_options();

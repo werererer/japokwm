@@ -12,7 +12,6 @@ static const struct luaL_Reg action[] =
 {
     {"arrange", lib_arrange},
     {"set_nmaster", set_nmaster},
-    {"set_arrange_by_focus", set_arrange_by_focus},
     {"set_resize_direction", set_resize_direction},
     {"resize_main", resize_main},
     {"get_nmaster", get_nmaster},
@@ -48,22 +47,26 @@ static const struct luaL_Reg info[] =
 static const struct luaL_Reg config[] = 
 {
     {"reload", reload_config},
-    {"set_gaps", lib_set_gaps},
-    {"set_borderpx", lib_set_borderpx},
-    {"set_sloppy_focus", lib_set_sloppy_focus},
-    {"set_root_color", lib_set_root_color},
-    {"set_focus_color", lib_set_focus_color},
     {"set_border_color", lib_set_border_color},
+    {"set_borderpx", lib_set_borderpx},
+    {"set_focus_color", lib_set_focus_color},
+    {"set_gaps", lib_set_gaps},
+    {"set_mod", lib_set_mod},
+    {"set_root_color", lib_set_root_color},
+    {"set_sloppy_focus", lib_set_sloppy_focus},
+    {"set_repeat_rate", lib_set_repeat_rate},
+    {"set_repeat_delay", lib_set_repeat_delay},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg localconfig[] =
 {
+    {"set_arrange_by_focus", local_set_arrange_by_focus},
+    {"set_border_color", local_set_border_color},
     {"set_borderpx", local_set_borderpx},
+    {"set_focus_color", local_set_focus_color},
     {"set_gaps", local_set_gaps},
     {"set_sloppy_focus", local_set_sloppy_focus},
-    {"set_focus_color", local_set_focus_color},
-    {"set_border_color", local_set_border_color},
     {NULL, NULL},
 };
 

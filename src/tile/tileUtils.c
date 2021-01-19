@@ -165,8 +165,7 @@ void arrange_monitor(struct monitor *m)
     update_container_positions(m);
 
     struct container *con;
-    if (lt->arrange_by_focus) {
-        printf("arrange by focus\n");
+    if (lt->options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
             if (!visibleon(con, m))
                 continue;
@@ -256,7 +255,7 @@ void update_hidden_containers(struct monitor *m)
     // subtract the solution by one to count
     int count = m->ws->layout.n + m->ws->layout.nmaster-1;
     int i = 1;
-    if (m->ws->layout.arrange_by_focus) {
+    if (m->ws->layout.options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
             if (!existon(con, m) || con->floating)
                 continue;

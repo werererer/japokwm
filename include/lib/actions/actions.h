@@ -23,7 +23,6 @@ int lib_resize_client(lua_State *L);
 int resize_main(lua_State *L);
 int set_floating(lua_State *L);
 int set_nmaster(lua_State *L);
-int set_arrange_by_focus(lua_State *L);
 int set_resize_direction(lua_State *L);
 int spawn(lua_State *L);
 int toggle_consider_layer_shell(lua_State *L);

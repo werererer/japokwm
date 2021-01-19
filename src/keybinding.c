@@ -5,6 +5,8 @@
 #include <string.h>
 
 const char *mods[8] = {"Shift_L", "Caps_Lock", "Control_L", "Alt_L", "", "", "Super_L", "ISO_Level3_Shift"};
+const char *modkeys[4] = {"Alt_L", "Num_Lock", "ISO_Level3_Shift", "Super_L"};
+const char *mouse[3] = {"Pointer_Button1", "Pointer_Button2", "Pointer_Button3"};
 
 static size_t modifiers;
 /*
@@ -35,8 +37,24 @@ static void sym_to_binding(char *dest, int mods, int sym)
 // this function converts a string to a xkeysym string element
 static void resolve_keybind_element(char *sym_dest, const char *bind)
 {
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws;
+    struct layout *lt = &ws->layout;
+
     if (strcmp(bind, "mod") == 0) {
-        strcpy(sym_dest, "Alt_L");
+        strcpy(sym_dest, modkeys[lt->options.modkey]);
+        return;
+    }
+    if (strcmp(bind, "M1") == 0) {
+        strcpy(sym_dest, mouse[0]);
+        return;
+    }
+    if (strcmp(bind, "M2") == 0) {
+        strcpy(sym_dest, mouse[1]);
+        return;
+    }
+    if (strcmp(bind, "M3") == 0) {
+        strcpy(sym_dest, mouse[2]);
         return;
     }
     if (strcmp(bind, "S") == 0) {
@@ -82,7 +100,6 @@ static bool is_same_keybind(const char *bind, const char *bind2)
 
 static bool process_binding(char *bind, const char *reference)
 {
-    printf("bind: %s\n", bind);
     bool handled = false;
     lua_getglobal_safe(L, reference);
     int len = lua_rawlen(L, -1);

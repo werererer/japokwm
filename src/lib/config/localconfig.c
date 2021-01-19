@@ -4,6 +4,16 @@
 #include "utils/gapUtils.h"
 #include "utils/coreUtils.h"
 
+int local_set_arrange_by_focus(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws;
+
+    // 2. argument
+    ws->layout.options.arrange_by_focus = lua_toboolean(L, -1);
+    return 0;
+}
+
 int local_set_gaps(lua_State *L)
 {
     struct monitor *m = selected_monitor;

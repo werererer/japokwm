@@ -24,9 +24,6 @@ extern size_t rule_count;
 extern struct mon_rule *monrules;
 extern size_t monrule_count;
 
-extern int repeat_rate;
-extern int repeat_delay;
-
 /* commands */
 extern struct wlr_list tag_names;
 extern char *termcmd;

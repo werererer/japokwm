@@ -58,16 +58,6 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
         focus_container(con, selected_monitor, FOCUS_NOOP);
 }
 
-int set_arrange_by_focus(lua_State *L)
-{
-    struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws;
-
-    // 2. argument
-    ws->layout.arrange_by_focus = lua_toboolean(L, -1);
-    return 0;
-}
-
 int set_resize_direction(lua_State *L)
 {
     struct monitor *m = selected_monitor;
@@ -507,7 +497,7 @@ int lib_zoom(lua_State *L)
     // focus new master window
     focus_container(previous, selected_monitor, FOCUS_NOOP);
 
-    if (selected_monitor->ws->layout.arrange_by_focus) {
+    if (selected_monitor->ws->layout.options.arrange_by_focus) {
         focus_top_container(m, FOCUS_NOOP);
         arrange();
     }
