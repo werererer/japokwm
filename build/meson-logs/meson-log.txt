@@ -1,13 +1,13 @@
-Build started at 2021-01-19T17:58:07.855331
+Build started at 2021-01-21T00:30:07.836651
 Main binary: /usr/bin/python
 Build Options: 
 Python system: Linux
 The Meson build system
 Version: 0.56.2
-Source dir: /home/jakob/git/juliawm
-Build dir: /home/jakob/git/juliawm/build
+Source dir: /home/jakob/git/japokwm
+Build dir: /home/jakob/git/japokwm/build
 Build type: native build
-Project name: juliawm
+Project name: japokwm
 Project version: undefined
 None of 'CC' are defined in the environment, not changing global flags.
 None of 'CFLAGS' are defined in the environment, not changing global flags.
@@ -17,14 +17,14 @@ None of 'CC_LD' are defined in the environment, not changing global flags.
 Sanity testing C compiler: cc
 Is cross compiler: False.
 None of 'CC_LD' are defined in the environment, not changing global flags.
-Sanity check compiler command line: cc /home/jakob/git/juliawm/build/meson-private/sanitycheckc.c -o /home/jakob/git/juliawm/build/meson-private/sanitycheckc.exe -pipe -D_FILE_OFFSET_BITS=64
+Sanity check compiler command line: cc /home/jakob/git/japokwm/build/meson-private/sanitycheckc.c -o /home/jakob/git/japokwm/build/meson-private/sanitycheckc.exe -pipe -D_FILE_OFFSET_BITS=64
 Sanity check compile stdout:
 
 -----
 Sanity check compile stderr:
 
 -----
-Running test binary command: /home/jakob/git/juliawm/build/meson-private/sanitycheckc.exe
+Running test binary command: /home/jakob/git/japokwm/build/meson-private/sanitycheckc.exe
 C compiler for the host machine: cc (gcc 10.2.0 "cc (GCC) 10.2.0")
 C linker for the host machine: cc ld.bfd 2.35.1
 None of 'AR' are defined in the environment, not changing global flags.
@@ -36,14 +36,14 @@ None of 'CC_LD' are defined in the environment, not changing global flags.
 Sanity testing C compiler: cc
 Is cross compiler: False.
 None of 'CC_LD' are defined in the environment, not changing global flags.
-Sanity check compiler command line: cc /home/jakob/git/juliawm/build/meson-private/sanitycheckc.c -o /home/jakob/git/juliawm/build/meson-private/sanitycheckc.exe -pipe -D_FILE_OFFSET_BITS=64
+Sanity check compiler command line: cc /home/jakob/git/japokwm/build/meson-private/sanitycheckc.c -o /home/jakob/git/japokwm/build/meson-private/sanitycheckc.exe -pipe -D_FILE_OFFSET_BITS=64
 Sanity check compile stdout:
 
 -----
 Sanity check compile stderr:
 
 -----
-Running test binary command: /home/jakob/git/juliawm/build/meson-private/sanitycheckc.exe
+Running test binary command: /home/jakob/git/japokwm/build/meson-private/sanitycheckc.exe
 C compiler for the build machine: cc (gcc 10.2.0 "cc (GCC) 10.2.0")
 C linker for the build machine: cc ld.bfd 2.35.1
 None of 'AR' are defined in the environment, not changing global flags.
@@ -54,7 +54,7 @@ Host machine cpu: x86_64
 Target machine cpu family: x86_64
 Target machine cpu: x86_64
 Program wayland-scanner found: YES (/usr/bin/wayland-scanner)
-Running command: /usr/bin/basename /home/jakob/git/juliawm/protocols/wlr-layer-shell-unstable-v1.xml .xml
+Running command: /usr/bin/basename /home/jakob/git/japokwm/protocols/wlr-layer-shell-unstable-v1.xml .xml
 --- stdout ---
 wlr-layer-shell-unstable-v1
 
@@ -73,7 +73,7 @@ Running command: /usr/bin/[ -f include/wlr-layer-shell-unstable-v1-protocol.h ]
 --- stderr ---
 
 
-Running command: /usr/bin/basename /home/jakob/git/juliawm/protocols/xdg-shell.xml .xml
+Running command: /usr/bin/basename /home/jakob/git/japokwm/protocols/xdg-shell.xml .xml
 --- stdout ---
 xdg-shell
 
@@ -92,7 +92,7 @@ Running command: /usr/bin/[ -f include/xdg-shell-protocol.h ]
 --- stderr ---
 
 
-Running command: /usr/bin/basename /home/jakob/git/juliawm/protocols/wlr-foreign-toplevel-management-unstable-v1.xml .xml
+Running command: /usr/bin/basename /home/jakob/git/japokwm/protocols/wlr-foreign-toplevel-management-unstable-v1.xml .xml
 --- stdout ---
 wlr-foreign-toplevel-management-unstable-v1
 
@@ -132,8 +132,8 @@ Called `/usr/bin/pkg-config xcb --libs` -> 0
 None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
 None of 'CC_LD' are defined in the environment, not changing global flags.
 Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpunz3yn_0
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpunz3yn_0/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpunz3yn_0/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 
+Working directory:  /home/jakob/git/japokwm/build/meson-private/tmpgpq5tyqh
+Command line:  cc /home/jakob/git/japokwm/build/meson-private/tmpgpq5tyqh/testfile.c -o /home/jakob/git/japokwm/build/meson-private/tmpgpq5tyqh/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 
 
 Code:
  #include<stdio.h>
@@ -154,8 +154,8 @@ Program stderr:
 
 
 Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmp73iec9d6
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmp73iec9d6/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmp73iec9d6/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
+Working directory:  /home/jakob/git/japokwm/build/meson-private/tmpkagbzhtv
+Command line:  cc /home/jakob/git/japokwm/build/meson-private/tmpkagbzhtv/testfile.c -o /home/jakob/git/japokwm/build/meson-private/tmpkagbzhtv/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
 
 Code:
  
@@ -280,8 +280,8 @@ Called `/usr/bin/pkg-config lua --libs` -> 0
 None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
 None of 'CC_LD' are defined in the environment, not changing global flags.
 Running compile:
-Working directory:  /home/jakob/git/juliawm/build/meson-private/tmpatimfn4t
-Command line:  cc /home/jakob/git/juliawm/build/meson-private/tmpatimfn4t/testfile.c -o /home/jakob/git/juliawm/build/meson-private/tmpatimfn4t/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 -Wl,--start-group -lm -Wl,--end-group -Wl,--allow-shlib-undefined 
+Working directory:  /home/jakob/git/japokwm/build/meson-private/tmpeqeq133e
+Command line:  cc /home/jakob/git/japokwm/build/meson-private/tmpeqeq133e/testfile.c -o /home/jakob/git/japokwm/build/meson-private/tmpeqeq133e/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 -Wl,--start-group -lm -Wl,--end-group -Wl,--allow-shlib-undefined 
 
 Code:
  int main(void) { return 0; }

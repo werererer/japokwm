@@ -1,5 +1,4 @@
-add_project_arguments('-DWLR_USE_UNSTABLE', '-Werror', '-Wno-uninitialized',
-                     '-I/usr/include/julia', language: 'c')
+add_project_arguments('-DWLR_USE_UNSTABLE', '-Werror', '-Wno-uninitialized', language: 'c')
 
 deps = [\
     dependency('xcb'),
@@ -54,7 +53,7 @@ srcs = files(
     'lib/layout/lib_layout.c',
   )
 
-libName = 'juliawm'
+libName = 'japokwm'
 wmlib = executable(libName,
               [main, srcs],
               dependencies: deps,
