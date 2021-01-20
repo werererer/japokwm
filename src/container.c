@@ -407,7 +407,7 @@ void applyrules(struct container *con)
     if (!title)
         title = "broken";
 
-    for (int i = 0; i < rule_count; i++) {
+    for (int i = 0; i < server.options.rule_count; i++) {
         const struct rule r = server.options.rules[i];
         bool same_id = strcmp(app_id, r.id) == 0;
         bool id_empty = strcmp(title, "") == 0;

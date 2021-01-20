@@ -61,7 +61,7 @@ static const struct luaL_Reg config[] =
     {"set_rules", lib_set_rules},
     {"set_layouts", lib_set_layouts},
     {"set_monrules", lib_set_monrules},
-    {"set_keybind", lib_set_keybinds},
+    {"set_keybinds", lib_set_keybinds},
     {"set_buttons", lib_set_buttons},
     {NULL, NULL},
 };

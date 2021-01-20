@@ -38,7 +38,7 @@ struct options {
     int layouts_ref;
     int tag_names_ref;
     int default_layout_ref;
-    int keys_ref;
+    int keybinds_ref;
     int buttons_ref;
 };
 

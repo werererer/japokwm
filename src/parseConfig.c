@@ -20,9 +20,6 @@
 
 size_t rule_count;
 
-struct layout *keys = NULL;
-struct layout *buttons = NULL;
-
 int update_config(lua_State *L)
 {
     init_error_file();

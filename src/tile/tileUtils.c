@@ -35,15 +35,16 @@ static void update_layout(lua_State *L, int n, struct monitor *m)
 
     int len = luaL_len(L, -1);
     n = MAX(MIN(len, n), 1);
+    m->ws->layout.n = n;
     lua_rawgeti(L, -1, n);
+    luaL_unref(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_index);
+    m->ws->layout.lua_layout_index = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_pop(L, 1);
 
     lua_getglobal_safe(L, "Update_layout");
     lua_pushinteger(L, n);
     lua_call_safe(L, 1, 0, 0);
 
-    m->ws->layout.n = lua_rawlen(L, -1);
-    luaL_unref(L, LUA_REGISTRYINDEX, m->ws->layout.lua_layout_index);
-    m->ws->layout.lua_layout_index = luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 static struct wlr_fbox lua_unbox_layout(struct lua_State *L, int i) {

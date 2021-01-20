@@ -1,4 +1,5 @@
 #include "keybinding.h"
+#include "server.h"
 #include "tile/tileUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "stringop.h"
@@ -98,10 +99,10 @@ static bool is_same_keybind(const char *bind, const char *bind2)
     return ret;
 }
 
-static bool process_binding(char *bind, const char *reference)
+static bool process_binding(lua_State *L, char *bind, int lua_ref)
 {
     bool handled = false;
-    lua_getglobal_safe(L, reference);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lua_ref);
     int len = lua_rawlen(L, -1);
     for (int i = 1; i <= len; i++) {
         lua_rawgeti(L, -1, i);
@@ -124,7 +125,8 @@ bool button_pressed(int mods, int sym)
     // TODO make this safer
     char bind[128] = "";
     sym_to_binding(bind, mods, sym);
-    bool handled = process_binding(bind, "Buttons");
+    /* bool handled = process_binding(L, bind, "Buttons"); */
+    bool handled = false;
     return handled;
 }
 
@@ -132,7 +134,7 @@ bool key_pressed(int mods, int sym)
 {
     char bind[128] = "";
     sym_to_binding(bind, mods, sym);
-    bool handled = process_binding(bind, "Keys");
+    bool handled = process_binding(L, bind, server.options.keybinds_ref);
     return handled;
 }
 

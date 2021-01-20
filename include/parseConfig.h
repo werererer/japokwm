@@ -19,12 +19,6 @@ extern float text_color[4];
 extern float sel_overlay_color[4];
 extern float sel_text_color[4];
 
-extern size_t rule_count;
-
-/* commands */
-extern struct layout *keys;
-extern struct layout *buttons;
-
 /* sets global variables but needs  */
 int update_config(lua_State *L);
 int reload_config(lua_State *L);
