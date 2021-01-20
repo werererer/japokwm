@@ -19,14 +19,9 @@ extern float text_color[4];
 extern float sel_overlay_color[4];
 extern float sel_text_color[4];
 
-extern struct rule *rules;
 extern size_t rule_count;
-extern struct mon_rule *monrules;
-extern size_t monrule_count;
 
 /* commands */
-extern struct wlr_list tag_names;
-extern char *termcmd;
 extern struct layout *keys;
 extern struct layout *buttons;
 

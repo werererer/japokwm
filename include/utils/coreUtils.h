@@ -46,7 +46,7 @@ struct rule {
     int lua_func_ref;
 };
 
-struct mon_rule {
+struct monrule {
     char *name;
     float mfact;
     int nmaster;

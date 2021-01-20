@@ -30,16 +30,21 @@ int get_config_int(lua_State *L, char *name);
 int lua_call_safe(lua_State *L, int nargs, int nresults, int msgh);
 int lua_getglobal_safe(lua_State *L, const char *name);
 struct layout get_config_layout(lua_State *L, char *name);
-struct mon_rule get_config_monrule(lua_State *L, char *name);
+struct monrule get_config_monrule(lua_State *L, char *name);
 struct rule get_config_rule(lua_State *L, char *name);
 void call_arrange_func(lua_State *L, int funcId, int n);
 void call_function(lua_State *L, struct layout lt);
+void handle_error(const char *msg);
 
 // get array values
 void get_config_str_arr(lua_State *L, struct wlr_list *resArr, char *name);
 void get_config_float_arr(lua_State *L, float *resArr, char *name);
 void get_config_int_arr(lua_State *L, int *resArr, char *name);
 void get_config_rule_arr(lua_State *L, struct rule **rules, size_t *rule_count, char *name);
-void get_config_mon_rule_arr(lua_State *L, struct mon_rule **monrules, size_t *monrule_count, char *name);
+void get_config_mon_rule_arr(lua_State *L, struct monrule **monrules, size_t *monrule_count, char *name);
+
+struct rule get_config_array_rule(lua_State *L, const char* name, size_t i);
+char *get_config_array_str(lua_State *L, const char *name, size_t i);
+struct monrule get_config_array_monrule(lua_State *L, const char* name, size_t i);
 
 #endif /* PARSE_CONFIG_UTILS_H */

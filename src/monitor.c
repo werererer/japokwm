@@ -52,8 +52,8 @@ void create_monitor(struct wl_listener *listener, void *data)
     m->damage_frame.notify = handle_output_damage_frame;
     wl_signal_add(&m->damage->events.frame, &m->damage_frame);
 
-    for (int i = 0; i < monrule_count; i++) {
-        struct mon_rule r = monrules[i];
+    for (int i = 0; i < server.options.monrule_count; i++) {
+        struct monrule r = server.options.monrules[i];
         if (!r.name || strstr(output->name, r.name)) {
             m->mfact = r.mfact;
             wlr_output_set_scale(output, r.scale);
@@ -75,7 +75,13 @@ void create_monitor(struct wl_listener *listener, void *data)
     wl_list_insert(&mons, &m->link);
     if (is_first_monitor) {
         set_selected_monitor(m);
-        create_workspaces(tag_names, default_layout);
+        printf("length: %zu\n", server.options.tag_names.length);
+        if (server.options.tag_names.length <= 0) {
+            handle_error("tag_names is empty, loading default tag_names");
+            reset_tag_names(&server.options.tag_names);
+        }
+
+        create_workspaces(server.options.tag_names, default_layout);
     }
 
     m->root = create_root(m);

@@ -408,7 +408,7 @@ void applyrules(struct container *con)
         title = "broken";
 
     for (int i = 0; i < rule_count; i++) {
-        const struct rule r = rules[i];
+        const struct rule r = server.options.rules[i];
         bool same_id = strcmp(app_id, r.id) == 0;
         bool id_empty = strcmp(title, "") == 0;
         bool same_title = strcmp(title, r.title) == 0;

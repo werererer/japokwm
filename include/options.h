@@ -25,7 +25,7 @@ struct options {
     struct wlr_list tag_names;
     struct rule *rules;
     size_t rule_count;
-    struct mon_rule *monrules;
+    struct monrule *monrules;
     size_t monrule_count;
 
     int repeat_rate;
@@ -34,9 +34,16 @@ struct options {
     int outer_gap;
 
     bool arrange_by_focus;
+
+    int layouts_ref;
+    int tag_names_ref;
+    int default_layout_ref;
+    int keys_ref;
+    int buttons_ref;
 };
 
 struct options get_default_options();
+void reset_tag_names(struct wlr_list *tag_names);
 void copy_options(struct options *dest_option, struct options *src_option);
 
 #endif /* OPTIONS_H */

@@ -5,7 +5,6 @@
 #include <lauxlib.h>
 #include <lua.h>
 
-// TODO add other stuff
 int lib_set_border_color(lua_State *L);
 int lib_set_borderpx(lua_State *L);
 int lib_set_focus_color(lua_State *L);
@@ -15,5 +14,13 @@ int lib_set_root_color(lua_State *L);
 int lib_set_sloppy_focus(lua_State *L);
 int lib_set_repeat_rate(lua_State *L);
 int lib_set_repeat_delay(lua_State *L);
+int lib_set_default_layout(lua_State *L);
+int lib_set_workspaces(lua_State *L);
+int lib_set_rules(lua_State *L);
+int lib_set_layouts(lua_State *L);
+int lib_set_default_layout(lua_State *L);
+int lib_set_monrules(lua_State *L);
+int lib_set_keybinds(lua_State *L);
+int lib_set_buttons(lua_State *L);
 
 #endif /* CONFIG_H */

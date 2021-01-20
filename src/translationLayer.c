@@ -56,6 +56,13 @@ static const struct luaL_Reg config[] =
     {"set_sloppy_focus", lib_set_sloppy_focus},
     {"set_repeat_rate", lib_set_repeat_rate},
     {"set_repeat_delay", lib_set_repeat_delay},
+    {"set_default_layout", lib_set_default_layout},
+    {"set_workspaces", lib_set_workspaces},
+    {"set_rules", lib_set_rules},
+    {"set_layouts", lib_set_layouts},
+    {"set_monrules", lib_set_monrules},
+    {"set_keybind", lib_set_keybinds},
+    {"set_buttons", lib_set_buttons},
     {NULL, NULL},
 };
 

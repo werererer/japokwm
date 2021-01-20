@@ -19,9 +19,7 @@ static const char *config_file = "init.lua";
 static const char *error_file = "init.err";
 static int error_fd = -1;
 
-static char *get_config_array_str(lua_State *L, const char *name, size_t i);
 static int load_config(lua_State *L, const char *path);
-static void handle_error(const char *);
 
 // returns 0 upon success and 1 upon failure
 static int load_config(lua_State *L, const char *path)
@@ -169,7 +167,7 @@ int lua_getglobal_safe(lua_State *L, const char *name)
     return LUA_OK;
 }
 
-static void handle_error(const char *msg)
+void handle_error(const char *msg)
 {
     wlr_log(WLR_ERROR, "%s", msg);
 
@@ -181,7 +179,7 @@ static void handle_error(const char *msg)
     write_to_file(error_fd, "\n");
 }
 
-static char *get_config_array_str(lua_State *L, const char *name, size_t i)
+char *get_config_array_str(lua_State *L, const char *name, size_t i)
 {
     lua_rawgeti(L, -1, i);
     if (!lua_isstring(L, -1)) {
@@ -372,7 +370,7 @@ struct layout get_config_layout(lua_State *L, char *name)
     return layout;
 }
 
-static struct rule get_config_array_rule(lua_State *L, const char* name, size_t i)
+struct rule get_config_array_rule(lua_State *L, const char* name, size_t i)
 {
     struct rule rule;
     lua_rawgeti(L, -1, i);
@@ -395,9 +393,9 @@ struct rule get_config_rule(lua_State *L, char *name)
     return rule;
 }
 
-static struct mon_rule get_config_array_monrule(lua_State *L, const char* name, size_t i)
+struct monrule get_config_array_monrule(lua_State *L, const char* name, size_t i)
 {
-    struct mon_rule monrule;
+    struct monrule monrule;
     lua_rawgeti(L, -1, i);
 
     monrule.name = get_config_array_str(L, name, 1);
@@ -411,9 +409,9 @@ static struct mon_rule get_config_array_monrule(lua_State *L, const char* name, 
     return monrule;
 }
 
-struct mon_rule get_config_monrule(lua_State *L, char *name)
+struct monrule get_config_monrule(lua_State *L, char *name)
 {
-    struct mon_rule monrule;
+    struct monrule monrule;
     lua_getglobal_safe(L, name);
 
     monrule.name = get_config_array_str(L, name, 1);
@@ -473,12 +471,12 @@ void get_config_rule_arr(lua_State *L, struct rule **rules, size_t *rule_count, 
     lua_pop(L, 1);
 }
 
-void get_config_mon_rule_arr(lua_State *L, struct mon_rule **monrules, size_t *monrule_count, char *name)
+void get_config_mon_rule_arr(lua_State *L, struct monrule **monrules, size_t *monrule_count, char *name)
 {
     lua_getglobal_safe(L, name);
     size_t len = lua_rawlen(L, -1);
     *monrule_count = len;
-    *monrules = calloc(len, sizeof(struct mon_rule));
+    *monrules = calloc(len, sizeof(struct monrule));
 
     for (int i = 1; i <= len; i++) {
         *monrules[i-1] = get_config_array_monrule(L, name, i);

@@ -18,14 +18,8 @@
 #include "workspace.h"
 #include "server.h"
 
-struct wlr_list tag_names;
-struct rule *rules;
 size_t rule_count;
-struct mon_rule *monrules;
-size_t monrule_count;
 
-struct wlr_list tag_names;
-char *termcmd;
 struct layout *keys = NULL;
 struct layout *buttons = NULL;
 
@@ -33,13 +27,6 @@ int update_config(lua_State *L)
 {
     init_error_file();
     init_config(L);
-
-    /* appearance */
-    wlr_list_init(&tag_names);
-    get_config_str_arr(L, &tag_names, "Tag_names");
-
-    get_config_rule_arr(L, &rules, &rule_count, "Rules");
-    get_config_mon_rule_arr(L, &monrules, &monrule_count, "Monrules");
 
     default_layout = get_config_layout(L, "Default_layout");
     prev_layout = (struct layout) {
@@ -52,22 +39,19 @@ int update_config(lua_State *L)
         .lua_box_data_index = 0,
     };
 
-    /* commands */
-    termcmd = get_config_str(L, "Termcmd");
-
     close_error_file();
     return 0;
 }
 
 int reload_config(lua_State *L)
 {
-    for (int i = 0; i < tag_names.length; i++)
-        free(wlr_list_pop(&tag_names));
-    wlr_list_finish(&tag_names);
+    for (int i = 0; i < server.options.tag_names.length; i++)
+        free(wlr_list_pop(&server.options.tag_names));
+    wlr_list_finish(&server.options.tag_names);
 
     destroy_workspaces();
     update_config(L);
-    create_workspaces(tag_names, default_layout);
+    create_workspaces(server.options.tag_names, default_layout);
 
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
