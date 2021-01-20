@@ -133,6 +133,6 @@ int lib_set_keybinds(lua_State *L)
 
 int lib_set_buttons(lua_State *L)
 {
-    server.options.buttons_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    server.options.buttonbinds_ref = luaL_ref(L, LUA_REGISTRYINDEX);
     return 0;
 }

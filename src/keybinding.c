@@ -125,8 +125,7 @@ bool button_pressed(int mods, int sym)
     // TODO make this safer
     char bind[128] = "";
     sym_to_binding(bind, mods, sym);
-    /* bool handled = process_binding(L, bind, "Buttons"); */
-    bool handled = false;
+    bool handled = process_binding(L, bind, server.options.buttonbinds_ref);
     return handled;
 }
 
