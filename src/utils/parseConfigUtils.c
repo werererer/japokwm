@@ -124,7 +124,8 @@ int init_config(lua_State *L)
         success = 0;
         break;
     }
-    free(config_path);
+    if (config_path)
+        free(config_path);
     return success;
 }
 

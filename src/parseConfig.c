@@ -22,6 +22,7 @@ size_t rule_count;
 
 int update_config(lua_State *L)
 {
+    printf("update_config\n");
     init_error_file();
     init_config(L);
 

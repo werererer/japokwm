@@ -1,4 +1,4 @@
-Build started at 2021-01-21T00:31:36.964099
+Build started at 2021-01-22T00:11:44.504916
 Main binary: /usr/bin/python
 Build Options: 
 Python system: Linux
@@ -7,7 +7,7 @@ Version: 0.56.2
 Source dir: /home/jakob/git/japokwm
 Build dir: /home/jakob/git/japokwm/build
 Build type: native build
-Project name: japokwm
+Project name: juliawm
 Project version: undefined
 None of 'CC' are defined in the environment, not changing global flags.
 None of 'CFLAGS' are defined in the environment, not changing global flags.
@@ -132,8 +132,8 @@ Called `/usr/bin/pkg-config xcb --libs` -> 0
 None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
 None of 'CC_LD' are defined in the environment, not changing global flags.
 Running compile:
-Working directory:  /home/jakob/git/japokwm/build/meson-private/tmpbrajfovq
-Command line:  cc /home/jakob/git/japokwm/build/meson-private/tmpbrajfovq/testfile.c -o /home/jakob/git/japokwm/build/meson-private/tmpbrajfovq/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 
+Working directory:  /home/jakob/git/japokwm/build/meson-private/tmp17mtrde0
+Command line:  cc /home/jakob/git/japokwm/build/meson-private/tmp17mtrde0/testfile.c -o /home/jakob/git/japokwm/build/meson-private/tmp17mtrde0/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 
 
 Code:
  #include<stdio.h>
@@ -154,8 +154,8 @@ Program stderr:
 
 
 Running compile:
-Working directory:  /home/jakob/git/japokwm/build/meson-private/tmpfpimi6zq
-Command line:  cc /home/jakob/git/japokwm/build/meson-private/tmpfpimi6zq/testfile.c -o /home/jakob/git/japokwm/build/meson-private/tmpfpimi6zq/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
+Working directory:  /home/jakob/git/japokwm/build/meson-private/tmpm7evxbui
+Command line:  cc /home/jakob/git/japokwm/build/meson-private/tmpm7evxbui/testfile.c -o /home/jakob/git/japokwm/build/meson-private/tmpm7evxbui/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
 
 Code:
  
@@ -280,8 +280,8 @@ Called `/usr/bin/pkg-config lua --libs` -> 0
 None of 'PKG_CONFIG_PATH' are defined in the environment, not changing global flags.
 None of 'CC_LD' are defined in the environment, not changing global flags.
 Running compile:
-Working directory:  /home/jakob/git/japokwm/build/meson-private/tmpekmtdhtq
-Command line:  cc /home/jakob/git/japokwm/build/meson-private/tmpekmtdhtq/testfile.c -o /home/jakob/git/japokwm/build/meson-private/tmpekmtdhtq/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 -Wl,--start-group -lm -Wl,--end-group -Wl,--allow-shlib-undefined 
+Working directory:  /home/jakob/git/japokwm/build/meson-private/tmp4y29yxgi
+Command line:  cc /home/jakob/git/japokwm/build/meson-private/tmp4y29yxgi/testfile.c -o /home/jakob/git/japokwm/build/meson-private/tmp4y29yxgi/output.exe -pipe -D_FILE_OFFSET_BITS=64 -O0 -Wl,--start-group -lm -Wl,--end-group -Wl,--allow-shlib-undefined 
 
 Code:
  int main(void) { return 0; }

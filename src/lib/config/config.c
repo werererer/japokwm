@@ -95,6 +95,7 @@ int lib_set_workspaces(lua_State *L)
 {
     size_t len = lua_rawlen(L, -1);
 
+    printf("clear\n");
     wlr_list_clear(&server.options.tag_names);
     for (int i = 1; i <= len; i++)
         wlr_list_push(&server.options.tag_names, get_config_array_str(L, "workspaces", i));

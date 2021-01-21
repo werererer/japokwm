@@ -232,23 +232,30 @@ struct monitor *xytomon(double x, double y)
 
 void load_layout(lua_State *L, struct layout *lt, const char *layout_name)
 {
+    printf("load_layout\n");
     lt->name = layout_name;
 
+    printf("load_layout0\n");
     char *config_path = get_config_file("layouts");
     char file[NUM_CHARS];
     strcpy(file, "");
     join_path(file, config_path);
     join_path(file, layout_name);
     join_path(file, "init.lua");
+    if (config_path)
+        free(config_path);
 
+    printf("load_layout1\n");
     if (!file_exists(file))
         return;
 
+    printf("load_layout2\n");
     if (luaL_loadfile(L, file)) {
         lua_pop(L, 1);
         return;
     }
     lua_call_safe(L, 0, 0, 0);
+    printf("load_layout end\n");
 }
 
 void load_default_layout(lua_State *L, struct layout *lt)
