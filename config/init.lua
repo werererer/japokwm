@@ -15,13 +15,15 @@ config.set_rules({
     {"termite", "termite", function(n) container.container_setsticky(n, true) end}
 })
 
--- local layouts = {
---     {"[M]", "master"},
---     {"[]=", "two_pane"},
---     {"||",  "monocle"},
---     {"--",  "tmp" },
--- }
--- config.set_layouts(layouts)
+-- config.set_default_layout(layouts[1])
+
+local layouts = {
+    {"[M]", "master"},
+    {"[]=", "two_pane"},
+    {"||",  "monocle"},
+    {"--",  "tmp" },
+}
+config.set_layouts(layouts)
 Layouts = {
     {"[M]", "master"},
     {"[]=", "two_pane"},
@@ -29,13 +31,11 @@ Layouts = {
     {"--",  "tmp" },
 }
 
--- config.set_default_layout(layouts[1])
-
 config.set_monrules({
     { "", 0.55, 1, 1, Layouts[1], 1 },
 })
 
-Default_layout = Layouts[1]
+config.set_default_layout(Layouts[1])
 local termcmd = "/usr/bin/termite"
 
 config.set_keybinds({
@@ -92,7 +92,3 @@ config.set_buttons({
     {"mod-M1",  function() action.move_resize(Cursor_mode.CUR_MOVE) end},
     {"mod-M2",  function() action.move_resize(Cursor_mode.CUR_RESIZE) end},
 })
--- Buttons = {
---     {"mod-M1",  function() action.move_resize(Cursor_mode.CUR_MOVE) end},
---     {"mod-M2",  function() action.move_resize(Cursor_mode.CUR_RESIZE) end},
--- }

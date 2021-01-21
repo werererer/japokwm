@@ -87,9 +87,13 @@ void create_monitor(struct wl_listener *listener, void *data)
     m->root = create_root(m);
 
     set_next_unoccupied_workspace(m, get_workspace(0));
+    printf("load default\n");
     load_default_layout(L, &m->ws->layout);
+    printf("done default\n");
     copy_layout_from_selected_workspace();
+    printf("works\n");
     set_root_color(m->root, m->ws->layout.options.root_color);
+    printf("end p\n");
 
 
     /* Adds this to the output layout. The add_auto function arranges outputs
@@ -105,6 +109,7 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     wlr_output_enable(output, 1);
 
+    printf("create monitor done: %s\n", default_layout.name);
     if (!wlr_output_commit(output))
         return;
 }
@@ -248,6 +253,5 @@ void load_layout(lua_State *L, struct layout *lt, const char *layout_name)
 
 void load_default_layout(lua_State *L, struct layout *lt)
 {
-    printf("load default layout\n");
     load_layout(L, lt, default_layout.name);
 }

@@ -74,6 +74,20 @@ int lib_set_repeat_delay(lua_State *L)
 
 int lib_set_default_layout(lua_State *L)
 {
+    printf("lib_set_default_layout: %i\n", lua_gettop(L));
+    struct layout layout = {
+        .symbol = get_config_array_str(L, "default_layout", 1),
+        .name = get_config_array_str(L, "default_layout", 2),
+        .n = 1,
+        .nmaster = 1,
+        .lua_layout_index = 0,
+        .lua_layout_copy_data_index = 0,
+        .lua_layout_original_copy_data_index = 0,
+        .lua_layout_master_copy_data_index = 0,
+        .lua_box_data_index = 0,
+    };
+    default_layout = layout;
+    lua_pop(L, 1);
     return 0;
 }
 
@@ -106,6 +120,7 @@ int lib_set_rules(lua_State *L)
 
 int lib_set_layouts(lua_State *L)
 {
+    server.options.layouts_ref = luaL_ref(L, -1);
     return 0;
 }
 

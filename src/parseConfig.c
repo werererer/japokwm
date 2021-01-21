@@ -25,7 +25,7 @@ int update_config(lua_State *L)
     init_error_file();
     init_config(L);
 
-    default_layout = get_config_layout(L, "Default_layout");
+    /* default_layout = get_config_layout(L, "Default_layout"); */
     prev_layout = (struct layout) {
         .name = "",
         .symbol = "",

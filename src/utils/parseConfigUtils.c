@@ -1,4 +1,5 @@
 #include "utils/parseConfigUtils.h"
+#include "options.h"
 #include "utils/writeFile.h"
 #include <lauxlib.h>
 #include <wlr/util/log.h>
@@ -340,6 +341,7 @@ void call_function(lua_State *L, struct layout lt)
 
 static struct layout get_config_array_layout(lua_State *L, const char *name, size_t i)
 {
+    printf("lua top: %i\n", lua_gettop(L));
     lua_rawgeti(L, -1, i);
     struct layout layout = {
         .symbol = get_config_array_str(L, name, 1),
@@ -347,6 +349,11 @@ static struct layout get_config_array_layout(lua_State *L, const char *name, siz
         .n = 1,
         .nmaster = 1,
         .lua_layout_index = 0,
+        .lua_layout_copy_data_index = 0,
+        .lua_layout_original_copy_data_index = 0,
+        .lua_layout_master_copy_data_index = 0,
+        .lua_box_data_index = 0,
+        .options = get_default_options(),
     };
     lua_pop(L, 1);
     return layout;
@@ -360,11 +367,13 @@ struct layout get_config_layout(lua_State *L, char *name)
         .name = get_config_array_str(L, name, 2),
         .n = 1,
         .nmaster = 1,
+        .resize_dir = 1,
         .lua_layout_index = 0,
         .lua_layout_copy_data_index = 0,
         .lua_layout_original_copy_data_index = 0,
         .lua_layout_master_copy_data_index = 0,
         .lua_box_data_index = 0,
+        .options = get_default_options(),
     };
     lua_pop(L, 1);
     return layout;

@@ -16,7 +16,8 @@ int lua_copy_table(lua_State *L)
     lua_getglobal_safe(L, "Deep_copy");
     lua_insert(L, -2);
     lua_call_safe(L, 1, 1, 0);
-    return luaL_ref(L, LUA_REGISTRYINDEX);
+    int ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    return ref;
 }
 
 bool is_same_layout(struct layout layout, struct layout layout2)
@@ -29,19 +30,34 @@ bool is_same_layout(struct layout layout, struct layout layout2)
 
 void copy_layout(struct layout *dest_lt, struct layout *src_lt)
 {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_copy_data_index);
-    dest_lt->lua_layout_copy_data_index = lua_copy_table(L);
+    if (!dest_lt)
+        return;
+    if (!src_lt)
+        return;
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_index);
-    dest_lt->lua_layout_index = lua_copy_table(L);
+    if (src_lt->lua_layout_copy_data_index > 0) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_copy_data_index);
+        dest_lt->lua_layout_copy_data_index = lua_copy_table(L);
+    }
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_master_copy_data_index);
-    dest_lt->lua_layout_master_copy_data_index = lua_copy_table(L);
+    if (src_lt->lua_layout_index > 0) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_index);
+        dest_lt->lua_layout_index = lua_copy_table(L);
+    }
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_original_copy_data_index);
-    dest_lt->lua_layout_original_copy_data_index = lua_copy_table(L);
+    if (src_lt->lua_layout_master_copy_data_index > 0) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_master_copy_data_index);
+        dest_lt->lua_layout_master_copy_data_index = lua_copy_table(L);
+    }
+
+    if (src_lt->lua_layout_original_copy_data_index > 0) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_original_copy_data_index);
+        dest_lt->lua_layout_original_copy_data_index = lua_copy_table(L);
+    }
 
     dest_lt->resize_dir = src_lt->resize_dir;
+    printf("works4\n");
 
     copy_options(&dest_lt->options, &src_lt->options);
+    printf("copy_layout end\n");
 }

@@ -41,6 +41,7 @@ static void update_layout(lua_State *L, int n, struct monitor *m)
     m->ws->layout.lua_layout_index = luaL_ref(L, LUA_REGISTRYINDEX);
     lua_pop(L, 1);
 
+    printf("get update_layout\n");
     lua_getglobal_safe(L, "Update_layout");
     lua_pushinteger(L, n);
     lua_call_safe(L, 1, 0, 0);
