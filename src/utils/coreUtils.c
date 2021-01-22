@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <wordexp.h>
 #include <stdlib.h>
+#include <execinfo.h>
 
 struct lua_State *L;
 
@@ -81,3 +82,13 @@ void lua_get_color(float dest_color[static 4])
     lua_pop(L, 1);
 }
 
+void print_trace()
+{
+    void* callstack[128];
+    int i, frames = backtrace(callstack, 128);
+    char** strs = backtrace_symbols(callstack, frames);
+    for (i = 0; i < frames; ++i) {
+        printf("%s\n", strs[i]);
+    }
+    free(strs);
+}

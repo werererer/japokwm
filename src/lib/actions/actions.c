@@ -63,7 +63,7 @@ int set_resize_direction(lua_State *L)
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
     ws->layout.resize_dir = luaL_checkinteger(L, -1);
-    printf("set resize direction: %i\n", ws->layout.resize_dir);
+    lua_pop(L, 1);
     return 0;
 }
 
@@ -77,7 +77,6 @@ int lib_arrange(lua_State *L)
 int toggle_consider_layer_shell(lua_State *L)
 {
     selected_monitor->root->consider_layer_shell = !selected_monitor->root->consider_layer_shell;
-    printf("toggle_consider_layer_shell\n");
     arrange();
     return 0;
 }
@@ -114,7 +113,6 @@ int set_floating(lua_State *L)
     if (!sel)
         return 0;
     set_container_floating(sel, b);
-    printf("set_floating\n");
     arrange();
     return 0;
 }
@@ -123,7 +121,6 @@ int set_nmaster(lua_State *L)
 {
     selected_monitor->ws->layout.nmaster = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    printf("set_nmaster\n");
     arrange();
     return 0;
 }
@@ -222,7 +219,6 @@ int focus_on_hidden_stack(lua_State *L)
     }
 
     focus_container(con, m, FOCUS_LIFT);
-    printf("focus_on_hidden_stack\n");
     arrange();
     return 0;
 }
@@ -244,7 +240,6 @@ int move_resize(lua_State *L)
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
                     "fleur", server.cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
-            printf("move_resize\n");
             arrange();
             break;
         case CURSOR_RESIZE:
@@ -258,7 +253,6 @@ int move_resize(lua_State *L)
             wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
                     "bottom_right_corner", server.cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
-            printf("move_resize\n");
             arrange();
             break;
         default:

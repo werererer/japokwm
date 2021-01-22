@@ -25,6 +25,7 @@ function Set_layout(i)
     Layout_id = i
     local layout = Layouts[i]
     local layout_name = layout[2]
+    -- action.load_layout(layout_name)
     Load_layout(layout_name)
     action.arrange()
 end

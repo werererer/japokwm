@@ -45,7 +45,6 @@ static void update_layout(lua_State *L, int n, struct monitor *m)
     lua_getglobal_safe(L, "Update_layout");
     lua_pushinteger(L, n);
     lua_call_safe(L, 1, 0, 0);
-
 }
 
 static struct wlr_fbox lua_unbox_layout(struct lua_State *L, int i) {

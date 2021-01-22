@@ -150,7 +150,6 @@ void set_workspace(struct monitor *m, struct workspace *ws)
 
 void copy_layout_from_selected_workspace()
 {
-    printf("works0\n");
     for (int i = 0; i < workspaces.length; i++) {
         struct workspace *ws = workspaces.items[i];
         struct layout *dest_lt = &ws->layout;
@@ -159,7 +158,6 @@ void copy_layout_from_selected_workspace()
         if (dest_lt == src_lt)
             continue;
 
-        printf("works\n");
         copy_layout(dest_lt, src_lt);
     }
 }

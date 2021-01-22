@@ -770,6 +770,7 @@ void setsel(struct wl_listener *listener, void *data)
 // TODO: set up initial layout
 int setup()
 {
+    printf("setup\n");
     wl_list_init(&mons);
     wl_list_init(&focus_stack);
     wl_list_init(&stack);
@@ -777,6 +778,18 @@ int setup()
     wl_list_init(&layer_stack);
     wl_list_init(&popups);
     wl_list_init(&sticky_stack);
+    default_layout = (struct layout) {
+        .symbol = "",
+        .name = "",
+        .n = 1,
+        .nmaster = 1,
+        .lua_layout_index = 0,
+        .lua_layout_copy_data_index = 0,
+        .lua_layout_original_copy_data_index = 0,
+        .lua_layout_master_copy_data_index = 0,
+        .lua_box_data_index = 0,
+        .options = get_default_options(),
+    };
 
     L = luaL_newstate();
     luaL_openlibs(L);
@@ -927,6 +940,7 @@ int setup()
         wlr_log(WLR_ERROR, "failed to setup XWayland X server, continuing without it");
     }
 
+    printf("setup end\n");
     return 0;
 }
 

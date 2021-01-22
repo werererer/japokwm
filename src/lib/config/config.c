@@ -74,10 +74,9 @@ int lib_set_repeat_delay(lua_State *L)
 
 int lib_set_default_layout(lua_State *L)
 {
-    printf("lib_set_default_layout: %i\n", lua_gettop(L));
     struct layout layout = {
-        .symbol = get_config_array_str(L, "default_layout", 1),
-        .name = get_config_array_str(L, "default_layout", 2),
+        .symbol = "s",
+        .name = "master",
         .n = 1,
         .nmaster = 1,
         .lua_layout_index = 0,
@@ -95,7 +94,6 @@ int lib_set_workspaces(lua_State *L)
 {
     size_t len = lua_rawlen(L, -1);
 
-    printf("clear\n");
     wlr_list_clear(&server.options.tag_names);
     for (int i = 1; i <= len; i++)
         wlr_list_push(&server.options.tag_names, get_config_array_str(L, "workspaces", i));
@@ -119,6 +117,12 @@ int lib_set_rules(lua_State *L)
     return 0;
 }
 
+int lib_set_layout(lua_State *L)
+{
+    /* server.options.layouts_ref = luaL_ref(L, -1); */
+    return 0;
+}
+
 int lib_set_layouts(lua_State *L)
 {
     server.options.layouts_ref = luaL_ref(L, -1);
@@ -127,6 +131,7 @@ int lib_set_layouts(lua_State *L)
 
 int lib_set_monrules(lua_State *L)
 {
+    printf("lib set monrules\n");
     size_t len = lua_rawlen(L, -1);
     server.options.monrules = calloc(server.options.monrule_count, sizeof(struct monrule));
     struct monrule *monrules = server.options.monrules;
@@ -138,17 +143,19 @@ int lib_set_monrules(lua_State *L)
     }
 
     lua_pop(L, 1);
+    printf("lib set monrules end\n");
     return 0;
 }
 
 int lib_set_keybinds(lua_State *L)
 {
-    server.options.keybinds_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    server.options.keybinds_ref = lua_copy_table(L);
     return 0;
 }
 
 int lib_set_buttons(lua_State *L)
 {
-    server.options.buttonbinds_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    printf("set_buttons: %i\n", lua_gettop(L));
+    server.options.buttonbinds_ref = lua_copy_table(L);
     return 0;
 }

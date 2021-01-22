@@ -75,7 +75,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     wl_list_insert(&mons, &m->link);
     if (is_first_monitor) {
         set_selected_monitor(m);
-        printf("length: %zu\n", server.options.tag_names.length);
         if (server.options.tag_names.length <= 0) {
             handle_error("tag_names is empty, loading default tag_names");
             reset_tag_names(&server.options.tag_names);
@@ -109,7 +108,6 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     wlr_output_enable(output, 1);
 
-    printf("create monitor done: %s\n", default_layout.name);
     if (!wlr_output_commit(output))
         return;
 }
@@ -232,24 +230,25 @@ struct monitor *xytomon(double x, double y)
 
 void load_layout(lua_State *L, struct layout *lt, const char *layout_name)
 {
-    printf("load_layout\n");
+    printf("load_layout: %s\n", layout_name);
     lt->name = layout_name;
 
     printf("load_layout0\n");
     char *config_path = get_config_file("layouts");
-    char file[NUM_CHARS];
+    char file[NUM_CHARS] = "";
     strcpy(file, "");
     join_path(file, config_path);
     join_path(file, layout_name);
     join_path(file, "init.lua");
     if (config_path)
         free(config_path);
+    printf("file: %s\n", file);
 
     printf("load_layout1\n");
     if (!file_exists(file))
         return;
 
-    printf("load_layout2\n");
+    printf("load_layout2: %s\n", file);
     if (luaL_loadfile(L, file)) {
         lua_pop(L, 1);
         return;

@@ -8,12 +8,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <translationLayer.h>
+#include <execinfo.h>
 #include "stringop.h"
+#include "utils/coreUtils.h"
 
 static const char *config_paths[] = {
-    "$HOME/.config/juliawm/",
-    "$XDG_CONFIG_HOME/juliawm/",
-    "/etc/juliawm/",
+    "$HOME/.config/japokwm/",
+    "$XDG_CONFIG_HOME/japokwm/",
+    "/etc/japokwm/",
 };
 
 static const char *config_file = "init.lua";
@@ -146,6 +148,10 @@ void close_error_file()
 
 int lua_call_safe(lua_State *L, int nargs, int nresults, int msgh)
 {
+    printf("call safe: %i\n", lua_gettop(L));
+    printf("nargs: %i : %i\n", nargs, nresults);
+    printf("function1: %i\n", lua_isfunction(L, -1));
+    printf("function2: %i\n", lua_isfunction(L, -2));
     int lua_status = lua_pcall(L, nargs, nresults, msgh);
     if (lua_status != LUA_OK) {
         const char *errmsg = luaL_checkstring(L, -1);
@@ -183,17 +189,19 @@ void handle_error(const char *msg)
 
 char *get_config_array_str(lua_State *L, const char *name, size_t i)
 {
+    printf("get_config_array_str: %i\n", lua_gettop(L));
     lua_rawgeti(L, -1, i);
     if (!lua_isstring(L, -1)) {
         char c[NUM_CHARS] = "";
         snprintf(c, NUM_CHARS, "%s[%lu] is not a string", name, i);
         handle_error(c);
-        return "";
+        return NULL;
     }
     const char *str = luaL_checkstring(L, -1);
     char *termcmd = calloc(strlen(str), sizeof(char));
     strcpy(termcmd, str);
     lua_pop(L, 1);
+    printf("get_config_array_str end: %i\n", lua_gettop(L));
     return termcmd;
 }
 
@@ -343,6 +351,7 @@ void call_function(lua_State *L, struct layout lt)
 static struct layout get_config_array_layout(lua_State *L, const char *name, size_t i)
 {
     printf("lua top: %i\n", lua_gettop(L));
+    printf("get_config array_layout\n");
     lua_rawgeti(L, -1, i);
     struct layout layout = {
         .symbol = get_config_array_str(L, name, 1),
@@ -354,15 +363,17 @@ static struct layout get_config_array_layout(lua_State *L, const char *name, siz
         .lua_layout_original_copy_data_index = 0,
         .lua_layout_master_copy_data_index = 0,
         .lua_box_data_index = 0,
-        .options = get_default_options(),
     };
+    layout.options = get_default_options();
     lua_pop(L, 1);
+    printf("get_config array_layout end\n");
     return layout;
 }
 
 struct layout get_config_layout(lua_State *L, char *name)
 {
     lua_getglobal_safe(L, name);
+    printf("get_config_layout\n");
     struct layout layout = {
         .symbol = get_config_array_str(L, name, 1),
         .name = get_config_array_str(L, name, 2),
@@ -385,6 +396,7 @@ struct rule get_config_array_rule(lua_State *L, const char* name, size_t i)
     struct rule rule;
     lua_rawgeti(L, -1, i);
 
+    printf("get_config_array_rule\n");
     rule.id  = get_config_array_str(L, name, 1);
     rule.title  = get_config_array_str(L, name, 2);
     rule.lua_func_ref = get_config_array_func_id(L, name, 3);
@@ -397,6 +409,7 @@ struct rule get_config_array_rule(lua_State *L, const char* name, size_t i)
 struct rule get_config_rule(lua_State *L, char *name)
 {
     struct rule rule;
+    printf("get_config_rule\n");
     rule.id  = get_config_array_str(L, name, 1);
     rule.title  = get_config_array_str(L, name, 2);
     rule.lua_func_ref = get_config_array_func_id(L, name, 3);
@@ -406,6 +419,7 @@ struct rule get_config_rule(lua_State *L, char *name)
 struct monrule get_config_array_monrule(lua_State *L, const char* name, size_t i)
 {
     struct monrule monrule;
+    printf("get_config_array_monrule: %i\n", lua_gettop(L));
     lua_rawgeti(L, -1, i);
 
     monrule.name = get_config_array_str(L, name, 1);
@@ -416,6 +430,7 @@ struct monrule get_config_array_monrule(lua_State *L, const char* name, size_t i
     monrule.rr = get_config_array_int(L, name, 6);
 
     lua_pop(L, 1);
+    printf("get_config_array_monrule: %i end\n", lua_gettop(L));
     return monrule;
 }
 
@@ -424,6 +439,7 @@ struct monrule get_config_monrule(lua_State *L, char *name)
     struct monrule monrule;
     lua_getglobal_safe(L, name);
 
+    printf("get_config_monrule\n");
     monrule.name = get_config_array_str(L, name, 1);
     monrule.mfact = get_config_array_float(L, name, 2);
     monrule.nmaster = get_config_array_int(L, name, 3);
@@ -444,6 +460,7 @@ void get_config_str_arr(lua_State *L, struct wlr_list *resArr, char *name)
     lua_getglobal_safe(L, name);
     size_t len = lua_rawlen(L, -1);
 
+    printf("get_config_str_arr\n");
     for (int i = 1; i <= len; i++)
         wlr_list_push(resArr, get_config_array_str(L, name, i));
     lua_pop(L, 1);
