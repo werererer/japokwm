@@ -2,7 +2,6 @@ configFiles = files(
   'init.lua',
   'defaultConfig.lua',
   'tile.lua',
-  'tilehooked.lua',
   'tileutils.lua',
 )
 

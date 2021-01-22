@@ -148,10 +148,6 @@ void close_error_file()
 
 int lua_call_safe(lua_State *L, int nargs, int nresults, int msgh)
 {
-    printf("call safe: %i\n", lua_gettop(L));
-    printf("nargs: %i : %i\n", nargs, nresults);
-    printf("function1: %i\n", lua_isfunction(L, -1));
-    printf("function2: %i\n", lua_isfunction(L, -2));
     int lua_status = lua_pcall(L, nargs, nresults, msgh);
     if (lua_status != LUA_OK) {
         const char *errmsg = luaL_checkstring(L, -1);
@@ -189,7 +185,6 @@ void handle_error(const char *msg)
 
 char *get_config_array_str(lua_State *L, const char *name, size_t i)
 {
-    printf("get_config_array_str: %i\n", lua_gettop(L));
     lua_rawgeti(L, -1, i);
     if (!lua_isstring(L, -1)) {
         char c[NUM_CHARS] = "";
@@ -201,7 +196,6 @@ char *get_config_array_str(lua_State *L, const char *name, size_t i)
     char *termcmd = calloc(strlen(str), sizeof(char));
     strcpy(termcmd, str);
     lua_pop(L, 1);
-    printf("get_config_array_str end: %i\n", lua_gettop(L));
     return termcmd;
 }
 
@@ -342,7 +336,7 @@ void call_arrange_func(lua_State *L, int funcId, int n)
 
 void call_function(lua_State *L, struct layout lt)
 {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt.lua_layout_index);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt.lua_layout_ref);
     lua_pushinteger(L, lt.n);
     lua_call_safe(L, 1, 0, 0);
     luaL_ref(L, LUA_REGISTRYINDEX);
@@ -358,11 +352,11 @@ static struct layout get_config_array_layout(lua_State *L, const char *name, siz
         .name = get_config_array_str(L, name, 2),
         .n = 1,
         .nmaster = 1,
-        .lua_layout_index = 0,
-        .lua_layout_copy_data_index = 0,
-        .lua_layout_original_copy_data_index = 0,
-        .lua_layout_master_copy_data_index = 0,
-        .lua_box_data_index = 0,
+        .lua_layout_ref = 0,
+        .lua_layout_copy_data_ref = 0,
+        .lua_layout_original_copy_data_ref = 0,
+        .lua_layout_master_copy_data_ref = 0,
+        .lua_box_data_ref = 0,
     };
     layout.options = get_default_options();
     lua_pop(L, 1);
@@ -380,11 +374,11 @@ struct layout get_config_layout(lua_State *L, char *name)
         .n = 1,
         .nmaster = 1,
         .resize_dir = 1,
-        .lua_layout_index = 0,
-        .lua_layout_copy_data_index = 0,
-        .lua_layout_original_copy_data_index = 0,
-        .lua_layout_master_copy_data_index = 0,
-        .lua_box_data_index = 0,
+        .lua_layout_ref = 0,
+        .lua_layout_copy_data_ref = 0,
+        .lua_layout_original_copy_data_ref = 0,
+        .lua_layout_master_copy_data_ref = 0,
+        .lua_box_data_ref = 0,
         .options = get_default_options(),
     };
     lua_pop(L, 1);
@@ -409,7 +403,6 @@ struct rule get_config_array_rule(lua_State *L, const char* name, size_t i)
 struct rule get_config_rule(lua_State *L, char *name)
 {
     struct rule rule;
-    printf("get_config_rule\n");
     rule.id  = get_config_array_str(L, name, 1);
     rule.title  = get_config_array_str(L, name, 2);
     rule.lua_func_ref = get_config_array_func_id(L, name, 3);
@@ -419,7 +412,6 @@ struct rule get_config_rule(lua_State *L, char *name)
 struct monrule get_config_array_monrule(lua_State *L, const char* name, size_t i)
 {
     struct monrule monrule;
-    printf("get_config_array_monrule: %i\n", lua_gettop(L));
     lua_rawgeti(L, -1, i);
 
     monrule.name = get_config_array_str(L, name, 1);
@@ -430,7 +422,6 @@ struct monrule get_config_array_monrule(lua_State *L, const char* name, size_t i
     monrule.rr = get_config_array_int(L, name, 6);
 
     lua_pop(L, 1);
-    printf("get_config_array_monrule: %i end\n", lua_gettop(L));
     return monrule;
 }
 
@@ -439,7 +430,6 @@ struct monrule get_config_monrule(lua_State *L, char *name)
     struct monrule monrule;
     lua_getglobal_safe(L, name);
 
-    printf("get_config_monrule\n");
     monrule.name = get_config_array_str(L, name, 1);
     monrule.mfact = get_config_array_float(L, name, 2);
     monrule.nmaster = get_config_array_int(L, name, 3);

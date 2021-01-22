@@ -58,7 +58,6 @@ void create_monitor(struct wl_listener *listener, void *data)
             m->mfact = r.mfact;
             wlr_output_set_scale(output, r.scale);
             wlr_xcursor_manager_load(server.cursorMgr, r.scale);
-            printf("create monitor\n");
             set_selected_layout(m->ws, r.lt);
             wlr_output_set_transform(output, WL_OUTPUT_TRANSFORM_NORMAL);
             break;
@@ -86,13 +85,9 @@ void create_monitor(struct wl_listener *listener, void *data)
     m->root = create_root(m);
 
     set_next_unoccupied_workspace(m, get_workspace(0));
-    printf("load default\n");
     load_default_layout(L, &m->ws->layout);
-    printf("done default\n");
     copy_layout_from_selected_workspace();
-    printf("works\n");
     set_root_color(m->root, m->ws->layout.options.root_color);
-    printf("end p\n");
 
 
     /* Adds this to the output layout. The add_auto function arranges outputs
@@ -156,7 +151,6 @@ void focusmon(int i)
 void destroy_monitor(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, destroy);
-    printf("destroy_monitor\n");
 
     set_workspace(m, NULL);
     destroy_root(m->root);
@@ -230,10 +224,8 @@ struct monitor *xytomon(double x, double y)
 
 void load_layout(lua_State *L, struct layout *lt, const char *layout_name)
 {
-    printf("load_layout: %s\n", layout_name);
     lt->name = layout_name;
 
-    printf("load_layout0\n");
     char *config_path = get_config_file("layouts");
     char file[NUM_CHARS] = "";
     strcpy(file, "");
@@ -242,19 +234,15 @@ void load_layout(lua_State *L, struct layout *lt, const char *layout_name)
     join_path(file, "init.lua");
     if (config_path)
         free(config_path);
-    printf("file: %s\n", file);
 
-    printf("load_layout1\n");
     if (!file_exists(file))
         return;
 
-    printf("load_layout2: %s\n", file);
     if (luaL_loadfile(L, file)) {
         lua_pop(L, 1);
         return;
     }
     lua_call_safe(L, 0, 0, 0);
-    printf("load_layout end\n");
 }
 
 void load_default_layout(lua_State *L, struct layout *lt)

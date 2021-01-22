@@ -92,15 +92,15 @@ int resize_main(lua_State *L)
     int d = lt->resize_dir;
 
     lua_getglobal_safe(L, "Resize_main_all");
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_index);
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_original_copy_data_index);
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_box_data_index);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_original_copy_data_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_box_data_ref);
     lua_pushnumber(L, n);
     lua_pushinteger(L, d);
 
     lua_call_safe(L, 5, 1, 0);
 
-    lt->lua_layout_copy_data_index = lua_copy_table(L);
+    lt->lua_layout_copy_data_ref = lua_copy_table(L);
     arrange();
     return 0;
 }
@@ -500,15 +500,37 @@ int lib_zoom(lua_State *L)
 
 int lib_load_layout(lua_State *L)
 {
-    printf("load_layout_lib\n");
-    const char *layout = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
     struct layout *lt = &ws->layout;
 
+    int argc = lua_gettop(L);
+    if (argc > 0) {
+        lt->lua_layout_index = luaL_checkinteger(L, -1);
+        lua_pop(L, 1);
+    }
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->options.layouts_ref);
+
+    printf("works0: %i\n", lua_gettop(L));
+    if (lua_gettop(L) <= 1) {
+        lt->lua_layout_index++;
+        if (lt->lua_layout_index > luaL_len(L, -1)) {
+            lt->lua_layout_index = 1;
+        }
+    }
+    printf("works1\n");
+
+    lua_rawgeti(L, -1, lt->lua_layout_index);
+    // get name
+    lua_rawgeti(L, -1, 2);
+    const char *layout = luaL_checkstring(L, -1);
+    lua_pop(L, 3);
+
     load_layout(L, lt, layout);
 
+    arrange();
+    printf("lib_load_layout end\n");
     return 0;
 }
 

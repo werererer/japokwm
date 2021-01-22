@@ -18,11 +18,11 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
     ws->layout = lt;
 
     lua_get_basic_layout();
-    ws->layout.lua_layout_copy_data_index = luaL_ref(L, LUA_REGISTRYINDEX);
+    ws->layout.lua_layout_copy_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
     lua_createtable(L, 0, 0);
-    ws->layout.lua_layout_index = luaL_ref(L, LUA_REGISTRYINDEX);
+    ws->layout.lua_layout_ref = luaL_ref(L, LUA_REGISTRYINDEX);
     lua_get_basic_layout();
-    ws->layout.lua_layout_master_copy_data_index = luaL_ref(L, LUA_REGISTRYINDEX);
+    ws->layout.lua_layout_master_copy_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
     ws->id = id;
     ws->m = NULL;

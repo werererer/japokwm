@@ -21,11 +21,12 @@ struct layout {
     // the amount master windows
     int nmaster;
     int resize_dir;
+    int lua_layout_ref;
     int lua_layout_index;
-    int lua_layout_copy_data_index;
-    int lua_layout_original_copy_data_index;
-    int lua_layout_master_copy_data_index;
-    int lua_box_data_index;
+    int lua_layout_copy_data_ref;
+    int lua_layout_original_copy_data_ref;
+    int lua_layout_master_copy_data_ref;
+    int lua_box_data_ref;
 
     struct bounds layout_bounds;
     struct bounds master_bounds;

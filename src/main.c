@@ -783,11 +783,11 @@ int setup()
         .name = "",
         .n = 1,
         .nmaster = 1,
-        .lua_layout_index = 0,
-        .lua_layout_copy_data_index = 0,
-        .lua_layout_original_copy_data_index = 0,
-        .lua_layout_master_copy_data_index = 0,
-        .lua_box_data_index = 0,
+        .lua_layout_ref = 0,
+        .lua_layout_copy_data_ref = 0,
+        .lua_layout_original_copy_data_ref = 0,
+        .lua_layout_master_copy_data_ref = 0,
+        .lua_box_data_ref = 0,
         .options = get_default_options(),
     };
 

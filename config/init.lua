@@ -1,5 +1,4 @@
 require "defaultConfig"
-print("init start")
 
 config.set_sloppy_focus(true)
 config.set_borderpx(2)
@@ -13,7 +12,7 @@ config.set_repeat_delay(600)
 config.set_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
 
 config.set_rules({
-    -- {"termite", "termite", function(n) container.container_setsticky(n, true) end}
+--     {"termite", "termite", function(n) container.container_setsticky(n, true) end}
 })
 
 local layouts = {
@@ -23,23 +22,15 @@ local layouts = {
     {"--",  "tmp" },
 }
 
-print("works0")
 config.set_layouts(layouts)
-Layouts = {
-    {"[M]", "master"},
-    {"[]=", "two_pane"},
-    {"||",  "monocle"},
-    {"--",  "tmp" },
-}
 
 config.set_default_layout(layouts[1])
 config.set_monrules({
-    { "", 0.55, 1, 1, layouts[1], 1 },
+--     { "", 0.55, 1, 1, layouts[1], 1 },
 })
 
 local termcmd = "/usr/bin/termite"
 
-print("works1")
 config.set_keybinds({
     {"mod-S-Return",  function() action.spawn(termcmd) end},
     {"mod-a",         function() action.set_nmaster(2) end},
@@ -50,12 +41,12 @@ config.set_keybinds({
     {"mod-S-k",       function() action.focus_on_hidden_stack(-1) end},
     {"mod-S-c",       function() action.kill() end},
     {"mod-S-q",       function() action.quit() end},
-    {"mod-space",     function() Set_layout() end},
-    {"mod-m",         function() Set_layout(1) end},
-    {"mod-S-t",       function() Set_layout(2) end},
-    {"mod-w",         function() Set_layout(3) end},
+    {"mod-space",     function() action.load_layout() end},
+    {"mod-m",         function() action.load_layout(1) end},
+    {"mod-S-t",       function() action.load_layout(2) end},
+    {"mod-w",         function() action.load_layout(3) end},
+    {"mod-S-w",       function() action.load_layout(4) end},
     {"mod-b",         function() action.toggle_consider_layer_shell() end},
-    {"mod-S-w",       function() Set_layout(4) end},
     {"mod-S-h",       function() action.resize_main(-1/10) end},
     {"mod-S-l",       function() action.resize_main(1/10) end},
     {"mod-S-s",       function() action.write_this_overlay("tmp") end},
@@ -90,9 +81,7 @@ config.set_keybinds({
     -- {"mod-less",              function() tagmon(-1) end},
 })
 
-print("works1")
 config.set_buttons({
     {"mod-M1",  function() action.move_resize(Cursor_mode.CUR_MOVE) end},
     {"mod-M2",  function() action.move_resize(Cursor_mode.CUR_RESIZE) end},
 })
-print("init end")

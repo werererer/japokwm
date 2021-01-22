@@ -30,34 +30,32 @@ bool is_same_layout(struct layout layout, struct layout layout2)
 
 void copy_layout(struct layout *dest_lt, struct layout *src_lt)
 {
-    printf("copy_layout start\n");
     if (!dest_lt)
         return;
     if (!src_lt)
         return;
 
-    if (src_lt->lua_layout_copy_data_index > 0) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_copy_data_index);
-        dest_lt->lua_layout_copy_data_index = lua_copy_table(L);
+    if (src_lt->lua_layout_copy_data_ref > 0) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_copy_data_ref);
+        dest_lt->lua_layout_copy_data_ref = lua_copy_table(L);
     }
 
-    if (src_lt->lua_layout_index > 0) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_index);
-        dest_lt->lua_layout_index = lua_copy_table(L);
+    if (src_lt->lua_layout_ref > 0) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_ref);
+        dest_lt->lua_layout_ref = lua_copy_table(L);
     }
 
-    if (src_lt->lua_layout_master_copy_data_index > 0) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_master_copy_data_index);
-        dest_lt->lua_layout_master_copy_data_index = lua_copy_table(L);
+    if (src_lt->lua_layout_master_copy_data_ref > 0) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_master_copy_data_ref);
+        dest_lt->lua_layout_master_copy_data_ref = lua_copy_table(L);
     }
 
-    if (src_lt->lua_layout_original_copy_data_index > 0) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_original_copy_data_index);
-        dest_lt->lua_layout_original_copy_data_index = lua_copy_table(L);
+    if (src_lt->lua_layout_original_copy_data_ref > 0) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_original_copy_data_ref);
+        dest_lt->lua_layout_original_copy_data_ref = lua_copy_table(L);
     }
 
     dest_lt->resize_dir = src_lt->resize_dir;
 
     copy_options(&dest_lt->options, &src_lt->options);
-    printf("copy_layout end\n");
 }

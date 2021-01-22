@@ -29,10 +29,6 @@ int update_config(lua_State *L)
         .name = "",
         .symbol = "",
         .nmaster = 1,
-        .n = 0,
-        .lua_layout_index = 0,
-        .lua_layout_copy_data_index = 0,
-        .lua_box_data_index = 0,
     };
 
     close_error_file();

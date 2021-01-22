@@ -13,14 +13,14 @@ int set_layout(lua_State *L)
     copy_options(&lt->options, &server.options);
 
     // 3. argument
-    lt->lua_box_data_index = lua_copy_table(L);
+    lt->lua_box_data_ref = lua_copy_table(L);
     // 2. argument
-    lt->lua_layout_master_copy_data_index = lua_copy_table(L);
+    lt->lua_layout_master_copy_data_ref = lua_copy_table(L);
     // 1.argument
-    lt->lua_layout_copy_data_index = lua_copy_table(L);
+    lt->lua_layout_copy_data_ref = lua_copy_table(L);
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_index);
-    lt->lua_layout_original_copy_data_index = lua_copy_table(L);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
+    lt->lua_layout_original_copy_data_ref = lua_copy_table(L);
     return 0;
 }
 
