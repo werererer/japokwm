@@ -7,7 +7,7 @@ local cursor_mode = {
 }
 
 -- uses wl_output_transform enum values
-local monitor_transformation = {
+local monitor_transform = {
     TRANSFORM_NORMAL = 0,
     TRANSFORM_90 = 1,
     TRANSFORM_180 = 2,
@@ -44,7 +44,7 @@ config.set_layouts(layouts)
 
 config.set_default_layout(layouts[1])
 config.set_monrules({
-    { "", 0.55, 1, 1, layouts[1], monitor_transformation.TRANSFORM_NORMAL },
+    { "", 0.55, 1, 1, layouts[1], monitor_transform.TRANSFORM_NORMAL },
 })
 
 local termcmd = "/usr/bin/termite"
