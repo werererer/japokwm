@@ -1,14 +1,21 @@
 require "tile"
 
-Cursor_mode = {
+local cursor_mode = {
     CUR_NORMAL = 0,
     CUR_MOVE = 1,
     CUR_RESIZE = 2,
 }
 
--- TODO complete transformations
-Monitor_transformation = {
-    NORMAL = 0,
+-- uses wl_output_transform enum values
+local monitor_transformation = {
+    TRANSFORM_NORMAL = 0,
+    TRANSFORM_90 = 1,
+    TRANSFORM_180 = 2,
+    TRANSFORM_270 = 3,
+    TRANSFORM_FLIPPED = 4,
+    TRANSFORM_FLIPPED_90 = 5,
+    TRANSFORM_FLIPPED_180 = 6,
+    TRANSFORM_FLIPPED_270 = 7,
 }
 
 config.set_sloppy_focus(true)
@@ -37,7 +44,7 @@ config.set_layouts(layouts)
 
 config.set_default_layout(layouts[1])
 config.set_monrules({
-    { "", 0.55, 1, 1, layouts[1], 1 },
+    { "", 0.55, 1, 1, layouts[1], monitor_transformation.TRANSFORM_NORMAL },
 })
 
 local termcmd = "/usr/bin/termite"
@@ -93,6 +100,6 @@ config.set_keybinds({
 })
 
 config.set_buttons({
-    {"mod-M1",  function() action.move_resize(Cursor_mode.CUR_MOVE) end},
-    {"mod-M2",  function() action.move_resize(Cursor_mode.CUR_RESIZE) end},
+    {"mod-M1",  function() action.move_resize(cursor_mode.CUR_MOVE) end},
+    {"mod-M2",  function() action.move_resize(cursor_mode.CUR_RESIZE) end},
 })
