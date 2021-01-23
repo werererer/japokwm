@@ -53,7 +53,7 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
     if (con->client->type == X11_UNMANAGED)
         return;
 
-    if (con->m->ws->layout.options.sloppy_focus)
+    if (con->m->ws->layout[0].options.sloppy_focus)
         focus_container(con, selected_monitor, FOCUS_NOOP);
 }
 
@@ -61,7 +61,7 @@ int set_resize_direction(lua_State *L)
 {
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
-    ws->layout.resize_dir = luaL_checkinteger(L, -1);
+    ws->layout[0].resize_dir = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     return 0;
 }
@@ -86,7 +86,7 @@ int resize_main(lua_State *L)
 
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
-    struct layout *lt = &ws->layout;
+    struct layout *lt = &ws->layout[0];
     int d = lt->resize_dir;
 
     lua_getglobal_safe(L, "Resize_main_all");
@@ -117,7 +117,7 @@ int set_floating(lua_State *L)
 
 int set_nmaster(lua_State *L)
 {
-    selected_monitor->ws->layout.nmaster = luaL_checkinteger(L, -1);
+    selected_monitor->ws->layout[0].nmaster = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     arrange();
     return 0;
@@ -175,7 +175,7 @@ int focus_on_stack(lua_State *L)
 
 int get_nmaster(lua_State *L)
 {
-    lua_pushinteger(L, selected_monitor->ws->layout.nmaster);
+    lua_pushinteger(L, selected_monitor->ws->layout[0].nmaster);
     return 1;
 }
 
@@ -490,7 +490,7 @@ int lib_zoom(lua_State *L)
     // focus new master window
     focus_container(previous, selected_monitor, FOCUS_NOOP);
 
-    if (selected_monitor->ws->layout.options.arrange_by_focus) {
+    if (selected_monitor->ws->layout[0].options.arrange_by_focus) {
         focus_top_container(m, FOCUS_NOOP);
         arrange();
     }
@@ -501,7 +501,7 @@ int lib_load_layout(lua_State *L)
 {
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
-    struct layout *lt = &ws->layout;
+    struct layout *lt = &ws->layout[0];
 
     int argc = lua_gettop(L);
     if (argc > 0) {
@@ -547,5 +547,16 @@ int lib_kill_client(lua_State *L)
                 wlr_xwayland_surface_close(sel->surface.xwayland);
         }
     }
+    return 0;
+}
+
+int toggle_layout(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws;
+    printf("toggle_layout\n");
+    push_layout(ws->layout, ws->layout[1]);
+    arrange();
+    printf("toggle_layout end\n");
     return 0;
 }

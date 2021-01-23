@@ -37,7 +37,8 @@ struct layout {
 bool is_same_layout(struct layout layout, struct layout layout2);
 int lua_copy_table(lua_State *L);
 void copy_layout(struct layout *dest_lt, struct layout *src_lt);
+void push_layout(struct layout lt_stack[static 2], struct layout lt);
+struct layout get_default_layout();
 
 extern struct layout default_layout;
-extern struct layout prev_layout;
 #endif /* LAYOUT_H */

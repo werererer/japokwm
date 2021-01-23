@@ -29,6 +29,7 @@ static const struct luaL_Reg action[] =
     {"toggle_view", toggle_view},
     {"view", view},
     {"zoom", lib_zoom},
+    {"toggle_layout", toggle_layout},
     {NULL, NULL},
 };
 

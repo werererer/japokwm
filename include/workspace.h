@@ -13,7 +13,7 @@
 struct workspace {
     size_t id;
     const char *name;
-    struct layout layout;
+    struct layout layout[2];
     struct monitor *m;
 };
 

@@ -9,7 +9,6 @@
 #include "utils/parseConfigUtils.h"
 
 struct layout default_layout;
-struct layout prev_layout;
 
 int lua_copy_table(lua_State *L)
 {
@@ -58,4 +57,26 @@ void copy_layout(struct layout *dest_lt, struct layout *src_lt)
     dest_lt->resize_dir = src_lt->resize_dir;
 
     copy_options(&dest_lt->options, &src_lt->options);
+}
+
+void push_layout(struct layout lt_stack[static 2], struct layout lt)
+{
+    lt_stack[1] = lt_stack[0];
+    lt_stack[0] = lt;
+}
+
+struct layout get_default_layout()
+{
+    return (struct layout) {
+        .symbol = "",
+        .name = "",
+        .n = 1,
+        .nmaster = 1,
+        .lua_layout_ref = 0,
+        .lua_layout_copy_data_ref = 0,
+        .lua_layout_original_copy_data_ref = 0,
+        .lua_layout_master_copy_data_ref = 0,
+        .lua_box_data_ref = 0,
+        .options = get_default_options(),
+    };
 }

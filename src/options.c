@@ -21,7 +21,6 @@ void reset_tag_names(struct wlr_list *tag_names)
 
 struct options get_default_options()
 {
-    printf("get_default_options\n");
     struct options options = {
         .root_color = {0.3f, 0.3f, 0.3f, 1.0f},
         .focus_color = {1.0f, 0.0f, 0.0f, 1.0f},
@@ -39,7 +38,6 @@ struct options get_default_options()
         .arrange_by_focus = false,
     };
     reset_tag_names(&options.tag_names);
-    printf("get_default_options end\n");
     return options;
 }
 

@@ -1,4 +1,5 @@
 require "tile"
+print("tile init start")
 
 local cursor_mode = {
     CUR_NORMAL = 0,
@@ -50,6 +51,7 @@ config.set_monrules({
 local termcmd = "/usr/bin/termite"
 
 config.set_keybinds({
+    {"mod-period",    function() action.toggle_layout() end},
     {"mod-S-Return",  function() action.spawn(termcmd) end},
     {"mod-a",         function() action.set_nmaster(2) end},
     {"mod-x",         function() action.set_nmaster(1) end},

@@ -135,6 +135,7 @@ int init_config(lua_State *L)
 int init_utils(lua_State *L)
 {
     char *config_path = get_config_dir("tile.lua");
+    printf("utils path: %s\n", config_path);
 
     // get the value of the
     int defaultId = 0;
@@ -147,7 +148,7 @@ int init_utils(lua_State *L)
         }
     }
 
-    int success = 1;
+    bool success = true;
     // repeat loop until the first config file was loaded successfully
     for (int i = 0; i < LENGTH(config_paths); i++) {
         if (i < defaultId)
@@ -162,7 +163,7 @@ int init_utils(lua_State *L)
             continue;
 
         // when config loaded successfully break;
-        success = 0;
+        success = false;
         break;
     }
     if (config_path)

@@ -7,7 +7,7 @@ int set_layout(lua_State *L)
 {
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
-    struct layout *lt = &ws->layout;
+    struct layout *lt = &ws->layout[0];
 
     // reset options
     copy_options(&lt->options, &server.options);

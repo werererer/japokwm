@@ -68,6 +68,7 @@
 #include "tile/tile.h"
 #include "tile/tileUtils.h"
 #include "workspace.h"
+#include "translationLayer.h"
 
 typedef struct {
     struct wl_listener request_mode;
@@ -268,7 +269,7 @@ void createnotify(struct wl_listener *listener, void *data)
     struct client *c = xdg_surface->data = calloc(1, sizeof(struct client));
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
-    struct layout *lt = &ws->layout;
+    struct layout *lt = &ws->layout[0];
 
     c->surface.xdg = xdg_surface;
     c->bw = lt->options.border_px;
@@ -770,7 +771,6 @@ void setsel(struct wl_listener *listener, void *data)
 // TODO: set up initial layout
 int setup()
 {
-    printf("setup\n");
     wl_list_init(&mons);
     wl_list_init(&focus_stack);
     wl_list_init(&stack);
@@ -778,33 +778,16 @@ int setup()
     wl_list_init(&layer_stack);
     wl_list_init(&popups);
     wl_list_init(&sticky_stack);
-    default_layout = (struct layout) {
-        .symbol = "",
-        .name = "",
-        .n = 1,
-        .nmaster = 1,
-        .lua_layout_ref = 0,
-        .lua_layout_copy_data_ref = 0,
-        .lua_layout_original_copy_data_ref = 0,
-        .lua_layout_master_copy_data_ref = 0,
-        .lua_box_data_ref = 0,
-        .options = get_default_options(),
-    };
 
     L = luaL_newstate();
     luaL_openlibs(L);
+    load_libs(L);
 
     init_error_file();
-    // TODO replace
     server.options = get_default_options();
 
-    prev_layout = (struct layout) {
-        .name = "",
-        .symbol = "",
-        .nmaster = 1,
-    };
-
-    init_config(L);
+    // TODO why can't this be deleted?
+    /* load lua utils */
     init_utils(L);
 
     init_workspaces();
@@ -1004,7 +987,7 @@ void createnotifyx11(struct wl_listener *listener, void *data)
 
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
-    struct layout *lt = &ws->layout;
+    struct layout *lt = &ws->layout[0];
     c->bw = lt->options.border_px;
 
     /* Listen to the various events it can emit */

@@ -40,7 +40,7 @@ static void resolve_keybind_element(char *sym_dest, const char *bind)
 {
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
-    struct layout *lt = &ws->layout;
+    struct layout *lt = &ws->layout[0];
 
     if (strcmp(bind, "mod") == 0) {
         strcpy(sym_dest, modkeys[lt->options.modkey]);

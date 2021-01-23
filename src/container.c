@@ -149,7 +149,7 @@ struct container *get_container(struct monitor *m, int i)
 
 struct container *first_container(struct monitor *m)
 {
-    if (m->ws->layout.n <= 0)
+    if (m->ws->layout[0].n <= 0)
         return NULL;
 
     struct container *con;
@@ -162,7 +162,7 @@ struct container *first_container(struct monitor *m)
 
 struct client *last_client(struct monitor *m)
 {
-    if (m->ws->layout.n <= 0)
+    if (m->ws->layout[0].n <= 0)
         return NULL;
 
     struct container *con;
@@ -170,7 +170,7 @@ struct client *last_client(struct monitor *m)
     wl_list_for_each(con, &stack, slink) {
         if (!visibleon(con, m))
             continue;
-        if (i > m->ws->layout.n)
+        if (i > m->ws->layout[0].n)
             return con->client;
         i++;
     }

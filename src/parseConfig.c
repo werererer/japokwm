@@ -33,7 +33,7 @@ int reload_config(lua_State *L)
 
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
-    struct layout *lt = &ws->layout;
+    struct layout *lt = &ws->layout[0];
 
     // reconfigure clients
     struct client *c;

@@ -247,7 +247,7 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
                     {ox, oy + con->client->bw + h, w + 2 * con->client->bw, con->client->bw}, /* bottom */
             };
 
-            struct layout *lt = &m->ws->layout;
+            struct layout *lt = &m->ws->layout[0];
             /* Draw window borders */
             const float *color = (con == sel) ? lt->options.focus_color : lt->options.border_color;
             for (int i = 0; i < 4; i++) {

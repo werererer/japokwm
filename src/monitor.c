@@ -1,19 +1,19 @@
 #include "monitor.h"
-#include <wlr/types/wlr_output.h>
-#include <wlr/types/wlr_xcursor_manager.h>
-#include <wlr/types/wlr_list.h>
-#include <stdlib.h>
-#include <wlr/util/log.h>
-#include <wlr/types/wlr_output_damage.h>
 #include <assert.h>
+#include <stdlib.h>
+#include <wlr/types/wlr_list.h>
+#include <wlr/types/wlr_output.h>
+#include <wlr/types/wlr_output_damage.h>
+#include <wlr/types/wlr_xcursor_manager.h>
+#include <wlr/util/log.h>
 
 #include "ipc-server.h"
+#include "lib/actions/actions.h"
 #include "parseConfig.h"
 #include "render/render.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "workspace.h"
-#include "lib/actions/actions.h"
 
 struct wl_list stack;
 struct wl_list focus_stack;
@@ -72,6 +72,7 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     bool is_first_monitor = wl_list_empty(&mons);
     wl_list_insert(&mons, &m->link);
+
     if (is_first_monitor) {
         set_selected_monitor(m);
         if (server.options.tag_names.length <= 0) {
@@ -80,14 +81,16 @@ void create_monitor(struct wl_listener *listener, void *data)
         }
 
         create_workspaces(server.options.tag_names, default_layout);
+        /* init_config(L); */
     }
+
 
     m->root = create_root(m);
 
     set_next_unoccupied_workspace(m, get_workspace(0));
-    load_default_layout(L, &m->ws->layout);
+    load_default_layout(L, &m->ws->layout[0]);
     copy_layout_from_selected_workspace();
-    set_root_color(m->root, m->ws->layout.options.root_color);
+    set_root_color(m->root, m->ws->layout[0].options.root_color);
 
 
     /* Adds this to the output layout. The add_auto function arranges outputs

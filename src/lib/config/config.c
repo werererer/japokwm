@@ -79,12 +79,6 @@ int lib_set_default_layout(lua_State *L)
         .name = "master",
         .n = 1,
         .nmaster = 1,
-        .lua_layout_ref = 0,
-        .lua_layout_index = 0,
-        .lua_layout_copy_data_ref = 0,
-        .lua_layout_original_copy_data_ref = 0,
-        .lua_layout_master_copy_data_ref = 0,
-        .lua_box_data_ref = 0,
     };
     default_layout = layout;
     lua_pop(L, 1);
@@ -120,7 +114,6 @@ int lib_set_rules(lua_State *L)
     lua_pop(L, 1);
     return 0;
 }
-
 
 int lib_set_layouts(lua_State *L)
 {

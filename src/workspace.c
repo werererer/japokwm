@@ -15,14 +15,14 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
     struct workspace *ws = malloc(sizeof(struct workspace));
     ws->name = name;
 
-    ws->layout = lt;
+    ws->layout[0] = lt;
 
     lua_get_basic_layout();
-    ws->layout.lua_layout_copy_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    ws->layout[0].lua_layout_copy_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
     lua_createtable(L, 0, 0);
-    ws->layout.lua_layout_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    ws->layout[0].lua_layout_ref = luaL_ref(L, LUA_REGISTRYINDEX);
     lua_get_basic_layout();
-    ws->layout.lua_layout_master_copy_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    ws->layout[0].lua_layout_master_copy_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
     ws->id = id;
     ws->m = NULL;
@@ -116,7 +116,7 @@ void set_selected_layout(struct workspace *ws, struct layout layout)
         wlr_log(WLR_ERROR, "ERROR: tag not initialized");
         return;
     }
-    ws->layout = layout;
+    push_layout(ws->layout, layout);
 }
 
 void set_next_unoccupied_workspace(struct monitor *m, struct workspace *ws)
@@ -152,8 +152,8 @@ void copy_layout_from_selected_workspace()
 {
     for (int i = 0; i < workspaces.length; i++) {
         struct workspace *ws = workspaces.items[i];
-        struct layout *dest_lt = &ws->layout;
-        struct layout *src_lt = &selected_monitor->ws->layout;
+        struct layout *dest_lt = &ws->layout[0];
+        struct layout *src_lt = &selected_monitor->ws->layout[0];
 
         if (dest_lt == src_lt)
             continue;
