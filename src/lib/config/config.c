@@ -96,8 +96,8 @@ int lib_set_workspaces(lua_State *L)
     size_t len = lua_rawlen(L, -1);
 
     wlr_list_clear(&server.options.tag_names);
-    for (int i = 1; i <= len; i++)
-        wlr_list_push(&server.options.tag_names, get_config_array_str(L, "workspaces", i));
+    for (int i = 0; i < len; i++)
+        wlr_list_push(&server.options.tag_names, get_config_array_str(L, "workspaces", i+1));
     lua_pop(L, 1);
     return 0;
 }
@@ -109,9 +109,9 @@ int lib_set_rules(lua_State *L)
     server.options.rules = calloc(len, sizeof(struct rule));
     struct rule *rules = server.options.rules;
 
-    for (int i = 1; i <= len; i++) {
-        struct rule r = get_config_array_rule(L, "rules", i);
-        rules[i-1] = r;
+    for (int i = 0; i < server.options.rule_count; i++) {
+        struct rule r = get_config_array_rule(L, "rules", i+1);
+        rules[i] = r;
     }
 
     lua_pop(L, 1);
@@ -134,7 +134,7 @@ int lib_set_monrules(lua_State *L)
 {
     size_t len = lua_rawlen(L, -1);
     server.options.monrule_count = len;
-    server.options.monrules = calloc(server.options.monrule_count, sizeof(struct monrule));
+    server.options.monrules = calloc(len, sizeof(struct monrule));
     struct monrule *monrules = server.options.monrules;
 
     for (int i = 0; i < server.options.monrule_count; i++) {

@@ -104,8 +104,8 @@ static bool process_binding(lua_State *L, char *bind, int lua_ref)
     bool handled = false;
     lua_rawgeti(L, LUA_REGISTRYINDEX, lua_ref);
     int len = lua_rawlen(L, -1);
-    for (int i = 1; i <= len; i++) {
-        lua_rawgeti(L, -1, i);
+    for (int i = 0; i < len; i++) {
+        lua_rawgeti(L, -1, i+1);
         lua_rawgeti(L, -1, 1);
         const char *ref = luaL_checkstring(L, -1);
         lua_pop(L, 1);

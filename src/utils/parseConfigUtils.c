@@ -450,8 +450,8 @@ void get_config_str_arr(lua_State *L, struct wlr_list *resArr, char *name)
     size_t len = lua_rawlen(L, -1);
 
     printf("get_config_str_arr\n");
-    for (int i = 1; i <= len; i++)
-        wlr_list_push(resArr, get_config_array_str(L, name, i));
+    for (int i = 0; i < len; i++)
+        wlr_list_push(resArr, get_config_array_str(L, name, i+1));
     lua_pop(L, 1);
 }
 
@@ -469,8 +469,8 @@ void get_config_float_arr(lua_State *L, float resArr[], char *name)
     lua_getglobal_safe(L, name);
     size_t len = lua_rawlen(L, -1);
 
-    for (int i = 1; i <= len; i++)
-        resArr[i-1] = get_config_array_float(L, name, i);
+    for (int i = 0; i < len; i++)
+        resArr[i] = get_config_array_float(L, name, i+1);
     lua_pop(L, 1);
 }
 
@@ -481,8 +481,8 @@ void get_config_rule_arr(lua_State *L, struct rule **rules, size_t *rule_count, 
     *rule_count = len;
     *rules = calloc(len, sizeof(struct rule));
 
-    for (int i = 1; i <= len; i++)
-        *rules[i-1] = get_config_array_rule(L, name, i);
+    for (int i = 0; i < len; i++)
+        *rules[i] = get_config_array_rule(L, name, i+1);
 
     lua_pop(L, 1);
 }
@@ -494,8 +494,8 @@ void get_config_mon_rule_arr(lua_State *L, struct monrule **monrules, size_t *mo
     *monrule_count = len;
     *monrules = calloc(len, sizeof(struct monrule));
 
-    for (int i = 1; i <= len; i++) {
-        *monrules[i-1] = get_config_array_monrule(L, name, i);
+    for (int i = 0; i < len; i++) {
+        *monrules[i-1] = get_config_array_monrule(L, name, i+1);
     }
 
     lua_pop(L, 1);
