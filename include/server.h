@@ -7,6 +7,7 @@
 #include <wlr/types/wlr_xcursor_manager.h>
 #include "xwayland.h"
 #include "options.h"
+#include "layout.h"
 
 /* enums */
 enum cursorMode { CurNormal, CURSOR_MOVE, CURSOR_RESIZE }; /* cursor */
@@ -29,6 +30,8 @@ struct server {
 
     struct wlr_cursor *cursor;
     struct wlr_xcursor_manager *cursorMgr;
+
+    struct layout default_layout;
 
     struct wlr_output_layout *output_layout;
     struct wl_list keyboards;

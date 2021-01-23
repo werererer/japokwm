@@ -16,6 +16,7 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
     ws->name = name;
 
     ws->layout[0] = lt;
+    /* copy_layout(&ws->layout[0], &lt); */
 
     lua_get_basic_layout();
     ws->layout[0].lua_layout_copy_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);

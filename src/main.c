@@ -782,14 +782,13 @@ int setup()
     L = luaL_newstate();
     luaL_openlibs(L);
     load_libs(L);
-
     init_error_file();
+
     server.options = get_default_options();
 
-    // TODO why can't this be deleted?
-    /* load lua utils */
+    init_default_layout();
+
     init_utils(L);
-    init_config(L);
 
     init_workspaces();
     /* The Wayland display is managed by libwayland. It handles accepting

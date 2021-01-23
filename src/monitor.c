@@ -74,6 +74,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     wl_list_insert(&mons, &m->link);
 
     if (is_first_monitor) {
+        init_config(L);
         set_selected_monitor(m);
         if (server.options.tag_names.length <= 0) {
             handle_error("tag_names is empty, loading default tag_names");
@@ -81,9 +82,7 @@ void create_monitor(struct wl_listener *listener, void *data)
         }
 
         create_workspaces(server.options.tag_names, default_layout);
-        /* init_config(L); */
     }
-
 
     m->root = create_root(m);
 

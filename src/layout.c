@@ -10,6 +10,16 @@
 
 struct layout default_layout;
 
+void init_default_layout()
+{
+    default_layout = (struct layout) {
+        .symbol = "s",
+        .name = "master",
+        .n = 1,
+        .nmaster = 1,
+    };
+}
+
 int lua_copy_table(lua_State *L)
 {
     lua_getglobal_safe(L, "Deep_copy");
