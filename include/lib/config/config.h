@@ -17,7 +17,6 @@ int lib_set_repeat_delay(lua_State *L);
 int lib_set_default_layout(lua_State *L);
 int lib_set_workspaces(lua_State *L);
 int lib_set_rules(lua_State *L);
-int lib_set_layout(lua_State *L);
 int lib_set_layouts(lua_State *L);
 int lib_set_default_layout(lua_State *L);
 int lib_set_monrules(lua_State *L);

@@ -104,6 +104,9 @@ int lib_set_workspaces(lua_State *L)
 
 int lib_set_rules(lua_State *L)
 {
+    if (server.options.rules)
+        free(server.options.rules);
+
     size_t len = lua_rawlen(L, -1);
     server.options.rule_count = len;
     server.options.rules = calloc(len, sizeof(struct rule));
@@ -118,11 +121,6 @@ int lib_set_rules(lua_State *L)
     return 0;
 }
 
-int lib_set_layout(lua_State *L)
-{
-    /* server.options.layouts_ref = luaL_ref(L, -1); */
-    return 0;
-}
 
 int lib_set_layouts(lua_State *L)
 {
@@ -132,6 +130,9 @@ int lib_set_layouts(lua_State *L)
 
 int lib_set_monrules(lua_State *L)
 {
+    if (server.options.monrules)
+        free(server.options.monrules);
+
     size_t len = lua_rawlen(L, -1);
     server.options.monrule_count = len;
     server.options.monrules = calloc(len, sizeof(struct monrule));
