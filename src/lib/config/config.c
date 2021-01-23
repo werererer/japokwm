@@ -132,19 +132,17 @@ int lib_set_layouts(lua_State *L)
 
 int lib_set_monrules(lua_State *L)
 {
-    printf("lib set monrules\n");
     size_t len = lua_rawlen(L, -1);
+    server.options.monrule_count = len;
     server.options.monrules = calloc(server.options.monrule_count, sizeof(struct monrule));
     struct monrule *monrules = server.options.monrules;
-    server.options.monrule_count = len;
 
-    for (int i = 1; i <= server.options.monrule_count; i++) {
-        struct monrule r = get_config_array_monrule(L, "monrules", i);
-        monrules[i-1] = r;
+    for (int i = 0; i < server.options.monrule_count; i++) {
+        struct monrule r = get_config_array_monrule(L, "monrules", i+1);
+        monrules[i] = r;
     }
 
     lua_pop(L, 1);
-    printf("lib set monrules end\n");
     return 0;
 }
 

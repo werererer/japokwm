@@ -37,7 +37,6 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
 
     /* If surface is NULL, clear pointer focus */
     if (!surface) {
-        printf("clear\n");
         wlr_seat_pointer_notify_clear_focus(server.seat);
         return;
     }
@@ -69,7 +68,6 @@ int set_resize_direction(lua_State *L)
 
 int lib_arrange(lua_State *L)
 {
-    printf("arrange\n");
     arrange();
     return 0;
 }
@@ -512,14 +510,12 @@ int lib_load_layout(lua_State *L)
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->options.layouts_ref);
 
-    printf("works0: %i\n", lua_gettop(L));
     if (lua_gettop(L) <= 1) {
         lt->lua_layout_index++;
         if (lt->lua_layout_index > luaL_len(L, -1)) {
             lt->lua_layout_index = 1;
         }
     }
-    printf("works1\n");
 
     lua_rawgeti(L, -1, lt->lua_layout_index);
     // get name
@@ -530,7 +526,7 @@ int lib_load_layout(lua_State *L)
     load_layout(L, lt, layout);
 
     arrange();
-    printf("lib_load_layout end\n");
+    printf("lib_load_layout end: %i\n", lua_gettop(L));
     return 0;
 }
 

@@ -59,7 +59,7 @@ void create_monitor(struct wl_listener *listener, void *data)
             wlr_output_set_scale(output, r.scale);
             wlr_xcursor_manager_load(server.cursorMgr, r.scale);
             set_selected_layout(m->ws, r.lt);
-            wlr_output_set_transform(output, WL_OUTPUT_TRANSFORM_NORMAL);
+            wlr_output_set_transform(output, r.rr);
             break;
         }
     }

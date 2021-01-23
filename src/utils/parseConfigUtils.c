@@ -344,7 +344,6 @@ void call_function(lua_State *L, struct layout lt)
 
 static struct layout get_config_array_layout(lua_State *L, const char *name, size_t i)
 {
-    printf("lua top: %i\n", lua_gettop(L));
     printf("get_config array_layout\n");
     lua_rawgeti(L, -1, i);
     struct layout layout = {
