@@ -789,6 +789,7 @@ int setup()
     // TODO why can't this be deleted?
     /* load lua utils */
     init_utils(L);
+    init_config(L);
 
     init_workspaces();
     /* The Wayland display is managed by libwayland. It handles accepting

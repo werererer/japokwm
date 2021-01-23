@@ -22,14 +22,14 @@ static const char *config_file = "init.lua";
 static const char *error_file = "init.err";
 static int error_fd = -1;
 
-static int load_config(lua_State *L, const char *path);
+static int load_file(lua_State *L, const char *path, const char *file);
 
 // returns 0 upon success and 1 upon failure
-static int load_config(lua_State *L, const char *path)
+static int load_file(lua_State *L, const char *path, const char *file)
 {
-    char *cf = calloc(1, strlen(path)+strlen(config_file));
+    char *cf = calloc(1, strlen(path)+strlen(file));
     join_path(cf, path);
-    join_path(cf, config_file);
+    join_path(cf, file);
 
     if (!path || !file_exists(path))
         return 1;
@@ -119,7 +119,7 @@ int init_config(lua_State *L)
 
         append_to_lua_path(L, config_paths[i]);
 
-        if (load_config(L, path))
+        if (load_file(L, path, config_file))
             continue;
 
         // when config loaded successfully break;
@@ -134,7 +134,8 @@ int init_config(lua_State *L)
 // returns 0 upon success and 1 upon failure
 int init_utils(lua_State *L)
 {
-    char *config_path = get_config_dir("tile.lua");
+    const char *tile_file = "tile.lua";
+    char *config_path = get_config_dir(tile_file);
     printf("utils path: %s\n", config_path);
 
     // get the value of the
@@ -159,7 +160,7 @@ int init_utils(lua_State *L)
 
         append_to_lua_path(L, config_paths[i]);
 
-        if (load_config(L, path))
+        if (load_file(L, path, tile_file))
             continue;
 
         // when config loaded successfully break;
