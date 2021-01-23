@@ -785,8 +785,7 @@ int setup()
     init_error_file();
 
     server.options = get_default_options();
-
-    init_default_layout();
+    default_layout = get_default_layout();
 
     init_utils(L);
 

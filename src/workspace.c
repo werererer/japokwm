@@ -15,15 +15,8 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
     struct workspace *ws = malloc(sizeof(struct workspace));
     ws->name = name;
 
+    // TODO why not copy layout?
     ws->layout[0] = lt;
-    /* copy_layout(&ws->layout[0], &lt); */
-
-    lua_get_basic_layout();
-    ws->layout[0].lua_layout_copy_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
-    lua_createtable(L, 0, 0);
-    ws->layout[0].lua_layout_ref = luaL_ref(L, LUA_REGISTRYINDEX);
-    lua_get_basic_layout();
-    ws->layout[0].lua_layout_master_copy_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
     ws->id = id;
     ws->m = NULL;

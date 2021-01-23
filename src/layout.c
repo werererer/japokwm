@@ -10,14 +10,21 @@
 
 struct layout default_layout;
 
-void init_default_layout()
+struct layout get_default_layout()
 {
-    default_layout = (struct layout) {
+    struct layout lt = (struct layout) {
         .symbol = "s",
         .name = "master",
-        .n = 1,
         .nmaster = 1,
+        .options = get_default_options(),
     };
+    lua_get_basic_layout();
+    lt.lua_layout_copy_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_createtable(L, 0, 0);
+    lt.lua_layout_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_get_basic_layout();
+    lt.lua_layout_master_copy_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    return lt;
 }
 
 int lua_copy_table(lua_State *L)
@@ -73,20 +80,4 @@ void push_layout(struct layout lt_stack[static 2], struct layout lt)
 {
     lt_stack[1] = lt_stack[0];
     lt_stack[0] = lt;
-}
-
-struct layout get_default_layout()
-{
-    return (struct layout) {
-        .symbol = "",
-        .name = "",
-        .n = 1,
-        .nmaster = 1,
-        .lua_layout_ref = 0,
-        .lua_layout_copy_data_ref = 0,
-        .lua_layout_original_copy_data_ref = 0,
-        .lua_layout_master_copy_data_ref = 0,
-        .lua_box_data_ref = 0,
-        .options = get_default_options(),
-    };
 }
