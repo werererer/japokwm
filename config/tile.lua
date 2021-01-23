@@ -5,35 +5,6 @@ local Y<const> = 2
 local WIDTH<const> = 3
 local HEIGHT<const> = 4
 
--- current layout_data
--- layout_data = layout item list
--- container list = layout item
--- list of 4 floats = container
-Layout_data = {
-    {
-        {0, 0, 1, 1},
-    },
-    {
-        {0.5, 0.0, 0.5, 1.0},
-        {0.0, 0.0, 0.5, 1.0},
-    },
-}
-
-Master_layout_data = {
-    {
-        {0, 0, 1.0, 1},
-    },
-    {
-        {0, 0, 1, 0.5},
-        {0, 0.5, 1, 0.5},
-    },
-}
-
-Box_data = {
-    {1},
-    {2, 3, 4, 5},
-}
-
 function Is_equally_affected_by_resize_of(container, container2, d)
     local resize = false
     if d == Direction.TOP then
@@ -49,9 +20,9 @@ function Is_equally_affected_by_resize_of(container, container2, d)
 end
 
 function Resize_this_all(n, d)
-    local i = math.max(math.min(info.get_this_container_count(), #Layout_data), 1)
-    local j = math.min(info.this_container_position(), #Layout_data[i])
-    Resize_all(Layout_data, i, j, n, d)
+    -- local i = math.max(math.min(info.get_this_container_count(), #Layout_data), 1)
+    -- local j = math.min(info.this_container_position(), #Layout_data[i])
+    -- Resize_all(Layout_data, i, j, n, d)
     action.arrange()
 end
 
@@ -80,18 +51,18 @@ function Get_resize_affected_containers(layout_data, o_layout_data, i, j, d, get
 end
 
 function Move_this_container(n, d)
-    local i = math.max(math.min(action.get_this_container_count(), #Layout_data), 1)
-    local j = math.min(info.this_container_position(), #Layout_data[i])
-    local container = Layout_data[i][j]
-    Layout_data[i][j] = Move_container(container, n, d)
-    action.arrange()
+    -- local i = math.max(math.min(action.get_this_container_count(), #Layout_data), 1)
+    -- local j = math.min(info.this_container_position(), #Layout_data[i])
+    -- local container = Layout_data[i][j]
+    -- Layout_data[i][j] = Move_container(container, n, d)
+    -- action.arrange()
 end
 
 function Resize_this_container(n, d)
-    local i = math.max(math.min(action.get_this_container_count(), #Layout_data), 1)
-    local j = math.min(action.client_pos(), #Layout_data[i])
-    Layout_data[i][j] = Resize_container(Layout_data[i][j], n, d)
-    action.arrange()
+    -- local i = math.max(math.min(action.get_this_container_count(), #Layout_data), 1)
+    -- local j = math.min(action.client_pos(), #Layout_data[i])
+    -- Layout_data[i][j] = Resize_container(Layout_data[i][j], n, d)
+    -- action.arrange()
 end
 
 --

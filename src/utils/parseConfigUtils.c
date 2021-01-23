@@ -131,6 +131,45 @@ int init_config(lua_State *L)
     return success;
 }
 
+// returns 0 upon success and 1 upon failure
+int init_utils(lua_State *L)
+{
+    char *config_path = get_config_dir("tile.lua");
+
+    // get the value of the
+    int defaultId = 0;
+    for (int i = 0; i < LENGTH(config_paths); i++) {
+        char *path = strdup(config_paths[defaultId]);
+        expand_path(&path);
+        if (path_compare(path, config_path) == 0) {
+            defaultId = i;
+            break;
+        }
+    }
+
+    int success = 1;
+    // repeat loop until the first config file was loaded successfully
+    for (int i = 0; i < LENGTH(config_paths); i++) {
+        if (i < defaultId)
+            continue;
+
+        char *path = strdup(config_paths[i]);
+        expand_path(&path);
+
+        append_to_lua_path(L, config_paths[i]);
+
+        if (load_config(L, path))
+            continue;
+
+        // when config loaded successfully break;
+        success = 0;
+        break;
+    }
+    if (config_path)
+        free(config_path);
+    return success;
+}
+
 void init_error_file()
 {
     char *ef = get_config_file("");

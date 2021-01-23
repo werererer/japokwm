@@ -450,6 +450,7 @@ int lib_resize_client(lua_State *L)
 int lib_quit(lua_State *L)
 {
     wl_display_terminate(server.display);
+    close_error_file();
     return 0;
 }
 

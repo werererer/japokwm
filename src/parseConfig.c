@@ -20,29 +20,15 @@
 
 size_t rule_count;
 
-int update_config(lua_State *L)
-{
-    init_error_file();
-    init_config(L);
-
-    prev_layout = (struct layout) {
-        .name = "",
-        .symbol = "",
-        .nmaster = 1,
-    };
-
-    close_error_file();
-    return 0;
-}
-
 int reload_config(lua_State *L)
 {
     for (int i = 0; i < server.options.tag_names.length; i++)
         free(wlr_list_pop(&server.options.tag_names));
     wlr_list_finish(&server.options.tag_names);
+    server.options = get_default_options();
 
     destroy_workspaces();
-    update_config(L);
+    /* update_config(L); */
     create_workspaces(server.options.tag_names, default_layout);
 
     struct monitor *m = selected_monitor;
