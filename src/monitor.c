@@ -58,7 +58,7 @@ void create_monitor(struct wl_listener *listener, void *data)
             m->mfact = r.mfact;
             wlr_output_set_scale(output, r.scale);
             wlr_xcursor_manager_load(server.cursorMgr, r.scale);
-            set_selected_layout(m->ws, r.lt);
+            set_selected_layout(m->ws[0], r.lt);
             wlr_output_set_transform(output, r.rr);
             break;
         }
@@ -87,9 +87,9 @@ void create_monitor(struct wl_listener *listener, void *data)
     m->root = create_root(m);
 
     set_next_unoccupied_workspace(m, get_workspace(0));
-    load_default_layout(L, m->ws);
+    load_default_layout(L, m->ws[0]);
     copy_layout_from_selected_workspace();
-    set_root_color(m->root, m->ws->layout[0].options.root_color);
+    set_root_color(m->root, m->ws[0]->layout[0].options.root_color);
 
 
     /* Adds this to the output layout. The add_auto function arranges outputs
@@ -176,7 +176,7 @@ void set_selected_monitor(struct monitor *m)
         return;
 
     selected_monitor = m;
-    set_workspace(m, m->ws);
+    set_workspace(m, m->ws[0]);
     int x = server.cursor->x;
     int y = server.cursor->y;
 

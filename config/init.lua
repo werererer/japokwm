@@ -48,7 +48,8 @@ config.set_monrules({
 local termcmd = "/usr/bin/termite"
 
 config.set_keybinds({
-    {"mod-period",    function() action.toggle_layout() end},
+    {"mod-period",    function() action.toggle_workspace() end},
+    {"mod-S-period",    function() action.toggle_layout() end},
     {"mod-S-Return",  function() action.spawn(termcmd) end},
     {"mod-a",         function() action.set_nmaster(2) end},
     {"mod-x",         function() action.set_nmaster(1) end},

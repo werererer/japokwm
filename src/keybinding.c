@@ -39,7 +39,7 @@ static void sym_to_binding(char *dest, int mods, int sym)
 static void resolve_keybind_element(char *sym_dest, const char *bind)
 {
     struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws;
+    struct workspace *ws = m->ws[0];
     struct layout *lt = &ws->layout[0];
 
     if (strcmp(bind, "mod") == 0) {

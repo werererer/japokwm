@@ -31,6 +31,7 @@ int lib_toggle_floating(lua_State *L);
 int lib_toggle_view(lua_State *L);
 int lib_view(lua_State *L);
 int lib_toggle_layout(lua_State *L);
+int lib_toggle_workspace(lua_State *L);
 
 void motionnotify(uint32_t time);
 

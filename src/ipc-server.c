@@ -404,7 +404,7 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
                         struct workspace *ws = get_workspace(i);
 
                         bool has_clients = workspace_has_clients(ws);
-                        bool is_workspace_selected = selected_monitor->ws->id == i;
+                        bool is_workspace_selected = selected_monitor->ws[0]->id == i;
                         if (!has_clients && !is_workspace_selected) 
                             continue;
 

@@ -268,7 +268,7 @@ void createnotify(struct wl_listener *listener, void *data)
     /* Allocate a Client for this surface */
     struct client *c = xdg_surface->data = calloc(1, sizeof(struct client));
     struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws;
+    struct workspace *ws = m->ws[0];
     struct layout *lt = &ws->layout[0];
 
     c->surface.xdg = xdg_surface;
@@ -561,7 +561,7 @@ void maprequest(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
 
     struct monitor *m = selected_monitor;
-    c->ws = m->ws;
+    c->ws = m->ws[0];
 
     switch (c->type) {
         case XDG_SHELL:
@@ -600,7 +600,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     wl_signal_add(&xwayland_surface->surface->events.commit, &c->commit);
 
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
-    c->ws = m->ws;
+    c->ws = m->ws[0];
 
     struct container *con = create_container(c, m, true);
 
@@ -984,7 +984,7 @@ void createnotifyx11(struct wl_listener *listener, void *data)
     c->type = X11_MANAGED;
 
     struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws;
+    struct workspace *ws = m->ws[0];
     struct layout *lt = &ws->layout[0];
     c->bw = lt->options.border_px;
 

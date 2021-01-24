@@ -32,7 +32,7 @@ int lib_reload_config(lua_State *L)
     create_workspaces(server.options.tag_names, default_layout);
 
     struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws;
+    struct workspace *ws = m->ws[0];
     struct layout *lt = &ws->layout[0];
 
     // reconfigure clients

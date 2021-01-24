@@ -31,14 +31,15 @@ void arrange()
 /* update layout and was set in the arrange function */
 static void update_layout(lua_State *L, int n, struct monitor *m)
 {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout[0].lua_layout_copy_data_ref);
+    struct workspace *ws = m->ws[0];
+    lua_rawgeti(L, LUA_REGISTRYINDEX, ws->layout[0].lua_layout_copy_data_ref);
 
     int len = luaL_len(L, -1);
     n = MAX(MIN(len, n), 1);
-    m->ws->layout[0].n = n;
+    m->ws[0]->layout[0].n = n;
     lua_rawgeti(L, -1, n);
-    luaL_unref(L, LUA_REGISTRYINDEX, m->ws->layout[0].lua_layout_ref);
-    m->ws->layout[0].lua_layout_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    luaL_unref(L, LUA_REGISTRYINDEX, ws->layout[0].lua_layout_ref);
+    ws->layout[0].lua_layout_ref = luaL_ref(L, LUA_REGISTRYINDEX);
     lua_pop(L, 1);
 
     printf("get update_layout\n");
@@ -71,7 +72,7 @@ static struct wlr_fbox lua_unbox_layout(struct lua_State *L, int i) {
 /* update layout and was set in the arrange function */
 static void apply_nmaster_transformation(struct wlr_box *box, struct monitor *m, int position, int count)
 {
-    struct layout lt = m->ws->layout[0];
+    struct layout lt = m->ws[0]->layout[0];
 
     if (position > lt.nmaster)
         return;
@@ -101,7 +102,7 @@ static void apply_nmaster_transformation(struct wlr_box *box, struct monitor *m,
 
 int get_slave_container_count(struct monitor *m)
 {
-    struct layout lt = m->ws->layout[0];
+    struct layout lt = m->ws[0]->layout[0];
     int abs_count = get_tiled_container_count(m);
     return MAX(abs_count - lt.nmaster, 0);
 }
@@ -153,7 +154,7 @@ void arrange_monitor(struct monitor *m)
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     set_root_area(m->root, m->geom);
 
-    struct layout *lt = &m->ws->layout[0];
+    struct layout *lt = &m->ws[0]->layout[0];
 
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);
 
@@ -189,17 +190,18 @@ void arrange_container(struct container *con, int arrange_position, int containe
         return;
 
     struct monitor *m = con->m;
-    struct layout lt = m->ws->layout[0];
+    struct workspace *ws = m->ws[0];
+    struct layout lt = ws->layout[0];
     // the 1 added represents the master area
     int n = MAX(0, arrange_position - lt.nmaster) + 1;
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, m->ws->layout[0].lua_layout_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, ws->layout[0].lua_layout_ref);
     struct wlr_fbox rel_geom = lua_unbox_layout(L, n);
 
     struct wlr_box box = get_absolute_box(rel_geom, m->root->geom);
     // TODO fix this function, hard to read
     apply_nmaster_transformation(&box, con->m, arrange_position, container_count);
-    m->ws->layout[0].lua_layout_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    ws->layout[0].lua_layout_ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
     container_surround_gaps(&box, lt.options.inner_gap);
 
@@ -252,11 +254,12 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
 void update_hidden_containers(struct monitor *m)
 {
     struct container *con;
+    struct workspace *ws = m->ws[0];
     // because the master are is included in n aswell as nmaster we have to
     // subtract the solution by one to count
-    int count = m->ws->layout[0].n + m->ws->layout[0].nmaster-1;
+    int count = ws->layout[0].n + ws->layout[0].nmaster-1;
     int i = 1;
-    if (m->ws->layout[0].options.arrange_by_focus) {
+    if (ws->layout[0].options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
             if (!existon(con, m) || con->floating)
                 continue;

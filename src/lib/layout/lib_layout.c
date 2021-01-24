@@ -6,7 +6,7 @@
 int lib_set_layout(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws;
+    struct workspace *ws = m->ws[0];
     struct layout *lt = &ws->layout[0];
 
     // reset options
@@ -23,4 +23,3 @@ int lib_set_layout(lua_State *L)
     lt->lua_layout_original_copy_data_ref = lua_copy_table(L);
     return 0;
 }
-

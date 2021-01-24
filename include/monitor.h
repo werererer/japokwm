@@ -22,7 +22,7 @@ struct monitor {
     struct wlr_box geom;
     struct root *root;
     double mfact;
-    struct workspace *ws;
+    struct workspace *ws[2];
 };
 
 /* associated with slink in container */
@@ -53,6 +53,7 @@ void push_selected_workspace(struct monitor *m, struct workspace *ws);
 struct monitor *dirtomon(int dir);
 struct monitor *outputtomon(struct wlr_output *output);
 struct monitor *xytomon(double x, double y);
+
 
 extern struct wl_list mons;
 extern struct monitor *selected_monitor;

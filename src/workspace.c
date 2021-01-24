@@ -136,10 +136,10 @@ void set_workspace(struct monitor *m, struct workspace *ws)
     ipc_event_workspace();
 
     // unset old workspace
-    if (m->ws)
-        m->ws->m = NULL;
+    if (m->ws[0])
+        m->ws[0]->m = NULL;
 
-    m->ws = ws;
+    m->ws[0] = ws;
     ws->m = m;
     // TODO is wlr_output_damage_whole better? because of floating windows
     root_damage_whole(m->root);
@@ -151,7 +151,7 @@ void copy_layout_from_selected_workspace()
         struct workspace *ws = workspaces.items[i];
         struct layout *dest_lt = &ws->layout[0];
         struct layout *dest_prev_lt = &ws->layout[1];
-        struct layout *src_lt = &selected_monitor->ws->layout[0];
+        struct layout *src_lt = &selected_monitor->ws[0]->layout[0];
 
         if (dest_lt == src_lt)
             continue;
@@ -216,3 +216,8 @@ void load_layout(lua_State *L, struct workspace *ws, const char *layout_name)
     lua_call_safe(L, 0, 0, 0);
 }
 
+void push_workspace(struct workspace *ws_stack[static 2], struct workspace *ws)
+{
+    ws_stack[1] = ws_stack[0];
+    set_workspace(selected_monitor, ws);
+}

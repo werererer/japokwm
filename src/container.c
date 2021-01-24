@@ -149,7 +149,7 @@ struct container *get_container(struct monitor *m, int i)
 
 struct container *first_container(struct monitor *m)
 {
-    if (m->ws->layout[0].n <= 0)
+    if (m->ws[0]->layout[0].n <= 0)
         return NULL;
 
     struct container *con;
@@ -162,7 +162,7 @@ struct container *first_container(struct monitor *m)
 
 struct client *last_client(struct monitor *m)
 {
-    if (m->ws->layout[0].n <= 0)
+    if (m->ws[0]->layout[0].n <= 0)
         return NULL;
 
     struct container *con;
@@ -170,7 +170,7 @@ struct client *last_client(struct monitor *m)
     wl_list_for_each(con, &stack, slink) {
         if (!visibleon(con, m))
             continue;
-        if (i > m->ws->layout[0].n)
+        if (i > m->ws[0]->layout[0].n)
             return con->client;
         i++;
     }
@@ -481,7 +481,7 @@ bool existon(struct container *con, struct monitor *m)
     if (c->sticky)
         return true;
 
-    return c->ws == m->ws;
+    return c->ws == m->ws[0];
 }
 
 bool hiddenon(struct container *con, struct monitor *m)
@@ -503,7 +503,7 @@ bool hiddenon(struct container *con, struct monitor *m)
     if (c->sticky)
         return true;
 
-    return c->ws == m->ws;
+    return c->ws == m->ws[0];
 }
 
 bool visibleon(struct container *con, struct monitor *m)
@@ -525,7 +525,7 @@ bool visibleon(struct container *con, struct monitor *m)
     if (c->sticky)
         return true;
 
-    return c->ws == m->ws;
+    return c->ws == m->ws[0];
 }
 
 void set_container_floating(struct container *con, bool floating)
@@ -552,5 +552,5 @@ void set_container_monitor(struct container *con, struct monitor *m)
         return;
 
     con->m = m;
-    con->client->ws = m->ws;
+    con->client->ws = m->ws[0];
 }
