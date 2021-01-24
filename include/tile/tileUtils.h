@@ -4,11 +4,6 @@
 #include "container.h"
 #include "monitor.h"
 
-enum layout_actions {
-    LAYOUT_NOOP,
-    LAYOUT_RESET,
-};
-
 struct client *focustop(struct monitor *m);
 void arrange();
 void arrange_monitor(struct monitor *m);
