@@ -39,6 +39,9 @@ int lua_copy_table(lua_State *L);
 void copy_layout(struct layout *dest_lt, struct layout *src_lt);
 void push_layout(struct layout lt_stack[static 2], struct layout lt);
 struct layout get_default_layout();
+void set_layout(lua_State *L, struct layout *lt);
+void load_layout(lua_State *L, struct layout *lt, const char *layout_name);
+void load_default_layout(lua_State *L, struct layout *lt);
 
 extern struct layout default_layout;
 #endif /* LAYOUT_H */

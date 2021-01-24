@@ -4,6 +4,6 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-int set_layout(lua_State *L);
+int lib_set_layout(lua_State *L);
 
 #endif /* LIB_LAYOUT_H */

@@ -72,14 +72,14 @@ int lib_arrange(lua_State *L)
     return 0;
 }
 
-int toggle_consider_layer_shell(lua_State *L)
+int lib_toggle_consider_layer_shell(lua_State *L)
 {
     selected_monitor->root->consider_layer_shell = !selected_monitor->root->consider_layer_shell;
     arrange();
     return 0;
 }
 
-int resize_main(lua_State *L)
+int lib_resize_main(lua_State *L)
 {
     float n = luaL_checknumber(L, -1);
     lua_pop(L, 1);
@@ -103,7 +103,7 @@ int resize_main(lua_State *L)
     return 0;
 }
 
-int set_floating(lua_State *L)
+int lib_set_floating(lua_State *L)
 {
     bool b = lua_toboolean(L, -1);
     lua_pop(L, 1);
@@ -123,7 +123,7 @@ int set_nmaster(lua_State *L)
     return 0;
 }
 
-int spawn(lua_State *L)
+int lib_spawn(lua_State *L)
 {
     const char *cmd = luaL_checkstring(L, -1);
     lua_pop(L, 1);
@@ -134,7 +134,7 @@ int spawn(lua_State *L)
     return 0;
 }
 
-int focus_on_stack(lua_State *L)
+int lib_focus_on_stack(lua_State *L)
 {
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
@@ -173,13 +173,13 @@ int focus_on_stack(lua_State *L)
     return 0;
 }
 
-int get_nmaster(lua_State *L)
+int lib_get_nmaster(lua_State *L)
 {
     lua_pushinteger(L, selected_monitor->ws->layout[0].nmaster);
     return 1;
 }
 
-int focus_on_hidden_stack(lua_State *L)
+int lib_focus_on_hidden_stack(lua_State *L)
 {
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
@@ -221,7 +221,7 @@ int focus_on_hidden_stack(lua_State *L)
     return 0;
 }
 
-int move_resize(lua_State *L)
+int lib_move_resize(lua_State *L)
 {
     int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
@@ -363,7 +363,7 @@ void motionnotify(uint32_t time)
     }
 }
 
-int view(lua_State *L)
+int lib_view(lua_State *L)
 {
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
@@ -386,7 +386,7 @@ int view(lua_State *L)
     return 0;
 }
 
-int toggle_view(lua_State *L)
+int lib_toggle_view(lua_State *L)
 {
     struct monitor *m = selected_monitor;
     focus_top_container(m, FOCUS_LIFT);
@@ -394,7 +394,7 @@ int toggle_view(lua_State *L)
     return 0;
 }
 
-int toggle_floating(lua_State *L)
+int lib_toggle_floating(lua_State *L)
 {
     struct container *sel = selected_container(selected_monitor);
     if (!sel)
@@ -509,25 +509,9 @@ int lib_load_layout(lua_State *L)
         lua_pop(L, 1);
     }
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->options.layouts_ref);
-
-    if (lua_gettop(L) <= 1) {
-        lt->lua_layout_index++;
-        if (lt->lua_layout_index > luaL_len(L, -1)) {
-            lt->lua_layout_index = 1;
-        }
-    }
-
-    lua_rawgeti(L, -1, lt->lua_layout_index);
-    // get name
-    lua_rawgeti(L, -1, 2);
-    const char *layout = luaL_checkstring(L, -1);
-    lua_pop(L, 3);
-
-    load_layout(L, lt, layout);
+    set_layout(L, lt);
 
     arrange();
-    printf("lib_load_layout end: %i\n", lua_gettop(L));
     return 0;
 }
 
@@ -550,13 +534,11 @@ int lib_kill_client(lua_State *L)
     return 0;
 }
 
-int toggle_layout(lua_State *L)
+int lib_toggle_layout(lua_State *L)
 {
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
-    printf("toggle_layout\n");
     push_layout(ws->layout, ws->layout[1]);
     arrange();
-    printf("toggle_layout end\n");
     return 0;
 }

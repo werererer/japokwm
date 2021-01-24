@@ -223,31 +223,3 @@ struct monitor *xytomon(double x, double y)
     struct wlr_output *o = wlr_output_layout_output_at(server.output_layout, x, y);
     return o ? o->data : NULL;
 }
-
-void load_layout(lua_State *L, struct layout *lt, const char *layout_name)
-{
-    lt->name = layout_name;
-
-    char *config_path = get_config_file("layouts");
-    char file[NUM_CHARS] = "";
-    strcpy(file, "");
-    join_path(file, config_path);
-    join_path(file, layout_name);
-    join_path(file, "init.lua");
-    if (config_path)
-        free(config_path);
-
-    if (!file_exists(file))
-        return;
-
-    if (luaL_loadfile(L, file)) {
-        lua_pop(L, 1);
-        return;
-    }
-    lua_call_safe(L, 0, 0, 0);
-}
-
-void load_default_layout(lua_State *L, struct layout *lt)
-{
-    load_layout(L, lt, default_layout.name);
-}

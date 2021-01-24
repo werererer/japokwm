@@ -15,8 +15,11 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
     struct workspace *ws = malloc(sizeof(struct workspace));
     ws->name = name;
 
-    // TODO why not copy layout?
-    ws->layout[0] = lt;
+    for (int i = 0; i < 2; i++)
+        ws->layout[i] = default_layout;
+
+    push_layout(ws->layout, lt);
+    push_layout(ws->layout, lt);
 
     ws->id = id;
     ws->m = NULL;
@@ -147,11 +150,13 @@ void copy_layout_from_selected_workspace()
     for (int i = 0; i < workspaces.length; i++) {
         struct workspace *ws = workspaces.items[i];
         struct layout *dest_lt = &ws->layout[0];
+        struct layout *dest_prev_lt = &ws->layout[1];
         struct layout *src_lt = &selected_monitor->ws->layout[0];
 
         if (dest_lt == src_lt)
             continue;
 
         copy_layout(dest_lt, src_lt);
+        copy_layout(dest_prev_lt, src_lt);
     }
 }

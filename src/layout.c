@@ -78,6 +78,52 @@ void copy_layout(struct layout *dest_lt, struct layout *src_lt)
 
 void push_layout(struct layout lt_stack[static 2], struct layout lt)
 {
-    lt_stack[1] = lt_stack[0];
-    lt_stack[0] = lt;
+    copy_layout(&lt_stack[1], &lt_stack[0]);
+    copy_layout(&lt_stack[0], &lt);
+}
+
+void set_layout(lua_State *L, struct layout *lt)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->options.layouts_ref);
+
+    if (lua_gettop(L) <= 1) {
+        lt->lua_layout_index++;
+        if (lt->lua_layout_index > luaL_len(L, -1)) {
+            lt->lua_layout_index = 1;
+        }
+    }
+
+    lua_rawgeti(L, -1, lt->lua_layout_index);
+    lua_rawgeti(L, -1, 2);
+    const char *layout_name = luaL_checkstring(L, -1);
+    lua_pop(L, 3);
+    load_layout(L, lt, layout_name);
+}
+
+void load_layout(lua_State *L, struct layout *lt, const char *layout_name)
+{
+    lt->name = layout_name;
+
+    char *config_path = get_config_file("layouts");
+    char file[NUM_CHARS] = "";
+    strcpy(file, "");
+    join_path(file, config_path);
+    join_path(file, layout_name);
+    join_path(file, "init.lua");
+    if (config_path)
+        free(config_path);
+
+    if (!file_exists(file))
+        return;
+
+    if (luaL_loadfile(L, file)) {
+        lua_pop(L, 1);
+        return;
+    }
+    lua_call_safe(L, 0, 0, 0);
+}
+
+void load_default_layout(lua_State *L, struct layout *lt)
+{
+    load_layout(L, lt, default_layout.name);
 }

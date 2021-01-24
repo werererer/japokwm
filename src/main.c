@@ -390,7 +390,6 @@ void destroyxdeco(struct wl_listener *listener, void *data)
     wl_list_remove(&d->destroy.link);
     wl_list_remove(&d->request_mode.link);
     free(d);
-
 }
 
 void getxdecomode(struct wl_listener *listener, void *data)

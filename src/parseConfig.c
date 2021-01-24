@@ -20,7 +20,7 @@
 
 size_t rule_count;
 
-int reload_config(lua_State *L)
+int lib_reload_config(lua_State *L)
 {
     for (int i = 0; i < server.options.tag_names.length; i++)
         free(wlr_list_pop(&server.options.tag_names));

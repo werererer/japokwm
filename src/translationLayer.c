@@ -13,23 +13,23 @@ static const struct luaL_Reg action[] =
     {"arrange", lib_arrange},
     {"set_nmaster", set_nmaster},
     {"set_resize_direction", set_resize_direction},
-    {"resize_main", resize_main},
-    {"get_nmaster", get_nmaster},
-    {"focus_on_hidden_stack", focus_on_hidden_stack},
-    {"toggle_consider_layer_shell", toggle_consider_layer_shell},
-    {"focus_on_stack", focus_on_stack},
+    {"resize_main", lib_resize_main},
+    {"get_nmaster", lib_get_nmaster},
+    {"focus_on_hidden_stack", lib_focus_on_hidden_stack},
+    {"toggle_consider_layer_shell", lib_toggle_consider_layer_shell},
+    {"focus_on_stack", lib_focus_on_stack},
     {"kill", lib_kill_client},
-    {"move_resize", move_resize},
+    {"move_resize", lib_move_resize},
     {"move_client_to_workspace", lib_move_client_to_workspace},
     {"quit", lib_quit},
     {"load_layout", lib_load_layout},
-    {"spawn", spawn},
-    {"set_floating", set_floating},
-    {"toggle_floating", toggle_floating},
-    {"toggle_view", toggle_view},
-    {"view", view},
+    {"spawn", lib_spawn},
+    {"set_floating", lib_set_floating},
+    {"toggle_floating", lib_toggle_floating},
+    {"toggle_view", lib_toggle_view},
+    {"view", lib_view},
     {"zoom", lib_zoom},
-    {"toggle_layout", toggle_layout},
+    {"toggle_layout", lib_toggle_layout},
     {NULL, NULL},
 };
 
@@ -47,7 +47,7 @@ static const struct luaL_Reg info[] =
 
 static const struct luaL_Reg config[] = 
 {
-    {"reload", reload_config},
+    {"reload", lib_reload_config},
     {"set_border_color", lib_set_border_color},
     {"set_borderpx", lib_set_borderpx},
     {"set_focus_color", lib_set_focus_color},
@@ -80,7 +80,7 @@ static const struct luaL_Reg localconfig[] =
 
 static const struct luaL_Reg layout[] =
 {
-    {"set", set_layout},
+    {"set", lib_set_layout},
     {NULL, NULL},
 };
 

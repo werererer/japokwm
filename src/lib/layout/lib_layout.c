@@ -3,7 +3,7 @@
 #include "monitor.h"
 #include "server.h"
 
-int set_layout(lua_State *L)
+int lib_set_layout(lua_State *L)
 {
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws;
