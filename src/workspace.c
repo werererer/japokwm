@@ -156,7 +156,63 @@ void copy_layout_from_selected_workspace()
         if (dest_lt == src_lt)
             continue;
 
-        copy_layout(dest_lt, src_lt);
-        copy_layout(dest_prev_lt, src_lt);
+        *dest_lt = copy_layout(src_lt);
+        *dest_prev_lt = copy_layout(src_lt);
     }
 }
+
+void load_default_layout(lua_State *L, struct workspace *ws)
+{
+    load_layout(L, ws, default_layout.name);
+}
+
+void set_layout(lua_State *L, struct workspace *ws, int layouts_ref)
+{
+    struct layout *lt = &ws->layout[0];
+    if (layouts_ref <= 0)
+        return;
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, layouts_ref);
+
+    // rotate layouts
+    if (lua_gettop(L) <= 1) {
+        lt->lua_layout_index++;
+        if (lt->lua_layout_index > luaL_len(L, -1)) {
+            lt->lua_layout_index = 1;
+        }
+    }
+
+    lua_rawgeti(L, -1, lt->lua_layout_index);
+    lua_rawgeti(L, -1, 2);
+    const char *layout_name = luaL_checkstring(L, -1);
+    lua_pop(L, 3);
+    load_layout(L, ws, layout_name);
+}
+
+
+void load_layout(lua_State *L, struct workspace *ws, const char *layout_name)
+{
+    push_layout(ws->layout, copy_layout(&default_layout));
+
+    struct layout *lt = &ws->layout[0];
+    lt->name = layout_name;
+
+    char *config_path = get_config_file("layouts");
+    char file[NUM_CHARS] = "";
+    strcpy(file, "");
+    join_path(file, config_path);
+    join_path(file, layout_name);
+    join_path(file, "init.lua");
+    if (config_path)
+        free(config_path);
+
+    if (!file_exists(file))
+        return;
+
+    if (luaL_loadfile(L, file)) {
+        lua_pop(L, 1);
+        return;
+    }
+    lua_call_safe(L, 0, 0, 0);
+}
+

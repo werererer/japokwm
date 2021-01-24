@@ -7,6 +7,7 @@
 
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"
+#include "workspace.h"
 
 struct layout default_layout;
 
@@ -44,86 +45,41 @@ bool is_same_layout(struct layout layout, struct layout layout2)
     return strcmp(c, c2) != 0;
 }
 
-void copy_layout(struct layout *dest_lt, struct layout *src_lt)
+struct layout copy_layout(struct layout *src_lt)
 {
-    if (!dest_lt)
-        return;
     if (!src_lt)
-        return;
+        return default_layout;
+    struct layout dest_lt = default_layout;
 
     if (src_lt->lua_layout_copy_data_ref > 0) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_copy_data_ref);
-        dest_lt->lua_layout_copy_data_ref = lua_copy_table(L);
+        dest_lt.lua_layout_copy_data_ref = lua_copy_table(L);
     }
 
     if (src_lt->lua_layout_ref > 0) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_ref);
-        dest_lt->lua_layout_ref = lua_copy_table(L);
+        dest_lt.lua_layout_ref = lua_copy_table(L);
     }
 
     if (src_lt->lua_layout_master_copy_data_ref > 0) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_master_copy_data_ref);
-        dest_lt->lua_layout_master_copy_data_ref = lua_copy_table(L);
+        dest_lt.lua_layout_master_copy_data_ref = lua_copy_table(L);
     }
 
     if (src_lt->lua_layout_original_copy_data_ref > 0) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_original_copy_data_ref);
-        dest_lt->lua_layout_original_copy_data_ref = lua_copy_table(L);
+        dest_lt.lua_layout_original_copy_data_ref = lua_copy_table(L);
     }
 
-    dest_lt->resize_dir = src_lt->resize_dir;
+    dest_lt.resize_dir = src_lt->resize_dir;
 
-    copy_options(&dest_lt->options, &src_lt->options);
+    copy_options(&dest_lt.options, &src_lt->options);
+
+    return dest_lt;
 }
 
 void push_layout(struct layout lt_stack[static 2], struct layout lt)
 {
-    copy_layout(&lt_stack[1], &lt_stack[0]);
-    copy_layout(&lt_stack[0], &lt);
-}
-
-void set_layout(lua_State *L, struct layout *lt)
-{
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->options.layouts_ref);
-
-    if (lua_gettop(L) <= 1) {
-        lt->lua_layout_index++;
-        if (lt->lua_layout_index > luaL_len(L, -1)) {
-            lt->lua_layout_index = 1;
-        }
-    }
-
-    lua_rawgeti(L, -1, lt->lua_layout_index);
-    lua_rawgeti(L, -1, 2);
-    const char *layout_name = luaL_checkstring(L, -1);
-    lua_pop(L, 3);
-    load_layout(L, lt, layout_name);
-}
-
-void load_layout(lua_State *L, struct layout *lt, const char *layout_name)
-{
-    lt->name = layout_name;
-
-    char *config_path = get_config_file("layouts");
-    char file[NUM_CHARS] = "";
-    strcpy(file, "");
-    join_path(file, config_path);
-    join_path(file, layout_name);
-    join_path(file, "init.lua");
-    if (config_path)
-        free(config_path);
-
-    if (!file_exists(file))
-        return;
-
-    if (luaL_loadfile(L, file)) {
-        lua_pop(L, 1);
-        return;
-    }
-    lua_call_safe(L, 0, 0, 0);
-}
-
-void load_default_layout(lua_State *L, struct layout *lt)
-{
-    load_layout(L, lt, default_layout.name);
+    lt_stack[1] = copy_layout(&lt_stack[0]);
+    lt_stack[0] = copy_layout(&lt);
 }

@@ -509,7 +509,7 @@ int lib_load_layout(lua_State *L)
         lua_pop(L, 1);
     }
 
-    set_layout(L, lt);
+    set_layout(L, ws, lt->options.layouts_ref);
 
     arrange();
     return 0;

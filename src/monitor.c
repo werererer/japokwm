@@ -87,7 +87,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     m->root = create_root(m);
 
     set_next_unoccupied_workspace(m, get_workspace(0));
-    load_default_layout(L, &m->ws->layout[0]);
+    load_default_layout(L, m->ws);
     copy_layout_from_selected_workspace();
     set_root_color(m->root, m->ws->layout[0].options.root_color);
 
