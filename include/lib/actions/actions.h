@@ -18,7 +18,6 @@ int lib_move_client_to_workspace(lua_State *L);
 int lib_move_resize(lua_State *L);
 int lib_quit(lua_State *L);
 int lib_repush(lua_State *L);
-int lib_repush_reverse(lua_State *L);
 int lib_resize_client(lua_State *L);
 int lib_resize_main(lua_State *L);
 int lib_set_floating(lua_State *L);

@@ -551,59 +551,6 @@ int lib_repush(lua_State *L)
     return 0;
 }
 
-int lib_repush_reverse(lua_State *L)
-{
-    int i = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-    int abs_index = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-
-    struct monitor *m = selected_monitor;
-
-    struct container *sel = get_container(selected_monitor, i);
-    /* struct container *sel = selected_container(m); */
-
-    if (!sel || sel->floating)
-        return 0;
-
-    struct container *master = wl_container_of(containers.next, master, mlink);
-    struct container *previous;
-    if (sel == master)
-        previous = wl_container_of(containers.next->next, previous, mlink);
-    else
-        previous = wl_container_of(sel->mlink.prev, previous, mlink);
-
-    bool found = false;
-    struct container *con;
-    // loop from selected monitor to previous item
-    wl_list_for_each(con, sel->mlink.prev, mlink) {
-        if (!visibleon(con, m) || con->floating)
-            continue;
-        if (con == master)
-            continue;
-
-        found = true;
-        break; /* found */
-    }
-    if (!found)
-        return 0;
-
-    wl_list_remove(&con->mlink);
-
-    // find container to put current container after
-    struct container *con2 = get_container(selected_monitor, abs_index);
-    wl_list_insert(&con2->mlink, &con->mlink);
-
-    arrange();
-    // focus new master window
-    focus_container(previous, selected_monitor, FOCUS_NOOP);
-
-    if (selected_monitor->ws[0]->layout[0].options.arrange_by_focus) {
-        arrange();
-    }
-    return 0;
-}
-
 int lib_load_layout(lua_State *L)
 {
     struct monitor *m = selected_monitor;
