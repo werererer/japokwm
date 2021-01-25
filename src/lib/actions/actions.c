@@ -140,6 +140,7 @@ int lib_focus_on_stack(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws[0];
     struct container *sel = selected_container(m);
     if (!sel)
         return 0;
@@ -150,7 +151,7 @@ int lib_focus_on_stack(lua_State *L)
         wl_list_for_each(con, &sel->mlink, mlink) {
             if (con == sel)
                 continue;
-            if (visibleon(con, m->ws[0])) {
+            if (visibleon(con, ws)) {
                 found = true;
                 break;
             }
@@ -159,7 +160,7 @@ int lib_focus_on_stack(lua_State *L)
         wl_list_for_each_reverse(con, &sel->mlink, mlink) {
             if (con == sel)
                 continue;
-            if (visibleon(con, m->ws[0])) {
+            if (visibleon(con, ws)) {
                 found = true;
                 break;
             }

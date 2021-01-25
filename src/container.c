@@ -51,12 +51,11 @@ static void container_damage(struct container *con, bool whole)
 
         double ox, oy;
         int w, h;
-        struct wlr_surface *surface = get_wlrsurface(con->client);
         ox = con->geom.x - con->client->bw;
         oy = con->geom.y - con->client->bw;
         wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
-        w = surface->current.width;
-        h = surface->current.height;
+        w = con->geom.width;
+        h = con->geom.height;
 
         struct wlr_box *borders;
         borders = (struct wlr_box[4]) {

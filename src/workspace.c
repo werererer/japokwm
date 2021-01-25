@@ -78,6 +78,8 @@ bool visibleon(struct container *con, struct workspace *ws)
 {
     if (!con || !ws)
         return false;
+    if (con->m != ws->m)
+        return false;
     if (con->hidden)
         return false;
 
@@ -85,13 +87,14 @@ bool visibleon(struct container *con, struct workspace *ws)
 
     if (!c)
         return false;
+
     // LayerShell based programs are visible on all workspaces
     if (c->type == LAYER_SHELL)
         return true;
     if (c->sticky)
         return true;
 
-    return c->ws->id == ws->id;
+    return c->ws == ws;
 }
 
 int workspace_count()
