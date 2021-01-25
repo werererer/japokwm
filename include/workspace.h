@@ -28,10 +28,12 @@ bool workspace_has_clients(struct workspace *ws);
 
 int workspace_count();
 int get_workspace_container_count(struct workspace *ws);
+bool is_workspace_empty(struct workspace *ws);
 
 struct workspace *find_next_unoccupied_workspace(struct workspace *ws);
 struct workspace *get_workspace(size_t i);
 struct workspace *get_next_empty_workspace(size_t i);
+struct workspace *get_prev_empty_workspace(size_t i);
 
 void init_workspaces();
 void create_workspaces(struct wlr_list tagNames, struct layout default_layout);
@@ -39,7 +41,7 @@ void workspace_assign_monitor(struct workspace *ws, struct monitor *m);
 void destroy_workspaces();
 void load_default_layout(lua_State *L, struct workspace *ws);
 void set_layout(lua_State *L, struct workspace *ws, int layouts_ref);
-void load_layout(lua_State *L, struct workspace *ws, const char *layout_name);
+void load_layout(lua_State *L, struct workspace *ws, const char *layout_name, const char *layout_symbol);
 void set_selected_layout(struct workspace *ws, struct layout layout);
 void set_next_unoccupied_workspace(struct monitor *m, struct workspace *ws);
 void copy_layout_from_selected_workspace();

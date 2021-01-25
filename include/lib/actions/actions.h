@@ -12,6 +12,7 @@ int lib_focus_on_hidden_stack(lua_State *L);
 int lib_focus_on_stack(lua_State *L);
 int lib_get_nmaster(lua_State *L);
 int lib_kill_client(lua_State *L);
+int lib_load_default_layout(lua_State *L);
 int lib_load_layout(lua_State *L);
 int lib_move_client(lua_State *L);
 int lib_move_client_to_workspace(lua_State *L);

@@ -551,7 +551,7 @@ int lib_repush(lua_State *L)
     return 0;
 }
 
-int lib_load_layout(lua_State *L)
+int lib_load_default_layout(lua_State *L)
 {
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws[0];
@@ -564,6 +564,24 @@ int lib_load_layout(lua_State *L)
     }
 
     set_layout(L, ws, lt->options.layouts_ref);
+
+    arrange();
+    return 0;
+}
+
+int lib_load_layout(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws[0];
+
+    lua_rawgeti(L, -1, 1);
+    const char *layout_symbol = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+    lua_rawgeti(L, -1, 2);
+    const char *layout_name = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+
+    load_layout(L, ws, layout_name, layout_symbol);
 
     arrange();
     return 0;

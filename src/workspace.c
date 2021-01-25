@@ -18,6 +18,7 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
     for (int i = 0; i < 2; i++)
         ws->layout[i] = default_layout;
 
+    // fill layout stack with reasonable values
     push_layout(ws->layout, lt);
     push_layout(ws->layout, lt);
 
@@ -77,8 +78,6 @@ bool visibleon(struct container *con, struct workspace *ws)
 {
     if (!con || !ws)
         return false;
-    if (con->m->ws[0]->id != ws->id)
-        return false;
     if (con->hidden)
         return false;
 
@@ -92,10 +91,8 @@ bool visibleon(struct container *con, struct workspace *ws)
     if (c->sticky)
         return true;
 
-    return c->ws[0].id == ws->id;
+    return c->ws->id == ws->id;
 }
-
-
 
 int workspace_count()
 {
@@ -104,13 +101,20 @@ int workspace_count()
 
 int get_workspace_container_count(struct workspace *ws)
 {
+    assert(ws);
+
     int i = 0;
     struct container *con;
     wl_list_for_each(con, &containers, mlink) {
-        if (visibleon(con, ws->m->ws[0]))
+        if (visibleon(con, ws))
             i++;
     }
     return i;
+}
+
+bool is_workspace_empty(struct workspace *ws)
+{
+    return get_workspace_container_count(ws) == 0;
 }
 
 struct workspace *find_next_unoccupied_workspace(struct workspace *ws)
@@ -136,8 +140,26 @@ struct workspace *get_workspace(size_t i)
 struct workspace *get_next_empty_workspace(size_t i)
 {
     struct workspace *ws = NULL;
-    for (int j = i; j < workspaces.length; j++)
-        ws = (get_workspace_container_count(ws) > 0) ? workspaces.items[i] : ws;
+    for (int j = i; j < workspaces.length; j++) {
+        ws = get_workspace(j);
+        if (is_workspace_empty(ws))
+            break;
+    }
+
+    return ws;
+}
+
+struct workspace *get_prev_empty_workspace(size_t i)
+{
+    if (i >= workspaces.length)
+        return NULL;
+
+    struct workspace *ws = NULL;
+    for (int j = i; j >= 0; j--) {
+        ws = get_workspace(j);
+        if (is_workspace_empty(ws))
+            break;
+    }
 
     return ws;
 }
@@ -207,7 +229,7 @@ void copy_layout_from_selected_workspace()
 
 void load_default_layout(lua_State *L, struct workspace *ws)
 {
-    load_layout(L, ws, default_layout.name);
+    load_layout(L, ws, default_layout.name, default_layout.symbol);
 }
 
 void set_layout(lua_State *L, struct workspace *ws, int layouts_ref)
@@ -227,19 +249,26 @@ void set_layout(lua_State *L, struct workspace *ws, int layouts_ref)
     }
 
     lua_rawgeti(L, -1, lt->lua_layout_index);
+    lua_rawgeti(L, -1, 1);
+    const char *layout_symbol = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
     lua_rawgeti(L, -1, 2);
     const char *layout_name = luaL_checkstring(L, -1);
-    lua_pop(L, 3);
-    load_layout(L, ws, layout_name);
+    lua_pop(L, 1);
+    lua_pop(L, 1);
+
+    lua_pop(L, 1);
+    load_layout(L, ws, layout_name, layout_symbol);
 }
 
 
-void load_layout(lua_State *L, struct workspace *ws, const char *layout_name)
+void load_layout(lua_State *L, struct workspace *ws, const char *layout_name, const char *layout_symbol)
 {
     push_layout(ws->layout, copy_layout(&default_layout));
 
     struct layout *lt = &ws->layout[0];
     lt->name = layout_name;
+    lt->symbol = layout_symbol;
 
     char *config_path = get_config_file("layouts");
     char file[NUM_CHARS] = "";

@@ -34,15 +34,35 @@ int lib_this_container_position(lua_State *L)
 
 int lib_get_next_empty_workspace(lua_State *L)
 {
+    enum wlr_direction dir = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
     int id = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
+    printf("lib_get_next_empty_workspace: %i\n", id);
 
-    struct workspace *ws = get_next_empty_workspace(id);
-    lua_pushinteger(L, ws->id);
+    struct workspace *ws;
+    switch (dir) {
+        case WLR_DIRECTION_LEFT:
+            ws = get_prev_empty_workspace(id);
+            break;
+        case WLR_DIRECTION_RIGHT:
+            ws = get_next_empty_workspace(id);
+            break;
+        default:
+            ws = get_workspace(id);
+    }
+
+    int ws_id = (ws) ? ws->id : id;
+    lua_pushinteger(L, ws_id);
     return 1;
 }
 
 int lib_get_workspace(lua_State *L)
 {
-    return 0;
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws[0];
+    int id = ws->id;
+
+    lua_pushinteger(L, id);
+    return 1;
 }
