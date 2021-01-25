@@ -63,7 +63,6 @@ void focus_container(struct container *con, struct monitor *m, enum focus_action
  * borders. This relies on stack being ordered from top to bottom. */
 bool existon(struct container *con, struct monitor *m);
 bool hiddenon(struct container *con, struct monitor *m);
-bool visibleon(struct container *con, struct monitor *m);
 void focus_top_container(struct monitor *m, enum focus_actions a);
 void lift_container(struct container *con);
 void set_container_floating(struct container *con, bool floating);

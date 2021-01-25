@@ -42,8 +42,8 @@ static const struct luaL_Reg container[] =
 
 static const struct luaL_Reg info[] =
 {
-    {"get_this_container_count", get_this_container_count},
-    {"this_container_position", this_container_position},
+    {"get_this_container_count", lib_get_this_container_count},
+    {"this_container_position", lib_this_container_position},
     {NULL, NULL},
 };
 

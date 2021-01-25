@@ -150,7 +150,7 @@ int lib_focus_on_stack(lua_State *L)
         wl_list_for_each(con, &sel->mlink, mlink) {
             if (con == sel)
                 continue;
-            if (visibleon(con, m)) {
+            if (visibleon(con, m->ws[0])) {
                 found = true;
                 break;
             }
@@ -159,7 +159,7 @@ int lib_focus_on_stack(lua_State *L)
         wl_list_for_each_reverse(con, &sel->mlink, mlink) {
             if (con == sel)
                 continue;
-            if (visibleon(con, m)) {
+            if (visibleon(con, m->ws[0])) {
                 found = true;
                 break;
             }
@@ -473,7 +473,7 @@ int lib_zoom(lua_State *L)
     struct container *con;
     // loop from selected monitor to previous item
     wl_list_for_each(con, sel->mlink.prev, mlink) {
-        if (!visibleon(con, m) || con->floating)
+        if (!visibleon(con, m->ws[0]) || con->floating)
             continue;
         if (con == master)
             continue;
@@ -524,7 +524,7 @@ int lib_repush(lua_State *L)
     struct container *con;
     // loop from selected monitor to previous item
     wl_list_for_each(con, sel->mlink.prev, mlink) {
-        if (!visibleon(con, m) || con->floating)
+        if (!visibleon(con, m->ws[0]) || con->floating)
             continue;
         if (con == master)
             continue;

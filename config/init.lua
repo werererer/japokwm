@@ -48,8 +48,10 @@ config.set_monrules({
 local termcmd = "/usr/bin/termite"
 
 config.set_keybinds({
+    {"mod-p",         function() action.spawn("/usr/bin/rofi -show run") end},
+    {"mod-e",         function() action.view(info.get_next_empty_workspace()) end},
     {"mod-period",    function() action.toggle_workspace() end},
-    {"mod-S-period",    function() action.toggle_layout() end},
+    {"mod-S-period",  function() action.toggle_layout() end},
     {"mod-S-Return",  function() action.spawn(termcmd) end},
     {"mod-a",         function() action.set_nmaster(2) end},
     {"mod-x",         function() action.set_nmaster(1) end},

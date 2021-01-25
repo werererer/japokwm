@@ -26,7 +26,7 @@ static struct wlr_box fit_root_area(struct root *root)
 
     struct container *con;
     wl_list_for_each(con, &layer_stack, llink) {
-        if (!visibleon(con, root->m))
+        if (!visibleon(con, root->m->ws[0]))
             continue;
 
         // desired_width and desired_height are == 0 if nothing is desired
@@ -97,7 +97,7 @@ void set_root_area(struct root *root, struct wlr_box geom)
 
     struct container *con;
     wl_list_for_each(con, &layer_stack, llink) {
-        if (!visibleon(con, root->m))
+        if (!visibleon(con, root->m->ws[0]))
             continue;
 
         struct monitor *m = root->m;

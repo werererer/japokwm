@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <wlr/types/wlr_list.h>
 #include "layout.h"
+#include "container.h"
+
 /* A tag is simply a workspace that can be focused (like a normal workspace)
  * and can selected: which just means that all clients on the selected tags
  * will be combined to be shown on the focused tag
@@ -21,12 +23,15 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
 void destroy_workspace(struct workspace *ws);
 
 bool is_workspace_occupied(struct workspace *ws);
+bool visibleon(struct container *con, struct workspace *ws);
 bool workspace_has_clients(struct workspace *ws);
 
 int workspace_count();
+int get_workspace_container_count(struct workspace *ws);
 
 struct workspace *find_next_unoccupied_workspace(struct workspace *ws);
 struct workspace *get_workspace(size_t i);
+struct workspace *get_next_empty_workspace(size_t i);
 
 void init_workspaces();
 void create_workspaces(struct wlr_list tagNames, struct layout default_layout);

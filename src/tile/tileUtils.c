@@ -125,7 +125,7 @@ static void update_container_positions(struct monitor *m)
     struct container *con;
     int position = 1;
     wl_list_for_each(con, &containers, mlink) {
-        if (!visibleon(con, m))
+        if (!visibleon(con, m->ws[0]))
             continue;
 
         con->position = position;
@@ -139,7 +139,7 @@ static void update_container_focus_stack_positions(struct monitor *m)
     int position = 1;
     struct container *con;
     wl_list_for_each(con, &focus_stack, flink) {
-        if (!visibleon(con, m))
+        if (!visibleon(con, m->ws[0]))
             continue;
 
         con->focus_stack_position = position;
@@ -169,14 +169,14 @@ void arrange_monitor(struct monitor *m)
     struct container *con;
     if (lt->options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
-            if (!visibleon(con, m))
+            if (!visibleon(con, m->ws[0]))
                 continue;
 
             arrange_container(con, con->focus_stack_position, container_count, false);
         }
     } else {
         wl_list_for_each(con, &containers, mlink) {
-            if (!visibleon(con, m))
+            if (!visibleon(con, m->ws[0]))
                 continue;
 
             arrange_container(con, con->position, container_count, false);

@@ -226,7 +226,7 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each_reverse(con, &stack, slink) {
-        if (!visibleon(con, m) && !con->floating)
+        if (!visibleon(con, m->ws[0]) && !con->floating)
             continue;
 
         struct wlr_surface *surface = get_wlrsurface(con->client);

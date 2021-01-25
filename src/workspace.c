@@ -73,9 +73,44 @@ bool workspace_has_clients(struct workspace *ws)
     return count > 0;
 }
 
+bool visibleon(struct container *con, struct workspace *ws)
+{
+    if (!con || !ws)
+        return false;
+    if (con->m->ws[0]->id != ws->id)
+        return false;
+    if (con->hidden)
+        return false;
+
+    struct client *c = con->client;
+
+    if (!c)
+        return false;
+    // LayerShell based programs are visible on all workspaces
+    if (c->type == LAYER_SHELL)
+        return true;
+    if (c->sticky)
+        return true;
+
+    return c->ws[0].id == ws->id;
+}
+
+
+
 int workspace_count()
 {
     return workspaces.length;
+}
+
+int get_workspace_container_count(struct workspace *ws)
+{
+    int i = 0;
+    struct container *con;
+    wl_list_for_each(con, &containers, mlink) {
+        if (visibleon(con, ws->m->ws[0]))
+            i++;
+    }
+    return i;
 }
 
 struct workspace *find_next_unoccupied_workspace(struct workspace *ws)
@@ -96,6 +131,15 @@ struct workspace *get_workspace(size_t i)
         return NULL;
 
     return workspaces.items[i];
+}
+
+struct workspace *get_next_empty_workspace(size_t i)
+{
+    struct workspace *ws = NULL;
+    for (int j = i; j < workspaces.length; j++)
+        ws = (get_workspace_container_count(ws) > 0) ? workspaces.items[i] : ws;
+
+    return ws;
 }
 
 void workspace_assign_monitor(struct workspace *ws, struct monitor *m)

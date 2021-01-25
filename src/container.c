@@ -101,7 +101,7 @@ struct container *selected_container(struct monitor *m)
         return NULL;
 
     struct container *con = wl_container_of(focus_stack.next, con, flink);
-    if (!visibleon(con, m) && !con->floating)
+    if (!visibleon(con, m->ws[0]) && !con->floating)
         return NULL;
     else
         return con;
@@ -113,7 +113,7 @@ struct container *next_container(struct monitor *m)
     {
         struct container *con =
             wl_container_of(focus_stack.next->next, con, flink);
-        if (!visibleon(con, m))
+        if (!visibleon(con, m->ws[0]))
             return NULL;
         else
             return con;
@@ -154,7 +154,7 @@ struct container *first_container(struct monitor *m)
 
     struct container *con;
     wl_list_for_each(con, &stack, slink) {
-        if (visibleon(con, m))
+        if (visibleon(con, m->ws[0]))
             break;
     }
     return con;
@@ -168,7 +168,7 @@ struct client *last_client(struct monitor *m)
     struct container *con;
     int i = 1;
     wl_list_for_each(con, &stack, slink) {
-        if (!visibleon(con, m))
+        if (!visibleon(con, m->ws[0]))
             continue;
         if (i > m->ws[0]->layout[0].n)
             return con->client;
@@ -188,7 +188,7 @@ struct container *xytocontainer(double x, double y)
         if (con->client->surface.layer->current.layer >
                 ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM)
             continue;
-        if (!visibleon(con, m) || !wlr_box_contains_point(&con->geom, x, y))
+        if (!visibleon(con, m->ws[0]) || !wlr_box_contains_point(&con->geom, x, y))
             continue;
 
         return con;
@@ -197,7 +197,7 @@ struct container *xytocontainer(double x, double y)
     wl_list_for_each(con, &stack, slink) {
         if (!con->focusable)
             continue;
-        if ((!visibleon(con, m) && !con->floating) || !wlr_box_contains_point(&con->geom, x, y))
+        if ((!visibleon(con, m->ws[0]) && !con->floating) || !wlr_box_contains_point(&con->geom, x, y))
             continue;
 
         return con;
@@ -209,7 +209,7 @@ struct container *xytocontainer(double x, double y)
         if (con->client->surface.layer->current.layer <
                 ZWLR_LAYER_SHELL_V1_LAYER_TOP)
             continue;
-        if (!visibleon(con, m) || !wlr_box_contains_point(&con->geom, x, y))
+        if (!visibleon(con, m->ws[0]) || !wlr_box_contains_point(&con->geom, x, y))
             continue;
 
         return con;
@@ -459,7 +459,7 @@ void focus_top_container(struct monitor *m, enum focus_actions a)
     struct container *con;
     bool focus = false;
     wl_list_for_each(con, &focus_stack, flink)
-        if (visibleon(con, m)) {
+        if (visibleon(con, m->ws[0])) {
             focus = true;
             break;
         }
@@ -491,28 +491,6 @@ bool hiddenon(struct container *con, struct monitor *m)
     if (con->m != m)
         return false;
     if (!con->hidden)
-        return false;
-
-    struct client *c = con->client;
-
-    if (!c)
-        return false;
-    // LayerShell based programs are visible on all workspaces
-    if (c->type == LAYER_SHELL)
-        return true;
-    if (c->sticky)
-        return true;
-
-    return c->ws == m->ws[0];
-}
-
-bool visibleon(struct container *con, struct monitor *m)
-{
-    if (!con || !m)
-        return false;
-    if (con->m != m)
-        return false;
-    if (con->hidden)
         return false;
 
     struct client *c = con->client;
