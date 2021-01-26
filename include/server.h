@@ -10,7 +10,7 @@
 #include "layout.h"
 
 /* enums */
-enum cursorMode { CurNormal, CURSOR_MOVE, CURSOR_RESIZE }; /* cursor */
+enum cursorMode { CURSOR_NORMAL, CURSOR_MOVE, CURSOR_RESIZE }; /* cursor */
 struct server {
     /* associated with ilink in client */
     struct wl_list independents;
@@ -29,13 +29,13 @@ struct server {
     struct wlr_xdg_decoration_manager_v1 *xdecoMgr;
 
     struct wlr_cursor *cursor;
-    struct wlr_xcursor_manager *cursorMgr;
+    struct wlr_xcursor_manager *cursor_mgr;
 
     struct layout default_layout;
 
     struct wlr_output_layout *output_layout;
     struct wl_list keyboards;
-    enum cursorMode cursorMode;
+    enum cursorMode cursor_mode;
 
     struct options options;
 };

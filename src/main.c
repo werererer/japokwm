@@ -169,10 +169,10 @@ void buttonpress(struct wl_listener *listener, void *data)
     case WLR_BUTTON_RELEASED:
         /* If you released any buttons, we exit interactive move/resize mode. */
         /* XXX should reset to the pointer focus's current setcursor */
-        if (server.cursorMode != CurNormal) {
-            wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
+        if (server.cursor_mode != CURSOR_NORMAL) {
+            wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
                     "left_ptr", server.cursor);
-            server.cursorMode = CurNormal;
+            server.cursor_mode = CURSOR_NORMAL;
             /* Drop the window off on its new monitor */
             struct monitor *m = xytomon(server.cursor->x, server.cursor->y);
             set_selected_monitor(m);
@@ -196,7 +196,7 @@ void cleanup()
     wlr_xwayland_destroy(server.xwayland.wlr_xwayland);
     wl_display_destroy_clients(server.display);
 
-    wlr_xcursor_manager_destroy(server.cursorMgr);
+    wlr_xcursor_manager_destroy(server.cursor_mgr);
     wlr_cursor_destroy(server.cursor);
     wlr_output_layout_destroy(server.output_layout);
 }
@@ -692,7 +692,7 @@ void run(char *startup_cmd)
      * initialized, as the image/coordinates are not transformed for the
      * monitor when displayed here */
     wlr_cursor_warp_closest(server.cursor, NULL, server.cursor->x, server.cursor->y);
-    wlr_xcursor_manager_set_cursor_image(server.cursorMgr, "left_ptr", server.cursor);
+    wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "left_ptr", server.cursor);
 
     /* Set the WAYLAND_DISPLAY environment variable to our socket and run the
      * startup command if requested. */
@@ -721,11 +721,12 @@ void run(char *startup_cmd)
 
 void set_cursor(struct wl_listener *listener, void *data)
 {
+    printf("set cursor\n");
     /* This event is raised by the seat when a client provides a cursor image */
     struct wlr_seat_pointer_request_set_cursor_event *event = data;
     /* If we're "grabbing" the server.cursor, don't use the client's image */
     /* XXX still need to save the provided surface to restore later */
-    if (server.cursorMode != CurNormal)
+    if (server.cursor_mode != CURSOR_NORMAL)
         return;
     /* This can be sent by any client, so we check to make sure this one is
      * actually has pointer focus first. If so, we can tell the cursor to
@@ -875,7 +876,7 @@ int setup()
      * Xcursor themes to source cursor images from and makes sure that cursor
      * images are available at all scale factors on the screen (necessary for
      * HiDPI support). Scaled cursors will be loaded with each output. */
-    server.cursorMgr = wlr_xcursor_manager_create(NULL, 24);
+    server.cursor_mgr = wlr_xcursor_manager_create(NULL, 24);
 
     /*
      * wlr_cursor *only* displays an image on screen. It does not move around
@@ -940,7 +941,6 @@ void sigchld(int unused)
 
 void unmapnotify(struct wl_listener *listener, void *data)
 {
-    printf("unmapnotify\n");
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
 

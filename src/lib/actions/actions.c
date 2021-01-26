@@ -232,11 +232,11 @@ int lib_move_resize(lua_State *L)
 
     /* Float the window and tell motionnotify to grab it */
     set_container_floating(grabc, true);
-    switch (server.cursorMode = ui) {
+    switch (server.cursor_mode = ui) {
         case CURSOR_MOVE:
             grabcx = server.cursor->x - grabc->geom.x;
             grabcy = server.cursor->y - grabc->geom.y;
-            wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
+            wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
                     "fleur", server.cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
             arrange();
@@ -249,7 +249,7 @@ int lib_move_resize(lua_State *L)
             wlr_cursor_warp_closest(server.cursor, NULL,
                     grabc->geom.x + grabc->geom.width,
                     grabc->geom.y + grabc->geom.height);
-            wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
+            wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
                     "bottom_right_corner", server.cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
             arrange();
@@ -270,7 +270,7 @@ void motionnotify(uint32_t time)
     bool action = false;
     struct wlr_box geom;
     /* If we are currently grabbing the mouse, handle and return */
-    switch (server.cursorMode) {
+    switch (server.cursor_mode) {
         case CURSOR_MOVE:
             action = true;
             geom.x = server.cursor->x - grabcx;
@@ -349,7 +349,7 @@ void motionnotify(uint32_t time)
     /* If there's no client surface under the server.cursor, set the cursor
      * image to a default. This is what makes the cursor image appear when you
      * move it off of a client or over its border. */
-    wlr_xcursor_manager_set_cursor_image(server.cursorMgr,
+    wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
             "left_ptr", server.cursor);
 
     // if there is no popup use the selected client's surface
