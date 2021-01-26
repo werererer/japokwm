@@ -368,7 +368,7 @@ void render_frame(struct monitor *m, pixman_region32_t *damage)
      * reason, wlroots provides a software fallback, which we ask it to render
      * here. wlr_cursor handles configuring hardware vs software cursors for you,
      * and this function is a no-op when hardware cursors are in use. */
-    wlr_output_render_software_cursors(m->wlr_output, damage);
+    wlr_output_render_software_cursors(m->wlr_output, NULL);
 
     /* Conclude rendering and swap the buffers, showing the final frame
      * on-screen. */

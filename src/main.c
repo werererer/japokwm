@@ -662,8 +662,7 @@ void motionrelative(struct wl_listener *listener, void *data)
      * special configuration applied for the specific input device which
      * generated the event. You can pass NULL for the device if you want to move
      * the cursor around without any input. */
-    wlr_cursor_move(server.cursor, event->device,
-            event->delta_x, event->delta_y);
+    wlr_cursor_move(server.cursor, event->device, event->delta_x, event->delta_y);
     motionnotify(event->time_msec);
 }
 
@@ -879,8 +878,7 @@ int setup()
      * images are available at all scale factors on the screen (necessary for
      * HiDPI support). Scaled cursors will be loaded with each output. */
     server.cursor_mgr = wlr_xcursor_manager_create(NULL, 24);
-    wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
-            "left_ptr", server.cursor);
+
     /*
      * wlr_cursor *only* displays an image on screen. It does not move around
      * when the pointer moves. However, we can attach input devices to it, and
@@ -909,9 +907,12 @@ int setup()
     wl_list_init(&server.keyboards);
     wl_signal_add(&server.backend->events.new_input, &new_input);
     server.seat = wlr_seat_create(server.display, "seat0");
-    wl_signal_add(&server.seat->events.request_set_cursor, &request_cursor);
-    wl_signal_add(&server.seat->events.request_set_selection, &request_set_sel);
-    wl_signal_add(&server.seat->events.request_set_primary_selection, &request_set_psel);
+    wl_signal_add(&server.seat->events.request_set_cursor,
+            &request_cursor);
+    wl_signal_add(&server.seat->events.request_set_selection,
+            &request_set_sel);
+    wl_signal_add(&server.seat->events.request_set_primary_selection,
+            &request_set_psel);
 
     /*
      * Initialise the XWayland X server.
