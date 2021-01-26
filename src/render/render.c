@@ -359,8 +359,8 @@ void render_frame(struct monitor *m, pixman_region32_t *damage)
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY, damage);
 
-    /* wlr_list_for_each(&render_data.textures, (void*)render_texture); */
-    /* render_popups(m, damage); */
+    wlr_list_for_each(&render_data.textures, (void*)render_texture);
+    render_popups(m, damage);
 
     /* Hardware cursors are rendered by the GPU on a separate plane, and can be
      * moved around without re-rendering what's beneath them - which is more
@@ -368,8 +368,7 @@ void render_frame(struct monitor *m, pixman_region32_t *damage)
      * reason, wlroots provides a software fallback, which we ask it to render
      * here. wlr_cursor handles configuring hardware vs software cursors for you,
      * and this function is a no-op when hardware cursors are in use. */
-
-    wlr_output_render_software_cursors(m->wlr_output, NULL);
+    wlr_output_render_software_cursors(m->wlr_output, damage);
 
     /* Conclude rendering and swap the buffers, showing the final frame
      * on-screen. */

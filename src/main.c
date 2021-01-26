@@ -733,9 +733,11 @@ void set_cursor(struct wl_listener *listener, void *data)
      * use the provided surface as the cursor image. It will set the
      * hardware cursor on the output that it's currently on and continue to
      * do so as the cursor moves between outputs. */
-    if (event->seat_client == server.seat->pointer_state.focused_client)
-        wlr_cursor_set_surface(server.cursor, event->surface,
-                event->hotspot_x, event->hotspot_y);
+    if (event->seat_client != server.seat->pointer_state.focused_client)
+        return;
+
+    wlr_cursor_set_surface(server.cursor, event->surface,
+            event->hotspot_x, event->hotspot_y);
 }
 
 /* arg > 1.0 will set mfact absolutely */
@@ -877,7 +879,8 @@ int setup()
      * images are available at all scale factors on the screen (necessary for
      * HiDPI support). Scaled cursors will be loaded with each output. */
     server.cursor_mgr = wlr_xcursor_manager_create(NULL, 24);
-
+    wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
+            "left_ptr", server.cursor);
     /*
      * wlr_cursor *only* displays an image on screen. It does not move around
      * when the pointer moves. However, we can attach input devices to it, and
@@ -906,12 +909,9 @@ int setup()
     wl_list_init(&server.keyboards);
     wl_signal_add(&server.backend->events.new_input, &new_input);
     server.seat = wlr_seat_create(server.display, "seat0");
-    wl_signal_add(&server.seat->events.request_set_cursor,
-            &request_cursor);
-    wl_signal_add(&server.seat->events.request_set_selection,
-            &request_set_sel);
-    wl_signal_add(&server.seat->events.request_set_primary_selection,
-            &request_set_psel);
+    wl_signal_add(&server.seat->events.request_set_cursor, &request_cursor);
+    wl_signal_add(&server.seat->events.request_set_selection, &request_set_sel);
+    wl_signal_add(&server.seat->events.request_set_primary_selection, &request_set_psel);
 
     /*
      * Initialise the XWayland X server.

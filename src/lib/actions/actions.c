@@ -236,8 +236,7 @@ int lib_move_resize(lua_State *L)
         case CURSOR_MOVE:
             grabcx = server.cursor->x - grabc->geom.x;
             grabcy = server.cursor->y - grabc->geom.y;
-            wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
-                    "fleur", server.cursor);
+            wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "fleur", server.cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
             arrange();
             break;

@@ -56,12 +56,12 @@ void create_monitor(struct wl_listener *listener, void *data)
     m->frame.notify = handle_output_frame;
     wl_signal_add(&m->wlr_output->events.frame, &m->frame);
 
+    wlr_xcursor_manager_load(server.cursor_mgr, 1);
     for (int i = 0; i < server.options.monrule_count; i++) {
         struct monrule r = server.options.monrules[i];
         if (!r.name || strstr(output->name, r.name)) {
             m->mfact = r.mfact;
             wlr_output_set_scale(output, r.scale);
-            wlr_xcursor_manager_load(server.cursor_mgr, r.scale);
             set_selected_layout(m->ws[0], r.lt);
             wlr_output_set_transform(output, r.rr);
             break;
