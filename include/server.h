@@ -28,6 +28,7 @@ struct server {
     struct wlr_layer_shell_v1 *layerShell;
     struct wlr_xdg_decoration_manager_v1 *xdecoMgr;
 
+    struct wlr_surface *cursor_surface;
     struct wlr_cursor *cursor;
     struct wlr_xcursor_manager *cursor_mgr;
 

@@ -339,15 +339,6 @@ static void clear_frame(struct monitor *m, float color[4], pixman_region32_t *da
 
 void render_frame(struct monitor *m, pixman_region32_t *damage)
 {
-    /* This function is called every time an output is ready to display a frame,
-     * generally at the output's refresh rate (e.g. 60Hz). */
-    struct timespec now;
-    clock_gettime(CLOCK_MONOTONIC, &now);
-
-    /* wlr_output_attach_render makes the OpenGL context current. */
-    if (!wlr_output_attach_render(m->wlr_output, NULL))
-        return;
-
     /* Begin the renderer (calls glViewport and some other GL sanity checks) */
     wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
 

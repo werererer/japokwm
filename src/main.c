@@ -87,7 +87,7 @@ void commitnotify(struct wl_listener *listener, void *data);
 void create_keyboard(struct wlr_input_device *device);
 void createnotify(struct wl_listener *listener, void *data);
 void createnotify_layer_shell(struct wl_listener *listener, void *data);
-void createpointer(struct wlr_input_device *device);
+void create_pointer(struct wlr_input_device *device);
 void createxdeco(struct wl_listener *listener, void *data);
 void cursorframe(struct wl_listener *listener, void *data);
 void destroynotify(struct wl_listener *listener, void *data);
@@ -213,6 +213,7 @@ void cleanupkeyboard(struct wl_listener *listener, void *data)
 
 void commitnotify(struct wl_listener *listener, void *data)
 {
+    printf("commitnotify\n");
     struct client *c = wl_container_of(listener, c, commit);
     struct container *con = c->con;
 
@@ -324,8 +325,9 @@ void createnotify_layer_shell(struct wl_listener *listener, void *data)
     wl_signal_add(&layer_surface->events.new_popup, &c->new_popup);
 }
 
-void createpointer(struct wlr_input_device *device)
+void create_pointer(struct wlr_input_device *device)
 {
+    printf("create pointer\n");
     /* We don't do anything special with pointers. All of our pointer handling
      * is proxied through wlr_cursor. On another compositor, you might take this
      * opportunity to do libinput configuration on the device to set
@@ -410,7 +412,7 @@ void inputdevice(struct wl_listener *listener, void *data)
         create_keyboard(device);
         break;
     case WLR_INPUT_DEVICE_POINTER:
-        createpointer(device);
+        create_pointer(device);
         break;
     default:
         /* XXX handle other input device types */
@@ -680,7 +682,6 @@ void run(char *startup_cmd)
     if (!wlr_backend_start(server.backend))
         BARF("startup: backend_start");
 
-    wlr_cursor_warp_absolute(server.cursor, NULL, 0.4, 0.3);
     /* Now that outputs are initialized, choose initial selMon based on
      * cursor position, and set default cursor image */
     struct monitor *m = xytomon(server.cursor->x, server.cursor->y);
@@ -725,18 +726,27 @@ void set_cursor(struct wl_listener *listener, void *data)
     struct wlr_seat_pointer_request_set_cursor_event *event = data;
     /* If we're "grabbing" the server.cursor, don't use the client's image */
     /* XXX still need to save the provided surface to restore later */
-    if (server.cursor_mode != CURSOR_NORMAL)
+    if (server.cursor_mode != CURSOR_NORMAL) {
         return;
+    }
     /* This can be sent by any client, so we check to make sure this one is
      * actually has pointer focus first. If so, we can tell the cursor to
      * use the provided surface as the cursor image. It will set the
      * hardware cursor on the output that it's currently on and continue to
      * do so as the cursor moves between outputs. */
-    if (event->seat_client != server.seat->pointer_state.focused_client)
+    if (event->seat_client != server.seat->pointer_state.focused_client) {
+       printf("fail: not focused_client\n");
         return;
+    }
 
-    wlr_cursor_set_surface(server.cursor, event->surface,
-            event->hotspot_x, event->hotspot_y);
+/*     if (!xytocontainer(server.cursor->x, server.cursor->y)) { */
+/*         printf("fail: not container\n"); */
+/*         return; */
+/*     } */
+
+    printf("set wlr cursor\n");
+    server.cursor_surface = event->surface;
+    wlr_cursor_set_surface(server.cursor, server.cursor_surface, event->hotspot_x, event->hotspot_y);
 }
 
 /* arg > 1.0 will set mfact absolutely */
@@ -907,12 +917,9 @@ int setup()
     wl_list_init(&server.keyboards);
     wl_signal_add(&server.backend->events.new_input, &new_input);
     server.seat = wlr_seat_create(server.display, "seat0");
-    wl_signal_add(&server.seat->events.request_set_cursor,
-            &request_cursor);
-    wl_signal_add(&server.seat->events.request_set_selection,
-            &request_set_sel);
-    wl_signal_add(&server.seat->events.request_set_primary_selection,
-            &request_set_psel);
+    wl_signal_add(&server.seat->events.request_set_cursor, &request_cursor);
+    wl_signal_add(&server.seat->events.request_set_selection, &request_set_sel);
+    wl_signal_add(&server.seat->events.request_set_primary_selection, &request_set_psel);
 
     /*
      * Initialise the XWayland X server.

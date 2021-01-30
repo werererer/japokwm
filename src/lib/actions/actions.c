@@ -294,9 +294,9 @@ void motionnotify(uint32_t time)
     }
 
     bool is_popup = false;
-    struct container *con;
     struct monitor *m = selected_monitor;
-    if ((con = selected_container(m))) {
+    struct container *con = selected_container(m);
+    if (con) {
         switch (con->client->type) {
             case XDG_SHELL:
                 is_popup = !wl_list_empty(&con->client->surface.xdg->popups);
@@ -349,9 +349,11 @@ void motionnotify(uint32_t time)
      * image to a default. This is what makes the cursor image appear when you
      * move it off of a client or over its border. */
 
-    if (!surface)
-        wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
-            "left_ptr", server.cursor);
+    /* if (!surface && !xytocontainer(server.cursor->x, server.cursor->y)) { */
+    /*     printf("set xcursor\n"); */
+    /*     wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, */
+    /*         "left_ptr", server.cursor); */
+    /* } */
 
     // if there is no popup use the selected client's surface
     if (!is_popup) {
