@@ -349,11 +349,11 @@ void motionnotify(uint32_t time)
      * image to a default. This is what makes the cursor image appear when you
      * move it off of a client or over its border. */
 
-    /* if (!surface && !xytocontainer(server.cursor->x, server.cursor->y)) { */
-    /*     printf("set xcursor\n"); */
-    /*     wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, */
-    /*         "left_ptr", server.cursor); */
-    /* } */
+    if (!surface && !xytocontainer(server.cursor->x, server.cursor->y)) {
+        printf("set xcursor\n");
+        wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
+            "left_ptr", server.cursor);
+    }
 
     // if there is no popup use the selected client's surface
     if (!is_popup) {

@@ -739,10 +739,10 @@ void set_cursor(struct wl_listener *listener, void *data)
         return;
     }
 
-/*     if (!xytocontainer(server.cursor->x, server.cursor->y)) { */
-/*         printf("fail: not container\n"); */
-/*         return; */
-/*     } */
+    if (!xytocontainer(server.cursor->x, server.cursor->y)) {
+        printf("fail: not container\n");
+        return;
+    }
 
     printf("set wlr cursor\n");
     server.cursor_surface = event->surface;
