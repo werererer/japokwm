@@ -54,6 +54,7 @@
 #include <xkbcommon/xkbcommon.h>
 #include <xkbcommon/xkbcommon.h>
 
+#include "cursor.h"
 #include "client.h"
 #include "container.h"
 #include "ipc-server.h"
@@ -102,7 +103,6 @@ void maprequestx11(struct wl_listener *listener, void *data);
 void motionabsolute(struct wl_listener *listener, void *data);
 void motionrelative(struct wl_listener *listener, void *data);
 void run(char *startup_cmd);
-void set_cursor(struct wl_listener *listener, void *data);
 void setpsel(struct wl_listener *listener, void *data);
 void setsel(struct wl_listener *listener, void *data);
 void setmfact(float factor);
@@ -123,7 +123,6 @@ static struct wl_listener new_output = {.notify = create_monitor};
 static struct wl_listener new_xdeco = {.notify = createxdeco};
 static struct wl_listener new_xdg_surface = {.notify = createnotify};
 static struct wl_listener new_layer_shell_surface = {.notify = createnotify_layer_shell};
-static struct wl_listener request_cursor = {.notify = set_cursor};
 static struct wl_listener request_set_psel = {.notify = setpsel};
 static struct wl_listener request_set_sel = {.notify = setsel};
 
@@ -153,7 +152,7 @@ void buttonpress(struct wl_listener *listener, void *data)
         {
             /* Change focus if the button was _pressed_ over a client */
             struct container *con;
-            if ((con = xytocontainer(server.cursor->x, server.cursor->y)))
+            if ((con = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y)))
                 focus_container(con, selected_monitor, FOCUS_NOOP);
 
             /* Translate libinput to xkbcommon code */
@@ -169,12 +168,12 @@ void buttonpress(struct wl_listener *listener, void *data)
     case WLR_BUTTON_RELEASED:
         /* If you released any buttons, we exit interactive move/resize mode. */
         /* XXX should reset to the pointer focus's current setcursor */
-        if (server.cursor_mode != CURSOR_NORMAL) {
+        if (server.cursor.cursor_mode != CURSOR_NORMAL) {
             wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
-                    "left_ptr", server.cursor);
-            server.cursor_mode = CURSOR_NORMAL;
+                    "left_ptr", server.cursor.wlr_cursor);
+            server.cursor.cursor_mode = CURSOR_NORMAL;
             /* Drop the window off on its new monitor */
-            struct monitor *m = xytomon(server.cursor->x, server.cursor->y);
+            struct monitor *m = xytomon(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
             set_selected_monitor(m);
             return;
         }
@@ -197,7 +196,7 @@ void cleanup()
     wl_display_destroy_clients(server.display);
 
     wlr_xcursor_manager_destroy(server.cursor_mgr);
-    wlr_cursor_destroy(server.cursor);
+    wlr_cursor_destroy(server.cursor.wlr_cursor);
     wlr_output_layout_destroy(server.output_layout);
 }
 
@@ -213,7 +212,6 @@ void cleanupkeyboard(struct wl_listener *listener, void *data)
 
 void commitnotify(struct wl_listener *listener, void *data)
 {
-    printf("commitnotify\n");
     struct client *c = wl_container_of(listener, c, commit);
     struct container *con = c->con;
 
@@ -332,7 +330,7 @@ void create_pointer(struct wlr_input_device *device)
      * is proxied through wlr_cursor. On another compositor, you might take this
      * opportunity to do libinput configuration on the device to set
      * acceleration, etc. */
-    wlr_cursor_attach_input_device(server.cursor, device);
+    wlr_cursor_attach_input_device(server.cursor.wlr_cursor, device);
 }
 
 void createxdeco(struct wl_listener *listener, void *data)
@@ -650,7 +648,7 @@ void motionabsolute(struct wl_listener *listener, void *data)
      * so we have to warp the mouse there. There is also some hardware which
      * emits these events. */
     struct wlr_event_pointer_motion_absolute *event = data;
-    wlr_cursor_warp_absolute(server.cursor, event->device, event->x, event->y);
+    wlr_cursor_warp_absolute(server.cursor.wlr_cursor, event->device, event->x, event->y);
     motionnotify(event->time_msec);
 }
 
@@ -664,7 +662,7 @@ void motionrelative(struct wl_listener *listener, void *data)
      * special configuration applied for the specific input device which
      * generated the event. You can pass NULL for the device if you want to move
      * the cursor around without any input. */
-    wlr_cursor_move(server.cursor, event->device, event->delta_x, event->delta_y);
+    wlr_cursor_move(server.cursor.wlr_cursor, event->device, event->delta_x, event->delta_y);
     motionnotify(event->time_msec);
 }
 
@@ -684,15 +682,15 @@ void run(char *startup_cmd)
 
     /* Now that outputs are initialized, choose initial selMon based on
      * cursor position, and set default cursor image */
-    struct monitor *m = xytomon(server.cursor->x, server.cursor->y);
+    struct monitor *m = xytomon(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
     set_selected_monitor(m);
 
     /* XXX hack to get cursor to display in its initial location (100, 100)
      * instead of (0, 0) and then jumping.  still may not be fully
      * initialized, as the image/coordinates are not transformed for the
      * monitor when displayed here */
-    wlr_cursor_warp_closest(server.cursor, NULL, server.cursor->x, server.cursor->y);
-    wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "left_ptr", server.cursor);
+    wlr_cursor_warp_closest(server.cursor.wlr_cursor, NULL, server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
+    wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "left_ptr", server.cursor.wlr_cursor);
 
     /* Set the WAYLAND_DISPLAY environment variable to our socket and run the
      * startup command if requested. */
@@ -717,36 +715,6 @@ void run(char *startup_cmd)
         kill(startup_pid, SIGTERM);
         waitpid(startup_pid, NULL, 0);
     }
-}
-
-void set_cursor(struct wl_listener *listener, void *data)
-{
-    printf("set cursor\n");
-    /* This event is raised by the seat when a client provides a cursor image */
-    struct wlr_seat_pointer_request_set_cursor_event *event = data;
-    /* If we're "grabbing" the server.cursor, don't use the client's image */
-    /* XXX still need to save the provided surface to restore later */
-    if (server.cursor_mode != CURSOR_NORMAL) {
-        return;
-    }
-    /* This can be sent by any client, so we check to make sure this one is
-     * actually has pointer focus first. If so, we can tell the cursor to
-     * use the provided surface as the cursor image. It will set the
-     * hardware cursor on the output that it's currently on and continue to
-     * do so as the cursor moves between outputs. */
-    if (event->seat_client != server.seat->pointer_state.focused_client) {
-       printf("fail: not focused_client\n");
-        return;
-    }
-
-    if (!xytocontainer(server.cursor->x, server.cursor->y)) {
-        printf("fail: not container\n");
-        return;
-    }
-
-    printf("set wlr cursor\n");
-    server.cursor_surface = event->surface;
-    wlr_cursor_set_surface(server.cursor, server.cursor_surface, event->hotspot_x, event->hotspot_y);
 }
 
 /* arg > 1.0 will set mfact absolutely */
@@ -880,8 +848,8 @@ int setup()
      * Creates a server.cursor, which is a wlroots utility for tracking the cursor
      * image shown on screen.
      */
-    server.cursor = wlr_cursor_create();
-    wlr_cursor_attach_output_layout(server.cursor, server.output_layout);
+    server.cursor.wlr_cursor = wlr_cursor_create();
+    wlr_cursor_attach_output_layout(server.cursor.wlr_cursor, server.output_layout);
 
     /* Creates an xcursor manager, another wlroots utility which loads up
      * Xcursor themes to source cursor images from and makes sure that cursor
@@ -901,12 +869,12 @@ int setup()
      *
      * And more comments are sprinkled throughout the notify functions above.
      */
-    wl_signal_add(&server.cursor->events.motion, &cursor_motion);
-    wl_signal_add(&server.cursor->events.motion_absolute,
+    wl_signal_add(&server.cursor.wlr_cursor->events.motion, &cursor_motion);
+    wl_signal_add(&server.cursor.wlr_cursor->events.motion_absolute,
             &cursor_motion_absolute);
-    wl_signal_add(&server.cursor->events.button, &cursor_button);
-    wl_signal_add(&server.cursor->events.axis, &cursor_axis);
-    wl_signal_add(&server.cursor->events.frame, &cursor_frame);
+    wl_signal_add(&server.cursor.wlr_cursor->events.button, &cursor_button);
+    wl_signal_add(&server.cursor.wlr_cursor->events.axis, &cursor_axis);
+    wl_signal_add(&server.cursor.wlr_cursor->events.frame, &cursor_frame);
 
     /*
      * Configures a seat, which is a single "seat" at which a user sits and

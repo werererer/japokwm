@@ -8,6 +8,7 @@
 #include <wlr/types/wlr_box.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <stdlib.h>
+#include <wlr/util/log.h>
 
 #include "container.h"
 #include "parseConfig.h"
@@ -26,6 +27,7 @@ void arrange()
             continue;
         arrange_monitor(m);
     }
+    update_cursor(&server.cursor);
 }
 
 /* update layout and was set in the arrange function */
@@ -42,7 +44,6 @@ static void update_layout(lua_State *L, int n, struct monitor *m)
     ws->layout[0].lua_layout_ref = luaL_ref(L, LUA_REGISTRYINDEX);
     lua_pop(L, 1);
 
-    printf("get update_layout\n");
     lua_getglobal_safe(L, "Update_layout");
     lua_pushinteger(L, n);
     lua_call_safe(L, 1, 0, 0);
@@ -50,6 +51,10 @@ static void update_layout(lua_State *L, int n, struct monitor *m)
 
 static struct wlr_fbox lua_unbox_layout(struct lua_State *L, int i) {
     struct wlr_fbox geom;
+
+    if (luaL_len(L, -1) < i)
+        wlr_log(WLR_ERROR, "index to high: index %i len %lli", i, luaL_len(L, -1));
+
     lua_rawgeti(L, -1, i);
 
     lua_rawgeti(L, -1, 1);
@@ -158,28 +163,29 @@ void arrange_monitor(struct monitor *m)
 
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);
 
-    int container_count = get_master_container_count(m);
+    int master_container_count = get_master_container_count(m);
     int default_container_count = get_default_container_count(m);
     update_layout(L, default_container_count, m);
 
     update_hidden_containers(m);
+
     update_container_focus_stack_positions(m);
     update_container_positions(m);
 
     struct container *con;
     if (lt->options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
-            if (!visibleon(con, m->ws[0]))
+            if (!visibleon(con, m->ws[0]) && !con->floating)
                 continue;
 
-            arrange_container(con, con->focus_stack_position, container_count, false);
+            arrange_container(con, con->focus_stack_position, master_container_count, false);
         }
     } else {
         wl_list_for_each(con, &containers, mlink) {
-            if (!visibleon(con, m->ws[0]))
+            if (!visibleon(con, m->ws[0]) && !con->floating)
                 continue;
 
-            arrange_container(con, con->position, container_count, false);
+            arrange_container(con, con->position, master_container_count, false);
         }
     }
 }
@@ -261,16 +267,20 @@ void update_hidden_containers(struct monitor *m)
     int i = 1;
     if (ws->layout[0].options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
-            if (!existon(con, m) || con->floating)
+            if (!existon(con, m) || con->floating) {
+                con->hidden = true;
                 continue;
+            }
 
             con->hidden = i > count;
             i++;
         }
     } else {
         wl_list_for_each(con, &containers, mlink) {
-            if (!existon(con, m) || con->floating)
+            if (!existon(con, m) || con->floating) {
+                con->hidden = true;
                 continue;
+            }
 
             con->hidden = i > count;
             i++;

@@ -4,9 +4,12 @@
 #include <string.h>
 #include <wayland-server.h>
 #include <wlr/util/log.h>
+#include <wlr/types/wlr_cursor.h>
 
 #include "ipc-server.h"
 #include "monitor.h"
+#include "server.h"
+#include "tile/tileUtils.h"
 
 static struct wlr_list workspaces;
 
@@ -210,6 +213,7 @@ void set_workspace(struct monitor *m, struct workspace *ws)
 
     m->ws[0] = ws;
     ws->m = m;
+
     // TODO is wlr_output_damage_whole better? because of floating windows
     root_damage_whole(m->root);
 }

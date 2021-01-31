@@ -105,12 +105,15 @@ int lib_resize_main(lua_State *L)
 
 int lib_set_floating(lua_State *L)
 {
-    bool b = lua_toboolean(L, -1);
+    printf("lib set floating\n");
+    printf("lua size: %i\n", lua_gettop(L));
+    bool floating = lua_toboolean(L, -1);
     lua_pop(L, 1);
     struct container *sel = selected_container(selected_monitor);
     if (!sel)
         return 0;
-    set_container_floating(sel, b);
+    set_container_floating(sel, floating);
+    printf("lua size: %i\n", lua_gettop(L));
     arrange();
     return 0;
 }
@@ -226,30 +229,30 @@ int lib_move_resize(lua_State *L)
 {
     int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    grabc = xytocontainer(server.cursor->x, server.cursor->y);
+    grabc = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
     if (!grabc)
         return 0;
 
     /* Float the window and tell motionnotify to grab it */
     set_container_floating(grabc, true);
-    switch (server.cursor_mode = ui) {
+    switch (server.cursor.cursor_mode = ui) {
         case CURSOR_MOVE:
-            grabcx = server.cursor->x - grabc->geom.x;
-            grabcy = server.cursor->y - grabc->geom.y;
-            wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "fleur", server.cursor);
+            grabcx = server.cursor.wlr_cursor->x - grabc->geom.x;
+            grabcy = server.cursor.wlr_cursor->y - grabc->geom.y;
+            wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "fleur", server.cursor.wlr_cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
             arrange();
             break;
         case CURSOR_RESIZE:
             /* Doesn't work for X11 output - the next absolute motion event
              * returns the cursor to where it started */
-            grabcx = server.cursor->x - grabc->geom.x;
-            grabcy = server.cursor->y - grabc->geom.y;
-            wlr_cursor_warp_closest(server.cursor, NULL,
+            grabcx = server.cursor.wlr_cursor->x - grabc->geom.x;
+            grabcy = server.cursor.wlr_cursor->y - grabc->geom.y;
+            wlr_cursor_warp_closest(server.cursor.wlr_cursor, NULL,
                     grabc->geom.x + grabc->geom.width,
                     grabc->geom.y + grabc->geom.height);
             wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
-                    "bottom_right_corner", server.cursor);
+                    "bottom_right_corner", server.cursor.wlr_cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
             arrange();
             break;
@@ -265,15 +268,15 @@ void motionnotify(uint32_t time)
     double sx = 0, sy = 0;
     struct wlr_surface *surface = NULL;
 
-    set_selected_monitor(xytomon(server.cursor->x, server.cursor->y));
+    set_selected_monitor(xytomon(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y));
     bool action = false;
     struct wlr_box geom;
     /* If we are currently grabbing the mouse, handle and return */
-    switch (server.cursor_mode) {
+    switch (server.cursor.cursor_mode) {
         case CURSOR_MOVE:
             action = true;
-            geom.x = server.cursor->x - grabcx;
-            geom.y = server.cursor->y - grabcy;
+            geom.x = server.cursor.wlr_cursor->x - grabcx;
+            geom.y = server.cursor.wlr_cursor->y - grabcy;
             geom.width = grabc->geom.width;
             geom.height = grabc->geom.height;
             /* Move the grabbed client to the new position. */
@@ -284,8 +287,8 @@ void motionnotify(uint32_t time)
             action = true;
             geom.x = grabc->geom.x;
             geom.y = grabc->geom.y;
-            geom.width = server.cursor->x - grabc->geom.x;
-            geom.height = server.cursor->y - grabc->geom.y;
+            geom.width = server.cursor.wlr_cursor->x - grabc->geom.x;
+            geom.height = server.cursor.wlr_cursor->y - grabc->geom.y;
             resize(grabc, geom, false);
             return;
             break;
@@ -305,8 +308,8 @@ void motionnotify(uint32_t time)
                             con->client->surface.xdg,
                             /* absolute mouse position to relative in regards to
                              * the client */
-                            server.cursor->x - con->geom.x,
-                            server.cursor->y - con->geom.y,
+                            server.cursor.wlr_cursor->x - con->geom.x,
+                            server.cursor.wlr_cursor->y - con->geom.y,
                             &sx, &sy);
                 }
                 break;
@@ -315,8 +318,8 @@ void motionnotify(uint32_t time)
                 if (is_popup) {
                     surface = wlr_layer_surface_v1_surface_at(
                             con->client->surface.layer,
-                            server.cursor->x - con->geom.x,
-                            server.cursor->y - con->geom.y,
+                            server.cursor.wlr_cursor->x - con->geom.x,
+                            server.cursor.wlr_cursor->y - con->geom.y,
                             &sx, &sy);
                 }
                 break;
@@ -328,7 +331,7 @@ void motionnotify(uint32_t time)
         if (!surface) {
             is_popup = false;
         } else if (surface == selected_container(m)->client->surface.xdg->surface) {
-            struct container *con = xytocontainer(server.cursor->x, server.cursor->y);
+            struct container *con = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
             if (con) {
                 is_popup = is_popup && surface == con->client->surface.xdg->surface;
             }
@@ -340,8 +343,8 @@ void motionnotify(uint32_t time)
                 wlr_xdg_popup_destroy(popup->xdg->base);
             }
             surface = wlr_surface_surface_at(get_wlrsurface(con->client),
-                    server.cursor->x - con->geom.x,
-                    server.cursor->y - con->geom.y, &sx, &sy);
+                    server.cursor.wlr_cursor->x - con->geom.x,
+                    server.cursor.wlr_cursor->y - con->geom.y, &sx, &sy);
         }
     }
 
@@ -349,15 +352,11 @@ void motionnotify(uint32_t time)
      * image to a default. This is what makes the cursor image appear when you
      * move it off of a client or over its border. */
 
-    if (!surface && !xytocontainer(server.cursor->x, server.cursor->y)) {
-        printf("set xcursor\n");
-        wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
-            "left_ptr", server.cursor);
-    }
+    update_cursor(&server.cursor);
 
     // if there is no popup use the selected client's surface
     if (!is_popup) {
-        con = xytocontainer(server.cursor->x, server.cursor->y);
+        con = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
         if (con) {
             surface = get_wlrsurface(con->client);
         }
@@ -386,7 +385,7 @@ int lib_view(lua_State *L)
     }
     set_next_unoccupied_workspace(m, ws);
     focus_top_container(m, FOCUS_NOOP);
-    arrange(false);
+    arrange();
     return 0;
 }
 
@@ -411,8 +410,8 @@ int lib_toggle_floating(lua_State *L)
 int lib_move_client(lua_State *L)
 {
     struct wlr_box geom;
-    geom.x = server.cursor->x - grabcx;
-    geom.y = server.cursor->y - grabcy;
+    geom.x = server.cursor.wlr_cursor->x - grabcx;
+    geom.y = server.cursor.wlr_cursor->y - grabcy;
     geom.width = grabc->geom.width;
     geom.height = grabc->geom.height;
     resize(grabc, geom, false);
@@ -445,8 +444,8 @@ int lib_resize_client(lua_State *L)
     struct wlr_box geom;
     geom.x = grabc->geom.x;
     geom.y = grabc->geom.y;
-    geom.width = server.cursor->x - grabc->geom.x;
-    geom.height = server.cursor->y - grabc->geom.y;
+    geom.width = server.cursor.wlr_cursor->x - grabc->geom.x;
+    geom.height = server.cursor.wlr_cursor->y - grabc->geom.y;
     resize(grabc, geom, false);
     return 0;
 }

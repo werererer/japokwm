@@ -279,6 +279,7 @@ static void add_container_to_focus_stack(struct container *con)
 
 static void add_container_to_monitor_stack(struct container *con)
 {
+    printf("add_container_to_monitor_stack\n");
     if (!con)
         return;
 
@@ -307,6 +308,7 @@ static void add_container_to_monitor_stack(struct container *con)
     }
 
     wl_list_insert(&con2->slink, &con->slink);
+    printf("add_container_to_monitor_stack end\n");
 }
 
 static void add_container_to_monitor(struct container *con, struct monitor *m)
@@ -519,7 +521,9 @@ void set_container_floating(struct container *con, bool floating)
         wl_list_remove(&con->mlink);
         add_container_to_monitor_containers(con, -1);
     } else {
-        set_container_monitor(con, selected_monitor);
+        lift_container(con);
+        wl_list_remove(&con->mlink);
+        add_container_to_monitor_containers(con, -1);
     }
 }
 

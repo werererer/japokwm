@@ -5,12 +5,12 @@
 #include <wlr/xcursor.h>
 #include <wayland-server-core.h>
 #include <wlr/types/wlr_xcursor_manager.h>
-#include "xwayland.h"
-#include "options.h"
-#include "layout.h"
 
-/* enums */
-enum cursorMode { CURSOR_NORMAL, CURSOR_MOVE, CURSOR_RESIZE }; /* cursor */
+#include "cursor.h"
+#include "layout.h"
+#include "options.h"
+#include "xwayland.h"
+
 struct server {
     /* associated with ilink in client */
     struct wl_list independents;
@@ -28,15 +28,13 @@ struct server {
     struct wlr_layer_shell_v1 *layerShell;
     struct wlr_xdg_decoration_manager_v1 *xdecoMgr;
 
-    struct wlr_surface *cursor_surface;
-    struct wlr_cursor *cursor;
+    struct cursor cursor;
     struct wlr_xcursor_manager *cursor_mgr;
 
     struct layout default_layout;
 
     struct wlr_output_layout *output_layout;
     struct wl_list keyboards;
-    enum cursorMode cursor_mode;
 
     struct options options;
 };
