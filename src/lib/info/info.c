@@ -1,8 +1,10 @@
 #include "lib/info/info.h"
 
-#include "container.h"
-#include "tile/tileUtils.h"
 #include <lauxlib.h>
+
+#include "container.h"
+#include "server.h"
+#include "tile/tileUtils.h"
 
 int lib_get_this_container_count(lua_State *L)
 {
@@ -64,5 +66,17 @@ int lib_get_workspace(lua_State *L)
     int id = ws->id;
 
     lua_pushinteger(L, id);
+    return 1;
+}
+
+int lib_get_container_under_cursor(lua_State *L)
+{
+    struct wlr_cursor *cursor = server.cursor.wlr_cursor;
+    struct container *con = xytocontainer(cursor->x, cursor->y);
+
+    int pos = 0;
+    if (con)
+        pos = con->position;
+    lua_pushinteger(L, pos);
     return 1;
 }

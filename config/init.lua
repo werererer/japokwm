@@ -16,7 +16,7 @@ local monitor_transform = {
     TRANSFORM_FLIPPED_270 = 7,
 }
 
-config.set_sloppy_focus(true)
+config.set_sloppy_focus(false)
 config.set_borderpx(2)
 config.set_gaps(20, 20)
 config.set_root_color({0.3, 0.3, 0.3, 1.0})
@@ -105,6 +105,7 @@ config.set_keybinds({
 })
 
 config.set_buttons({
+    {"M1", function() action.focus_container(info.get_container_under_cursor()) end},
     {"mod-M1",  function() action.move_resize(cursor_mode.CUR_MOVE) end},
     {"mod-M2",  function() action.move_resize(cursor_mode.CUR_RESIZE) end},
 })

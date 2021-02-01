@@ -72,6 +72,17 @@ int lib_arrange(lua_State *L)
     return 0;
 }
 
+int lib_focus_container(lua_State *L)
+{
+    int pos = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    struct container *con = container_position_to_container(pos);
+
+    if (con)
+        focus_container(con, selected_monitor, FOCUS_NOOP);
+    return 0;
+}
+
 int lib_toggle_consider_layer_shell(lua_State *L)
 {
     selected_monitor->root->consider_layer_shell = !selected_monitor->root->consider_layer_shell;
@@ -356,6 +367,9 @@ void motionnotify(uint32_t time)
         }
     }
     if (!action && con) {
+        if (!wl_list_empty(&server.independents))
+            return;
+
         pointer_focus(con, surface, sx, sy, time);
     }
 }

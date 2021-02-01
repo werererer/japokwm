@@ -128,8 +128,8 @@ static struct wl_listener request_set_psel = {.notify = setpsel};
 static struct wl_listener request_set_sel = {.notify = setsel};
 
 static void activatex11(struct wl_listener *listener, void *data);
-static void createnotifyx11(struct wl_listener *listener, void *data);
-static struct wl_listener new_xwayland_surface = {.notify = createnotifyx11};
+static void create_notifyx11(struct wl_listener *listener, void *data);
+static struct wl_listener new_xwayland_surface = {.notify = create_notifyx11};
 
 void axisnotify(struct wl_listener *listener, void *data)
 {
@@ -152,9 +152,6 @@ void buttonpress(struct wl_listener *listener, void *data)
     case WLR_BUTTON_PRESSED:
         {
             /* Change focus if the button was _pressed_ over a client */
-            struct container *con;
-            if ((con = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y)))
-                focus_container(con, selected_monitor, FOCUS_NOOP);
 
             /* Translate libinput to xkbcommon code */
             unsigned sym = event->button + 64985;
@@ -573,7 +570,7 @@ void maprequest(struct wl_listener *listener, void *data)
             }
         case LAYER_SHELL:
             {
-                struct monitor *m = outputtomon(c->surface.layer->output);
+                struct monitor *m = output_to_monitor(c->surface.layer->output);
                 wl_list_insert(&clients, &c->link);
                 wlr_layer_surface_v1_configure(c->surface.layer, m->geom.width, m->geom.height);
                 create_container(c, m, true);
@@ -628,6 +625,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
                 con->on_top = true;
                 con->has_border = false;
+                focus_container(con, m, FOCUS_LIFT);
                 set_container_floating(con, true);
                 resize(con, get_center_box(con->m->geom), false);
                 break;
@@ -935,8 +933,6 @@ void unmapnotify(struct wl_listener *listener, void *data)
             wl_list_remove(&c->link);
             break;
         case X11_UNMANAGED:
-            /* // TODO */
-            wl_list_remove(&c->con->ilink);
             break;
     }
 }
@@ -950,7 +946,7 @@ void activatex11(struct wl_listener *listener, void *data)
                wlr_xwayland_surface_activate(c->surface.xwayland, 1);
 }
 
-void createnotifyx11(struct wl_listener *listener, void *data)
+void create_notifyx11(struct wl_listener *listener, void *data)
 {
     struct wlr_xwayland_surface *xwayland_surface = data;
     struct client *c;

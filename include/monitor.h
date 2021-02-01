@@ -52,7 +52,7 @@ void set_selected_monitor(struct monitor *m);
 void push_selected_workspace(struct monitor *m, struct workspace *ws);
 
 struct monitor *dirtomon(int dir);
-struct monitor *outputtomon(struct wlr_output *output);
+struct monitor *output_to_monitor(struct wlr_output *output);
 struct monitor *xytomon(double x, double y);
 
 

@@ -11,6 +11,7 @@
 static const struct luaL_Reg action[] =
 {
     {"arrange", lib_arrange},
+    {"focus_container", lib_focus_container},
     {"focus_on_hidden_stack", lib_focus_on_hidden_stack},
     {"focus_on_stack", lib_focus_on_stack},
     {"get_nmaster", lib_get_nmaster},
@@ -47,6 +48,7 @@ static const struct luaL_Reg info[] =
     {"this_container_position", lib_this_container_position},
     {"get_next_empty_workspace", lib_get_next_empty_workspace},
     {"get_workspace", lib_get_workspace},
+    {"get_container_under_cursor", lib_get_container_under_cursor},
     {NULL, NULL},
 };
 

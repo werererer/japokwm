@@ -31,13 +31,20 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 void destroy_container(struct container *con)
 {
     wl_list_remove(&con->flink);
-    struct client *c = con->client;
 
-    if (c->type == LAYER_SHELL) {
-        wl_list_remove(&con->llink);
-    } else {
-        wl_list_remove(&con->slink);
-        wl_list_remove(&con->mlink);
+    switch (con->client->type) {
+        case LAYER_SHELL:
+            wl_list_remove(&con->llink);
+            break;
+        case X11_UNMANAGED:
+            wl_list_remove(&con->slink);
+            wl_list_remove(&con->ilink);
+            wl_list_remove(&con->mlink);
+            break;
+        default:
+            wl_list_remove(&con->slink);
+            wl_list_remove(&con->mlink);
+            break;
     }
     free(con);
 }
@@ -455,13 +462,14 @@ void focus_top_container(struct monitor *m, enum focus_actions a)
 {
     // focus_stack should not be changed while iterating
     struct container *con;
-    bool focus = false;
-    wl_list_for_each(con, &focus_stack, flink)
+    bool container_found = false;
+    wl_list_for_each(con, &focus_stack, flink) {
         if (visibleon(con, m->ws[0])) {
-            focus = true;
+            container_found = true;
             break;
         }
-    if (focus)
+    }
+    if (container_found)
         focus_container(con, m, a);
 }
 

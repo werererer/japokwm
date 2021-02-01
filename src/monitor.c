@@ -213,7 +213,7 @@ struct monitor *dirtomon(int dir)
     }
 }
 
-struct monitor *outputtomon(struct wlr_output *output)
+struct monitor *output_to_monitor(struct wlr_output *output)
 {
     struct monitor *m;
     bool found = false;
