@@ -30,7 +30,6 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 
 void destroy_container(struct container *con)
 {
-    printf("destroy_container\n");
     wl_list_remove(&con->flink);
     struct client *c = con->client;
 

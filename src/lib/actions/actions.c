@@ -348,10 +348,6 @@ void motionnotify(uint32_t time)
         }
     }
 
-    /* If there's no client surface under the server.cursor, set the cursor
-     * image to a default. This is what makes the cursor image appear when you
-     * move it off of a client or over its border. */
-
     update_cursor(&server.cursor);
 
     // if there is no popup use the selected client's surface

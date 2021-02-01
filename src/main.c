@@ -70,6 +70,7 @@
 #include "tile/tileUtils.h"
 #include "workspace.h"
 #include "translationLayer.h"
+#include "cursor.h"
 
 typedef struct {
     struct wl_listener request_mode;
@@ -358,6 +359,7 @@ void cursorframe(struct wl_listener *listener, void *data)
 
 void destroynotify(struct wl_listener *listener, void *data)
 {
+    printf("destroynotify\n");
     /* Called when the surface is destroyed and should never be shown again. */
     struct client *c = wl_container_of(listener, c, destroy);
     wl_list_remove(&c->map.link);
@@ -375,11 +377,18 @@ void destroynotify(struct wl_listener *listener, void *data)
             break;
     }
 
+    printf("c->con: %p\n", c->con);
+    printf("size: %i\n", wl_list_length(&stack));
+    printf("size: %i\n", wl_list_length(&focus_stack));
+    printf("size: %i\n", wl_list_length(&layer_stack));
+    printf("size: %i\n", wl_list_length(&containers));
+    printf("size: %i\n", wl_list_length(&sticky_stack));
     free(c);
     c = NULL;
 
     arrange();
     focus_top_container(selected_monitor, FOCUS_NOOP);
+    printf("destroynotify end\n");
 }
 
 void destroyxdeco(struct wl_listener *listener, void *data)
@@ -885,7 +894,7 @@ int setup()
     wl_list_init(&server.keyboards);
     wl_signal_add(&server.backend->events.new_input, &new_input);
     server.seat = wlr_seat_create(server.display, "seat0");
-    wl_signal_add(&server.seat->events.request_set_cursor, &request_cursor);
+    wl_signal_add(&server.seat->events.request_set_cursor, &request_set_cursor);
     wl_signal_add(&server.seat->events.request_set_selection, &request_set_sel);
     wl_signal_add(&server.seat->events.request_set_primary_selection, &request_set_psel);
 
@@ -917,11 +926,13 @@ void sigchld(int unused)
 
 void unmapnotify(struct wl_listener *listener, void *data)
 {
+    printf("unmapnotify\n");
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
 
     container_damage_whole(c->con);
     destroy_container(c->con);
+    c->con = NULL;
 
     switch (c->type) {
         case LAYER_SHELL:
@@ -934,7 +945,7 @@ void unmapnotify(struct wl_listener *listener, void *data)
             wl_list_remove(&c->link);
             break;
         case X11_UNMANAGED:
-            // TODO
+            /* // TODO */
             wl_list_remove(&c->con->ilink);
             break;
     }

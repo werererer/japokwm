@@ -27,6 +27,7 @@ void arrange()
             continue;
         arrange_monitor(m);
     }
+
     update_cursor(&server.cursor);
 }
 
