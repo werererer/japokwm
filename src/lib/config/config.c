@@ -148,7 +148,6 @@ int lib_set_keybinds(lua_State *L)
 
 int lib_set_buttons(lua_State *L)
 {
-    printf("set_buttons: %i\n", lua_gettop(L));
     server.options.buttonbinds_ref = lua_copy_table(L);
     return 0;
 }

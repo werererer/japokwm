@@ -176,16 +176,17 @@ void arrange_monitor(struct monitor *m)
     struct container *con;
     if (lt->options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
-            if (!visibleon(con, m->ws[0]) && !con->floating)
+            if (!visibleon(con, m->ws[0]))
                 continue;
 
             arrange_container(con, con->focus_stack_position, master_container_count, false);
         }
     } else {
         wl_list_for_each(con, &containers, mlink) {
-            if (!visibleon(con, m->ws[0]) && !con->floating)
+            if (!visibleon(con, m->ws[0]))
                 continue;
 
+            printf("arrange con: %p\n", con);
             arrange_container(con, con->position, master_container_count, false);
         }
     }

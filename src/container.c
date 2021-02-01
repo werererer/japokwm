@@ -99,7 +99,7 @@ struct container *selected_container(struct monitor *m)
         return NULL;
 
     struct container *con = wl_container_of(focus_stack.next, con, flink);
-    if (!visibleon(con, m->ws[0]) && !con->floating)
+    if (!visibleon(con, m->ws[0]))
         return NULL;
     else
         return con;
@@ -195,7 +195,7 @@ struct container *xytocontainer(double x, double y)
     wl_list_for_each(con, &stack, slink) {
         if (!con->focusable)
             continue;
-        if ((!visibleon(con, m->ws[0]) && !con->floating) || !wlr_box_contains_point(&con->geom, x, y))
+        if (!visibleon(con, m->ws[0]) || !wlr_box_contains_point(&con->geom, x, y))
             continue;
 
         return con;
@@ -278,7 +278,6 @@ static void add_container_to_focus_stack(struct container *con)
 
 static void add_container_to_monitor_stack(struct container *con)
 {
-    printf("add_container_to_monitor_stack\n");
     if (!con)
         return;
 
@@ -307,7 +306,6 @@ static void add_container_to_monitor_stack(struct container *con)
     }
 
     wl_list_insert(&con2->slink, &con->slink);
-    printf("add_container_to_monitor_stack end\n");
 }
 
 static void add_container_to_monitor(struct container *con, struct monitor *m)

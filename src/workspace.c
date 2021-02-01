@@ -81,6 +81,8 @@ bool visibleon(struct container *con, struct workspace *ws)
 {
     if (!con || !ws)
         return false;
+    if (con->floating)
+        return true;
     if (con->m != ws->m)
         return false;
     if (con->hidden)
@@ -177,7 +179,6 @@ void workspace_assign_monitor(struct workspace *ws, struct monitor *m)
 
 void set_selected_layout(struct workspace *ws, struct layout layout)
 {
-    printf("set selected layout\n");
     if (!ws)
         return;
 

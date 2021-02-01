@@ -385,7 +385,6 @@ void call_function(lua_State *L, struct layout lt)
 
 static struct layout get_config_array_layout(lua_State *L, const char *name, size_t i)
 {
-    printf("get_config array_layout\n");
     lua_rawgeti(L, -1, i);
     struct layout layout = {
         .symbol = get_config_array_str(L, name, 1),
@@ -400,7 +399,6 @@ static struct layout get_config_array_layout(lua_State *L, const char *name, siz
     };
     layout.options = get_default_options();
     lua_pop(L, 1);
-    printf("get_config array_layout end\n");
     return layout;
 }
 

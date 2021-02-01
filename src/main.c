@@ -326,7 +326,6 @@ void createnotify_layer_shell(struct wl_listener *listener, void *data)
 
 void create_pointer(struct wlr_input_device *device)
 {
-    printf("create pointer\n");
     /* We don't do anything special with pointers. All of our pointer handling
      * is proxied through wlr_cursor. On another compositor, you might take this
      * opportunity to do libinput configuration on the device to set
@@ -359,7 +358,6 @@ void cursorframe(struct wl_listener *listener, void *data)
 
 void destroynotify(struct wl_listener *listener, void *data)
 {
-    printf("destroynotify\n");
     /* Called when the surface is destroyed and should never be shown again. */
     struct client *c = wl_container_of(listener, c, destroy);
     wl_list_remove(&c->map.link);
@@ -377,18 +375,11 @@ void destroynotify(struct wl_listener *listener, void *data)
             break;
     }
 
-    printf("c->con: %p\n", c->con);
-    printf("size: %i\n", wl_list_length(&stack));
-    printf("size: %i\n", wl_list_length(&focus_stack));
-    printf("size: %i\n", wl_list_length(&layer_stack));
-    printf("size: %i\n", wl_list_length(&containers));
-    printf("size: %i\n", wl_list_length(&sticky_stack));
     free(c);
     c = NULL;
 
     arrange();
     focus_top_container(selected_monitor, FOCUS_NOOP);
-    printf("destroynotify end\n");
 }
 
 void destroyxdeco(struct wl_listener *listener, void *data)
@@ -913,7 +904,6 @@ int setup()
         wlr_log(WLR_ERROR, "failed to setup XWayland X server, continuing without it");
     }
 
-    printf("setup end\n");
     return 0;
 }
 
@@ -926,7 +916,6 @@ void sigchld(int unused)
 
 void unmapnotify(struct wl_listener *listener, void *data)
 {
-    printf("unmapnotify\n");
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
 

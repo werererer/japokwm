@@ -106,14 +106,12 @@ int lib_resize_main(lua_State *L)
 int lib_set_floating(lua_State *L)
 {
     printf("lib set floating\n");
-    printf("lua size: %i\n", lua_gettop(L));
     bool floating = lua_toboolean(L, -1);
     lua_pop(L, 1);
     struct container *sel = selected_container(selected_monitor);
     if (!sel)
         return 0;
     set_container_floating(sel, floating);
-    printf("lua size: %i\n", lua_gettop(L));
     arrange();
     return 0;
 }
