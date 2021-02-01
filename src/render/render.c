@@ -226,6 +226,10 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each_reverse(con, &stack, slink) {
+        printf("con->hidden: %i\n", con->hidden);
+        printf("con->client->ws: %p\n", con->client->ws);
+        printf("m->ws[0]: %p\n", m->ws[0]);
+        printf("con->floating: %i\n", con->floating);
         printf("visibleon ws: %i\n", visibleon(con, m->ws[0]));
         if (!visibleon(con, m->ws[0]))
             continue;

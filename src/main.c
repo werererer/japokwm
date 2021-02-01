@@ -87,8 +87,8 @@ void cleanup();
 void cleanupkeyboard(struct wl_listener *listener, void *data);
 void commitnotify(struct wl_listener *listener, void *data);
 void create_keyboard(struct wlr_input_device *device);
-void createnotify(struct wl_listener *listener, void *data);
-void createnotify_layer_shell(struct wl_listener *listener, void *data);
+void create_notify(struct wl_listener *listener, void *data);
+void create_notify_layer_shell(struct wl_listener *listener, void *data);
 void create_pointer(struct wlr_input_device *device);
 void createxdeco(struct wl_listener *listener, void *data);
 void cursorframe(struct wl_listener *listener, void *data);
@@ -122,8 +122,8 @@ static struct wl_listener cursor_motion_absolute = {.notify = motionabsolute};
 static struct wl_listener new_input = {.notify = inputdevice};
 static struct wl_listener new_output = {.notify = create_monitor};
 static struct wl_listener new_xdeco = {.notify = createxdeco};
-static struct wl_listener new_xdg_surface = {.notify = createnotify};
-static struct wl_listener new_layer_shell_surface = {.notify = createnotify_layer_shell};
+static struct wl_listener new_xdg_surface = {.notify = create_notify};
+static struct wl_listener new_layer_shell_surface = {.notify = create_notify_layer_shell};
 static struct wl_listener request_set_psel = {.notify = setpsel};
 static struct wl_listener request_set_sel = {.notify = setsel};
 
@@ -256,7 +256,7 @@ void create_keyboard(struct wlr_input_device *device)
     wl_list_insert(&server.keyboards, &kb->link);
 }
 
-void createnotify(struct wl_listener *listener, void *data)
+void create_notify(struct wl_listener *listener, void *data)
 {
     /* This event is raised when wlr_xdg_shell receives a new xdg surface from a
      * client, either a toplevel (application window) or popup. */
@@ -293,7 +293,7 @@ void createnotify(struct wl_listener *listener, void *data)
     wl_signal_add(&xdg_surface->events.new_popup, &c->new_popup);
 }
 
-void createnotify_layer_shell(struct wl_listener *listener, void *data)
+void create_notify_layer_shell(struct wl_listener *listener, void *data)
 {
     /* This event is raised when wlr_xdg_shell receives a new xdg surface from a
      * client, either a toplevel (application window) or popup. */
@@ -561,6 +561,7 @@ void maprequest(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
 
     struct monitor *m = selected_monitor;
+    printf("set client workspace\n");
     c->ws = m->ws[0];
 
     switch (c->type) {

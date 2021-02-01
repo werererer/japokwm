@@ -133,6 +133,8 @@ static void update_container_positions(struct monitor *m)
     wl_list_for_each(con, &containers, mlink) {
         if (!visibleon(con, m->ws[0]))
             continue;
+        if (con->floating)
+            continue;
 
         con->position = position;
         // then use the layout that may have been reseted
@@ -146,6 +148,8 @@ static void update_container_focus_stack_positions(struct monitor *m)
     struct container *con;
     wl_list_for_each(con, &focus_stack, flink) {
         if (!visibleon(con, m->ws[0]))
+            continue;
+        if (con->floating)
             continue;
 
         con->focus_stack_position = position;
@@ -176,14 +180,14 @@ void arrange_monitor(struct monitor *m)
     struct container *con;
     if (lt->options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
-            if (!visibleon(con, m->ws[0]))
+            if (!visibleon(con, m->ws[0]) || con->floating)
                 continue;
 
             arrange_container(con, con->focus_stack_position, master_container_count, false);
         }
     } else {
         wl_list_for_each(con, &containers, mlink) {
-            if (!visibleon(con, m->ws[0]))
+            if (!visibleon(con, m->ws[0]) || con->floating)
                 continue;
 
             printf("arrange con: %p\n", con);
@@ -269,8 +273,12 @@ void update_hidden_containers(struct monitor *m)
     int i = 1;
     if (ws->layout[0].options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
-            if (!existon(con, m) || con->floating) {
+            if (con->floating) {
                 con->hidden = true;
+                continue;
+            }
+
+            if (!existon(con, m)) {
                 continue;
             }
 
@@ -279,8 +287,12 @@ void update_hidden_containers(struct monitor *m)
         }
     } else {
         wl_list_for_each(con, &containers, mlink) {
-            if (!existon(con, m) || con->floating) {
+            if (con->floating) {
                 con->hidden = true;
+                continue;
+            }
+
+            if (!existon(con, m)) {
                 continue;
             }
 

@@ -469,6 +469,8 @@ bool existon(struct container *con, struct monitor *m)
 {
     if (!con || !m)
         return false;
+    if (con->floating)
+        return true;
     if (con->m != m)
         return false;
 
