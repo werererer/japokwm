@@ -544,3 +544,29 @@ void set_container_monitor(struct container *con, struct monitor *m)
     con->m = m;
     con->client->ws = m->ws[0];
 }
+
+void move_container(struct container *con, int dx, int dy)
+{
+    struct wlr_box geom = con->geom;
+    geom.width = server.cursor.wlr_cursor->x - dx;
+    geom.height = server.cursor.wlr_cursor->y - dy;
+    resize(con, geom, false);
+}
+
+void resize_container(struct container *con, int dx, int dy)
+{
+    struct wlr_box geom = con->geom;
+    geom.x = server.cursor.wlr_cursor->x - dx,
+    geom.y = server.cursor.wlr_cursor->y - dy,
+    resize(con, geom, false);
+}
+
+inline int absolute_x_to_container_relative_x(struct container *con, int x)
+{
+    return x - con->geom.x;
+}
+
+inline int absolute_y_to_container_relative_y(struct container *con, int y)
+{
+    return y - con->geom.y;
+}

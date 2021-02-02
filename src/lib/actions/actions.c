@@ -22,9 +22,6 @@
 #include "workspace.h"
 #include "xdg-shell-protocol.h"
 
-static struct container *grabc = NULL;
-static int dx, dy; /* client-relative */
-
 static void pointer_focus(struct container *con, struct wlr_surface *surface,
         double sx, double sy, uint32_t time);
 
@@ -240,137 +237,8 @@ int lib_move_resize(lua_State *L)
 {
     int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    grabc = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
-    if (!grabc)
-        return 0;
-
-    /* Float the window and tell motionnotify to grab it */
-    set_container_floating(grabc, true);
-    switch (server.cursor.cursor_mode = ui) {
-        case CURSOR_MOVE:
-            dx = server.cursor.wlr_cursor->x - grabc->geom.x;
-            dy = server.cursor.wlr_cursor->y - grabc->geom.y;
-            wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "fleur", server.cursor.wlr_cursor);
-            wlr_seat_pointer_notify_clear_focus(server.seat);
-            arrange();
-            break;
-        case CURSOR_RESIZE:
-            /* Doesn't work for X11 output - the next absolute motion event
-             * returns the cursor to where it started */
-            wlr_cursor_warp_closest(server.cursor.wlr_cursor, NULL,
-                    grabc->geom.x + grabc->geom.width,
-                    grabc->geom.y + grabc->geom.height);
-            wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
-                    "bottom_right_corner", server.cursor.wlr_cursor);
-            wlr_seat_pointer_notify_clear_focus(server.seat);
-            arrange();
-            break;
-        default:
-            break;
-    }
+    move_resize(ui);
     return 0;
-}
-
-// TODO optimize this function
-void motionnotify(uint32_t time)
-{
-    double sx = 0, sy = 0;
-    struct wlr_surface *surface = NULL;
-
-    set_selected_monitor(xytomon(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y));
-    bool action = false;
-    struct wlr_box geom;
-    /* If we are currently grabbing the mouse, handle and return */
-    switch (server.cursor.cursor_mode) {
-        case CURSOR_MOVE:
-            action = true;
-            geom.x = server.cursor.wlr_cursor->x - dx;
-            geom.y = server.cursor.wlr_cursor->y - dy;
-            geom.width = grabc->geom.width;
-            geom.height = grabc->geom.height;
-            /* Move the grabbed client to the new position. */
-            resize(grabc, geom, false);
-            return;
-            break;
-        case CURSOR_RESIZE:
-            action = true;
-            geom.x = grabc->geom.x;
-            geom.y = grabc->geom.y;
-            geom.width = server.cursor.wlr_cursor->x - grabc->geom.x;
-            geom.height = server.cursor.wlr_cursor->y - grabc->geom.y;
-            resize(grabc, geom, false);
-            return;
-            break;
-        default:
-            break;
-    }
-
-    bool is_popup = false;
-    struct monitor *m = selected_monitor;
-    struct container *con = focused_container(m);
-    if (con) {
-        switch (con->client->type) {
-            case XDG_SHELL:
-                is_popup = !wl_list_empty(&con->client->surface.xdg->popups);
-                if (is_popup) {
-                    surface = wlr_xdg_surface_surface_at(
-                            con->client->surface.xdg,
-                            /* absolute mouse position to relative in regards to
-                             * the client */
-                            server.cursor.wlr_cursor->x - con->geom.x,
-                            server.cursor.wlr_cursor->y - con->geom.y,
-                            &sx, &sy);
-                }
-                break;
-            case LAYER_SHELL:
-                is_popup = !wl_list_empty(&con->client->surface.layer->popups);
-                if (is_popup) {
-                    surface = wlr_layer_surface_v1_surface_at(
-                            con->client->surface.layer,
-                            server.cursor.wlr_cursor->x - con->geom.x,
-                            server.cursor.wlr_cursor->y - con->geom.y,
-                            &sx, &sy);
-                }
-                break;
-            default:
-                break;
-        }
-
-        // if surface and subsurface exit
-        if (!surface) {
-            is_popup = false;
-        } else if (surface == focused_container(m)->client->surface.xdg->surface) {
-            struct container *con = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
-            if (con) {
-                is_popup = is_popup && surface == con->client->surface.xdg->surface;
-            }
-        }
-
-        if (!surface && !is_popup) {
-            if (!wl_list_empty(&popups)) {
-                struct xdg_popup *popup = wl_container_of(popups.next, popup, plink);
-                wlr_xdg_popup_destroy(popup->xdg->base);
-            }
-            surface = wlr_surface_surface_at(get_wlrsurface(con->client),
-                    server.cursor.wlr_cursor->x - con->geom.x,
-                    server.cursor.wlr_cursor->y - con->geom.y, &sx, &sy);
-        }
-    }
-
-    update_cursor(&server.cursor);
-
-    // if there is no popup use the selected client's surface
-    if (!is_popup) {
-        con = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
-        if (con) {
-            surface = get_wlrsurface(con->client);
-        }
-    }
-
-    printf("pointer focus container: %p\n", con);
-    if (!action && con) {
-        pointer_focus(con, surface, sx, sy, time);
-    }
 }
 
 int lib_view(lua_State *L)
