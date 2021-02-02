@@ -273,28 +273,20 @@ void update_hidden_containers(struct monitor *m)
     int i = 1;
     if (ws->layout[0].options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
-            if (con->floating) {
-                con->hidden = true;
+            if (con->floating)
                 continue;
-            }
-
-            if (!existon(con, m)) {
+            if (!existon(con, m))
                 continue;
-            }
 
             con->hidden = i > count;
             i++;
         }
     } else {
         wl_list_for_each(con, &containers, mlink) {
-            if (con->floating) {
-                con->hidden = true;
+            if (con->floating)
                 continue;
-            }
-
-            if (!existon(con, m)) {
+            if (!existon(con, m))
                 continue;
-            }
 
             con->hidden = i > count;
             i++;

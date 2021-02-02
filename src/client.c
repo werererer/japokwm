@@ -53,7 +53,7 @@ static void unfocus_client(struct client *c)
 
 void focus_client(struct client *old, struct client *c)
 {
-    printf("focus client\n");
+    printf("focus client: %p -> %p\n", old, c);
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
 
     unfocus_client(old);

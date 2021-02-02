@@ -604,6 +604,13 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
     if (is_popup_menu(c)) {
         wl_list_insert(&server.independents, &con->ilink);
+        con->has_border = false;
+        con->geom = (struct wlr_box) {
+            .x = c->surface.xwayland->x,
+            .y = c->surface.xwayland->y,
+            .width = c->surface.xwayland->width,
+            .height = c->surface.xwayland->height,
+        };
         return;
     }
 

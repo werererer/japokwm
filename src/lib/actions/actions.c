@@ -78,8 +78,6 @@ int lib_focus_container(lua_State *L)
     lua_pop(L, 1);
     struct container *con = container_position_to_container(pos);
 
-    if (!wl_list_empty(&server.independents))
-        return 0;
     if (!con)
         return 0;
 
@@ -371,8 +369,6 @@ void motionnotify(uint32_t time)
         }
     }
     if (!action && con) {
-        if (!wl_list_empty(&server.independents))
-            return;
         pointer_focus(con, surface, sx, sy, time);
     }
 }
