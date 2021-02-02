@@ -48,7 +48,7 @@ struct container *first_container(struct monitor *m);
 struct container *get_container(struct monitor *m, int i);
 struct container *last_container(struct monitor *m);
 struct container *next_container(struct monitor *m);
-struct container *selected_container(struct monitor *m);
+struct container *focused_container(struct monitor *m);
 struct container *xytocontainer(double x, double y);
 struct wlr_box get_center_box(struct wlr_box ref);
 struct wlr_box get_absolute_box(struct wlr_fbox ref, struct wlr_box box);

@@ -78,8 +78,12 @@ int lib_focus_container(lua_State *L)
     lua_pop(L, 1);
     struct container *con = container_position_to_container(pos);
 
-    if (con)
-        focus_container(con, selected_monitor, FOCUS_NOOP);
+    if (!wl_list_empty(&server.independents))
+        return 0;
+    if (!con)
+        return 0;
+
+    focus_container(con, selected_monitor, FOCUS_NOOP);
     return 0;
 }
 
@@ -119,7 +123,7 @@ int lib_set_floating(lua_State *L)
     printf("lib set floating\n");
     bool floating = lua_toboolean(L, -1);
     lua_pop(L, 1);
-    struct container *sel = selected_container(selected_monitor);
+    struct container *sel = focused_container(selected_monitor);
     if (!sel)
         return 0;
     set_container_floating(sel, floating);
@@ -153,7 +157,7 @@ int lib_focus_on_stack(lua_State *L)
 
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws[0];
-    struct container *sel = selected_container(m);
+    struct container *sel = focused_container(m);
     if (!sel)
         return 0;
 
@@ -198,7 +202,7 @@ int lib_focus_on_hidden_stack(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
-    struct container *sel = selected_container(m);
+    struct container *sel = focused_container(m);
 
     if (!sel)
         return 0;
@@ -307,7 +311,7 @@ void motionnotify(uint32_t time)
 
     bool is_popup = false;
     struct monitor *m = selected_monitor;
-    struct container *con = selected_container(m);
+    struct container *con = focused_container(m);
     if (con) {
         switch (con->client->type) {
             case XDG_SHELL:
@@ -339,7 +343,7 @@ void motionnotify(uint32_t time)
         // if surface and subsurface exit
         if (!surface) {
             is_popup = false;
-        } else if (surface == selected_container(m)->client->surface.xdg->surface) {
+        } else if (surface == focused_container(m)->client->surface.xdg->surface) {
             struct container *con = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
             if (con) {
                 is_popup = is_popup && surface == con->client->surface.xdg->surface;
@@ -369,7 +373,6 @@ void motionnotify(uint32_t time)
     if (!action && con) {
         if (!wl_list_empty(&server.independents))
             return;
-
         pointer_focus(con, surface, sx, sy, time);
     }
 }
@@ -407,7 +410,7 @@ int lib_toggle_view(lua_State *L)
 
 int lib_toggle_floating(lua_State *L)
 {
-    struct container *sel = selected_container(selected_monitor);
+    struct container *sel = focused_container(selected_monitor);
     if (!sel)
         return 0;
     set_container_floating(sel, !sel->floating);
@@ -433,7 +436,7 @@ int lib_move_client_to_workspace(lua_State *L)
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
     struct workspace *ws = get_workspace(ui);
-    struct container *con = selected_container(m);
+    struct container *con = focused_container(m);
 
     if (!con || con->client->type == LAYER_SHELL)
         return 0;
@@ -468,7 +471,7 @@ int lib_quit(lua_State *L)
 int lib_zoom(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    struct container *sel = selected_container(m);
+    struct container *sel = focused_container(m);
 
     if (!sel || sel->floating)
         return 0;
@@ -600,7 +603,7 @@ int lib_load_layout(lua_State *L)
 
 int lib_kill_client(lua_State *L)
 {
-    struct client *sel = selected_container(selected_monitor)->client;
+    struct client *sel = focused_container(selected_monitor)->client;
     if (sel) {
         switch (sel->type) {
             case XDG_SHELL:

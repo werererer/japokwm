@@ -93,7 +93,7 @@ json_object *ipc_json_describe_workspace(struct monitor *m, struct workspace *ws
 }
 
 json_object *ipc_json_describe_node(struct monitor *m, struct client *c) {
-    bool focused = selected_container(m)->client == c;
+    bool focused = focused_container(m)->client == c;
     char *title = c->title;
 
     struct wlr_box *box;

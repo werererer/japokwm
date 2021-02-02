@@ -7,7 +7,6 @@ struct wl_listener request_set_cursor = {.notify = handle_set_cursor};
 
 void handle_set_cursor(struct wl_listener *listener, void *data)
 {
-    printf("handle_set_cursor\n");
     struct wlr_seat_pointer_request_set_cursor_event *event = data;
     struct cursor *cursor = &server.cursor;
 

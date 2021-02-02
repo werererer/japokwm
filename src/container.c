@@ -100,16 +100,17 @@ struct container *container_position_to_container(int position)
     return NULL;
 }
 
-struct container *selected_container(struct monitor *m)
+struct container *focused_container(struct monitor *m)
 {
     if (wl_list_empty(&focus_stack))
         return NULL;
 
     struct container *con = wl_container_of(focus_stack.next, con, flink);
+
     if (!visibleon(con, m->ws[0]))
         return NULL;
-    else
-        return con;
+
+    return con;
 }
 
 struct container *next_container(struct monitor *m)
@@ -428,15 +429,12 @@ void applyrules(struct container *con)
 
 void focus_container(struct container *con, struct monitor *m, enum focus_actions a)
 {
-    if (!con) {
-        /* With no client, all we have left is to clear focus */
-        wlr_seat_keyboard_notify_clear_focus(server.seat);
+    if (!con)
         return;
-    }
     if (!con->focusable)
         return;
 
-    struct container *sel = selected_container(m);
+    struct container *fcon = focused_container(m);
 
     if (a == FOCUS_LIFT)
         lift_container(con);
@@ -445,7 +443,7 @@ void focus_container(struct container *con, struct monitor *m, enum focus_action
     wl_list_remove(&con->flink);
     add_container_to_focus_stack(con);
 
-    struct client *c = sel ? sel->client : NULL;
+    struct client *c = fcon ? fcon->client : NULL;
     struct client *c2 = con ? con->client : NULL;
     focus_client(c, c2);
 }

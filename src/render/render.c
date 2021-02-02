@@ -221,7 +221,7 @@ static void scissor_output(struct wlr_output *output, pixman_box32_t *rect)
 
 static void render_containers(struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct container *con, *sel = selected_container(m);
+    struct container *con, *sel = focused_container(m);
 
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
