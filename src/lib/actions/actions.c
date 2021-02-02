@@ -368,6 +368,8 @@ void motionnotify(uint32_t time)
             surface = get_wlrsurface(con->client);
         }
     }
+
+    printf("pointer focus container: %p\n", con);
     if (!action && con) {
         pointer_focus(con, surface, sx, sy, time);
     }

@@ -64,6 +64,7 @@ void focus_client(struct client *old, struct client *c)
         return;
     }
 
+    printf("enter\n");
     /* Have a client, so focus its top-level wlr_surface */
     wlr_seat_keyboard_notify_enter(server.seat, get_wlrsurface(c), kb->keycodes,
             kb->num_keycodes, &kb->modifiers);

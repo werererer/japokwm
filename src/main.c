@@ -585,7 +585,7 @@ void maprequest(struct wl_listener *listener, void *data)
 
     struct container *con = c->con;
     container_damage_part(con);
-    applyrules(con);
+    apply_rules(con);
 }
 
 void maprequestx11(struct wl_listener *listener, void *data)
@@ -605,21 +605,15 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
     struct wlr_box prefered_geom = (struct wlr_box) {
         .x = c->surface.xwayland->x,
-            .y = c->surface.xwayland->y,
-            .width = c->surface.xwayland->width,
-            .height = c->surface.xwayland->height,
+        .y = c->surface.xwayland->y,
+        .width = c->surface.xwayland->width,
+        .height = c->surface.xwayland->height,
     };
-
-    if (is_popup_menu(c) && xwayland_surface->parent) {
-        wl_list_insert(&server.independents, &con->ilink);
-        con->has_border = false;
-        resize(con, prefered_geom, false);
-        return;
-    }
 
     switch (c->type) {
         case X11_MANAGED:
             {
+                printf("x11 managed\n");
                 wl_list_insert(&clients, &c->link);
 
                 con->on_top = false;
@@ -631,11 +625,17 @@ void maprequestx11(struct wl_listener *listener, void *data)
             }
         case X11_UNMANAGED:
             {
+                printf("x11 unmanaged\n");
                 wl_list_insert(&server.independents, &con->ilink);
 
-                con->on_top = true;
+                if (!is_popup_menu(c) && !xwayland_surface->parent) {
+                    con->on_top = true;
+                    wl_list_remove(&con->flink);
+                    wl_list_insert(&focused_container(m)->flink, &con->flink);
+                }
+
                 con->has_border = false;
-                focus_container(con, FOCUS_LIFT);
+                lift_container(con);
                 set_container_floating(con, true);
                 resize(con, prefered_geom, false);
                 break;
@@ -645,7 +645,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     }
     arrange();
     focus_top_container(selected_monitor, FOCUS_NOOP);
-    applyrules(con);
+    apply_rules(con);
 }
 
 void motionabsolute(struct wl_listener *listener, void *data)
