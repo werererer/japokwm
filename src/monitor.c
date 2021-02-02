@@ -188,7 +188,7 @@ void set_selected_monitor(struct monitor *m)
     int x = server.cursor.wlr_cursor->x;
     int y = server.cursor.wlr_cursor->y;
 
-    focus_container(xytocontainer(x, y), m, FOCUS_NOOP);
+    focus_container(xytocontainer(x, y), FOCUS_NOOP);
 }
 
 void push_selected_workspace(struct monitor *m, struct workspace *ws)

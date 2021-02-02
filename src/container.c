@@ -427,13 +427,14 @@ void applyrules(struct container *con)
     }
 }
 
-void focus_container(struct container *con, struct monitor *m, enum focus_actions a)
+void focus_container(struct container *con, enum focus_actions a)
 {
     if (!con)
         return;
     if (!con->focusable)
         return;
 
+    struct monitor *m = con->m;
     struct container *fcon = focused_container(m);
 
     if (a == FOCUS_LIFT)
@@ -470,7 +471,7 @@ void focus_top_container(struct monitor *m, enum focus_actions a)
         }
     }
     if (container_found)
-        focus_container(con, m, a);
+        focus_container(con, a);
 }
 
 bool existon(struct container *con, struct monitor *m)

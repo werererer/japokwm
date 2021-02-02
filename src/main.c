@@ -603,15 +603,17 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
     struct container *con = create_container(c, m, true);
 
-    if (is_popup_menu(c) && xwayland_surface->parent) {
-        wl_list_insert(&server.independents, &con->ilink);
-        con->has_border = false;
-        con->geom = (struct wlr_box) {
-            .x = c->surface.xwayland->x,
+    struct wlr_box prefered_geom = (struct wlr_box) {
+        .x = c->surface.xwayland->x,
             .y = c->surface.xwayland->y,
             .width = c->surface.xwayland->width,
             .height = c->surface.xwayland->height,
-        };
+    };
+
+    if (is_popup_menu(c) && xwayland_surface->parent) {
+        wl_list_insert(&server.independents, &con->ilink);
+        con->has_border = false;
+        resize(con, prefered_geom, false);
         return;
     }
 
@@ -623,7 +625,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 con->on_top = false;
                 if (wants_floating(con->client)) {
                     set_container_floating(con, true);
-                    resize(con, get_center_box(con->m->geom), false);
+                    resize(con, prefered_geom, false);
                 }
                 break;
             }
@@ -633,9 +635,9 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
                 con->on_top = true;
                 con->has_border = false;
-                focus_container(con, m, FOCUS_LIFT);
+                focus_container(con, FOCUS_LIFT);
                 set_container_floating(con, true);
-                resize(con, get_center_box(con->m->geom), false);
+                resize(con, prefered_geom, false);
                 break;
             }
         default:

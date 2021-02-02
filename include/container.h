@@ -58,7 +58,7 @@ void applyrules(struct container *con);
 void container_damage_part(struct container *con);
 void container_damage_whole(struct container *con);
 struct container *container_position_to_container(int position);
-void focus_container(struct container *con, struct monitor *m, enum focus_actions a);
+void focus_container(struct container *con, enum focus_actions a);
 /* Find the topmost visible client (if any) at point (x, y), including
  * borders. This relies on stack being ordered from top to bottom. */
 bool existon(struct container *con, struct monitor *m);

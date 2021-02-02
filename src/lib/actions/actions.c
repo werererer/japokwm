@@ -54,7 +54,7 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
         return;
 
     if (con->m->ws[0]->layout[0].options.sloppy_focus)
-        focus_container(con, selected_monitor, FOCUS_NOOP);
+        focus_container(con, FOCUS_NOOP);
 }
 
 int set_resize_direction(lua_State *L)
@@ -81,7 +81,7 @@ int lib_focus_container(lua_State *L)
     if (!con)
         return 0;
 
-    focus_container(con, selected_monitor, FOCUS_NOOP);
+    focus_container(con, FOCUS_NOOP);
     return 0;
 }
 
@@ -183,7 +183,7 @@ int lib_focus_on_stack(lua_State *L)
 
     if (found) {
         /* If only one client is visible on selMon, then c == sel */
-        focus_container(con, m, FOCUS_LIFT);
+        focus_container(con, FOCUS_LIFT);
     }
     return 0;
 }
@@ -231,7 +231,7 @@ int lib_focus_on_hidden_stack(lua_State *L)
         wl_list_insert(containers.prev, &sel->mlink);
     }
 
-    focus_container(con, m, FOCUS_LIFT);
+    focus_container(con, FOCUS_LIFT);
     arrange();
     return 0;
 }
@@ -499,7 +499,7 @@ int lib_zoom(lua_State *L)
 
     arrange();
     // focus new master window
-    focus_container(previous, selected_monitor, FOCUS_NOOP);
+    focus_container(previous, FOCUS_NOOP);
 
     if (selected_monitor->ws[0]->layout[0].options.arrange_by_focus) {
         focus_top_container(m, FOCUS_NOOP);
@@ -553,7 +553,7 @@ int lib_repush(lua_State *L)
 
     arrange();
     // focus new master window
-    focus_container(previous, selected_monitor, FOCUS_NOOP);
+    focus_container(previous, FOCUS_NOOP);
 
     if (selected_monitor->ws[0]->layout[0].options.arrange_by_focus) {
         arrange();
