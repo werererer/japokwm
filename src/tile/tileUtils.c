@@ -190,7 +190,6 @@ void arrange_monitor(struct monitor *m)
             if (!visibleon(con, m->ws[0]) || con->floating)
                 continue;
 
-            printf("arrange con: %p floating: %i\n", con, con->floating);
             arrange_container(con, con->position, master_container_count, false);
         }
     }

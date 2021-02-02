@@ -1,6 +1,7 @@
 #ifndef CURSOR_H
 #define CURSOR_H
 
+#include "lib/actions/actions.h"
 #include <wayland-server-core.h>
 #include <wlr/types/wlr_surface.h>
 #include <wlr/types/wlr_seat.h>
@@ -25,11 +26,14 @@ struct cursor {
 /* This event is raised by the seat when a client provides a cursor image */
 void handle_set_cursor(struct wl_listener *listener, void *data);
 
+/* void motionnotify(uint32_t time); */
 /* reload the surface stored in cursor */
 void update_cursor(struct cursor *cursor);
 void cursor_set_image_surface(struct cursor *cursor,
         struct wlr_surface *surface, int32_t hotspot_x, int32_t hotspot_y,
         struct wl_client *client);
+void set_grabcontainer(struct container *con, int x, int y);
+struct container *get_grabcontainer();
 
 extern struct wl_listener request_set_cursor;
 

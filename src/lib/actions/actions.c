@@ -23,7 +23,7 @@
 #include "xdg-shell-protocol.h"
 
 static struct container *grabc = NULL;
-static int grabcx, grabcy; /* client-relative */
+static int dx, dy; /* client-relative */
 
 static void pointer_focus(struct container *con, struct wlr_surface *surface,
         double sx, double sy, uint32_t time);
@@ -248,8 +248,8 @@ int lib_move_resize(lua_State *L)
     set_container_floating(grabc, true);
     switch (server.cursor.cursor_mode = ui) {
         case CURSOR_MOVE:
-            grabcx = server.cursor.wlr_cursor->x - grabc->geom.x;
-            grabcy = server.cursor.wlr_cursor->y - grabc->geom.y;
+            dx = server.cursor.wlr_cursor->x - grabc->geom.x;
+            dy = server.cursor.wlr_cursor->y - grabc->geom.y;
             wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "fleur", server.cursor.wlr_cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
             arrange();
@@ -257,8 +257,6 @@ int lib_move_resize(lua_State *L)
         case CURSOR_RESIZE:
             /* Doesn't work for X11 output - the next absolute motion event
              * returns the cursor to where it started */
-            grabcx = server.cursor.wlr_cursor->x - grabc->geom.x;
-            grabcy = server.cursor.wlr_cursor->y - grabc->geom.y;
             wlr_cursor_warp_closest(server.cursor.wlr_cursor, NULL,
                     grabc->geom.x + grabc->geom.width,
                     grabc->geom.y + grabc->geom.height);
@@ -286,8 +284,8 @@ void motionnotify(uint32_t time)
     switch (server.cursor.cursor_mode) {
         case CURSOR_MOVE:
             action = true;
-            geom.x = server.cursor.wlr_cursor->x - grabcx;
-            geom.y = server.cursor.wlr_cursor->y - grabcy;
+            geom.x = server.cursor.wlr_cursor->x - dx;
+            geom.y = server.cursor.wlr_cursor->y - dy;
             geom.width = grabc->geom.width;
             geom.height = grabc->geom.height;
             /* Move the grabbed client to the new position. */
@@ -416,19 +414,8 @@ int lib_toggle_floating(lua_State *L)
     return 0;
 }
 
-int lib_move_client(lua_State *L)
-{
-    struct wlr_box geom;
-    geom.x = server.cursor.wlr_cursor->x - grabcx;
-    geom.y = server.cursor.wlr_cursor->y - grabcy;
-    geom.width = grabc->geom.width;
-    geom.height = grabc->geom.height;
-    resize(grabc, geom, false);
-    return 0;
-}
-
 // TODO optimize
-int lib_move_client_to_workspace(lua_State *L)
+int lib_move_container_to_workspace(lua_State *L)
 {
     unsigned int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
@@ -445,17 +432,6 @@ int lib_move_client_to_workspace(lua_State *L)
 
     container_damage_whole(con);
 
-    return 0;
-}
-
-int lib_resize_client(lua_State *L)
-{
-    struct wlr_box geom;
-    geom.x = grabc->geom.x;
-    geom.y = grabc->geom.y;
-    geom.width = server.cursor.wlr_cursor->x - grabc->geom.x;
-    geom.height = server.cursor.wlr_cursor->y - grabc->geom.y;
-    resize(grabc, geom, false);
     return 0;
 }
 
@@ -599,7 +575,7 @@ int lib_load_layout(lua_State *L)
     return 0;
 }
 
-int lib_kill_client(lua_State *L)
+int lib_kill(lua_State *L)
 {
     struct client *sel = focused_container(selected_monitor)->client;
     if (sel) {
