@@ -545,7 +545,8 @@ static bool is_popup_menu(struct client *c)
     struct xwayland xwayland = server.xwayland;
     for (size_t i = 0; i < surface->window_type_len; ++i) {
         xcb_atom_t type = surface->window_type[i];
-        if (type == xwayland.atoms[NET_WM_WINDOW_TYPE_POPUP_MENU]) {
+        if (type == xwayland.atoms[NET_WM_WINDOW_TYPE_POPUP_MENU] ||
+                type == xwayland.atoms[NET_WM_WINDOW_TYPE_NORMAL]) {
             return true;
         }
     }
@@ -602,7 +603,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
     struct container *con = create_container(c, m, true);
 
-    if (is_popup_menu(c)) {
+    if (is_popup_menu(c) && xwayland_surface->parent) {
         wl_list_insert(&server.independents, &con->ilink);
         con->has_border = false;
         con->geom = (struct wlr_box) {
