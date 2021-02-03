@@ -81,22 +81,22 @@ void motionnotify(uint32_t time)
         return;
 
     is_popup = !wl_list_empty(&con->client->surface.xdg->popups);
-    if (is_popup){
+    if (is_popup) {
         switch (con->client->type) {
             case XDG_SHELL:
                 surface = wlr_xdg_surface_surface_at(
                         con->client->surface.xdg,
                         /* absolute mouse position to relative in regards to
                          * the client */
-                        server.cursor.wlr_cursor->x - con->geom.x,
-                        server.cursor.wlr_cursor->y - con->geom.y,
+                        absolute_x_to_container_relative_x(con, cursorx),
+                        absolute_y_to_container_relative_y(con, cursory),
                         &sx, &sy);
                 break;
             case LAYER_SHELL:
                     surface = wlr_layer_surface_v1_surface_at(
                             con->client->surface.layer,
-                            server.cursor.wlr_cursor->x - con->geom.x,
-                            server.cursor.wlr_cursor->y - con->geom.y,
+                            absolute_x_to_container_relative_x(con, cursorx),
+                            absolute_y_to_container_relative_y(con, cursory),
                             &sx, &sy);
                     break;
                     default:
