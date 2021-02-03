@@ -73,7 +73,6 @@ void motionnotify(uint32_t time)
     if (handle_move_resize(server.cursor.cursor_mode))
         return;
 
-    bool is_popup = false;
     struct monitor *m = selected_monitor;
     struct container *con = focused_container(m);
 
@@ -81,19 +80,17 @@ void motionnotify(uint32_t time)
         return;
 
     popup_surface = get_popup_surface_under_cursor(con, &sx, &sy);
-    is_popup = popup_surface != NULL;
+    bool is_popup = popup_surface != NULL;
 
     // if surface and subsurface exist
-    if (!popup_surface) {
-        is_popup = false;
-    } else if (popup_surface == focused_container(m)->client->surface.xdg->surface) {
+    if (popup_surface == con->client->surface.xdg->surface) {
         struct container *con = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
         if (con) {
             is_popup = is_popup && popup_surface == con->client->surface.xdg->surface;
         }
     }
 
-    if (!popup_surface && !is_popup) {
+    if (!is_popup) {
         if (!wl_list_empty(&popups)) {
             struct xdg_popup *popup = wl_container_of(popups.next, popup, plink);
             wlr_xdg_popup_destroy(popup->xdg->base);
