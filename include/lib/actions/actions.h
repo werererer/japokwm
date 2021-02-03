@@ -32,6 +32,6 @@ int lib_zoom(lua_State *L);
 int set_nmaster(lua_State *L);
 int set_resize_direction(lua_State *L);
 
-void motionnotify(uint32_t time);
+void motion_notify(uint32_t time);
 
 #endif /* ACTIONS_H */

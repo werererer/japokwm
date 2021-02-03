@@ -56,8 +56,7 @@ static bool handle_move_resize(enum cursor_mode cursor_mode)
     return ret_val;
 }
 
-// TODO optimize this function
-void motionnotify(uint32_t time)
+void motion_notify(uint32_t time)
 {
     int cursorx = server.cursor.wlr_cursor->x;
     int cursory = server.cursor.wlr_cursor->y;

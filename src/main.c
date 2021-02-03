@@ -658,7 +658,7 @@ void motionabsolute(struct wl_listener *listener, void *data)
      * emits these events. */
     struct wlr_event_pointer_motion_absolute *event = data;
     wlr_cursor_warp_absolute(server.cursor.wlr_cursor, event->device, event->x, event->y);
-    motionnotify(event->time_msec);
+    motion_notify(event->time_msec);
 }
 
 void motionrelative(struct wl_listener *listener, void *data)
@@ -672,7 +672,7 @@ void motionrelative(struct wl_listener *listener, void *data)
      * generated the event. You can pass NULL for the device if you want to move
      * the cursor around without any input. */
     wlr_cursor_move(server.cursor.wlr_cursor, event->device, event->delta_x, event->delta_y);
-    motionnotify(event->time_msec);
+    motion_notify(event->time_msec);
 }
 
 void run(char *startup_cmd)
