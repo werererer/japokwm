@@ -433,7 +433,6 @@ void focus_container(struct container *con, enum focus_actions a)
     if (!con->focusable)
         return;
 
-    printf("focus_container\n");
     struct monitor *m = con->m;
     struct container *fcon = focused_container(m);
 
@@ -522,7 +521,6 @@ void set_container_floating(struct container *con, bool floating)
     if (con->floating == floating)
         return;
 
-    printf("set container floating: %p = %i\n", con, floating);
     con->floating = floating;
 
     if (con->floating) {

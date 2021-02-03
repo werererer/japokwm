@@ -128,6 +128,9 @@ void popup_handle_destroy(struct wl_listener *listener, void *data)
 
 struct wlr_surface *get_popup_surface_under_cursor(struct container *con, double *sx, double *sy)
 {
+    if (!con)
+        return NULL;
+
     int cursorx = server.cursor.wlr_cursor->x;
     int cursory = server.cursor.wlr_cursor->y;
 

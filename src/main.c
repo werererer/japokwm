@@ -628,10 +628,12 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 printf("x11 unmanaged\n");
                 wl_list_insert(&server.independents, &con->ilink);
 
-                if (!is_popup_menu(c) && !xwayland_surface->parent) {
-                    con->on_top = true;
+                if (is_popup_menu(c) || xwayland_surface->parent) {
                     wl_list_remove(&con->flink);
                     wl_list_insert(&focused_container(m)->flink, &con->flink);
+                } else {
+                    con->on_top = true;
+                    focus_container(con, FOCUS_NOOP);
                 }
 
                 con->has_border = false;
@@ -644,7 +646,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
             break;
     }
     arrange();
-    focus_top_container(selected_monitor, FOCUS_NOOP);
     apply_rules(con);
 }
 
@@ -953,7 +954,7 @@ void activatex11(struct wl_listener *listener, void *data)
 
        /* Only "managed" windows can be activated */
        if (c->type == X11_MANAGED)
-               wlr_xwayland_surface_activate(c->surface.xwayland, 1);
+           wlr_xwayland_surface_activate(c->surface.xwayland, true);
 }
 
 void create_notifyx11(struct wl_listener *listener, void *data)

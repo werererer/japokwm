@@ -20,7 +20,6 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface, do
 
     /* If surface is NULL, clear pointer focus */
     if (!surface) {
-        printf("clear focus\n");
         wlr_seat_pointer_notify_clear_focus(server.seat);
         return;
     }
@@ -69,8 +68,6 @@ void motion_notify(uint32_t time)
 
     struct monitor *m = selected_monitor;
     struct container *fcon = focused_container(m);
-    if (!fcon)
-        return;
 
     double sx = 0, sy = 0;
     struct wlr_surface *popup_surface = get_popup_surface_under_cursor(fcon, &sx, &sy);
@@ -79,15 +76,21 @@ void motion_notify(uint32_t time)
     struct wlr_surface *focus_surface = popup_surface;
     struct container *new_fcon = fcon;
     if (!is_popup) {
-        new_fcon = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
+        new_fcon = xytocontainer(cursorx, cursory);
 
-        // when refactoring keep in mind that this also changes sx and sy
-        focus_surface = wlr_surface_surface_at(get_wlrsurface(fcon->client),
-                absolute_x_to_container_relative(fcon, cursorx),
-                absolute_y_to_container_relative(fcon, cursory),
-                &sx, &sy);
-        if (new_fcon)
-            focus_surface = get_wlrsurface(new_fcon->client);
+        if (new_fcon) {
+            focus_surface = wlr_surface_surface_at(get_wlrsurface(new_fcon->client),
+                    absolute_x_to_container_relative(new_fcon, cursorx),
+                    absolute_y_to_container_relative(new_fcon, cursory),
+                    &sx, &sy);
+        } else {
+            if (fcon)
+                focus_surface = wlr_surface_surface_at(get_wlrsurface(fcon->client),
+                        absolute_x_to_container_relative(fcon, cursorx),
+                        absolute_y_to_container_relative(fcon, cursory),
+                        &sx, &sy);
+        }
+
 
         // if the cursor is not on an empty spot and there are popups
         if (!wl_list_empty(&popups) && new_fcon) {
@@ -110,7 +113,7 @@ void move_resize(int ui)
     if (!grabc)
         return;
 
-    /* Float the window and tell motionnotify to grab it */
+    /* Float the window and tell motion_notify to grab it */
     set_container_floating(grabc, true);
     switch (server.cursor.cursor_mode = ui) {
         case CURSOR_MOVE:

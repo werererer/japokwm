@@ -13,6 +13,29 @@
 //global variables
 struct wl_list clients; /* tiling order */
 
+struct wlr_surface *get_base_wlrsurface(struct client *c)
+{
+    struct wlr_surface *ret_surface;
+    switch (c->type) {
+        case X11_MANAGED:
+        case X11_UNMANAGED:
+            {
+                struct wlr_xwayland_surface *xwayland_surface = c->surface.xwayland;
+                while (xwayland_surface->parent)
+                    xwayland_surface = xwayland_surface->parent;
+                ret_surface = xwayland_surface->surface;
+                break;
+            }
+        case XDG_SHELL:
+            ret_surface = get_wlrsurface(c);
+            break;
+        case LAYER_SHELL:
+            ret_surface = get_wlrsurface(c);
+            break;
+    }
+    return ret_surface;
+}
+
 struct wlr_surface *get_wlrsurface(struct client *c)
 {
     if (!c)
@@ -28,13 +51,13 @@ struct wlr_surface *get_wlrsurface(struct client *c)
         case X11_UNMANAGED:
             return c->surface.xwayland->surface;
         default:
-            printf("wlr_surface is not supported: \n");
             return NULL;
     }
 }
 
 static void unfocus_client(struct client *c)
 {
+    printf("unfocus\n");
     if (!c)
         return;
 
@@ -53,18 +76,24 @@ static void unfocus_client(struct client *c)
 
 void focus_client(struct client *old, struct client *c)
 {
-    printf("focus client: %p -> %p\n", old, c);
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
 
-    unfocus_client(old);
-    /* Update wlroots' keyboard focus */
+    struct wlr_surface *old_surface = get_base_wlrsurface(old);
+    struct wlr_surface *new_surface = get_base_wlrsurface(c);
+    printf("old_surface: %p\n", old_surface);
+    printf("new_surface: %p\n", new_surface);
+    if (old_surface != new_surface) {
+        printf("unfocus client: %p\n", old);
+        unfocus_client(old);
+    }
+
+    /* Update wlroots'c keyboard focus */
     if (!c) {
         /* With no client, all we have left is to clear focus */
         wlr_seat_keyboard_notify_clear_focus(server.seat);
         return;
     }
 
-    printf("enter\n");
     /* Have a client, so focus its top-level wlr_surface */
     wlr_seat_keyboard_notify_enter(server.seat, get_wlrsurface(c), kb->keycodes,
             kb->num_keycodes, &kb->modifiers);

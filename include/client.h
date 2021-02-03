@@ -43,5 +43,6 @@ float calc_ratio(float width, float height);
 
 extern struct wl_list clients; /* tiling order */
 
+struct wlr_surface *get_base_wlrsurface(struct client *c);
 struct wlr_surface *get_wlrsurface(struct client *c);
 #endif
