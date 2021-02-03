@@ -69,38 +69,39 @@ void motionnotify(uint32_t time)
         return;
 
     struct monitor *m = selected_monitor;
-    struct container *con = focused_container(m);
-
-    if (!con)
+    struct container *fcon = focused_container(m);
+    if (!fcon)
         return;
 
     double sx = 0, sy = 0;
-    struct wlr_surface *popup_surface = get_popup_surface_under_cursor(con, &sx, &sy);
+    struct wlr_surface *popup_surface = get_popup_surface_under_cursor(fcon, &sx, &sy);
     bool is_popup = popup_surface != NULL;
 
+    struct container *new_fcon = fcon;
     if (!is_popup) {
-        popup_surface = wlr_surface_surface_at(get_wlrsurface(con->client),
-                server.cursor.wlr_cursor->x - con->geom.x,
-                server.cursor.wlr_cursor->y - con->geom.y, &sx, &sy);
+        popup_surface = wlr_surface_surface_at(get_wlrsurface(fcon->client),
+                server.cursor.wlr_cursor->x - fcon->geom.x,
+                server.cursor.wlr_cursor->y - fcon->geom.y, &sx, &sy);
 
-        con = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
+        // 
+        new_fcon = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
 
-        if (con) {
-            popup_surface = get_wlrsurface(con->client);
+        if (new_fcon) {
+            popup_surface = get_wlrsurface(new_fcon->client);
         }
 
-        if (!wl_list_empty(&popups) && con) {
+        if (!wl_list_empty(&popups) && new_fcon) {
             struct xdg_popup *popup = wl_container_of(popups.next, popup, plink);
             wlr_xdg_popup_destroy(popup->xdg->base);
         }
+
+        update_cursor(&server.cursor);
     }
 
-    update_cursor(&server.cursor);
-
-    if (!con)
+    if (!new_fcon)
         return;
 
-    pointer_focus(con, popup_surface, sx, sy, time);
+    pointer_focus(new_fcon, popup_surface, sx, sy, time);
 }
 
 void move_resize(int ui)
