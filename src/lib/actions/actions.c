@@ -315,7 +315,15 @@ int lib_zoom(lua_State *L)
     struct monitor *m = selected_monitor;
     struct container *sel = focused_container(m);
 
-    if (!sel || sel->floating)
+    if (!sel)
+        return 0;
+    if (sel->floating)
+        return 0;
+    if (sel->client->type == LAYER_SHELL) {
+        focus_top_container(m, FOCUS_NOOP);
+        sel = wl_container_of(&containers.next, sel, mlink);
+    }
+    if (!sel)
         return 0;
 
     struct container *master = wl_container_of(containers.next, master, mlink);
