@@ -298,6 +298,8 @@ int lib_move_container_to_workspace(lua_State *L)
     arrange();
     focus_top_container(m, FOCUS_NOOP);
 
+    ipc_event_workspace();
+
     container_damage_whole(con);
 
     return 0;
