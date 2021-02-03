@@ -125,3 +125,36 @@ void popup_handle_destroy(struct wl_listener *listener, void *data)
     wl_list_remove(&popup->plink);
     destroy_popup(popup);
 }
+
+struct wlr_surface *get_popup_surface_under_cursor(struct container *con, double *sx, double *sy)
+{
+    int cursorx = server.cursor.wlr_cursor->x;
+    int cursory = server.cursor.wlr_cursor->y;
+
+    bool is_popup = !wl_list_empty(&popups);
+    if (!is_popup)
+        return NULL;
+
+    struct wlr_surface *surface = NULL;
+    switch (con->client->type) {
+        case XDG_SHELL:
+            surface = wlr_xdg_surface_surface_at(
+                    con->client->surface.xdg,
+                    /* absolute mouse position to relative in regards to
+                     * the client */
+                    absolute_x_to_container_relative(con, cursorx),
+                    absolute_y_to_container_relative(con, cursory),
+                    sx, sy);
+            break;
+        case LAYER_SHELL:
+            surface = wlr_layer_surface_v1_surface_at(
+                    con->client->surface.layer,
+                    absolute_x_to_container_relative(con, cursorx),
+                    absolute_y_to_container_relative(con, cursory),
+                    sx, sy);
+            break;
+        default:
+            break;
+    }
+    return surface;
+}

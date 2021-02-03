@@ -561,12 +561,12 @@ void resize_container(struct container *con, int dx, int dy)
     resize(con, geom, false);
 }
 
-inline int absolute_x_to_container_relative_x(struct container *con, int x)
+inline int absolute_x_to_container_relative(struct container *con, int x)
 {
     return x - con->geom.x;
 }
 
-inline int absolute_y_to_container_relative_y(struct container *con, int y)
+inline int absolute_y_to_container_relative(struct container *con, int y)
 {
     return y - con->geom.y;
 }

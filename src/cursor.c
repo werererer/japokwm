@@ -65,7 +65,7 @@ void motionnotify(uint32_t time)
     set_selected_monitor(xytomon(cursorx, cursory));
 
     double sx = 0, sy = 0;
-    struct wlr_surface *surface = NULL;
+    struct wlr_surface *popup_surface = NULL;
 
     set_selected_monitor(xytomon(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y));
 
@@ -80,46 +80,25 @@ void motionnotify(uint32_t time)
     if (!con)
         return;
 
-    is_popup = !wl_list_empty(&con->client->surface.xdg->popups);
-    if (is_popup) {
-        switch (con->client->type) {
-            case XDG_SHELL:
-                surface = wlr_xdg_surface_surface_at(
-                        con->client->surface.xdg,
-                        /* absolute mouse position to relative in regards to
-                         * the client */
-                        absolute_x_to_container_relative(con, cursorx),
-                        absolute_y_to_container_relative(con, cursory),
-                        &sx, &sy);
-                break;
-            case LAYER_SHELL:
-                    surface = wlr_layer_surface_v1_surface_at(
-                            con->client->surface.layer,
-                            absolute_x_to_container_relative(con, cursorx),
-                            absolute_y_to_container_relative(con, cursory),
-                            &sx, &sy);
-                    break;
-                    default:
-                    break;
-        }
-    }
+    popup_surface = get_popup_surface_under_cursor(con, &sx, &sy);
+    is_popup = popup_surface != NULL;
 
     // if surface and subsurface exist
-    if (!surface) {
+    if (!popup_surface) {
         is_popup = false;
-    } else if (surface == focused_container(m)->client->surface.xdg->surface) {
+    } else if (popup_surface == focused_container(m)->client->surface.xdg->surface) {
         struct container *con = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
         if (con) {
-            is_popup = is_popup && surface == con->client->surface.xdg->surface;
+            is_popup = is_popup && popup_surface == con->client->surface.xdg->surface;
         }
     }
 
-    if (!surface && !is_popup) {
+    if (!popup_surface && !is_popup) {
         if (!wl_list_empty(&popups)) {
             struct xdg_popup *popup = wl_container_of(popups.next, popup, plink);
             wlr_xdg_popup_destroy(popup->xdg->base);
         }
-        surface = wlr_surface_surface_at(get_wlrsurface(con->client),
+        popup_surface = wlr_surface_surface_at(get_wlrsurface(con->client),
                 server.cursor.wlr_cursor->x - con->geom.x,
                 server.cursor.wlr_cursor->y - con->geom.y, &sx, &sy);
     }
@@ -130,13 +109,13 @@ void motionnotify(uint32_t time)
     if (!is_popup) {
         con = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
         if (con) {
-            surface = get_wlrsurface(con->client);
+            popup_surface = get_wlrsurface(con->client);
         }
     }
 
     printf("pointer focus container: %p\n", con);
     if (con) {
-        pointer_focus(con, surface, sx, sy, time);
+        pointer_focus(con, popup_surface, sx, sy, time);
     }
 }
 
