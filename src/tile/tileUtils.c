@@ -83,15 +83,7 @@ static void apply_nmaster_transformation(struct wlr_box *box, struct monitor *m,
     if (position > lt.nmaster)
         return;
 
-/*     lua_getglobal_safe(L, "Update_nmaster"); */
-/*     int g = count > lt.nmaster ? lt.nmaster : count; */
-/*     lua_pushinteger(L, g); */
-/*     lua_call_safe(L, 1, 1, 0); */
-/*     int k = MIN(position, g); */
-/*     struct wlr_fbox geom = lua_unbox_layout(L, k); */
-/*     lua_pop(L, 1); */
-
-
+    // get layout
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt.lua_layout_master_copy_data_ref);
     int len = luaL_len(L, -1);
     int g = MIN(count, lt.nmaster);
@@ -128,12 +120,23 @@ static int get_default_container_count(struct monitor *m)
 
 static void update_container_positions(struct monitor *m)
 {
+    printf("update container positions\n");
     struct container *con;
     int position = 1;
     wl_list_for_each(con, &containers, mlink) {
         if (!visibleon(con, m->ws[0]))
             continue;
         if (con->floating)
+            continue;
+
+        con->position = position;
+        // then use the layout that may have been reseted
+        position++;
+    }
+    wl_list_for_each(con, &containers, mlink) {
+        if (!visibleon(con, m->ws[0]))
+            continue;
+        if (!con->floating)
             continue;
 
         con->position = position;

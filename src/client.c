@@ -60,7 +60,6 @@ struct wlr_surface *get_wlrsurface(struct client *c)
 
 static void unfocus_client(struct client *c)
 {
-    printf("unfocus\n");
     if (!c)
         return;
 
@@ -83,10 +82,7 @@ void focus_client(struct client *old, struct client *c)
 
     struct wlr_surface *old_surface = get_base_wlrsurface(old);
     struct wlr_surface *new_surface = get_base_wlrsurface(c);
-    printf("old_surface: %p\n", old_surface);
-    printf("new_surface: %p\n", new_surface);
     if (old_surface != new_surface) {
-        printf("unfocus client: %p\n", old);
         unfocus_client(old);
     }
 

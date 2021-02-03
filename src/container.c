@@ -106,10 +106,12 @@ struct container *focused_container(struct monitor *m)
         return NULL;
 
     struct container *con = wl_container_of(focus_stack.next, con, flink);
+    printf("focused container: %p\n", con);
 
     if (!visibleon(con, m->ws[0]))
         return NULL;
 
+    printf("visible\n");
     return con;
 }
 
@@ -447,6 +449,7 @@ void focus_container(struct container *con, enum focus_actions a)
 
     struct client *c = fcon ? fcon->client : NULL;
     struct client *c2 = new_focus_con ? new_focus_con->client : NULL;
+    printf("focus client: %p\n", c);
     focus_client(c, c2);
 }
 
@@ -454,6 +457,9 @@ void lift_container(struct container *con)
 {
     if (!con)
         return;
+    if (con->client->type == LAYER_SHELL)
+        return;
+
     wl_list_remove(&con->slink);
     add_container_to_monitor_stack(con);
 }

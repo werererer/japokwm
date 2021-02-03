@@ -71,7 +71,7 @@ static bool is_same_keybind(const char *bind, const char *bind2)
     struct wlr_list bind2arr = split_string(bind2, "-");
 
     if (bind2arr.length == 0)
-        return false;
+        return true;
     if (bindarr.length != bind2arr.length)
         return false;
 
