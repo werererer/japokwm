@@ -73,7 +73,6 @@ void motionnotify(uint32_t time)
     if (handle_move_resize(server.cursor.cursor_mode))
         return;
 
-    bool action = false;
     bool is_popup = false;
     struct monitor *m = selected_monitor;
     struct container *con = focused_container(m);
@@ -136,7 +135,7 @@ void motionnotify(uint32_t time)
     }
 
     printf("pointer focus container: %p\n", con);
-    if (!action && con) {
+    if (con) {
         pointer_focus(con, surface, sx, sy, time);
     }
 }
