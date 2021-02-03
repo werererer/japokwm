@@ -1,4 +1,4 @@
-Build started at 2021-02-03T17:12:33.306865
+Build started at 2021-02-03T19:14:28.791936
 Main binary: /usr/bin/python
 Build Options: -Dbackend=ninja
 Python system: Linux
@@ -93,8 +93,8 @@ Build targets in project: 1
 
 Found ninja-1.10.2 at /usr/bin/ninja
 Running compile:
-Working directory:  /home/jakob/git/japokwm/build/meson-private/tmp_9lru925
-Command line:  cc /home/jakob/git/japokwm/build/meson-private/tmp_9lru925/testfile.c -o /home/jakob/git/japokwm/build/meson-private/tmp_9lru925/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
+Working directory:  /home/jakob/git/japokwm/build/meson-private/tmpp8l5y2dd
+Command line:  cc /home/jakob/git/japokwm/build/meson-private/tmpp8l5y2dd/testfile.c -o /home/jakob/git/japokwm/build/meson-private/tmpp8l5y2dd/output.obj -pipe -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs 
 
 Code:
  

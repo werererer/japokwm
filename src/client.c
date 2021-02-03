@@ -15,6 +15,9 @@ struct wl_list clients; /* tiling order */
 
 struct wlr_surface *get_base_wlrsurface(struct client *c)
 {
+    if (!c)
+        return NULL;
+
     struct wlr_surface *ret_surface;
     switch (c->type) {
         case X11_MANAGED:
