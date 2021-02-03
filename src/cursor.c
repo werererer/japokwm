@@ -64,11 +64,6 @@ void motionnotify(uint32_t time)
 
     set_selected_monitor(xytomon(cursorx, cursory));
 
-    double sx = 0, sy = 0;
-    struct wlr_surface *popup_surface = NULL;
-
-    set_selected_monitor(xytomon(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y));
-
     /* If handled successfully return */
     if (handle_move_resize(server.cursor.cursor_mode))
         return;
@@ -79,41 +74,33 @@ void motionnotify(uint32_t time)
     if (!con)
         return;
 
-    popup_surface = get_popup_surface_under_cursor(con, &sx, &sy);
+    double sx = 0, sy = 0;
+    struct wlr_surface *popup_surface = get_popup_surface_under_cursor(con, &sx, &sy);
     bool is_popup = popup_surface != NULL;
 
-    // if surface and subsurface exist
-    if (popup_surface == con->client->surface.xdg->surface) {
-        struct container *con = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
-        if (con) {
-            is_popup = is_popup && popup_surface == con->client->surface.xdg->surface;
-        }
-    }
-
     if (!is_popup) {
-        if (!wl_list_empty(&popups)) {
-            struct xdg_popup *popup = wl_container_of(popups.next, popup, plink);
-            wlr_xdg_popup_destroy(popup->xdg->base);
-        }
         popup_surface = wlr_surface_surface_at(get_wlrsurface(con->client),
                 server.cursor.wlr_cursor->x - con->geom.x,
                 server.cursor.wlr_cursor->y - con->geom.y, &sx, &sy);
+
+        con = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
+
+        if (con) {
+            popup_surface = get_wlrsurface(con->client);
+        }
+
+        if (!wl_list_empty(&popups) && con) {
+            struct xdg_popup *popup = wl_container_of(popups.next, popup, plink);
+            wlr_xdg_popup_destroy(popup->xdg->base);
+        }
     }
 
     update_cursor(&server.cursor);
 
-    // if there is no popup use the selected client's surface
-    if (!is_popup) {
-        con = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
-        if (con) {
-            popup_surface = get_wlrsurface(con->client);
-        }
-    }
+    if (!con)
+        return;
 
-    printf("pointer focus container: %p\n", con);
-    if (con) {
-        pointer_focus(con, popup_surface, sx, sy, time);
-    }
+    pointer_focus(con, popup_surface, sx, sy, time);
 }
 
 void move_resize(int ui)
