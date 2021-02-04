@@ -80,26 +80,24 @@ typedef struct {
 /* Used to move all of the data necessary to render a surface from the top-level
  * frame handler to the per-surface render function. */
 /* function declarations */
-void cleanup();
-void commitnotify(struct wl_listener *listener, void *data);
-void create_notify(struct wl_listener *listener, void *data);
-void create_notify_layer_shell(struct wl_listener *listener, void *data);
-void createxdeco(struct wl_listener *listener, void *data);
-void destroynotify(struct wl_listener *listener, void *data);
-void destroyxdeco(struct wl_listener *listener, void *data);
-void getxdecomode(struct wl_listener *listener, void *data);
-void inputdevice(struct wl_listener *listener, void *data);
-void maprequest(struct wl_listener *listener, void *data);
-void maprequestx11(struct wl_listener *listener, void *data);
-void run(char *startup_cmd);
-void setpsel(struct wl_listener *listener, void *data);
-void setsel(struct wl_listener *listener, void *data);
-void setmfact(float factor);
-int setup();
-void sigchld(int unused);
-void unmapnotify(struct wl_listener *listener, void *data);
-
-/* global variables */
+static void cleanup();
+static void commitnotify(struct wl_listener *listener, void *data);
+static void create_notify(struct wl_listener *listener, void *data);
+static void create_notify_layer_shell(struct wl_listener *listener, void *data);
+static void createxdeco(struct wl_listener *listener, void *data);
+static void destroynotify(struct wl_listener *listener, void *data);
+static void destroyxdeco(struct wl_listener *listener, void *data);
+static void getxdecomode(struct wl_listener *listener, void *data);
+static void inputdevice(struct wl_listener *listener, void *data);
+static void maprequest(struct wl_listener *listener, void *data);
+static void maprequestx11(struct wl_listener *listener, void *data);
+static void run(char *startup_cmd);
+static void setpsel(struct wl_listener *listener, void *data);
+static void setsel(struct wl_listener *listener, void *data);
+static void setmfact(float factor);
+static void sigchld(int unused);
+static void unmapnotify(struct wl_listener *listener, void *data);
+static int setup();
 
 /* global event handlers */
 static struct wl_listener cursor_axis = {.notify = axisnotify};
