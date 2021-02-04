@@ -22,7 +22,6 @@
 #include <wayland-server-protocol.h>
 #include <wayland-util.h>
 #include <wlr/backend.h>
-#include <wlr/backend/multi.h>
 #include <wlr/backend/session.h>
 #include <wlr/render/wlr_renderer.h>
 #include <wlr/render/wlr_renderer.h>
@@ -82,9 +81,7 @@ typedef struct {
  * frame handler to the per-surface render function. */
 /* function declarations */
 void cleanup();
-void cleanupkeyboard(struct wl_listener *listener, void *data);
 void commitnotify(struct wl_listener *listener, void *data);
-void create_keyboard(struct wlr_input_device *device);
 void create_notify(struct wl_listener *listener, void *data);
 void create_notify_layer_shell(struct wl_listener *listener, void *data);
 void createxdeco(struct wl_listener *listener, void *data);
@@ -92,8 +89,6 @@ void destroynotify(struct wl_listener *listener, void *data);
 void destroyxdeco(struct wl_listener *listener, void *data);
 void getxdecomode(struct wl_listener *listener, void *data);
 void inputdevice(struct wl_listener *listener, void *data);
-void keypress(struct wl_listener *listener, void *data);
-void keypressmod(struct wl_listener *listener, void *data);
 void maprequest(struct wl_listener *listener, void *data);
 void maprequestx11(struct wl_listener *listener, void *data);
 void run(char *startup_cmd);
@@ -143,40 +138,6 @@ void commitnotify(struct wl_listener *listener, void *data)
         return;
 
     container_damage_part(con);
-}
-
-void create_keyboard(struct wlr_input_device *device)
-{
-    struct xkb_context *context;
-    struct xkb_keymap *keymap;
-    struct keyboard *kb;
-
-    kb = device->data = calloc(1, sizeof(struct keyboard));
-    kb->device = device;
-
-    /* Prepare an XKB keymap and assign it to the keyboard. */
-    context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-    keymap = xkb_map_new_from_names(context, NULL,
-        XKB_KEYMAP_COMPILE_NO_FLAGS);
-
-    wlr_keyboard_set_keymap(device->keyboard, keymap);
-    xkb_keymap_unref(keymap);
-    xkb_context_unref(context);
-    wlr_keyboard_set_repeat_info(device->keyboard, server.options.repeat_rate,
-            server.options.repeat_delay);
-
-    /* Here we set up listeners for keyboard events. */
-    kb->modifiers.notify = keypressmod;
-    wl_signal_add(&device->keyboard->events.modifiers, &kb->modifiers);
-    kb->key.notify = keypress;
-    wl_signal_add(&device->keyboard->events.key, &kb->key);
-    kb->destroy.notify = cleanupkeyboard;
-    wl_signal_add(&device->events.destroy, &kb->destroy);
-
-    wlr_seat_set_keyboard(server.seat, device);
-
-    /* And add the keyboard to our list of server.keyboards */
-    wl_list_insert(&server.keyboards, &kb->link);
 }
 
 void create_notify(struct wl_listener *listener, void *data)
@@ -328,89 +289,6 @@ void inputdevice(struct wl_listener *listener, void *data)
     if (!wl_list_empty(&server.keyboards))
         caps |= WL_SEAT_CAPABILITY_KEYBOARD;
     wlr_seat_set_capabilities(server.seat, caps);
-}
-
-static bool handle_VT_keys(struct keyboard *kb, uint32_t keycode)
-{
-    const xkb_keysym_t *syms;
-    int nsyms =
-        xkb_state_key_get_syms(kb->device->keyboard->xkb_state, keycode, &syms);
-    bool handled = false;
-
-    for (int i = 0; i < nsyms; i++) {
-        if (syms[i] < XKB_KEY_XF86Switch_VT_1 || syms[i] > XKB_KEY_XF86Switch_VT_12)
-            continue;
-        if (!wlr_backend_is_multi(server.backend))
-            continue;
-
-        /* if required switch to different virtual terminal */
-        struct wlr_session *session =
-            wlr_backend_get_session(server.backend);
-        if (!session)
-            continue;
-
-        int vt = syms[i] - XKB_KEY_XF86Switch_VT_1 + 1;
-        wlr_session_change_vt(session, vt);
-        handled = true;
-    }
-    return handled;
-}
-
-void keypress(struct wl_listener *listener, void *data)
-{
-    /* This event is raised when a key is pressed or released. */
-    struct keyboard *kb = wl_container_of(listener, kb, key);
-    struct wlr_event_keyboard_key *event = data;
-    int i;
-
-    /* Translate libinput keycode -> xkbcommon */
-    uint32_t keycode = event->keycode + 8;
-    /* Get a list of keysyms based on the keymap for this keyboard */
-    const xkb_keysym_t *syms;
-    struct xkb_state *state;
-    xkb_state_key_get_one_sym(kb->device->keyboard->xkb_state, keycode);
-
-    /* create new state to clear the shift modifier to get a instead of A */
-    state = xkb_state_new(kb->device->keyboard->keymap);
-    int nsyms = xkb_state_key_get_syms(state, keycode, &syms);
-    uint32_t mods = wlr_keyboard_get_modifiers(kb->device->keyboard);
-
-    bool handled = false;
-    /* uint32_t mods = wlr_keyboard_get_modifiers(kb->device->keyboard); */
-    /* On _press_, attempt to process a compositor keybinding. */
-
-    if (handle_VT_keys(kb, keycode))
-        return;
-
-    if (event->state == WLR_KEY_PRESSED) {
-        for (i = 0; i < nsyms; i++) {
-            handled = key_pressed(mods, syms[i]);
-        }
-    }
-
-    if (!handled) {
-        /* Pass unhandled keycodes along to the client. */
-        wlr_seat_set_keyboard(server.seat, kb->device);
-        wlr_seat_keyboard_notify_key(server.seat, event->time_msec,
-            event->keycode, event->state);
-    }
-}
-
-void keypressmod(struct wl_listener *listener, void *data)
-{
-    /* This event is raised when a modifier key, such as shift or alt, is
-     * pressed. We simply communicate this to the client. */
-    struct keyboard *kb = wl_container_of(listener, kb, modifiers);
-    /*
-     * A seat can only have one keyboard, but this is a limitation of the
-     * Wayland protocol - not wlroots. We assign all connected server.keyboards 
-     * to the same seat. You can swap out the underlying wlr_keyboard like this
-     * and wlr_seat handles this transparently.
-     */
-    wlr_seat_set_keyboard(server.seat, kb->device);
-    /* Send modifiers to the client. */
-    wlr_seat_keyboard_notify_modifiers(server.seat,
-        &kb->device->keyboard->modifiers);
 }
 
 static bool wants_floating(struct client *c) {
