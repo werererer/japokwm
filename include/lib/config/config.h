@@ -6,7 +6,8 @@
 #include <lua.h>
 
 int lib_set_border_color(lua_State *L);
-int lib_set_borderpx(lua_State *L);
+int lib_set_tile_borderpx(lua_State *L);
+int lib_set_float_borderpx(lua_State *L);
 int lib_set_focus_color(lua_State *L);
 int lib_set_gaps(lua_State *L);
 int lib_set_mod(lua_State *L);

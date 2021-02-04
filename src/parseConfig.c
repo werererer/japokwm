@@ -38,7 +38,7 @@ int lib_reload_config(lua_State *L)
     // reconfigure clients
     struct client *c;
     wl_list_for_each(c, &clients, link) {
-        c->bw = lt->options.border_px;
+        c->bw = lt->options.tile_border_px;
     }
 
     printf("reload_config\n");

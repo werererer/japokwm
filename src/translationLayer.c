@@ -56,7 +56,8 @@ static const struct luaL_Reg config[] =
 {
     {"reload", lib_reload_config},
     {"set_border_color", lib_set_border_color},
-    {"set_borderpx", lib_set_borderpx},
+    {"set_tile_borderpx", lib_set_tile_borderpx},
+    {"set_float_borderpx", lib_set_float_borderpx},
     {"set_focus_color", lib_set_focus_color},
     {"set_gaps", lib_set_gaps},
     {"set_mod", lib_set_mod},
@@ -78,7 +79,8 @@ static const struct luaL_Reg localconfig[] =
 {
     {"set_arrange_by_focus", local_set_arrange_by_focus},
     {"set_border_color", local_set_border_color},
-    {"set_borderpx", local_set_borderpx},
+    {"set_tile_borderpx", local_set_tile_borderpx},
+    {"set_float_borderpx", local_set_float_borderpx},
     {"set_focus_color", local_set_focus_color},
     {"set_gaps", local_set_gaps},
     {"set_sloppy_focus", local_set_sloppy_focus},

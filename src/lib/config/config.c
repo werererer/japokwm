@@ -14,9 +14,16 @@ int lib_set_gaps(lua_State *L)
     return 0;
 }
 
-int lib_set_borderpx(lua_State *L)
+int lib_set_tile_borderpx(lua_State *L)
 {
-    server.options.border_px = luaL_checkinteger(L, -1);
+    server.options.tile_border_px = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    return 0;
+}
+
+int lib_set_float_borderpx(lua_State *L)
+{
+    server.options.float_border_px = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     return 0;
 }

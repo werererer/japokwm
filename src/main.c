@@ -269,7 +269,7 @@ void create_notify(struct wl_listener *listener, void *data)
     struct layout *lt = &ws->layout[0];
 
     c->surface.xdg = xdg_surface;
-    c->bw = lt->options.border_px;
+    c->bw = lt->options.tile_border_px;
     c->type = XDG_SHELL;
 
     /* Tell the client not to try anything fancy */
@@ -970,7 +970,7 @@ void create_notifyx11(struct wl_listener *listener, void *data)
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws[0];
     struct layout *lt = &ws->layout[0];
-    c->bw = lt->options.border_px;
+    c->bw = lt->options.tile_border_px;
 
     /* Listen to the various events it can emit */
     c->map.notify = maprequestx11;

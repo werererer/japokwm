@@ -524,6 +524,8 @@ void set_container_floating(struct container *con, bool floating)
 {
     if (!con)
         return;
+    if (con->client->type == LAYER_SHELL)
+        return;
     if (con->floating == floating)
         return;
 
@@ -533,10 +535,12 @@ void set_container_floating(struct container *con, bool floating)
         lift_container(con);
         wl_list_remove(&con->mlink);
         add_container_to_monitor_containers(con, -1);
+        con->client->bw = selected_monitor->ws[0]->layout->options.float_border_px;
     } else {
         lift_container(con);
         wl_list_remove(&con->mlink);
         add_container_to_monitor_containers(con, -1);
+        con->client->bw = selected_monitor->ws[0]->layout->options.tile_border_px;
     }
 }
 

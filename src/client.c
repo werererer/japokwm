@@ -121,11 +121,25 @@ float calc_ratio(float width, float height)
     return height / width;
 }
 
-void reset_client_borders(int border_px)
+void reset_tiled_client_borders(int border_px)
 {
     struct client *c;
     wl_list_for_each(c, &clients, link) {
         if (!existon(c->con, selected_monitor))
+            continue;
+        if (c->con->floating)
+            continue;
+        c->bw = border_px;
+    }
+}
+
+void reset_floating_client_borders(int border_px)
+{
+    struct client *c;
+    wl_list_for_each(c, &clients, link) {
+        if (!existon(c->con, selected_monitor))
+            continue;
+        if (!c->con->floating)
             continue;
         c->bw = border_px;
     }

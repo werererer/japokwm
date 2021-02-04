@@ -13,7 +13,8 @@
 
 struct options {
     bool sloppy_focus;
-    int border_px;
+    int tile_border_px;
+    int float_border_px;
     int modkey;
     float root_color[4];
     float border_color[4];

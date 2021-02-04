@@ -27,7 +27,8 @@ struct options get_default_options()
         .border_color = {0.0f, 0.0f, 1.0f, 1.0f},
         .repeat_rate = 25,
         .repeat_delay = 600,
-        .border_px = 3,
+        .tile_border_px = 3,
+        .float_border_px = 3,
         .inner_gap = 10,
         .outer_gap = 10,
         .monrule_count = 0,
@@ -45,5 +46,6 @@ void copy_options(struct options *dest_option, struct options *src_option)
 {
     memcpy(dest_option, src_option, sizeof(struct options));
 
-    reset_client_borders(dest_option->border_px);
+    reset_tiled_client_borders(dest_option->tile_border_px);
+    reset_floating_client_borders(dest_option->tile_border_px);
 }

@@ -112,6 +112,8 @@ void move_resize(int ui)
     grabc = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
     if (!grabc)
         return;
+    if (grabc->client->type == LAYER_SHELL)
+        return;
 
     /* Float the window and tell motion_notify to grab it */
     set_container_floating(grabc, true);

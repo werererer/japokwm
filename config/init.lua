@@ -17,7 +17,8 @@ local monitor_transform = {
 }
 
 config.set_sloppy_focus(false)
-config.set_borderpx(2)
+config.set_tile_borderpx(2)
+config.set_float_borderpx(2)
 config.set_gaps(20, 20)
 config.set_root_color({0.3, 0.3, 0.3, 1.0})
 config.set_focus_color({1.0, 0.0, 0.0, 1.0})
@@ -48,7 +49,7 @@ config.set_monrules({
 local termcmd = "/usr/bin/termite"
 
 config.set_keybinds({
-    {"mod-p",         function() action.spawn("/usr/bin/rofi -show run") end},
+    {"mod-p",         function() os.execute("rofi -show run&") end},
     {"mod-e",         function() action.view(info.get_next_empty_workspace(info.get_workspace(), Direction.RIGHT)) end},
     {"mod-period",    function() action.toggle_workspace() end},
     {"mod-S-period",  function() action.toggle_layout() end},

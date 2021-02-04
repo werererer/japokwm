@@ -24,13 +24,23 @@ int local_set_gaps(lua_State *L)
     return 0;
 }
 
-int local_set_borderpx(lua_State *L)
+int local_set_tile_borderpx(lua_State *L)
 {
     struct monitor *m = selected_monitor;
     struct layout *lt = &m->ws[0]->layout[0];
-    lt->options.border_px = luaL_checkinteger(L, -1);
+    lt->options.tile_border_px = luaL_checkinteger(L, -1);
 
-    reset_client_borders(lt->options.border_px);
+    reset_tiled_client_borders(lt->options.tile_border_px);
+    return 0;
+}
+
+int local_set_float_borderpx(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct layout *lt = &m->ws[0]->layout[0];
+    lt->options.tile_border_px = luaL_checkinteger(L, -1);
+
+    reset_floating_client_borders(lt->options.tile_border_px);
     return 0;
 }
 
