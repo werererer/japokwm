@@ -13,7 +13,7 @@ int lib_set_layout(lua_State *L)
     copy_options(&lt->options, &server.options);
 
     // 3. argument
-    lt->lua_box_data_ref = lua_copy_table(L);
+    lt->lua_resize_data_ref = lua_copy_table(L);
     // 2. argument
     lt->lua_layout_master_copy_data_ref = lua_copy_table(L);
     // 1.argument

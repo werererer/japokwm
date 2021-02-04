@@ -29,8 +29,10 @@ int lib_toggle_view(lua_State *L);
 int lib_toggle_workspace(lua_State *L);
 int lib_view(lua_State *L);
 int lib_zoom(lua_State *L);
-int set_nmaster(lua_State *L);
-int set_resize_direction(lua_State *L);
+int lib_set_nmaster(lua_State *L);
+int lib_increase_nmaster(lua_State *L);
+int lib_decrease_nmaster(lua_State *L);
+int lib_set_resize_direction(lua_State *L);
 
 void motion_notify(uint32_t time);
 

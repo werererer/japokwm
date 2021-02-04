@@ -54,7 +54,7 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
         focus_container(con, FOCUS_NOOP);
 }
 
-int set_resize_direction(lua_State *L)
+int lib_set_resize_direction(lua_State *L)
 {
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws[0];
@@ -104,7 +104,7 @@ int lib_resize_main(lua_State *L)
     lua_getglobal_safe(L, "Resize_main_all");
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_original_copy_data_ref);
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_box_data_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_resize_data_ref);
     lua_pushnumber(L, n);
     lua_pushinteger(L, d);
 
@@ -128,10 +128,33 @@ int lib_set_floating(lua_State *L)
     return 0;
 }
 
-int set_nmaster(lua_State *L)
+int lib_set_nmaster(lua_State *L)
 {
     selected_monitor->ws[0]->layout[0].nmaster = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
+    arrange();
+    return 0;
+}
+
+int lib_increase_nmaster(lua_State *L)
+{
+    struct layout *lt = &selected_monitor->ws[0]->layout[0];
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_master_copy_data_ref);
+    int max_nmaster = luaL_len(L, -1);
+    lua_pop(L, 1);
+
+    printf("max nmaster: %i\n", max_nmaster);
+    printf("max nmaster: %i\n", max_nmaster);
+    lt->nmaster = MIN(max_nmaster, lt->nmaster + 1);
+    arrange();
+    return 0;
+}
+
+int lib_decrease_nmaster(lua_State *L)
+{
+    struct layout *lt = &selected_monitor->ws[0]->layout[0];
+
+    lt->nmaster = MAX(1, lt->nmaster - 1);
     arrange();
     return 0;
 }

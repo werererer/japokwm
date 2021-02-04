@@ -26,7 +26,7 @@ struct layout {
     int lua_layout_copy_data_ref;
     int lua_layout_original_copy_data_ref;
     int lua_layout_master_copy_data_ref;
-    int lua_box_data_ref;
+    int lua_resize_data_ref;
 
     struct bounds layout_bounds;
     struct bounds master_bounds;
