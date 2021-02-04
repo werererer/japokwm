@@ -90,7 +90,7 @@ static bool handle_move_resize(enum cursor_mode cursor_mode)
     return false;
 }
 
-void motionrelative(struct wl_listener *listener, void *data)
+void motion_relative(struct wl_listener *listener, void *data)
 {
     /* This event is forwarded by the cursor when a pointer emits a _relative_
      * pointer motion event (i.e. a delta) */

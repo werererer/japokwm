@@ -71,6 +71,7 @@
 #include "workspace.h"
 #include "translationLayer.h"
 #include "cursor.h"
+#include "keyboard.h"
 
 typedef struct {
     struct wl_listener request_mode;
@@ -80,7 +81,6 @@ typedef struct {
 /* Used to move all of the data necessary to render a surface from the top-level
  * frame handler to the per-surface render function. */
 /* function declarations */
-void buttonpress(struct wl_listener *listener, void *data);
 void cleanup();
 void cleanupkeyboard(struct wl_listener *listener, void *data);
 void commitnotify(struct wl_listener *listener, void *data);
@@ -124,47 +124,6 @@ static void activatex11(struct wl_listener *listener, void *data);
 static void create_notifyx11(struct wl_listener *listener, void *data);
 static struct wl_listener new_xwayland_surface = {.notify = create_notifyx11};
 
-void buttonpress(struct wl_listener *listener, void *data)
-{
-    struct wlr_event_pointer_button *event = data;
-    /* struct wlr_keyboard *keyboard; */
-    /* uint32_t mods; */
-
-    switch (event->state) {
-    case WLR_BUTTON_PRESSED:
-        {
-            /* Change focus if the button was _pressed_ over a client */
-
-            /* Translate libinput to xkbcommon code */
-            unsigned sym = event->button + 64985;
-
-            /* get modifiers */
-            struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
-            int mods = wlr_keyboard_get_modifiers(kb);
-
-            button_pressed(mods, sym);
-            break;
-        }
-    case WLR_BUTTON_RELEASED:
-        /* If you released any buttons, we exit interactive move/resize mode. */
-        /* XXX should reset to the pointer focus's current setcursor */
-        if (server.cursor.cursor_mode != CURSOR_NORMAL) {
-            wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
-                    "left_ptr", server.cursor.wlr_cursor);
-            server.cursor.cursor_mode = CURSOR_NORMAL;
-            /* Drop the window off on its new monitor */
-            struct monitor *m = xytomon(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
-            set_selected_monitor(m);
-            return;
-        }
-        break;
-    }
-    /* If the event wasn't handled by the compositor, notify the client with
-     * pointer focus that a button press has occurred */
-    wlr_seat_pointer_notify_button(server.seat,
-            event->time_msec, event->button, event->state);
-}
-
 void cleanup()
 {
     wlr_xwayland_destroy(server.xwayland.wlr_xwayland);
@@ -173,16 +132,6 @@ void cleanup()
     wlr_xcursor_manager_destroy(server.cursor_mgr);
     wlr_cursor_destroy(server.cursor.wlr_cursor);
     wlr_output_layout_destroy(server.output_layout);
-}
-
-void cleanupkeyboard(struct wl_listener *listener, void *data)
-{
-    struct wlr_input_device *device = data;
-    struct keyboard *kb = device->data;
-
-    wl_list_remove(&kb->destroy.link);
-    wl_list_remove(&kb->link);
-    free(kb);
 }
 
 void commitnotify(struct wl_listener *listener, void *data)

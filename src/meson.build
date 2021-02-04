@@ -52,6 +52,7 @@ srcs = files(
     'workspace.c',
     'xdg-shell-protocol.c',
     'xwayland.c',
+    'keyboard.c'
   )
 
 libName = 'japokwm'
