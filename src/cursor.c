@@ -70,7 +70,7 @@ void motion_notify(uint32_t time)
     struct container *fcon = focused_container(m);
 
     double sx = 0, sy = 0;
-    struct wlr_surface *popup_surface = get_popup_surface_under_cursor(fcon, &sx, &sy);
+    struct wlr_surface *popup_surface = get_popup_surface_under_cursor(&sx, &sy);
     bool is_popup = popup_surface != NULL;
 
     struct wlr_surface *focus_surface = popup_surface;

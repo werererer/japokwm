@@ -22,5 +22,5 @@ struct xdg_popup {
 
 void popup_handle_destroy(struct wl_listener *listener, void *data);
 void popup_handle_new_popup(struct wl_listener *listener, void *data);
-struct wlr_surface *get_popup_surface_under_cursor(struct container *con, double *sx, double *sy);
+struct wlr_surface *get_popup_surface_under_cursor(double *sx, double *sy);
 #endif /* POPUP_H */
