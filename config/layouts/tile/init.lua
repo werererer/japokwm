@@ -1,5 +1,6 @@
 action.set_resize_direction(Direction.RIGHT)
 
+print("tile")
 local layout_data = {
     {
         {0, 0, 1, 1},
@@ -38,9 +39,9 @@ local master_layout_data = {
     },
 }
 
-local box_data = {
+local resize_data = {
     {1},
     {2, 3, 4, 5},
 }
 
-layout.set(layout_data, master_layout_data, box_data)
+layout.set(layout_data, master_layout_data, resize_data)

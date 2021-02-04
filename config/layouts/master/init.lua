@@ -6,6 +6,7 @@ Min_main_width = 0.2
 Max_main_width = 1
 Min_main_height = 0.2
 Max_main_height = 1
+print("master")
 
 function Update(n)
     -- if n == 1 then
@@ -89,13 +90,9 @@ local master_layout_data = {
     {
         {0.0, 0.0, 1.0, 1.0}
     },
-    {
-        {0.0, 0.0, 1.0, 0.5},
-        {0.0, 0.5, 1.0, 0.5},
-    },
 }
 
-local box_data = {
+local resize_data = {
     {1},
     {2},
     {3, 4},
@@ -103,8 +100,4 @@ local box_data = {
     {6, 7, 8, 9},
 }
 
-print("works")
-layout.set(layout_data, master_layout_data, box_data)
-print("works2")
-lconfig.set_gaps(10, 50)
-lconfig.set_border_color{0.0, 1.0, 1.0, 1.0}
+layout.set(layout_data, master_layout_data, resize_data)

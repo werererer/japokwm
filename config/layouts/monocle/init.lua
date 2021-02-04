@@ -19,11 +19,12 @@ local master_layout_data = {
     },
 }
 
-local box_data = {
+local resize_data = {
     {1},
 }
 
-layout.set(layout_data, master_layout_data, box_data)
-action.set_arrange_by_focus(true);
-lconfig.set_borderpx(0)
+layout.set(layout_data, master_layout_data, resize_data)
+lconfig.set_arrange_by_focus(true);
+lconfig.set_tile_borderpx(0)
+lconfig.set_float_borderpx(1)
 lconfig.set_gaps(0, 0)

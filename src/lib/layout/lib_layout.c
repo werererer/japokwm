@@ -12,6 +12,7 @@ int lib_set_layout(lua_State *L)
     // reset options
     copy_options(&lt->options, &server.options);
 
+    // TODO is corrupted?
     // 3. argument
     lt->lua_resize_data_ref = lua_copy_table(L);
     // 2. argument

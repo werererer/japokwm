@@ -2,6 +2,7 @@ function Update(n)
 end
 action.set_resize_direction(Direction.LEFT)
 
+print("two_pane")
 local layout_data = {
     {
         {0, 0, 1, 1},
@@ -22,9 +23,9 @@ local master_layout_data = {
     },
 }
 
-local box_data = {
+local resize_data = {
     {1},
     {2},
 }
 
-layout.set(layout_data, master_layout_data, box_data)
+layout.set(layout_data, master_layout_data, resize_data)
