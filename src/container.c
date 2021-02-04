@@ -569,6 +569,16 @@ void resize_container(struct container *con, int dx, int dy)
     resize(con, geom, false);
 }
 
+inline int container_relative_x_to_absolute(struct container *con, int relx)
+{
+    return relx + con->geom.x;
+}
+
+inline int container_relative_y_to_absolute(struct container *con, int rely)
+{
+    return rely + con->geom.x;
+}
+
 inline int absolute_x_to_container_relative(struct container *con, int x)
 {
     return x - con->geom.x;

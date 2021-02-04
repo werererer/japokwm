@@ -8,8 +8,9 @@
 struct wl_listener request_set_cursor = {.notify = handle_set_cursor};
 
 static struct container *grabc = NULL;
-static int dx, dy; /* client-relative */
+static int dx, dy;
 
+// TODO refactor this function
 static void pointer_focus(struct container *con, struct wlr_surface *surface, double sx, double sy, uint32_t time);
 
 static void pointer_focus(struct container *con, struct wlr_surface *surface, double sx, double sy, uint32_t time)
@@ -71,27 +72,22 @@ void motion_notify(uint32_t time)
 
     double sx = 0, sy = 0;
     struct wlr_surface *popup_surface = get_popup_surface_under_cursor(&sx, &sy);
-    bool is_popup = popup_surface != NULL;
+    bool is_popup_under_cursor = popup_surface != NULL;
 
     struct wlr_surface *focus_surface = popup_surface;
 
     struct container *focus_con = xytocontainer(cursorx, cursory);
-    if (!is_popup) {
-        if (focus_con) {
-            focus_surface = wlr_surface_surface_at(get_wlrsurface(focus_con->client),
-                    absolute_x_to_container_relative(focus_con, cursorx),
-                    absolute_y_to_container_relative(focus_con, cursory),
-                    &sx, &sy);
+    if (!is_popup_under_cursor && focus_con) {
+        focus_surface = wlr_surface_surface_at(get_wlrsurface(focus_con->client),
+                absolute_x_to_container_relative(focus_con, cursorx),
+                absolute_y_to_container_relative(focus_con, cursory),
+                &sx, &sy);
 
-            if (popups_exist())
-                destroy_popups();
-        }
+        if (popups_exist())
+            destroy_popups();
 
         update_cursor(&server.cursor);
     }
-
-    if (!focus_con && !is_popup)
-        return;
 
     pointer_focus(focus_con, focus_surface, sx, sy, time);
 }
@@ -104,13 +100,17 @@ void move_resize(int ui)
     if (grabc->client->type == LAYER_SHELL)
         return;
 
+    struct wlr_cursor *cursor = server.cursor.wlr_cursor;
+    int cursorx = server.cursor.wlr_cursor->x;
+    int cursory = server.cursor.wlr_cursor->y;
+
     /* Float the window and tell motion_notify to grab it */
     set_container_floating(grabc, true);
     switch (server.cursor.cursor_mode = ui) {
         case CURSOR_MOVE:
-            dx = server.cursor.wlr_cursor->x - grabc->geom.x;
-            dy = server.cursor.wlr_cursor->y - grabc->geom.y;
-            wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "fleur", server.cursor.wlr_cursor);
+            dx = absolute_x_to_container_relative(grabc, cursorx);
+            dy = absolute_y_to_container_relative(grabc, cursory);
+            wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "fleur", cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
             arrange();
             break;
@@ -121,7 +121,7 @@ void move_resize(int ui)
                     grabc->geom.x + grabc->geom.width,
                     grabc->geom.y + grabc->geom.height);
             wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
-                    "bottom_right_corner", server.cursor.wlr_cursor);
+                    "bottom_right_corner", cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
             arrange();
             break;
