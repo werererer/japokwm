@@ -80,29 +80,22 @@ typedef struct {
 /* Used to move all of the data necessary to render a surface from the top-level
  * frame handler to the per-surface render function. */
 /* function declarations */
-void axisnotify(struct wl_listener *listener, void *data);
 void buttonpress(struct wl_listener *listener, void *data);
-void chvt(unsigned int ui);
 void cleanup();
 void cleanupkeyboard(struct wl_listener *listener, void *data);
 void commitnotify(struct wl_listener *listener, void *data);
 void create_keyboard(struct wlr_input_device *device);
 void create_notify(struct wl_listener *listener, void *data);
 void create_notify_layer_shell(struct wl_listener *listener, void *data);
-void create_pointer(struct wlr_input_device *device);
 void createxdeco(struct wl_listener *listener, void *data);
-void cursorframe(struct wl_listener *listener, void *data);
 void destroynotify(struct wl_listener *listener, void *data);
 void destroyxdeco(struct wl_listener *listener, void *data);
 void getxdecomode(struct wl_listener *listener, void *data);
-void incnmaster(int i);
 void inputdevice(struct wl_listener *listener, void *data);
 void keypress(struct wl_listener *listener, void *data);
 void keypressmod(struct wl_listener *listener, void *data);
 void maprequest(struct wl_listener *listener, void *data);
 void maprequestx11(struct wl_listener *listener, void *data);
-void motionabsolute(struct wl_listener *listener, void *data);
-void motionrelative(struct wl_listener *listener, void *data);
 void run(char *startup_cmd);
 void setpsel(struct wl_listener *listener, void *data);
 void setsel(struct wl_listener *listener, void *data);
@@ -117,8 +110,8 @@ void unmapnotify(struct wl_listener *listener, void *data);
 static struct wl_listener cursor_axis = {.notify = axisnotify};
 static struct wl_listener cursor_button = {.notify = buttonpress};
 static struct wl_listener cursor_frame = {.notify = cursorframe};
-static struct wl_listener cursor_motion = {.notify = motionrelative};
-static struct wl_listener cursor_motion_absolute = {.notify = motionabsolute};
+static struct wl_listener cursor_motion = {.notify = motion_relative};
+static struct wl_listener cursor_motion_absolute = {.notify = motion_absolute};
 static struct wl_listener new_input = {.notify = inputdevice};
 static struct wl_listener new_output = {.notify = create_monitor};
 static struct wl_listener new_xdeco = {.notify = createxdeco};
@@ -130,17 +123,6 @@ static struct wl_listener request_set_sel = {.notify = setsel};
 static void activatex11(struct wl_listener *listener, void *data);
 static void create_notifyx11(struct wl_listener *listener, void *data);
 static struct wl_listener new_xwayland_surface = {.notify = create_notifyx11};
-
-void axisnotify(struct wl_listener *listener, void *data)
-{
-    /* This event is forwarded by the cursor when a pointer emits an axis event,
-     * for example when you move the scroll wheel. */
-    struct wlr_event_pointer_axis *event = data;
-    /* Notify the client with pointer focus of the axis event. */
-    wlr_seat_pointer_notify_axis(server.seat,
-            event->time_msec, event->orientation, event->delta,
-            event->delta_discrete, event->source);
-}
 
 void buttonpress(struct wl_listener *listener, void *data)
 {
@@ -181,11 +163,6 @@ void buttonpress(struct wl_listener *listener, void *data)
      * pointer focus that a button press has occurred */
     wlr_seat_pointer_notify_button(server.seat,
             event->time_msec, event->button, event->state);
-}
-
-void chvt(unsigned int ui)
-{
-    wlr_session_change_vt(wlr_backend_get_session(server.backend), ui);
 }
 
 void cleanup()
@@ -321,15 +298,6 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     wl_signal_add(&layer_surface->events.new_popup, &c->new_popup);
 }
 
-void create_pointer(struct wlr_input_device *device)
-{
-    /* We don't do anything special with pointers. All of our pointer handling
-     * is proxied through wlr_cursor. On another compositor, you might take this
-     * opportunity to do libinput configuration on the device to set
-     * acceleration, etc. */
-    wlr_cursor_attach_input_device(server.cursor.wlr_cursor, device);
-}
-
 void createxdeco(struct wl_listener *listener, void *data)
 {
     struct wlr_xdg_toplevel_decoration_v1 *wlr_deco = data;
@@ -341,16 +309,6 @@ void createxdeco(struct wl_listener *listener, void *data)
     d->destroy.notify = destroyxdeco;
 
     getxdecomode(&d->request_mode, wlr_deco);
-}
-
-void cursorframe(struct wl_listener *listener, void *data)
-{
-    /* This event is forwarded by the cursor when a pointer emits an frame
-     * event. Frame events are sent after regular pointer events to group
-     * multiple events together. For instance, two axis events may happen at the
-     * same time, in which case a frame event won't be sent in between. */
-    /* Notify the client with pointer focus of the frame event. */
-    wlr_seat_pointer_notify_frame(server.seat);
 }
 
 void destroynotify(struct wl_listener *listener, void *data)
@@ -649,33 +607,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
     apply_rules(con);
 }
 
-void motionabsolute(struct wl_listener *listener, void *data)
-{
-    /* This event is forwarded by the cursor when a pointer emits an _absolute_
-     * motion event, from 0..1 on Each axis. This happens, for example, when
-     * wlroots is running under a Wayland window rather than KMS+DRM, and you
-     * move the mouse over the Windows. You could enter the window from any edge,
-     * so we have to warp the mouse there. There is also some hardware which
-     * emits these events. */
-    struct wlr_event_pointer_motion_absolute *event = data;
-    wlr_cursor_warp_absolute(server.cursor.wlr_cursor, event->device, event->x, event->y);
-    motion_notify(event->time_msec);
-}
-
-void motionrelative(struct wl_listener *listener, void *data)
-{
-    /* This event is forwarded by the cursor when a pointer emits a _relative_
-     * pointer motion event (i.e. a delta) */
-    struct wlr_event_pointer_motion *event = data;
-    /* The cursor doesn't move unless we tell it to. The cursor automatically
-     * handles constraining the motion to the output layout, as well as any
-     * special configuration applied for the specific input device which
-     * generated the event. You can pass NULL for the device if you want to move
-     * the cursor around without any input. */
-    wlr_cursor_move(server.cursor.wlr_cursor, event->device, event->delta_x, event->delta_y);
-    motion_notify(event->time_msec);
-}
-
 void run(char *startup_cmd)
 {
     pid_t startup_pid = -1;
@@ -699,6 +630,7 @@ void run(char *startup_cmd)
      * instead of (0, 0) and then jumping.  still may not be fully
      * initialized, as the image/coordinates are not transformed for the
      * monitor when displayed here */
+    printf("warp\n");
     wlr_cursor_warp_closest(server.cursor.wlr_cursor, NULL, server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
     wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "left_ptr", server.cursor.wlr_cursor);
 

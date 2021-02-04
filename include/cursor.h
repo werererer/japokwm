@@ -23,9 +23,14 @@ struct cursor {
     int hotspot_y;
 };
 
+void axisnotify(struct wl_listener *listener, void *data);
+void create_pointer(struct wlr_input_device *device);
+void cursorframe(struct wl_listener *listener, void *data);
 /* This event is raised by the seat when a client provides a cursor image */
 void handle_set_cursor(struct wl_listener *listener, void *data);
 
+void motion_relative(struct wl_listener *listener, void *data);
+void motion_absolute(struct wl_listener *listener, void *data);
 /* void motionnotify(uint32_t time); */
 /* reload the surface stored in cursor */
 void update_cursor(struct cursor *cursor);

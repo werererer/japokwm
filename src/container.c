@@ -106,12 +106,10 @@ struct container *focused_container(struct monitor *m)
         return NULL;
 
     struct container *con = wl_container_of(focus_stack.next, con, flink);
-    printf("focused container: %p\n", con);
 
     if (!visibleon(con, m->ws[0]))
         return NULL;
 
-    printf("visible\n");
     return con;
 }
 
@@ -556,27 +554,31 @@ void set_container_monitor(struct container *con, struct monitor *m)
 void move_container(struct container *con, int dx, int dy)
 {
     struct wlr_box geom = con->geom;
-    geom.width = server.cursor.wlr_cursor->x - dx;
-    geom.height = server.cursor.wlr_cursor->y - dy;
+    geom.x += dx,
+    geom.y += dy,
+    /* geom.x = server.cursor.wlr_cursor->x - geom.x, */
+    /* geom.y = server.cursor.wlr_cursor->y - geom.y, */
+    /* geom.x = container_relative_x_to_absolute(con, dx); */
+    /* geom.y = container_relative_y_to_absolute(con, dy); */
     resize(con, geom, false);
 }
 
 void resize_container(struct container *con, int dx, int dy)
 {
     struct wlr_box geom = con->geom;
-    geom.x = server.cursor.wlr_cursor->x - dx,
-    geom.y = server.cursor.wlr_cursor->y - dy,
+    geom.width += dx;
+    geom.height += dy;
     resize(con, geom, false);
 }
 
-inline int container_relative_x_to_absolute(struct container *con, int relx)
+inline int container_relative_x_to_absolute(struct container *con, int lx)
 {
-    return relx + con->geom.x;
+    return con->geom.x + lx;
 }
 
-inline int container_relative_y_to_absolute(struct container *con, int rely)
+inline int container_relative_y_to_absolute(struct container *con, int ly)
 {
-    return rely + con->geom.x;
+    return con->geom.y + ly;
 }
 
 inline int absolute_x_to_container_relative(struct container *con, int x)

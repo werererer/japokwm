@@ -8,6 +8,7 @@
 struct wl_listener request_set_cursor = {.notify = handle_set_cursor};
 
 static struct container *grabc = NULL;
+static int old_cursor_x, old_cursor_y;
 static int dx, dy;
 
 // TODO refactor this function
@@ -41,22 +42,80 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface, do
         focus_container(con, FOCUS_NOOP);
 }
 
+void axisnotify(struct wl_listener *listener, void *data)
+{
+    /* This event is forwarded by the cursor when a pointer emits an axis event,
+     * for example when you move the scroll wheel. */
+    struct wlr_event_pointer_axis *event = data;
+    /* Notify the client with pointer focus of the axis event. */
+    wlr_seat_pointer_notify_axis(server.seat,
+            event->time_msec, event->orientation, event->delta,
+            event->delta_discrete, event->source);
+}
+
+
+void create_pointer(struct wlr_input_device *device)
+{
+    /* We don't do anything special with pointers. All of our pointer handling
+     * is proxied through wlr_cursor. On another compositor, you might take this
+     * opportunity to do libinput configuration on the device to set
+     * acceleration, etc. */
+    wlr_cursor_attach_input_device(server.cursor.wlr_cursor, device);
+}
+
+void cursorframe(struct wl_listener *listener, void *data)
+{
+    /* This event is forwarded by the cursor when a pointer emits an frame
+     * event. Frame events are sent after regular pointer events to group
+     * multiple events together. For instance, two axis events may happen at the
+     * same time, in which case a frame event won't be sent in between. */
+    /* Notify the client with pointer focus of the frame event. */
+    wlr_seat_pointer_notify_frame(server.seat);
+}
+
 static bool handle_move_resize(enum cursor_mode cursor_mode)
 {
-    bool ret_val = false;
     switch (cursor_mode) {
         case CURSOR_MOVE:
-            resize_container(grabc, dx, dy);
-            ret_val = true;
+            move_container(grabc, dx, dy);
+            return true;
             break;
         case CURSOR_RESIZE:
-            move_container(grabc, grabc->geom.x, grabc->geom.y);
-            ret_val = true;
+            resize_container(grabc, dx, dy);
+            return true;
             break;
         default:
             break;
     }
-    return ret_val;
+    return false;
+}
+
+void motionrelative(struct wl_listener *listener, void *data)
+{
+    /* This event is forwarded by the cursor when a pointer emits a _relative_
+     * pointer motion event (i.e. a delta) */
+    struct wlr_event_pointer_motion *event = data;
+    /* The cursor doesn't move unless we tell it to. The cursor automatically
+     * handles constraining the motion to the output layout, as well as any
+     * special configuration applied for the specific input device which
+     * generated the event. You can pass NULL for the device if you want to move
+     * the cursor around without any input. */
+    wlr_cursor_move(server.cursor.wlr_cursor, event->device, event->delta_x, event->delta_y);
+    motion_notify(event->time_msec);
+}
+
+void motion_absolute(struct wl_listener *listener, void *data)
+{
+    /* This event is forwarded by the cursor when a pointer emits an _absolute_
+     * motion event, from 0..1 on Each axis. This happens, for example, when
+     * wlroots is running under a Wayland window rather than KMS+DRM, and you
+     * move the mouse over the Windows. You could enter the window from any edge,
+     * so we have to warp the mouse there. There is also some hardware which
+     * emits these events. */
+    struct wlr_event_pointer_motion_absolute *event = data;
+    printf("warpabsolute\n");
+    wlr_cursor_warp_absolute(server.cursor.wlr_cursor, event->device, event->x, event->y);
+    motion_notify(event->time_msec);
 }
 
 void motion_notify(uint32_t time)
@@ -65,6 +124,11 @@ void motion_notify(uint32_t time)
     int cursory = server.cursor.wlr_cursor->y;
 
     set_selected_monitor(xytomon(cursorx, cursory));
+
+    dx = cursorx - old_cursor_x;
+    dy = cursory - old_cursor_y;
+    old_cursor_x = cursorx;
+    old_cursor_y = cursory;
 
     /* If handled successfully return */
     if (handle_move_resize(server.cursor.cursor_mode))
@@ -101,15 +165,10 @@ void move_resize(int ui)
         return;
 
     struct wlr_cursor *cursor = server.cursor.wlr_cursor;
-    int cursorx = server.cursor.wlr_cursor->x;
-    int cursory = server.cursor.wlr_cursor->y;
-
     /* Float the window and tell motion_notify to grab it */
     set_container_floating(grabc, true);
     switch (server.cursor.cursor_mode = ui) {
         case CURSOR_MOVE:
-            dx = absolute_x_to_container_relative(grabc, cursorx);
-            dy = absolute_y_to_container_relative(grabc, cursory);
             wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "fleur", cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
             arrange();
@@ -117,11 +176,12 @@ void move_resize(int ui)
         case CURSOR_RESIZE:
             /* Doesn't work for X11 output - the next absolute motion event
              * returns the cursor to where it started */
+            printf("warp closest\n");
             wlr_cursor_warp_closest(server.cursor.wlr_cursor, NULL,
                     grabc->geom.x + grabc->geom.width,
                     grabc->geom.y + grabc->geom.height);
             wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
-                    "bottom_right_corner", cursor);
+                    "bottom_right_corner", server.cursor.wlr_cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
             arrange();
             break;

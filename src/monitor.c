@@ -174,6 +174,7 @@ void center_mouse_in_monitor(struct monitor *m)
 
     int xcenter = m->geom.x + m->geom.width/2;
     int ycenter = m->geom.y + m->geom.height/2;
+    printf("warp\n");
     wlr_cursor_warp(server.cursor.wlr_cursor, NULL, xcenter, ycenter);
 }
 
