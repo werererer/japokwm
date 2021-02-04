@@ -33,6 +33,9 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface, do
      * of its surfaces, and make keyboard focus follow if desired. */
     wlr_seat_pointer_notify_enter(server.seat, surface, sx, sy);
 
+    if (!con)
+        return;
+
     if (con->m->ws[0]->layout[0].options.sloppy_focus)
         focus_container(con, FOCUS_NOOP);
 }
@@ -66,45 +69,31 @@ void motion_notify(uint32_t time)
     if (handle_move_resize(server.cursor.cursor_mode))
         return;
 
-    struct monitor *m = selected_monitor;
-    struct container *fcon = focused_container(m);
-
     double sx = 0, sy = 0;
     struct wlr_surface *popup_surface = get_popup_surface_under_cursor(&sx, &sy);
     bool is_popup = popup_surface != NULL;
 
     struct wlr_surface *focus_surface = popup_surface;
-    struct container *new_fcon = fcon;
+
+    struct container *focus_con = xytocontainer(cursorx, cursory);
     if (!is_popup) {
-        new_fcon = xytocontainer(cursorx, cursory);
-
-        if (new_fcon) {
-            focus_surface = wlr_surface_surface_at(get_wlrsurface(new_fcon->client),
-                    absolute_x_to_container_relative(new_fcon, cursorx),
-                    absolute_y_to_container_relative(new_fcon, cursory),
+        if (focus_con) {
+            focus_surface = wlr_surface_surface_at(get_wlrsurface(focus_con->client),
+                    absolute_x_to_container_relative(focus_con, cursorx),
+                    absolute_y_to_container_relative(focus_con, cursory),
                     &sx, &sy);
-        } else {
-            if (fcon)
-                focus_surface = wlr_surface_surface_at(get_wlrsurface(fcon->client),
-                        absolute_x_to_container_relative(fcon, cursorx),
-                        absolute_y_to_container_relative(fcon, cursory),
-                        &sx, &sy);
-        }
 
-
-        // if the cursor is not on an empty spot and there are popups
-        if (!wl_list_empty(&popups) && new_fcon) {
-            struct xdg_popup *popup = wl_container_of(popups.next, popup, plink);
-            wlr_xdg_popup_destroy(popup->xdg->base);
+            if (popups_exist())
+                destroy_popups();
         }
 
         update_cursor(&server.cursor);
     }
 
-    if (!new_fcon)
+    if (!focus_con && !is_popup)
         return;
 
-    pointer_focus(new_fcon, focus_surface, sx, sy, time);
+    pointer_focus(focus_con, focus_surface, sx, sy, time);
 }
 
 void move_resize(int ui)

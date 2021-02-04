@@ -131,11 +131,10 @@ struct wlr_surface *get_popup_surface_under_cursor(double *sx, double *sy)
     int cursorx = server.cursor.wlr_cursor->x;
     int cursory = server.cursor.wlr_cursor->y;
 
-    bool is_popup = !wl_list_empty(&popups);
-    if (!is_popup)
+    if (!popups_exist())
         return NULL;
 
-    struct xdg_popup *popup = wl_container_of(popups.next, popup, plink);
+    struct xdg_popup *popup = get_latest_popup();
     if (!popup)
         return NULL;
     struct container *con = popup->toplevel;
@@ -164,4 +163,22 @@ struct wlr_surface *get_popup_surface_under_cursor(double *sx, double *sy)
             break;
     }
     return surface;
+}
+
+inline void destroy_popups()
+{
+    struct xdg_popup *popup = get_latest_popup();
+    wlr_xdg_popup_destroy(popup->xdg->base);
+}
+
+inline struct xdg_popup *get_latest_popup()
+{
+    struct xdg_popup *popup = wl_container_of(popups.next, popup, plink);
+    return popup;
+}
+
+
+inline bool popups_exist()
+{
+    return !wl_list_empty(&popups);
 }
