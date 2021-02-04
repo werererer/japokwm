@@ -100,7 +100,15 @@ function Is_affected_by_resize_of(container, container2, d)
     return resize
 end
 
+-- TODO refactor and simplify
 function Resize_all(lt_data, o_layout_data, i, j, n, d)
+    if i > #lt_data then
+        return lt_data
+    end
+    if j > #lt_data[i] then
+        return lt_data
+    end
+
     local directions = Get_directions(d)
     local layout_data = Deep_copy(lt_data)
     local container = layout_data[i][j]
