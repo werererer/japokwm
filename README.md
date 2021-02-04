@@ -27,4 +27,4 @@ now you can execute japokwm:
 japokwm
 ```
 ## Acknowledgements
-japokwm forked dwl and uses to do the heavy lifting
+japokwm forked dwl and uses wlroots to do the heavy lifting
