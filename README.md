@@ -1,23 +1,30 @@
 # japokwm - tiling made easy [![CircleCI](https://circleci.com/gh/werererer/japokwm.svg?style=shield)](https://app.circleci.com/pipelines/github/werererer)
 
-- very flexible and easy to configure layouts 
-- very flexible configuration
+## Features:
+- you can create any layout you want by editing a 3 dimensional Array:
+![](edit_layout.gif)
+- layout specific configurations
 - sane default settings
+## Known limitations and issues
+japokwm is not ready for use yet.
 
 ## TODO
-- a lot of things still need to be tested
+- fix a lot of annoying bugs
+- write man pages / documentation
+- test it on other machines
+- unittests
 
 ## Building
-Execute:
+Run:
 ```
 meson build
 cd build
 meson compile
 meson install
 ```
-
-## Known limitations and issues
-japokwm is not ready for use yet.
-
+now you can execute japokwm:
+```
+japokwm
+```
 ## Acknowledgements
-japokwm forked dwl.
+japokwm forked dwl and uses to do the heavy lifting
