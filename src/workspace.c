@@ -129,7 +129,7 @@ bool hiddenon(struct container *con, struct workspace *ws)
         return false;
     // LayerShell based programs are visible on all workspaces
     if (c->type == LAYER_SHELL)
-        return true;
+        return false;
     if (c->sticky)
         return true;
 
