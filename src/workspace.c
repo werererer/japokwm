@@ -83,14 +83,14 @@ bool existon(struct container *con, struct workspace *ws)
         return false;
     if (con->m != ws->m)
         return false;
+    if (con->floating)
+        return true;
 
     struct client *c = con->client;
 
     if (!c)
         return false;
 
-    if (con->floating)
-        return true;
     if (c->type == LAYER_SHELL)
         return true;
     if (c->sticky)
@@ -122,6 +122,8 @@ bool hiddenon(struct container *con, struct workspace *ws)
         return false;
     if (!con->hidden)
         return false;
+    if (con->floating)
+        return false;
 
     struct client *c = con->client;
 
@@ -144,14 +146,14 @@ bool visibleon(struct container *con, struct workspace *ws)
         return false;
     if (con->hidden)
         return false;
+    if (con->floating)
+        return true;
 
     struct client *c = con->client;
 
     if (!c)
         return false;
 
-    if (con->floating)
-        return true;
     // LayerShell based programs are visible on all workspaces
     if (c->type == LAYER_SHELL)
         return true;
