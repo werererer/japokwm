@@ -120,7 +120,6 @@ static int get_default_container_count(struct monitor *m)
 
 static void update_container_positions(struct monitor *m)
 {
-    printf("update container positions\n");
     struct container *con;
     int position = 1;
     wl_list_for_each(con, &containers, mlink) {
@@ -154,6 +153,8 @@ static void update_container_focus_stack_positions(struct monitor *m)
             continue;
         if (con->floating)
             continue;
+        if (con->client->type == LAYER_SHELL)
+            continue;
 
         con->focus_stack_position = position;
         // then use the layout that may have been reseted
@@ -184,6 +185,8 @@ void arrange_monitor(struct monitor *m)
     if (lt->options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
             if (!visibleon(con, m->ws[0]) || con->floating)
+                continue;
+            if (con->client->type == LAYER_SHELL)
                 continue;
 
             arrange_container(con, con->focus_stack_position, master_container_count, false);
@@ -279,6 +282,8 @@ void update_hidden_containers(struct monitor *m)
                 continue;
             if (!existon(con, m))
                 continue;
+            if (con->client->type == LAYER_SHELL)
+                continue;
 
             con->hidden = i > count;
             i++;
@@ -301,8 +306,14 @@ int get_tiled_container_count(struct monitor *m)
     struct container *con;
     int n = 0;
 
-    wl_list_for_each(con, &containers, mlink)
-        if(!con->floating && existon(con, m))
-            n++;
+    wl_list_for_each(con, &containers, mlink) {
+        if (con->floating)
+            continue;
+        if (!existon(con, m))
+            continue;
+        if (con->client->type == LAYER_SHELL)
+            continue;
+        n++;
+    }
     return n;
 }

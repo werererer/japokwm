@@ -113,7 +113,6 @@ void motion_absolute(struct wl_listener *listener, void *data)
      * so we have to warp the mouse there. There is also some hardware which
      * emits these events. */
     struct wlr_event_pointer_motion_absolute *event = data;
-    printf("warpabsolute\n");
     wlr_cursor_warp_absolute(server.cursor.wlr_cursor, event->device, event->x, event->y);
     motion_notify(event->time_msec);
 }

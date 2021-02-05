@@ -447,7 +447,6 @@ void focus_container(struct container *con, enum focus_actions a)
 
     struct client *c = fcon ? fcon->client : NULL;
     struct client *c2 = new_focus_con ? new_focus_con->client : NULL;
-    printf("focus client: %p\n", c);
     focus_client(c, c2);
 }
 

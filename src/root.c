@@ -92,6 +92,7 @@ void set_root_area(struct root *root, struct wlr_box geom)
 {
     root->geom = geom;
 
+    printf("consider layer shell: %i\n", root->consider_layer_shell);
     if (root->consider_layer_shell) {
         root->geom = fit_root_area(root);
     }
