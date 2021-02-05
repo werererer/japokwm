@@ -62,7 +62,6 @@ struct container *container_position_to_container(int position);
 void focus_container(struct container *con, enum focus_actions a);
 /* Find the topmost visible client (if any) at point (x, y), including
  * borders. This relies on stack being ordered from top to bottom. */
-bool existon(struct container *con, struct monitor *m);
 bool hiddenon(struct container *con, struct monitor *m);
 void focus_top_container(struct monitor *m, enum focus_actions a);
 void lift_container(struct container *con);

@@ -22,6 +22,7 @@ struct workspace {
 struct workspace *create_workspace(const char *name, size_t id, struct layout lt);
 void destroy_workspace(struct workspace *ws);
 
+bool existon(struct container *con, struct workspace *ws);
 bool is_workspace_occupied(struct workspace *ws);
 bool visibleon(struct container *con, struct workspace *ws);
 bool workspace_has_clients(struct workspace *ws);

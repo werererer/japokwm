@@ -476,25 +476,6 @@ void focus_top_container(struct monitor *m, enum focus_actions a)
         focus_container(con, a);
 }
 
-bool existon(struct container *con, struct monitor *m)
-{
-    if (!con || !m)
-        return false;
-    if (con->floating)
-        return true;
-    if (con->m != m)
-        return false;
-
-    struct client *c = con->client;
-
-    if (!c)
-        return false;
-    if (c->sticky)
-        return true;
-
-    return c->ws == m->ws[0];
-}
-
 bool hiddenon(struct container *con, struct monitor *m)
 {
     if (!con || !m)

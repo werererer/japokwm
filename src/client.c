@@ -125,7 +125,7 @@ void reset_tiled_client_borders(int border_px)
 {
     struct client *c;
     wl_list_for_each(c, &clients, link) {
-        if (!existon(c->con, selected_monitor))
+        if (!existon(c->con, selected_monitor->ws[0]))
             continue;
         if (c->con->floating)
             continue;
@@ -137,7 +137,7 @@ void reset_floating_client_borders(int border_px)
 {
     struct client *c;
     wl_list_for_each(c, &clients, link) {
-        if (!existon(c->con, selected_monitor))
+        if (!existon(c->con, selected_monitor->ws[0]))
             continue;
         if (!c->con->floating)
             continue;

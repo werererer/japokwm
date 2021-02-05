@@ -62,6 +62,25 @@ bool is_workspace_occupied(struct workspace *ws)
     return ws->m ? true : false;
 }
 
+bool existon(struct container *con, struct workspace *ws)
+{
+    if (!con || !ws)
+        return false;
+    if (con->floating)
+        return true;
+    if (con->m != ws->m)
+        return false;
+
+    struct client *c = con->client;
+
+    if (!c)
+        return false;
+    if (c->sticky)
+        return true;
+
+    return c->ws == ws;
+}
+
 bool workspace_has_clients(struct workspace *ws)
 {
     if (!ws)

@@ -280,7 +280,7 @@ void update_hidden_containers(struct monitor *m)
         wl_list_for_each(con, &focus_stack, flink) {
             if (con->floating)
                 continue;
-            if (!existon(con, m))
+            if (!existon(con, ws))
                 continue;
             if (con->client->type == LAYER_SHELL)
                 continue;
@@ -292,7 +292,7 @@ void update_hidden_containers(struct monitor *m)
         wl_list_for_each(con, &containers, mlink) {
             if (con->floating)
                 continue;
-            if (!existon(con, m))
+            if (!existon(con, ws))
                 continue;
 
             con->hidden = i > count;
@@ -309,7 +309,7 @@ int get_tiled_container_count(struct monitor *m)
     wl_list_for_each(con, &containers, mlink) {
         if (con->floating)
             continue;
-        if (!existon(con, m))
+        if (!existon(con, m->ws[0]))
             continue;
         if (con->client->type == LAYER_SHELL)
             continue;
