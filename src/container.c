@@ -461,21 +461,6 @@ void lift_container(struct container *con)
     add_container_to_monitor_stack(con);
 }
 
-void focus_top_container(struct monitor *m, enum focus_actions a)
-{
-    // focus_stack should not be changed while iterating
-    struct container *con;
-    bool container_found = false;
-    wl_list_for_each(con, &focus_stack, flink) {
-        if (visibleon(con, m->ws[0])) {
-            container_found = true;
-            break;
-        }
-    }
-    if (container_found)
-        focus_container(con, a);
-}
-
 void set_container_floating(struct container *con, bool floating)
 {
     if (!con)

@@ -231,13 +231,13 @@ int lib_focus_on_hidden_stack(lua_State *L)
     if (i > 0) {
         int j = 1;
         wl_list_for_each(con, &sel->mlink, mlink) {
-            if (hiddenon(con, m))
+            if (hiddenon(con, m->ws[0]))
                 break;  /* found it */
             j++;
         }
     } else {
         wl_list_for_each_reverse(con, &sel->mlink, mlink) {
-            if (hiddenon(con, m))
+            if (hiddenon(con, m->ws[0]))
                 break;  /* found it */
         }
     }
@@ -284,7 +284,7 @@ int lib_view(lua_State *L)
         return 0;
     }
     set_next_unoccupied_workspace(m, ws);
-    focus_top_container(m, FOCUS_NOOP);
+    focus_top_container(m->ws[0], FOCUS_NOOP);
     arrange();
     return 0;
 }
@@ -292,7 +292,7 @@ int lib_view(lua_State *L)
 int lib_toggle_view(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    focus_top_container(m, FOCUS_LIFT);
+    focus_top_container(m->ws[0], FOCUS_LIFT);
     arrange(false);
     return 0;
 }
@@ -321,7 +321,7 @@ int lib_move_container_to_workspace(lua_State *L)
 
     con->client->ws = ws;
     arrange();
-    focus_top_container(m, FOCUS_NOOP);
+    focus_top_container(m->ws[0], FOCUS_NOOP);
 
     ipc_event_workspace();
 
@@ -347,7 +347,7 @@ int lib_zoom(lua_State *L)
     if (sel->floating)
         return 0;
     if (sel->client->type == LAYER_SHELL) {
-        focus_top_container(m, FOCUS_NOOP);
+        focus_top_container(m->ws[0], FOCUS_NOOP);
         sel = wl_container_of(&containers.next, sel, mlink);
     }
     if (!sel)
@@ -383,7 +383,7 @@ int lib_zoom(lua_State *L)
     focus_container(previous, FOCUS_NOOP);
 
     if (selected_monitor->ws[0]->layout[0].options.arrange_by_focus) {
-        focus_top_container(m, FOCUS_NOOP);
+        focus_top_container(m->ws[0], FOCUS_NOOP);
         arrange();
     }
     return 0;

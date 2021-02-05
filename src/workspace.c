@@ -35,6 +35,21 @@ void destroy_workspace(struct workspace *ws)
     free(ws);
 }
 
+void focus_top_container(struct workspace *ws, enum focus_actions a)
+{
+    // focus_stack should not be changed while iterating
+    struct container *con;
+    bool container_found = false;
+    wl_list_for_each(con, &focus_stack, flink) {
+        if (visibleon(con, ws)) {
+            container_found = true;
+            break;
+        }
+    }
+    if (container_found)
+        focus_container(con, a);
+}
+
 void init_workspaces()
 {
     wlr_list_init(&workspaces);

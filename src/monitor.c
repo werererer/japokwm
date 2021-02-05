@@ -155,7 +155,8 @@ static void handle_output_mode(struct wl_listener *listener, void *data)
 void focusmon(int i)
 {
     selected_monitor = dirtomon(i);
-    focus_top_container(selected_monitor, FOCUS_LIFT);
+    struct workspace *ws = selected_monitor->ws[0];
+    focus_top_container(ws, FOCUS_LIFT);
 }
 
 void destroy_monitor(struct wl_listener *listener, void *data)

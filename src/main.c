@@ -242,7 +242,7 @@ void destroynotify(struct wl_listener *listener, void *data)
     c = NULL;
 
     arrange();
-    focus_top_container(selected_monitor, FOCUS_NOOP);
+    focus_top_container(selected_monitor->ws[0], FOCUS_NOOP);
 }
 
 void destroyxdeco(struct wl_listener *listener, void *data)
@@ -364,7 +364,7 @@ void maprequest(struct wl_listener *listener, void *data)
             break;
     }
     arrange();
-    focus_top_container(selected_monitor, FOCUS_NOOP);
+    focus_top_container(selected_monitor->ws[0], FOCUS_NOOP);
 
     struct container *con = c->con;
     container_damage_part(con);
