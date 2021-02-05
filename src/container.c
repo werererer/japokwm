@@ -476,28 +476,6 @@ void focus_top_container(struct monitor *m, enum focus_actions a)
         focus_container(con, a);
 }
 
-bool hiddenon(struct container *con, struct monitor *m)
-{
-    if (!con || !m)
-        return false;
-    if (con->m != m)
-        return false;
-    if (!con->hidden)
-        return false;
-
-    struct client *c = con->client;
-
-    if (!c)
-        return false;
-    // LayerShell based programs are visible on all workspaces
-    if (c->type == LAYER_SHELL)
-        return true;
-    if (c->sticky)
-        return true;
-
-    return c->ws == m->ws[0];
-}
-
 void set_container_floating(struct container *con, bool floating)
 {
     if (!con)

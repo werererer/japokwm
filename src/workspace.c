@@ -96,6 +96,28 @@ bool workspace_has_clients(struct workspace *ws)
     return count > 0;
 }
 
+bool hiddenon(struct container *con, struct workspace *ws)
+{
+    if (!con || !ws)
+        return false;
+    if (con->m != ws->m)
+        return false;
+    if (!con->hidden)
+        return false;
+
+    struct client *c = con->client;
+
+    if (!c)
+        return false;
+    // LayerShell based programs are visible on all workspaces
+    if (c->type == LAYER_SHELL)
+        return true;
+    if (c->sticky)
+        return true;
+
+    return c->ws == ws;
+}
+
 bool visibleon(struct container *con, struct workspace *ws)
 {
     if (!con || !ws)
