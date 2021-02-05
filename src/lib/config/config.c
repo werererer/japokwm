@@ -30,7 +30,8 @@ int lib_set_float_borderpx(lua_State *L)
 
 int lib_set_focus_color(lua_State *L)
 {
-    lua_get_color(server.options.focus_color);
+    lua_tocolor(server.options.focus_color);
+    lua_pop(L, 1);
     return 0;
 }
 
@@ -48,13 +49,15 @@ int lib_set_mod(lua_State *L)
 
 int lib_set_border_color(lua_State *L)
 {
-    lua_get_color(server.options.border_color);
+    lua_tocolor(server.options.border_color);
+    lua_pop(L, 1);
     return 0;
 }
 
 int lib_set_root_color(lua_State *L)
 {
-    lua_get_color(server.options.root_color);
+    lua_tocolor(server.options.root_color);
+    lua_pop(L, 1);
     return 0;
 }
 

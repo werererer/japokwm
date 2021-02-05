@@ -72,14 +72,13 @@ void lua_get_basic_layout()
     lua_rawseti(L, -2, 1);
 }
 
-void lua_get_color(float dest_color[static 4])
+void lua_tocolor(float dest_color[static 4])
 {
     for (int i = 0; i < 4; i++) {
         lua_rawgeti(L, -1, i+1);
         dest_color[i] = luaL_checknumber(L, -1);
         lua_pop(L, 1);
     }
-    lua_pop(L, 1);
 }
 
 void print_trace()
