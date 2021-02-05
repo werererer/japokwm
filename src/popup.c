@@ -86,6 +86,9 @@ static void popup_handle_unmap(struct wl_listener *listener, void *data)
 
 static void popup_damage(struct xdg_popup *xdg_popup, bool whole)
 {
+    if (!xdg_popup)
+        return;
+
     struct wlr_xdg_popup *popup = xdg_popup->xdg;
     struct wlr_surface *surface = popup->base->surface;
     int ox = xdg_popup->geom.x;
