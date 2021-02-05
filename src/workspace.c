@@ -81,8 +81,6 @@ bool existon(struct container *con, struct workspace *ws)
 {
     if (!con || !ws)
         return false;
-    if (con->floating)
-        return true;
     if (con->m != ws->m)
         return false;
 
@@ -90,6 +88,11 @@ bool existon(struct container *con, struct workspace *ws)
 
     if (!c)
         return false;
+
+    if (con->floating)
+        return true;
+    if (c->type == LAYER_SHELL)
+        return true;
     if (c->sticky)
         return true;
 

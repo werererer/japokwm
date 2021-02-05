@@ -132,7 +132,7 @@ void set_root_area(struct root *root, struct wlr_box geom)
             continue;
         }
 
-        printf("toggle hidden\n");
+        printf("set hidden: %i\n", !root->consider_layer_shell);
         con->hidden = !root->consider_layer_shell;
     }
 }

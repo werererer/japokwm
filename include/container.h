@@ -6,6 +6,11 @@
 
 #include "client.h"
 
+enum focus_actions {
+    FOCUS_NOOP,
+    FOCUS_LIFT,
+};
+
 struct container {
     /* monitor containers */
     struct wl_list mlink;
