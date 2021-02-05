@@ -8,8 +8,7 @@
 struct wl_listener request_set_cursor = {.notify = handle_set_cursor};
 
 static struct container *grabc = NULL;
-static int old_cursor_x, old_cursor_y;
-static int dx, dy;
+static int offsetx, offsety;
 
 // TODO refactor this function
 static void pointer_focus(struct container *con, struct wlr_surface *surface, double sx, double sy, uint32_t time);
@@ -75,13 +74,14 @@ void cursorframe(struct wl_listener *listener, void *data)
 
 static bool handle_move_resize(enum cursor_mode cursor_mode)
 {
+    struct wlr_cursor *cursor = server.cursor.wlr_cursor;
     switch (cursor_mode) {
         case CURSOR_MOVE:
-            move_container(grabc, dx, dy);
+            move_container(grabc, cursor, offsetx, offsety);
             return true;
             break;
         case CURSOR_RESIZE:
-            resize_container(grabc, dx, dy);
+            resize_container(grabc, server.cursor.wlr_cursor, 0, 0);
             return true;
             break;
         default:
@@ -125,11 +125,6 @@ void motion_notify(uint32_t time)
 
     set_selected_monitor(xytomon(cursorx, cursory));
 
-    dx = cursorx - old_cursor_x;
-    dy = cursory - old_cursor_y;
-    old_cursor_x = cursorx;
-    old_cursor_y = cursory;
-
     /* If handled successfully return */
     if (handle_move_resize(server.cursor.cursor_mode))
         return;
@@ -171,12 +166,13 @@ void move_resize(int ui)
         case CURSOR_MOVE:
             wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "fleur", cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
+            offsetx = absolute_x_to_container_relative(grabc, cursor->x);
+            offsety = absolute_y_to_container_relative(grabc, cursor->y);
             arrange();
             break;
         case CURSOR_RESIZE:
             /* Doesn't work for X11 output - the next absolute motion event
              * returns the cursor to where it started */
-            printf("warp closest\n");
             wlr_cursor_warp_closest(server.cursor.wlr_cursor, NULL,
                     grabc->geom.x + grabc->geom.width,
                     grabc->geom.y + grabc->geom.height);

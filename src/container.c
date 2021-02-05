@@ -551,11 +551,11 @@ void set_container_monitor(struct container *con, struct monitor *m)
     con->client->ws = m->ws[0];
 }
 
-void move_container(struct container *con, int dx, int dy)
+void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety)
 {
     struct wlr_box geom = con->geom;
-    geom.x += dx,
-    geom.y += dy,
+    geom.x = cursor->x - offsetx;
+    geom.y = cursor->y - offsety;
     /* geom.x = server.cursor.wlr_cursor->x - geom.x, */
     /* geom.y = server.cursor.wlr_cursor->y - geom.y, */
     /* geom.x = container_relative_x_to_absolute(con, dx); */
@@ -563,11 +563,12 @@ void move_container(struct container *con, int dx, int dy)
     resize(con, geom, false);
 }
 
-void resize_container(struct container *con, int dx, int dy)
+void resize_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety)
 {
     struct wlr_box geom = con->geom;
-    geom.width += dx;
-    geom.height += dy;
+
+    geom.width = absolute_x_to_container_relative(con, cursor->x - offsetx);
+    geom.height = absolute_y_to_container_relative(con, cursor->y - offsety);
     resize(con, geom, false);
 }
 

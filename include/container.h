@@ -2,6 +2,7 @@
 #define CONTAINER_H
 
 #include <wlr/types/wlr_box.h>
+#include <wlr/types/wlr_cursor.h>
 
 #include "client.h"
 
@@ -67,8 +68,8 @@ void focus_top_container(struct monitor *m, enum focus_actions a);
 void lift_container(struct container *con);
 void set_container_floating(struct container *con, bool floating);
 void set_container_monitor(struct container *con, struct monitor *m);
-void resize_container(struct container *con, int dx, int dy);
-void move_container(struct container *con, int dx, int dy);
+void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
+void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
 
 // TODO check if those 2 functions even work
 int container_relative_x_to_absolute(struct container *con, int lx);
