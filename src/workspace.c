@@ -81,8 +81,6 @@ bool visibleon(struct container *con, struct workspace *ws)
 {
     if (!con || !ws)
         return false;
-    if (con->floating)
-        return true;
     if (con->m != ws->m)
         return false;
     if (con->hidden)
@@ -93,6 +91,8 @@ bool visibleon(struct container *con, struct workspace *ws)
     if (!c)
         return false;
 
+    if (con->floating)
+        return true;
     // LayerShell based programs are visible on all workspaces
     if (c->type == LAYER_SHELL)
         return true;

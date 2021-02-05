@@ -26,7 +26,7 @@ static struct wlr_box fit_root_area(struct root *root)
 
     struct container *con;
     wl_list_for_each(con, &layer_stack, llink) {
-        if (!visibleon(con, root->m->ws[0]))
+        if (!existon(con, root->m))
             continue;
 
         struct client *c = con->client;
@@ -36,7 +36,6 @@ static struct wlr_box fit_root_area(struct root *root)
         // desired_width and desired_height are == 0 if nothing is desired
         int desired_width = current->desired_width;
         int desired_height = current->desired_height;
-
 
         // resize the root area
         if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP) {
@@ -92,15 +91,15 @@ void set_root_area(struct root *root, struct wlr_box geom)
 {
     root->geom = geom;
 
-    printf("consider layer shell: %i\n", root->consider_layer_shell);
     if (root->consider_layer_shell) {
+        printf("fit root area\n");
         root->geom = fit_root_area(root);
     }
 
     // arrange layer stack based programs
     struct container *con;
     wl_list_for_each(con, &layer_stack, llink) {
-        if (!visibleon(con, root->m->ws[0]))
+        if (!existon(con, root->m))
             continue;
 
         struct monitor *m = root->m;
@@ -112,7 +111,6 @@ void set_root_area(struct root *root, struct wlr_box geom)
         geom.x = 0;
         geom.y = 0;
 
-        printf("anchor: %i\n", anchor);
         if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP)
             geom.y = 0;
         if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT)
@@ -126,11 +124,16 @@ void set_root_area(struct root *root, struct wlr_box geom)
 
         configure_layer_shell_container_geom(con, geom);
 
-        // move the current window barely out of view
-        if (!root->consider_layer_shell) {
-            con->geom.x = -con->geom.width;
-            con->geom.y = -con->geom.height;
+        // TODO put all of this into a function
+        if (con->client->surface.layer->current.layer == ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND) {
+            continue;
         }
+        if (con->floating) {
+            continue;
+        }
+
+        printf("toggle hidden\n");
+        con->hidden = !root->consider_layer_shell;
     }
 }
 
