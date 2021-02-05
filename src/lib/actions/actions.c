@@ -226,6 +226,8 @@ int lib_focus_on_hidden_stack(lua_State *L)
 
     if (!sel)
         return 0;
+    if (sel->client->type == LAYER_SHELL)
+        return 0;
 
     struct container *con;
     if (i > 0) {

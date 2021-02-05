@@ -65,7 +65,7 @@ static void resolve_keybind_element(char *sym_dest, const char *bind)
     strcpy(sym_dest, bind);
 }
 
-static bool is_same_keybind(const char *bind, const char *bind2)
+static bool is_same_keybind_element(const char *bind, const char *bind2)
 {
     struct wlr_list bindarr = split_string(bind, "-");
     struct wlr_list bind2arr = split_string(bind2, "-");
@@ -97,6 +97,13 @@ static bool is_same_keybind(const char *bind, const char *bind2)
     bool ret = bind2arr.length == 0;
 
     return ret;
+}
+
+static bool is_same_keybind(const char *bind, const char *bind2)
+{
+    bool same = false;
+    same = is_same_keybind_element(bind, bind2);
+    return same;
 }
 
 static bool process_binding(lua_State *L, char *bind, int lua_ref)
