@@ -214,15 +214,17 @@ void update_cursor(struct cursor *cursor)
     if (cursor->cursor_mode != CURSOR_NORMAL)
         return;
 
-    if (!server.seat->pointer_state.focused_client) {
-        return;
-    }
-
     if (!xytocontainer(cursor->wlr_cursor->x, cursor->wlr_cursor->y)) {
         wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
             "left_ptr", server.cursor.wlr_cursor);
         return;
     }
+
+    if (!cursor->cursor_surface)
+        return;
+
+    if (!server.seat->pointer_state.focused_client)
+        return;
 
     wlr_cursor_set_surface(cursor->wlr_cursor, cursor->cursor_surface,
             cursor->hotspot_x, cursor->hotspot_y);
