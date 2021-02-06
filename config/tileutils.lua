@@ -80,10 +80,12 @@ function Is_resize_locked(layout_data, o_layout_data, i, j, n, directions)
         local main_con = Move_resize(container, 0, n, dir)
         local alt_con = Get_alternative_container(main_con, dir)
 
-        lock = lock or (main_con[WIDTH] < Min_main_width and main_con[WIDTH] < container[WIDTH])
-        lock = lock or (main_con[HEIGHT] < Min_main_height and main_con[HEIGHT] < container[HEIGHT])
-        lock = lock or (main_con[WIDTH] > Max_main_width and main_con[WIDTH] > container[WIDTH])
-        lock = lock or (main_con[HEIGHT] > Max_main_height and main_con[HEIGHT] > container[HEIGHT])
+        -- locked (via c api)
+        lock = lock or (main_con[WIDTH] < Min_main_width)
+        lock = lock or (main_con[HEIGHT] < Min_main_height)
+        lock = lock or (main_con[WIDTH] > Max_main_width)
+        lock = lock or (main_con[HEIGHT] > Max_main_height)
+
         local con = Deep_copy(layout_data)
         for k = 1,#resize_containers do
             local li = resize_containers[k][5]
@@ -95,7 +97,9 @@ function Is_resize_locked(layout_data, o_layout_data, i, j, n, directions)
             con[li][lj][HEIGHT] = resize_containers[k][HEIGHT] * alt_con[HEIGHT]
 
             local c = con[li][lj]
-            lock = lock or c[WIDTH] < Min_width or c[HEIGHT] < Min_height
+            -- locked (via c api)
+            lock = lock or c[WIDTH] < Min_width
+            lock = lock or c[HEIGHT] < Min_height
             lock = lock or c[WIDTH] > Max_width
             lock = lock or c[HEIGHT] > Max_height
         end

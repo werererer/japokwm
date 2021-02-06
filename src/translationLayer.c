@@ -28,6 +28,8 @@ static const struct luaL_Reg action[] =
     {"increase_nmaster", lib_increase_nmaster},
     {"decrease_nmaster", lib_decrease_nmaster},
     {"set_resize_direction", lib_set_resize_direction},
+    {"set_layout_constrains", lib_set_layout_constrains},
+    {"set_master_constrains", lib_set_master_constrains},
     {"spawn", lib_spawn},
     {"toggle_consider_layer_shell", lib_toggle_consider_layer_shell},
     {"toggle_floating", lib_toggle_floating},

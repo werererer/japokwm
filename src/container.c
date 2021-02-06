@@ -534,3 +534,13 @@ inline int absolute_y_to_container_relative(struct container *con, int y)
 {
     return y - con->geom.y;
 }
+
+bool is_container_in_layout_limit(struct container *con)
+{
+    /* bool is_in_limit = true; */
+        /* lock = lock or (main_con[WIDTH] < Min_main_width and main_con[WIDTH] < container[WIDTH]) */
+        /* lock = lock or (main_con[HEIGHT] < Min_main_height and main_con[HEIGHT] < container[HEIGHT]) */
+        /* lock = lock or (main_con[WIDTH] > Max_main_width and main_con[WIDTH] > container[WIDTH]) */
+        /* lock = lock or (main_con[HEIGHT] > Max_main_height and main_con[HEIGHT] > container[HEIGHT]) */
+    return true;
+}

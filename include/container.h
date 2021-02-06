@@ -51,14 +51,16 @@ struct container *last_container(struct monitor *m);
 struct container *next_container(struct monitor *m);
 struct container *focused_container(struct monitor *m);
 struct container *xytocontainer(double x, double y);
+struct container *container_position_to_container(int position);
+
 struct wlr_box get_center_box(struct wlr_box ref);
 struct wlr_box get_absolute_box(struct wlr_fbox ref, struct wlr_box box);
 struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box ref);
+
 void apply_bounds(struct container *con, struct wlr_box bbox);
 void apply_rules(struct container *con);
 void container_damage_part(struct container *con);
 void container_damage_whole(struct container *con);
-struct container *container_position_to_container(int position);
 void focus_container(struct container *con, enum focus_actions a);
 /* Find the topmost visible client (if any) at point (x, y), including
  * borders. This relies on stack being ordered from top to bottom. */
@@ -73,4 +75,6 @@ int container_relative_x_to_absolute(struct container *con, int lx);
 int container_relative_y_to_absolute(struct container *con, int ly);
 int absolute_x_to_container_relative(struct container *con, int x);
 int absolute_y_to_container_relative(struct container *con, int y);
+
+bool is_container_in_layout_limit(struct container *con);
 #endif /* CONTAINER_H */
