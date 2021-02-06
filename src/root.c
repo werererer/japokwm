@@ -92,7 +92,6 @@ void set_root_area(struct root *root, struct wlr_box geom)
     root->geom = geom;
 
     if (root->consider_layer_shell) {
-        printf("fit root area\n");
         root->geom = fit_root_area(root);
     }
 
@@ -124,7 +123,6 @@ void set_root_area(struct root *root, struct wlr_box geom)
 
         configure_layer_shell_container_geom(con, geom);
 
-        // TODO put all of this into a function
         if (con->client->surface.layer->current.layer == ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND) {
             continue;
         }
@@ -132,7 +130,6 @@ void set_root_area(struct root *root, struct wlr_box geom)
             continue;
         }
 
-        printf("set hidden: %i\n", !root->consider_layer_shell);
         con->hidden = !root->consider_layer_shell;
     }
 }

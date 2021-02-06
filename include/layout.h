@@ -7,10 +7,10 @@
 #include "options.h"
 
 struct resize_constraints {
-    int min_width;
-    int max_width;
-    int min_height;
-    int max_height;
+    float min_width;
+    float max_width;
+    float min_height;
+    float max_height;
 };
 
 struct layout {

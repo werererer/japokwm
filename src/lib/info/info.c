@@ -80,3 +80,33 @@ int lib_get_container_under_cursor(lua_State *L)
     lua_pushinteger(L, pos);
     return 1;
 }
+
+int lib_is_container_not_in_limit(lua_State *L)
+{
+    printf("lib_is_container_in_limit\n");
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws[0];
+    struct layout *lt = ws->layout;
+
+    struct wlr_fbox geom = lua_togeometry(L);
+    lua_pop(L, 1);
+
+    bool not_in_limit = is_resize_not_in_limit(&geom, &lt->layout_constraints);
+    printf("inlimit: %i\n", !not_in_limit);
+    return not_in_limit;
+}
+
+int lib_is_container_not_in_master_limit(lua_State *L)
+{
+    printf("lib_is_container_in_limit\n");
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws[0];
+    struct layout *lt = ws->layout;
+
+    struct wlr_fbox geom = lua_togeometry(L);
+    lua_pop(L, 1);
+
+    bool not_in_limit = is_resize_not_in_limit(&geom, &lt->master_constraints);
+    printf("inlimit: %i\n", !not_in_limit);
+    return not_in_limit;
+}

@@ -41,19 +41,19 @@ struct resize_constraints lua_toresize_constrains(lua_State *L)
 {
     struct resize_constraints resize_constrains;
     lua_getfield(L, -1, "min_width");
-    resize_constrains.min_width = luaL_checkinteger(L, -1);
+    resize_constrains.min_width = luaL_checknumber(L, -1);
     lua_pop(L, 1);
 
     lua_getfield(L, -1, "max_width");
-    resize_constrains.max_width = luaL_checkinteger(L, -1);
+    resize_constrains.max_width = luaL_checknumber(L, -1);
     lua_pop(L, 1);
 
     lua_getfield(L, -1, "min_height");
-    resize_constrains.min_height = luaL_checkinteger(L, -1);
+    resize_constrains.min_height = luaL_checknumber(L, -1);
     lua_pop(L, 1);
 
     lua_getfield(L, -1, "max_height");
-    resize_constrains.max_height = luaL_checkinteger(L, -1);
+    resize_constrains.max_height = luaL_checknumber(L, -1);
     lua_pop(L, 1);
     return resize_constrains;
 }

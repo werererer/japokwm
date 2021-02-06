@@ -455,7 +455,6 @@ void run(char *startup_cmd)
      * instead of (0, 0) and then jumping.  still may not be fully
      * initialized, as the image/coordinates are not transformed for the
      * monitor when displayed here */
-    printf("warp\n");
     wlr_cursor_warp_closest(server.cursor.wlr_cursor, NULL, server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
     wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "left_ptr", server.cursor.wlr_cursor);
 

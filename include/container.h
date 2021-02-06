@@ -56,6 +56,7 @@ struct container *container_position_to_container(int position);
 struct wlr_box get_center_box(struct wlr_box ref);
 struct wlr_box get_absolute_box(struct wlr_fbox ref, struct wlr_box box);
 struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box ref);
+struct wlr_fbox lua_togeometry(lua_State *L);
 
 void apply_bounds(struct container *con, struct wlr_box bbox);
 void apply_rules(struct container *con);
@@ -76,5 +77,5 @@ int container_relative_y_to_absolute(struct container *con, int ly);
 int absolute_x_to_container_relative(struct container *con, int x);
 int absolute_y_to_container_relative(struct container *con, int y);
 
-bool is_container_in_limit(struct container *con, struct resize_constraints *resize_constraints);
+bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *resize_constraints);
 #endif /* CONTAINER_H */

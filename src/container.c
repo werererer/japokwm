@@ -371,6 +371,28 @@ struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box ref)
     return b;
 }
 
+struct wlr_fbox lua_togeometry(lua_State *L)
+{
+    struct wlr_fbox geom;
+    lua_rawgeti(L, -1, 1);
+    geom.x = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, -1, 2);
+    geom.y = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, -1, 3);
+    geom.width = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, -1, 4);
+    geom.height = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+    return geom;
+}
+
+
 void apply_bounds(struct container *con, struct wlr_box bbox)
 {
     /* set minimum possible */
@@ -535,11 +557,16 @@ inline int absolute_y_to_container_relative(struct container *con, int y)
     return y - con->geom.y;
 }
 
-bool is_container_in_limit(struct container *con, struct resize_constraints *resize_constraints)
+bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *resize_constraints)
 {
-    bool is_width_in_limit = (con->geom.width >= resize_constraints->min_width &&
-            con->geom.width < resize_constraints->max_height);
-    bool is_height_in_limit = (con->geom.height >= resize_constraints->min_height &&
-            con->geom.height < resize_constraints->max_height);
-    return is_width_in_limit && is_height_in_limit;
+    bool is_width_not_in_limit = geom->width < resize_constraints->min_width ||
+        geom->height < resize_constraints->min_height;
+
+    bool is_height_not_in_limit = geom->width > resize_constraints->max_width ||
+        geom->height > resize_constraints->max_height;
+
+    printf("min_width: %f min_height: %f\n", resize_constraints->min_width, resize_constraints->min_height);
+    printf("max_width: %f max_height: %f\n", resize_constraints->max_width, resize_constraints->max_height);
+
+    return is_width_not_in_limit || is_height_not_in_limit;
 }

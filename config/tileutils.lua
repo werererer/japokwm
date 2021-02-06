@@ -71,40 +71,34 @@ end
 
 -- TODO this is a mess fix it!!
 function Is_resize_locked(layout_data, o_layout_data, i, j, n, directions)
-    local container = layout_data[i][j]
-    local lock = false
+    local lt_data = Deep_copy(layout_data)
+    local main_con = lt_data[i][j]
 
     for x = 1,#directions do
         local dir = directions[x]
-        local resize_containers = Get_resize_affected_containers(layout_data, o_layout_data, i, j, dir, Get_alternative_container, Is_affected_by_resize_of)
-        local main_con = Move_resize(container, 0, n, dir)
+        local resize_containers = Get_resize_affected_containers(lt_data, o_layout_data, i, j, dir, Get_alternative_container, Is_affected_by_resize_of)
+        main_con = Deep_copy(Move_resize(main_con, 0, n, dir))
         local alt_con = Get_alternative_container(main_con, dir)
 
-        -- locked (via c api)
-        lock = lock or (main_con[WIDTH] < Min_main_width)
-        lock = lock or (main_con[HEIGHT] < Min_main_height)
-        lock = lock or (main_con[WIDTH] > Max_main_width)
-        lock = lock or (main_con[HEIGHT] > Max_main_height)
+        if info.is_container_not_in_master_limit(main_con) then
+            return true
+        end
 
-        local con = Deep_copy(layout_data)
         for k = 1,#resize_containers do
             local li = resize_containers[k][5]
             local lj = resize_containers[k][6]
 
-            con[li][lj][X] = alt_con[X] + (resize_containers[k][X] * alt_con[WIDTH])
-            con[li][lj][Y] = alt_con[Y] + (resize_containers[k][Y] * alt_con[HEIGHT])
-            con[li][lj][WIDTH] = resize_containers[k][WIDTH] * alt_con[WIDTH]
-            con[li][lj][HEIGHT] = resize_containers[k][HEIGHT] * alt_con[HEIGHT]
+            lt_data[li][lj][X] = alt_con[X] + (resize_containers[k][X] * alt_con[WIDTH])
+            lt_data[li][lj][Y] = alt_con[Y] + (resize_containers[k][Y] * alt_con[HEIGHT])
+            lt_data[li][lj][WIDTH] = resize_containers[k][WIDTH] * alt_con[WIDTH]
+            lt_data[li][lj][HEIGHT] = resize_containers[k][HEIGHT] * alt_con[HEIGHT]
 
-            local c = con[li][lj]
-            -- locked (via c api)
-            lock = lock or c[WIDTH] < Min_width
-            lock = lock or c[HEIGHT] < Min_height
-            lock = lock or c[WIDTH] > Max_width
-            lock = lock or c[HEIGHT] > Max_height
+            if info.is_container_not_in_limit(main_con) then
+              return true
+            end
         end
     end
-    return lock
+    return false
 end
 
 function Resize_container(container, n, d)

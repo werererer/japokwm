@@ -28,8 +28,8 @@ static const struct luaL_Reg action[] =
     {"increase_nmaster", lib_increase_nmaster},
     {"decrease_nmaster", lib_decrease_nmaster},
     {"set_resize_direction", lib_set_resize_direction},
-    {"set_layout_constrains", lib_set_layout_constrains},
-    {"set_master_constrains", lib_set_master_constrains},
+    {"set_layout_constraints", lib_set_layout_constraints},
+    {"set_master_constraints", lib_set_master_constraints},
     {"spawn", lib_spawn},
     {"toggle_consider_layer_shell", lib_toggle_consider_layer_shell},
     {"toggle_floating", lib_toggle_floating},
@@ -53,6 +53,8 @@ static const struct luaL_Reg info[] =
     {"get_next_empty_workspace", lib_get_next_empty_workspace},
     {"get_workspace", lib_get_workspace},
     {"get_container_under_cursor", lib_get_container_under_cursor},
+    {"is_container_not_in_limit", lib_is_container_not_in_limit},
+    {"is_container_not_in_master_limit", lib_is_container_not_in_master_limit},
     {NULL, NULL},
 };
 
