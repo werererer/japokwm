@@ -535,12 +535,11 @@ inline int absolute_y_to_container_relative(struct container *con, int y)
     return y - con->geom.y;
 }
 
-bool is_container_in_layout_limit(struct container *con)
+bool is_container_in_limit(struct container *con, struct resize_constraints *resize_constraints)
 {
-    /* bool is_in_limit = true; */
-        /* lock = lock or (main_con[WIDTH] < Min_main_width and main_con[WIDTH] < container[WIDTH]) */
-        /* lock = lock or (main_con[HEIGHT] < Min_main_height and main_con[HEIGHT] < container[HEIGHT]) */
-        /* lock = lock or (main_con[WIDTH] > Max_main_width and main_con[WIDTH] > container[WIDTH]) */
-        /* lock = lock or (main_con[HEIGHT] > Max_main_height and main_con[HEIGHT] > container[HEIGHT]) */
-    return true;
+    bool is_width_in_limit = (con->geom.width >= resize_constraints->min_width &&
+            con->geom.width < resize_constraints->max_height);
+    bool is_height_in_limit = (con->geom.height >= resize_constraints->min_height &&
+            con->geom.height < resize_constraints->max_height);
+    return is_width_in_limit && is_height_in_limit;
 }

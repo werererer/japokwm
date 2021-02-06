@@ -76,5 +76,5 @@ int container_relative_y_to_absolute(struct container *con, int ly);
 int absolute_x_to_container_relative(struct container *con, int x);
 int absolute_y_to_container_relative(struct container *con, int y);
 
-bool is_container_in_layout_limit(struct container *con);
+bool is_container_in_limit(struct container *con, struct resize_constraints *resize_constraints);
 #endif /* CONTAINER_H */

@@ -6,7 +6,7 @@
 #include <lauxlib.h>
 #include "options.h"
 
-struct resize_constrains {
+struct resize_constraints {
     int min_width;
     int max_width;
     int min_height;
@@ -28,15 +28,15 @@ struct layout {
     int lua_layout_master_copy_data_ref;
     int lua_resize_data_ref;
 
-    struct resize_constrains layout_constrains;
-    struct resize_constrains master_constrains;
+    struct resize_constraints layout_constraints;
+    struct resize_constraints master_constraints;
 
     struct options options;
 };
 
 bool is_same_layout(struct layout layout, struct layout layout2);
 int lua_copy_table(lua_State *L);
-struct resize_constrains lua_toresize_constrains(lua_State *L);
+struct resize_constraints lua_toresize_constrains(lua_State *L);
 void push_layout(struct layout lt_stack[static 2], struct layout lt);
 struct layout copy_layout(struct layout *src_lt);
 struct layout get_default_layout();
