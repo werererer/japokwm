@@ -1,8 +1,3 @@
-function Update(n)
-    print("update: ", n)
-end
-
-action.set_resize_direction(0)
 local layout_data = {
     {
         {0, 0, 1, 1},
