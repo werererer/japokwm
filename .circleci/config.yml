@@ -14,14 +14,15 @@ jobs:
             - run: pacman -S --noconfirm meson
             - run: pacman -S --noconfirm wlroots
             - run: pacman -S --noconfirm lua
-            - run: pacman -S --noconfirm cairo
             - run: pacman -S --noconfirm wayland
             - run: pacman -S --noconfirm wayland-protocols
             - run: pacman -S --noconfirm check
             - run: pacman -S --noconfirm gcovr
             - checkout
             - run: ls
+            - run: whereis gcc
             - run: meson -Db_coverage=true build
+            - run: cat /root/project/build/meson-logs/meson-log.txt
             - run: cd build && meson compile
             - run: cd build && meson test
             - store_test_results:
