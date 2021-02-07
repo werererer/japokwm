@@ -149,12 +149,8 @@ void create_notify(struct wl_listener *listener, void *data)
 
     /* Allocate a Client for this surface */
     struct client *c = xdg_surface->data = calloc(1, sizeof(struct client));
-    struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws[0];
-    struct layout *lt = &ws->layout[0];
 
     c->surface.xdg = xdg_surface;
-    c->bw = lt->options.tile_border_px;
     c->type = XDG_SHELL;
 
     /* Tell the client not to try anything fancy */
@@ -342,8 +338,11 @@ void maprequest(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
 
     struct monitor *m = selected_monitor;
-    printf("set client workspace\n");
+    struct workspace *ws = m->ws[0];
+    struct layout *lt = &ws->layout[0];
+
     c->ws = m->ws[0];
+    c->bw = lt->options.tile_border_px;
 
     switch (c->type) {
         case XDG_SHELL:
@@ -722,11 +721,6 @@ void create_notifyx11(struct wl_listener *listener, void *data)
     c->surface.xwayland = xwayland_surface;
     // set default value will be overriden on maprequest
     c->type = X11_MANAGED;
-
-    struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws[0];
-    struct layout *lt = &ws->layout[0];
-    c->bw = lt->options.tile_border_px;
 
     /* Listen to the various events it can emit */
     c->map.notify = maprequestx11;

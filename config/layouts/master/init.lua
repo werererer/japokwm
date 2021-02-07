@@ -85,6 +85,8 @@ local resize_data = {
 }
 
 layout.set(layout_data)
+lconfig.set_tile_borderpx(0)
+lconfig.set_float_borderpx(5)
 lconfig.set_resize_data(resize_data)
 lconfig.set_resize_direction(Direction.RIGHT + Direction.TOP + Direction.BOTTOM + Direction.LEFT)
 lconfig.set_update_function(update)
