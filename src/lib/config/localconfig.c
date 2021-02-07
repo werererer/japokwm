@@ -45,7 +45,7 @@ int local_set_float_borderpx(lua_State *L)
     lt->options.float_border_px = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    reset_floating_client_borders(lt->options.tile_border_px);
+    reset_floating_client_borders(lt->options.float_border_px);
     return 0;
 }
 
