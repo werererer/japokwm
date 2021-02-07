@@ -45,7 +45,10 @@ static void update_layout(lua_State *L, int n, struct monitor *m)
     ws->layout[0].lua_layout_ref = luaL_ref(L, LUA_REGISTRYINDEX);
     lua_pop(L, 1);
 
-    lua_getglobal_safe(L, "Update_layout");
+    // call update functin
+    if (ws->layout->options.update_func_ref == 0)
+        return;
+    lua_rawgeti(L, LUA_REGISTRYINDEX, ws->layout->options.update_func_ref);
     lua_pushinteger(L, n);
     lua_call_safe(L, 1, 0, 0);
 }

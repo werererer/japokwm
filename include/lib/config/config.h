@@ -23,5 +23,8 @@ int lib_set_default_layout(lua_State *L);
 int lib_set_monrules(lua_State *L);
 int lib_set_keybinds(lua_State *L);
 int lib_set_buttons(lua_State *L);
+int lib_set_layout_constraints(lua_State *L);
+int lib_set_master_constraints(lua_State *L);
+int lib_set_update_function(lua_State *L);
 
 #endif /* CONFIG_H */

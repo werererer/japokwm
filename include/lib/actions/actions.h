@@ -33,9 +33,5 @@ int lib_set_nmaster(lua_State *L);
 int lib_increase_nmaster(lua_State *L);
 int lib_decrease_nmaster(lua_State *L);
 int lib_set_resize_direction(lua_State *L);
-int lib_set_layout_constraints(lua_State *L);
-int lib_set_master_constraints(lua_State *L);
-
-void motion_notify(uint32_t time);
 
 #endif /* ACTIONS_H */

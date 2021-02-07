@@ -76,3 +76,36 @@ int local_set_border_color(lua_State *L)
     lua_pop(L, 1);
     return 0;
 }
+
+int local_set_layout_constraints(lua_State *L)
+{
+    printf("local_set_layout_constraints\n");
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws[0];
+    struct layout *lt = &ws->layout[0];
+
+    lt->options.layout_constraints = lua_toresize_constrains(L);
+    lua_pop(L, 1);
+    return 0;
+}
+
+int local_set_master_constraints(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws[0];
+    struct layout *lt = &ws->layout[0];
+
+    lt->options.master_constraints = lua_toresize_constrains(L);
+    lua_pop(L, 1);
+    return 0;
+}
+
+int local_set_update_function(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws[0];
+    struct layout *lt = &ws->layout[0];
+
+    lt->options.update_func_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    return 0;
+}

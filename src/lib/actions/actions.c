@@ -54,28 +54,6 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
         focus_container(con, FOCUS_NOOP);
 }
 
-int lib_set_layout_constraints(lua_State *L)
-{
-    struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws[0];
-    struct layout *lt = &ws->layout[0];
-
-    lt->layout_constraints = lua_toresize_constrains(L);
-    lua_pop(L, 1);
-    return 0;
-}
-
-int lib_set_master_constraints(lua_State *L)
-{
-    struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws[0];
-    struct layout *lt = &ws->layout[0];
-
-    lt->master_constraints = lua_toresize_constrains(L);
-    lua_pop(L, 1);
-    return 0;
-}
-
 int lib_set_resize_direction(lua_State *L)
 {
     struct monitor *m = selected_monitor;

@@ -31,7 +31,7 @@ void handle_set_cursor(struct wl_listener *listener, void *data);
 
 void motion_relative(struct wl_listener *listener, void *data);
 void motion_absolute(struct wl_listener *listener, void *data);
-/* void motionnotify(uint32_t time); */
+void motion_notify(uint32_t time);
 /* reload the surface stored in cursor */
 void update_cursor(struct cursor *cursor);
 void move_resize(int ui);

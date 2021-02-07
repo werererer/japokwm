@@ -28,8 +28,6 @@ static const struct luaL_Reg action[] =
     {"increase_nmaster", lib_increase_nmaster},
     {"decrease_nmaster", lib_decrease_nmaster},
     {"set_resize_direction", lib_set_resize_direction},
-    {"set_layout_constraints", lib_set_layout_constraints},
-    {"set_master_constraints", lib_set_master_constraints},
     {"spawn", lib_spawn},
     {"toggle_consider_layer_shell", lib_toggle_consider_layer_shell},
     {"toggle_floating", lib_toggle_floating},
@@ -78,6 +76,9 @@ static const struct luaL_Reg config[] =
     {"set_monrules", lib_set_monrules},
     {"set_keybinds", lib_set_keybinds},
     {"set_buttons", lib_set_buttons},
+    {"set_layout_constraints", lib_set_layout_constraints},
+    {"set_master_constraints", lib_set_master_constraints},
+    {"set_update_function", lib_set_update_function},
     {NULL, NULL},
 };
 
@@ -90,6 +91,9 @@ static const struct luaL_Reg localconfig[] =
     {"set_focus_color", local_set_focus_color},
     {"set_gaps", local_set_gaps},
     {"set_sloppy_focus", local_set_sloppy_focus},
+    {"set_layout_constraints", local_set_layout_constraints},
+    {"set_master_constraints", local_set_master_constraints},
+    {"set_update_function", local_set_update_function},
     {NULL, NULL},
 };
 

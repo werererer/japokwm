@@ -45,5 +45,5 @@ local resize_data = {
 }
 
 layout.set(layout_data, master_layout_data, resize_data)
-action.set_layout_constraints({min_width = 0.1, max_width = 1, min_height = 0.1, max_height = 1})
-action.set_master_constraints({min_width = 0.2, max_width = 1, min_height = 0.2, max_height = 1})
+lconfig.set_layout_constraints({min_width = 0.1, max_width = 1, min_height = 0.1, max_height = 1})
+lconfig.set_master_constraints({min_width = 0.2, max_width = 1, min_height = 0.2, max_height = 1})

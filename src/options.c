@@ -22,6 +22,18 @@ void reset_tag_names(struct wlr_list *tag_names)
 struct options get_default_options()
 {
     struct options options = {
+        .layout_constraints = {
+            .min_width = 0.1f,
+            .min_height = 0.1f,
+            .max_width = 1.0f,
+            .max_height = 1.0f
+        },
+        .master_constraints = {
+            .min_width = 0.1f,
+            .min_height = 0.1f,
+            .max_width = 1.0f,
+            .max_height = 1.0f
+        },
         .root_color = {0.3f, 0.3f, 0.3f, 1.0f},
         .focus_color = {1.0f, 0.0f, 0.0f, 1.0f},
         .border_color = {0.0f, 0.0f, 1.0f, 1.0f},

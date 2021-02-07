@@ -6,13 +6,6 @@
 #include <lauxlib.h>
 #include "options.h"
 
-struct resize_constraints {
-    float min_width;
-    float max_width;
-    float min_height;
-    float max_height;
-};
-
 struct layout {
     const char *name;
     const char *symbol;
@@ -27,9 +20,6 @@ struct layout {
     int lua_layout_original_copy_data_ref;
     int lua_layout_master_copy_data_ref;
     int lua_resize_data_ref;
-
-    struct resize_constraints layout_constraints;
-    struct resize_constraints master_constraints;
 
     struct options options;
 };

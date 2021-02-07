@@ -87,13 +87,14 @@ function Is_resize_locked(layout_data, o_layout_data, i, j, n, directions)
         for k = 1,#resize_containers do
             local li = resize_containers[k][5]
             local lj = resize_containers[k][6]
+            local c = lt_data[li][lj]
 
-            lt_data[li][lj][X] = alt_con[X] + (resize_containers[k][X] * alt_con[WIDTH])
-            lt_data[li][lj][Y] = alt_con[Y] + (resize_containers[k][Y] * alt_con[HEIGHT])
-            lt_data[li][lj][WIDTH] = resize_containers[k][WIDTH] * alt_con[WIDTH]
-            lt_data[li][lj][HEIGHT] = resize_containers[k][HEIGHT] * alt_con[HEIGHT]
+            c[X] = alt_con[X] + (resize_containers[k][X] * alt_con[WIDTH])
+            c[Y] = alt_con[Y] + (resize_containers[k][Y] * alt_con[HEIGHT])
+            c[WIDTH] = resize_containers[k][WIDTH] * alt_con[WIDTH]
+            c[HEIGHT] = resize_containers[k][HEIGHT] * alt_con[HEIGHT]
 
-            if info.is_container_not_in_limit(main_con) then
+            if info.is_container_not_in_limit(c) then
               return true
             end
         end

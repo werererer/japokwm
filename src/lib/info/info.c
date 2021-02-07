@@ -91,7 +91,7 @@ int lib_is_container_not_in_limit(lua_State *L)
     struct wlr_fbox geom = lua_togeometry(L);
     lua_pop(L, 1);
 
-    bool not_in_limit = is_resize_not_in_limit(&geom, &lt->layout_constraints);
+    bool not_in_limit = is_resize_not_in_limit(&geom, &lt->options.layout_constraints);
     printf("inlimit: %i\n", !not_in_limit);
     return not_in_limit;
 }
@@ -106,7 +106,7 @@ int lib_is_container_not_in_master_limit(lua_State *L)
     struct wlr_fbox geom = lua_togeometry(L);
     lua_pop(L, 1);
 
-    bool not_in_limit = is_resize_not_in_limit(&geom, &lt->master_constraints);
+    bool not_in_limit = is_resize_not_in_limit(&geom, &lt->options.master_constraints);
     printf("inlimit: %i\n", !not_in_limit);
     return not_in_limit;
 }

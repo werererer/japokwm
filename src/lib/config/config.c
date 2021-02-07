@@ -161,3 +161,23 @@ int lib_set_buttons(lua_State *L)
     server.options.buttonbindings_ref = lua_copy_table(L);
     return 0;
 }
+
+int lib_set_layout_constraints(lua_State *L)
+{
+    server.options.layout_constraints = lua_toresize_constrains(L);
+    lua_pop(L, 1);
+    return 0;
+}
+
+int lib_set_master_constraints(lua_State *L)
+{
+    server.options.master_constraints = lua_toresize_constrains(L);
+    lua_pop(L, 1);
+    return 0;
+}
+
+int lib_set_update_function(lua_State *L)
+{
+    server.options.update_func_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    return 0;
+}

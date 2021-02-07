@@ -11,6 +11,13 @@
 #define GREEN {0.0f, 1.0f, 0.0f, 1.0f}
 #define BLUE {0.0f, 0.0f, 1.0f, 1.0f}
 
+struct resize_constraints {
+    float min_width;
+    float max_width;
+    float min_height;
+    float max_height;
+};
+
 struct options {
     bool sloppy_focus;
     int tile_border_px;
@@ -22,6 +29,9 @@ struct options {
     float text_color[4];
     float sel_overlay_color[4];
     float sel_text_color[4];
+
+    struct resize_constraints layout_constraints;
+    struct resize_constraints master_constraints;
 
     struct wlr_list tag_names;
     struct rule *rules;
@@ -36,6 +46,7 @@ struct options {
 
     bool arrange_by_focus;
 
+    int update_func_ref;
     int layouts_ref;
     int tag_names_ref;
     int default_layout_ref;
