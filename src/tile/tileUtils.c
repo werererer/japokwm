@@ -116,7 +116,7 @@ int get_master_container_count(struct monitor *m)
 }
 
 // amount of slave containers plus the one master area
-static int get_default_container_count(struct monitor *m)
+static int get_container_count(struct monitor *m)
 {
     return get_slave_container_count(m) + 1;
 }
@@ -176,7 +176,7 @@ void arrange_monitor(struct monitor *m)
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);
 
     int master_container_count = get_master_container_count(m);
-    int default_container_count = get_default_container_count(m);
+    int default_container_count = get_container_count(m);
     update_layout(L, default_container_count, m);
 
     update_hidden_containers(m);
@@ -278,6 +278,15 @@ void update_hidden_containers(struct monitor *m)
     // because the master are is included in n aswell as nmaster we have to
     // subtract the solution by one to count
     int count = ws->layout[0].n + ws->layout[0].nmaster-1;
+    struct layout *lt = &ws->layout[0];
+
+    // ensure that the count is not higher than the amount of data available
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_original_copy_data_ref);
+    lua_rawgeti(L, -1, count);
+    count = luaL_len(L, -1);
+    lua_pop(L, 1);
+    lua_pop(L, 1);
+
     int i = 1;
     if (ws->layout[0].options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
