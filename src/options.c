@@ -22,6 +22,7 @@ void reset_tag_names(struct wlr_list *tag_names)
 struct options get_default_options()
 {
     struct options options = {
+        .resize_dir = 0,
         .layout_constraints = {
             .min_width = 0.1f,
             .min_height = 0.1f,
@@ -43,6 +44,7 @@ struct options get_default_options()
         .float_border_px = 3,
         .inner_gap = 10,
         .outer_gap = 10,
+        .update_func_ref = 0,
         .monrule_count = 0,
         .monrules = NULL,
         .rule_count = 0,

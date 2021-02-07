@@ -54,15 +54,6 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface,
         focus_container(con, FOCUS_NOOP);
 }
 
-int lib_set_resize_direction(lua_State *L)
-{
-    struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws[0];
-    ws->layout[0].resize_dir = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-    return 0;
-}
-
 int lib_arrange(lua_State *L)
 {
     arrange();
@@ -99,14 +90,14 @@ int lib_resize_main(lua_State *L)
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws[0];
     struct layout *lt = &ws->layout[0];
-    int d = lt->resize_dir;
+    int dir = lt->options.resize_dir;
 
     lua_getglobal_safe(L, "Resize_main_all");
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_original_copy_data_ref);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_resize_data_ref);
     lua_pushnumber(L, n);
-    lua_pushinteger(L, d);
+    lua_pushinteger(L, dir);
 
     lua_call_safe(L, 5, 1, 0);
 

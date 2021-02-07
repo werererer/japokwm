@@ -109,3 +109,14 @@ int local_set_update_function(lua_State *L)
     lt->options.update_func_ref = luaL_ref(L, LUA_REGISTRYINDEX);
     return 0;
 }
+
+int local_set_resize_direction(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws[0];
+    struct layout *lt = &ws->layout[0];
+
+    lt->options.resize_dir = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    return 0;
+}

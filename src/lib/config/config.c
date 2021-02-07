@@ -181,3 +181,10 @@ int lib_set_update_function(lua_State *L)
     server.options.update_func_ref = luaL_ref(L, LUA_REGISTRYINDEX);
     return 0;
 }
+
+int lib_set_resize_direction(lua_State *L)
+{
+    server.options.resize_dir = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    return 0;
+}

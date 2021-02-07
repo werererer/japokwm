@@ -1,5 +1,4 @@
 require "tileutils"
-print("tile start")
 
 local X<const> = 1
 local Y<const> = 2

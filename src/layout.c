@@ -92,8 +92,6 @@ struct layout copy_layout(struct layout *src_lt)
         dest_lt.lua_layout_original_copy_data_ref = lua_copy_table(L);
     }
 
-    dest_lt.resize_dir = src_lt->resize_dir;
-
     copy_options(&dest_lt.options, &src_lt->options);
 
     return dest_lt;

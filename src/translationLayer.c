@@ -27,7 +27,6 @@ static const struct luaL_Reg action[] =
     {"set_nmaster", lib_set_nmaster},
     {"increase_nmaster", lib_increase_nmaster},
     {"decrease_nmaster", lib_decrease_nmaster},
-    {"set_resize_direction", lib_set_resize_direction},
     {"spawn", lib_spawn},
     {"toggle_consider_layer_shell", lib_toggle_consider_layer_shell},
     {"toggle_floating", lib_toggle_floating},
@@ -79,6 +78,7 @@ static const struct luaL_Reg config[] =
     {"set_layout_constraints", lib_set_layout_constraints},
     {"set_master_constraints", lib_set_master_constraints},
     {"set_update_function", lib_set_update_function},
+    {"set_resize_direction", lib_set_resize_direction},
     {NULL, NULL},
 };
 
@@ -94,6 +94,7 @@ static const struct luaL_Reg localconfig[] =
     {"set_layout_constraints", local_set_layout_constraints},
     {"set_master_constraints", local_set_master_constraints},
     {"set_update_function", local_set_update_function},
+    {"set_resize_direction", local_set_resize_direction},
     {NULL, NULL},
 };
 

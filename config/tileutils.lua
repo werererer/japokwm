@@ -278,20 +278,3 @@ function Get_edge_container(container, d)
     end
     return con
 end
-
--- TODO: improve function name which doesn't representing what it does
-function Update_layout(n)
-    -- if n > #Layout_data then
-    --     return
-    -- end
-
-    if Update then
-        Update(n)
-    end
-end
-
--- TODO: improve function name not representing what it does
-function Update_nmaster(n)
-    local i = math.max(math.min(#Master_layout_data, n), 1)
-    return Master_layout_data[i]
-end
