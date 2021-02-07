@@ -5,11 +5,10 @@
 #include <stdio.h>
 #include <lua.h>
 
+#include "server.h"
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "workspace.h"
-
-struct layout default_layout;
 
 struct layout get_default_layout()
 {
@@ -19,12 +18,10 @@ struct layout get_default_layout()
         .nmaster = 1,
         .options = get_default_options(),
     };
-    lua_get_basic_layout();
+    lua_get_default_layout_data();
     lt.lua_layout_copy_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
     lua_createtable(L, 0, 0);
     lt.lua_layout_ref = luaL_ref(L, LUA_REGISTRYINDEX);
-    lua_get_basic_layout();
-    lt.lua_layout_master_copy_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
     return lt;
 }
 
@@ -68,9 +65,10 @@ bool is_same_layout(struct layout layout, struct layout layout2)
 
 struct layout copy_layout(struct layout *src_lt)
 {
+    struct layout dest_lt = server.default_layout;
+
     if (!src_lt)
-        return default_layout;
-    struct layout dest_lt = default_layout;
+        return dest_lt;
 
     if (src_lt->lua_layout_copy_data_ref > 0) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_copy_data_ref);
@@ -82,9 +80,9 @@ struct layout copy_layout(struct layout *src_lt)
         dest_lt.lua_layout_ref = lua_copy_table(L);
     }
 
-    if (src_lt->lua_layout_master_copy_data_ref > 0) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_master_copy_data_ref);
-        dest_lt.lua_layout_master_copy_data_ref = lua_copy_table(L);
+    if (src_lt->options.master_layout_data_ref > 0) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->options.master_layout_data_ref);
+        dest_lt.options.master_layout_data_ref = lua_copy_table(L);
     }
 
     if (src_lt->lua_layout_original_copy_data_ref > 0) {
@@ -101,4 +99,39 @@ void push_layout(struct layout lt_stack[static 2], struct layout lt)
 {
     lt_stack[1] = copy_layout(&lt_stack[0]);
     lt_stack[0] = copy_layout(&lt);
+}
+
+bool lua_islayout_data(lua_State *L, const char *name)
+{
+    if (!lua_istable(L, -1))
+        return false;
+
+    int len1 = luaL_len(L, -1);
+    if (len1 <= 0)
+        return false;
+
+    for (int i = 1; i <= len1; i++) {
+        lua_rawgeti(L, -1, i);
+        int len2 = luaL_len(L, -1);
+        if (len2 <= 0)
+        {
+            char c[NUM_CHARS] = "";
+            snprintf(c, NUM_CHARS, "%s[%i] == nil", name, i);
+            handle_error(c);
+            return false;
+        }
+        for (int j = 1; j <= len2; j++) {
+            lua_rawgeti(L, -1, j);
+            int len3 = luaL_len(L, -1);
+            if (len3 != 4) {
+                char c[NUM_CHARS] = "";
+                snprintf(c, NUM_CHARS, "%s[%i][%i].size != 4", name, i, j);
+                handle_error(c);
+                return false;
+            }
+            lua_pop(L, 1);
+        }
+        lua_pop(L, 1);
+    }
+    return true;
 }

@@ -95,7 +95,7 @@ int lib_resize_main(lua_State *L)
     lua_getglobal_safe(L, "Resize_main_all");
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_original_copy_data_ref);
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_resize_data_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->options.resize_data_ref);
     lua_pushnumber(L, n);
     lua_pushinteger(L, dir);
 
@@ -130,7 +130,7 @@ int lib_set_nmaster(lua_State *L)
 int lib_increase_nmaster(lua_State *L)
 {
     struct layout *lt = &selected_monitor->ws[0]->layout[0];
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_master_copy_data_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->options.master_layout_data_ref);
     int max_nmaster = luaL_len(L, -1);
     lua_pop(L, 1);
 

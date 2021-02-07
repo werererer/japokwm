@@ -63,14 +63,40 @@ int path_compare(const char *path1, const char *path2);
 void join_path(char *base, const char *file);
 
 /*
- * create a basic lua table that looks like that:
+ * create a lua table that looks like this:
  * {
  *   {
  *     {0, 0, 1, 1}
  *   }
  * }
  */
-void lua_get_basic_layout();
+void lua_get_default_layout_data();
+
+/*
+ * create a lua table that looks like this:
+ * {
+ *   {
+ *     {0, 0, 1, 1}
+ *   },
+ *   {
+ *     {0, 0, 1, 0.5},
+ *     {0, 0.5, 1, 0.5},
+ *   },
+ *   {
+ *     {0, 0, 1, 0.333},
+ *     {0, 0.333, 1, 0.333},
+ *     {0, 0.5, 1, 0.333},
+ *   },
+ * }
+ */
+void lua_get_default_master_layout_data();
+/*
+ * create a lua table that looks like this:
+ * {
+ *   {2, 3, 4, 5, 6, 7, 8, 9}
+ * }
+ */
+void lua_get_default_resize_data();
 
 void wlr_list_clear(struct wlr_list *list);
 void lua_tocolor(float dest_color[static 4]);

@@ -19,7 +19,7 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
     ws->name = name;
 
     for (int i = 0; i < 2; i++)
-        ws->layout[i] = default_layout;
+        ws->layout[i] = server.default_layout;
 
     // fill layout stack with reasonable values
     push_layout(ws->layout, lt);
@@ -298,7 +298,7 @@ void copy_layout_from_selected_workspace()
 
 void load_default_layout(lua_State *L, struct workspace *ws)
 {
-    load_layout(L, ws, default_layout.name, default_layout.symbol);
+    load_layout(L, ws, server.default_layout.name, server.default_layout.symbol);
 }
 
 void set_layout(lua_State *L, struct workspace *ws, int layouts_ref)
@@ -333,7 +333,7 @@ void set_layout(lua_State *L, struct workspace *ws, int layouts_ref)
 
 void load_layout(lua_State *L, struct workspace *ws, const char *layout_name, const char *layout_symbol)
 {
-    push_layout(ws->layout, copy_layout(&default_layout));
+    push_layout(ws->layout, copy_layout(&server.default_layout));
 
     struct layout *lt = &ws->layout[0];
     lt->name = layout_name;

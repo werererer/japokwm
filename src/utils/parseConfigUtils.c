@@ -394,8 +394,6 @@ static struct layout get_config_array_layout(lua_State *L, const char *name, siz
         .lua_layout_ref = 0,
         .lua_layout_copy_data_ref = 0,
         .lua_layout_original_copy_data_ref = 0,
-        .lua_layout_master_copy_data_ref = 0,
-        .lua_resize_data_ref = 0,
     };
     layout.options = get_default_options();
     lua_pop(L, 1);
@@ -414,8 +412,6 @@ struct layout get_config_layout(lua_State *L, char *name)
         .lua_layout_ref = 0,
         .lua_layout_copy_data_ref = 0,
         .lua_layout_original_copy_data_ref = 0,
-        .lua_layout_master_copy_data_ref = 0,
-        .lua_resize_data_ref = 0,
         .options = get_default_options(),
     };
     lua_pop(L, 1);

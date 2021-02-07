@@ -120,3 +120,31 @@ int local_set_resize_direction(lua_State *L)
     lua_pop(L, 1);
     return 0;
 }
+
+int local_set_master_layout_data(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws[0];
+    struct layout *lt = &ws->layout[0];
+
+    if (lua_islayout_data(L, "master_layout_data")) {
+
+        lt->options.master_layout_data_ref = lua_copy_table(L);
+    }
+    else
+        lua_pop(L, 1);
+    return 0;
+}
+
+int local_set_resize_data(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws[0];
+    struct layout *lt = &ws->layout[0];
+
+    if (lua_istable(L, -1))
+        lt->options.resize_data_ref = lua_copy_table(L);
+    else
+        lua_pop(L, 1);
+    return 0;
+}

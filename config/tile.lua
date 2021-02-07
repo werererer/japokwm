@@ -152,7 +152,7 @@ function Resize_main_all(layout_data, o_layout_data, resize_data, n, d)
                 for j=1,#resize_data[g] do
                     layout_data = Resize_all(layout_data, o_layout_data, resize_data[g][j], 1, n, d)
                 end
-                break
+                return layout_data
             end
         end
     end

@@ -29,7 +29,7 @@ int lib_reload_config(lua_State *L)
 
     destroy_workspaces();
     /* update_config(L); */
-    create_workspaces(server.options.tag_names, default_layout);
+    create_workspaces(server.options.tag_names, server.default_layout);
 
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws[0];

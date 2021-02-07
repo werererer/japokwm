@@ -52,6 +52,13 @@ struct options get_default_options()
         .modkey = 0,
         .arrange_by_focus = false,
     };
+
+    lua_get_default_master_layout_dat();
+    options.master_layout_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+
+    lua_get_default_resize_data();
+    options.resize_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+
     reset_tag_names(&options.tag_names);
     return options;
 }

@@ -79,6 +79,8 @@ static const struct luaL_Reg config[] =
     {"set_master_constraints", lib_set_master_constraints},
     {"set_update_function", lib_set_update_function},
     {"set_resize_direction", lib_set_resize_direction},
+    {"set_master_layout_data", lib_set_master_layout_data},
+    {"set_resize_data", lib_set_resize_data},
     {NULL, NULL},
 };
 
@@ -95,6 +97,8 @@ static const struct luaL_Reg localconfig[] =
     {"set_master_constraints", local_set_master_constraints},
     {"set_update_function", local_set_update_function},
     {"set_resize_direction", local_set_resize_direction},
+    {"set_master_layout_data", local_set_master_layout_data},
+    {"set_resize_data", local_set_resize_data},
     {NULL, NULL},
 };
 

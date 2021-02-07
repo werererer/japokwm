@@ -529,8 +529,8 @@ int setup()
     load_libs(L);
     init_error_file();
 
+    server.default_layout = get_default_layout();
     server.options = get_default_options();
-    default_layout = get_default_layout();
 
     init_utils(L);
 

@@ -90,7 +90,7 @@ int lib_set_default_layout(lua_State *L)
         .n = 1,
         .nmaster = 1,
     };
-    default_layout = layout;
+    server.default_layout = layout;
     lua_pop(L, 1);
     return 0;
 }
@@ -186,5 +186,23 @@ int lib_set_resize_direction(lua_State *L)
 {
     server.options.resize_dir = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
+    return 0;
+}
+
+int lib_set_master_layout_data(lua_State *L)
+{
+    if (lua_islayout_data(L, "master_layout_data"))
+        server.options.master_layout_data_ref = lua_copy_table(L);
+    else
+        lua_pop(L, 1);
+    return 0;
+}
+
+int lib_set_resize_data(lua_State *L)
+{
+    if (lua_istable(L, -1))
+        server.options.resize_data_ref = lua_copy_table(L);
+    else
+        lua_pop(L, 1);
     return 0;
 }

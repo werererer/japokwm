@@ -50,26 +50,134 @@ void join_path(char *base, const char *file)
     strcat(base, file);
 }
 
-void lua_get_basic_layout()
+static void lua_create_container(struct wlr_fbox con)
+{
+    lua_createtable(L, 4, 0);
+    lua_pushnumber(L, con.x);
+    lua_rawseti(L, -2, 1);
+    lua_pushnumber(L, con.y);
+    lua_rawseti(L, -2, 2);
+    lua_pushnumber(L, con.width);
+    lua_rawseti(L, -2, 3);
+    lua_pushnumber(L, con.height);
+    lua_rawseti(L, -2, 4);
+}
+
+void lua_get_default_layout_data()
+{
+    struct wlr_fbox con;
+    lua_createtable(L, 1, 0);
+    {
+        lua_createtable(L, 1, 0);
+        {
+            con = (struct wlr_fbox) {
+                .x = 0,
+                    .y = 0,
+                    .width = 1,
+                    .height = 1,
+            };
+            lua_create_container(con);
+            lua_rawseti(L, -2, 1);
+        }
+        lua_rawseti(L, -2, 1);
+    }
+}
+
+void lua_get_default_master_layout_data()
+{
+    struct wlr_fbox con;
+    lua_createtable(L, 1, 0);
+    int i = 1;
+    {
+        lua_createtable(L, 1, 0);
+        int j = 1;
+        {
+            con = (struct wlr_fbox) {
+                .x = 0,
+                .y = 0,
+                .width = 1,
+                .height = 1,
+            };
+            lua_create_container(con);
+            lua_rawseti(L, -2, j++);
+        }
+        lua_rawseti(L, -2, i++);
+    }
+    {
+        lua_createtable(L, 1, 0);
+        int j = 1;
+        {
+            con = (struct wlr_fbox) {
+                .x = 0,
+                .y = 0,
+                .width = 1,
+                .height = 0.5,
+            };
+            lua_create_container(con);
+            lua_rawseti(L, -2, j++);
+        }
+        {
+            con = (struct wlr_fbox) {
+                .x = 0,
+                .y = 0.5,
+                .width = 1,
+                .height = 0.5,
+            };
+            lua_create_container(con);
+            lua_rawseti(L, -2, j++);
+        }
+        lua_rawseti(L, -2, i++);
+    }
+    {
+        lua_createtable(L, 1, 0);
+        int j = 1;
+        {
+            con = (struct wlr_fbox) {
+                .x = 0,
+                .y = 0,
+                .width = 1,
+                .height = 0.333,
+            };
+            lua_create_container(con);
+            lua_rawseti(L, -2, j++);
+        }
+        {
+            con = (struct wlr_fbox) {
+                .x = 0,
+                .y = 0.333,
+                .width = 1,
+                .height = 0.333,
+            };
+            lua_create_container(con);
+            lua_rawseti(L, -2, j++);
+        }
+        {
+            con = (struct wlr_fbox) {
+                .x = 0,
+                .y = 0.666,
+                .width = 1,
+                .height = 0.333,
+            };
+            lua_create_container(con);
+            lua_rawseti(L, -2, j++);
+        }
+        lua_rawseti(L, -2, i++);
+    }
+}
+
+void lua_get_default_resize_data()
 {
     lua_createtable(L, 1, 0);
-
-    lua_createtable(L, 1, 0);
-
-    lua_createtable(L, 4, 0);
-    lua_pushinteger(L, 0);
-
-    lua_rawseti(L, -2, 1);
-    lua_pushinteger(L, 0);
-    lua_rawseti(L, -2, 2);
-    lua_pushinteger(L, 1);
-    lua_rawseti(L, -2, 3);
-    lua_pushinteger(L, 1);
-    lua_rawseti(L, -2, 4);
-
-    lua_rawseti(L, -2, 1);
-
-    lua_rawseti(L, -2, 1);
+    {
+        lua_createtable(L, 1, 0);
+        {
+            for (int i = 1; i < 10; i++) {
+                lua_pushinteger(L, i+1);
+                lua_rawseti(L, -2, i);
+            }
+        }
+        lua_rawseti(L, -2, 1);
+    }
 }
 
 void lua_tocolor(float dest_color[static 4])

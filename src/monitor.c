@@ -85,7 +85,7 @@ void create_monitor(struct wl_listener *listener, void *data)
             reset_tag_names(&server.options.tag_names);
         }
 
-        create_workspaces(server.options.tag_names, default_layout);
+        create_workspaces(server.options.tag_names, server.default_layout);
     }
 
     m->root = create_root(m);
