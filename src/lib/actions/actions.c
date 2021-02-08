@@ -273,6 +273,7 @@ int lib_view(lua_State *L)
         return 0;
 
     if (is_workspace_occupied(ws)) {
+        center_mouse_in_monitor(ws->m);
         set_selected_monitor(ws->m);
         return 0;
     }
