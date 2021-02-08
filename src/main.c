@@ -528,8 +528,8 @@ int setup()
     load_libs(L);
     init_error_file();
 
+    printf("set default layout\n");
     server.default_layout = get_default_layout();
-    server.options = get_default_options();
 
     init_utils(L);
 

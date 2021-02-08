@@ -22,14 +22,14 @@ size_t rule_count;
 
 int lib_reload_config(lua_State *L)
 {
-    for (int i = 0; i < server.options.tag_names.length; i++)
-        free(wlr_list_pop(&server.options.tag_names));
-    wlr_list_finish(&server.options.tag_names);
-    server.options = get_default_options();
+    for (int i = 0; i < server.default_layout.options.tag_names.length; i++)
+        free(wlr_list_pop(&server.default_layout.options.tag_names));
+    wlr_list_finish(&server.default_layout.options.tag_names);
+    server.default_layout.options = get_default_options();
 
     destroy_workspaces();
     /* update_config(L); */
-    create_workspaces(server.options.tag_names, server.default_layout);
+    create_workspaces(server.default_layout.options.tag_names, server.default_layout);
 
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws[0];

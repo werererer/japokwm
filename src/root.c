@@ -84,6 +84,7 @@ static void configure_layer_shell_container_geom(struct container *con, struct w
 
 void set_root_color(struct root *root, float color[static 4])
 {
+    printf("set root color\n");
     memcpy(root->color, color, sizeof(float)*4);
 }
 

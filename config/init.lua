@@ -1,3 +1,4 @@
+print("run init file")
 local cursor_mode = {
     CUR_NORMAL = 0,
     CUR_MOVE = 1,
@@ -33,7 +34,7 @@ config.set_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
 -- })
 
 local layouts = {
-    {"[M]", "master"},
+    {"[M]", "tile"},
     {"[]=", "two_pane"},
     {"||",  "monocle"},
     {"--",  "tmp" },
@@ -41,10 +42,10 @@ local layouts = {
 
 config.set_layouts(layouts)
 
-config.set_default_layout(layouts[1])
 config.set_monrules({
     { "", 0.55, 1, 1, layouts[1], monitor_transform.TRANSFORM_NORMAL },
 })
+config.set_default_layout(layouts[1])
 
 local termcmd = "/usr/bin/termite"
 
@@ -97,12 +98,7 @@ config.set_keybinds({
     {"mod-t",         function() action.set_floating(false)    end},
     -- {"mod-period",            function() focusmon(1) end},
     -- {"mod-comma",             function() focusmon(-1) end},
-    -- {"mod-a",                 function() action.set_tabcount(action.get_tabcount()+1) end},
-    -- {"mod-x",                 function() action.set_tabcount(action.get_tabcount()-1) end},
     -- {"mod-d",                 function() incnmaster(-1) end},
-    -- {"mod-parenright",        function() tag(~0) end},
-    -- {"mod-greater",           function() tagmon(1) end},
-    -- {"mod-less",              function() tagmon(-1) end},
 })
 
 config.set_buttons({

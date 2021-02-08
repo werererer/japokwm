@@ -434,8 +434,8 @@ void apply_rules(struct container *con)
     if (!title)
         title = "broken";
 
-    for (int i = 0; i < server.options.rule_count; i++) {
-        const struct rule r = server.options.rules[i];
+    for (int i = 0; i < server.default_layout.options.rule_count; i++) {
+        const struct rule r = server.default_layout.options.rules[i];
         bool same_id = strcmp(app_id, r.id) == 0;
         bool id_empty = strcmp(title, "") == 0;
         bool same_title = strcmp(title, r.title) == 0;

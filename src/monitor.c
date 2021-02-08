@@ -57,8 +57,8 @@ void create_monitor(struct wl_listener *listener, void *data)
     wl_signal_add(&m->wlr_output->events.frame, &m->frame);
 
     wlr_xcursor_manager_load(server.cursor_mgr, 1);
-    for (int i = 0; i < server.options.monrule_count; i++) {
-        struct monrule r = server.options.monrules[i];
+    for (int i = 0; i < server.default_layout.options.monrule_count; i++) {
+        struct monrule r = server.default_layout.options.monrules[i];
         if (!r.name || strstr(output->name, r.name)) {
             m->mfact = r.mfact;
             wlr_output_set_scale(output, r.scale);
@@ -80,12 +80,12 @@ void create_monitor(struct wl_listener *listener, void *data)
     if (is_first_monitor) {
         init_config(L);
         set_selected_monitor(m);
-        if (server.options.tag_names.length <= 0) {
+        if (server.default_layout.options.tag_names.length <= 0) {
             handle_error("tag_names is empty, loading default tag_names");
-            reset_tag_names(&server.options.tag_names);
+            reset_tag_names(&server.default_layout.options.tag_names);
         }
 
-        create_workspaces(server.options.tag_names, server.default_layout);
+        create_workspaces(server.default_layout.options.tag_names, server.default_layout);
     }
 
     m->root = create_root(m);
@@ -94,7 +94,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     load_default_layout(L, m->ws[0]);
     copy_layout_from_selected_workspace();
     set_root_color(m->root, m->ws[0]->layout[0].options.root_color);
-
 
     /* Adds this to the output layout. The add_auto function arranges outputs
      * from left-to-right in the order they appear. A more sophisticated

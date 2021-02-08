@@ -132,7 +132,7 @@ bool button_pressed(int mods, int sym)
     // TODO make this safer
     char bind[128] = "";
     sym_to_binding(bind, mods, sym);
-    bool handled = process_binding(L, bind, server.options.buttonbindings_ref);
+    bool handled = process_binding(L, bind, server.default_layout.options.buttonbindings_ref);
     return handled;
 }
 
@@ -140,7 +140,7 @@ bool key_pressed(int mods, int sym)
 {
     char bind[128] = "";
     sym_to_binding(bind, mods, sym);
-    bool handled = process_binding(L, bind, server.options.keybinds_ref);
+    bool handled = process_binding(L, bind, server.default_layout.options.keybinds_ref);
     return handled;
 }
 

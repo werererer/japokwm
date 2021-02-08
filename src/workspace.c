@@ -19,7 +19,7 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
     ws->name = name;
 
     for (int i = 0; i < 2; i++)
-        ws->layout[i] = server.default_layout;
+        ws->layout[i] = get_default_layout();
 
     // fill layout stack with reasonable values
     push_layout(ws->layout, lt);
@@ -301,13 +301,14 @@ void load_default_layout(lua_State *L, struct workspace *ws)
     load_layout(L, ws, server.default_layout.name, server.default_layout.symbol);
 }
 
-void set_layout(lua_State *L, struct workspace *ws, int layouts_ref)
+void set_layout(lua_State *L, struct workspace *ws)
 {
     struct layout *lt = &ws->layout[0];
-    if (layouts_ref <= 0)
+
+    if (lt->options.layouts_ref <= 0)
         return;
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, layouts_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->options.layouts_ref);
 
     // rotate layouts
     if (lua_gettop(L) <= 1) {
@@ -333,8 +334,6 @@ void set_layout(lua_State *L, struct workspace *ws, int layouts_ref)
 
 void load_layout(lua_State *L, struct workspace *ws, const char *layout_name, const char *layout_symbol)
 {
-    push_layout(ws->layout, copy_layout(&server.default_layout));
-
     struct layout *lt = &ws->layout[0];
     lt->name = layout_name;
     lt->symbol = layout_symbol;

@@ -44,7 +44,7 @@ void focus_top_container(struct workspace *ws, enum focus_actions a);
 void init_workspaces();
 void load_default_layout(lua_State *L, struct workspace *ws);
 void load_layout(lua_State *L, struct workspace *ws, const char *layout_name, const char *layout_symbol);
-void set_layout(lua_State *L, struct workspace *ws, int layouts_ref);
+void set_layout(lua_State *L, struct workspace *ws);
 void set_next_unoccupied_workspace(struct monitor *m, struct workspace *ws);
 void set_selected_layout(struct workspace *ws, struct layout layout);
 void workspace_assign_monitor(struct workspace *ws, struct monitor *m);

@@ -448,7 +448,8 @@ int lib_load_default_layout(lua_State *L)
         lua_pop(L, 1);
     }
 
-    set_layout(L, ws, lt->options.layouts_ref);
+    printf("load default layout\n");
+    set_layout(L, ws);
 
     arrange();
     return 0;

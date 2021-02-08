@@ -139,12 +139,12 @@ int init_utils(lua_State *L)
     printf("utils path: %s\n", config_path);
 
     // get the value of the
-    int defaultId = 0;
+    int default_id = 0;
     for (int i = 0; i < LENGTH(config_paths); i++) {
-        char *path = strdup(config_paths[defaultId]);
+        char *path = strdup(config_paths[default_id]);
         expand_path(&path);
         if (path_compare(path, config_path) == 0) {
-            defaultId = i;
+            default_id = i;
             break;
         }
     }
@@ -152,7 +152,7 @@ int init_utils(lua_State *L)
     bool success = true;
     // repeat loop until the first config file was loaded successfully
     for (int i = 0; i < LENGTH(config_paths); i++) {
-        if (i < defaultId)
+        if (i < default_id)
             continue;
 
         char *path = strdup(config_paths[i]);
