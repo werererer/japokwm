@@ -1,4 +1,3 @@
-print("run init file")
 local cursor_mode = {
     CUR_NORMAL = 0,
     CUR_MOVE = 1,
@@ -40,7 +39,9 @@ local layouts = {
     {"--",  "tmp" },
 }
 
-config.set_layouts(layouts)
+config.set_layouts("name", layouts)
+config.set_layouts("name", layouts)
+config.set_layouts("name", layouts)
 
 config.set_monrules({
     { "", 0.55, 1, 1, layouts[1], monitor_transform.TRANSFORM_NORMAL },
@@ -63,11 +64,11 @@ config.set_keybinds({
     {"mod-S-k",       function() action.focus_on_hidden_stack(-1) end},
     {"mod-S-c",       function() action.kill() end},
     {"mod-S-q",       function() action.quit() end},
-    {"mod-space",     function() action.load_default_layout() end},
-    {"mod-m",         function() action.load_default_layout(1) end},
-    {"mod-S-t",       function() action.load_default_layout(2) end},
-    {"mod-w",         function() action.load_default_layout(3) end},
-    {"mod-S-w",       function() action.load_default_layout(4) end},
+    {"mod-space",     function() action.load_default_layout("name") end},
+    {"mod-m",         function() action.load_default_layout("name", 1) end},
+    {"mod-S-t",       function() action.load_default_layout("name", 2) end},
+    {"mod-w",         function() action.load_default_layout("name", 3) end},
+    {"mod-S-w",       function() action.load_default_layout("name", 4) end},
     {"mod-S-p",       function() action.load_layout({"g", "tmp"}) end},
     {"mod-b",         function() action.toggle_consider_layer_shell() end},
     {"mod-S-h",       function() action.resize_main(-1/10) end},

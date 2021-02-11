@@ -130,6 +130,8 @@ static void update_container_positions(struct monitor *m)
             continue;
         if (con->floating)
             continue;
+        if (con->client->type == LAYER_SHELL)
+            continue;
 
         con->position = position;
         // then use the layout that may have been reseted
@@ -139,6 +141,8 @@ static void update_container_positions(struct monitor *m)
         if (!visibleon(con, m->ws[0]))
             continue;
         if (!con->floating)
+            continue;
+        if (con->client->type == LAYER_SHELL)
             continue;
 
         con->position = position;
@@ -305,6 +309,8 @@ void update_hidden_containers(struct monitor *m)
             if (con->floating)
                 continue;
             if (!existon(con, ws))
+                continue;
+            if (con->client->type == LAYER_SHELL)
                 continue;
 
             con->hidden = i > count;

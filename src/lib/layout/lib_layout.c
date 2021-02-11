@@ -13,7 +13,7 @@ int lib_set_layout(lua_State *L)
     // reset options
     copy_options(&lt->options, &server.default_layout.options);
 
-    // 1. argument -- layout_data
+    // 1. argument -- layout_set
     if (lua_islayout_data(L, "layout_data"))
         lt->lua_layout_copy_data_ref = lua_copy_table(L);
     else

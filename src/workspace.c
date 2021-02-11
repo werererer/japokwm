@@ -81,10 +81,10 @@ bool existon(struct container *con, struct workspace *ws)
 {
     if (!con || !ws)
         return false;
-    if (con->m != ws->m)
-        return false;
     if (con->floating)
         return true;
+    if (con->m != ws->m)
+        return false;
 
     struct client *c = con->client;
 
@@ -118,11 +118,11 @@ bool hiddenon(struct container *con, struct workspace *ws)
 {
     if (!con || !ws)
         return false;
+    if (con->floating)
+        return false;
     if (con->m != ws->m)
         return false;
     if (!con->hidden)
-        return false;
-    if (con->floating)
         return false;
 
     struct client *c = con->client;
@@ -142,12 +142,12 @@ bool visibleon(struct container *con, struct workspace *ws)
 {
     if (!con || !ws)
         return false;
+    if (con->floating)
+        return true;
     if (con->m != ws->m)
         return false;
     if (con->hidden)
         return false;
-    if (con->floating)
-        return true;
 
     struct client *c = con->client;
 
@@ -305,10 +305,10 @@ void set_layout(lua_State *L, struct workspace *ws)
 {
     struct layout *lt = &ws->layout[0];
 
-    if (lt->options.layouts_ref <= 0)
+    if (lt->layouts_ref <= 0)
         return;
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->options.layouts_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->layouts_ref);
 
     // rotate layouts
     if (lua_gettop(L) <= 1) {

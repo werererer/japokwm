@@ -51,7 +51,6 @@ struct options {
     int resize_data_ref;
 
     int update_func_ref;
-    int layouts_ref;
     int tag_names_ref;
     int default_layout_ref;
     int keybinds_ref;

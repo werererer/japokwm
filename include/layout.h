@@ -18,6 +18,8 @@ struct layout {
     int lua_layout_copy_data_ref;
     int lua_layout_original_copy_data_ref;
 
+    int layouts_ref;
+
     struct options options;
 };
 

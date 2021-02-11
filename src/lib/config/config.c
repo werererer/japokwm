@@ -129,7 +129,7 @@ int lib_set_rules(lua_State *L)
 
 int lib_set_layouts(lua_State *L)
 {
-    server.default_layout.options.layouts_ref = lua_copy_table(L);
+    server.default_layout.layouts_ref = lua_copy_table(L);
     return 0;
 }
 

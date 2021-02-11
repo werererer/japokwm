@@ -21,7 +21,7 @@ void destroy_root(struct root *root)
 // TODO fix this to allow placement on all sides on screen
 static struct wlr_box fit_root_area(struct root *root)
 {
-    struct wlr_box d_box = root->geom;
+    struct wlr_box d_box = root->m->geom;
     struct wlr_box box = root->geom;
 
     struct container *con;
@@ -39,7 +39,7 @@ static struct wlr_box fit_root_area(struct root *root)
 
         // resize the root area
         if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP) {
-            int diff_height = box.y - d_box.y;
+            int diff_height = d_box.y - (d_box.y - box.y);
             box.y = MAX(diff_height, desired_height);
             box.height = d_box.height - box.y;
         }
