@@ -41,7 +41,8 @@ static const struct luaL_Reg action[] =
 
 static const struct luaL_Reg container[] =
 {
-    {"container_setsticky", container_setsticky}
+    {"set_sticky", container_set_sticky},
+    {"set_ratio", container_set_ratio},
 };
 
 static const struct luaL_Reg info[] =

@@ -41,7 +41,8 @@ struct container {
     int stack_position;
     int focus_stack_position;
     int position;
-    float scale;
+    // height = ratio * width
+    float ratio;
 };
 
 struct container *create_container(struct client *c, struct monitor *m, bool has_border);

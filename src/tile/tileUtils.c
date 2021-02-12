@@ -133,6 +133,9 @@ static void update_container_positions(struct monitor *m)
             continue;
 
         con->position = position;
+
+        apply_rules(con);
+
         // then use the layout that may have been reseted
         position++;
     }
@@ -145,6 +148,9 @@ static void update_container_positions(struct monitor *m)
             continue;
 
         con->position = position;
+
+        apply_rules(con);
+
         // then use the layout that may have been reseted
         position++;
     }
@@ -195,19 +201,19 @@ void arrange_monitor(struct monitor *m)
             if (con->client->type == LAYER_SHELL)
                 continue;
 
-            arrange_container(con, con->focus_stack_position, master_container_count, false);
+            arrange_container(con, con->focus_stack_position, master_container_count);
         }
     } else {
         wl_list_for_each(con, &containers, mlink) {
             if (!visibleon(con, m->ws[0]) || con->floating)
                 continue;
 
-            arrange_container(con, con->position, master_container_count, false);
+            arrange_container(con, con->position, master_container_count);
         }
     }
 }
 
-void arrange_container(struct container *con, int arrange_position, int container_count, bool preserve)
+void arrange_container(struct container *con, int arrange_position, int container_count)
 {
     if (con->floating || con->hidden)
         return;
@@ -228,10 +234,10 @@ void arrange_container(struct container *con, int arrange_position, int containe
 
     container_surround_gaps(&box, lt.options.inner_gap);
 
-    resize(con, box, preserve);
+    resize(con, box);
 }
 
-void resize(struct container *con, struct wlr_box geom, bool preserve)
+void resize(struct container *con, struct wlr_box geom)
 {
     /*
      * Note that I took some shortcuts here. In a more fleshed-out
@@ -241,37 +247,35 @@ void resize(struct container *con, struct wlr_box geom, bool preserve)
     container_damage_whole(con);
     con->geom = geom;
 
-    if (preserve) {
-        // if width <= height
-        if (con->client->ratio >= 1) {
-            con->geom.height = geom.height;
-            con->geom.width = con->geom.height / con->client->ratio;
-        } else {
-            con->geom.width = geom.width;
-            con->geom.height = geom.width * con->client->ratio;
-        }
-    } else {
-        con->client->ratio = calc_ratio(con->geom.width, con->geom.height);
-        apply_bounds(con, *wlr_output_layout_get_box(server.output_layout, NULL));
+    bool preserve_ratio = con->ratio != 0;
 
-        /* wlroots makes this a no-op if size hasn't changed */
-        switch (con->client->type) {
-            case XDG_SHELL:
-                wlr_xdg_toplevel_set_size(con->client->surface.xdg,
-                        con->geom.width, con->geom.height);
-                break;
-            case LAYER_SHELL:
-                wlr_layer_surface_v1_configure(con->client->surface.layer,
-                        con->m->geom.width,
-                        con->m->geom.height);
-                break;
-            case X11_UNMANAGED:
-            case X11_MANAGED:
-                wlr_xwayland_surface_configure(con->client->surface.xwayland,
-                        con->geom.x, con->geom.y, con->geom.width,
-                        con->geom.height);
-        }
+    if (preserve_ratio) {
+        // if width <= height
+        float max_height = geom.height/con->ratio;
+        con->geom.width = MIN(geom.width, max_height);
+        con->geom.height = con->geom.width * con->ratio;
     }
+
+    apply_bounds(con, *wlr_output_layout_get_box(server.output_layout, NULL));
+
+    /* wlroots makes this a no-op if size hasn't changed */
+    switch (con->client->type) {
+        case XDG_SHELL:
+            wlr_xdg_toplevel_set_size(con->client->surface.xdg,
+                    con->geom.width, con->geom.height);
+            break;
+        case LAYER_SHELL:
+            wlr_layer_surface_v1_configure(con->client->surface.layer,
+                    con->m->geom.width,
+                    con->m->geom.height);
+            break;
+        case X11_UNMANAGED:
+        case X11_MANAGED:
+            wlr_xwayland_surface_configure(con->client->surface.xwayland,
+                    con->geom.x, con->geom.y, con->geom.width,
+                    con->geom.height);
+    }
+    container_damage_whole(con);
 }
 
 void update_hidden_containers(struct monitor *m)

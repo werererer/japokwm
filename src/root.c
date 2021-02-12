@@ -81,7 +81,7 @@ static void configure_layer_shell_container_geom(struct container *con, struct w
         .height = desired_height != 0 ? desired_height : m->geom.height,
     };
 
-    resize(con, geom, false);
+    resize(con, geom);
 }
 
 void set_root_color(struct root *root, float color[static 4])

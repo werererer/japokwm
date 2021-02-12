@@ -7,8 +7,8 @@
 struct client *focustop(struct monitor *m);
 void arrange();
 void arrange_monitor(struct monitor *m);
-void arrange_container(struct container *con, int arrange_position, int count, bool preserve);
-void resize(struct container *con, struct wlr_box geom, bool preserve_geometry);
+void arrange_container(struct container *con, int arrange_position, int count);
+void resize(struct container *con, struct wlr_box geom);
 void update_hidden_containers(struct monitor *m);
 int lib_get_this_container_count();
 int get_tiled_container_count(struct monitor *m);

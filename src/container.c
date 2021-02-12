@@ -436,12 +436,14 @@ void apply_rules(struct container *con)
     if (!title)
         title = "broken";
 
+    printf("update positions: %i\n", con->position);
     for (int i = 0; i < server.default_layout.options.rule_count; i++) {
+        printf("start\n");
         const struct rule r = server.default_layout.options.rules[i];
-        bool same_id = strcmp(app_id, r.id) == 0;
-        bool id_empty = strcmp(title, "") == 0;
-        bool same_title = strcmp(title, r.title) == 0;
-        bool title_empty = strcmp(title, "") == 0;
+        bool same_id = strcmp(r.id, app_id) == 0;
+        bool id_empty = strcmp(r.id, "") == 0;
+        bool same_title = strcmp(r.title, title) == 0;
+        bool title_empty = strcmp(r.title, "") == 0;
         if ((same_id || id_empty) && (same_title || title_empty)) {
             lua_geti(L, LUA_REGISTRYINDEX, r.lua_func_ref);
             lua_pushinteger(L, con->position);
@@ -527,7 +529,7 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
     /* geom.y = server.cursor.wlr_cursor->y - geom.y, */
     /* geom.x = container_relative_x_to_absolute(con, dx); */
     /* geom.y = container_relative_y_to_absolute(con, dy); */
-    resize(con, geom, false);
+    resize(con, geom);
 }
 
 void resize_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety)
@@ -536,7 +538,7 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
 
     geom.width = absolute_x_to_container_relative(con, cursor->x - offsetx);
     geom.height = absolute_y_to_container_relative(con, cursor->y - offsety);
-    resize(con, geom, false);
+    resize(con, geom);
 }
 
 inline int container_relative_x_to_absolute(struct container *con, int lx)
