@@ -1,9 +1,11 @@
 #include "root.h"
+
+#include <string.h>
+
 #include "client.h"
 #include "container.h"
 #include "utils/coreUtils.h"
 #include "tile/tileUtils.h"
-#include "parseConfig.h"
 
 struct root *create_root(struct monitor *m)
 {

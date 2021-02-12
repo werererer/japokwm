@@ -11,7 +11,6 @@
 #include <wlr/util/log.h>
 
 #include "container.h"
-#include "parseConfig.h"
 #include "root.h"
 #include "server.h"
 #include "utils/coreUtils.h"

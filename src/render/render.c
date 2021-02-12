@@ -1,10 +1,4 @@
 #include "render/render.h"
-#include "client.h"
-#include "monitor.h"
-#include "popup.h"
-#include "root.h"
-#include "server.h"
-#include "tile/tileUtils.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -13,6 +7,14 @@
 #include <wlr/types/wlr_output_damage.h>
 #include <wlr/util/edges.h>
 #include <wlr/util/region.h>
+#include <string.h>
+
+#include "client.h"
+#include "monitor.h"
+#include "popup.h"
+#include "root.h"
+#include "server.h"
+#include "tile/tileUtils.h"
 
 struct wlr_renderer *drw;
 struct render_data render_data;

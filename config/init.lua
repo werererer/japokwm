@@ -63,7 +63,7 @@ config.set_keybinds({
     {"mod-S-c",       function() action.kill() end},
     {"mod-S-q",       function() action.quit() end},
     {"mod-space",     function() action.increase_default_layout("name") end},
-    {"mod-S-space",     function() action.decrease_default_layout("name") end},
+    {"mod-S-space",   function() action.decrease_default_layout("name") end},
     {"mod-m",         function() action.load_default_layout("name", 1) end},
     {"mod-S-t",       function() action.load_default_layout("name", 2) end},
     {"mod-w",         function() action.load_default_layout("name", 3) end},

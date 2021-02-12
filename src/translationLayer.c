@@ -5,7 +5,6 @@
 #include "lib/config/localconfig.h"
 #include "lib/layout/lib_layout.h"
 #include "lib/info/info.h"
-#include "parseConfig.h"
 #include "tile/tile.h"
 
 static const struct luaL_Reg action[] =

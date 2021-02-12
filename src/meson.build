@@ -33,7 +33,6 @@ srcs = files(
     'monitor.c',
     'options.c',
     'output.c',
-    'parseConfig.c',
     'popup.c',
     'render/render.c',
     'root.c',

@@ -52,6 +52,7 @@
 #include <wlr/xwayland.h>
 #include <xkbcommon/xkbcommon.h>
 #include <xkbcommon/xkbcommon.h>
+#include <lualib.h>
 
 #include "cursor.h"
 #include "client.h"
@@ -60,7 +61,6 @@
 #include "keybinding.h"
 #include "lib/actions/actions.h"
 #include "monitor.h"
-#include "parseConfig.h"
 #include "popup.h"
 #include "render/render.h"
 #include "root.h"
@@ -71,6 +71,7 @@
 #include "translationLayer.h"
 #include "cursor.h"
 #include "keyboard.h"
+#include "utils/parseConfigUtils.h"
 
 typedef struct {
     struct wl_listener request_mode;

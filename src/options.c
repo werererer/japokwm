@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "client.h"
+#include "utils/coreUtils.h"
 
 void reset_tag_names(struct wlr_list *tag_names)
 {

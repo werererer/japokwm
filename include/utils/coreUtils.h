@@ -26,19 +26,6 @@
 #define NUM_CHARS 64
 #define NUM_DIGITS 9
 
-typedef struct Monitor Monitor;
-
-struct keyboard {
-    struct wl_list link;
-    struct wlr_input_device *device;
-
-    struct wl_listener modifiers;
-    struct wl_listener key;
-    struct wl_listener destroy;
-};
-
-typedef uint32_t xkb_keysym_t;
-
 /* rules */
 struct rule {
     char *id;

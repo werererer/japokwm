@@ -9,11 +9,11 @@
 
 #include "ipc-server.h"
 #include "lib/actions/actions.h"
-#include "parseConfig.h"
 #include "render/render.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "workspace.h"
+#include "utils/parseConfigUtils.h"
 
 struct wl_list stack;
 struct wl_list focus_stack;

@@ -1,10 +1,12 @@
 #ifndef CONTAINER_H
 #define CONTAINER_H
 
+#include <lua.h>
 #include <wlr/types/wlr_box.h>
 #include <wlr/types/wlr_cursor.h>
 
 #include "client.h"
+#include "options.h"
 
 enum focus_actions {
     FOCUS_NOOP,

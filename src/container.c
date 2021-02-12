@@ -3,13 +3,15 @@
 #include <lua.h>
 #include <stdlib.h>
 #include <wayland-util.h>
+#include <string.h>
 
 #include "client.h"
-#include "parseConfig.h"
 #include "server.h"
 #include "monitor.h"
 #include "tile/tileUtils.h"
 #include "render/render.h"
+#include "options.h"
+#include "utils/parseConfigUtils.h"
 
 static void add_container_to_monitor(struct container *con, struct monitor *m);
 static void add_container_to_monitor_containers(struct container *con, int i);

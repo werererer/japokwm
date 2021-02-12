@@ -4,8 +4,6 @@
 #include <wlr/types/wlr_layer_shell_v1.h>
 #include <wlr/xwayland.h>
 
-#include "parseConfig.h"
-
 enum shell { XDG_SHELL, X11_MANAGED, X11_UNMANAGED, LAYER_SHELL }; /* client types */
 
 struct client {

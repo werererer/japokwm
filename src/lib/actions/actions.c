@@ -12,7 +12,6 @@
 #include "ipc-server.h"
 #include "layout_set.h"
 #include "monitor.h"
-#include "parseConfig.h"
 #include "popup.h"
 #include "root.h"
 #include "server.h"
@@ -20,6 +19,7 @@
 #include "tile/tileUtils.h"
 #include "translationLayer.h"
 #include "utils/stringUtils.h"
+#include "utils/parseConfigUtils.h"
 #include "workspace.h"
 #include "xdg-shell-protocol.h"
 

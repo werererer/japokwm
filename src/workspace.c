@@ -10,6 +10,7 @@
 #include "monitor.h"
 #include "server.h"
 #include "tile/tileUtils.h"
+#include "utils/parseConfigUtils.h"
 
 static struct wlr_list workspaces;
 
@@ -301,6 +302,7 @@ void load_default_layout(lua_State *L, struct workspace *ws)
     load_layout(L, ws, server.default_layout.name, server.default_layout.symbol);
 }
 
+// TODO refactor this function
 void set_layout(lua_State *L, struct workspace *ws)
 {
     struct layout *lt = &ws->layout[0];
