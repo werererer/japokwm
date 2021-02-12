@@ -58,7 +58,7 @@ static const struct luaL_Reg info[] =
 
 static const struct luaL_Reg config[] = 
 {
-    {"reload", lib_reload_config},
+    {"reload", lib_reload},
     {"set_border_color", lib_set_border_color},
     {"set_tile_borderpx", lib_set_tile_borderpx},
     {"set_float_borderpx", lib_set_float_borderpx},
