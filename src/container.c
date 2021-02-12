@@ -436,9 +436,7 @@ void apply_rules(struct container *con)
     if (!title)
         title = "broken";
 
-    printf("update positions: %i\n", con->position);
     for (int i = 0; i < server.default_layout.options.rule_count; i++) {
-        printf("start\n");
         const struct rule r = server.default_layout.options.rules[i];
         bool same_id = strcmp(r.id, app_id) == 0;
         bool id_empty = strcmp(r.id, "") == 0;

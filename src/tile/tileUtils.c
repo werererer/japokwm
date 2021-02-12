@@ -250,10 +250,17 @@ void resize(struct container *con, struct wlr_box geom)
     bool preserve_ratio = con->ratio != 0;
 
     if (preserve_ratio) {
-        // if width <= height
+        /* calculated biggest container where con->geom.width and
+         * con->geom.height = con->geom.width * con->ratio is inside geom.width
+         * and geom.height
+         * */
         float max_height = geom.height/con->ratio;
         con->geom.width = MIN(geom.width, max_height);
         con->geom.height = con->geom.width * con->ratio;
+        // center in x direction
+        con->geom.x += (geom.width - con->geom.width)/2;
+        // center in y direction
+        con->geom.y += (geom.height - con->geom.height)/2;
     }
 
     apply_bounds(con, *wlr_output_layout_get_box(server.output_layout, NULL));
