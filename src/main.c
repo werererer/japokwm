@@ -120,6 +120,7 @@ static struct wl_listener new_xwayland_surface = {.notify = create_notifyx11};
 
 void cleanup()
 {
+    close_error_file();
     wlr_xwayland_destroy(server.xwayland.wlr_xwayland);
     wl_display_destroy_clients(server.display);
 
