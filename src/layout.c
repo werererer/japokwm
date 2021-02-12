@@ -18,6 +18,7 @@ struct layout get_default_layout()
         .n = 1,
         .nmaster = 1,
         .options = get_default_options(),
+        .layout_set = get_default_layout_set(),
     };
     lua_get_default_layout_data();
     lt.lua_layout_copy_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
@@ -66,7 +67,7 @@ bool is_same_layout(struct layout layout, struct layout layout2)
 
 struct layout copy_layout(struct layout *src_lt)
 {
-    printf("copy layout\n");
+    printf("copy_layout\n");
     struct layout dest_lt = get_default_layout();
 
     if (!src_lt)

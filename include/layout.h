@@ -6,6 +6,8 @@
 #include <lauxlib.h>
 #include "options.h"
 
+#include "layout_set.h"
+
 struct layout {
     const char *name;
     const char *symbol;
@@ -14,11 +16,10 @@ struct layout {
     // the amount master windows
     int nmaster;
     int lua_layout_ref;
-    int lua_layout_index;
     int lua_layout_copy_data_ref;
     int lua_layout_original_copy_data_ref;
 
-    int layouts_ref;
+    struct layout_set layout_set;
 
     struct options options;
 };

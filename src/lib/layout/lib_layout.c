@@ -5,10 +5,14 @@
 
 int lib_set_layout(lua_State *L)
 {
+    printf("set layout\n");
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws[0];
     struct layout *lt = &ws->layout[0];
+
+    int layout_index = lt->layout_set.lua_layout_index;
     *lt = server.default_layout;
+    lt->layout_set.lua_layout_index = layout_index;
 
     // reset options
     copy_options(&lt->options, &server.default_layout.options);

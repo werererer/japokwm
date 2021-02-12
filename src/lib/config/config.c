@@ -129,7 +129,15 @@ int lib_set_rules(lua_State *L)
 
 int lib_set_layouts(lua_State *L)
 {
-    server.default_layout.layouts_ref = lua_copy_table(L);
+    const int layout_set_ref = lua_copy_table(L);
+    const char *layout_set_key = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+
+    struct layout *lt = &server.default_layout;
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->layout_set.layout_sets_ref);
+    lua_set_layout_set_element(L, layout_set_key, layout_set_ref);
+    lua_pop(L, 1);
     return 0;
 }
 
