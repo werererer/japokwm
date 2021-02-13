@@ -251,13 +251,13 @@ void set_selected_layout(struct workspace *ws, struct layout layout)
     push_layout(ws->layout, layout);
 }
 
-void set_next_unoccupied_workspace(struct monitor *m, struct workspace *ws)
+void focus_next_unoccupied_workspace(struct monitor *m, struct workspace *ws)
 {
     struct workspace *w = find_next_unoccupied_workspace(ws);
-    set_workspace(m, w);
+    focus_workspace(m, w);
 }
 
-void set_workspace(struct monitor *m, struct workspace *ws)
+void focus_workspace(struct monitor *m, struct workspace *ws)
 {
     if (!m || !ws)
         return;
@@ -271,7 +271,7 @@ void set_workspace(struct monitor *m, struct workspace *ws)
     ipc_event_workspace();
 
     // unset old workspace
-    if (m->ws[0])
+    if (m->ws[0] && !workspace_has_clients(m->ws[0]))
         m->ws[0]->m = NULL;
 
     m->ws[0] = ws;
@@ -361,5 +361,5 @@ void load_layout(lua_State *L, struct workspace *ws, const char *layout_name, co
 void push_workspace(struct workspace *ws_stack[static 2], struct workspace *ws)
 {
     ws_stack[1] = ws_stack[0];
-    set_workspace(selected_monitor, ws);
+    focus_workspace(selected_monitor, ws);
 }

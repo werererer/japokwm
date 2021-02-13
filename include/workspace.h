@@ -45,11 +45,11 @@ void init_workspaces();
 void load_default_layout(lua_State *L, struct workspace *ws);
 void load_layout(lua_State *L, struct workspace *ws, const char *layout_name, const char *layout_symbol);
 void set_layout(lua_State *L, struct workspace *ws);
-void set_next_unoccupied_workspace(struct monitor *m, struct workspace *ws);
+void focus_next_unoccupied_workspace(struct monitor *m, struct workspace *ws);
 void set_selected_layout(struct workspace *ws, struct layout layout);
 void workspace_assign_monitor(struct workspace *ws, struct monitor *m);
 /* sets the value of selTag[0] */
-void set_workspace(struct monitor *m, struct workspace *ws);
+void focus_workspace(struct monitor *m, struct workspace *ws);
 void push_workspace(struct workspace *ws_stack[static 2], struct workspace *ws);
 
 #endif /* WORKSPACE_H */

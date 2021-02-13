@@ -49,7 +49,7 @@ void execute_command(const char *_exec)
             }
             if (handled) {
                 if (key_state_has_modifiers(MOD_SHIFT)) {
-                    set_workspace(selected_monitor, get_workspace(i));
+                    focus_workspace(selected_monitor, get_workspace(i));
             } else {
                 push_selected_workspace(selected_monitor, get_workspace(i));
             }

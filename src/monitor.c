@@ -90,7 +90,7 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     m->root = create_root(m);
 
-    set_next_unoccupied_workspace(m, get_workspace(0));
+    focus_next_unoccupied_workspace(m, get_workspace(0));
     load_default_layout(L, m->ws[0]);
     copy_layout_from_selected_workspace();
     set_root_color(m->root, m->ws[0]->layout[0].options.root_color);
@@ -162,7 +162,7 @@ void destroy_monitor(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, destroy);
 
-    set_workspace(m, NULL);
+    focus_workspace(m, NULL);
     destroy_root(m->root);
     wl_list_remove(&m->link);
 }
@@ -179,12 +179,13 @@ void center_mouse_in_monitor(struct monitor *m)
 
 void set_selected_monitor(struct monitor *m)
 {
-    assert(m);
+    if (!m)
+        return;
     if (selected_monitor == m)
         return;
 
     selected_monitor = m;
-    set_workspace(m, m->ws[0]);
+    focus_workspace(m, m->ws[0]);
     int x = server.cursor.wlr_cursor->x;
     int y = server.cursor.wlr_cursor->y;
 
@@ -195,7 +196,7 @@ void push_selected_workspace(struct monitor *m, struct workspace *ws)
 {
     if (!m || !ws)
         return;
-    set_workspace(m, ws);
+    focus_workspace(m, ws);
 }
 
 struct monitor *dirtomon(int dir)
