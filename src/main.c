@@ -343,7 +343,7 @@ void maprequest(struct wl_listener *listener, void *data)
     struct workspace *ws = m->ws[0];
     struct layout *lt = &ws->layout[0];
 
-    c->ws = m->ws[0];
+    c->ws = ws;
     c->bw = lt->options.tile_border_px;
 
     switch (c->type) {
@@ -377,12 +377,15 @@ void maprequestx11(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
     struct wlr_xwayland_surface *xwayland_surface = c->surface.xwayland;
     struct monitor *m = selected_monitor;
+    struct workspace *ws = m->ws[0];
+    struct layout *lt = &ws->layout[0];
 
     c->commit.notify = commitnotify;
     wl_signal_add(&xwayland_surface->surface->events.commit, &c->commit);
 
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
     c->ws = m->ws[0];
+    c->bw = lt->options.tile_border_px;
 
     struct container *con = create_container(c, m, true);
 
@@ -396,7 +399,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
     switch (c->type) {
         case X11_MANAGED:
             {
-                printf("x11 managed\n");
                 wl_list_insert(&clients, &c->link);
 
                 con->on_top = false;
@@ -408,7 +410,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
             }
         case X11_UNMANAGED:
             {
-                printf("x11 unmanaged\n");
                 wl_list_insert(&server.independents, &con->ilink);
 
                 if (is_popup_menu(c) || xwayland_surface->parent) {
