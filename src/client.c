@@ -69,7 +69,13 @@ static void unfocus_client(struct client *c)
             break;
         case X11_MANAGED:
         case X11_UNMANAGED:
-            wlr_xwayland_surface_activate(c->surface.xwayland, false);
+            {
+                // unfocus x11 parent surface
+                struct wlr_xwayland_surface *xwayland_surface = c->surface.xwayland;
+                while (xwayland_surface->parent)
+                    xwayland_surface = xwayland_surface->parent;
+                wlr_xwayland_surface_activate(xwayland_surface, false);
+            }
             break;
         default:
             break;
