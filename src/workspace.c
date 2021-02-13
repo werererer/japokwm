@@ -305,21 +305,19 @@ void load_default_layout(lua_State *L, struct workspace *ws)
 // TODO refactor this function
 void set_layout(lua_State *L, struct workspace *ws)
 {
-    struct layout *lt = &ws->layout[0];
-
-    if (lt->layout_set.layout_sets_ref <= 0) {
+    if (server.layout_set.layout_sets_ref <= 0) {
         printf("layout sets ref NULL\n");
         return;
     }
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->layout_set.layout_sets_ref);
-    if (!lua_is_index_defined(L, lt->layout_set.key)) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
+    if (!lua_is_index_defined(L, server.layout_set.key)) {
         lua_pop(L, 1);
         return;
     }
-    lua_get_layout_set_element(L, lt->layout_set.key);
+    lua_get_layout_set_element(L, server.layout_set.key);
 
-    lua_rawgeti(L, -1, lt->layout_set.lua_layout_index);
+    lua_rawgeti(L, -1, server.layout_set.lua_layout_index);
     lua_rawgeti(L, -1, 1);
     const char *layout_symbol = luaL_checkstring(L, -1);
     lua_pop(L, 1);

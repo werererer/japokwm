@@ -10,9 +10,9 @@ int lib_set_layout(lua_State *L)
     struct workspace *ws = m->ws[0];
     struct layout *lt = &ws->layout[0];
 
-    int layout_index = lt->layout_set.lua_layout_index;
+    int layout_index = server.layout_set.lua_layout_index;
     *lt = server.default_layout;
-    lt->layout_set.lua_layout_index = layout_index;
+    server.layout_set.lua_layout_index = layout_index;
 
     // reset options
     copy_options(&lt->options, &server.default_layout.options);

@@ -160,9 +160,7 @@ int lib_set_layouts(lua_State *L)
     const char *layout_set_key = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    struct layout *lt = &server.default_layout;
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->layout_set.layout_sets_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
     lua_set_layout_set_element(L, layout_set_key, layout_set_ref);
     lua_pop(L, 1);
     return 0;

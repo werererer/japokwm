@@ -439,30 +439,30 @@ int lib_repush(lua_State *L)
 
 int lib_increase_default_layout(lua_State *L)
 {
+    printf("increase default layout\n");
     const char *layout_set_key = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws[0];
-    struct layout *lt = &ws->layout[0];
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->layout_set.layout_sets_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
     if (!lua_is_index_defined(L, layout_set_key)) {
         printf("is nil return\n");
         lua_pop(L, 1);
         return 0;
     }
     lua_pop(L, 1);
-    lt->layout_set.key = layout_set_key;
+    server.layout_set.key = layout_set_key;
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->layout_set.layout_sets_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
     lua_get_layout_set_element(L, layout_set_key);
     int n_layouts = luaL_len(L, -1);
     lua_pop(L, 2);
 
-    lt->layout_set.lua_layout_index++;
-    if (lt->layout_set.lua_layout_index > n_layouts) {
-        lt->layout_set.lua_layout_index = 1;
+    server.layout_set.lua_layout_index++;
+    if (server.layout_set.lua_layout_index > n_layouts) {
+        server.layout_set.lua_layout_index = 1;
     }
 
     set_layout(L, ws);
@@ -473,30 +473,30 @@ int lib_increase_default_layout(lua_State *L)
 
 int lib_decrease_default_layout(lua_State *L)
 {
+    printf("decrease default layout\n");
     const char *layout_set_key = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws[0];
-    struct layout *lt = &ws->layout[0];
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->layout_set.layout_sets_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
     if (!lua_is_index_defined(L, layout_set_key)) {
         printf("is nil return\n");
         lua_pop(L, 1);
         return 0;
     }
     lua_pop(L, 1);
-    lt->layout_set.key = layout_set_key;
+    server.layout_set.key = layout_set_key;
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->layout_set.layout_sets_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
     lua_get_layout_set_element(L, layout_set_key);
     int n_layouts = luaL_len(L, -1);
     lua_pop(L, 2);
 
-    lt->layout_set.lua_layout_index--;
-    if (lt->layout_set.lua_layout_index <= 0) {
-        lt->layout_set.lua_layout_index = n_layouts;
+    server.layout_set.lua_layout_index--;
+    if (server.layout_set.lua_layout_index <= 0) {
+        server.layout_set.lua_layout_index = n_layouts;
     }
 
     printf("load default layout\n");
@@ -508,18 +508,19 @@ int lib_decrease_default_layout(lua_State *L)
 
 int lib_load_default_layout(lua_State *L)
 {
+    printf("load default layout\n");
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws[0];
-    struct layout *lt = &ws->layout[0];
 
-    lt->layout_set.lua_layout_index = luaL_checkinteger(L, -1);
+    server.layout_set.lua_layout_index = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
     const char *layout_set_key = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
     // if nil return
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->layout_set.layout_sets_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
+    printf("layout set key: %s\n", layout_set_key);
     if (!lua_is_index_defined(L, layout_set_key)) {
         printf("is nil return\n");
         lua_pop(L, 1);
@@ -528,7 +529,7 @@ int lib_load_default_layout(lua_State *L)
     lua_pop(L, 1);
 
     printf("load default layout\n");
-    lt->layout_set.key = layout_set_key;
+    server.layout_set.key = layout_set_key;
     set_layout(L, ws);
 
     arrange();

@@ -18,7 +18,6 @@ struct layout get_default_layout()
         .n = 1,
         .nmaster = 1,
         .options = get_default_options(),
-        .layout_set = get_default_layout_set(),
     };
     lua_get_default_layout_data();
     lt.lua_layout_copy_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);

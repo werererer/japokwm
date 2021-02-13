@@ -32,6 +32,7 @@ struct server {
     struct wlr_xcursor_manager *cursor_mgr;
 
     struct layout default_layout;
+    struct layout_set layout_set;
 
     struct wlr_output_layout *output_layout;
     struct wl_list keyboards;
