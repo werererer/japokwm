@@ -257,6 +257,7 @@ void resize(struct container *con, struct wlr_box geom)
         float max_height = geom.height/con->ratio;
         con->geom.width = MIN(geom.width, max_height);
         con->geom.height = con->geom.width * con->ratio;
+        // TODO make a function out of that 
         // center in x direction
         con->geom.x += (geom.width - con->geom.width)/2;
         // center in y direction

@@ -189,6 +189,10 @@ int lib_set_monrules(lua_State *L)
 
 int lib_set_keybinds(lua_State *L)
 {
+    printf("set keybinds\n");
+    if (server.default_layout.options.keybinds_ref > 0) {
+        luaL_unref(L, LUA_REGISTRYINDEX, server.default_layout.options.keybinds_ref);
+    }
     server.default_layout.options.keybinds_ref = lua_copy_table(L);
     return 0;
 }

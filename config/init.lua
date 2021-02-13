@@ -30,7 +30,7 @@ config.set_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
 
 config.set_rules({
     -- {"termite", "termite", function(n) container.set_sticky(n, true) end},
-    {"termite", "", function(n) container.set_ratio(n, 1) end},
+    -- {"termite", "", function(n) container.set_ratio(n, 1) end},
 })
 
 local layouts = {

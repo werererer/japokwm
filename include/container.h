@@ -70,6 +70,7 @@ void focus_container(struct container *con, enum focus_actions a);
  * borders. This relies on stack being ordered from top to bottom. */
 void lift_container(struct container *con);
 void set_container_floating(struct container *con, bool floating);
+void set_container_workspace(struct container *con, struct workspace *ws);
 void set_container_monitor(struct container *con, struct monitor *m);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);

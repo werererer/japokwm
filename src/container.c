@@ -232,7 +232,7 @@ static void add_container_to_monitor_containers(struct container *con, int i)
         return;
 
     if (!con->floating) {
-        /* Insert container container*/
+        /* Insert container after container at position i*/
         struct container *con2 = get_container(m, i);
         if (con2)
             wl_list_insert(&con2->mlink, &con->mlink);
@@ -496,17 +496,23 @@ void set_container_floating(struct container *con, bool floating)
 
     con->floating = floating;
 
-    if (con->floating) {
-        lift_container(con);
-        wl_list_remove(&con->mlink);
-        add_container_to_monitor_containers(con, -1);
-        con->client->bw = selected_monitor->ws[0]->layout->options.float_border_px;
-    } else {
-        lift_container(con);
-        wl_list_remove(&con->mlink);
-        add_container_to_monitor_containers(con, -1);
-        con->client->bw = selected_monitor->ws[0]->layout->options.tile_border_px;
-    }
+    // move container to the selected workspace
+    if (!con->floating)
+        set_container_workspace(con, selected_monitor->ws[0]);
+
+    lift_container(con);
+    con->client->bw = selected_monitor->ws[0]->layout->options.float_border_px;
+}
+
+void set_container_workspace(struct container *con, struct workspace *ws)
+{
+    if (!con)
+        return;
+    if (!ws)
+        return;
+
+    con->m = ws->m;
+    con->client->ws = ws;
 }
 
 void set_container_monitor(struct container *con, struct monitor *m)

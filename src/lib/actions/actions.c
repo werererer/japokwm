@@ -314,9 +314,9 @@ int lib_move_container_to_workspace(lua_State *L)
     if (!con || con->client->type == LAYER_SHELL)
         return 0;
 
-    con->client->ws = ws;
-    arrange();
+    set_container_workspace(con, ws);
     focus_top_container(m->ws[0], FOCUS_NOOP);
+    arrange();
 
     ipc_event_workspace();
 
