@@ -7,6 +7,49 @@
 #include "utils/coreUtils.h"
 #include "tile/tileUtils.h"
 
+struct anchor {
+    uint32_t singular_anchor;
+    uint32_t anchor_triplet;
+};
+
+struct anchors {
+    struct anchor top;
+    struct anchor bottom;
+    struct anchor left;
+    struct anchor right;
+};
+
+static const struct anchors anchors = {
+    .top = {
+        .singular_anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP,
+        .anchor_triplet =
+            ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP |
+            ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT |
+            ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT,
+    },
+    .bottom = {
+        .singular_anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM,
+        .anchor_triplet =
+            ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT |
+            ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT |
+            ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM,
+    },
+    .left = {
+        .singular_anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT,
+        .anchor_triplet =
+            ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT |
+            ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP |
+            ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM,
+    },
+    .right = {
+        .singular_anchor = ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT,
+        .anchor_triplet =
+            ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT |
+            ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP |
+            ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM,
+    },
+};
+
 struct root *create_root(struct monitor *m)
 {
     struct root *root = calloc(1, sizeof(struct root));
@@ -18,6 +61,13 @@ struct root *create_root(struct monitor *m)
 void destroy_root(struct root *root)
 {
     free(root);
+}
+
+static bool equals_anchor(const struct anchor *anchor, uint32_t anchor_value)
+{
+    bool is_anchor_triplet = anchor->anchor_triplet == anchor_value;
+    bool is_singular_anchor = anchor->singular_anchor == anchor_value;
+    return is_anchor_triplet || is_singular_anchor;
 }
 
 // TODO fix this to allow placement on all sides on screen
@@ -40,21 +90,21 @@ static struct wlr_box fit_root_area(struct root *root)
         int desired_height = current->desired_height;
 
         // resize the root area
-        if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP) {
+        if (equals_anchor(&anchors.top, anchor)) {
             int diff_height = d_box.y - (d_box.y - box.y);
             box.y = MAX(diff_height, desired_height);
             box.height = d_box.height - box.y;
         }
-        if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM) {
+        if (equals_anchor(&anchors.bottom, anchor)) {
             int diff_height = (d_box.y + d_box.height) - (box.y + box.height);
             box.height = d_box.height - MAX(diff_height, desired_height);
         }
-        if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT) {
+        if (equals_anchor(&anchors.left, anchor)) {
             int diff_width = box.x - d_box.x;
             box.x = MAX(diff_width, desired_width);
             box.width = d_box.width - box.x;
         }
-        if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT) {
+        if (equals_anchor(&anchors.right, anchor)) {
             int diff_width = (d_box.x + d_box.width) - (box.x + box.width);
             box.width = d_box.width - MAX(diff_width, desired_width);
         }
@@ -113,14 +163,14 @@ void set_root_area(struct root *root, struct wlr_box geom)
         geom.x = 0;
         geom.y = 0;
 
-        if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP)
+        if (equals_anchor(&anchors.top, anchor))
             geom.y = 0;
-        if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT)
+        if (equals_anchor(&anchors.left, anchor))
             geom.x = 0;
-        if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM)
+        if (equals_anchor(&anchors.bottom, anchor))
             /* geom.y = m->geom.height - con->geom.height; */
             geom.y = m->geom.height;
-        if (anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT)
+        if (equals_anchor(&anchors.right, anchor))
             /* geom.x = m->geom.width - con->geom.width; */
             geom.x = m->geom.width;
 
