@@ -263,6 +263,15 @@ void focus_workspace(struct monitor *m, struct workspace *ws)
         return;
     assert(m->damage != NULL);
 
+    // focus the workspace in the monitor it appears if such a monitor exist
+    // and is not the selected one
+    if (is_workspace_occupied(ws) && ws->m != selected_monitor) {
+        center_mouse_in_monitor(ws->m);
+        set_selected_monitor(ws->m);
+        focus_workspace(ws->m, ws);
+        return;
+    }
+
     struct container *con;
     wl_list_for_each(con, &sticky_stack, stlink) {
         con->client->ws = ws;

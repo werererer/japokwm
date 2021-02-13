@@ -273,13 +273,6 @@ int lib_view(lua_State *L)
     if (!ws)
         return 0;
 
-    if (is_workspace_occupied(ws) && ws->m != selected_monitor) {
-        set_selected_monitor(ws->m);
-        center_mouse_in_monitor(ws->m);
-        focus_workspace(ws->m, ws);
-        return 0;
-    }
-
     focus_workspace(m, ws);
     focus_top_container(m->ws[0], FOCUS_NOOP);
     arrange();
