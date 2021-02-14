@@ -20,10 +20,7 @@
 void arrange()
 {
     struct monitor *m;
-    arrange_monitor(selected_monitor);
     wl_list_for_each(m, &mons, link) {
-        if (m == selected_monitor)
-            continue;
         arrange_monitor(m);
     }
 

@@ -9,6 +9,14 @@
 int lib_reload(lua_State *L)
 {
     init_config(L);
+
+    struct monitor *m;
+    wl_list_for_each(m, &mons, link) {
+        struct workspace *ws = m->ws[0];
+        load_layout(L, ws, ws->layout->name, ws->layout->symbol);
+    }
+
+    arrange();
     return 0;
 }
 
@@ -168,7 +176,6 @@ int lib_set_monrules(lua_State *L)
 
 int lib_set_keybinds(lua_State *L)
 {
-    printf("set keybinds\n");
     if (server.default_layout.options.keybinds_ref > 0) {
         luaL_unref(L, LUA_REGISTRYINDEX, server.default_layout.options.keybinds_ref);
     }

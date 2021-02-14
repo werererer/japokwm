@@ -23,38 +23,6 @@
 #include "workspace.h"
 #include "xdg-shell-protocol.h"
 
-static void pointer_focus(struct container *con, struct wlr_surface *surface,
-        double sx, double sy, uint32_t time);
-
-static void pointer_focus(struct container *con, struct wlr_surface *surface,
-        double sx, double sy, uint32_t time)
-{
-    /* Use top level surface if nothing more specific given */
-    if (con && !surface)
-        surface = get_wlrsurface(con->client);
-
-    /* If surface is NULL, clear pointer focus */
-    if (!surface) {
-        wlr_seat_pointer_notify_clear_focus(server.seat);
-        return;
-    }
-
-    /* If surface is already focused, only notify motion */
-    if (surface == server.seat->pointer_state.focused_surface) {
-        wlr_seat_pointer_notify_motion(server.seat, time, sx, sy);
-        return;
-    }
-    /* Otherwise, let the client know that the mouse cursor has entered one
-     * of its surfaces, and make keyboard focus follow if desired. */
-    wlr_seat_pointer_notify_enter(server.seat, surface, sx, sy);
-
-    if (con->client->type == X11_UNMANAGED)
-        return;
-
-    if (con->m->ws[0]->layout[0].options.sloppy_focus)
-        focus_container(con, FOCUS_NOOP);
-}
-
 int lib_arrange(lua_State *L)
 {
     arrange();
@@ -515,9 +483,7 @@ int lib_load_default_layout(lua_State *L)
 
     // if nil return
     lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
-    printf("layout set key: %s\n", layout_set_key);
     if (!lua_is_index_defined(L, layout_set_key)) {
-        printf("is nil return\n");
         lua_pop(L, 1);
         return 0;
     }

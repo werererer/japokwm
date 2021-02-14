@@ -5,7 +5,7 @@
 
 int lib_set_layout(lua_State *L)
 {
-    printf("set layout\n");
+    printf("lib_set_layout\n");
     struct monitor *m = selected_monitor;
     struct workspace *ws = m->ws[0];
     struct layout *lt = &ws->layout[0];

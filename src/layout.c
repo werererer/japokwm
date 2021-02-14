@@ -66,7 +66,6 @@ bool is_same_layout(struct layout layout, struct layout layout2)
 
 struct layout copy_layout(struct layout *src_lt)
 {
-    printf("copy_layout\n");
     struct layout dest_lt = get_default_layout();
 
     if (!src_lt)

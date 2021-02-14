@@ -9,7 +9,6 @@ struct layout_set {
     const char *key;
     int layout_sets_ref;
     int lua_layout_index;
-    // TODO replace all of them with lua_layout_sets_ref
 };
 
 struct layout_set get_default_layout_set();
