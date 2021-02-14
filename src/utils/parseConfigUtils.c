@@ -32,16 +32,12 @@ static int load_file(lua_State *L, const char *path, const char *file)
     strcpy(config_file, "");
     join_path(config_file, path);
     join_path(config_file, file);
-    printf("config_file: %s\n", config_file);
 
     if (!file_exists(config_file)) {
-        printf("faileoesn't exist or no path\n");
         return 1;
     }
 
-    printf("lua load file \n");
     if (luaL_loadfile(L, config_file)) {
-        printf("failed to load file\n");
         const char *errmsg = luaL_checkstring(L, -1);
         lua_pop(L, 1);
         handle_error(errmsg);

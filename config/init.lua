@@ -1,4 +1,3 @@
-print("init.lua\n")
 local cursor_mode = {
     CUR_NORMAL = 0,
     CUR_MOVE = 1,
@@ -26,7 +25,6 @@ config.set_focus_color({1.0, 0.0, 0.0, 1.0})
 config.set_border_color({0.0, 0.0, 1.0, 1.0})
 config.set_repeat_rate(25)
 config.set_repeat_delay(600)
-os.execute("termite&")
 
 config.set_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
 
