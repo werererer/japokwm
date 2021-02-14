@@ -20,7 +20,7 @@ int lib_this_container_position(lua_State *L)
     bool handled = false;
 
     wl_list_for_each(con, &containers, mlink) {
-        if (!visibleon(con, selected_monitor->ws[0]) || con->floating)
+        if (!visibleon(con, selected_monitor->ws_ids[0]) || con->floating)
             continue;
         if (con == sel) {
             handled = true;
@@ -62,10 +62,7 @@ int lib_get_next_empty_workspace(lua_State *L)
 int lib_get_workspace(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws[0];
-    int id = ws->id;
-
-    lua_pushinteger(L, id);
+    lua_pushinteger(L, m->ws_ids[0]);
     return 1;
 }
 
@@ -84,9 +81,7 @@ int lib_get_container_under_cursor(lua_State *L)
 int lib_is_container_not_in_limit(lua_State *L)
 {
     printf("lib_is_container_in_limit\n");
-    struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws[0];
-    struct layout *lt = ws->layout;
+    struct layout *lt = get_layout_on_monitor(selected_monitor);
 
     struct wlr_fbox geom = lua_togeometry(L);
     lua_pop(L, 1);
@@ -99,9 +94,7 @@ int lib_is_container_not_in_limit(lua_State *L)
 int lib_is_container_not_in_master_limit(lua_State *L)
 {
     printf("lib_is_container_in_limit\n");
-    struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws[0];
-    struct layout *lt = ws->layout;
+    struct layout *lt = get_layout_on_monitor(selected_monitor);
 
     struct wlr_fbox geom = lua_togeometry(L);
     lua_pop(L, 1);

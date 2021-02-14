@@ -30,21 +30,22 @@ void arrange()
 /* update layout and was set in the arrange function */
 static void update_layout(lua_State *L, int n, struct monitor *m)
 {
-    struct workspace *ws = m->ws[0];
-    lua_rawgeti(L, LUA_REGISTRYINDEX, ws->layout[0].lua_layout_copy_data_ref);
+    struct layout *lt = get_layout_on_monitor(m);
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
 
     int len = luaL_len(L, -1);
     n = MAX(MIN(len, n), 1);
-    m->ws[0]->layout[0].n = n;
+    lt->n = n;
     lua_rawgeti(L, -1, n);
-    luaL_unref(L, LUA_REGISTRYINDEX, ws->layout[0].lua_layout_ref);
-    ws->layout[0].lua_layout_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    luaL_unref(L, LUA_REGISTRYINDEX, lt->lua_layout_ref);
+    lt->lua_layout_ref = luaL_ref(L, LUA_REGISTRYINDEX);
     lua_pop(L, 1);
 
     // call update function
-    if (ws->layout->options.update_func_ref == 0)
+    if (lt->options.update_func_ref == 0)
         return;
-    lua_rawgeti(L, LUA_REGISTRYINDEX, ws->layout->options.update_func_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->options.update_func_ref);
     lua_pushinteger(L, n);
     lua_call_safe(L, 1, 0, 0);
 }
@@ -77,15 +78,15 @@ static struct wlr_fbox lua_unbox_layout(struct lua_State *L, int i) {
 /* update layout and was set in the arrange function */
 static void apply_nmaster_transformation(struct wlr_box *box, struct monitor *m, int position, int count)
 {
-    struct layout lt = m->ws[0]->layout[0];
+    struct layout *lt = get_layout_on_monitor(m);
 
-    if (position > lt.nmaster)
+    if (position > lt->nmaster)
         return;
 
     // get layout
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt.options.master_layout_data_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->options.master_layout_data_ref);
     int len = luaL_len(L, -1);
-    int g = MIN(count, lt.nmaster);
+    int g = MIN(count, lt->nmaster);
     g = MAX(MIN(len, g), 1);
     lua_rawgeti(L, -1, g);
     int k = MIN(position, g);
@@ -99,9 +100,9 @@ static void apply_nmaster_transformation(struct wlr_box *box, struct monitor *m,
 
 int get_slave_container_count(struct monitor *m)
 {
-    struct layout lt = m->ws[0]->layout[0];
+    struct layout *lt = get_layout_on_monitor(m);
     int abs_count = get_tiled_container_count(m);
-    return MAX(abs_count - lt.nmaster, 0);
+    return MAX(abs_count - lt->nmaster, 0);
 }
 
 int get_master_container_count(struct monitor *m)
@@ -122,7 +123,7 @@ static void update_container_positions(struct monitor *m)
     struct container *con;
     int position = 1;
     wl_list_for_each(con, &containers, mlink) {
-        if (!visibleon(con, m->ws[0]))
+        if (!visibleon(con, m->ws_ids[0]))
             continue;
         if (con->floating)
             continue;
@@ -137,7 +138,7 @@ static void update_container_positions(struct monitor *m)
         position++;
     }
     wl_list_for_each(con, &containers, mlink) {
-        if (!visibleon(con, m->ws[0]))
+        if (!visibleon(con, m->ws_ids[0]))
             continue;
         if (!con->floating)
             continue;
@@ -158,7 +159,7 @@ static void update_container_focus_stack_positions(struct monitor *m)
     int position = 1;
     struct container *con;
     wl_list_for_each(con, &focus_stack, flink) {
-        if (!visibleon(con, m->ws[0]))
+        if (!visibleon(con, m->ws_ids[0]))
             continue;
         if (con->floating)
             continue;
@@ -177,7 +178,7 @@ void arrange_monitor(struct monitor *m)
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     set_root_area(m->root, m->geom);
 
-    struct layout *lt = &m->ws[0]->layout[0];
+    struct layout *lt = get_layout_on_monitor(m);
 
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);
 
@@ -193,7 +194,7 @@ void arrange_monitor(struct monitor *m)
     struct container *con;
     if (lt->options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
-            if (!visibleon(con, m->ws[0]) || con->floating)
+            if (!visibleon(con, m->ws_ids[0]) || con->floating)
                 continue;
             if (con->client->type == LAYER_SHELL)
                 continue;
@@ -202,7 +203,7 @@ void arrange_monitor(struct monitor *m)
         }
     } else {
         wl_list_for_each(con, &containers, mlink) {
-            if (!visibleon(con, m->ws[0]) || con->floating)
+            if (!visibleon(con, m->ws_ids[0]) || con->floating)
                 continue;
 
             arrange_container(con, con->position, master_container_count);
@@ -216,7 +217,7 @@ void arrange_container(struct container *con, int arrange_position, int containe
         return;
 
     struct monitor *m = con->m;
-    struct workspace *ws = m->ws[0];
+    struct workspace *ws = get_workspace_on_monitor(m);
     struct layout lt = ws->layout[0];
     // the 1 added represents the master area
     int n = MAX(0, arrange_position - lt.nmaster) + 1;
@@ -286,7 +287,7 @@ void resize(struct container *con, struct wlr_box geom)
 void update_hidden_containers(struct monitor *m)
 {
     struct container *con;
-    struct workspace *ws = m->ws[0];
+    struct workspace *ws = get_workspace_on_monitor(m);
     // because the master are is included in n aswell as nmaster we have to
     // subtract the solution by one to count
     int count = ws->layout[0].n + ws->layout[0].nmaster-1;
@@ -304,7 +305,7 @@ void update_hidden_containers(struct monitor *m)
         wl_list_for_each(con, &focus_stack, flink) {
             if (con->floating)
                 continue;
-            if (!existon(con, ws))
+            if (!existon(con, ws->id))
                 continue;
             if (con->client->type == LAYER_SHELL)
                 continue;
@@ -316,7 +317,7 @@ void update_hidden_containers(struct monitor *m)
         wl_list_for_each(con, &containers, mlink) {
             if (con->floating)
                 continue;
-            if (!existon(con, ws))
+            if (!existon(con, ws->id))
                 continue;
             if (con->client->type == LAYER_SHELL)
                 continue;
@@ -335,7 +336,7 @@ int get_tiled_container_count(struct monitor *m)
     wl_list_for_each(con, &containers, mlink) {
         if (con->floating)
             continue;
-        if (!existon(con, m->ws[0]))
+        if (!existon(con, m->ws_ids[0]))
             continue;
         if (con->client->type == LAYER_SHELL)
             continue;

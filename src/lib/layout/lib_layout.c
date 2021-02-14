@@ -6,9 +6,7 @@
 int lib_set_layout(lua_State *L)
 {
     printf("lib_set_layout\n");
-    struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws[0];
-    struct layout *lt = &ws->layout[0];
+    struct layout *lt = get_layout_on_monitor(selected_monitor);
 
     int layout_index = server.layout_set.lua_layout_index;
     *lt = server.default_layout;

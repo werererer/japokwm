@@ -34,7 +34,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     /* This event is raised by the backend when a new output (aka a display or
      * monitor) becomes available. */
     struct wlr_output *output = data;
-    struct monitor *m;
 
     /* The mode is a tuple of (width, height, refresh rate), and each
      * monitor supports only a specific set of modes. We just pick the
@@ -43,7 +42,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     wlr_output_set_mode(output, wlr_output_preferred_mode(output));
 
     /* Allocates and configures monitor state using configured rules */
-    m = output->data = calloc(1, sizeof(struct monitor));
+    struct monitor *m = output->data = calloc(1, sizeof(struct monitor));
 
     m->wlr_output = output;
 
@@ -62,7 +61,10 @@ void create_monitor(struct wl_listener *listener, void *data)
         if (!r.name || strstr(output->name, r.name)) {
             m->mfact = r.mfact;
             wlr_output_set_scale(output, r.scale);
-            set_selected_layout(m->ws[0], r.lt);
+
+            struct workspace *ws = get_workspace_on_monitor(m);
+            set_selected_layout(ws, r.lt);
+
             wlr_output_set_transform(output, r.rr);
             break;
         }
@@ -77,6 +79,8 @@ void create_monitor(struct wl_listener *listener, void *data)
     bool is_first_monitor = wl_list_empty(&mons);
     wl_list_insert(&mons, &m->link);
 
+    m->root = create_root(m);
+
     if (is_first_monitor) {
         init_config(L);
         set_selected_monitor(m);
@@ -88,12 +92,11 @@ void create_monitor(struct wl_listener *listener, void *data)
         create_workspaces(server.default_layout.options.tag_names, server.default_layout);
     }
 
-    m->root = create_root(m);
-
     focus_next_unoccupied_workspace(m, get_workspace(0));
-    load_default_layout(L, m->ws[0]);
+    struct workspace *ws = get_workspace_on_monitor(m);
+    load_default_layout(L, ws);
     copy_layout_from_selected_workspace();
-    set_root_color(m->root, m->ws[0]->layout[0].options.root_color);
+    set_root_color(m->root, ws->layout[0].options.root_color);
 
     /* Adds this to the output layout. The add_auto function arranges outputs
      * from left-to-right in the order they appear. A more sophisticated
@@ -106,7 +109,7 @@ void create_monitor(struct wl_listener *listener, void *data)
      */
     wlr_output_layout_add_auto(server.output_layout, output);
 
-    wlr_output_enable(output, 1);
+    wlr_output_enable(output, true);
 
     if (!wlr_output_commit(output))
         return;
@@ -154,15 +157,15 @@ static void handle_output_mode(struct wl_listener *listener, void *data)
 void focusmon(int i)
 {
     selected_monitor = dirtomon(i);
-    struct workspace *ws = selected_monitor->ws[0];
-    focus_top_container(ws, FOCUS_LIFT);
+    struct workspace *ws = get_workspace_on_monitor(selected_monitor);
+    focus_top_container(ws->id, FOCUS_LIFT);
 }
 
 void destroy_monitor(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, destroy);
 
-    focus_workspace(m, NULL);
+    focus_workspace(m, -1);
     destroy_root(m->root);
     wl_list_remove(&m->link);
 }
@@ -185,7 +188,7 @@ void set_selected_monitor(struct monitor *m)
         return;
 
     selected_monitor = m;
-    focus_workspace(m, m->ws[0]);
+    focus_workspace(m, m->ws_ids[0]);
     int x = server.cursor.wlr_cursor->x;
     int y = server.cursor.wlr_cursor->y;
 
@@ -196,7 +199,7 @@ void push_selected_workspace(struct monitor *m, struct workspace *ws)
 {
     if (!m || !ws)
         return;
-    focus_workspace(m, ws);
+    focus_workspace(m, ws->id);
 }
 
 struct monitor *dirtomon(int dir)
@@ -231,4 +234,15 @@ struct monitor *xytomon(double x, double y)
 {
     struct wlr_output *o = wlr_output_layout_output_at(server.output_layout, x, y);
     return o ? o->data : NULL;
+}
+
+inline struct workspace *get_workspace_on_monitor(struct monitor *m)
+{
+    return get_workspace(m->ws_ids[0]);
+}
+
+struct layout *get_layout_on_monitor(struct monitor *m)
+{
+    struct workspace *ws = get_workspace_on_monitor(m);
+    return &ws->layout[0];
 }

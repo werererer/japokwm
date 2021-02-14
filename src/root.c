@@ -78,7 +78,7 @@ static struct wlr_box fit_root_area(struct root *root)
 
     struct container *con;
     wl_list_for_each(con, &layer_stack, llink) {
-        if (!existon(con, root->m->ws[0]))
+        if (!existon(con, root->m->ws_ids[0]))
             continue;
 
         struct client *c = con->client;
@@ -151,7 +151,7 @@ void set_root_area(struct root *root, struct wlr_box geom)
     // arrange layer stack based programs
     struct container *con;
     wl_list_for_each(con, &layer_stack, llink) {
-        if (!existon(con, root->m->ws[0]))
+        if (!existon(con, root->m->ws_ids[0]))
             continue;
 
         struct monitor *m = root->m;
@@ -189,5 +189,7 @@ void set_root_area(struct root *root, struct wlr_box geom)
 
 void root_damage_whole(struct root *root)
 {
+    if (!root)
+        return;
     wlr_output_damage_add_box(root->m->damage, &root->geom);
 }

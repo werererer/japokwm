@@ -14,6 +14,16 @@
 
 static struct wlr_list workspaces;
 
+static void update_workspaces_id()
+{
+    int id = 0;
+    for (int i = 0; i < workspaces.length; i++) {
+        struct workspace *ws = workspaces.items[i];
+        ws->id = id;
+        id++;
+    }
+}
+
 struct workspace *create_workspace(const char *name, size_t id, struct layout lt)
 {
     struct workspace *ws = malloc(sizeof(struct workspace));
@@ -36,13 +46,13 @@ void destroy_workspace(struct workspace *ws)
     free(ws);
 }
 
-void focus_top_container(struct workspace *ws, enum focus_actions a)
+void focus_top_container(int ws_id, enum focus_actions a)
 {
     // focus_stack should not be changed while iterating
     struct container *con;
     bool container_found = false;
     wl_list_for_each(con, &focus_stack, flink) {
-        if (visibleon(con, ws)) {
+        if (visibleon(con, ws_id)) {
             container_found = true;
             break;
         }
@@ -51,13 +61,9 @@ void focus_top_container(struct workspace *ws, enum focus_actions a)
         focus_container(con, a);
 }
 
-void init_workspaces()
-{
-    wlr_list_init(&workspaces);
-}
-
 void create_workspaces(struct wlr_list tagNames, struct layout default_layout)
 {
+    wlr_list_init(&workspaces);
     for (int i = 0; i < tagNames.length; i++) {
         struct workspace *ws = create_workspace(tagNames.items[i], i, default_layout);
         wlr_list_push(&workspaces, ws);
@@ -71,6 +77,22 @@ void destroy_workspaces()
     wlr_list_finish(&workspaces);
 }
 
+void delete_workspace(size_t id)
+{
+    struct workspace *ws = get_workspace(id);
+    wlr_list_del(&workspaces, id);
+    destroy_workspace(ws);
+    update_workspaces_id();
+}
+
+void rename_workspace(size_t i, const char *name)
+{
+    struct workspace *ws = get_workspace(i);
+    if (!ws)
+        return;
+    ws->name = name;
+}
+
 bool is_workspace_occupied(struct workspace *ws)
 {
     assert(ws);
@@ -78,8 +100,9 @@ bool is_workspace_occupied(struct workspace *ws)
     return ws->m ? true : false;
 }
 
-bool existon(struct container *con, struct workspace *ws)
+bool existon(struct container *con, int ws_id)
 {
+    struct workspace *ws = get_workspace(ws_id);
     if (!con || !ws)
         return false;
     if (con->floating)
@@ -97,7 +120,7 @@ bool existon(struct container *con, struct workspace *ws)
     if (c->sticky)
         return true;
 
-    return c->ws == ws;
+    return c->ws_id == ws->id;
 }
 
 bool workspace_has_clients(struct workspace *ws)
@@ -109,14 +132,15 @@ bool workspace_has_clients(struct workspace *ws)
 
     struct client *c;
     wl_list_for_each(c, &clients, link)
-        if (c->ws == ws)
+        if (c->ws_id == ws->id)
             count++;
 
     return count > 0;
 }
 
-bool hiddenon(struct container *con, struct workspace *ws)
+bool hiddenon(struct container *con, int ws_id)
 {
+    struct workspace *ws = get_workspace(ws_id);
     if (!con || !ws)
         return false;
     if (con->floating)
@@ -136,11 +160,12 @@ bool hiddenon(struct container *con, struct workspace *ws)
     if (c->sticky)
         return true;
 
-    return c->ws == ws;
+    return c->ws_id == ws->id;
 }
 
-bool visibleon(struct container *con, struct workspace *ws)
+bool visibleon(struct container *con, int ws_id)
 {
+    struct workspace *ws = get_workspace(ws_id);
     if (!con || !ws)
         return false;
     if (con->floating)
@@ -161,7 +186,7 @@ bool visibleon(struct container *con, struct workspace *ws)
     if (c->sticky)
         return true;
 
-    return c->ws == ws;
+    return c->ws_id == ws->id;
 }
 
 int workspace_count()
@@ -169,22 +194,20 @@ int workspace_count()
     return workspaces.length;
 }
 
-int get_workspace_container_count(struct workspace *ws)
+int get_workspace_container_count(size_t ws_id)
 {
-    assert(ws);
-
     int i = 0;
     struct container *con;
     wl_list_for_each(con, &containers, mlink) {
-        if (visibleon(con, ws))
+        if (visibleon(con, ws_id))
             i++;
     }
     return i;
 }
 
-bool is_workspace_empty(struct workspace *ws)
+bool is_workspace_empty(size_t ws_id)
 {
-    return get_workspace_container_count(ws) == 0;
+    return get_workspace_container_count(ws_id) == 0;
 }
 
 struct workspace *find_next_unoccupied_workspace(struct workspace *ws)
@@ -199,8 +222,10 @@ struct workspace *find_next_unoccupied_workspace(struct workspace *ws)
     return NULL;
 }
 
-struct workspace *get_workspace(size_t i)
+struct workspace *get_workspace(int i)
 {
+    if (i < 0)
+        return NULL;
     if (i >= workspaces.length)
         return NULL;
 
@@ -211,8 +236,7 @@ struct workspace *get_next_empty_workspace(size_t i)
 {
     struct workspace *ws = NULL;
     for (int j = i; j < workspaces.length; j++) {
-        ws = get_workspace(j);
-        if (is_workspace_empty(ws))
+        if (is_workspace_empty(j))
             break;
     }
 
@@ -226,8 +250,7 @@ struct workspace *get_prev_empty_workspace(size_t i)
 
     struct workspace *ws = NULL;
     for (int j = i; j >= 0; j--) {
-        ws = get_workspace(j);
-        if (is_workspace_empty(ws))
+        if (is_workspace_empty(j))
             break;
     }
 
@@ -254,11 +277,12 @@ void set_selected_layout(struct workspace *ws, struct layout layout)
 void focus_next_unoccupied_workspace(struct monitor *m, struct workspace *ws)
 {
     struct workspace *w = find_next_unoccupied_workspace(ws);
-    focus_workspace(m, w);
+    focus_workspace(m, w->id);
 }
 
-void focus_workspace(struct monitor *m, struct workspace *ws)
+void focus_workspace(struct monitor *m, int ws_id)
 {
+    struct workspace *ws = get_workspace(ws_id);
     if (!m || !ws)
         return;
     assert(m->damage != NULL);
@@ -268,22 +292,25 @@ void focus_workspace(struct monitor *m, struct workspace *ws)
     if (is_workspace_occupied(ws) && ws->m != selected_monitor) {
         center_mouse_in_monitor(ws->m);
         set_selected_monitor(ws->m);
-        focus_workspace(ws->m, ws);
+        focus_workspace(ws->m, ws->id);
         return;
     }
 
     struct container *con;
     wl_list_for_each(con, &sticky_stack, stlink) {
-        con->client->ws = ws;
+        con->client->ws_id = ws->id;
     }
 
     ipc_event_workspace();
 
+    struct workspace *old_ws = get_workspace_on_monitor(m);
     // unset old workspace
-    if (m->ws[0] && !workspace_has_clients(m->ws[0]))
-        m->ws[0]->m = NULL;
+    if (!workspace_has_clients(old_ws)) {
+        struct workspace *old_ws = get_workspace_on_monitor(m);
+        old_ws->m = m;
+    }
 
-    m->ws[0] = ws;
+    m->ws_ids[0] = ws->id;
     ws->m = m;
 
     // TODO is wlr_output_damage_whole better? because of floating windows
@@ -296,7 +323,7 @@ void copy_layout_from_selected_workspace()
         struct workspace *ws = workspaces.items[i];
         struct layout *dest_lt = &ws->layout[0];
         struct layout *dest_prev_lt = &ws->layout[1];
-        struct layout *src_lt = &selected_monitor->ws[0]->layout[0];
+        struct layout *src_lt = get_layout_on_monitor(selected_monitor);
 
         if (dest_lt == src_lt)
             continue;
@@ -367,8 +394,8 @@ void load_layout(lua_State *L, struct workspace *ws, const char *layout_name, co
     lua_call_safe(L, 0, 0, 0);
 }
 
-void push_workspace(struct workspace *ws_stack[static 2], struct workspace *ws)
+void push_workspace(int ws_ids[static 2], int ws_id)
 {
-    ws_stack[1] = ws_stack[0];
-    focus_workspace(selected_monitor, ws);
+    ws_ids[1] = ws_ids[0];
+    focus_workspace(selected_monitor, ws_id);
 }

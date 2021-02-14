@@ -109,7 +109,7 @@ struct container *focused_container(struct monitor *m)
 
     struct container *con = wl_container_of(focus_stack.next, con, flink);
 
-    if (!visibleon(con, m->ws[0]))
+    if (!visibleon(con, m->ws_ids[0]))
         return NULL;
 
     return con;
@@ -121,7 +121,7 @@ struct container *next_container(struct monitor *m)
     {
         struct container *con =
             wl_container_of(focus_stack.next->next, con, flink);
-        if (!visibleon(con, m->ws[0]))
+        if (!visibleon(con, m->ws_ids[0]))
             return NULL;
         else
             return con;
@@ -157,12 +157,13 @@ struct container *get_container(struct monitor *m, int i)
 
 struct container *first_container(struct monitor *m)
 {
-    if (m->ws[0]->layout[0].n <= 0)
+    struct workspace *ws = get_workspace(m->ws_ids[0]);
+    if (ws->layout[0].n <= 0)
         return NULL;
 
     struct container *con;
     wl_list_for_each(con, &stack, slink) {
-        if (visibleon(con, m->ws[0]))
+        if (visibleon(con, ws->id))
             break;
     }
     return con;
@@ -170,15 +171,17 @@ struct container *first_container(struct monitor *m)
 
 struct client *last_client(struct monitor *m)
 {
-    if (m->ws[0]->layout[0].n <= 0)
+    struct layout *lt = get_layout_on_monitor(m);
+
+    if (lt->n <= 0)
         return NULL;
 
     struct container *con;
     int i = 1;
     wl_list_for_each(con, &stack, slink) {
-        if (!visibleon(con, m->ws[0]))
+        if (!visibleon(con, m->ws_ids[0]))
             continue;
-        if (i > m->ws[0]->layout[0].n)
+        if (i > lt->n)
             return con->client;
         i++;
     }
@@ -188,6 +191,8 @@ struct client *last_client(struct monitor *m)
 struct container *xytocontainer(double x, double y)
 {
     struct monitor *m = xytomon(x, y);
+    if (!m)
+        return NULL;
 
     struct container *con;
     wl_list_for_each(con, &layer_stack, llink) {
@@ -196,7 +201,7 @@ struct container *xytocontainer(double x, double y)
         if (con->client->surface.layer->current.layer >
                 ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM)
             continue;
-        if (!visibleon(con, m->ws[0]) || !wlr_box_contains_point(&con->geom, x, y))
+        if (!visibleon(con, m->ws_ids[0]) || !wlr_box_contains_point(&con->geom, x, y))
             continue;
 
         return con;
@@ -205,7 +210,9 @@ struct container *xytocontainer(double x, double y)
     wl_list_for_each(con, &stack, slink) {
         if (!con->focusable)
             continue;
-        if (!visibleon(con, m->ws[0]) || !wlr_box_contains_point(&con->geom, x, y))
+        if (!visibleon(con, m->ws_ids[0]))
+            continue;
+        if (!wlr_box_contains_point(&con->geom, x, y))
             continue;
 
         return con;
@@ -217,7 +224,9 @@ struct container *xytocontainer(double x, double y)
         if (con->client->surface.layer->current.layer <
                 ZWLR_LAYER_SHELL_V1_LAYER_TOP)
             continue;
-        if (!visibleon(con, m->ws[0]) || !wlr_box_contains_point(&con->geom, x, y))
+        if (!visibleon(con, m->ws_ids[0]))
+            continue;
+        if (!wlr_box_contains_point(&con->geom, x, y))
             continue;
 
         return con;
@@ -494,25 +503,29 @@ void set_container_floating(struct container *con, bool floating)
     if (con->floating == floating)
         return;
 
+    struct monitor *m = selected_monitor;
+    struct layout *lt = get_layout_on_monitor(m);
+
     con->floating = floating;
 
     // move container to the selected workspace
     if (!con->floating)
-        set_container_workspace(con, selected_monitor->ws[0]);
+        set_container_workspace(con, m->ws_ids[0]);
 
     lift_container(con);
-    con->client->bw = selected_monitor->ws[0]->layout->options.float_border_px;
+    con->client->bw = lt->options.float_border_px;
 }
 
-void set_container_workspace(struct container *con, struct workspace *ws)
+void set_container_workspace(struct container *con, int ws_id)
 {
     if (!con)
         return;
+    struct workspace *ws = get_workspace(ws_id);
     if (!ws)
         return;
 
     con->m = ws->m;
-    con->client->ws = ws;
+    con->client->ws_id = ws_id;
 }
 
 void set_container_monitor(struct container *con, struct monitor *m)
@@ -521,7 +534,7 @@ void set_container_monitor(struct container *con, struct monitor *m)
         return;
 
     con->m = m;
-    con->client->ws = m->ws[0];
+    con->client->ws_id = m->ws_ids[0];
 }
 
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety)

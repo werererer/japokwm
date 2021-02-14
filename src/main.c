@@ -240,7 +240,7 @@ void destroynotify(struct wl_listener *listener, void *data)
     c = NULL;
 
     arrange();
-    focus_top_container(selected_monitor->ws[0], FOCUS_NOOP);
+    focus_top_container(selected_monitor->ws_ids[0], FOCUS_NOOP);
 }
 
 void destroyxdeco(struct wl_listener *listener, void *data)
@@ -340,10 +340,10 @@ void maprequest(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
 
     struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws[0];
+    struct workspace *ws = get_workspace_on_monitor(m);
     struct layout *lt = &ws->layout[0];
 
-    c->ws = ws;
+    c->ws_id = ws->id;
     c->bw = lt->options.tile_border_px;
 
     switch (c->type) {
@@ -365,7 +365,7 @@ void maprequest(struct wl_listener *listener, void *data)
             break;
     }
     arrange();
-    focus_top_container(selected_monitor->ws[0], FOCUS_NOOP);
+    focus_top_container(ws->id, FOCUS_NOOP);
 
     struct container *con = c->con;
     container_damage_part(con);
@@ -377,14 +377,13 @@ void maprequestx11(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
     struct wlr_xwayland_surface *xwayland_surface = c->surface.xwayland;
     struct monitor *m = selected_monitor;
-    struct workspace *ws = m->ws[0];
-    struct layout *lt = &ws->layout[0];
+    struct layout *lt = get_layout_on_monitor(m);
 
     c->commit.notify = commitnotify;
     wl_signal_add(&xwayland_surface->surface->events.commit, &c->commit);
 
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
-    c->ws = m->ws[0];
+    c->ws_id = m->ws_ids[0];
     c->bw = lt->options.tile_border_px;
 
     struct container *con = create_container(c, m, true);
@@ -536,7 +535,6 @@ int setup()
 
     init_utils(L);
 
-    init_workspaces();
     /* The Wayland display is managed by libwayland. It handles accepting
      * clients from the Unix socket, manging Wayland globals, and so on. */
     server.display = wl_display_create();

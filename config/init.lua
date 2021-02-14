@@ -1,4 +1,3 @@
-print("init.lua\n")
 local cursor_mode = {
     CUR_NORMAL = 0,
     CUR_MOVE = 1,

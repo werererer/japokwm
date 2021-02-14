@@ -30,7 +30,8 @@ struct client {
     int id;
     char *title;
     bool sticky;
-    struct workspace *ws;
+    // workspace id
+    int ws_id;
 };
 
 /* it ignores bool  hiding which visibleon doesn't */

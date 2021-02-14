@@ -12,7 +12,7 @@ int lib_reload(lua_State *L)
 
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
-        struct workspace *ws = m->ws[0];
+        struct workspace *ws = get_workspace(m->ws_ids[0]);
         load_layout(L, ws, ws->layout->name, ws->layout->symbol);
     }
 
@@ -116,11 +116,19 @@ int lib_set_default_layout(lua_State *L)
 int lib_set_workspaces(lua_State *L)
 {
     size_t len = lua_rawlen(L, -1);
+    struct wlr_list *tag_names = &server.default_layout.options.tag_names;
 
-    wlr_list_clear(&server.default_layout.options.tag_names);
+    wlr_list_clear(tag_names);
     for (int i = 0; i < len; i++)
-        wlr_list_push(&server.default_layout.options.tag_names, get_config_array_str(L, "workspaces", i+1));
+        wlr_list_push(&server.default_layout.options.tag_names,
+                get_config_array_str(L, "workspaces", i+1));
     lua_pop(L, 1);
+
+    destroy_workspaces();
+    create_workspaces(*tag_names, server.default_layout);
+
+    ipc_event_workspace();
+
     return 0;
 }
 

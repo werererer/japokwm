@@ -109,6 +109,9 @@ int init_config(lua_State *L)
         }
     }
 
+    if (config_path)
+        free(config_path);
+
     int success = 1;
     // repeat loop until the first config file was loaded successfully
     for (int i = 0; i < LENGTH(config_paths); i++) {
@@ -127,8 +130,6 @@ int init_config(lua_State *L)
         success = 0;
         break;
     }
-    if (config_path)
-        free(config_path);
     return success;
 }
 
