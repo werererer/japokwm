@@ -27,24 +27,29 @@ static int load_file(lua_State *L, const char *path, const char *file);
 // returns 0 upon success and 1 upon failure
 static int load_file(lua_State *L, const char *path, const char *file)
 {
-    char *cf = calloc(1, strlen(path)+strlen(file));
-    join_path(cf, path);
-    join_path(cf, file);
+    char config_file[strlen(path)+strlen(file)];
 
-    if (!path || !file_exists(path))
+    strcpy(config_file, "");
+    join_path(config_file, path);
+    join_path(config_file, file);
+    printf("config_file: %s\n", config_file);
+
+    if (!file_exists(config_file)) {
+        printf("faileoesn't exist or no path\n");
         return 1;
-    load_libs(L);
+    }
 
-    if (luaL_loadfile(L, cf)) {
+    printf("lua load file \n");
+    if (luaL_loadfile(L, config_file)) {
+        printf("failed to load file\n");
         const char *errmsg = luaL_checkstring(L, -1);
         lua_pop(L, 1);
         handle_error(errmsg);
         return 1;
     }
 
-    wlr_log(WLR_DEBUG, "load file %s", path);
-
     int ret = lua_call_safe(L, 0, 0, 0);
+
     return ret;
 }
 
@@ -135,19 +140,23 @@ int init_config(lua_State *L)
 int init_utils(lua_State *L)
 {
     const char *tile_file = "tile.lua";
-    char *config_path = get_config_dir(tile_file);
-    printf("utils path: %s\n", config_path);
+    char *config_dir = get_config_dir(tile_file);
+
+    if (!config_dir)
+        return 1;
 
     // get the value of the
     int default_id = 0;
     for (int i = 0; i < LENGTH(config_paths); i++) {
         char *path = strdup(config_paths[default_id]);
         expand_path(&path);
-        if (path_compare(path, config_path) == 0) {
+        if (path_compare(path, config_dir) == 0) {
             default_id = i;
             break;
         }
+        free(path);
     }
+    free(config_dir);
 
     bool success = true;
     // repeat loop until the first config file was loaded successfully
@@ -167,8 +176,6 @@ int init_utils(lua_State *L)
         success = false;
         break;
     }
-    if (config_path)
-        free(config_path);
     return success;
 }
 
