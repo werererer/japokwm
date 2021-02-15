@@ -400,8 +400,8 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
 
                 struct monitor *m;
                 wl_list_for_each(m, &mons, link) {
-                    for (int i = 0; i < workspace_count(); i++) {
-                        struct workspace *ws = get_workspace(i);
+                    for (int i = 0; i < server.workspaces.length; i++) {
+                        struct workspace *ws = get_workspace(&server.workspaces, i);
                         bool has_clients = workspace_has_clients(ws);
                         bool is_workspace_selected = m->ws_ids[0] == i;
                         bool is_workspace_active = selected_monitor->ws_ids[0] == i;

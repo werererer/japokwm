@@ -5,6 +5,8 @@
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "ipc-server.h"
+#include "monitor.h"
+#include "workspace.h"
 
 int lib_reload(lua_State *L)
 {
@@ -12,7 +14,7 @@ int lib_reload(lua_State *L)
 
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
-        struct workspace *ws = get_workspace(m->ws_ids[0]);
+        struct workspace *ws = get_workspace(&server.workspaces, m->ws_ids[0]);
         load_layout(L, ws, ws->layout->name, ws->layout->symbol);
     }
     arrange();
@@ -123,8 +125,19 @@ int lib_set_workspaces(lua_State *L)
                 get_config_array_str(L, "workspaces", i+1));
     lua_pop(L, 1);
 
-    destroy_workspaces();
-    create_workspaces(*tag_names, server.default_layout);
+    destroy_workspaces(&server.workspaces);
+    create_workspaces(&server.workspaces, *tag_names, server.default_layout);
+
+    struct monitor *m;
+    wl_list_for_each(m, &mons, link) {
+        for (int i = 0; i < m->workspaces.length; i++) {
+            int *ws_id_ptr = m->workspaces.items[i];
+            struct workspace *ws = get_workspace(&server.workspaces, *ws_id_ptr);
+            if (!ws)
+                continue;
+            ws->m = m;
+        }
+    }
 
     ipc_event_workspace();
     /* focus_workspace(selected_monitor, selected_monitor->ws_ids[0]); */

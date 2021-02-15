@@ -109,7 +109,7 @@ struct container *focused_container(struct monitor *m)
 
     struct container *con = wl_container_of(focus_stack.next, con, flink);
 
-    if (!visibleon(con, m->ws_ids[0]))
+    if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
         return NULL;
 
     return con;
@@ -121,7 +121,7 @@ struct container *next_container(struct monitor *m)
     {
         struct container *con =
             wl_container_of(focus_stack.next->next, con, flink);
-        if (!visibleon(con, m->ws_ids[0]))
+        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
             return NULL;
         else
             return con;
@@ -157,13 +157,13 @@ struct container *get_container(struct monitor *m, int i)
 
 struct container *first_container(struct monitor *m)
 {
-    struct workspace *ws = get_workspace(m->ws_ids[0]);
+    struct workspace *ws = get_workspace(&server.workspaces, m->ws_ids[0]);
     if (ws->layout[0].n <= 0)
         return NULL;
 
     struct container *con;
     wl_list_for_each(con, &stack, slink) {
-        if (visibleon(con, ws->id))
+        if (visibleon(con, &server.workspaces, ws->id))
             break;
     }
     return con;
@@ -179,7 +179,7 @@ struct client *last_client(struct monitor *m)
     struct container *con;
     int i = 1;
     wl_list_for_each(con, &stack, slink) {
-        if (!visibleon(con, m->ws_ids[0]))
+        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
             continue;
         if (i > lt->n)
             return con->client;
@@ -201,7 +201,9 @@ struct container *xytocontainer(double x, double y)
         if (con->client->surface.layer->current.layer >
                 ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM)
             continue;
-        if (!visibleon(con, m->ws_ids[0]) || !wlr_box_contains_point(&con->geom, x, y))
+        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
+            continue;
+        if (!wlr_box_contains_point(&con->geom, x, y))
             continue;
 
         return con;
@@ -210,7 +212,7 @@ struct container *xytocontainer(double x, double y)
     wl_list_for_each(con, &stack, slink) {
         if (!con->focusable)
             continue;
-        if (!visibleon(con, m->ws_ids[0]))
+        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
             continue;
         if (!wlr_box_contains_point(&con->geom, x, y))
             continue;
@@ -224,7 +226,7 @@ struct container *xytocontainer(double x, double y)
         if (con->client->surface.layer->current.layer <
                 ZWLR_LAYER_SHELL_V1_LAYER_TOP)
             continue;
-        if (!visibleon(con, m->ws_ids[0]))
+        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
             continue;
         if (!wlr_box_contains_point(&con->geom, x, y))
             continue;
@@ -520,7 +522,7 @@ void set_container_workspace(struct container *con, int ws_id)
 {
     if (!con)
         return;
-    struct workspace *ws = get_workspace(ws_id);
+    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
     if (!ws)
         return;
 

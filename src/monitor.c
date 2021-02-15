@@ -89,13 +89,16 @@ void create_monitor(struct wl_listener *listener, void *data)
             reset_tag_names(&server.default_layout.options.tag_names);
         }
 
-        create_workspaces(server.default_layout.options.tag_names, server.default_layout);
+        printf("create workspaces\n");
+        create_workspaces(&server.workspaces, server.default_layout.options.tag_names, server.default_layout);
     }
 
-    focus_next_unoccupied_workspace(m, get_workspace(0));
-    struct workspace *ws = get_workspace_on_monitor(m);
+    struct workspace *ws = get_workspace(&server.workspaces, 0);
+    focus_next_unoccupied_workspace(m, &server.workspaces, ws);
+    // TODO is this needed?
+    ws = get_workspace_on_monitor(m);
     load_default_layout(L, ws);
-    copy_layout_from_selected_workspace();
+    copy_layout_from_selected_workspace(&server.workspaces);
     set_root_color(m->root, ws->layout[0].options.root_color);
 
     /* Adds this to the output layout. The add_auto function arranges outputs
@@ -158,14 +161,14 @@ void focusmon(int i)
 {
     selected_monitor = dirtomon(i);
     struct workspace *ws = get_workspace_on_monitor(selected_monitor);
-    focus_top_container(ws->id, FOCUS_LIFT);
+    focus_top_container(&server.workspaces, ws->id, FOCUS_LIFT);
 }
 
 void destroy_monitor(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, destroy);
 
-    focus_workspace(m, -1);
+    focus_workspace(m, &server.workspaces, -1);
     destroy_root(m->root);
     wl_list_remove(&m->link);
 }
@@ -188,7 +191,7 @@ void set_selected_monitor(struct monitor *m)
         return;
 
     selected_monitor = m;
-    focus_workspace(m, m->ws_ids[0]);
+    focus_workspace(m, &server.workspaces, m->ws_ids[0]);
     int x = server.cursor.wlr_cursor->x;
     int y = server.cursor.wlr_cursor->y;
 
@@ -199,7 +202,7 @@ void push_selected_workspace(struct monitor *m, struct workspace *ws)
 {
     if (!m || !ws)
         return;
-    focus_workspace(m, ws->id);
+    focus_workspace(m, &server.workspaces, ws->id);
 }
 
 struct monitor *dirtomon(int dir)
@@ -238,7 +241,7 @@ struct monitor *xytomon(double x, double y)
 
 inline struct workspace *get_workspace_on_monitor(struct monitor *m)
 {
-    return get_workspace(m->ws_ids[0]);
+    return get_workspace(&server.workspaces, m->ws_ids[0]);
 }
 
 struct layout *get_layout_on_monitor(struct monitor *m)

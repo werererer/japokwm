@@ -36,6 +36,8 @@ struct server {
 
     struct wlr_output_layout *output_layout;
     struct wl_list keyboards;
+
+    struct wlr_list workspaces;
 };
 
 extern struct server server;

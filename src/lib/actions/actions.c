@@ -57,7 +57,7 @@ int lib_resize_main(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace(m->ws_ids[0]);
+    struct workspace *ws = get_workspace(&server.workspaces, m->ws_ids[0]);
     struct layout *lt = &ws->layout[0];
     int dir = lt->options.resize_dir;
 
@@ -142,7 +142,7 @@ int lib_focus_on_stack(lua_State *L)
         return 0;
 
     if (sel->client->type == LAYER_SHELL) {
-        focus_top_container(m->ws_ids[0], FOCUS_NOOP);
+        focus_top_container(&server.workspaces, m->ws_ids[0], FOCUS_NOOP);
         return 0;
     }
 
@@ -152,7 +152,7 @@ int lib_focus_on_stack(lua_State *L)
         wl_list_for_each(con, &sel->mlink, mlink) {
             if (con == sel)
                 continue;
-            if (visibleon(con, m->ws_ids[0])) {
+            if (visibleon(con, &server.workspaces, m->ws_ids[0])) {
                 found = true;
                 break;
             }
@@ -161,7 +161,7 @@ int lib_focus_on_stack(lua_State *L)
         wl_list_for_each_reverse(con, &sel->mlink, mlink) {
             if (con == sel)
                 continue;
-            if (visibleon(con, m->ws_ids[0])) {
+            if (visibleon(con, &server.workspaces, m->ws_ids[0])) {
                 found = true;
                 break;
             }
@@ -199,13 +199,13 @@ int lib_focus_on_hidden_stack(lua_State *L)
     if (i > 0) {
         int j = 1;
         wl_list_for_each(con, &sel->mlink, mlink) {
-            if (hiddenon(con, m->ws_ids[0]))
+            if (hiddenon(con, &server.workspaces, m->ws_ids[0]))
                 break;  /* found it */
             j++;
         }
     } else {
         wl_list_for_each_reverse(con, &sel->mlink, mlink) {
-            if (hiddenon(con, m->ws_ids[0]))
+            if (hiddenon(con, &server.workspaces, m->ws_ids[0]))
                 break;  /* found it */
         }
     }
@@ -243,12 +243,12 @@ int lib_view(lua_State *L)
     if (!m)
         return 0;
 
-    struct workspace *ws = get_workspace(ws_id);
+    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
     if (!ws)
         return 0;
 
-    focus_workspace(m, ws->id);
-    focus_top_container(m->ws_ids[0], FOCUS_NOOP);
+    focus_workspace(m, &server.workspaces, ws->id);
+    focus_top_container(&server.workspaces, m->ws_ids[0], FOCUS_NOOP);
     arrange();
     return 0;
 }
@@ -256,7 +256,7 @@ int lib_view(lua_State *L)
 int lib_toggle_view(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    focus_top_container(m->ws_ids[0], FOCUS_LIFT);
+    focus_top_container(&server.workspaces, m->ws_ids[0], FOCUS_LIFT);
     arrange(false);
     return 0;
 }
@@ -277,14 +277,14 @@ int lib_move_container_to_workspace(lua_State *L)
     unsigned int ws_id = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace(ws_id);
+    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
     struct container *con = focused_container(m);
 
     if (!con || con->client->type == LAYER_SHELL)
         return 0;
 
     set_container_workspace(con, ws->id);
-    focus_top_container(m->ws_ids[0], FOCUS_NOOP);
+    focus_top_container(&server.workspaces, m->ws_ids[0], FOCUS_NOOP);
     arrange();
 
     ipc_event_workspace();
@@ -311,7 +311,7 @@ int lib_zoom(lua_State *L)
     if (sel->floating)
         return 0;
     if (sel->client->type == LAYER_SHELL) {
-        focus_top_container(m->ws_ids[0], FOCUS_NOOP);
+        focus_top_container(&server.workspaces, m->ws_ids[0], FOCUS_NOOP);
         sel = wl_container_of(&containers.next, sel, mlink);
     }
     if (!sel)
@@ -328,7 +328,9 @@ int lib_zoom(lua_State *L)
     struct container *con;
     // loop from selected monitor to previous item
     wl_list_for_each(con, sel->mlink.prev, mlink) {
-        if (!visibleon(con, m->ws_ids[0]) || con->floating)
+        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
+            continue;
+        if (con->floating)
             continue;
         if (con == master)
             continue;
@@ -348,7 +350,7 @@ int lib_zoom(lua_State *L)
 
     struct layout *lt = get_layout_on_monitor(m);
     if (lt->options.arrange_by_focus) {
-        focus_top_container(m->ws_ids[0], FOCUS_NOOP);
+        focus_top_container(&server.workspaces, m->ws_ids[0], FOCUS_NOOP);
         arrange();
     }
     return 0;
@@ -380,7 +382,9 @@ int lib_repush(lua_State *L)
     struct container *con;
     // loop from selected monitor to previous item
     wl_list_for_each(con, sel->mlink.prev, mlink) {
-        if (!visibleon(con, m->ws_ids[0]) || con->floating)
+        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
+            continue;
+        if (con->floating)
             continue;
         if (con == master)
             continue;

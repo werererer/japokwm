@@ -123,7 +123,7 @@ static void update_container_positions(struct monitor *m)
     struct container *con;
     int position = 1;
     wl_list_for_each(con, &containers, mlink) {
-        if (!visibleon(con, m->ws_ids[0]))
+        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
             continue;
         if (con->floating)
             continue;
@@ -138,7 +138,7 @@ static void update_container_positions(struct monitor *m)
         position++;
     }
     wl_list_for_each(con, &containers, mlink) {
-        if (!visibleon(con, m->ws_ids[0]))
+        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
             continue;
         if (!con->floating)
             continue;
@@ -159,7 +159,7 @@ static void update_container_focus_stack_positions(struct monitor *m)
     int position = 1;
     struct container *con;
     wl_list_for_each(con, &focus_stack, flink) {
-        if (!visibleon(con, m->ws_ids[0]))
+        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
             continue;
         if (con->floating)
             continue;
@@ -194,7 +194,9 @@ void arrange_monitor(struct monitor *m)
     struct container *con;
     if (lt->options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
-            if (!visibleon(con, m->ws_ids[0]) || con->floating)
+            if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
+                continue;
+            if (con->floating)
                 continue;
             if (con->client->type == LAYER_SHELL)
                 continue;
@@ -203,7 +205,9 @@ void arrange_monitor(struct monitor *m)
         }
     } else {
         wl_list_for_each(con, &containers, mlink) {
-            if (!visibleon(con, m->ws_ids[0]) || con->floating)
+            if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
+                continue;
+            if (con->floating)
                 continue;
 
             arrange_container(con, con->position, master_container_count);
@@ -308,7 +312,7 @@ void update_hidden_containers(struct monitor *m)
         wl_list_for_each(con, &focus_stack, flink) {
             if (con->floating)
                 continue;
-            if (!existon(con, ws->id))
+            if (!existon(con, &server.workspaces, ws->id))
                 continue;
             if (con->client->type == LAYER_SHELL)
                 continue;
@@ -320,7 +324,7 @@ void update_hidden_containers(struct monitor *m)
         wl_list_for_each(con, &containers, mlink) {
             if (con->floating)
                 continue;
-            if (!existon(con, ws->id))
+            if (!existon(con, &server.workspaces, ws->id))
                 continue;
             if (con->client->type == LAYER_SHELL)
                 continue;
@@ -339,7 +343,7 @@ int get_tiled_container_count(struct monitor *m)
     wl_list_for_each(con, &containers, mlink) {
         if (con->floating)
             continue;
-        if (!existon(con, m->ws_ids[0]))
+        if (!existon(con, &server.workspaces, m->ws_ids[0]))
             continue;
         if (con->client->type == LAYER_SHELL)
             continue;

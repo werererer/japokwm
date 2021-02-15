@@ -8,6 +8,7 @@
 #include "monitor.h"
 #include "stringop.h"
 #include "keybinding.h"
+#include "server.h"
 
 void execute_command(const char *_exec)
 {
@@ -23,35 +24,36 @@ void execute_command(const char *_exec)
         printf("Ignoring empty command.\n");
         return;
     }
-        printf("Handling command '%s'\n", cmd);
-        //TODO better handling of argv
-        int argc;
-        char **argv = split_args(cmd, &argc);
-        if (strcmp(argv[0], "exec") != 0 &&
-                strcmp(argv[0], "exec_always") != 0 &&
-                strcmp(argv[0], "mode") != 0) {
-            for (int i = 1; i < argc; ++i) {
-                if (*argv[i] == '\"' || *argv[i] == '\'') {
-                    strip_quotes(argv[i]);
-                }
+    printf("Handling command '%s'\n", cmd);
+    //TODO better handling of argv
+    int argc;
+    char **argv = split_args(cmd, &argc);
+    if (strcmp(argv[0], "exec") != 0 &&
+            strcmp(argv[0], "exec_always") != 0 &&
+            strcmp(argv[0], "mode") != 0) {
+        for (int i = 1; i < argc; ++i) {
+            if (*argv[i] == '\"' || *argv[i] == '\'') {
+                strip_quotes(argv[i]);
             }
         }
+    }
 
-        // execute command
-        if (strcmp(argv[0], "workspace") == 0) {
-            bool handled = false;
-            int i;
-            for (i = 0; i < workspace_count(); i++) {
-                if (strcmp(get_workspace(i)->name, argv[2]) == 0) {
-                    handled = true;
-                    break;
-                }
+    // execute command
+    if (strcmp(argv[0], "workspace") == 0) {
+        bool handled = false;
+        int i;
+        for (i = 0; i < server.workspaces.length; i++) {
+            if (strcmp(get_workspace(&server.workspaces, i)->name, argv[2]) == 0) {
+                handled = true;
+                break;
             }
-            if (handled) {
-                if (key_state_has_modifiers(MOD_SHIFT)) {
-                    focus_workspace(selected_monitor, i);
+        }
+        if (handled) {
+            if (key_state_has_modifiers(MOD_SHIFT)) {
+                focus_workspace(selected_monitor, &server.workspaces, i);
             } else {
-                push_selected_workspace(selected_monitor, get_workspace(i));
+                struct workspace *ws = get_workspace(&server.workspaces, i);
+                push_selected_workspace(selected_monitor, ws);
             }
         }
     }

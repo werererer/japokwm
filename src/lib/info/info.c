@@ -20,7 +20,9 @@ int lib_this_container_position(lua_State *L)
     bool handled = false;
 
     wl_list_for_each(con, &containers, mlink) {
-        if (!visibleon(con, selected_monitor->ws_ids[0]) || con->floating)
+        if (!visibleon(con, &server.workspaces, selected_monitor->ws_ids[0]))
+            continue;
+        if (con->floating)
             continue;
         if (con == sel) {
             handled = true;
@@ -45,13 +47,13 @@ int lib_get_next_empty_workspace(lua_State *L)
     struct workspace *ws;
     switch (dir) {
         case WLR_DIRECTION_LEFT:
-            ws = get_prev_empty_workspace(id);
+            ws = get_prev_empty_workspace(&server.workspaces, id);
             break;
         case WLR_DIRECTION_RIGHT:
-            ws = get_next_empty_workspace(id);
+            ws = get_next_empty_workspace(&server.workspaces, id);
             break;
         default:
-            ws = get_workspace(id);
+            ws = get_workspace(&server.workspaces, id);
     }
 
     int ws_id = (ws) ? ws->id : id;
