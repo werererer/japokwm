@@ -15,7 +15,6 @@ int lib_reload(lua_State *L)
         struct workspace *ws = get_workspace(m->ws_ids[0]);
         load_layout(L, ws, ws->layout->name, ws->layout->symbol);
     }
-
     arrange();
     return 0;
 }
@@ -128,6 +127,8 @@ int lib_set_workspaces(lua_State *L)
     create_workspaces(*tag_names, server.default_layout);
 
     ipc_event_workspace();
+    /* focus_workspace(selected_monitor, selected_monitor->ws_ids[0]); */
+    /* printf("focused workspace: %i\n", selected_monitor->ws_ids[0]); */
 
     return 0;
 }

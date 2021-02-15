@@ -232,6 +232,9 @@ void arrange_container(struct container *con, int arrange_position, int containe
 
     container_surround_gaps(&box, lt.options.inner_gap);
 
+    // since gaps are halfed we need to multiply it by 2 
+    container_surround_gaps(&box, 2*lt.options.tile_border_px);
+
     resize(con, box);
 }
 
