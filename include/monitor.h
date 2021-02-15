@@ -24,7 +24,6 @@ struct monitor {
     struct root *root;
     double mfact;
     int ws_ids[2];
-    struct wlr_list workspaces;
 };
 
 /* associated with slink in container */

@@ -13,7 +13,6 @@
  * using this struct requires to use tagsetCreate and later tagsetDestroy
  * */
 struct workspace {
-    size_t m_id;
     size_t id;
     const char *name;
     struct layout layout[2];

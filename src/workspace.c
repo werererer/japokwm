@@ -301,15 +301,8 @@ void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
     if (!workspace_has_clients(old_ws)) {
         struct workspace *old_ws = get_workspace_on_monitor(m);
         old_ws->m = m;
-        int *ws_id_ptr = wlr_list_pop(&m->workspaces);
-        if (ws_id_ptr)
-            free(ws_id_ptr);
     }
 
-    // TODO fix this memoy leak
-    int *ws_id_ptr = calloc(1, sizeof(int));
-    *ws_id_ptr = ws->id;
-    wlr_list_push(&m->workspaces, ws_id_ptr);
     m->ws_ids[0] = ws->id;
     ws->m = m;
 
@@ -367,7 +360,6 @@ void set_layout(lua_State *L, struct workspace *ws)
     lua_pop(L, 1);
     load_layout(L, ws, layout_name, layout_symbol);
 }
-
 
 void load_layout(lua_State *L, struct workspace *ws, const char *layout_name, const char *layout_symbol)
 {

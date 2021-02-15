@@ -12,11 +12,6 @@ int lib_reload(lua_State *L)
 {
     init_config(L);
 
-    struct monitor *m;
-    wl_list_for_each(m, &mons, link) {
-        struct workspace *ws = get_workspace(&server.workspaces, m->ws_ids[0]);
-        load_layout(L, ws, ws->layout->name, ws->layout->symbol);
-    }
     arrange();
     return 0;
 }
@@ -114,6 +109,7 @@ int lib_set_default_layout(lua_State *L)
     return 0;
 }
 
+// TODO refactor this function hard to read
 int lib_set_workspaces(lua_State *L)
 {
     size_t len = lua_rawlen(L, -1);
@@ -125,23 +121,29 @@ int lib_set_workspaces(lua_State *L)
                 get_config_array_str(L, "workspaces", i+1));
     lua_pop(L, 1);
 
+    struct wlr_list workspaces_tmp;
+    wlr_list_init(&workspaces_tmp);
+    for (int i = 0; i < server.workspaces.length; i++) {
+        struct workspace *ws = calloc(1, sizeof(struct workspace));
+        memcpy(ws, server.workspaces.items[i], sizeof(struct workspace));
+        wlr_list_push(&workspaces_tmp, ws);
+    }
+
     destroy_workspaces(&server.workspaces);
     create_workspaces(&server.workspaces, *tag_names, server.default_layout);
 
-    struct monitor *m;
-    wl_list_for_each(m, &mons, link) {
-        for (int i = 0; i < m->workspaces.length; i++) {
-            int *ws_id_ptr = m->workspaces.items[i];
-            struct workspace *ws = get_workspace(&server.workspaces, *ws_id_ptr);
-            if (!ws)
-                continue;
-            ws->m = m;
-        }
+    for (int i = 0 ; i < server.workspaces.length; i++) {
+        if (i >= workspaces_tmp.length)
+            break;
+        struct workspace *tmp_ws = workspaces_tmp.items[i];
+        struct workspace *ws = server.workspaces.items[i];
+        memcpy(ws->layout, tmp_ws->layout, 2*sizeof(struct layout));
+        ws->m = tmp_ws->m;
     }
+    destroy_workspaces(&workspaces_tmp);
+    printf("end\n");
 
     ipc_event_workspace();
-    /* focus_workspace(selected_monitor, selected_monitor->ws_ids[0]); */
-    /* printf("focused workspace: %i\n", selected_monitor->ws_ids[0]); */
 
     return 0;
 }

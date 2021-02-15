@@ -3,13 +3,13 @@
 #include "monitor.h"
 #include "server.h"
 
+// TODO refactor
 int lib_set_layout(lua_State *L)
 {
     printf("lib_set_layout\n");
     struct layout *lt = get_layout_on_monitor(selected_monitor);
 
     int layout_index = server.layout_set.lua_layout_index;
-    *lt = server.default_layout;
     server.layout_set.lua_layout_index = layout_index;
 
     // reset options
