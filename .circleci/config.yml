@@ -1,6 +1,6 @@
 version: 2.1
 docker:
-    - image: archlinux
+    - image: archlinux/archlinux
 updatepackage:
     name: Update Packages
     command: sudo pacman -Syu --noconfirm

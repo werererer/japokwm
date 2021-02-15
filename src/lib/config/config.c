@@ -141,7 +141,6 @@ int lib_set_workspaces(lua_State *L)
         ws->m = tmp_ws->m;
     }
     destroy_workspaces(&workspaces_tmp);
-    printf("end\n");
 
     ipc_event_workspace();
 
