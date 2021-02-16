@@ -27,19 +27,15 @@ static int load_file(lua_State *L, const char *path, const char *file);
 // returns 0 upon success and 1 upon failure
 static int load_file(lua_State *L, const char *path, const char *file)
 {
-    printf("works0\n");
     char config_file[strlen(path)+strlen(file)];
     strcpy(config_file, "");
     join_path(config_file, path);
     join_path(config_file, file);
 
-    printf("works1\n");
     if (!file_exists(config_file)) {
-        printf("return from works1\n");
         return 1;
     }
 
-    printf("works2\n");
     if (luaL_loadfile(L, config_file)) {
         const char *errmsg = luaL_checkstring(L, -1);
         lua_pop(L, 1);
@@ -47,7 +43,6 @@ static int load_file(lua_State *L, const char *path, const char *file)
         return 1;
     }
 
-    printf("works3\n");
     int ret = lua_call_safe(L, 0, 0, 0);
 
     return ret;
@@ -126,12 +121,10 @@ int init_config(lua_State *L)
 
         append_to_lua_path(L, config_paths[i]);
 
-        printf("load file: %p\n", path);
         if (load_file(L, path, config_file)) {
             free(path);
             continue;
         }
-        printf("load file end\n");
 
         // when config loaded successfully break;
         success = 0;
@@ -215,7 +208,6 @@ int lua_getglobal_safe(lua_State *L, const char *name)
     if (lua_isnil(L, -1))
     {
         char c[NUM_CHARS] = "";
-        snprintf(c, NUM_CHARS, "ERROR: getglobal: %s == nil", name);
         handle_error(c);
         lua_pop(L, 1);
         return LUA_ERRRUN;
@@ -240,7 +232,6 @@ char *get_config_array_str(lua_State *L, const char *name, size_t i)
     lua_rawgeti(L, -1, i);
     if (!lua_isstring(L, -1)) {
         char c[NUM_CHARS] = "";
-        snprintf(c, NUM_CHARS, "%s[%lu] is not a string", name, i);
         handle_error(c);
         return NULL;
     }
@@ -256,7 +247,6 @@ char *get_config_str(lua_State *L, char *name)
     lua_getglobal_safe(L, name);
     if (!lua_isstring(L, -1)) {
         char c[NUM_CHARS] = "";
-        snprintf(c, NUM_CHARS, "%s is not a string", name);
         handle_error(c);
         return "";
     }
@@ -272,7 +262,6 @@ static float get_config_array_float(lua_State *L, const char *name, size_t i)
     lua_rawgeti(L, -1, i);
     if (!lua_isnumber(L, -1)) {
         char c[NUM_CHARS] = "";
-        snprintf(c, NUM_CHARS, "%s[%lu] is not a number", name, i);
         handle_error(c);
         return 0;
     }
@@ -287,7 +276,6 @@ float get_config_float(lua_State *L, char *name)
     if (!lua_isnumber(L, -1)) {
         /* write_to_file(fd, "ERROR: %s is not a number\n"); */
         char c[NUM_CHARS] = "";
-        snprintf(c, NUM_CHARS, "%s is not a number", name);
         handle_error(c);
         return 0;
     }
@@ -301,7 +289,6 @@ static int get_config_array_int(lua_State *L, const char *name, size_t i)
     lua_rawgeti(L, -1, i);
     if (!lua_isinteger(L, -1)) {
         char c[NUM_CHARS] = "";
-        snprintf(c, NUM_CHARS, "%s[%lu] is not an integer", name, i);
         handle_error(c);
         return 0;
     }
@@ -315,7 +302,6 @@ int get_config_int(lua_State *L, char *name)
     lua_getglobal_safe(L, name);
     if (!lua_isinteger(L, -1)) {
         char c[NUM_CHARS] = "";
-        snprintf(c, NUM_CHARS, "%s is not an integer", name);
         handle_error(c);
         return 0;
     }
@@ -328,7 +314,6 @@ int get_config_int(lua_State *L, char *name)
 /* { */
 /*     lua_rawgeti(L, -1, i); */
 /*     if (!lua_isboolean(L, -1)) { */
-/*         printf("ERROR: %s[%lu] is not a boolean\n", name, i); */
 /*         return false; */
 /*     } */
 /*     bool f = lua_toboolean(L, -1); */
@@ -341,7 +326,6 @@ bool get_config_bool(lua_State *L, char *name)
     lua_getglobal_safe(L, name);
     if (!lua_isboolean(L, -1)) {
         char c[NUM_CHARS] = "";
-        snprintf(c, NUM_CHARS, "%s is not a boolean", name);
         handle_error(c);
         return false;
     }
@@ -355,7 +339,6 @@ static int get_config_array_func_id(lua_State *L, const char *name, int i)
     lua_rawgeti(L, -1, i);
     if (!lua_isfunction(L, -1)) {
         char c[NUM_CHARS] = "";
-        snprintf(c, NUM_CHARS, "%s[%i] is not a function", name, i);
         handle_error(c);
         return 0;
     }
@@ -399,7 +382,6 @@ static struct layout get_config_array_layout(lua_State *L, const char *name, siz
 struct layout get_config_layout(lua_State *L, char *name)
 {
     lua_getglobal_safe(L, name);
-    printf("get_config_layout\n");
     struct layout layout = {
         .symbol = get_config_array_str(L, name, 1),
         .name = get_config_array_str(L, name, 2),
@@ -419,7 +401,6 @@ struct rule get_config_array_rule(lua_State *L, const char* name, size_t i)
     struct rule rule;
     lua_rawgeti(L, -1, i);
 
-    printf("get_config_array_rule\n");
     rule.id  = get_config_array_str(L, name, 1);
     rule.title  = get_config_array_str(L, name, 2);
     rule.lua_func_ref = get_config_array_func_id(L, name, 3);
@@ -474,11 +455,9 @@ struct layout get_config_key(lua_State *L, char *name)
 
 void get_config_str_arr(lua_State *L, struct wlr_list *resArr, char *name)
 {
-    //TODO cleanup !!!
     lua_getglobal_safe(L, name);
     size_t len = lua_rawlen(L, -1);
 
-    printf("get_config_str_arr\n");
     for (int i = 0; i < len; i++)
         wlr_list_push(resArr, get_config_array_str(L, name, i+1));
     lua_pop(L, 1);
