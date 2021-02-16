@@ -74,7 +74,7 @@ bool is_same_layout(struct layout layout, struct layout layout2)
 
 struct layout copy_layout(struct layout *src_lt)
 {
-    struct layout dest_lt = server.default_layout;
+    struct layout dest_lt = get_default_layout();
 
     if (!src_lt)
         return dest_lt;
