@@ -70,7 +70,7 @@ int lib_resize_main(lua_State *L)
 
     lua_call_safe(L, 5, 1, 0);
 
-    lt->lua_layout_copy_data_ref = lua_copy_table(L);
+    lua_copy_table(L, &lt->lua_layout_copy_data_ref);
     arrange();
     return 0;
 }

@@ -50,6 +50,15 @@ void join_path(char *base, const char *file)
     strcat(base, file);
 }
 
+void lua_ref_safe(lua_State *L, int t, int *ref)
+{
+    if (*ref > 0) {
+        luaL_unref(L, t, *ref);
+    }
+
+    *ref = luaL_ref(L, t);
+}
+
 static void lua_create_container(struct wlr_fbox con)
 {
     lua_createtable(L, 4, 0);

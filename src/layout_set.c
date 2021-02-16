@@ -9,7 +9,7 @@ struct layout_set get_default_layout_set()
     };
 
     lua_createtable(L, 0, 0);
-    layout_set.layout_sets_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &layout_set.layout_sets_ref);
 
     return layout_set;
 }

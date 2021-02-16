@@ -26,13 +26,19 @@ struct layout get_default_layout()
     return lt;
 }
 
-int lua_copy_table(lua_State *L)
+void lua_copy_table(lua_State *L, int *ref)
 {
+    if (*ref > 0) {
+        luaL_unref(L, LUA_REGISTRYINDEX, *ref);
+    }
+
     lua_getglobal_safe(L, "Deep_copy");
     lua_insert(L, -2);
     lua_call_safe(L, 1, 1, 0);
-    int ref = luaL_ref(L, LUA_REGISTRYINDEX);
-    return ref;
+
+    *ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    printf("reference: %i\n", *ref);
+    return;
 }
 
 struct resize_constraints lua_toresize_constrains(lua_State *L)
@@ -73,22 +79,22 @@ struct layout copy_layout(struct layout *src_lt)
 
     if (src_lt->lua_layout_copy_data_ref > 0) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_copy_data_ref);
-        dest_lt.lua_layout_copy_data_ref = lua_copy_table(L);
+        lua_copy_table(L, &dest_lt.lua_layout_copy_data_ref);
     }
 
     if (src_lt->lua_layout_ref > 0) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_ref);
-        dest_lt.lua_layout_ref = lua_copy_table(L);
+        lua_copy_table(L, &dest_lt.lua_layout_ref);
     }
 
     if (src_lt->options.master_layout_data_ref > 0) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->options.master_layout_data_ref);
-        dest_lt.options.master_layout_data_ref = lua_copy_table(L);
+        lua_copy_table(L, &dest_lt.options.master_layout_data_ref);
     }
 
     if (src_lt->lua_layout_original_copy_data_ref > 0) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_original_copy_data_ref);
-        dest_lt.lua_layout_original_copy_data_ref = lua_copy_table(L);
+        lua_copy_table(L, &dest_lt.lua_layout_original_copy_data_ref);
     }
 
     copy_options(&dest_lt.options, &src_lt->options);
@@ -98,8 +104,8 @@ struct layout copy_layout(struct layout *src_lt)
 
 void push_layout(struct layout lt_stack[static 2], struct layout lt)
 {
-    lt_stack[1] = copy_layout(&lt_stack[0]);
-    lt_stack[0] = copy_layout(&lt);
+    lt_stack[1] = lt_stack[0];
+    lt_stack[0] = lt;
 }
 
 bool lua_islayout_data(lua_State *L, const char *name)

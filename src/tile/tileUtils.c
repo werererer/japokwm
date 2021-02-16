@@ -38,8 +38,7 @@ static void update_layout(lua_State *L, int n, struct monitor *m)
     n = MAX(MIN(len, n), 1);
     lt->n = n;
     lua_rawgeti(L, -1, n);
-    luaL_unref(L, LUA_REGISTRYINDEX, lt->lua_layout_ref);
-    lt->lua_layout_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_ref);
     lua_pop(L, 1);
 
     // call update function
@@ -232,7 +231,7 @@ void arrange_container(struct container *con, int arrange_position, int containe
     struct wlr_box box = get_absolute_box(rel_geom, m->root->geom);
     // TODO fix this function, hard to read
     apply_nmaster_transformation(&box, con->m, arrange_position, container_count);
-    ws->layout[0].lua_layout_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &ws->layout[0].lua_layout_ref);
 
     container_surround_gaps(&box, lt.options.inner_gap);
 

@@ -26,7 +26,6 @@ void append_to_lua_path(lua_State *L, const char *path);
 bool get_config_bool(lua_State *L, char *name);
 char* get_config_str(lua_State *L, char *name);
 float get_config_float(lua_State *L, char *name);
-int get_config_func_id(lua_State *L, char *name);
 int get_config_int(lua_State *L, char *name);
 int lua_call_safe(lua_State *L, int nargs, int nresults, int msgh);
 int lua_getglobal_safe(lua_State *L, const char *name);

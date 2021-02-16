@@ -81,15 +81,20 @@ void append_to_lua_path(lua_State *L, const char *path)
     const char * curr_path = luaL_checkstring(L, -1);
     lua_pop(L, 1);
     char *path_var = calloc(1,
-            strlen(curr_path) + 1 + strlen(path) + strlen("/?.lua"));
+            strlen(curr_path)
+            + 1
+            + strlen(path)
+            + strlen("/?.lua"));
 
     strcpy(path_var, curr_path);
     strcat(path_var, ";");
     strcat(path_var, path);
     join_path(path_var, "/?.lua");
+
     lua_pushstring(L, path_var);
     lua_setfield(L, -2, "path");
     lua_pop(L, 1);
+
     free(path_var);
 }
 
@@ -123,8 +128,10 @@ int init_config(lua_State *L)
 
         append_to_lua_path(L, config_paths[i]);
 
+        printf("load file\n");
         if (load_file(L, path, config_file))
             continue;
+        printf("load file end\n");
 
         // when config loaded successfully break;
         success = 0;
@@ -238,9 +245,9 @@ char *get_config_array_str(lua_State *L, const char *name, size_t i)
         return NULL;
     }
     const char *str = luaL_checkstring(L, -1);
-    char *termcmd = calloc(strlen(str), sizeof(char));
-    strcpy(termcmd, str);
     lua_pop(L, 1);
+
+    char *termcmd = strdup(str);
     return termcmd;
 }
 
@@ -343,19 +350,6 @@ bool get_config_bool(lua_State *L, char *name)
     return b;
 }
 
-int get_config_func_id(lua_State *L, char *name)
-{
-    lua_getglobal_safe(L, name);
-    if (!lua_isfunction(L, -1)) {
-        char c[NUM_CHARS] = "";
-        snprintf(c, NUM_CHARS, "%s is not a function", name);
-        handle_error(c);
-        return 0;
-    }
-    int f = luaL_ref(L, LUA_REGISTRYINDEX);
-    return f;
-}
-
 static int get_config_array_func_id(lua_State *L, const char *name, int i)
 {
     lua_rawgeti(L, -1, i);
@@ -371,7 +365,6 @@ static int get_config_array_func_id(lua_State *L, const char *name, int i)
     return f;
 }
 
-
 void call_arrange_func(lua_State *L, int funcId, int n)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, funcId);
@@ -384,7 +377,6 @@ void call_function(lua_State *L, struct layout lt)
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt.lua_layout_ref);
     lua_pushinteger(L, lt.n);
     lua_call_safe(L, 1, 0, 0);
-    luaL_ref(L, LUA_REGISTRYINDEX);
 }
 
 static struct layout get_config_array_layout(lua_State *L, const char *name, size_t i)
@@ -435,7 +427,6 @@ struct rule get_config_array_rule(lua_State *L, const char* name, size_t i)
     lua_pop(L, 1);
     return rule;
 }
-
 
 struct rule get_config_rule(lua_State *L, char *name)
 {

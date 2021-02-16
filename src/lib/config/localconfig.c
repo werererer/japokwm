@@ -93,7 +93,7 @@ int local_set_update_function(lua_State *L)
 {
     struct layout *lt = get_layout_on_monitor(selected_monitor);
 
-    lt->options.update_func_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->options.update_func_ref);
     return 0;
 }
 
@@ -110,10 +110,8 @@ int local_set_master_layout_data(lua_State *L)
 {
     struct layout *lt = get_layout_on_monitor(selected_monitor);
 
-    if (lua_islayout_data(L, "master_layout_data")) {
-
-        lt->options.master_layout_data_ref = lua_copy_table(L);
-    }
+    if (lua_islayout_data(L, "master_layout_data"))
+        lua_copy_table(L, &lt->options.master_layout_data_ref);
     else
         lua_pop(L, 1);
     return 0;
@@ -124,7 +122,7 @@ int local_set_resize_data(lua_State *L)
     struct layout *lt = get_layout_on_monitor(selected_monitor);
 
     if (lua_istable(L, -1))
-        lt->options.resize_data_ref = lua_copy_table(L);
+        lua_copy_table(L, &lt->options.resize_data_ref);
     else
         lua_pop(L, 1);
     return 0;

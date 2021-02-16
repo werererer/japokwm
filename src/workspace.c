@@ -24,18 +24,16 @@ static void update_workspaces_id(struct wlr_list *workspaces)
 
 struct workspace *create_workspace(const char *name, size_t id, struct layout lt)
 {
-    struct workspace *ws = malloc(sizeof(struct workspace));
+    struct workspace *ws = calloc(1, sizeof(struct workspace));
     ws->name = name;
 
-    for (int i = 0; i < 2; i++)
-        ws->layout[i] = get_default_layout();
-
+    printf("recreate workspaces\n");
     // fill layout stack with reasonable values
     push_layout(ws->layout, lt);
     push_layout(ws->layout, lt);
+    printf("recreate workspaces end\n");
 
     ws->id = id;
-    ws->m = NULL;
     return ws;
 }
 
@@ -321,6 +319,7 @@ void copy_layout_from_selected_workspace(struct wlr_list *workspaces)
         if (dest_lt == src_lt)
             continue;
 
+        printf("copy_layout\n");
         *dest_lt = copy_layout(src_lt);
         *dest_prev_lt = copy_layout(src_lt);
     }

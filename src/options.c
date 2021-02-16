@@ -55,10 +55,10 @@ struct options get_default_options()
     };
 
     lua_get_default_master_layout_data();
-    options.master_layout_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &options.master_layout_data_ref);
 
     lua_get_default_resize_data();
-    options.resize_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &options.resize_data_ref);
 
     reset_tag_names(&options.tag_names);
     return options;

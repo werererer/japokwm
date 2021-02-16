@@ -17,11 +17,12 @@ int lib_set_layout(lua_State *L)
 
     // 1. argument -- layout_set
     if (lua_islayout_data(L, "layout_data"))
-        lt->lua_layout_copy_data_ref = lua_copy_table(L);
+        lua_copy_table(L, &lt->lua_layout_copy_data_ref);
     else
         lua_pop(L, 1);
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
-    lt->lua_layout_original_copy_data_ref = lua_copy_table(L);
+    lua_copy_table(L, &lt->lua_layout_original_copy_data_ref);
+    lua_pop(L, 1);
     return 0;
 }
