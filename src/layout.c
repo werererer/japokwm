@@ -19,10 +19,11 @@ struct layout get_default_layout()
         .nmaster = 1,
         .options = get_default_options(),
     };
+
     lua_get_default_layout_data();
-    lt.lua_layout_copy_data_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.lua_layout_copy_data_ref);
     lua_createtable(L, 0, 0);
-    lt.lua_layout_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.lua_layout_ref);
     return lt;
 }
 
@@ -72,7 +73,7 @@ bool is_same_layout(struct layout layout, struct layout layout2)
 
 struct layout copy_layout(struct layout *src_lt)
 {
-    struct layout dest_lt = get_default_layout();
+    struct layout dest_lt = server.default_layout;
 
     if (!src_lt)
         return dest_lt;
