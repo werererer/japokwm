@@ -173,13 +173,13 @@ int lib_set_rules(lua_State *L)
 
 int lib_set_layouts(lua_State *L)
 {
-    int layout_set_ref = 0;
-    lua_copy_table(L, &layout_set_ref);
+    int *layout_set_ref = &server.layout_set.layout_sets_ref;
+    lua_copy_table(L, layout_set_ref);
     const char *layout_set_key = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
-    lua_set_layout_set_element(L, layout_set_key, layout_set_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, *layout_set_ref);
+    lua_set_layout_set_element(L, layout_set_key, *layout_set_ref);
     lua_pop(L, 1);
     return 0;
 }
