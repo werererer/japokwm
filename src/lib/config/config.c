@@ -114,14 +114,17 @@ int lib_set_default_layout(lua_State *L)
 // TODO refactor this function hard to read
 int lib_set_workspaces(lua_State *L)
 {
-    size_t len = lua_rawlen(L, -1);
     struct wlr_list *tag_names = &server.default_layout.options.tag_names;
-
     wlr_list_clear(tag_names);
-    for (int i = 0; i < len; i++)
-        wlr_list_push(&server.default_layout.options.tag_names,
-                get_config_array_str(L, "workspaces", i+1));
+
+    printf("get strings\n");
+    size_t len = lua_rawlen(L, -1);
+    for (int i = 0; i < len; i++) {
+        char *ws_name = get_config_array_str(L, "workspaces", i+1);
+        wlr_list_push(tag_names, ws_name);
+    }
     lua_pop(L, 1);
+    printf("get strings done\n");
 
     struct wlr_list workspaces_tmp;
     wlr_list_init(&workspaces_tmp);

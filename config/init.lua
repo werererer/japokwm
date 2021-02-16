@@ -1,54 +1,56 @@
-local cursor_mode = {
-    CUR_NORMAL = 0,
-    CUR_MOVE = 1,
-    CUR_RESIZE = 2,
-}
+-- local cursor_mode = {
+--     CUR_NORMAL = 0,
+--     CUR_MOVE = 1,
+--     CUR_RESIZE = 2,
+-- }
 
--- uses wl_output_transform enum values
-local monitor_transform = {
-    TRANSFORM_NORMAL = 0,
-    TRANSFORM_90 = 1,
-    TRANSFORM_180 = 2,
-    TRANSFORM_270 = 3,
-    TRANSFORM_FLIPPED = 4,
-    TRANSFORM_FLIPPED_90 = 5,
-    TRANSFORM_FLIPPED_180 = 6,
-    TRANSFORM_FLIPPED_270 = 7,
-}
+-- -- uses wl_output_transform enum values
+-- local monitor_transform = {
+--     TRANSFORM_NORMAL = 0,
+--     TRANSFORM_90 = 1,
+--     TRANSFORM_180 = 2,
+--     TRANSFORM_270 = 3,
+--     TRANSFORM_FLIPPED = 4,
+--     TRANSFORM_FLIPPED_90 = 5,
+--     TRANSFORM_FLIPPED_180 = 6,
+--     TRANSFORM_FLIPPED_270 = 7,
+-- }
 
-config.set_sloppy_focus(true)
-config.set_tile_borderpx(2)
-config.set_float_borderpx(2)
-config.set_gaps(20, 20)
-config.set_root_color({0.3, 0.3, 0.3, 1.0})
-config.set_focus_color({1.0, 0.0, 0.0, 1.0})
-config.set_border_color({0.0, 0.0, 1.0, 1.0})
-config.set_repeat_rate(25)
-config.set_repeat_delay(600)
+-- config.set_sloppy_focus(true)
+-- config.set_tile_borderpx(2)
+-- config.set_float_borderpx(2)
+-- config.set_gaps(20, 20)
+-- config.set_root_color({0.3, 0.3, 0.3, 1.0})
+-- config.set_focus_color({1.0, 0.0, 0.0, 1.0})
+-- config.set_border_color({0.0, 0.0, 1.0, 1.0})
+-- config.set_repeat_rate(25)
+-- config.set_repeat_delay(600)
 
+print("set workspaces")
 config.set_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
+print("set workspaces end")
 
-config.set_rules({
-    -- {"termite", "termite", function(n) container.set_sticky(n, true) end},
-    -- {"termite", "", function(n) container.set_ratio(n, 1) end},
-})
+-- config.set_rules({
+--     -- {"termite", "termite", function(n) container.set_sticky(n, true) end},
+--     -- {"termite", "", function(n) container.set_ratio(n, 1) end},
+-- })
 
-local layouts = {
-    {"[M]", "tile"},
-    {"[]=", "two_pane"},
-    {"||",  "monocle"},
-    {"--",  "tmp" },
-}
+-- local layouts = {
+--     {"[M]", "tile"},
+--     {"[]=", "two_pane"},
+--     {"||",  "monocle"},
+--     {"--",  "tmp" },
+-- }
 
-config.set_layouts("default", layouts)
+-- config.set_layouts("default", layouts)
 
-config.set_monrules({
-    { "", 0.55, 1, 1, layouts[1], monitor_transform.TRANSFORM_NORMAL },
-})
-config.set_default_layout(layouts[1])
+-- config.set_monrules({
+--     { "", 0.55, 1, 1, layouts[1], monitor_transform.TRANSFORM_NORMAL },
+-- })
+-- config.set_default_layout(layouts[1])
 
+print("set keybinds")
 local termcmd = "/usr/bin/termite"
-
 config.set_keybinds({
     {"mod-p",         function() os.execute("rofi -show run&") end},
     {"mod-e",         function() action.view(info.get_next_empty_workspace(info.get_workspace(), Direction.RIGHT)) end},
@@ -101,9 +103,10 @@ config.set_keybinds({
     -- {"mod-comma",             function() focusmon(-1) end},
     -- {"mod-d",                 function() incnmaster(-1) end},
 })
+print("end keybinds")
 
-config.set_buttons({
-    {"M1", function() action.focus_container(info.get_container_under_cursor()) end},
-    {"mod-M1",  function() action.move_resize(cursor_mode.CUR_MOVE) end},
-    {"mod-M2",  function() action.move_resize(cursor_mode.CUR_RESIZE) end},
-})
+-- config.set_buttons({
+--     {"M1", function() action.focus_container(info.get_container_under_cursor()) end},
+--     {"mod-M1",  function() action.move_resize(cursor_mode.CUR_MOVE) end},
+--     {"mod-M2",  function() action.move_resize(cursor_mode.CUR_RESIZE) end},
+-- })

@@ -8,7 +8,7 @@
 struct lua_State *L;
 
 bool file_exists(const char *path) {
-    return path && access(path, R_OK) != -1;
+    return access(path, R_OK) != -1;
 }
 
 void wlr_list_clear(struct wlr_list *list)

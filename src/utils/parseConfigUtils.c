@@ -27,16 +27,19 @@ static int load_file(lua_State *L, const char *path, const char *file);
 // returns 0 upon success and 1 upon failure
 static int load_file(lua_State *L, const char *path, const char *file)
 {
+    printf("works0\n");
     char config_file[strlen(path)+strlen(file)];
-
     strcpy(config_file, "");
     join_path(config_file, path);
     join_path(config_file, file);
 
+    printf("works1\n");
     if (!file_exists(config_file)) {
+        printf("return from works1\n");
         return 1;
     }
 
+    printf("works2\n");
     if (luaL_loadfile(L, config_file)) {
         const char *errmsg = luaL_checkstring(L, -1);
         lua_pop(L, 1);
@@ -44,6 +47,7 @@ static int load_file(lua_State *L, const char *path, const char *file)
         return 1;
     }
 
+    printf("works3\n");
     int ret = lua_call_safe(L, 0, 0, 0);
 
     return ret;
@@ -80,12 +84,8 @@ void append_to_lua_path(lua_State *L, const char *path)
     lua_getfield(L, -1, "path");
     const char * curr_path = luaL_checkstring(L, -1);
     lua_pop(L, 1);
-    char *path_var = calloc(1,
-            strlen(curr_path)
-            + 1
-            + strlen(path)
-            + strlen("/?.lua"));
 
+    char path_var[strlen(curr_path) + 1 + strlen(path) + strlen("/?.lua")];
     strcpy(path_var, curr_path);
     strcat(path_var, ";");
     strcat(path_var, path);
@@ -94,8 +94,6 @@ void append_to_lua_path(lua_State *L, const char *path)
     lua_pushstring(L, path_var);
     lua_setfield(L, -2, "path");
     lua_pop(L, 1);
-
-    free(path_var);
 }
 
 // returns 0 upon success and 1 upon failure
@@ -128,14 +126,16 @@ int init_config(lua_State *L)
 
         append_to_lua_path(L, config_paths[i]);
 
-        printf("load file\n");
-        if (load_file(L, path, config_file))
+        printf("load file: %p\n", path);
+        if (load_file(L, path, config_file)) {
+            free(path);
             continue;
+        }
         printf("load file end\n");
 
         // when config loaded successfully break;
         success = 0;
-        break;
+        free(path);
     }
     return success;
 }
