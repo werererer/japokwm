@@ -27,11 +27,9 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
     struct workspace *ws = calloc(1, sizeof(struct workspace));
     ws->name = name;
 
-    printf("recreate workspaces\n");
     // fill layout stack with reasonable values
     push_layout(ws->layout, lt);
     push_layout(ws->layout, lt);
-    printf("recreate workspaces end\n");
 
     ws->id = id;
     return ws;

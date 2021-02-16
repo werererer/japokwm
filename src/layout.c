@@ -31,6 +31,7 @@ void lua_copy_table(lua_State *L, int *ref)
 {
     if (*ref > 0) {
         luaL_unref(L, LUA_REGISTRYINDEX, *ref);
+        *ref = 0;
     }
 
     lua_getglobal_safe(L, "Deep_copy");
