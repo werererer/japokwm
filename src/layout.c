@@ -13,7 +13,7 @@
 struct layout get_default_layout()
 {
     struct layout lt = (struct layout) {
-        .symbol = "master",
+        .symbol = "",
         .name = "",
         .n = 1,
         .nmaster = 1,
