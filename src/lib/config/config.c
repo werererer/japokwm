@@ -18,11 +18,17 @@ int lib_reload(lua_State *L)
     return 0;
 }
 
-int lib_set_gaps(lua_State *L)
+int lib_set_inner_gaps(lua_State *L)
+{
+    server.default_layout.options.inner_gap = luaL_checkinteger(L ,-1);
+    lua_pop(L, 1);
+    configure_gaps(&server.default_layout.options.inner_gap, &server.default_layout.options.outer_gap);
+    return 0;
+}
+
+int lib_set_outer_gaps(lua_State *L)
 {
     server.default_layout.options.outer_gap = luaL_checkinteger(L ,-1);
-    lua_pop(L, 1);
-    server.default_layout.options.inner_gap = luaL_checkinteger(L ,-1);
     lua_pop(L, 1);
     configure_gaps(&server.default_layout.options.inner_gap, &server.default_layout.options.outer_gap);
     return 0;

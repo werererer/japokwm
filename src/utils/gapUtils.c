@@ -21,7 +21,7 @@ static void containerAddGapBottom(struct wlr_box *con, float gap)
     con->height = MAX(1, con->height - gap);
 }
 
-void containerAddGaps(struct wlr_box *con, double gap, enum wlr_edges edges) {
+void container_add_gaps(struct wlr_box *con, double gap, enum wlr_edges edges) {
     if (edges & WLR_EDGE_LEFT)
         containerAddGapLeft(con, gap);
     if (edges & WLR_EDGE_RIGHT)
@@ -47,15 +47,15 @@ void container_surround_gaps(struct wlr_box *con, double gap)
      * therefore x and y need to be 1/2ed and the width has to be decreased
      * by the whole amound
      * */
-        containerAddGaps(con, gap/2, WLR_EDGE_TOP | WLR_EDGE_LEFT);
-        containerAddGaps(con, gap, WLR_EDGE_RIGHT | WLR_EDGE_BOTTOM);
+        container_add_gaps(con, gap/2, WLR_EDGE_TOP | WLR_EDGE_LEFT);
+        container_add_gaps(con, gap, WLR_EDGE_RIGHT | WLR_EDGE_BOTTOM);
 }
 
-void configure_gaps(int *innerGap, int *outerGap)
+void configure_gaps(int *inner_gap, int *outer_gap)
 {
     /* innerGaps are applied twice because gaps don't overlap from two
      containers therefore it has to be divided by 2*/
-    *innerGap /= 2;
+    *inner_gap /= 2;
     /* outerGap + innerGap = resultGap but we only want the outerGap */
-    *outerGap -= *innerGap;
+    *outer_gap -= *inner_gap;
 }

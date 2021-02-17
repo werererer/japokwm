@@ -14,13 +14,22 @@ int local_set_arrange_by_focus(lua_State *L)
     return 0;
 }
 
-int local_set_gaps(lua_State *L)
+int local_set_inner_gaps(lua_State *L)
+{
+    struct layout *lt = get_layout_on_monitor(selected_monitor);
+
+    lt->options.inner_gap = luaL_checkinteger(L ,-1);
+    lua_pop(L, 1);
+
+    configure_gaps(&lt->options.inner_gap, &lt->options.outer_gap);
+    return 0;
+}
+
+int local_set_outer_gaps(lua_State *L)
 {
     struct layout *lt = get_layout_on_monitor(selected_monitor);
 
     lt->options.outer_gap = luaL_checkinteger(L ,-1);
-    lua_pop(L, 1);
-    lt->options.inner_gap = luaL_checkinteger(L ,-1);
     lua_pop(L, 1);
 
     configure_gaps(&lt->options.inner_gap, &lt->options.outer_gap);

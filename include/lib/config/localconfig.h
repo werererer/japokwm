@@ -4,7 +4,8 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-int local_set_gaps(lua_State *L);
+int local_set_inner_gaps(lua_State *L);
+int local_set_outer_gaps(lua_State *L);
 int local_set_tile_borderpx(lua_State *L);
 int local_set_float_borderpx(lua_State *L);
 int local_set_sloppy_focus(lua_State *L);
