@@ -138,7 +138,7 @@ struct container *get_container(struct monitor *m, int i)
         return NULL;
     if (i >= 0) {
         struct wl_list *pos = &containers;
-        while (i > 0) {
+        while (i >= 0) {
             if (pos->next)
                 pos = pos->next;
             i--;
@@ -152,6 +152,18 @@ struct container *get_container(struct monitor *m, int i)
         }
         con = wl_container_of(pos, con, mlink);
     }
+    return con;
+}
+
+struct container *get_relative_container(struct monitor *m, int i)
+{
+    struct container *sel = focused_container(m);
+    int position = sel->position;
+    printf("position: %i\n", position);
+    int list_length = wl_list_length(&containers);
+    int new_position = (position + i) % list_length;
+    printf("new_position: %i\n", new_position);
+    struct container *con = get_container(m, new_position);
     return con;
 }
 
@@ -528,6 +540,11 @@ void set_container_workspace(struct container *con, int ws_id)
 
     con->m = ws->m;
     con->client->ws_id = ws_id;
+
+    if (con->floating)
+        con->client->bw = ws->layout->options.float_border_px;
+    else 
+        con->client->bw = ws->layout->options.tile_border_px;
 }
 
 void set_container_monitor(struct container *con, struct monitor *m)

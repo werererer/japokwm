@@ -50,7 +50,6 @@ config.set_monrules({
 })
 config.set_default_layout(layouts[1])
 
-print("set keybinds")
 local termcmd = "/usr/bin/termite"
 config.set_keybinds({
     {"mod-p",         function() os.execute("rofi -show run&") end},

@@ -49,7 +49,7 @@ static void update_layout(lua_State *L, int n, struct monitor *m)
     lua_call_safe(L, 1, 0, 0);
 }
 
-static struct wlr_fbox lua_unbox_layout(struct lua_State *L, int i) {
+static struct wlr_fbox lua_unbox_layout(lua_State *L, int i) {
     struct wlr_fbox geom;
 
     if (luaL_len(L, -1) < i)
@@ -74,11 +74,19 @@ static struct wlr_fbox lua_unbox_layout(struct lua_State *L, int i) {
     return geom;
 }
 
-/* update layout and was set in the arrange function */
-static void apply_nmaster_transformation(struct wlr_box *box, struct monitor *m, int position, int count)
+static struct wlr_box get_geom_in_layout(lua_State *L, struct layout *lt, struct root *root, int n)
 {
-    struct layout *lt = get_layout_on_monitor(m);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_ref);
+    struct wlr_fbox rel_geom = lua_unbox_layout(L, n);
+    lua_pop(L, 1);
 
+    struct wlr_box box = get_absolute_box(rel_geom, root->geom);
+    return box;
+}
+
+/* update layout and was set in the arrange function */
+static void apply_nmaster_transformation(struct wlr_box *box, struct layout *lt, int position, int count)
+{
     if (position > lt->nmaster)
         return;
 
@@ -120,7 +128,7 @@ static int get_container_count(struct monitor *m)
 static void update_container_positions(struct monitor *m)
 {
     struct container *con;
-    int position = 1;
+    int position = 0;
     wl_list_for_each(con, &containers, mlink) {
         if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
             continue;
@@ -155,7 +163,7 @@ static void update_container_positions(struct monitor *m)
 
 static void update_container_focus_stack_positions(struct monitor *m)
 {
-    int position = 1;
+    int position = 0;
     struct container *con;
     wl_list_for_each(con, &focus_stack, flink) {
         if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
@@ -223,18 +231,13 @@ void arrange_container(struct container *con, int arrange_position, int containe
     struct workspace *ws = get_workspace_on_monitor(m);
     struct layout lt = ws->layout[0];
     // the 1 added represents the master area
-    int n = MAX(0, arrange_position - lt.nmaster) + 1;
+    int n = MAX(0, arrange_position + 1 - lt.nmaster) + 1;
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, ws->layout[0].lua_layout_ref);
-    struct wlr_fbox rel_geom = lua_unbox_layout(L, n);
-
-    struct wlr_box box = get_absolute_box(rel_geom, m->root->geom);
+    struct wlr_box box = get_geom_in_layout(L, &ws->layout[0], m->root, n);
     // TODO fix this function, hard to read
-    apply_nmaster_transformation(&box, con->m, arrange_position, container_count);
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &ws->layout[0].lua_layout_ref);
+    apply_nmaster_transformation(&box, &lt, arrange_position+1, container_count);
 
     container_surround_gaps(&box, lt.options.inner_gap);
-
     // since gaps are halfed we need to multiply it by 2 
     container_surround_gaps(&box, 2*lt.options.tile_border_px);
 

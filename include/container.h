@@ -50,6 +50,7 @@ void destroy_container(struct container *con);
 
 struct container *first_container(struct monitor *m);
 struct container *get_container(struct monitor *m, int i);
+struct container *get_relative_container(struct monitor *m, int i);
 struct container *last_container(struct monitor *m);
 struct container *next_container(struct monitor *m);
 struct container *focused_container(struct monitor *m);

@@ -146,32 +146,12 @@ int lib_focus_on_stack(lua_State *L)
         return 0;
     }
 
-    bool found = false;
-    struct container *con;
-    if (i > 0) {
-        wl_list_for_each(con, &sel->mlink, mlink) {
-            if (con == sel)
-                continue;
-            if (visibleon(con, &server.workspaces, m->ws_ids[0])) {
-                found = true;
-                break;
-            }
-        }
-    } else {
-        wl_list_for_each_reverse(con, &sel->mlink, mlink) {
-            if (con == sel)
-                continue;
-            if (visibleon(con, &server.workspaces, m->ws_ids[0])) {
-                found = true;
-                break;
-            }
-        }
-    }
+    struct container *con = get_relative_container(m, i);
+    if (!con)
+        return 0;
 
-    if (found) {
-        /* If only one client is visible on selMon, then c == sel */
-        focus_container(con, FOCUS_LIFT);
-    }
+    /* If only one client is visible on selMon, then c == sel */
+    focus_container(con, FOCUS_LIFT);
     return 0;
 }
 
