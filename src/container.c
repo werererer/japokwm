@@ -287,19 +287,22 @@ struct container *xytocontainer(double x, double y)
     return NULL;
 }
 
-void add_container_to_monitor_containers(struct container *con, int i)
+void add_container_to_containers(struct container *con, int i)
 {
     struct monitor *m = con->m;
     if (!con)
         return;
 
     if (!con->floating) {
-        /* Insert container after container at position i*/
+        /* Insert container at position i and push back container at i*/
         struct container *con2 = get_container(m, i);
-        if (con2)
+        if (con2) {
             wl_list_insert(&con2->mlink, &con->mlink);
-        else
+            wl_list_remove(&con2->mlink);
+            wl_list_insert(&con->mlink, &con2->mlink);
+        } else {
             wl_list_insert(&containers, &con->mlink);
+        }
     } else {
         /* Insert container after the last non floating container */
         struct container *con2;
@@ -395,7 +398,7 @@ static void add_container_to_monitor(struct container *con, struct monitor *m)
         case XDG_SHELL:
         case X11_MANAGED:
         case X11_UNMANAGED:
-            add_container_to_monitor_containers(con, 0);
+            add_container_to_containers(con, 0);
             add_container_to_monitor_stack(con);
             break;
     }
