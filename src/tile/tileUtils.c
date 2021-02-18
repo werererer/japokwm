@@ -171,9 +171,9 @@ static void update_container_positions(struct monitor *m)
         position++;
     }
     wl_list_for_each(con, &containers, mlink) {
-        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
+        if (!hiddenon(con, &server.workspaces, m->ws_ids[0]))
             continue;
-        if (!con->floating)
+        if (con->floating)
             continue;
         if (con->client->type == LAYER_SHELL)
             continue;
@@ -207,14 +207,12 @@ static void update_container_focus_stack_positions(struct monitor *m)
 
 void arrange_monitor(struct monitor *m)
 {
-    set_root_area(m->root, m->geom);
-
     struct layout *lt = get_layout_on_monitor(m);
 
+    set_root_area(m->root, m->geom);
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);
 
     update_layout_counters(L, m);
-
     call_update_function(lt);
 
     update_hidden_containers(m);

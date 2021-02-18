@@ -51,11 +51,13 @@ void destroy_container(struct container *con);
 struct container *first_container(struct monitor *m);
 struct container *get_container(struct monitor *m, int i);
 struct container *get_relative_container(struct monitor *m, int i);
+struct container *get_relative_hidden_container(struct monitor *m, int i);
 struct container *last_container(struct monitor *m);
 struct container *next_container(struct monitor *m);
 struct container *focused_container(struct monitor *m);
 struct container *xytocontainer(double x, double y);
 struct container *container_position_to_container(int ws_id, int position);
+struct container *container_position_to_hidden_container(int ws_id, int position);
 
 struct wlr_box get_center_box(struct wlr_box ref);
 struct wlr_box get_absolute_box(struct wlr_fbox ref, struct wlr_box box);
@@ -76,6 +78,7 @@ void set_container_workspace(struct container *con, int ws_id);
 void set_container_monitor(struct container *con, struct monitor *m);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
+
 
 // TODO check if those 2 functions even work
 int container_relative_x_to_absolute(struct container *con, int lx);

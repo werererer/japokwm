@@ -97,7 +97,26 @@ struct container *container_position_to_container(int ws_id, int position)
     wl_list_for_each(con, &containers, mlink) {
         if (!visibleon(con, &server.workspaces, ws_id))
             continue;
+        if (con->floating)
+            continue;
 
+        if (con->position == position)
+            return con;
+    }
+    return NULL;
+}
+
+struct container *container_position_to_hidden_container(int ws_id, int position)
+{
+    // TODO debug
+    struct container *con;
+    wl_list_for_each(con, &containers, mlink) {
+        if (!hiddenon(con, &server.workspaces, ws_id))
+            continue;
+        if (con->floating)
+            continue;
+
+        printf("position: %i : %i\n", con->position, position);
         if (con->position == position)
             return con;
     }
@@ -160,21 +179,31 @@ struct container *get_container(struct monitor *m, int i)
 struct container *get_relative_container(struct monitor *m, int i)
 {
     struct container *sel = focused_container(m);
-    struct workspace *ws = get_workspace_on_monitor(m);
-    int position = sel->position;
-    int list_length = get_container_count(ws);
-
-    printf("position: %i i: %i\n", position, i);
-    printf("container count: %i\n", list_length);
     struct layout *lt = get_layout_on_monitor(m);
-    list_length = lt->n;
-    int new_position = (position + i) % (list_length);
-    if (new_position < 0) {
-        new_position += list_length;
+
+    int new_position = (sel->position + i) % (lt->n_abs);
+    while (new_position < 0) {
+        new_position += lt->n_abs;
     }
-    printf("new_position: %i\n", new_position);
-    struct container *con = container_position_to_container(m->ws_ids[0], new_position);
-    return con;
+
+    return container_position_to_container(m->ws_ids[0], new_position);
+}
+
+struct container *get_relative_hidden_container(struct monitor *m, int i)
+{
+    struct layout *lt = get_layout_on_monitor(m);
+    int n_hidden_containers = wl_list_length(&containers) - lt->n_abs;
+
+    if (n_hidden_containers == 0)
+        return NULL;
+
+    int new_position = (i) % (n_hidden_containers);
+    while (new_position < 0) {
+        new_position += n_hidden_containers;
+    }
+    new_position += lt->n_abs;
+
+    return container_position_to_hidden_container(m->ws_ids[0], new_position);
 }
 
 struct container *first_container(struct monitor *m)
@@ -489,6 +518,8 @@ void focus_container(struct container *con, enum focus_actions a)
         return;
     if (!con->focusable)
         return;
+    if (con->hidden)
+        return;
 
     struct monitor *m = con->m;
     struct container *fcon = focused_container(m);
@@ -502,9 +533,9 @@ void focus_container(struct container *con, enum focus_actions a)
 
     struct container *new_focus_con = focused_container(m);
 
-    struct client *c = fcon ? fcon->client : NULL;
-    struct client *c2 = new_focus_con ? new_focus_con->client : NULL;
-    focus_client(c, c2);
+    struct client *old_c = fcon ? fcon->client : NULL;
+    struct client *new_c = new_focus_con ? new_focus_con->client : NULL;
+    focus_client(old_c, new_c);
 }
 
 void lift_container(struct container *con)

@@ -176,33 +176,22 @@ int lib_focus_on_hidden_stack(lua_State *L)
     if (sel->client->type == LAYER_SHELL)
         return 0;
 
-    struct container *con;
-    if (i > 0) {
-        int j = 1;
-        wl_list_for_each(con, &sel->mlink, mlink) {
-            if (hiddenon(con, &server.workspaces, m->ws_ids[0]))
-                break;  /* found it */
-            j++;
-        }
-    } else {
-        wl_list_for_each_reverse(con, &sel->mlink, mlink) {
-            if (hiddenon(con, &server.workspaces, m->ws_ids[0]))
-                break;  /* found it */
-        }
-    }
+    struct container *con = get_relative_hidden_container(m, i);
 
+    if (!con)
+        return 0;
     if (sel == con)
         return 0;
 
-    if (sel && con) {
-        // replace current client with a hidden one
-        wl_list_remove(&con->mlink);
-        wl_list_insert(&sel->mlink, &con->mlink);
-        wl_list_remove(&sel->mlink);
-        wl_list_insert(containers.prev, &sel->mlink);
-    }
+    // replace current container with a hidden one
+    wl_list_remove(&con->mlink);
+    wl_list_insert(&sel->mlink, &con->mlink);
+    con->hidden = false;
+    wl_list_remove(&sel->mlink);
+    wl_list_insert(containers.prev, &sel->mlink);
+    sel->hidden = true;
 
-    focus_container(con, FOCUS_LIFT);
+    focus_container(con, FOCUS_NOOP);
     arrange();
     return 0;
 }
