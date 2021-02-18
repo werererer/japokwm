@@ -150,28 +150,13 @@ int get_container_count(struct workspace *ws)
     return get_slave_container_count(ws) + 1;
 }
 
-static void update_container_positions(struct monitor *m)
+void update_container_positions(struct monitor *m)
 {
     struct container *con;
     int position = 0;
 
     wl_list_for_each(con, &containers, mlink) {
-        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
-            continue;
-        if (con->floating)
-            continue;
-        if (con->client->type == LAYER_SHELL)
-            continue;
-
-        con->position = position;
-
-        apply_rules(con);
-
-        // then use the layout that may have been reseted
-        position++;
-    }
-    wl_list_for_each(con, &containers, mlink) {
-        if (!hiddenon(con, &server.workspaces, m->ws_ids[0]))
+        if (!existon(con, &server.workspaces, m->ws_ids[0]))
             continue;
         if (con->floating)
             continue;

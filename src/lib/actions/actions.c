@@ -147,7 +147,7 @@ int lib_focus_on_stack(lua_State *L)
         return 0;
     }
 
-    struct container *con = get_relative_container(m, i);
+    struct container *con = get_relative_container(m, sel, i);
     if (!con)
         return 0;
 
@@ -178,18 +178,34 @@ int lib_focus_on_hidden_stack(lua_State *L)
 
     struct container *con = get_relative_hidden_container(m, i);
 
-    if (!con)
+    if (!con) {
+        printf("contaier not found\n");
         return 0;
-    if (sel == con)
+    }
+    if (sel == con) {
+        printf("selected equals con\n");
         return 0;
+    }
 
-    // replace current container with a hidden one
     wl_list_remove(&con->mlink);
     wl_list_insert(&sel->mlink, &con->mlink);
     con->hidden = false;
-    wl_list_remove(&sel->mlink);
-    wl_list_insert(containers.prev, &sel->mlink);
-    sel->hidden = true;
+    if (i >= 0) {
+        // replace selected container with a hidden one and move the selected
+        // container to the end of containers
+        wl_list_remove(&sel->mlink);
+        wl_list_insert(containers.prev, &sel->mlink);
+        sel->hidden = true;
+    } else if (i < 0) {
+        // replace current container with a hidden one and move the selected
+        // container to the first position that is not visible
+        wl_list_remove(&sel->mlink);
+        update_container_positions(m);
+        struct container *last_container = container_position_to_container(m->ws_ids[0], 0);
+        struct container *container_hidden = get_relative_container(m, last_container, -1);
+        wl_list_insert(&container_hidden->mlink, &sel->mlink);
+        sel->hidden = true;
+    }
 
     focus_container(con, FOCUS_NOOP);
     arrange();

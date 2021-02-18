@@ -116,7 +116,6 @@ struct container *container_position_to_hidden_container(int ws_id, int position
         if (con->floating)
             continue;
 
-        printf("position: %i : %i\n", con->position, position);
         if (con->position == position)
             return con;
     }
@@ -176,12 +175,11 @@ struct container *get_container(struct monitor *m, int i)
     return con;
 }
 
-struct container *get_relative_container(struct monitor *m, int i)
+struct container *get_relative_container(struct monitor *m, struct container *con, int i)
 {
-    struct container *sel = focused_container(m);
     struct layout *lt = get_layout_on_monitor(m);
 
-    int new_position = (sel->position + i) % (lt->n_abs);
+    int new_position = (con->position + i) % (lt->n_abs);
     while (new_position < 0) {
         new_position += lt->n_abs;
     }
@@ -194,8 +192,11 @@ struct container *get_relative_hidden_container(struct monitor *m, int i)
     struct layout *lt = get_layout_on_monitor(m);
     int n_hidden_containers = wl_list_length(&containers) - lt->n_abs;
 
-    if (n_hidden_containers == 0)
+    if (n_hidden_containers == 0) {
+        printf("n_hidden_containers == 0\n");
+        printf("numbers: length: %i, n_abs: %i", wl_list_length(&containers), lt->n_abs);
         return NULL;
+    }
 
     int new_position = (i) % (n_hidden_containers);
     while (new_position < 0) {
@@ -203,7 +204,8 @@ struct container *get_relative_hidden_container(struct monitor *m, int i)
     }
     new_position += lt->n_abs;
 
-    return container_position_to_hidden_container(m->ws_ids[0], new_position);
+    struct container *con = container_position_to_hidden_container(m->ws_ids[0], new_position);
+    return con;
 }
 
 struct container *first_container(struct monitor *m)
