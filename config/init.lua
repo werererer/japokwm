@@ -16,7 +16,7 @@ local monitor_transform = {
     TRANSFORM_FLIPPED_270 = 7,
 }
 
-config.set_sloppy_focus(true)
+config.set_sloppy_focus(false)
 config.set_tile_borderpx(2)
 config.set_float_borderpx(2)
 config.set_inner_gaps(20)

@@ -13,6 +13,9 @@ struct layout {
     const char *symbol;
     // the amount of slave windows plus the master are (+1)
     int n;
+    int n_abs;
+    // the absolute amount of windows
+    int nmaster_abs;
     // the amount master windows
     int nmaster;
     int lua_layout_ref;

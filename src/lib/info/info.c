@@ -8,7 +8,10 @@
 
 int lib_get_this_container_count(lua_State *L)
 {
-    int i = get_slave_container_count(selected_monitor) + 1;
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = get_workspace_on_monitor(m);
+
+    int i = get_slave_container_count(ws) + 1;
     lua_pushinteger(L, i);
     return 1;
 }

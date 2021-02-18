@@ -14,7 +14,6 @@
 #include "utils/parseConfigUtils.h"
 
 static void add_container_to_monitor(struct container *con, struct monitor *m);
-static void add_container_to_monitor_containers(struct container *con, int i);
 static void add_container_to_focus_stack(struct container *con);
 static void add_container_to_monitor_stack(struct container *con);
 
@@ -91,11 +90,14 @@ void container_damage_whole(struct container *con)
     container_damage(con, true);
 }
 
-struct container *container_position_to_container(int position)
+struct container *container_position_to_container(int ws_id, int position)
 {
     // TODO debug
     struct container *con;
     wl_list_for_each(con, &containers, mlink) {
+        if (!visibleon(con, &server.workspaces, ws_id))
+            continue;
+
         if (con->position == position)
             return con;
     }
@@ -158,12 +160,20 @@ struct container *get_container(struct monitor *m, int i)
 struct container *get_relative_container(struct monitor *m, int i)
 {
     struct container *sel = focused_container(m);
+    struct workspace *ws = get_workspace_on_monitor(m);
     int position = sel->position;
-    printf("position: %i\n", position);
-    int list_length = wl_list_length(&containers);
-    int new_position = (position + i) % list_length;
+    int list_length = get_container_count(ws);
+
+    printf("position: %i i: %i\n", position, i);
+    printf("container count: %i\n", list_length);
+    struct layout *lt = get_layout_on_monitor(m);
+    list_length = lt->n;
+    int new_position = (position + i) % (list_length);
+    if (new_position < 0) {
+        new_position += list_length;
+    }
     printf("new_position: %i\n", new_position);
-    struct container *con = get_container(m, new_position);
+    struct container *con = container_position_to_container(m->ws_ids[0], new_position);
     return con;
 }
 
@@ -248,7 +258,7 @@ struct container *xytocontainer(double x, double y)
     return NULL;
 }
 
-static void add_container_to_monitor_containers(struct container *con, int i)
+void add_container_to_monitor_containers(struct container *con, int i)
 {
     struct monitor *m = con->m;
     if (!con)
