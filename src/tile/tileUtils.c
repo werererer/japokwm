@@ -16,6 +16,7 @@
 #include "utils/coreUtils.h"
 #include "utils/gapUtils.h"
 #include "utils/parseConfigUtils.h"
+#include "event_handler.h"
 
 void arrange()
 {
@@ -25,15 +26,6 @@ void arrange()
     }
 
     update_cursor(&server.cursor);
-}
-
-static void call_update_function(struct layout *lt)
-{
-    if (lt->options.update_func_ref == 0)
-        return;
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->options.update_func_ref);
-    lua_pushinteger(L, lt->n);
-    lua_call_safe(L, 1, 0, 0);
 }
 
 // TODO what does this fucntion even do?
@@ -198,7 +190,7 @@ void arrange_monitor(struct monitor *m)
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);
 
     update_layout_counters(L, m);
-    call_update_function(lt);
+    call_update_function(&lt->options.event_handler, lt->n);
 
     update_hidden_containers(m);
     update_container_focus_stack_positions(m);

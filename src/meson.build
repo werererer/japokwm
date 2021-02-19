@@ -52,7 +52,10 @@ srcs = files(
     'xdg-shell-protocol.c',
     'xwayland.c',
     'keyboard.c',
-    'layout_set.c'
+    'layout_set.c',
+    'event_handler.c',
+    'lib/event_handler/lib_event_handler.c',
+    'lib/event_handler/local_event_handler.c',
   )
 
 libName = 'japokwm'

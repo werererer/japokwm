@@ -15,7 +15,7 @@
 
 static void add_container_to_monitor(struct container *con, struct monitor *m);
 static void add_container_to_focus_stack(struct container *con);
-static void add_container_to_monitor_stack(struct container *con);
+static void add_container_to_stack(struct container *con);
 
 struct container *create_container(struct client *c, struct monitor *m, bool has_border)
 {
@@ -26,6 +26,10 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     con->focusable = true;
     c->con = con;
     add_container_to_monitor(con, con->m);
+
+    struct layout *lt = get_layout_on_monitor(con->m);
+    struct event_handler *ev = &lt->options.event_handler;
+    call_create_container_function(ev, con->position);
     return con;
 }
 
@@ -302,8 +306,10 @@ void add_container_to_containers(struct container *con, int i)
             wl_list_insert(&con2->mlink, &con->mlink);
             wl_list_remove(&con2->mlink);
             wl_list_insert(&con->mlink, &con2->mlink);
+            con->position = con2->stack_position;
         } else {
             wl_list_insert(&containers, &con->mlink);
+            con->position = i;
         }
     } else {
         /* Insert container after the last non floating container */
@@ -313,10 +319,13 @@ void add_container_to_containers(struct container *con, int i)
                 break;
         }
 
-        if (wl_list_empty(&containers))
+        if (wl_list_empty(&containers)) {
             wl_list_insert(containers.prev, &con->mlink);
-        else
+            con->position = wl_list_length(containers.prev)-1;
+        } else {
             wl_list_insert(&con2->mlink, &con->mlink);
+            con->position = con2->position+1;
+        }
     }
 }
 
@@ -353,7 +362,7 @@ static void add_container_to_focus_stack(struct container *con)
         wl_list_insert(c->flink.next, &con->flink);
 }
 
-static void add_container_to_monitor_stack(struct container *con)
+static void add_container_to_stack(struct container *con)
 {
     if (!con)
         return;
@@ -401,7 +410,7 @@ static void add_container_to_monitor(struct container *con, struct monitor *m)
         case X11_MANAGED:
         case X11_UNMANAGED:
             add_container_to_containers(con, 0);
-            add_container_to_monitor_stack(con);
+            add_container_to_stack(con);
             break;
     }
 
@@ -551,7 +560,7 @@ void lift_container(struct container *con)
         return;
 
     wl_list_remove(&con->slink);
-    add_container_to_monitor_stack(con);
+    add_container_to_stack(con);
 }
 
 void set_container_floating(struct container *con, bool floating)

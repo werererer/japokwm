@@ -98,14 +98,6 @@ int local_set_master_constraints(lua_State *L)
     return 0;
 }
 
-int local_set_update_function(lua_State *L)
-{
-    struct layout *lt = get_layout_on_monitor(selected_monitor);
-
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->options.update_func_ref);
-    return 0;
-}
-
 int local_set_resize_direction(lua_State *L)
 {
     struct layout *lt = get_layout_on_monitor(selected_monitor);

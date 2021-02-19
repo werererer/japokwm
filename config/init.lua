@@ -27,6 +27,10 @@ config.set_border_color({0.0, 0.0, 1.0, 1.0})
 config.set_repeat_rate(25)
 config.set_repeat_delay(600)
 
+event.set_create_container_function(function(n)
+    print("it is: ", n)
+end)
+
 print("set workspaces")
 config.set_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
 print("set workspaces end")

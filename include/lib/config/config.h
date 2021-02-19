@@ -29,7 +29,6 @@ int lib_set_root_color(lua_State *L);
 int lib_set_rules(lua_State *L);
 int lib_set_sloppy_focus(lua_State *L);
 int lib_set_tile_borderpx(lua_State *L);
-int lib_set_update_function(lua_State *L);
 int lib_set_workspaces(lua_State *L);
 
 #endif /* CONFIG_H */

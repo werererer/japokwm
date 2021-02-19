@@ -26,6 +26,15 @@ struct monitor {
     int ws_ids[2];
 };
 
+struct monrule {
+    char *name;
+    float mfact;
+    int nmaster;
+    float scale;
+    struct layout lt;
+    enum wl_output_transform rr;
+};
+
 /* associated with slink in container */
 extern struct wl_list stack;
 /* associated with flink in container */

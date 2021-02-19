@@ -3,8 +3,10 @@
 #include "lib/actions/libcontainer.h"
 #include "lib/config/config.h"
 #include "lib/config/localconfig.h"
+#include "lib/event_handler/lib_event_handler.h"
 #include "lib/layout/lib_layout.h"
 #include "lib/info/info.h"
+#include "lib/event_handler/local_event_handler.h"
 #include "tile/tile.h"
 
 static const struct luaL_Reg action[] =
@@ -43,6 +45,21 @@ static const struct luaL_Reg container[] =
 {
     {"set_sticky", container_set_sticky},
     {"set_ratio", container_set_ratio},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg event[] =
+{
+    {"set_update_function", lib_set_update_function},
+    {"set_create_container_function", lib_set_create_container_function},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg levent[] =
+{
+    {"set_update_function", local_set_update_function},
+    {"set_create_container_function", local_set_create_container_function},
+    {NULL, NULL},
 };
 
 static const struct luaL_Reg info[] =
@@ -80,7 +97,6 @@ static const struct luaL_Reg config[] =
     {"set_buttons", lib_set_buttons},
     {"set_layout_constraints", lib_set_layout_constraints},
     {"set_master_constraints", lib_set_master_constraints},
-    {"set_update_function", lib_set_update_function},
     {"set_resize_direction", lib_set_resize_direction},
     {"set_master_layout_data", lib_set_master_layout_data},
     {"set_resize_data", lib_set_resize_data},
@@ -99,7 +115,6 @@ static const struct luaL_Reg localconfig[] =
     {"set_sloppy_focus", local_set_sloppy_focus},
     {"set_layout_constraints", local_set_layout_constraints},
     {"set_master_constraints", local_set_master_constraints},
-    {"set_update_function", local_set_update_function},
     {"set_resize_direction", local_set_resize_direction},
     {"set_master_layout_data", local_set_master_layout_data},
     {"set_resize_data", local_set_resize_data},
@@ -118,6 +133,10 @@ void load_libs(lua_State *L)
     lua_setglobal(L, "action");
     luaL_newlib(L, container);
     lua_setglobal(L, "container");
+    luaL_newlib(L, event);
+    lua_setglobal(L, "event");
+    luaL_newlib(L, levent);
+    lua_setglobal(L, "levent");
     luaL_newlib(L, info);
     lua_setglobal(L, "info");
     luaL_newlib(L, config);

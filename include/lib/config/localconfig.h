@@ -14,7 +14,6 @@ int local_set_border_color(lua_State *L);
 int local_set_arrange_by_focus(lua_State *L);
 int local_set_layout_constraints(lua_State *L);
 int local_set_master_constraints(lua_State *L);
-int local_set_update_function(lua_State *L);
 int local_set_resize_direction(lua_State *L);
 int local_set_master_layout_data(lua_State *L);
 int local_set_resize_data(lua_State *L);

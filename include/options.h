@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <wlr/types/wlr_list.h>
+#include "event_handler.h"
 
 #define BLACK {0.0f, 0.0f, 0.0f, 1.0f}
 #define WHITE {1.0f, 1.0f, 1.0f, 1.0f}
@@ -50,7 +51,7 @@ struct options {
     int master_layout_data_ref;
     int resize_data_ref;
 
-    int update_func_ref;
+    struct event_handler event_handler;
     int tag_names_ref;
     int default_layout_ref;
     int keybinds_ref;

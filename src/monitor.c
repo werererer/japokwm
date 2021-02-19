@@ -240,6 +240,9 @@ struct monitor *xytomon(double x, double y)
 
 inline struct workspace *get_workspace_on_monitor(struct monitor *m)
 {
+    if (!m)
+        return NULL;
+
     return get_workspace(&server.workspaces, m->ws_ids[0]);
 }
 
