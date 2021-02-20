@@ -357,7 +357,6 @@ void maprequest(struct wl_listener *listener, void *data)
             {
                 struct monitor *m = output_to_monitor(c->surface.layer->output);
                 wl_list_insert(&clients, &c->link);
-                wlr_layer_surface_v1_configure(c->surface.layer, m->geom.width, m->geom.height);
                 create_container(c, m, true);
                 break;
             }
@@ -366,9 +365,6 @@ void maprequest(struct wl_listener *listener, void *data)
     }
     arrange();
     focus_top_container(&server.workspaces, ws->id, FOCUS_NOOP);
-
-    struct container *con = c->con;
-    container_damage_part(con);
 }
 
 void maprequestx11(struct wl_listener *listener, void *data)
