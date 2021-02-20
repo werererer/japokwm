@@ -1,10 +1,3 @@
-Direction = {
-    TOP = 1,
-    BOTTOM = 2,
-    LEFT = 4,
-    RIGHT = 8,
-}
-
 local X<const> = 1
 local Y<const> = 2
 local WIDTH<const> = 3
@@ -57,13 +50,13 @@ end
 -- client: current window
 function Move_container(container, n, d)
     local con = container
-    if d == Direction.TOP then
+    if d == info.direction.top then
         con[Y] = con[Y] + n
-    elseif d == Direction.BOTTOM then
+    elseif d == info.direction.bottom then
         con[Y] = con[Y] + n
-    elseif d == Direction.LEFT then
+    elseif d == info.direction.left then
         con[X] = con[X] + n
-    elseif d == Direction.RIGHT then
+    elseif d == info.direction.right then
         con[X] = con[X] + n
     end
     return con
@@ -104,15 +97,15 @@ end
 
 function Resize_container(container, n, d)
     local con = container
-    if d == Direction.TOP then
+    if d == info.direction.top then
         con[Y] = con[Y] - n
         con[HEIGHT] = con[HEIGHT] + n
-    elseif d == Direction.BOTTOM then
+    elseif d == info.direction.bottom then
         con[HEIGHT] = con[HEIGHT] + n
-    elseif d == Direction.LEFT then
+    elseif d == info.direction.left then
         con[X] = con[X] - n
         con[WIDTH] = con[WIDTH] + n
-    elseif d == Direction.RIGHT then
+    elseif d == info.direction.right then
         con[WIDTH] = con[WIDTH] + n
     end
     return con
@@ -139,16 +132,16 @@ end
 
 function Get_current_container(container, d)
     local alt = {0, 0, 1, 1}
-    if d == Direction.TOP then
+    if d == info.direction.top then
         alt[Y] = 0
         alt[HEIGHT] = container[Y]
-    elseif d == Direction.BOTTOM then
+    elseif d == info.direction.bottom then
         alt[Y] = container[Y] + container[HEIGHT]
         alt[HEIGHT] = 1 - (container[Y] + container[HEIGHT])
-    elseif d == Direction.LEFT then
+    elseif d == info.direction.left then
         alt[X] = 0
         alt[WIDTH] = container[X]
-    elseif d == Direction.RIGHT then
+    elseif d == info.direction.right then
         alt[X] = container[X] + container[WIDTH]
         alt[WIDTH] = 1 - alt[X]
     end
@@ -213,7 +206,7 @@ function Get_directions(d)
     return list
 end
 
--- if d == Direction.LEFT then "raytrace" to the left like that and return the
+-- if d == info.direction.left then "raytrace" to the left like that and return the
 -- geometry of that area
 -- +--------------------------+
 -- |< - - - - +---------+     |
@@ -225,16 +218,16 @@ end
 -- where w is the original window and a is the alternative window
 function Get_alternative_container(container, d)
     local alt_con = {0, 0, 1, 1}
-    if d == Direction.TOP then
+    if d == info.direction.top then
         alt_con[Y] = 0
         alt_con[HEIGHT] = container[Y]
-    elseif d == Direction.BOTTOM then
+    elseif d == info.direction.bottom then
         alt_con[Y] = container[Y] + container[HEIGHT]
         alt_con[HEIGHT] = 1 - alt_con[Y]
-    elseif d == Direction.LEFT then
+    elseif d == info.direction.left then
         alt_con[X] = 0
         alt_con[WIDTH] = container[X]
-    elseif d == Direction.RIGHT then
+    elseif d == info.direction.right then
         alt_con[X] = container[X] + container[WIDTH]
         alt_con[WIDTH] = 1 - alt_con[X]
     end
@@ -243,16 +236,16 @@ end
 
 function Get_main_container(container, d)
     local con = {container[X], container[Y], container[WIDTH], container[HEIGHT]}
-    if d == Direction.TOP then
+    if d == info.direction.top then
         con[X] = 0
         con[WIDTH] = 1
-    elseif d == Direction.BOTTOM then
+    elseif d == info.direction.bottom then
         con[X] = 0
         con[WIDTH] = 1
-    elseif d == Direction.LEFT then
+    elseif d == info.direction.left then
         con[Y] = 0
         con[HEIGHT] = 1
-    elseif d == Direction.RIGHT then
+    elseif d == info.direction.right then
         con[Y] = 0
         con[HEIGHT] = 1
     end
@@ -261,16 +254,16 @@ end
 
 function Get_edge_container(container, d)
     local con = {container[X], container[Y], container[WIDTH], container[HEIGHT]}
-    if d == Direction.TOP then
+    if d == info.direction.top then
         con[X] = 0
         con[WIDTH] = 1
-    elseif d == Direction.BOTTOM then
+    elseif d == info.direction.bottom then
         con[X] = 0
         con[WIDTH] = 1
-    elseif d == Direction.LEFT then
+    elseif d == info.direction.left then
         con[Y] = 0
         con[HEIGHT] = 1
-    elseif d == Direction.RIGHT then
+    elseif d == info.direction.right then
         con[X] = container[X] + container[WIDTH]
         con[Y] = container[Y] + container[HEIGHT]
         con[WIDTH] = 1 - con[X]

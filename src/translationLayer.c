@@ -182,6 +182,22 @@ static void load_info()
 
     lua_setfield(L, -2 ,"monitor");
 
+    lua_createtable(L, 0, 0);
+
+    lua_pushinteger(L, WLR_DIRECTION_DOWN);
+    lua_setfield(L, -2, "down");
+
+    lua_pushinteger(L, WLR_DIRECTION_UP);
+    lua_setfield(L, -2, "up");
+
+    lua_pushinteger(L, WLR_DIRECTION_LEFT);
+    lua_setfield(L, -2, "left");
+
+    lua_pushinteger(L, WLR_DIRECTION_RIGHT);
+    lua_setfield(L, -2, "right");
+
+    lua_setfield(L, -2, "direction");
+
     lua_setglobal(L, "info");
 }
 
@@ -196,16 +212,18 @@ void load_libs(lua_State *L)
     luaL_newlib(L, event);
     lua_setglobal(L, "event");
 
+    lua_createtable(L, 0, 0);
     luaL_newlib(L, levent);
-    lua_setglobal(L, "levent");
+    lua_setfield(L, -2, "event");
+
+    luaL_newlib(L, localconfig);
+    lua_setfield(L, -2, "config");
+    lua_setglobal(L, "l");
 
     load_info();
 
     luaL_newlib(L, config);
     lua_setglobal(L, "config");
-
-    luaL_newlib(L, localconfig);
-    lua_setglobal(L, "lconfig");
 
     luaL_newlib(L, layout);
     lua_setglobal(L, "layout");

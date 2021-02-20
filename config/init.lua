@@ -37,7 +37,7 @@ config.set_default_layout(layouts[1])
 local termcmd = "/usr/bin/termite"
 config.set_keybinds({
     {"mod-p",         function() os.execute("rofi -show run&") end},
-    {"mod-e",         function() action.view(info.get_next_empty_workspace(info.get_workspace(), Direction.RIGHT)) end},
+    {"mod-e",         function() action.view(info.get_next_empty_workspace(info.get_workspace(), info.direction.right)) end},
     {"mod-period",    function() action.toggle_workspace() end},
     {"mod-S-period",  function() action.toggle_layout() end},
     {"mod-S-Return",  function() action.spawn(termcmd) end},
