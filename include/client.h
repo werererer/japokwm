@@ -41,8 +41,17 @@ void reset_tiled_client_borders(int border_bx);
 void reset_floating_client_borders(int border_px);
 float calc_ratio(float width, float height);
 
-extern struct wl_list clients; /* tiling order */
+bool wants_floating(struct client *c);
+bool is_popup_menu(struct client *c);
+
+void commit_notify(struct wl_listener *listener, void *data);
+void create_notify(struct wl_listener *listener, void *data);
+void destroynotify(struct wl_listener *listener, void *data);
+void maprequest(struct wl_listener *listener, void *data);
+void unmapnotify(struct wl_listener *listener, void *data);
 
 struct wlr_surface *get_base_wlrsurface(struct client *c);
 struct wlr_surface *get_wlrsurface(struct client *c);
+
+extern struct wl_list clients; /* tiling order */
 #endif

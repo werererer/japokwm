@@ -1,8 +1,11 @@
 #include "xwayland.h"
+
 #include <stdlib.h>
 #include <wlr/util/log.h>
+
 #include "container.h"
 #include "server.h"
+#include "tile/tileUtils.h"
 
 static const char *atom_map[ATOM_LAST] = {
     "_NET_WM_WINDOW_TYPE_NORMAL",
@@ -18,6 +21,27 @@ static const char *atom_map[ATOM_LAST] = {
     "_NET_WM_WINDOW_TYPE_NOTIFICATION",
     "_NET_WM_STATE_MODAL",
 };
+
+void create_notifyx11(struct wl_listener *listener, void *data)
+{
+    struct wlr_xwayland_surface *xwayland_surface = data;
+    struct client *c;
+    /* Allocate a Client for this surface */
+    c = xwayland_surface->data = calloc(1, sizeof(struct client));
+    c->surface.xwayland = xwayland_surface;
+    // set default value will be overriden on maprequest
+    c->type = X11_MANAGED;
+
+    /* Listen to the various events it can emit */
+    c->map.notify = maprequestx11;
+    wl_signal_add(&xwayland_surface->events.map, &c->map);
+    c->unmap.notify = unmapnotify;
+    wl_signal_add(&xwayland_surface->events.unmap, &c->unmap);
+    c->activate.notify = activatex11;
+    wl_signal_add(&xwayland_surface->events.request_activate, &c->activate);
+    c->destroy.notify = destroynotify;
+    wl_signal_add(&xwayland_surface->events.destroy, &c->destroy);
+}
 
 void handle_xwayland_ready(struct wl_listener *listener, void *data)
 {
@@ -57,3 +81,72 @@ void handle_xwayland_ready(struct wl_listener *listener, void *data)
     xcb_disconnect(xcb_conn);
 }
 
+void activatex11(struct wl_listener *listener, void *data)
+{
+       struct client *c = wl_container_of(listener, c, activate);
+
+       /* Only "managed" windows can be activated */
+       if (c->type == X11_MANAGED)
+           wlr_xwayland_surface_activate(c->surface.xwayland, true);
+}
+
+void maprequestx11(struct wl_listener *listener, void *data)
+{
+    /* Called when the surface is mapped, or ready to display on-screen. */
+    struct client *c = wl_container_of(listener, c, map);
+    struct wlr_xwayland_surface *xwayland_surface = c->surface.xwayland;
+    struct monitor *m = selected_monitor;
+    struct layout *lt = get_layout_on_monitor(m);
+
+    c->commit.notify = commit_notify;
+    wl_signal_add(&xwayland_surface->surface->events.commit, &c->commit);
+
+    c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
+    c->ws_id = m->ws_ids[0];
+    c->bw = lt->options.tile_border_px;
+
+    struct container *con = create_container(c, m, true);
+
+    struct wlr_box prefered_geom = (struct wlr_box) {
+        .x = c->surface.xwayland->x,
+        .y = c->surface.xwayland->y,
+        .width = c->surface.xwayland->width,
+        .height = c->surface.xwayland->height,
+    };
+
+    switch (c->type) {
+        case X11_MANAGED:
+            {
+                wl_list_insert(&clients, &c->link);
+
+                con->on_top = false;
+                if (wants_floating(con->client)) {
+                    set_container_floating(con, true);
+                    resize(con, prefered_geom);
+                }
+                break;
+            }
+        case X11_UNMANAGED:
+            {
+                wl_list_insert(&server.independents, &con->ilink);
+
+                if (is_popup_menu(c) || xwayland_surface->parent) {
+                    wl_list_remove(&con->flink);
+                    wl_list_insert(&focused_container(m)->flink, &con->flink);
+                } else {
+                    con->on_top = true;
+                    focus_container(con, FOCUS_NOOP);
+                }
+
+                con->has_border = false;
+                lift_container(con);
+                set_container_floating(con, true);
+                resize(con, prefered_geom);
+                break;
+            }
+        default:
+            break;
+    }
+    arrange();
+    apply_rules(con);
+}

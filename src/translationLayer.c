@@ -185,10 +185,10 @@ static void load_info()
     lua_createtable(L, 0, 0);
 
     lua_pushinteger(L, WLR_DIRECTION_DOWN);
-    lua_setfield(L, -2, "down");
+    lua_setfield(L, -2, "bottom");
 
     lua_pushinteger(L, WLR_DIRECTION_UP);
-    lua_setfield(L, -2, "up");
+    lua_setfield(L, -2, "top");
 
     lua_pushinteger(L, WLR_DIRECTION_LEFT);
     lua_setfield(L, -2, "left");

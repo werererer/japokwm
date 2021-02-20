@@ -82,22 +82,15 @@ typedef struct {
  * frame handler to the per-surface render function. */
 /* function declarations */
 static void cleanup();
-static void commitnotify(struct wl_listener *listener, void *data);
-static void create_notify(struct wl_listener *listener, void *data);
 static void create_notify_layer_shell(struct wl_listener *listener, void *data);
 static void createxdeco(struct wl_listener *listener, void *data);
-static void destroynotify(struct wl_listener *listener, void *data);
 static void destroyxdeco(struct wl_listener *listener, void *data);
 static void getxdecomode(struct wl_listener *listener, void *data);
 static void inputdevice(struct wl_listener *listener, void *data);
-static void maprequest(struct wl_listener *listener, void *data);
-static void maprequestx11(struct wl_listener *listener, void *data);
 static void run(char *startup_cmd);
 static void setpsel(struct wl_listener *listener, void *data);
 static void setsel(struct wl_listener *listener, void *data);
-static void setmfact(float factor);
 static void sigchld(int unused);
-static void unmapnotify(struct wl_listener *listener, void *data);
 static int setup();
 
 /* global event handlers */
@@ -114,8 +107,6 @@ static struct wl_listener new_layer_shell_surface = {.notify = create_notify_lay
 static struct wl_listener request_set_psel = {.notify = setpsel};
 static struct wl_listener request_set_sel = {.notify = setsel};
 
-static void activatex11(struct wl_listener *listener, void *data);
-static void create_notifyx11(struct wl_listener *listener, void *data);
 static struct wl_listener new_xwayland_surface = {.notify = create_notifyx11};
 
 void cleanup()
@@ -127,50 +118,6 @@ void cleanup()
     wlr_xcursor_manager_destroy(server.cursor_mgr);
     wlr_cursor_destroy(server.cursor.wlr_cursor);
     wlr_output_layout_destroy(server.output_layout);
-}
-
-void commitnotify(struct wl_listener *listener, void *data)
-{
-    struct client *c = wl_container_of(listener, c, commit);
-    struct container *con = c->con;
-
-    if (!con)
-        return;
-
-    container_damage_part(con);
-}
-
-void create_notify(struct wl_listener *listener, void *data)
-{
-    /* This event is raised when wlr_xdg_shell receives a new xdg surface from a
-     * client, either a toplevel (application window) or popup. */
-    struct wlr_xdg_surface *xdg_surface = data;
-
-    if (xdg_surface->role != WLR_XDG_SURFACE_ROLE_TOPLEVEL)
-        return;
-
-    /* Allocate a Client for this surface */
-    struct client *c = xdg_surface->data = calloc(1, sizeof(struct client));
-
-    c->surface.xdg = xdg_surface;
-    c->type = XDG_SHELL;
-
-    /* Tell the client not to try anything fancy */
-    wlr_xdg_toplevel_set_tiled(c->surface.xdg, WLR_EDGE_TOP |
-            WLR_EDGE_BOTTOM | WLR_EDGE_LEFT | WLR_EDGE_RIGHT);
-
-    /* Listen to the various events it can emit */
-    c->commit.notify = commitnotify;
-    wl_signal_add(&xdg_surface->surface->events.commit, &c->commit);
-    c->map.notify = maprequest;
-    wl_signal_add(&xdg_surface->events.map, &c->map);
-    c->unmap.notify = unmapnotify;
-    wl_signal_add(&xdg_surface->events.unmap, &c->unmap);
-    c->destroy.notify = destroynotify;
-    wl_signal_add(&xdg_surface->events.destroy, &c->destroy);
-    /* popups */
-    c->new_popup.notify = popup_handle_new_popup;
-    wl_signal_add(&xdg_surface->events.new_popup, &c->new_popup);
 }
 
 void create_notify_layer_shell(struct wl_listener *listener, void *data)
@@ -187,7 +134,7 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     c->type = LAYER_SHELL;
 
     /* Listen to the various events it can emit */
-    c->commit.notify = commitnotify;
+    c->commit.notify = commit_notify;
     wl_signal_add(&layer_surface->surface->events.commit, &c->commit);
     c->map.notify = maprequest;
     wl_signal_add(&layer_surface->events.map, &c->map);
@@ -215,32 +162,6 @@ void createxdeco(struct wl_listener *listener, void *data)
     d->destroy.notify = destroyxdeco;
 
     getxdecomode(&d->request_mode, wlr_deco);
-}
-
-void destroynotify(struct wl_listener *listener, void *data)
-{
-    /* Called when the surface is destroyed and should never be shown again. */
-    struct client *c = wl_container_of(listener, c, destroy);
-    wl_list_remove(&c->map.link);
-    wl_list_remove(&c->unmap.link);
-    wl_list_remove(&c->destroy.link);
-
-    switch (c->type) {
-        case XDG_SHELL:
-            wl_list_remove(&c->commit.link);
-            break;
-        case X11_MANAGED:
-            wl_list_remove(&c->activate.link);
-            break;
-        default:
-            break;
-    }
-
-    free(c);
-    c = NULL;
-
-    arrange();
-    focus_top_container(&server.workspaces, selected_monitor->ws_ids[0], FOCUS_NOOP);
 }
 
 void destroyxdeco(struct wl_listener *listener, void *data)
@@ -285,147 +206,6 @@ void inputdevice(struct wl_listener *listener, void *data)
     if (!wl_list_empty(&server.keyboards))
         caps |= WL_SEAT_CAPABILITY_KEYBOARD;
     wlr_seat_set_capabilities(server.seat, caps);
-}
-
-static bool wants_floating(struct client *c) {
-    if (c->type != X11_MANAGED && c->type != X11_UNMANAGED) {
-        return false;
-    }
-    struct wlr_xwayland_surface *surface = c->surface.xwayland;
-    struct xwayland xwayland = server.xwayland;
-
-    if (surface->modal) {
-        return true;
-    }
-
-    for (size_t i = 0; i < surface->window_type_len; ++i) {
-        xcb_atom_t type = surface->window_type[i];
-        if (type == xwayland.atoms[NET_WM_WINDOW_TYPE_DIALOG] ||
-                type == xwayland.atoms[NET_WM_WINDOW_TYPE_UTILITY] ||
-                type == xwayland.atoms[NET_WM_WINDOW_TYPE_TOOLBAR] ||
-                type == xwayland.atoms[NET_WM_WINDOW_TYPE_POPUP_MENU] ||
-                type == xwayland.atoms[NET_WM_WINDOW_TYPE_SPLASH]) {
-            return true;
-        }
-    }
-
-    struct wlr_xwayland_surface_size_hints *size_hints = surface->size_hints;
-    if (size_hints != NULL &&
-            size_hints->min_width > 0 && size_hints->min_height > 0 &&
-            (size_hints->max_width == size_hints->min_width ||
-            size_hints->max_height == size_hints->min_height)) {
-        return true;
-    }
-
-    return false;
-}
-
-static bool is_popup_menu(struct client *c)
-{
-    struct wlr_xwayland_surface *surface = c->surface.xwayland;
-    struct xwayland xwayland = server.xwayland;
-    for (size_t i = 0; i < surface->window_type_len; ++i) {
-        xcb_atom_t type = surface->window_type[i];
-        if (type == xwayland.atoms[NET_WM_WINDOW_TYPE_POPUP_MENU] ||
-                type == xwayland.atoms[NET_WM_WINDOW_TYPE_NORMAL]) {
-            return true;
-        }
-    }
-    return false;
-}
-
-void maprequest(struct wl_listener *listener, void *data)
-{
-    /* Called when the surface is mapped, or ready to display on-screen. */
-    struct client *c = wl_container_of(listener, c, map);
-
-    struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace_on_monitor(m);
-    struct layout *lt = &ws->layout[0];
-
-    c->ws_id = ws->id;
-    c->bw = lt->options.tile_border_px;
-
-    switch (c->type) {
-        case XDG_SHELL:
-            {
-                wl_list_insert(&clients, &c->link);
-                create_container(c, m, true);
-                break;
-            }
-        case LAYER_SHELL:
-            {
-                struct monitor *m = output_to_monitor(c->surface.layer->output);
-                wl_list_insert(&clients, &c->link);
-                create_container(c, m, true);
-                break;
-            }
-        default:
-            break;
-    }
-    arrange();
-    focus_top_container(&server.workspaces, ws->id, FOCUS_NOOP);
-}
-
-void maprequestx11(struct wl_listener *listener, void *data)
-{
-    /* Called when the surface is mapped, or ready to display on-screen. */
-    struct client *c = wl_container_of(listener, c, map);
-    struct wlr_xwayland_surface *xwayland_surface = c->surface.xwayland;
-    struct monitor *m = selected_monitor;
-    struct layout *lt = get_layout_on_monitor(m);
-
-    c->commit.notify = commitnotify;
-    wl_signal_add(&xwayland_surface->surface->events.commit, &c->commit);
-
-    c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
-    c->ws_id = m->ws_ids[0];
-    c->bw = lt->options.tile_border_px;
-
-    struct container *con = create_container(c, m, true);
-
-    struct wlr_box prefered_geom = (struct wlr_box) {
-        .x = c->surface.xwayland->x,
-        .y = c->surface.xwayland->y,
-        .width = c->surface.xwayland->width,
-        .height = c->surface.xwayland->height,
-    };
-
-    switch (c->type) {
-        case X11_MANAGED:
-            {
-                wl_list_insert(&clients, &c->link);
-
-                con->on_top = false;
-                if (wants_floating(con->client)) {
-                    set_container_floating(con, true);
-                    resize(con, prefered_geom);
-                }
-                break;
-            }
-        case X11_UNMANAGED:
-            {
-                wl_list_insert(&server.independents, &con->ilink);
-
-                if (is_popup_menu(c) || xwayland_surface->parent) {
-                    wl_list_remove(&con->flink);
-                    wl_list_insert(&focused_container(m)->flink, &con->flink);
-                } else {
-                    con->on_top = true;
-                    focus_container(con, FOCUS_NOOP);
-                }
-
-                con->has_border = false;
-                lift_container(con);
-                set_container_floating(con, true);
-                resize(con, prefered_geom);
-                break;
-            }
-        default:
-            break;
-    }
-    arrange();
-    apply_rules(con);
 }
 
 void run(char *startup_cmd)
@@ -477,16 +257,6 @@ void run(char *startup_cmd)
         kill(startup_pid, SIGTERM);
         waitpid(startup_pid, NULL, 0);
     }
-}
-
-/* arg > 1.0 will set mfact absolutely */
-void setmfact(float factor)
-{
-    factor = factor < 1.0 ? factor + selected_monitor->mfact : factor - 1.0;
-    if (factor < 0.1 || factor > 0.9)
-        return;
-    selected_monitor->mfact = factor;
-    arrange();
 }
 
 void setpsel(struct wl_listener *listener, void *data)
@@ -674,60 +444,6 @@ void sigchld(int unused)
     if (signal(SIGCHLD, sigchld) == SIG_ERR)
         EBARF("can't install SIGCHLD handler");
     while (0 < waitpid(-1, NULL, WNOHANG));
-}
-
-void unmapnotify(struct wl_listener *listener, void *data)
-{
-    /* Called when the surface is unmapped, and should no longer be shown. */
-    struct client *c = wl_container_of(listener, c, unmap);
-
-    container_damage_whole(c->con);
-    destroy_container(c->con);
-    c->con = NULL;
-
-    switch (c->type) {
-        case LAYER_SHELL:
-            wl_list_remove(&c->link);
-            break;
-        case XDG_SHELL:
-            wl_list_remove(&c->link);
-            break;
-        case X11_MANAGED:
-            wl_list_remove(&c->link);
-            break;
-        case X11_UNMANAGED:
-            break;
-    }
-}
-
-void activatex11(struct wl_listener *listener, void *data)
-{
-       struct client *c = wl_container_of(listener, c, activate);
-
-       /* Only "managed" windows can be activated */
-       if (c->type == X11_MANAGED)
-           wlr_xwayland_surface_activate(c->surface.xwayland, true);
-}
-
-void create_notifyx11(struct wl_listener *listener, void *data)
-{
-    struct wlr_xwayland_surface *xwayland_surface = data;
-    struct client *c;
-    /* Allocate a Client for this surface */
-    c = xwayland_surface->data = calloc(1, sizeof(struct client));
-    c->surface.xwayland = xwayland_surface;
-    // set default value will be overriden on maprequest
-    c->type = X11_MANAGED;
-
-    /* Listen to the various events it can emit */
-    c->map.notify = maprequestx11;
-    wl_signal_add(&xwayland_surface->events.map, &c->map);
-    c->unmap.notify = unmapnotify;
-    wl_signal_add(&xwayland_surface->events.unmap, &c->unmap);
-    c->activate.notify = activatex11;
-    wl_signal_add(&xwayland_surface->events.request_activate, &c->activate);
-    c->destroy.notify = destroynotify;
-    wl_signal_add(&xwayland_surface->events.destroy, &c->destroy);
 }
 
 Atom getatom(xcb_connection_t *xc, const char *name)
