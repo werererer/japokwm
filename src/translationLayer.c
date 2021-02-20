@@ -1,4 +1,5 @@
 #include "translationLayer.h"
+#include "cursor.h"
 #include "lib/actions/actions.h"
 #include "lib/actions/libcontainer.h"
 #include "lib/config/config.h"
@@ -9,6 +10,8 @@
 #include "lib/event_handler/local_event_handler.h"
 #include "tile/tile.h"
 #include <lauxlib.h>
+#include <lua.h>
+#include <wayland-server-protocol.h>
 
 static const struct luaL_Reg action[] =
 {
@@ -128,23 +131,82 @@ static const struct luaL_Reg layout[] =
     {NULL, NULL},
 };
 
+static void load_info()
+{
+    luaL_newlib(L, info);
+
+    lua_createtable(L, 0, 0);
+    lua_createtable(L, 0, 0);
+
+    lua_pushinteger(L, CURSOR_NORMAL);
+    lua_setfield(L, -2 ,"normal");
+
+    lua_pushinteger(L, CURSOR_MOVE);
+    lua_setfield(L, -2 ,"move");
+
+    lua_pushinteger(L, CURSOR_RESIZE);
+    lua_setfield(L, -2 ,"resize");
+
+    lua_setfield(L, -2 ,"mode");
+    lua_setfield(L, -2 ,"cursor");
+
+    lua_createtable(L, 0, 0);
+
+    lua_createtable(L, 0, 0);
+
+    lua_pushinteger(L, WL_OUTPUT_TRANSFORM_NORMAL);
+    lua_setfield(L, -2 ,"normal");
+
+    lua_pushinteger(L, WL_OUTPUT_TRANSFORM_90);
+    lua_setfield(L, -2 ,"rotate_90");
+
+    lua_pushinteger(L, WL_OUTPUT_TRANSFORM_180);
+    lua_setfield(L, -2 ,"rotate_90");
+
+    lua_pushinteger(L, WL_OUTPUT_TRANSFORM_270);
+    lua_setfield(L, -2 ,"rotate_270");
+
+    lua_pushinteger(L, WL_OUTPUT_TRANSFORM_FLIPPED);
+    lua_setfield(L, -2 ,"flipp");
+
+    lua_pushinteger(L, WL_OUTPUT_TRANSFORM_FLIPPED_90);
+    lua_setfield(L, -2 ,"flipp_90");
+
+    lua_pushinteger(L, WL_OUTPUT_TRANSFORM_FLIPPED_180);
+    lua_setfield(L, -2 ,"flipp_180");
+
+    lua_pushinteger(L, WL_OUTPUT_TRANSFORM_FLIPPED_270);
+    lua_setfield(L, -2 ,"flipp_270");
+
+    lua_setfield(L, -2 ,"transform");
+
+    lua_setfield(L, -2 ,"monitor");
+
+    lua_setglobal(L, "info");
+}
+
 void load_libs(lua_State *L)
 {
     luaL_newlib(L, action);
     lua_setglobal(L, "action");
+
     luaL_newlib(L, container);
     lua_setglobal(L, "container");
+
     luaL_newlib(L, event);
     lua_setglobal(L, "event");
-    lua_createtable(L, 0, 0);
+
     luaL_newlib(L, levent);
     lua_setglobal(L, "levent");
-    luaL_newlib(L, info);
-    lua_setglobal(L, "info");
+
+    load_info();
+
     luaL_newlib(L, config);
     lua_setglobal(L, "config");
+
     luaL_newlib(L, localconfig);
     lua_setglobal(L, "lconfig");
+
     luaL_newlib(L, layout);
     lua_setglobal(L, "layout");
 }

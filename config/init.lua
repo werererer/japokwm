@@ -1,21 +1,3 @@
-local cursor_mode = {
-    CUR_NORMAL = 0,
-    CUR_MOVE = 1,
-    CUR_RESIZE = 2,
-}
-
--- uses wl_output_transform enum values
-local monitor_transform = {
-    TRANSFORM_NORMAL = 0,
-    TRANSFORM_90 = 1,
-    TRANSFORM_180 = 2,
-    TRANSFORM_270 = 3,
-    TRANSFORM_FLIPPED = 4,
-    TRANSFORM_FLIPPED_90 = 5,
-    TRANSFORM_FLIPPED_180 = 6,
-    TRANSFORM_FLIPPED_270 = 7,
-}
-
 config.set_sloppy_focus(false)
 config.set_tile_borderpx(2)
 config.set_float_borderpx(2)
@@ -31,9 +13,7 @@ event.set_create_container_function(function(n)
     print("it is: ", n)
 end)
 
-print("set workspaces")
 config.set_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
-print("set workspaces end")
 
 config.set_rules({
     -- {"termite", "termite", function(n) container.set_sticky(n, true) end},
@@ -50,7 +30,7 @@ local layouts = {
 config.set_layouts("default", layouts)
 
 config.set_monrules({
-    { "", 0.55, 1, 1, layouts[1], monitor_transform.TRANSFORM_NORMAL },
+    { "", 0.55, 1, 1, layouts[1], info.monitor.transform.rotate_90 },
 })
 config.set_default_layout(layouts[1])
 
@@ -109,6 +89,6 @@ print("end keybinds")
 
 config.set_buttons({
     {"M1", function() action.focus_container(info.get_container_under_cursor()) end},
-    {"mod-M1",  function() action.move_resize(cursor_mode.CUR_MOVE) end},
-    {"mod-M2",  function() action.move_resize(cursor_mode.CUR_RESIZE) end},
+    {"mod-M1",  function() action.move_resize(info.cursor.mode.move) end},
+    {"mod-M2",  function() action.move_resize(info.cursor.mode.resize) end},
 })
