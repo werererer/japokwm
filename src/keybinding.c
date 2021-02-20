@@ -58,6 +58,10 @@ static void resolve_keybind_element(char *sym_dest, const char *bind)
         strcpy(sym_dest, mouse[2]);
         return;
     }
+    if (strcmp(bind, "C") == 0) {
+        strcpy(sym_dest, "Control_L");
+        return;
+    }
     if (strcmp(bind, "S") == 0) {
         strcpy(sym_dest, "Shift_L");
         return;
