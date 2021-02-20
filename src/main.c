@@ -134,12 +134,12 @@ void run(char *startup_cmd)
     /* Add a Unix socket to the Wayland display. */
     const char *socket = wl_display_add_socket_auto(server.display);
     if (!socket)
-        BARF("startup: display_add_socket_auto");
+        wlr_log(WLR_INFO, "startup: display_add_socket_auto");
 
     /* Start the backend. This will enumerate outputs and inputs, become the DRM
      * master, etc */
     if (!wlr_backend_start(server.backend))
-        BARF("startup: backend_start");
+        wlr_log(WLR_INFO, "startup: backend_start");
 
     /* Now that outputs are initialized, choose initial selMon based on
      * cursor position, and set default cursor image */
@@ -159,11 +159,11 @@ void run(char *startup_cmd)
     if (startup_cmd) {
         startup_pid = fork();
         if (startup_pid < 0)
-            EBARF("startup: fork");
+            wlr_log(WLR_ERROR, "startup: fork");
         if (startup_pid == 0) {
             printf("exec: %s\n", startup_cmd);
             execl("/bin/sh", "/bin/sh", "-c", startup_cmd, (void *)NULL);
-            EBARF("startup: execl");
+            wlr_log(WLR_ERROR, "startup: execl");
         }
     }
     /* Run the Wayland event loop. This does not return until you exit the
@@ -238,7 +238,7 @@ int setup()
      * if the backend does not support hardware cursors (some older GPUs
      * don't). */
     if (!(server.backend = wlr_backend_autocreate(server.display, NULL)))
-        BARF("couldn't create backend");
+        wlr_log(WLR_INFO, "couldn't create backend");
 
     /* If we don't provide a renderer, autocreate makes a GLES2 renderer for us.
      * The renderer is responsible for defining the various pixel formats it
@@ -361,7 +361,7 @@ int setup()
 void sigchld(int unused)
 {
     if (signal(SIGCHLD, sigchld) == SIG_ERR)
-        EBARF("can't install SIGCHLD handler");
+        wlr_log(WLR_ERROR, "can't install SIGCHLD handler");
     while (0 < waitpid(-1, NULL, WNOHANG));
 }
 
@@ -394,7 +394,7 @@ int main(int argc, char *argv[])
         goto usage;
 
     // TODO delete to increase performance
-    setbuf(stdout, NULL);
+    /* setbuf(stdout, NULL); */
 
     // Wayland requires XDG_RUNTIME_DIR for creating its communications
     // socket
@@ -413,5 +413,5 @@ int main(int argc, char *argv[])
     return EXIT_SUCCESS;
 
 usage:
-    BARF("Usage: %s [-s startup command]", argv[0]);
+    wlr_log(WLR_INFO, "Usage: %s [-s startup command]", argv[0]);
 }

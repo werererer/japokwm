@@ -7,23 +7,16 @@ local HEIGHT<const> = 4
 
 function Is_equally_affected_by_resize_of(container, container2, d)
     local resize = false
-    if d == Direction.TOP then
+    if d == info.direction.top then
         resize = Is_approx_equal(container2[Y], container[Y])
-    elseif d == Direction.BOTTOM then
+    elseif d == info.direction.bottom then
         resize = Is_approx_equal(container2[Y] + container2[HEIGHT], container[Y] + container[HEIGHT])
-    elseif d == Direction.LEFT then
+    elseif d == info.direction.left then
         resize = Is_approx_equal(container2[X], container[X])
-    elseif d == Direction.RIGHT then
+    elseif d == info.direction.right then
         resize = Is_approx_equal(container2[X] + container2[WIDTH], container[X] + container[WIDTH])
     end
     return resize
-end
-
-function Resize_this_all(n, d)
-    -- local i = math.max(math.min(info.get_this_container_count(), #Layout_data), 1)
-    -- local j = math.min(info.this_container_position(), #Layout_data[i])
-    -- Resize_all(Layout_data, i, j, n, d)
-    action.arrange()
 end
 
 -- finds containers that are affected by the container at i,j
@@ -70,25 +63,25 @@ end
 function Is_affected_by_resize_of(container, container2, d)
     local resize = false
 
-    if d == Direction.TOP then
+    if d == info.direction.top then
         local right = Is_container_right_to(container, container2)
         local left = Is_container_left_to(container, container2)
         local container_is_higher = Is_container_over(container, container2)
 
         resize = container_is_higher and not (left or right)
-    elseif d == Direction.BOTTOM then
+    elseif d == info.direction.bottom then
         local right = Is_container_right_to(container, container2)
         local left = Is_container_left_to(container, container2)
         local container_is_lower = Is_container_under(container, container2)
 
         resize = container_is_lower and not (left or right)
-    elseif d == Direction.LEFT then
+    elseif d == info.direction.left then
         local over = Is_container_over(container, container2)
         local under = Is_container_under(container, container2)
         local container_is_left = Is_container_left_to(container, container2)
 
         resize = container_is_left and not (over or under)
-    elseif d == Direction.RIGHT then
+    elseif d == info.direction.right then
         local over = Is_container_over(container, container2)
         local under = Is_container_under(container, container2)
         local container_is_right = Is_container_right_to(container, container2)
