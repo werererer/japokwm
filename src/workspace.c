@@ -40,6 +40,14 @@ void destroy_workspace(struct workspace *ws)
     free(ws);
 }
 
+void update_workspace_ids(struct wlr_list *workspaces)
+{
+    for (int i = 0; i < workspaces->length; i++) {
+        struct workspace *ws = workspaces->items[i];
+        ws->id = i;
+    }
+}
+
 void focus_top_container(struct wlr_list *workspaces, int ws_id, enum focus_actions a)
 {
     // focus_stack should not be changed while iterating

@@ -34,9 +34,7 @@ int lib_focus_container(lua_State *L)
     int pos = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
-    printf("focus container: %i\n", pos);
     struct container *con = container_position_to_container(m->ws_ids[0], pos);
-    printf("container: %p\n", con);
 
     if (!con)
         return 0;
@@ -538,5 +536,20 @@ int lib_toggle_workspace(lua_State *L)
     struct monitor *m = selected_monitor;
     push_workspace(m->ws_ids, m->ws_ids[1]);
     arrange();
+    return 0;
+}
+
+int lib_move_workspace_to(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = get_workspace_on_monitor(m);
+
+    int i = luaL_checkinteger(L, -1);
+    lua_pop(L, -1);
+
+    wlr_list_del(&server.workspaces, ws->id);
+    wlr_list_insert(&server.workspaces, i, ws);
+    update_workspace_ids(&server.workspaces);
+
     return 0;
 }

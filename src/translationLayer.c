@@ -15,6 +15,7 @@
 
 static const struct luaL_Reg action[] =
 {
+    {"lib_move_workspace_to", lib_move_workspace_to},
     {"arrange", lib_arrange},
     {"focus_container", lib_focus_container},
     {"focus_on_hidden_stack", lib_focus_on_hidden_stack},

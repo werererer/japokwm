@@ -100,11 +100,6 @@ _XCURSOR_THEME_
 
 # AUTHORS
 
-Maintained by Drew DeVault <sir@cmpwn.com>, who is assisted by other open
-source contributors. For more information about sway development, see
-<https://github.com/swaywm/sway>.
+Maintained by Jakob Schlanstedt
 
 # SEE ALSO
-
-*sway*(5) *swaymsg*(1) *sway-input*(5) *sway-output*(5) *sway-bar*(5)
-*sway-ipc*(7)
