@@ -81,7 +81,6 @@ int local_set_border_color(lua_State *L)
 
 int local_set_layout_constraints(lua_State *L)
 {
-    printf("local_set_layout_constraints\n");
     struct layout *lt = get_layout_on_monitor(selected_monitor);
 
     lt->options.layout_constraints = lua_toresize_constrains(L);

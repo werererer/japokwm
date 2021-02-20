@@ -89,7 +89,6 @@ void create_monitor(struct wl_listener *listener, void *data)
             reset_tag_names(&server.default_layout.options.tag_names);
         }
 
-        printf("create workspaces\n");
         create_workspaces(&server.workspaces, server.default_layout.options.tag_names, server.default_layout);
     }
 

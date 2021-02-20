@@ -317,7 +317,6 @@ void copy_layout_from_selected_workspace(struct wlr_list *workspaces)
         if (dest_lt == src_lt)
             continue;
 
-        printf("copy_layout\n");
         *dest_lt = copy_layout(src_lt);
         *dest_prev_lt = copy_layout(src_lt);
     }
@@ -332,7 +331,6 @@ void load_default_layout(lua_State *L, struct workspace *ws)
 void set_layout(lua_State *L, struct workspace *ws)
 {
     if (server.layout_set.layout_sets_ref <= 0) {
-        printf("layout sets ref NULL\n");
         return;
     }
 

@@ -214,7 +214,6 @@ int setup()
     load_libs(L);
     init_error_file();
 
-    printf("set default layout\n");
     server.default_layout = get_default_layout();
     server.layout_set = get_default_layout_set();
 

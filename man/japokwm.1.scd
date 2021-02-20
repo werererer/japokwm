@@ -11,22 +11,22 @@ japokwm - tiling made easy
 # OPTIONS
 
 *-h, --help*
-    Show help message and quit.
+	Show help message and quit.
 
 *-c, --config* <config>
-    Specifies a config file.
+	Specifies a config file.
 
 *-d, --debug*
-    Enables full logging, including debug information.
+	Enables full logging, including debug information.
 
 *-v, --version*
-    Show the version number and quit.
+	Show the version number and quit.
 
 *-V, --verbose*
-    Enables more verbose logging.
+	Enables more verbose logging.
 
 *--get-socketpath*
-    Gets the IPC socket path and prints it, then exits.
+	Gets the IPC socket path and prints it, then exits.
 
 # DESCRIPTION
 
@@ -69,34 +69,34 @@ with *i3-msg*(1) or even with *i3*(1).
 The following environment variables have an effect on sway:
 
 _SWAYSOCK_
-    Specifies the path to the sway IPC socket.
+	Specifies the path to the sway IPC socket.
 
 _XKB\_DEFAULT\_RULES_, _XKB\_DEFAULT\_MODEL_, _XKB\_DEFAULT\_LAYOUT_,
 _XKB\_DEFAULT\_VARIANT_, _XKB\_DEFAULT\_OPTIONS_
-    Configures the xkb keyboard settings. See *xkeyboard-config*(7). The
-    preferred way to configure the keyboard is via the configuration file, see
-    *sway-input*(5).
+	Configures the xkb keyboard settings. See *xkeyboard-config*(7). The
+	preferred way to configure the keyboard is via the configuration file, see
+	*sway-input*(5).
 
 The following environment variables are set by sway:
 
 _DISPLAY_
-    If compiled with Xwayland support and Xwayland is not disabled by the
-    config, this will be set to the name of the X display used for Xwayland.
+	If compiled with Xwayland support and Xwayland is not disabled by the
+	config, this will be set to the name of the X display used for Xwayland.
 
 _I3SOCK_
-    For compatibility with i3, specifies the path to the sway IPC socket.
+	For compatibility with i3, specifies the path to the sway IPC socket.
 
 _SWAYSOCK_
-    Specifies the path to the sway IPC socket.
+	Specifies the path to the sway IPC socket.
 
 _WAYLAND_DISPLAY_
-    Specifies the name of the Wayland display that sway is running on.
+	Specifies the name of the Wayland display that sway is running on.
 
 _XCURSOR_SIZE_
-    Specifies the configured cursor size.
+	Specifies the configured cursor size.
 
 _XCURSOR_THEME_
-    Specifies the configured cursor theme.
+	Specifies the configured cursor theme.
 
 # AUTHORS
 

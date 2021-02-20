@@ -10,9 +10,7 @@
 
 int lib_reload(lua_State *L)
 {
-    printf("reload\n");
     init_config(L);
-    printf("reload end\n");
 
     arrange();
     return 0;
@@ -123,14 +121,12 @@ int lib_set_workspaces(lua_State *L)
     struct wlr_list *tag_names = &server.default_layout.options.tag_names;
     wlr_list_clear(tag_names);
 
-    printf("get strings\n");
     size_t len = lua_rawlen(L, -1);
     for (int i = 0; i < len; i++) {
         char *ws_name = get_config_array_str(L, "workspaces", i+1);
         wlr_list_push(tag_names, ws_name);
     }
     lua_pop(L, 1);
-    printf("get strings done\n");
 
     struct wlr_list workspaces_tmp;
     wlr_list_init(&workspaces_tmp);

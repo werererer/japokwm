@@ -9,10 +9,6 @@ config.set_border_color({0.0, 0.0, 1.0, 1.0})
 config.set_repeat_rate(25)
 config.set_repeat_delay(600)
 
-event.set_create_container_function(function(n)
-    print("it is: ", n)
-end)
-
 config.set_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
 
 config.set_rules({
@@ -85,7 +81,6 @@ config.set_keybinds({
     -- {"mod-comma",             function() focusmon(-1) end},
     -- {"mod-d",                 function() incnmaster(-1) end},
 })
-print("end keybinds")
 
 config.set_buttons({
     {"M1", function() action.focus_container(info.get_container_under_cursor()) end},

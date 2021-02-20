@@ -457,7 +457,6 @@ int lib_decrease_default_layout(lua_State *L)
         server.layout_set.lua_layout_index = n_layouts;
     }
 
-    printf("load default layout\n");
     set_layout(L, ws);
 
     arrange();
@@ -466,7 +465,6 @@ int lib_decrease_default_layout(lua_State *L)
 
 int lib_load_default_layout(lua_State *L)
 {
-    printf("load default layout\n");
     struct workspace *ws = get_workspace_on_monitor(selected_monitor);
 
     server.layout_set.lua_layout_index = luaL_checkinteger(L, -1);
@@ -483,7 +481,6 @@ int lib_load_default_layout(lua_State *L)
     }
     lua_pop(L, 1);
 
-    printf("load default layout\n");
     server.layout_set.key = layout_set_key;
     set_layout(L, ws);
 
