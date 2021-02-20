@@ -8,6 +8,7 @@
 #include "lib/info/info.h"
 #include "lib/event_handler/local_event_handler.h"
 #include "tile/tile.h"
+#include <lauxlib.h>
 
 static const struct luaL_Reg action[] =
 {
@@ -135,6 +136,7 @@ void load_libs(lua_State *L)
     lua_setglobal(L, "container");
     luaL_newlib(L, event);
     lua_setglobal(L, "event");
+    lua_createtable(L, 0, 0);
     luaL_newlib(L, levent);
     lua_setglobal(L, "levent");
     luaL_newlib(L, info);
