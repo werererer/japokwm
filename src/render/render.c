@@ -343,7 +343,6 @@ static void clear_frame(struct monitor *m, float color[4], pixman_region32_t *da
 
 void render_frame(struct monitor *m, pixman_region32_t *damage)
 {
-    printf("render frame\n");
     /* Begin the renderer (calls glViewport and some other GL sanity checks) */
     wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
 
