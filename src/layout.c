@@ -29,17 +29,11 @@ struct layout get_default_layout()
 
 void lua_copy_table(lua_State *L, int *ref)
 {
-    if (*ref > 0) {
-        luaL_unref(L, LUA_REGISTRYINDEX, *ref);
-        *ref = 0;
-    }
-
     lua_getglobal_safe(L, "Deep_copy");
     lua_insert(L, -2);
     lua_call_safe(L, 1, 1, 0);
 
-    *ref = luaL_ref(L, LUA_REGISTRYINDEX);
-    printf("reference: %i\n", *ref);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, ref);
     return;
 }
 
