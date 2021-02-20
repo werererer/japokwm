@@ -330,20 +330,20 @@ int setup()
     wl_list_init(&clients);
     wl_list_init(&server.independents);
 
-    server.xdgShell = wlr_xdg_shell_create(server.display);
-    wl_signal_add(&server.xdgShell->events.new_surface, &new_xdg_surface);
+    server.xdg_shell = wlr_xdg_shell_create(server.display);
+    wl_signal_add(&server.xdg_shell->events.new_surface, &new_xdg_surface);
     // remove csd(client side decorations) completely from xdg based windows
     wlr_server_decoration_manager_set_default_mode(
             wlr_server_decoration_manager_create(server.display),
             WLR_SERVER_DECORATION_MANAGER_MODE_SERVER);
 
-    server.layerShell = wlr_layer_shell_v1_create(server.display);
-    wl_signal_add(&server.layerShell->events.new_surface,
+    server.layer_shell = wlr_layer_shell_v1_create(server.display);
+    wl_signal_add(&server.layer_shell->events.new_surface,
             &new_layer_shell_surface);
 
     /* Use xdg_decoration protocol to negotiate server-side decorations */
-    server.xdecoMgr = wlr_xdg_decoration_manager_v1_create(server.display);
-    wl_signal_add(&server.xdecoMgr->events.new_toplevel_decoration, &new_xdeco);
+    server.xdeco_mgr = wlr_xdg_decoration_manager_v1_create(server.display);
+    wl_signal_add(&server.xdeco_mgr->events.new_toplevel_decoration, &new_xdeco);
 
     /*
      * Creates a server.cursor, which is a wlroots utility for tracking the cursor

@@ -24,9 +24,9 @@ struct server {
     struct xwayland xwayland;
     struct wl_listener xwayland_ready;
 
-    struct wlr_xdg_shell *xdgShell;
-    struct wlr_layer_shell_v1 *layerShell;
-    struct wlr_xdg_decoration_manager_v1 *xdecoMgr;
+    struct wlr_xdg_shell *xdg_shell;
+    struct wlr_layer_shell_v1 *layer_shell;
+    struct wlr_xdg_decoration_manager_v1 *xdeco_mgr;
 
     struct cursor cursor;
     struct wlr_xcursor_manager *cursor_mgr;
