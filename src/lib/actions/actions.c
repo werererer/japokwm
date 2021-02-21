@@ -396,7 +396,7 @@ int lib_repush(lua_State *L)
     return 0;
 }
 
-int lib_increase_default_layout(lua_State *L)
+int lib_load_next_layout_in_set(lua_State *L)
 {
     const char *layout_set_key = luaL_checkstring(L, -1);
     lua_pop(L, 1);
@@ -428,7 +428,7 @@ int lib_increase_default_layout(lua_State *L)
     return 0;
 }
 
-int lib_decrease_default_layout(lua_State *L)
+int lib_load_prev_layout_in_set(lua_State *L)
 {
     const char *layout_set_key = luaL_checkstring(L, -1);
     lua_pop(L, 1);
