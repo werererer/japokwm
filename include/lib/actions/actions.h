@@ -35,5 +35,6 @@ int lib_set_nmaster(lua_State *L);
 int lib_increase_nmaster(lua_State *L);
 int lib_decrease_nmaster(lua_State *L);
 int lib_move_workspace_to(lua_State *L);
+int lib_swap_workspace(lua_State *L);
 
 #endif /* ACTIONS_H */

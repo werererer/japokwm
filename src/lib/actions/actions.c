@@ -539,17 +539,29 @@ int lib_toggle_workspace(lua_State *L)
     return 0;
 }
 
-int lib_move_workspace_to(lua_State *L)
+int lib_swap_workspace(lua_State *L)
 {
+    int ws_id1 = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+
+    int ws_id2 = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+
+    struct container *con;
+    wl_list_for_each(con, &containers, mlink) {
+        if (existon(con, &server.workspaces, ws_id1)) {
+            con->client->ws_id = ws_id2;
+            continue;
+        }
+        if (existon(con, &server.workspaces, ws_id2)) {
+            con->client->ws_id = ws_id1;
+            continue;
+        }
+    }
+
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace_on_monitor(m);
-
-    int i = luaL_checkinteger(L, -1);
-    lua_pop(L, -1);
-
-    wlr_list_del(&server.workspaces, ws->id);
-    wlr_list_insert(&server.workspaces, i, ws);
-    update_workspace_ids(&server.workspaces);
-
+    arrange();
+    focus_top_container(&server.workspaces, m->ws_ids[0], FOCUS_NOOP);
+    root_damage_whole(m->root);
     return 0;
 }
