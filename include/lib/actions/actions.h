@@ -14,7 +14,7 @@ int lib_focus_on_stack(lua_State *L);
 int lib_kill(lua_State *L);
 int lib_load_next_layout_in_set(lua_State *L);
 int lib_load_prev_layout_in_set(lua_State *L);
-int lib_load_default_layout(lua_State *L);
+int lib_load_layout_in_set(lua_State *L);
 int lib_load_layout(lua_State *L);
 int lib_move_container_to_workspace(lua_State *L);
 int lib_move_resize(lua_State *L);

@@ -450,7 +450,7 @@ int lib_load_prev_layout_in_set(lua_State *L)
     return 0;
 }
 
-int lib_load_default_layout(lua_State *L)
+int lib_load_layout_in_set(lua_State *L)
 {
     struct workspace *ws = get_workspace_on_monitor(selected_monitor);
 
