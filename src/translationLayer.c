@@ -35,7 +35,7 @@ static const struct luaL_Reg action[] =
     {"set_floating", lib_set_floating},
     {"set_nmaster", lib_set_nmaster},
     {"swap_workspace", lib_swap_workspace},
-    {"toggle_consider_layer_shell", lib_toggle_consider_layer_shell},
+    {"toggle_bars", lib_toggle_bars},
     {"toggle_floating", lib_toggle_floating},
     {"toggle_layout", lib_toggle_layout},
     {"toggle_view", lib_toggle_view},
@@ -59,7 +59,7 @@ static const struct luaL_Reg event[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg levent[] =
+static const struct luaL_Reg localevent[] =
 {
     {"set_update_function", local_set_update_function},
     {"set_create_container_function", local_set_create_container_function},
@@ -214,7 +214,7 @@ void load_libs(lua_State *L)
     lua_setglobal(L, "event");
 
     lua_createtable(L, 0, 0);
-    luaL_newlib(L, levent);
+    luaL_newlib(L, localevent);
     lua_setfield(L, -2, "event");
 
     luaL_newlib(L, localconfig);

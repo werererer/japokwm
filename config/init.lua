@@ -52,7 +52,7 @@ config.set_keybinds({
     {"mod-w",         function() action.load_default_layout("default", 3) end},
     {"mod-S-w",       function() action.load_default_layout("default", 4) end},
     {"mod-S-p",       function() action.load_layout({"g", "tmp"}) end},
-    {"mod-b",         function() action.toggle_consider_layer_shell() end},
+    {"mod-b",         function() action.toggle_bars() end},
     {"mod-S-h",       function() action.resize_main(-1/10) end},
     {"mod-S-l",       function() action.resize_main(1/10) end},
     {"mod-S-s",       function() action.write_this_overlay("tmp") end},

@@ -43,7 +43,7 @@ int lib_focus_container(lua_State *L)
     return 0;
 }
 
-int lib_toggle_consider_layer_shell(lua_State *L)
+int lib_toggle_bars(lua_State *L)
 {
     selected_monitor->root->consider_layer_shell = !selected_monitor->root->consider_layer_shell;
     arrange();

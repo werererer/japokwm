@@ -23,7 +23,7 @@ int lib_repush(lua_State *L);
 int lib_resize_main(lua_State *L);
 int lib_set_floating(lua_State *L);
 int lib_exec(lua_State *L);
-int lib_toggle_consider_layer_shell(lua_State *L);
+int lib_toggle_bars(lua_State *L);
 int lib_toggle_floating(lua_State *L);
 int lib_toggle_layout(lua_State *L);
 int lib_toggle_view(lua_State *L);
