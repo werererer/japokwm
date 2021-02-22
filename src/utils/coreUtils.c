@@ -1,6 +1,7 @@
 #include "utils/coreUtils.h"
 #include <string.h>
 #include <unistd.h>
+#include <wlr/util/log.h>
 #include <wordexp.h>
 #include <stdlib.h>
 #include <execinfo.h>
@@ -207,4 +208,16 @@ void print_trace()
         printf("%s\n", strs[i]);
     }
     free(strs);
+}
+
+int exec(const char *cmd)
+{
+    int ret_val = 0;
+
+    if (fork() == 0) {
+        setsid();
+        ret_val = execl("/bin/sh", "/bin/sh", "-c", cmd, (void *)NULL);
+    }
+
+    return ret_val;
 }

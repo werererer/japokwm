@@ -64,6 +64,13 @@ int lib_get_next_empty_workspace(lua_State *L)
     return 1;
 }
 
+int lib_get_nmaster(lua_State *L)
+{
+    struct layout *lt = get_layout_on_monitor(selected_monitor);
+    lua_pushinteger(L, lt->nmaster);
+    return 1;
+}
+
 int lib_get_workspace(lua_State *L)
 {
     struct monitor *m = selected_monitor;

@@ -81,4 +81,5 @@ void lua_tocolor(float dest_color[static 4]);
 void lua_ref_safe(lua_State *L, int t, int *ref);
 void copy_options(struct options *dest_option, struct options *src_option);
 void print_trace();
+int exec(const char *cmd);
 #endif

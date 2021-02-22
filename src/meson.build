@@ -11,6 +11,7 @@ deps = [\
     dependency('lua'),
     dependency('x11'),
     dependency('json-c'),
+    dependency('threads'),
     ]
 
 main = files('main.c')

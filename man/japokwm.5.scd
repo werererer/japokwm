@@ -25,24 +25,21 @@ change various settings. An example config is likely present in
 	Configure things locally to the layout
 
 # ACTION
-*arrange* - Arrange containers to the given information
+*arrange()* - Arrange containers to the given information
+*decrease_nmaster()* - decrease the number of master windows
+*focus_container(i)* - focus the container at i
+	- i: integer - absolute position on the stack
 	```
-	action.arrange()
+	action.focus_container(0) -- this focuses the master container
 	```
-*decrease_nmaster* - decrease the number of master windows
+*focus_on_hidden_stack(i)* - replace current container with a hidden container
+	- i: integer - relative position on the hidden stack
 	```
-	action.decrease_nmaster()
+	action.focus_on_hidden_stack(0) -- show first hidden container
 	```
-*focus_container* - focus a container that is at the given position
-	```
-	action.focus_container(3)
-	```
-*focus_on_hidden_stack* - replace current container with the
-*increase_nmaster* - increase the number of master windows
-	```
-	action.increase_nmaster()
-	```
-*focus_container* - focuses
+*focus_on_stack(i)* - focuses the container at relative i
+	- i: integer - relative position on the stack
+*increase_nmaster()* - increase the number of master windows
 # SEE ALSO
 
 *japokwm*(1)

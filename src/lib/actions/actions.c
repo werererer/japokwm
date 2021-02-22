@@ -119,14 +119,10 @@ int lib_decrease_nmaster(lua_State *L)
     return 0;
 }
 
-int lib_spawn(lua_State *L)
+int lib_exec(lua_State *L)
 {
     const char *cmd = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-    if (fork() == 0) {
-        setsid();
-        execl("/bin/sh", "/bin/sh", "-c", cmd, (void *)NULL);
-    }
+    exec(cmd);
     return 0;
 }
 
@@ -152,13 +148,6 @@ int lib_focus_on_stack(lua_State *L)
     /* If only one client is visible on selMon, then c == sel */
     focus_container(con, FOCUS_LIFT);
     return 0;
-}
-
-int lib_get_nmaster(lua_State *L)
-{
-    struct layout *lt = get_layout_on_monitor(selected_monitor);
-    lua_pushinteger(L, lt->nmaster);
-    return 1;
 }
 
 int lib_focus_on_hidden_stack(lua_State *L)
