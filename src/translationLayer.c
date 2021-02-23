@@ -68,19 +68,19 @@ static const struct luaL_Reg localevent[] =
 
 static const struct luaL_Reg info[] =
 {
-    {"get_this_container_count", lib_get_this_container_count},
-    {"this_container_position", lib_this_container_position},
-    {"get_next_empty_workspace", lib_get_next_empty_workspace},
-    {"get_workspace", lib_get_workspace},
     {"get_container_under_cursor", lib_get_container_under_cursor},
+    {"get_next_empty_workspace", lib_get_next_empty_workspace},
+    {"get_nmaster", lib_get_nmaster},
+    {"get_this_container_count", lib_get_this_container_count},
+    {"get_workspace", lib_get_workspace},
     {"is_container_not_in_limit", lib_is_container_not_in_limit},
     {"is_container_not_in_master_limit", lib_is_container_not_in_master_limit},
+    {"this_container_position", lib_this_container_position},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg config[] = 
 {
-    {"get_nmaster", lib_get_nmaster},
     {"reload", lib_reload},
     {"set_border_color", lib_set_border_color},
     {"set_buttons", lib_set_buttons},
