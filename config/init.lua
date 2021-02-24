@@ -24,12 +24,14 @@ config.set_rules({
 })
 
 config.set_monrules({
-    { "", 0.55, 1, 1, layouts[1], info.monitor.transform.rotate_90 },
+    {"", function() monitor.scale_monitor(0.6) end},
+    -- { "", 0.55, 1, 1, layouts[1], info.monitor.transform.rotate_90 },
 })
-
-config.set_monrules({
-    { "", 0.55, 1, 1, layouts[1], info.monitor.transform.rotate_90 },
-})
+    -- /* float mfact; */
+    -- /* int nmaster; */
+    -- /* float scale; */
+    -- /* struct layout lt; */
+    -- /* enum wl_output_transform rr; */
 
 config.create_layout_set("default", layouts)
 

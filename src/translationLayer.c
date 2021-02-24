@@ -8,6 +8,7 @@
 #include "lib/layout/lib_layout.h"
 #include "lib/info/info.h"
 #include "lib/event_handler/local_event_handler.h"
+#include "lib/monitor/lib_monitor.h"
 #include "tile/tile.h"
 #include <lauxlib.h>
 #include <lua.h>
@@ -131,6 +132,12 @@ static const struct luaL_Reg layout[] =
     {NULL, NULL},
 };
 
+static const struct luaL_Reg monitor[] = 
+{
+    {"scale_monitor", lib_scale_monitor},
+    {NULL, NULL},
+};
+
 static void load_info()
 {
     luaL_newlib(L, info);
@@ -227,4 +234,7 @@ void load_libs(lua_State *L)
 
     luaL_newlib(L, layout);
     lua_setglobal(L, "layout");
+
+    luaL_newlib(L, monitor);
+    lua_setglobal(L, "monitor");
 }

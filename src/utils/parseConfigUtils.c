@@ -424,11 +424,7 @@ struct monrule get_config_array_monrule(lua_State *L, const char* name, size_t i
     lua_rawgeti(L, -1, i);
 
     monrule.name = get_config_array_str(L, name, 1);
-    monrule.mfact = get_config_array_float(L, name, 2);
-    monrule.nmaster = get_config_array_int(L, name, 3);
-    monrule.scale = get_config_array_float(L, name, 4);
-    monrule.lt = get_config_array_layout(L, name, 5);
-    monrule.rr = get_config_array_int(L, name, 6);
+    monrule.lua_func_ref = get_config_array_func_id(L, name, 2);
 
     lua_pop(L, 1);
     return monrule;
@@ -440,10 +436,9 @@ struct monrule get_config_monrule(lua_State *L, char *name)
     lua_getglobal_safe(L, name);
 
     monrule.name = get_config_array_str(L, name, 1);
-    monrule.mfact = get_config_array_float(L, name, 2);
-    monrule.nmaster = get_config_array_int(L, name, 3);
-    monrule.scale = get_config_array_float(L, name, 4);
-    monrule.lt = get_config_array_layout(L, name, 5);
+    monrule.lua_func_ref = get_config_array_func_id(L, name, 2);
+
+    lua_pop(L, 1);
     return monrule;
 }
 

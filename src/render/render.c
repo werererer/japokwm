@@ -134,7 +134,7 @@ finish_damage:
     pixman_region32_fini(&damage);
 }
 
-static void render_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct wlr_box *box, pixman_region32_t *output_damage)
+static void render_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct wlr_box box, pixman_region32_t *output_damage)
 {
     struct wlr_texture *texture = wlr_surface_get_texture(surface);
     struct wlr_output *wlr_output = m->wlr_output;
@@ -142,14 +142,14 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
     if (!texture)
         return;
 
-    scale_box(box, wlr_output->scale);
+    scale_box(&box, wlr_output->scale);
 
     /* The client has a position in layout coordinates. If you have two displays,
      * one next to the other, both 1080p, a client on the rightmost display might
      * have layout coordinates of 2000,100. We need to translate that to
      * output-local coordinates, or (2000 - 1920). */
-    double ox = box->x;
-    double oy = box->y;
+    double ox = box.x;
+    double oy = box.y;
     wlr_output_layout_output_coords(server.output_layout, wlr_output, &ox, &oy);
 
     struct wlr_box obox = {
@@ -157,8 +157,8 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
          * part of the puzzle, dwl does not fully support HiDPI. */
         .x = ox,
         .y = oy,
-        .width = box->width,
-        .height = box->height,
+        .width = box.width,
+        .height = box.height,
     };
 
     render_texture(wlr_output, output_damage, texture, &obox);
@@ -263,7 +263,7 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
 
         con->geom.width = surface->current.width;
         con->geom.height = surface->current.height;
-        render_surface_iterator(m, surface, &con->geom, output_damage);
+        render_surface_iterator(m, surface, con->geom, output_damage);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -287,7 +287,7 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
         struct wlr_surface *surface = get_wlrsurface(con->client);
         con->geom.width = surface->current.width;
         con->geom.height = surface->current.height;
-        render_surface_iterator(m, surface, &con->geom, output_damage);
+        render_surface_iterator(m, surface, con->geom, output_damage);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -304,7 +304,7 @@ static void render_independents(struct monitor *m, pixman_region32_t *output_dam
 
         con->geom.width = surface->current.width;
         con->geom.height = surface->current.height;
-        render_surface_iterator(m, surface, &con->geom, output_damage);
+        render_surface_iterator(m, surface, con->geom, output_damage);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -317,7 +317,7 @@ static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
     struct xdg_popup *popup;
     wl_list_for_each_reverse(popup, &popups, plink) {
         struct wlr_surface *surface = popup->xdg->base->surface;
-        render_surface_iterator(m, surface, &popup->geom, output_damage);
+        render_surface_iterator(m, surface, popup->geom, output_damage);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);

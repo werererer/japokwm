@@ -22,17 +22,13 @@ struct monitor {
     /* monitor area, layout-relative */
     struct wlr_box geom;
     struct root *root;
-    double mfact;
+    float scale;
     int ws_ids[2];
 };
 
 struct monrule {
     char *name;
-    float mfact;
-    int nmaster;
-    float scale;
-    struct layout lt;
-    enum wl_output_transform rr;
+    int lua_func_ref;
 };
 
 /* associated with slink in container */
@@ -53,6 +49,7 @@ void create_monitor(struct wl_listener *listener, void *data);
 void destroy_monitor(struct wl_listener *listener, void *data);
 void focusmon(int i);
 void set_selected_monitor(struct monitor *m);
+void scale_monitor(struct monitor *m, float scale);
 
 /* *
  * selTag[1] = selTag[0] then

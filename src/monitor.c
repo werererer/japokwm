@@ -28,6 +28,7 @@ struct monitor *selected_monitor;
 static void handle_output_damage_frame(struct wl_listener *listener, void *data);
 static void handle_output_frame(struct wl_listener *listener, void *data);
 static void handle_output_mode(struct wl_listener *listener, void *data);
+static void evaluate_monrules(struct wlr_output *output);
 
 void create_monitor(struct wl_listener *listener, void *data)
 {
@@ -56,19 +57,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     wl_signal_add(&m->wlr_output->events.frame, &m->frame);
 
     wlr_xcursor_manager_load(server.cursor_mgr, 1);
-    for (int i = 0; i < server.default_layout.options.monrule_count; i++) {
-        struct monrule r = server.default_layout.options.monrules[i];
-        if (!r.name || strstr(output->name, r.name)) {
-            m->mfact = r.mfact;
-            wlr_output_set_scale(output, r.scale);
-
-            struct workspace *ws = get_workspace_on_monitor(m);
-            set_selected_layout(ws, r.lt);
-
-            wlr_output_set_transform(output, r.rr);
-            break;
-        }
-    }
 
     /* Set up event listeners */
     m->destroy.notify = destroy_monitor;
@@ -84,6 +72,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     if (is_first_monitor) {
         init_config(L);
         set_selected_monitor(m);
+
         if (server.default_layout.options.tag_names.length <= 0) {
             handle_error("tag_names is empty, loading default tag_names");
             reset_tag_names(&server.default_layout.options.tag_names);
@@ -91,6 +80,9 @@ void create_monitor(struct wl_listener *listener, void *data)
 
         create_workspaces(&server.workspaces, server.default_layout.options.tag_names, server.default_layout);
     }
+
+    evaluate_monrules(output);
+
 
     struct workspace *ws = get_workspace(&server.workspaces, 0);
     focus_next_unoccupied_workspace(m, &server.workspaces, ws);
@@ -117,8 +109,30 @@ void create_monitor(struct wl_listener *listener, void *data)
         return;
 }
 
+static void evaluate_monrules(struct wlr_output *output)
+{
+    for (int i = 0; i < server.default_layout.options.monrule_count; i++) {
+        struct monrule r = server.default_layout.options.monrules[i];
+        if (!r.name || strstr(output->name, r.name)) {
+            if (!r.lua_func_ref)
+                continue;
+            lua_rawgeti(L, LUA_REGISTRYINDEX, r.lua_func_ref);
+            lua_call_safe(L, 0, 0, 0);
+            /* m->mfact = r.mfact; */
+            /* wlr_output_set_scale(output, r.scale); */
+
+            /* struct workspace *ws = get_workspace_on_monitor(m); */
+            /* set_selected_layout(ws, r.lt); */
+
+            /* wlr_output_set_transform(output, r.rr); */
+            break;
+        }
+    }
+}
+
 static void handle_output_frame(struct wl_listener *listener, void *data)
 {
+    /* NOOP */
 }
 
 static void handle_output_damage_frame(struct wl_listener *listener, void *data)
@@ -179,6 +193,13 @@ void center_mouse_in_monitor(struct monitor *m)
     int xcenter = m->geom.x + m->geom.width/2;
     int ycenter = m->geom.y + m->geom.height/2;
     wlr_cursor_warp(server.cursor.wlr_cursor, NULL, xcenter, ycenter);
+}
+
+void scale_monitor(struct monitor *m, float scale)
+{
+    struct wlr_output *output = m->wlr_output;
+    m->scale = scale;
+    wlr_output_set_scale(output, scale);
 }
 
 void set_selected_monitor(struct monitor *m)
