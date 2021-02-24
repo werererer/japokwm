@@ -118,14 +118,6 @@ static void evaluate_monrules(struct wlr_output *output)
                 continue;
             lua_rawgeti(L, LUA_REGISTRYINDEX, r.lua_func_ref);
             lua_call_safe(L, 0, 0, 0);
-            /* m->mfact = r.mfact; */
-            /* wlr_output_set_scale(output, r.scale); */
-
-            /* struct workspace *ws = get_workspace_on_monitor(m); */
-            /* set_selected_layout(ws, r.lt); */
-
-            /* wlr_output_set_transform(output, r.rr); */
-            break;
         }
     }
 }
@@ -200,6 +192,12 @@ void scale_monitor(struct monitor *m, float scale)
     struct wlr_output *output = m->wlr_output;
     m->scale = scale;
     wlr_output_set_scale(output, scale);
+}
+
+void transform_monitor(struct monitor *m, enum wl_output_transform transform)
+{
+    struct wlr_output *output = m->wlr_output;
+    wlr_output_set_transform(output, transform);
 }
 
 void set_selected_monitor(struct monitor *m)

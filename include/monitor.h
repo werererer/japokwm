@@ -50,6 +50,7 @@ void destroy_monitor(struct wl_listener *listener, void *data);
 void focusmon(int i);
 void set_selected_monitor(struct monitor *m);
 void scale_monitor(struct monitor *m, float scale);
+void transform_monitor(struct monitor *m, enum wl_output_transform transform);
 
 /* *
  * selTag[1] = selTag[0] then

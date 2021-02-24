@@ -457,6 +457,18 @@ integers
 <where> ++
 	i: integer - border width in pixel
 
+# MONITOR
+*set_scale(n)* ++
+	scale the monitor by n
+<where> ++
+	n: number - the percentage the monitor will be scaled e.g. 1 = 100%
+
+*set_transform(e)* ++
+	scale the monitor by n
+<where> ++
+	% TODO: what is this enum?
+	e: WL_LIST_TRANSFORMATION - an enum provided by info.monitor.transform
+
 # LOCAL
 config beginning with l are considered local config and only apply for the
 current layout. There are basically the same functions as usual but only some of

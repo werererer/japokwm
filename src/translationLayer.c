@@ -134,7 +134,8 @@ static const struct luaL_Reg layout[] =
 
 static const struct luaL_Reg monitor[] = 
 {
-    {"scale_monitor", lib_scale_monitor},
+    {"set_scale", lib_set_scale},
+    {"set_transform", lib_set_transform},
     {NULL, NULL},
 };
 
@@ -168,7 +169,7 @@ static void load_info()
     lua_setfield(L, -2 ,"rotate_90");
 
     lua_pushinteger(L, WL_OUTPUT_TRANSFORM_180);
-    lua_setfield(L, -2 ,"rotate_90");
+    lua_setfield(L, -2 ,"rotate_180");
 
     lua_pushinteger(L, WL_OUTPUT_TRANSFORM_270);
     lua_setfield(L, -2 ,"rotate_270");

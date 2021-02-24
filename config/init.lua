@@ -24,14 +24,9 @@ config.set_rules({
 })
 
 config.set_monrules({
-    {"", function() monitor.scale_monitor(0.6) end},
-    -- { "", 0.55, 1, 1, layouts[1], info.monitor.transform.rotate_90 },
+    {"", function() monitor.set_scale(0.6) end},
+    -- {"", function() monitor.set_transform(info.monitor.transform.rotate_90) end},
 })
-    -- /* float mfact; */
-    -- /* int nmaster; */
-    -- /* float scale; */
-    -- /* struct layout lt; */
-    -- /* enum wl_output_transform rr; */
 
 config.create_layout_set("default", layouts)
 

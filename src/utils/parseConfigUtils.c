@@ -425,8 +425,6 @@ struct monrule get_config_array_monrule(lua_State *L, const char* name, size_t i
 
     monrule.name = get_config_array_str(L, name, 1);
     monrule.lua_func_ref = get_config_array_func_id(L, name, 2);
-
-    lua_pop(L, 1);
     return monrule;
 }
 
