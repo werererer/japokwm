@@ -1,12 +1,14 @@
 version: 2.1
 docker:
     - image: archlinux
+updatepackage:
+    name: Update Packages
+    command: sudo pacman -Syu --noconfirm
 jobs:
     one:
         docker:
             - image: archlinux
         steps:
-            - run: uname -a
             - run: pacman -Sy --noconfirm
             - run: pacman -S --noconfirm base-devel
             - run: pacman -S --noconfirm meson
