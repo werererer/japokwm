@@ -116,7 +116,7 @@ int lib_set_default_layout(lua_State *L)
 }
 
 // TODO refactor this function hard to read
-int lib_set_workspaces(lua_State *L)
+int lib_create_workspaces(lua_State *L)
 {
     struct wlr_list *tag_names = &server.default_layout.options.tag_names;
     wlr_list_clear(tag_names);
@@ -173,7 +173,7 @@ int lib_set_rules(lua_State *L)
     return 0;
 }
 
-int lib_set_layouts(lua_State *L)
+int lib_create_layout_set(lua_State *L)
 {
     int *layout_set_ref = &server.layout_set.layout_sets_ref;
     lua_copy_table(L, layout_set_ref);
@@ -208,12 +208,6 @@ int lib_set_monrules(lua_State *L)
 int lib_set_keybinds(lua_State *L)
 {
     lua_copy_table(L, &server.default_layout.options.keybinds_ref);
-    return 0;
-}
-
-int lib_set_buttons(lua_State *L)
-{
-    lua_copy_table(L, &server.default_layout.options.buttonbindings_ref);
     return 0;
 }
 

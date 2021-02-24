@@ -16,7 +16,7 @@ int lib_set_inner_gaps(lua_State *L);
 int lib_set_outer_gaps(lua_State *L);
 int lib_set_keybinds(lua_State *L);
 int lib_set_layout_constraints(lua_State *L);
-int lib_set_layouts(lua_State *L);
+int lib_create_layout_set(lua_State *L);
 int lib_set_master_constraints(lua_State *L);
 int lib_set_master_layout_data(lua_State *L);
 int lib_set_mod(lua_State *L);
@@ -29,6 +29,6 @@ int lib_set_root_color(lua_State *L);
 int lib_set_rules(lua_State *L);
 int lib_set_sloppy_focus(lua_State *L);
 int lib_set_tile_borderpx(lua_State *L);
-int lib_set_workspaces(lua_State *L);
+int lib_create_workspaces(lua_State *L);
 
 #endif /* CONFIG_H */

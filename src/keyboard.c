@@ -45,7 +45,7 @@ void buttonpress(struct wl_listener *listener, void *data)
                 struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
                 int mods = wlr_keyboard_get_modifiers(kb);
 
-                button_pressed(mods, sym);
+                handle_keybinding(mods, sym);
                 break;
             }
         case WLR_BUTTON_RELEASED:
@@ -142,7 +142,7 @@ void keypress(struct wl_listener *listener, void *data)
 
     if (event->state == WLR_KEY_PRESSED) {
         for (i = 0; i < nsyms; i++) {
-            handled = key_pressed(mods, syms[i]);
+            handled = handle_keybinding(mods, syms[i]);
         }
     }
 

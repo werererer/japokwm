@@ -130,16 +130,7 @@ static bool process_binding(lua_State *L, char *bind, int lua_ref)
     return handled;
 }
 
-bool button_pressed(int mods, int sym)
-{
-    // TODO make this safer
-    char bind[128] = "";
-    sym_to_binding(bind, mods, sym);
-    bool handled = process_binding(L, bind, server.default_layout.options.buttonbindings_ref);
-    return handled;
-}
-
-bool key_pressed(int mods, int sym)
+bool handle_keybinding(int mods, int sym)
 {
     char bind[128] = "";
     sym_to_binding(bind, mods, sym);

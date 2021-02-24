@@ -9,7 +9,7 @@ config.set_border_color({0.0, 0.0, 1.0, 1.0})
 config.set_repeat_rate(25)
 config.set_repeat_delay(600)
 
-config.set_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
+config.create_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
 
 config.set_rules({
     -- {"termite", "termite", function(n) container.set_sticky(n, true) end},
@@ -23,7 +23,7 @@ local layouts = {
     {"--",  "tmp" },
 }
 
-config.set_layouts("default", layouts)
+config.create_layout_set("default", layouts)
 
 config.set_monrules({
     { "", 0.55, 1, 1, layouts[1], info.monitor.transform.rotate_90 },
@@ -89,9 +89,6 @@ config.set_keybinds({
     -- {"mod-period",            function() focusmon(1) end},
     -- {"mod-comma",             function() focusmon(-1) end},
     -- {"mod-d",                 function() incnmaster(-1) end},
-})
-
-config.set_buttons({
     {"M1", function() action.focus_container(info.get_container_under_cursor()) end},
     {"mod-M1",  function() action.move_resize(info.cursor.mode.move) end},
     {"mod-M2",  function() action.move_resize(info.cursor.mode.resize) end},

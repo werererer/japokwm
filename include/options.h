@@ -55,7 +55,6 @@ struct options {
     int tag_names_ref;
     int default_layout_ref;
     int keybinds_ref;
-    int buttonbindings_ref;
 };
 
 struct options get_default_options();

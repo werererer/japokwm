@@ -19,6 +19,8 @@ change various settings. An example config is likely present in
 	the right side. At x = 0.5 you are at half the screen ++
 	when width = 0 it is literally 0. When it is 1 it is as wide as the ++
 	current monitor. When width = 0.5 it means half the width of the monitor ++
+*root*
+	everything you see when you don't have a window open
 *window* ++
 	the container and the content you see in it
 
@@ -87,21 +89,31 @@ integers
 :< array(string, string) the 1st argument represents the symbol of the layout
    the 2nd argument represents the directory/name of the layout
 :< {"+", "main"} -- symbol is "+" and directory "main"
+|  color
+:< array(number, number, number, number) the arguments represents rgba
+   respectively between 0..1
+:< {0, 1, 1, 1} -- cyan
+|  keybinding
+:< array(string, function()) the arguments are the keys given by the string ++
+   and the function representing the action that will be taken
+:< {"M-S-e", function() print("test") end}
 
 
 # NAMESPACES
-*action*
-	Execute an action
-*config*
-	Configure certain properties or the behavior of the window manager
-*container*
-	Configure certain properties or the behavior of a container
-*event*
-	Bind a function to an event
-*layout*
-	Configure certain properties or the behavior of a layout
-*l*
-	Configure things locally to the layout
+[[ *Namespace*
+:< *Description*
+|  *action*
+:< Execute an action
+|  config
+:< Configure certain properties or the behavior of the window manager
+|  container
+:< Configure certain properties or the behavior of a container
+|  event
+:< Bind a function to an event
+|  layout
+:< Configure certain properties or the behavior of a layout
+|  l
+:< Configure things locally to the layout
 
 # ACTION
 *arrange()* ++
@@ -133,7 +145,8 @@ integers
 *increase_nmaster()* ++
 	increase the number of master windows
 
-*kill()* - kill the focused window
+*kill()* ++
+	kill the focused window
 
 *load_layout(l)* ++
 	load a layout ++
@@ -177,8 +190,10 @@ integers
 <where> ++
 	f: number - relative size (between 0 and 1)
 
-*set_floating(b)*
+*set_floating(b)* ++
 	set the selected container's floating status
+<where>
+	b: boolean - status(true/false)
 
 *set_nmaster(i)*
 	set the amount of master windows ++
@@ -188,10 +203,10 @@ integers
 *swap_workspace(i, i2)*
 	swap the workspace i with the workspace i2 ++
 <where> ++
-	i: integer ++
-	i2: integer
+	i: integer workspace at i ++
+	i2: integer workspace at i2
 
-*toggle_consider_layer_shell()* ++
+*toggle_bars()* ++
 	toggles layer_shell bars
 
 *toggle_floating()* ++
@@ -223,28 +238,42 @@ integers
 	f: number
 
 # EVENT
-*set_update_function(function(n) ... end)* ++
+*set_update_function(func)* ++
 	set the update function ++
 <where> ++
-	n: integer
+	func: function(n) - it will be called every time the another ++
+		layout_element will be loaded ++
+	<where> ++
+		n: integer - n represents the amount of containers  
 
-*set_create_container_function()*
+*set_create_container_function()* ++
+	set the create_container function
+<where> ++
+	func: function(n) - it will be called every time a container is created ++
+		by Japokwm ++
+	<where> ++
+		n: integer - n represents the current container position
 
-## LAYOUT
+# LAYOUT
 *set(layout_data)* ++
 	set layout ++
 <where> ++
-	layout_data: layout_data
+	layout_data: layout_data for the layout
 
 # INFO
 *get_this_container_count()* ++
 	get the amount of visible containers
+<return> ++
+	integer -
 
 *this_container_position()* ++
-	returns the position the container is at
-
-*get_nmaster() ++
-	> integer* - Returns the number of master windows
+	get the position the container is at ++
+<return> ++
+	integer - position of the focused container
+*get_nmaster()* ++
+	get the number of master windows ++
+<return> ++
+	 integer - number of master windows
 
 *get_next_empty_workspace()* ++
 	Get next workspaces not used by any window
@@ -257,97 +286,164 @@ integers
 <return> ++
 	integer: container id
 
-*is_container_not_in_limit()* - 
+*is_container_not_in_limit()* ++
+	WIP
 
-*is_container_not_in_master_limit()* - 
+*is_container_not_in_master_limit()* ++
+	WIP
 
 # CONFIG
+
+*create_layout_set(name, layouts)*
+	create a new layout_set ++
+<where> ++
+	name: string - name of the layout set ++
+	layouts: layouts that belong to this set
+
+*create_workspaces(names)*
+	create or recreate all workspaces with an array of names for each ++
+	workspace. The order of the workspace can be set by prefixing the names ++
+	with: "%i:" where %i represents the position the workspace will be on.
+<where>
+	names: array(string)
 
 *reload()* ++
 	reload the config file
 
 *set_border_color(color)* ++
-	set the border color of windows
+	set the border color of windows ++
+<where> ++
+	color: color
 
-*set_buttons()* - 
+*set_default_layout(l)*
+	set the default layout
+<where>
+	l: layout_info
 
-*set_default_layout()* - 
-*set_float_borderpx()* - 
+*set_float_borderpx(f)* - 
+	set the border width of floating windows in pixel ++
+<where> ++
+	f: border width in pixel
 
-*set_focus_color()* - 
+*set_focus_color(color)* -  ++
+	set the color of the focused window ++
+<where> ++
+	color: color
 
-*set_inner_gaps()* - 
+*set_inner_gaps(i)*
+	set how large the gap between windows is
+<where> ++
+	i: integer - the size of those gaps in pixel
 
-*set_keybinds()* - 
+*set_keybinds(k)*
+	set all keybindings existing in Japokwm and overwrite old keybindings ++
+<where> ++
+	k: array(keybinding, ...)
 
-*set_layout_constraints()* - 
+*set_layout_constraints(min_width: a, max_width: b, min_height: c, max_height: d)*
+	Set the minimum and maximum dimensions of resizing any window ++
+<where> ++
+	a, b, c, d: number - relative width/height
 
-*set_layouts()* - 
+*set_master_constraints(min_width: a, max_width: b, min_height: c, max_height: d)*
+	Set the minimum and maximum dimensions of resizing the master area ++
+<where> ++
+	a, b, c, d: number - relative width/height
 
-*set_master_constraints()* - 
+*set_master_layout_data(data)*
+	set the way the windows in the master area are tiled depending on nmaster
+<where> ++
+	data: layout_data
 
-*set_master_layout_data()* - 
+*set_mod(i)*
+	set the modifier which is any number between 1 and 4. This causes the "mod"
+	string to be replaced such that they correspond to the correct modifiers:
 
-*set_mod()* - 
+[[ Number
+:< Mod
+:< Literally
+|< 1
+:< Alt
+:< "Alt_L"
+|< 2
+:< Number lock
+:< "Num_Lock"
+|< 3
+:< AltGr
+:< "ISO_Level3_Shift"
+|< 4
+:< Super
+:< "Super_L"
 
-*set_monrules()* - 
+<where> ++
+	i: integer
 
-*set_outer_gaps()* - 
+*set_monrules(r)* ++
+	WIP
 
-*set_repeat_delay()* - 
+*set_outer_gaps(i)*
+	set how large the gap between all the windows and the root is
+<where> ++
+	i: integer - the size of those gaps in pixel
 
-*set_repeat_rate()* - 
+*set_repeat_delay(i)*
+	how long do you need to wait before the keyboard starts to repeat in
+<where> ++
+	i: integer - i is the delay given in milliseconds
 
-*set_resize_data()* - 
+*set_repeat_rate(i)* - 
+	how often will a character repeat
+<where> ++
+	i: integer - i is the repeat rate given in milliseconds
 
-*set_resize_direction()* - 
+*set_resize_data()*
+	WIP
 
-*set_root_color()* - 
+*set_resize_direction()*
+	WIP
 
-*set_rules()* - 
+*set_root_color(color)*
+	set color of the root
+<where>
+	color: color
 
-*set_sloppy_focus()* - 
+*set_rules()*
+	WIP
 
-*set_tile_borderpx()* - 
+*set_sloppy_focus(b)*
+	set whether to use sloppy focus or not. If sloppy focus is activated you
+	will focus windows by hovering above them.
 
-*set_workspaces()* - 
+*set_tile_borderpx(i)*
+	set the border width of tiled windows in pixel ++
+<where> ++
+	f: border width in pixel
 
 # LOCAL
 config beginning with l are considered local config and only apply for the
-current layout
+current layout. There are basically the same functions as usual but only some of
+them can be used locally. Here is a list of available functions:
 
-## LOCALCONFIG
-*set_arrange_by_focus()* - 
+## CONFIG
+set_arrange_by_focus ++
+set_border_color ++
+set_float_borderpx ++
+set_focus_color ++
+set_inner_gaps ++
+set_layout_constraints ++
+set_master_constraints ++
+set_master_layout_data ++
+set_outer_gaps ++
+set_resize_data ++
+set_resize_direction ++
+set_sloppy_focus ++
+set_tile_borderpx ++
+ 
 
-*set_border_color()* - 
-
-*set_tile_borderpx()* - 
-
-*set_float_borderpx()* - 
-
-*set_focus_color()* - 
-
-*set_inner_gaps()* - 
-
-*set_outer_gaps()* - 
-
-*set_sloppy_focus()* - 
-
-*set_layout_constraints()* - 
-
-*set_master_constraints()* - 
-
-*set_resize_direction()* - 
-
-*set_master_layout_data()* - 
-
-*set_resize_data()* - 
-
-## LOCALEVENT
-*set_update_function()* - 
-
-*set_create_container_function()* - 
+## EVENT
+set_create_container_function ++
+set_update_function ++
+ 
 
 # SEE ALSO
-
 *japokwm*(1)
