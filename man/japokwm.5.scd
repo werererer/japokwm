@@ -48,6 +48,9 @@ important because you won't understand the function definitions otherwise.
 |  boolean
 :< basic lua boolean
 :< true | false
+|  direction
+:< an exist
+:< true | false
 
 In Japokwm multiple types of tables are used to different kinds of information.
 We gave those special tables certain names so that you can tell them apart more
@@ -97,6 +100,18 @@ integers
 :< array(string, function()) the arguments are the keys given by the string ++
    and the function representing the action that will be taken
 :< {"M-S-e", function() print("test") end}
+|  rule
+:< array(string, string, function(n)) the arguments are class name and rule ++
+   respectively. The class and name are obtained from the window and the rule ++
+   is just a function that gets the container id. The function will be ++
+   executed when the layout is rearrange.
+:< {"anki", "", function() print("test") end}
+|  monrule
+:< array(string, function()) the arguments are name and rule
+   respectively. The class and name are obtained from the window and the rule is
+   just a function without arguments. The function will be executed
+   when a layout is created.
+:< {"", function() print("test") end}
 
 
 # NAMESPACES
@@ -191,8 +206,8 @@ integers
 	f: number - relative size (between 0 and 1)
 
 *set_floating(b)* ++
-	set the selected container's floating status
-<where>
+	set the selected container's floating status ++
+<where> ++
 	b: boolean - status(true/false)
 
 *set_nmaster(i)*
@@ -258,18 +273,19 @@ integers
 *set(layout_data)* ++
 	set layout ++
 <where> ++
-	layout_data: layout_data for the layout
+	layout_data - layout_data for the layout
 
 # INFO
 *get_this_container_count()* ++
-	get the amount of visible containers
+	get the amount of visible containers in this workspace
 <return> ++
-	integer -
+	integer - number of containers
 
 *this_container_position()* ++
 	get the position the container is at ++
 <return> ++
 	integer - position of the focused container
+
 *get_nmaster()* ++
 	get the number of master windows ++
 <return> ++
@@ -277,20 +293,30 @@ integers
 
 *get_next_empty_workspace()* ++
 	Get next workspaces not used by any window
+<return> ++
+	integer - workspace id of this empty workspace
 
 *get_workspace()* ++
 	Get the workspaces id of the current workspace
+<return> ++
+	integer - workspace id
 
 *get_container_under_cursor()* ++
 	get the container beneath the cursor ++
 <return> ++
-	integer: container id
+	integer - container id
 
 *is_container_not_in_limit()* ++
-	WIP
+	returns whether a container doesn't violate min/max_width/height of the
+	constraints ++
+<return> ++
+	boolean - whether it is in limit
 
 *is_container_not_in_master_limit()* ++
-	WIP
+	returns whether a container doesn't violate min/max_width/height of the ++
+	master constraints ++
+<return> ++
+	boolean - whether it is in limit
 
 # CONFIG
 
@@ -303,8 +329,8 @@ integers
 *create_workspaces(names)*
 	create or recreate all workspaces with an array of names for each ++
 	workspace. The order of the workspace can be set by prefixing the names ++
-	with: "%i:" where %i represents the position the workspace will be on.
-<where>
+	with: "%i:" where %i represents the position the workspace will be on. ++
+<where> ++
 	names: array(string)
 
 *reload()* ++
@@ -315,23 +341,23 @@ integers
 <where> ++
 	color: color
 
-*set_default_layout(l)*
-	set the default layout
-<where>
+*set_default_layout(l)* ++
+	set the default layout ++
+<where> ++
 	l: layout_info
 
-*set_float_borderpx(f)* - 
+*set_float_borderpx(f)* ++
 	set the border width of floating windows in pixel ++
 <where> ++
 	f: border width in pixel
 
-*set_focus_color(color)* -  ++
+*set_focus_color(color)* ++
 	set the color of the focused window ++
 <where> ++
 	color: color
 
-*set_inner_gaps(i)*
-	set how large the gap between windows is
+*set_inner_gaps(i)* ++
+	set how large the gap between windows is ++
 <where> ++
 	i: integer - the size of those gaps in pixel
 
@@ -340,24 +366,25 @@ integers
 <where> ++
 	k: array(keybinding, ...)
 
-*set_layout_constraints(min_width: a, max_width: b, min_height: c, max_height: d)*
+*set_layout_constraints(min_width: a, max_width: b, min_height: c, max_height: d)* ++
 	Set the minimum and maximum dimensions of resizing any window ++
 <where> ++
 	a, b, c, d: number - relative width/height
 
-*set_master_constraints(min_width: a, max_width: b, min_height: c, max_height: d)*
+*set_master_constraints(min_width: a, max_width: b, min_height: c, max_height: d)* ++
 	Set the minimum and maximum dimensions of resizing the master area ++
 <where> ++
 	a, b, c, d: number - relative width/height
 
-*set_master_layout_data(data)*
-	set the way the windows in the master area are tiled depending on nmaster
+*set_master_layout_data(data)* ++
+	set the way the windows in the master area are tiled depending on nmaster ++
 <where> ++
 	data: layout_data
 
-*set_mod(i)*
-	set the modifier which is any number between 1 and 4. This causes the "mod"
-	string to be replaced such that they correspond to the correct modifiers:
+*set_mod(i)* ++
+	set the modifier which is any number between 1 and 4. This causes the ++
+	"mod" string to be replaced such that they correspond to the correct ++
+	modifiers:
 
 [[ Number
 :< Mod
@@ -379,45 +406,56 @@ integers
 	i: integer
 
 *set_monrules(r)* ++
-	WIP
+	set the rules applied for the respective monitor ++
+<where> ++
+	r: array(monrule)
 
-*set_outer_gaps(i)*
-	set how large the gap between all the windows and the root is
+*set_outer_gaps(i)* ++
+	set how large the gap between all the windows and the root is ++
 <where> ++
 	i: integer - the size of those gaps in pixel
 
-*set_repeat_delay(i)*
-	how long do you need to wait before the keyboard starts to repeat in
+*set_repeat_delay(i)* ++
+	how long do you need to wait before the keyboard starts to repeat in ++
 <where> ++
 	i: integer - i is the delay given in milliseconds
 
-*set_repeat_rate(i)* - 
-	how often will a character repeat
+*set_repeat_rate(i)* ++
+	how often will a character repeat ++
 <where> ++
 	i: integer - i is the repeat rate given in milliseconds
 
-*set_resize_data()*
-	WIP
+*set_resize_data(data)*
+	set the resize direction of the layout ++
+	; TODO improve this
+<where> ++
+	data: array(array(integer, ...))
 
-*set_resize_direction()*
-	WIP
+*set_resize_direction(d)* ++
+	set the resize direction of the layout ++
+<where> ++
+	d: direction
 
-*set_root_color(color)*
-	set color of the root
-<where>
+*set_root_color(color)* ++
+	set color of the root ++
+<where> ++
 	color: color
 
-*set_rules()*
-	WIP
+*set_rules(r)* ++
+	set the rules ++
+<where> ++
+	r: array(rule)
 
-*set_sloppy_focus(b)*
-	set whether to use sloppy focus or not. If sloppy focus is activated you
-	will focus windows by hovering above them.
+*set_sloppy_focus(b)* ++
+	set whether to use sloppy focus or not. If sloppy focus is activated you ++
+	will focus windows by hovering above them. ++
+<where> ++
+	b: boolean - border width in pixel
 
-*set_tile_borderpx(i)*
+*set_tile_borderpx(i)* ++
 	set the border width of tiled windows in pixel ++
 <where> ++
-	f: border width in pixel
+	i: integer - border width in pixel
 
 # LOCAL
 config beginning with l are considered local config and only apply for the

@@ -11,11 +11,6 @@ config.set_repeat_delay(600)
 
 config.create_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
 
-config.set_rules({
-    -- {"termite", "termite", function(n) container.set_sticky(n, true) end},
-    -- {"termite", "", function(n) container.set_ratio(n, 1) end},
-})
-
 local layouts = {
     {"[M]", "tile"},
     {"[]=", "two_pane"},
@@ -23,11 +18,21 @@ local layouts = {
     {"--",  "tmp" },
 }
 
-config.create_layout_set("default", layouts)
+config.set_rules({
+    -- {"termite", "termite", function(n) container.set_sticky(n, true) end},
+    -- {"termite", "", function(n) container.set_ratio(n, 1) end},
+})
 
 config.set_monrules({
     { "", 0.55, 1, 1, layouts[1], info.monitor.transform.rotate_90 },
 })
+
+config.set_monrules({
+    { "", 0.55, 1, 1, layouts[1], info.monitor.transform.rotate_90 },
+})
+
+config.create_layout_set("default", layouts)
+
 config.set_default_layout(layouts[1])
 
 local termcmd = "/usr/bin/termite"
