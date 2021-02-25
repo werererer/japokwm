@@ -48,7 +48,6 @@ struct container {
 struct container *create_container(struct client *c, struct monitor *m, bool has_border);
 void destroy_container(struct container *con);
 
-struct container *first_container(struct monitor *m);
 struct container *get_container(struct monitor *m, int i);
 struct container *get_container_on_focus_stack(struct monitor *m, int i);
 struct container *get_relative_container(struct monitor *m, struct container *con, int i);

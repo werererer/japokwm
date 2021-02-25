@@ -112,7 +112,6 @@ struct container *container_position_to_container(int ws_id, int position)
 
 struct container *container_position_to_hidden_container(int ws_id, int position)
 {
-    // TODO debug
     struct container *con;
     wl_list_for_each(con, &containers, mlink) {
         if (!hiddenon(con, &server.workspaces, ws_id))
@@ -235,39 +234,6 @@ struct container *get_relative_hidden_container(struct monitor *m, int i)
 
     struct container *con = container_position_to_hidden_container(m->ws_ids[0], new_position);
     return con;
-}
-
-struct container *first_container(struct monitor *m)
-{
-    struct workspace *ws = get_workspace(&server.workspaces, m->ws_ids[0]);
-    if (ws->layout[0].n <= 0)
-        return NULL;
-
-    struct container *con;
-    wl_list_for_each(con, &stack, slink) {
-        if (visibleon(con, &server.workspaces, ws->id))
-            break;
-    }
-    return con;
-}
-
-struct client *last_client(struct monitor *m)
-{
-    struct layout *lt = get_layout_on_monitor(m);
-
-    if (lt->n <= 0)
-        return NULL;
-
-    struct container *con;
-    int i = 1;
-    wl_list_for_each(con, &stack, slink) {
-        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
-            continue;
-        if (i > lt->n)
-            return con->client;
-        i++;
-    }
-    return NULL;
 }
 
 struct container *xytocontainer(double x, double y)
