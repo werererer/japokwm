@@ -145,7 +145,7 @@ integers
 *focus_container(i)* ++
 	focus the container at i ++
 <where> ++
-	i: integer - absolute position on the stack
+	i: integer - position on the stack
 
 *focus_on_hidden_stack(i)* ++
 	replace current container with a hidden container ++
@@ -160,8 +160,10 @@ integers
 *increase_nmaster()* ++
 	increase the number of master windows
 
-*kill()* ++
-	kill the focused window
+*kill(i)* ++
+	kill the window at position i
+<where> ++
+	i: integer - position on the stack
 
 *load_layout(l)* ++
 	load a layout ++
@@ -197,8 +199,11 @@ integers
 *quit()* ++
 	quit the window manager
 
-*repush()* ++
-	push the container into the master area
+*repush(i, j)* ++
+	push the container into the master area ++
+<where> ++
+	i: integer - container that needs to repushed
+	j: integer - new position it will be pushed to
 
 *resize_main(f)* ++
 	resize the master area ++

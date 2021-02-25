@@ -563,6 +563,36 @@ void lift_container(struct container *con)
     add_container_to_stack(con);
 }
 
+void repush(int pos1, int pos2)
+{
+    struct monitor *m = selected_monitor;
+
+    struct container *con1 = get_container(m, pos2);
+
+    if (!con1)
+        return;
+    if (con1->floating)
+        return;
+
+    struct container *master = wl_container_of(containers.next, master, mlink);
+
+    struct container *con2 = get_container(selected_monitor, pos1);
+
+    if (con2 == con1)
+        return;
+
+    wl_list_remove(&con2->mlink);
+    wl_list_insert(&con1->mlink, &con2->mlink);
+    wl_list_remove(&con1->mlink);
+    wl_list_insert(&con2->mlink, &con1->mlink);
+
+    arrange();
+
+    struct layout *lt = get_layout_on_monitor(m);
+    if (lt->options.arrange_by_focus)
+        arrange();
+}
+
 void set_container_floating(struct container *con, bool floating)
 {
     if (!con)

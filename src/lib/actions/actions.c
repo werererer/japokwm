@@ -279,47 +279,16 @@ int lib_zoom(lua_State *L)
     struct monitor *m = selected_monitor;
     struct container *sel = focused_container(m);
 
-    if (!sel)
-        return 0;
-    if (sel->floating)
-        return 0;
-    if (sel->client->type == LAYER_SHELL) {
-        focus_top_container(&server.workspaces, m->ws_ids[0], FOCUS_NOOP);
-        sel = wl_container_of(&containers.next, sel, mlink);
-    }
-    if (!sel)
-        return 0;
-
-    struct container *master = wl_container_of(containers.next, master, mlink);
-    struct container *previous;
-    if (sel == master)
-        previous = wl_container_of(containers.next->next, previous, mlink);
+    if (sel->position != 0)
+        repush(sel->position, 0);
     else
-        previous = wl_container_of(sel->mlink.prev, previous, mlink);
-
-    bool found = false;
-    struct container *con;
-    // loop from selected monitor to previous item
-    wl_list_for_each(con, sel->mlink.prev, mlink) {
-        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
-            continue;
-        if (con->floating)
-            continue;
-        if (con == master)
-            continue;
-
-        found = true;
-        break; /* found */
-    }
-    if (!found)
-        return 0;
-
-    wl_list_remove(&con->mlink);
-    wl_list_insert(&containers, &con->mlink);
+        repush(1, 0);
 
     arrange();
+
     // focus new master window
-    focus_container(previous, FOCUS_NOOP);
+    struct container *con0 = get_container(m, 0);
+    focus_container(con0, FOCUS_NOOP);
 
     struct layout *lt = get_layout_on_monitor(m);
     if (lt->options.arrange_by_focus) {
@@ -331,57 +300,12 @@ int lib_zoom(lua_State *L)
 
 int lib_repush(lua_State *L)
 {
-    int i = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
     int abs_index = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
+    int i = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
 
-    struct monitor *m = selected_monitor;
-
-    struct container *sel = get_container(selected_monitor, i);
-    /* struct container *sel = selected_container(m); */
-
-    if (!sel || sel->floating)
-        return 0;
-
-    struct container *master = wl_container_of(containers.next, master, mlink);
-    struct container *previous;
-    if (sel == master)
-        previous = wl_container_of(containers.next->next, previous, mlink);
-    else
-        previous = wl_container_of(sel->mlink.prev, previous, mlink);
-
-    bool found = false;
-    struct container *con;
-    // loop from selected monitor to previous item
-    wl_list_for_each(con, sel->mlink.prev, mlink) {
-        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
-            continue;
-        if (con->floating)
-            continue;
-        if (con == master)
-            continue;
-
-        found = true;
-        break; /* found */
-    }
-    if (!found)
-        return 0;
-
-    wl_list_remove(&con->mlink);
-
-    // find container to put current container after
-    struct container *con2 = get_container(selected_monitor, abs_index);
-    wl_list_insert(&con2->mlink, &con->mlink);
-
-    arrange();
-    // focus new master window
-    focus_container(previous, FOCUS_NOOP);
-
-    struct layout *lt = get_layout_on_monitor(selected_monitor);
-    if (lt->options.arrange_by_focus) {
-        arrange();
-    }
+    repush(i, abs_index);
     return 0;
 }
 

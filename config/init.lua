@@ -59,6 +59,7 @@ config.set_keybinds({
     {"mod-S-l",       function() action.resize_main(1/10) end},
     {"mod-S-s",       function() action.write_this_overlay("tmp") end},
     {"mod-Return",    function() action.zoom() end},
+    -- {"mod-Return",    function() action.repush(2, 0) end},
     {"mod-1",         function() action.view(0) end},
     {"mod-2",         function() action.view(1) end},
     {"mod-3",         function() action.view(2) end},

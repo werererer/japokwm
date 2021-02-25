@@ -73,12 +73,12 @@ void focus_container(struct container *con, enum focus_actions a);
 /* Find the topmost visible client (if any) at point (x, y), including
  * borders. This relies on stack being ordered from top to bottom. */
 void lift_container(struct container *con);
+void repush(int pos, int pos2);
 void set_container_floating(struct container *con, bool floating);
 void set_container_workspace(struct container *con, int ws_id);
 void set_container_monitor(struct container *con, struct monitor *m);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
-
 
 // TODO check if those 2 functions even work
 int container_relative_x_to_absolute(struct container *con, int lx);
