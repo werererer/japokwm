@@ -336,6 +336,11 @@ integers
 *reload()* ++
 	reload the config file
 
+*set_arrange_by_focus(b)* ++
+	if b is true windows will be tiled by means of the focus stack
+<where> ++
+	b: boolean
+
 *set_border_color(color)* ++
 	set the border color of windows ++
 <where> ++

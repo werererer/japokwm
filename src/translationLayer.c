@@ -85,6 +85,7 @@ static const struct luaL_Reg config[] =
     {"create_layout_set", lib_create_layout_set},
     {"create_workspaces", lib_create_workspaces},
     {"reload", lib_reload},
+    {"set_arrange_by_focus", lib_set_arrange_by_focus},
     {"set_border_color", lib_set_border_color},
     {"set_default_layout", lib_set_default_layout},
     {"set_float_borderpx", lib_set_float_borderpx},

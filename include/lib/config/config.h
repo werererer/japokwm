@@ -6,6 +6,7 @@
 #include <lua.h>
 
 int lib_reload(lua_State *L);
+int lib_set_arrange_by_focus(lua_State *L);
 int lib_set_border_color(lua_State *L);
 int lib_set_buttons(lua_State *L);
 int lib_set_default_layout(lua_State *L);

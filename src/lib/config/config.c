@@ -16,9 +16,21 @@ int lib_reload(lua_State *L)
     return 0;
 }
 
+int lib_set_arrange_by_focus(lua_State *L)
+{
+    struct layout *lt = &server.default_layout;
+
+    // 1. argument
+    lt->options.arrange_by_focus = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+    return 0;
+}
+
 int lib_set_inner_gaps(lua_State *L)
 {
-    server.default_layout.options.inner_gap = luaL_checkinteger(L ,-1);
+    struct layout *lt = &server.default_layout;
+
+    lt->options.inner_gap = luaL_checkinteger(L ,-1);
     lua_pop(L, 1);
     configure_gaps(&server.default_layout.options.inner_gap, &server.default_layout.options.outer_gap);
     return 0;

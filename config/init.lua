@@ -24,7 +24,7 @@ config.set_rules({
 })
 
 config.set_monrules({
-    {"", function() monitor.set_scale(0.6) end},
+    -- {"", function() monitor.set_scale(0.6) end},
     -- {"", function() monitor.set_transform(info.monitor.transform.rotate_90) end},
 })
 
