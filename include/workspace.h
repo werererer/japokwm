@@ -44,7 +44,6 @@ void create_workspaces(struct wlr_list *workspaces, struct wlr_list tagNames, st
 void destroy_workspaces(struct wlr_list *workspaces);
 void delete_workspace(struct wlr_list *workspaces, size_t id);
 void rename_workspace(size_t i, struct wlr_list *workspaces, const char *name);
-void focus_top_container(struct wlr_list *workspaces, int ws_id, enum focus_actions a);
 void load_default_layout(lua_State *L, struct workspace *ws);
 void load_layout(lua_State *L, struct workspace *ws, const char *layout_name, const char *layout_symbol);
 void set_layout(lua_State *L, struct workspace *ws);

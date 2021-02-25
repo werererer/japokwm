@@ -179,6 +179,31 @@ struct container *get_container(struct monitor *m, int i)
     return con;
 }
 
+struct container *get_container_on_focus_stack(struct monitor *m, int i)
+{
+    struct container *con;
+
+    if (abs(i) > wl_list_length(&focus_stack))
+        return NULL;
+    if (i >= 0) {
+        struct wl_list *pos = &focus_stack;
+        while (i >= 0) {
+            if (pos->next)
+                pos = pos->next;
+            i--;
+        }
+        con = wl_container_of(pos, con, flink);
+    } else { // i < 0
+        struct wl_list *pos = &focus_stack;
+        while (i < 0) {
+            pos = pos->prev;
+            i++;
+        }
+        con = wl_container_of(pos, con, flink);
+    }
+    return con;
+}
+
 struct container *get_relative_container(struct monitor *m, struct container *con, int i)
 {
     struct layout *lt = get_layout_on_monitor(m);
@@ -550,6 +575,16 @@ void focus_container(struct container *con, enum focus_actions a)
     struct client *old_c = fcon ? fcon->client : NULL;
     struct client *new_c = new_focus_con ? new_focus_con->client : NULL;
     focus_client(old_c, new_c);
+}
+
+void focus_top_container(struct monitor *m, enum focus_actions a)
+{
+    struct container *con = get_container_on_focus_stack(m, 0);
+
+    if (!con)
+        return;
+
+    focus_container(con, a);
 }
 
 void lift_container(struct container *con)

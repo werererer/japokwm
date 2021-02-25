@@ -48,21 +48,6 @@ void update_workspace_ids(struct wlr_list *workspaces)
     }
 }
 
-void focus_top_container(struct wlr_list *workspaces, int ws_id, enum focus_actions a)
-{
-    // focus_stack should not be changed while iterating
-    struct container *con;
-    bool container_found = false;
-    wl_list_for_each(con, &focus_stack, flink) {
-        if (visibleon(con, workspaces, ws_id)) {
-            container_found = true;
-            break;
-        }
-    }
-    if (container_found)
-        focus_container(con, a);
-}
-
 void create_workspaces(struct wlr_list *workspaces, struct wlr_list tagNames, struct layout default_layout)
 {
     wlr_list_init(workspaces);

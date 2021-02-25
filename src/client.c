@@ -267,7 +267,7 @@ void destroynotify(struct wl_listener *listener, void *data)
     c = NULL;
 
     arrange();
-    focus_top_container(&server.workspaces, selected_monitor->ws_ids[0], FOCUS_NOOP);
+    focus_top_container(selected_monitor, FOCUS_NOOP);
 }
 
 
@@ -302,7 +302,7 @@ void maprequest(struct wl_listener *listener, void *data)
             break;
     }
     arrange();
-    focus_top_container(&server.workspaces, ws->id, FOCUS_NOOP);
+    focus_top_container(m, FOCUS_NOOP);
 }
 
 void unmapnotify(struct wl_listener *listener, void *data)
