@@ -120,6 +120,7 @@ void motion_absolute(struct wl_listener *listener, void *data)
 
 void motion_notify(uint32_t time)
 {
+    printf("motion notify\n");
     int cursorx = server.cursor.wlr_cursor->x;
     int cursory = server.cursor.wlr_cursor->y;
 

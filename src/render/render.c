@@ -169,11 +169,12 @@ damage_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct w
 {
     struct wlr_output *wlr_output = m->wlr_output;
     bool whole = *(bool *) user_data;
+    struct wlr_box geom = *box;
 
-    scale_box(box, wlr_output->scale);
+    scale_box(&geom, wlr_output->scale);
 
     if (whole) {
-        wlr_output_damage_add_box(m->damage, box);
+        wlr_output_damage_add_box(m->damage, &geom);
     } else if (pixman_region32_not_empty(&surface->buffer_damage)) {
         pixman_region32_t damage;
         pixman_region32_init(&damage);
@@ -186,7 +187,7 @@ damage_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct w
                region. */
             wlr_region_expand(&damage, &damage, ceil(wlr_output->scale) - surface->current.scale);
         }
-        pixman_region32_translate(&damage, box->x, box->y);
+        pixman_region32_translate(&damage, geom.x, geom.y);
         wlr_output_damage_add(m->damage, &damage);
         pixman_region32_fini(&damage);
     }

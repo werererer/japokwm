@@ -208,6 +208,7 @@ void commit_notify(struct wl_listener *listener, void *data)
     if (!con)
         return;
 
+    printf("commit notify\n");
     container_damage_part(con);
 }
 

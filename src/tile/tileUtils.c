@@ -20,6 +20,7 @@
 
 void arrange()
 {
+    printf("arrange\n");
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
         arrange_monitor(m);
@@ -246,7 +247,6 @@ void resize(struct container *con, struct wlr_box geom)
      * compositor, you'd wait for the client to prepare a buffer at
      * the new size, then commit any movement that was prepared.
      */
-    container_damage_whole(con);
     con->geom = geom;
 
     bool preserve_ratio = con->ratio != 0;
@@ -285,7 +285,6 @@ void resize(struct container *con, struct wlr_box geom)
                     con->geom.x, con->geom.y, con->geom.width,
                     con->geom.height);
     }
-    container_damage_whole(con);
 }
 
 void update_hidden_containers(struct monitor *m)

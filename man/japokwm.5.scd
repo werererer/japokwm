@@ -244,7 +244,7 @@ integers
 	i: integer - ith workspace
 
 *zoom()* ++
-	push the current container to the main position
+	like dwm's zoom
 
 # CONTAINER
 *container_set_sticky(b)* ++

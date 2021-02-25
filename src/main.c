@@ -29,7 +29,7 @@
  * frame handler to the per-surface render function. */
 /* function declarations */
 static void cleanup();
-static void inputdevice(struct wl_listener *listener, void *data);
+static void handle_new_inputdevice(struct wl_listener *listener, void *data);
 static void run(char *startup_cmd);
 static int setup();
 
@@ -39,7 +39,7 @@ static struct wl_listener cursor_button = {.notify = buttonpress};
 static struct wl_listener cursor_frame = {.notify = cursorframe};
 static struct wl_listener cursor_motion = {.notify = motion_relative};
 static struct wl_listener cursor_motion_absolute = {.notify = motion_absolute};
-static struct wl_listener new_input = {.notify = inputdevice};
+static struct wl_listener new_input = {.notify = handle_new_inputdevice};
 static struct wl_listener new_output = {.notify = create_monitor};
 static struct wl_listener new_xdeco = {.notify = createxdeco};
 static struct wl_listener new_xdg_surface = {.notify = create_notify};
@@ -49,7 +49,7 @@ static struct wl_listener request_set_sel = {.notify = set_selection};
 
 static struct wl_listener new_xwayland_surface = {.notify = create_notifyx11};
 
-void cleanup()
+static void cleanup()
 {
     close_error_file();
     wlr_xwayland_destroy(server.xwayland.wlr_xwayland);
@@ -60,7 +60,7 @@ void cleanup()
     wlr_output_layout_destroy(server.output_layout);
 }
 
-void inputdevice(struct wl_listener *listener, void *data)
+static void handle_new_inputdevice(struct wl_listener *listener, void *data)
 {
     /* This event is raised by the backend when a new input device becomes
      * available. */
@@ -87,7 +87,7 @@ void inputdevice(struct wl_listener *listener, void *data)
     wlr_seat_set_capabilities(server.seat, caps);
 }
 
-void run(char *startup_cmd)
+static void run(char *startup_cmd)
 {
     pid_t startup_pid = -1;
 
@@ -138,8 +138,7 @@ void run(char *startup_cmd)
     }
 }
 
-// TODO: set up initial layout
-int setup()
+static int setup()
 {
     wl_list_init(&mons);
     wl_list_init(&focus_stack);

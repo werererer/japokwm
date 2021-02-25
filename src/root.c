@@ -191,5 +191,6 @@ void root_damage_whole(struct root *root)
 {
     if (!root)
         return;
+    printf("damage root\n");
     wlr_output_damage_add_box(root->m->damage, &root->geom);
 }

@@ -56,6 +56,7 @@ void destroy_container(struct container *con)
 
 static void container_damage(struct container *con, bool whole)
 {
+    printf("container damage\n");
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
         output_damage_surface(m, get_wlrsurface(con->client), con->geom.x, con->geom.y, whole);

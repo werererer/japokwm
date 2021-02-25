@@ -83,7 +83,6 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     evaluate_monrules(output);
 
-
     struct workspace *ws = get_workspace(&server.workspaces, 0);
     focus_next_unoccupied_workspace(m, &server.workspaces, ws);
     // TODO is this needed?
@@ -131,14 +130,13 @@ static void handle_output_damage_frame(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, damage_frame);
 
-    if (!m->wlr_output->enabled) {
+    if (!m->wlr_output->enabled)
         return;
-    }
 
     /* Check if we can scan-out the primary view. */
-    bool needs_frame;
     pixman_region32_t damage;
     pixman_region32_init(&damage);
+    bool needs_frame;
     if (!wlr_output_damage_attach_render(m->damage, &needs_frame, &damage))
         goto damage_finish;
 
