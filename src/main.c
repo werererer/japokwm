@@ -31,7 +31,6 @@
 static void cleanup();
 static void inputdevice(struct wl_listener *listener, void *data);
 static void run(char *startup_cmd);
-static void sigchld(int unused);
 static int setup();
 
 /* global event handlers */
@@ -166,9 +165,6 @@ int setup()
     server.wl_event_loop = wl_display_get_event_loop(server.display);
     ipc_init(server.wl_event_loop);
 
-    /* clean up child processes immediately */
-    sigchld(0);
-
     /* The backend is a wlroots feature which abstracts the underlying input and
      * output hardware. The autocreate option will choose the most suitable
      * backend based on the current environment, such as opening an X11 window
@@ -296,13 +292,6 @@ int setup()
     }
 
     return 0;
-}
-
-void sigchld(int unused)
-{
-    if (signal(SIGCHLD, sigchld) == SIG_ERR)
-        wlr_log(WLR_ERROR, "can't install SIGCHLD handler");
-    while (0 < waitpid(-1, NULL, WNOHANG));
 }
 
 Atom getatom(xcb_connection_t *xc, const char *name)
