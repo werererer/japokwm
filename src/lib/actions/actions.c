@@ -494,19 +494,28 @@ int lib_load_layout(lua_State *L)
 
 int lib_kill(lua_State *L)
 {
-    struct client *sel = focused_container(selected_monitor)->client;
-    if (sel) {
-        switch (sel->type) {
-            case XDG_SHELL:
-                wlr_xdg_toplevel_send_close(sel->surface.xdg);
-                break;
-            case LAYER_SHELL:
-                wlr_layer_surface_v1_close(sel->surface.layer);
-                break;
-            case X11_MANAGED:
-            case X11_UNMANAGED:
-                wlr_xwayland_surface_close(sel->surface.xwayland);
-        }
+    struct monitor *m = selected_monitor;
+
+    int i = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+
+    struct container *con = get_container(m, i);
+    struct client *sel = con->client;
+
+    if (!sel)
+        return 0;
+
+    switch (sel->type) {
+        case XDG_SHELL:
+            wlr_xdg_toplevel_send_close(sel->surface.xdg);
+            break;
+        case LAYER_SHELL:
+            wlr_layer_surface_v1_close(sel->surface.layer);
+            break;
+        case X11_MANAGED:
+        case X11_UNMANAGED:
+            wlr_xwayland_surface_close(sel->surface.xwayland);
+            break;
     }
     return 0;
 }

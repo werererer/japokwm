@@ -45,7 +45,7 @@ config.set_keybinds({
     {"mod-j",         function() action.focus_on_stack(1) end},
     {"mod-S-j",       function() action.focus_on_hidden_stack(0) end},
     {"mod-S-k",       function() action.focus_on_hidden_stack(-1) end},
-    {"mod-S-c",       function() action.kill() end},
+    {"mod-S-c",       function() action.kill(info.this_container_position()) end},
     {"mod-S-q",       function() action.quit() end},
     {"mod-space",     function() action.load_next_layout_in_set("default") end},
     {"mod-S-space",   function() action.load_prev_layout_in_set("default") end},
