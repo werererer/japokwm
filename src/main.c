@@ -7,7 +7,6 @@
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_export_dmabuf_v1.h>
 #include <wlr/types/wlr_gamma_control_v1.h>
-#include <wlr/types/wlr_primary_selection.h>
 #include <wlr/types/wlr_primary_selection_v1.h>
 #include <wlr/types/wlr_screencopy_v1.h>
 #include <wlr/types/wlr_server_decoration.h>
@@ -16,6 +15,7 @@
 #include <wlr/types/wlr_xdg_output_v1.h>
 #include <wlr/util/log.h>
 
+#include "clipboard.h"
 #include "ipc-server.h"
 #include "keyboard.h"
 #include "layer_shell.h"
@@ -23,23 +23,14 @@
 #include "server.h"
 #include "translationLayer.h"
 #include "utils/parseConfigUtils.h"
-
-typedef struct {
-    struct wl_listener request_mode;
-    struct wl_listener destroy;
-} Decoration;
+#include "xdg_shell.h"
 
 /* Used to move all of the data necessary to render a surface from the top-level
  * frame handler to the per-surface render function. */
 /* function declarations */
 static void cleanup();
-static void createxdeco(struct wl_listener *listener, void *data);
-static void destroyxdeco(struct wl_listener *listener, void *data);
-static void getxdecomode(struct wl_listener *listener, void *data);
 static void inputdevice(struct wl_listener *listener, void *data);
 static void run(char *startup_cmd);
-static void setpsel(struct wl_listener *listener, void *data);
-static void setsel(struct wl_listener *listener, void *data);
 static void sigchld(int unused);
 static int setup();
 
@@ -54,8 +45,8 @@ static struct wl_listener new_output = {.notify = create_monitor};
 static struct wl_listener new_xdeco = {.notify = createxdeco};
 static struct wl_listener new_xdg_surface = {.notify = create_notify};
 static struct wl_listener new_layer_shell_surface = {.notify = create_notify_layer_shell};
-static struct wl_listener request_set_psel = {.notify = setpsel};
-static struct wl_listener request_set_sel = {.notify = setsel};
+static struct wl_listener request_set_psel = {.notify = set_primary_selection};
+static struct wl_listener request_set_sel = {.notify = set_selection};
 
 static struct wl_listener new_xwayland_surface = {.notify = create_notifyx11};
 
@@ -68,36 +59,6 @@ void cleanup()
     wlr_xcursor_manager_destroy(server.cursor_mgr);
     wlr_cursor_destroy(server.cursor.wlr_cursor);
     wlr_output_layout_destroy(server.output_layout);
-}
-
-void createxdeco(struct wl_listener *listener, void *data)
-{
-    struct wlr_xdg_toplevel_decoration_v1 *wlr_deco = data;
-    Decoration *d = wlr_deco->data = calloc(1, sizeof(*d));
-
-    wl_signal_add(&wlr_deco->events.request_mode, &d->request_mode);
-    d->request_mode.notify = getxdecomode;
-    wl_signal_add(&wlr_deco->events.destroy, &d->destroy);
-    d->destroy.notify = destroyxdeco;
-
-    getxdecomode(&d->request_mode, wlr_deco);
-}
-
-void destroyxdeco(struct wl_listener *listener, void *data)
-{
-    struct wlr_xdg_toplevel_decoration_v1 *wlr_deco = data;
-    Decoration *d = wlr_deco->data;
-
-    wl_list_remove(&d->destroy.link);
-    wl_list_remove(&d->request_mode.link);
-    free(d);
-}
-
-void getxdecomode(struct wl_listener *listener, void *data)
-{
-    struct wlr_xdg_toplevel_decoration_v1 *wlr_deco = data;
-    wlr_xdg_toplevel_decoration_v1_set_mode(wlr_deco,
-            WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
 }
 
 void inputdevice(struct wl_listener *listener, void *data)
@@ -176,26 +137,6 @@ void run(char *startup_cmd)
         kill(startup_pid, SIGTERM);
         waitpid(startup_pid, NULL, 0);
     }
-}
-
-void setpsel(struct wl_listener *listener, void *data)
-{
-    /* This event is raised by the seat when a client wants to set the selection,
-     * usually when the user copies something. wlroots allows compositors to
-     * ignore such requests if they so choose, but in dwl we always honor
-     */
-    struct wlr_seat_request_set_primary_selection_event *event = data;
-    wlr_seat_set_primary_selection(server.seat, event->source, event->serial);
-}
-
-void setsel(struct wl_listener *listener, void *data)
-{
-    /* This event is raised by the seat when a client wants to set the selection,
-     * usually when the user copies something. wlroots allows compositors to
-     * ignore such requests if they so choose, but in dwl we always honor
-     */
-    struct wlr_seat_request_set_selection_event *event = data;
-    wlr_seat_set_selection(server.seat, event->source, event->serial);
 }
 
 // TODO: set up initial layout

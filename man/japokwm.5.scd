@@ -202,13 +202,13 @@ integers
 *repush(i, j)* ++
 	push the container into the master area ++
 <where> ++
-	i: integer - container that needs to repushed
+	i: integer - container that needs to repushed ++
 	j: integer - new position it will be pushed to
 
-*resize_main(f)* ++
+*resize_main(n)* ++
 	resize the master area ++
 <where> ++
-	f: number - relative size (between 0 and 1)
+	n: number - relative size (between 0 and 1)
 
 *set_floating(b)* ++
 	set the selected container's floating status ++

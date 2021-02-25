@@ -1,0 +1,13 @@
+#ifndef XDG_SHELL_H
+#define XDG_SHELL_H
+
+#include <wayland-server-core.h>
+
+typedef struct {
+    struct wl_listener request_mode;
+    struct wl_listener destroy;
+} Decoration;
+
+void createxdeco(struct wl_listener *listener, void *data);
+
+#endif /* XDG_SHELL_H */

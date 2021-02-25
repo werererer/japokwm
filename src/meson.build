@@ -59,6 +59,8 @@ srcs = files(
     'lib/event_handler/local_event_handler.c',
     'layer_shell.c',
     'lib/monitor/lib_monitor.c',
+    'xdg_shell.c',
+    'clipboard.c',
   )
 
 libName = 'japokwm'
