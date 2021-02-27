@@ -76,9 +76,8 @@ static void output_for_each_surface_iterator(struct wlr_surface *surface, int sx
         struct surface_iterator_data *data = user_data;
         struct monitor *m = data->m;
 
-        if (!wlr_surface_has_buffer(surface)) {
+        if (!wlr_surface_has_buffer(surface))
                 return;
-        }
 
         struct wlr_box surface_box = {
                 .x = data->ox + sx + surface->sx,
@@ -87,27 +86,10 @@ static void output_for_each_surface_iterator(struct wlr_surface *surface, int sx
                 .height = surface->current.height,
         };
 
-        if (!intersects_with_output(m, server.output_layout, &surface_box)) {
+        if (!intersects_with_output(m, server.output_layout, &surface_box))
                 return;
-        }
 
         data->user_iterator(data->m, surface, &surface_box, data->user_data);
-}
-
-
-void output_surface_for_each_surface(struct monitor *m, struct wlr_surface
-        *surface, double ox, double oy, surface_iterator_func_t iterator,
-        void *user_data)
-{
-    struct surface_iterator_data data = {
-        .user_iterator = iterator,
-        .user_data = user_data,
-        .m = m,
-        .ox = ox,
-        .oy = oy,
-    };
-
-    wlr_surface_for_each_surface(surface, output_for_each_surface_iterator, &data);
 }
 
 static void render_texture(struct wlr_output *wlr_output,
@@ -193,14 +175,23 @@ damage_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct w
     }
 }
 
-void output_damage_surface(struct monitor *m, struct wlr_surface *surface, double lx, double ly, bool whole)
+void output_damage_surface(struct monitor *m, struct wlr_surface *surface, struct wlr_box *geom, bool whole)
 {
     if (!m->wlr_output->enabled)
         return;
 
-    double ox = lx, oy = ly;
+    double ox = geom->x, oy = geom->y;
     wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
-    output_surface_for_each_surface(m, surface, ox, oy, damage_surface_iterator, &whole);
+
+    struct surface_iterator_data data = {
+        .user_iterator = damage_surface_iterator,
+        .user_data = &whole,
+        .m = m,
+        .ox = ox,
+        .oy = oy,
+    };
+
+    wlr_surface_for_each_surface(surface, output_for_each_surface_iterator, &data);
 }
 
 static void scissor_output(struct wlr_output *output, pixman_box32_t *rect)
@@ -262,8 +253,6 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
         /* This calls our render function for each surface among the
          * xdg_surface's toplevel and popups. */
 
-        con->geom.width = surface->current.width;
-        con->geom.height = surface->current.height;
         render_surface_iterator(m, surface, con->geom, output_damage);
 
         struct timespec now;

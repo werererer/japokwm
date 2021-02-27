@@ -39,7 +39,7 @@ struct surface_iterator_data {
 void render_frame(struct monitor *m, pixman_region32_t *damage);
 void scale_box(struct wlr_box *box, float scale);
 void output_damage_surface(struct monitor *m, struct wlr_surface *surface,
-        double lx, double ly, bool whole);
+        struct wlr_box *geom, bool whole);
 
 extern struct wlr_renderer *drw;
 extern struct render_data render_data;

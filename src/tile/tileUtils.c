@@ -247,7 +247,7 @@ void resize(struct container *con, struct wlr_box geom)
      * compositor, you'd wait for the client to prepare a buffer at
      * the new size, then commit any movement that was prepared.
      */
-    con->geom = geom;
+    set_container_geom(con, geom);
 
     bool preserve_ratio = con->ratio != 0;
 

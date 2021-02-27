@@ -91,11 +91,9 @@ static void popup_damage(struct xdg_popup *xdg_popup, bool whole)
 
     struct wlr_xdg_popup *popup = xdg_popup->xdg;
     struct wlr_surface *surface = popup->base->surface;
-    int ox = xdg_popup->geom.x;
-    int oy = xdg_popup->geom.y;
     struct monitor *m = xdg_popup->m;
 
-    output_damage_surface(m, surface, ox, oy, whole);
+    output_damage_surface(m, surface, &xdg_popup->geom, whole);
 }
 
 void popup_handle_new_popup(struct wl_listener *listener, void *data)

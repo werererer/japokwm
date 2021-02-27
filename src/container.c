@@ -56,10 +56,9 @@ void destroy_container(struct container *con)
 
 static void container_damage(struct container *con, bool whole)
 {
-    printf("container damage\n");
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
-        output_damage_surface(m, get_wlrsurface(con->client), con->geom.x, con->geom.y, whole);
+        output_damage_surface(m, get_wlrsurface(con->client), &con->geom, whole);
 
         double ox, oy;
         int w, h;
@@ -81,18 +80,23 @@ static void container_damage(struct container *con, bool whole)
             scale_box(&borders[i], m->wlr_output->scale);
             wlr_output_damage_add_box(m->damage, &borders[i]);
         }
-        wlr_output_damage_add_whole(m->damage);
     }
 }
 
 void container_damage_part(struct container *con)
 {
+    struct container prev_con = *con;
+    set_container_geom(&prev_con, con->prev_geom);
     container_damage(con, false);
+    container_damage(&prev_con, false);
 }
 
 void container_damage_whole(struct container *con)
 {
+    struct container prev_con = *con;
+    set_container_geom(&prev_con, con->prev_geom);
     container_damage(con, true);
+    container_damage(&prev_con, false);
 }
 
 struct container *container_position_to_container(int ws_id, int position)
@@ -615,6 +619,13 @@ void set_container_floating(struct container *con, bool floating)
 
     lift_container(con);
     con->client->bw = lt->options.float_border_px;
+}
+
+void set_container_geom(struct container *con, struct wlr_box geom)
+{
+    printf("set geometry\n");
+    con->prev_geom = con->geom;
+    con->geom = geom;
 }
 
 void set_container_workspace(struct container *con, int ws_id)

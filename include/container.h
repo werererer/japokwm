@@ -29,6 +29,7 @@ struct container {
 
     /* layout-relative, includes border */
     struct wlr_box geom;
+    struct wlr_box prev_geom;
     struct client *client;
 
     struct monitor *m;
@@ -76,6 +77,7 @@ void focus_top_container(struct monitor *m, enum focus_actions a);
 void lift_container(struct container *con);
 void repush(int pos, int pos2);
 void set_container_floating(struct container *con, bool floating);
+void set_container_geom(struct container *con, struct wlr_box geom);
 void set_container_workspace(struct container *con, int ws_id);
 void set_container_monitor(struct container *con, struct monitor *m);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
