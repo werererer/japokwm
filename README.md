@@ -5,6 +5,7 @@
 ![](edit_layout.gif)
 - layout specific configurations
 - sane default settings
+- Damage Tracking
 ## Known limitations and issues
 japokwm is not ready for use yet.
 
