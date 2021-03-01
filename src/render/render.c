@@ -73,23 +73,23 @@ static bool intersects_with_output(struct monitor *m,
 
 static void output_for_each_surface_iterator(struct wlr_surface *surface, int sx, int sy, void *user_data)
 {
-        struct surface_iterator_data *data = user_data;
-        struct monitor *m = data->m;
+    struct surface_iterator_data *data = user_data;
+    struct monitor *m = data->m;
 
-        if (!wlr_surface_has_buffer(surface))
-                return;
+    if (!wlr_surface_has_buffer(surface))
+        return;
 
-        struct wlr_box surface_box = {
-                .x = data->ox + sx + surface->sx,
-                .y = data->oy + sy + surface->sy,
-                .width = surface->current.width,
-                .height = surface->current.height,
-        };
+    struct wlr_box surface_box = {
+        .x = data->ox + sx + surface->sx,
+        .y = data->oy + sy + surface->sy,
+        .width = surface->current.width,
+        .height = surface->current.height,
+    };
 
-        if (!intersects_with_output(m, server.output_layout, &surface_box))
-                return;
+    if (!intersects_with_output(m, server.output_layout, &surface_box))
+        return;
 
-        data->user_iterator(data->m, surface, &surface_box, data->user_data);
+    data->user_iterator(data->m, surface, &surface_box, data->user_data);
 }
 
 static void render_texture(struct wlr_output *wlr_output,
@@ -177,6 +177,7 @@ damage_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct w
 
 void output_damage_surface(struct monitor *m, struct wlr_surface *surface, struct wlr_box *geom, bool whole)
 {
+    printf("output_damage_surface\n");
     if (!m->wlr_output->enabled)
         return;
 
@@ -331,7 +332,7 @@ static void clear_frame(struct monitor *m, float color[4], pixman_region32_t *da
     }
 }
 
-void render_frame(struct monitor *m, pixman_region32_t *damage)
+void render_monitor(struct monitor *m, pixman_region32_t *damage)
 {
     /* Begin the renderer (calls glViewport and some other GL sanity checks) */
     wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);

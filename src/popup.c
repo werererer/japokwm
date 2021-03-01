@@ -121,7 +121,6 @@ static void popup_handle_new_subpopup(struct wl_listener *listener, void *data)
 
 void popup_handle_destroy(struct wl_listener *listener, void *data)
 {
-    printf("destroy popup\n");
     struct xdg_popup *popup = wl_container_of(listener, popup, destroy);
     wl_list_remove(&popup->plink);
     destroy_popup(popup);

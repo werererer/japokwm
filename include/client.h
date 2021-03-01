@@ -30,6 +30,7 @@ struct client {
     int id;
     char *title;
     bool sticky;
+    bool resize;
     // workspace id
     int ws_id;
 };

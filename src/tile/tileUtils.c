@@ -248,6 +248,7 @@ void resize(struct container *con, struct wlr_box geom)
      * the new size, then commit any movement that was prepared.
      */
     set_container_geom(con, geom);
+    con->client->resize = true;
 
     bool preserve_ratio = con->ratio != 0;
 

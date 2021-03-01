@@ -88,7 +88,12 @@ static void con_damage(struct container *con, struct wlr_box *geom, bool whole)
 static void container_damage(struct container *con, bool whole)
 {
     con_damage(con, &con->geom, whole);
-    con_damage(con, &con->prev_geom, whole);
+
+    struct client *c = con->client;
+    if (c->resize) {
+        con_damage(con, &con->prev_geom, whole);
+        c->resize = false;
+    }
 }
 
 void container_damage_part(struct container *con)
@@ -621,6 +626,8 @@ void set_container_floating(struct container *con, bool floating)
 
     lift_container(con);
     con->client->bw = lt->options.float_border_px;
+    con->client->resize = true;
+    container_damage_whole(con);
 }
 
 void set_container_geom(struct container *con, struct wlr_box geom)
@@ -665,6 +672,7 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
     /* geom.x = container_relative_x_to_absolute(con, dx); */
     /* geom.y = container_relative_y_to_absolute(con, dy); */
     resize(con, geom);
+    container_damage(con, true);
 }
 
 void resize_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety)

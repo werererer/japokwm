@@ -130,23 +130,24 @@ static void handle_output_damage_frame(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, damage_frame);
 
-    if (!m->wlr_output->enabled)
+    if (!m->wlr_output->enabled) {
         return;
+    }
 
     /* Check if we can scan-out the primary view. */
     pixman_region32_t damage;
     pixman_region32_init(&damage);
     bool needs_frame;
-    if (!wlr_output_damage_attach_render(m->damage, &needs_frame, &damage))
+    if (!wlr_output_damage_attach_render(m->damage, &needs_frame, &damage)) {
         goto damage_finish;
+    }
 
     if (!needs_frame) {
         wlr_output_rollback(m->wlr_output);
-        pixman_region32_fini(&damage);
-        return;
+        goto damage_finish;
     }
 
-    render_frame(m, &damage);
+    render_monitor(m, &damage);
 
 damage_finish:
     pixman_region32_fini(&damage);
