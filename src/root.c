@@ -194,3 +194,19 @@ void root_damage_whole(struct root *root)
     printf("damage root\n");
     wlr_output_damage_add_box(root->m->damage, &root->geom);
 }
+
+void set_bars_visible(struct monitor *m, bool visible)
+{
+    m->root->consider_layer_shell = visible;
+    wlr_output_damage_add_whole(m->damage);
+}
+
+bool get_bars_visible(struct monitor *m)
+{
+    return m->root->consider_layer_shell;
+}
+
+void toggle_bars_visible(struct monitor *m)
+{
+    set_bars_visible(m, !get_bars_visible(m));
+}

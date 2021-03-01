@@ -208,11 +208,6 @@ void commit_notify(struct wl_listener *listener, void *data)
     if (!con)
         return;
 
-    printf("commit notify\n");
-    printf("0geom.x: %i\n", con->geom.x);
-    printf("0geom.y: %i\n", con->geom.y);
-    printf("0geom.width: %i\n", con->geom.width);
-    printf("0geom.height: %i\n", con->geom.height);
     container_damage_part(con);
 }
 

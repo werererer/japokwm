@@ -54,49 +54,51 @@ void destroy_container(struct container *con)
     free(con);
 }
 
+static void damage_border(struct monitor *m, struct wlr_box *geom, int border_width)
+{
+    double ox = geom->x - border_width;
+    double oy = geom->y - border_width;
+    wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
+    int w = geom->width;
+    int h = geom->height;
+
+    struct wlr_box *borders;
+    borders = (struct wlr_box[4]) {
+        {ox, oy, w + 2 * border_width, border_width},             /* top */
+            {ox, oy + border_width, border_width, h},                 /* left */
+            {ox + border_width + w, oy + border_width, border_width, h},     /* right */
+            {ox, oy + border_width + h, w + 2 * border_width, border_width}, /* bottom */
+    };
+
+    for (int i = 0; i < 4; i++) {
+        scale_box(&borders[i], m->wlr_output->scale);
+        wlr_output_damage_add_box(m->damage, &borders[i]);
+    }
+}
+
+static void con_damage(struct container *con, struct wlr_box *geom, bool whole)
+{
+    struct monitor *m = con->m;
+
+    output_damage_surface(m, get_wlrsurface(con->client), geom, whole);
+
+    damage_border(m, geom, con->client->bw);
+}
+
 static void container_damage(struct container *con, bool whole)
 {
-    struct monitor *m;
-    wl_list_for_each(m, &mons, link) {
-        output_damage_surface(m, get_wlrsurface(con->client), &con->geom, whole);
-
-        double ox, oy;
-        int w, h;
-        ox = con->geom.x - con->client->bw;
-        oy = con->geom.y - con->client->bw;
-        wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
-        w = con->geom.width;
-        h = con->geom.height;
-
-        struct wlr_box *borders;
-        borders = (struct wlr_box[4]) {
-            {ox, oy, w + 2 * con->client->bw, con->client->bw},             /* top */
-                {ox, oy + con->client->bw, con->client->bw, h},                 /* left */
-                {ox + con->client->bw + w, oy + con->client->bw, con->client->bw, h},     /* right */
-                {ox, oy + con->client->bw + h, w + 2 * con->client->bw, con->client->bw}, /* bottom */
-        };
-
-        for (int i = 0; i < 4; i++) {
-            scale_box(&borders[i], m->wlr_output->scale);
-            wlr_output_damage_add_box(m->damage, &borders[i]);
-        }
-    }
+    con_damage(con, &con->geom, whole);
+    con_damage(con, &con->prev_geom, whole);
 }
 
 void container_damage_part(struct container *con)
 {
-    struct container prev_con = *con;
-    set_container_geom(&prev_con, con->prev_geom);
     container_damage(con, false);
-    container_damage(&prev_con, false);
 }
 
 void container_damage_whole(struct container *con)
 {
-    struct container prev_con = *con;
-    set_container_geom(&prev_con, con->prev_geom);
     container_damage(con, true);
-    container_damage(&prev_con, false);
 }
 
 struct container *container_position_to_container(int ws_id, int position)
@@ -623,7 +625,6 @@ void set_container_floating(struct container *con, bool floating)
 
 void set_container_geom(struct container *con, struct wlr_box geom)
 {
-    printf("set geometry\n");
     con->prev_geom = con->geom;
     con->geom = geom;
 }

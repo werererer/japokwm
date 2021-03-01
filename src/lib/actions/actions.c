@@ -45,7 +45,8 @@ int lib_focus_container(lua_State *L)
 
 int lib_toggle_bars(lua_State *L)
 {
-    selected_monitor->root->consider_layer_shell = !selected_monitor->root->consider_layer_shell;
+    struct monitor *m = selected_monitor;
+    toggle_bars_visible(m);
     arrange();
     return 0;
 }
