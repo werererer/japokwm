@@ -222,8 +222,10 @@ int lib_view(lua_State *L)
         return 0;
 
     focus_workspace(m, &server.workspaces, ws->id);
-    focus_top_container(m, FOCUS_NOOP);
     arrange();
+    focus_container(container_position_to_container(m->ws_ids[0], 0), FOCUS_NOOP);
+
+    root_damage_whole(m->root);
     return 0;
 }
 
@@ -288,7 +290,7 @@ int lib_zoom(lua_State *L)
     arrange();
 
     // focus new master window
-    struct container *con0 = get_container(m, 0);
+    struct container *con0 = container_position_to_container(m->ws_ids[0], 0);
     focus_container(con0, FOCUS_NOOP);
 
     struct layout *lt = get_layout_on_monitor(m);

@@ -20,13 +20,13 @@
 
 void arrange()
 {
-    printf("arrange\n");
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
         arrange_monitor(m);
     }
 
     update_cursor(&server.cursor);
+    root_damage_whole(m->root);
 }
 
 // TODO what does this fucntion even do?
