@@ -163,6 +163,22 @@ void update_container_positions(struct monitor *m)
         // then use the layout that may have been reseted
         position++;
     }
+
+    wl_list_for_each(con, &containers, mlink) {
+        if (!existon(con, &server.workspaces, m->ws_ids[0]))
+            continue;
+        if (!con->floating)
+            continue;
+        if (con->client->type == LAYER_SHELL)
+            continue;
+
+        con->position = position;
+
+        apply_rules(con);
+
+        // then use the layout that may have been reseted
+        position++;
+    }
 }
 
 static void update_container_focus_stack_positions(struct monitor *m)
