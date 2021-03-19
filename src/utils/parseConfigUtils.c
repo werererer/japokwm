@@ -1,5 +1,6 @@
 #include "utils/parseConfigUtils.h"
 #include "options.h"
+#include "server.h"
 #include "utils/writeFile.h"
 #include <lauxlib.h>
 #include <wlr/util/log.h>
@@ -92,7 +93,7 @@ void append_to_lua_path(lua_State *L, const char *path)
 }
 
 // returns 0 upon success and 1 upon failure
-int load_config(lua_State *L)
+static int load_default_config(lua_State *L)
 {
     char *config_path = get_config_dir(config_file);
 
@@ -129,6 +130,19 @@ int load_config(lua_State *L)
         // when config loaded successfully break;
         success = 0;
         free(path);
+    }
+    return success;
+}
+
+// returns 0 upon success and 1 upon failure
+int load_config(lua_State *L)
+{
+    int success = 0;
+    if (strcmp(server.config_file, "") != 0) {
+        printf("load custom config file: %s\n", server.config_file);
+        success = load_file(L, "", server.config_file);
+    } else {
+        success = load_default_config(L);
     }
     return success;
 }

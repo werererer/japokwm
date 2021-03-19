@@ -322,15 +322,18 @@ void print_help()
 
 int main(int argc, char *argv[])
 {
-    char *startup_cmd = NULL;
-    int c;
+    char *startup_cmd = "";
 
+    init_server();
+
+    int c;
     while ((c = getopt(argc, argv, "c:s:h")) != -1) {
         switch (c) {
             case 's':
                 startup_cmd = optarg;
                 break;
             case 'c':
+                server.config_file = optarg;
                 break;
             case 'h':
                 print_help();

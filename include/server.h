@@ -38,7 +38,11 @@ struct server {
     struct wl_list keyboards;
 
     struct wlr_list workspaces;
+
+    const char *config_file;
 };
 
 extern struct server server;
+
+void init_server();
 #endif /* SERVER_H */
