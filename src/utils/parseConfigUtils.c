@@ -92,7 +92,7 @@ void append_to_lua_path(lua_State *L, const char *path)
 }
 
 // returns 0 upon success and 1 upon failure
-int init_config(lua_State *L)
+int load_config(lua_State *L)
 {
     char *config_path = get_config_dir(config_file);
 

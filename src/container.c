@@ -219,6 +219,7 @@ struct container *get_relative_container(struct monitor *m, struct container *co
 {
     struct layout *lt = get_layout_on_monitor(m);
 
+    printf("n_abs: %i\n", lt->n_abs);
     int new_position = (con->position + i) % (lt->n_abs);
     while (new_position < 0) {
         new_position += lt->n_abs;

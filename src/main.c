@@ -307,19 +307,44 @@ Atom getatom(xcb_connection_t *xc, const char *name)
     return atom;
 }
 
+void print_usage(char *argv[])
+{
+    wlr_log(WLR_INFO, "Usage: %s [-s startup command]", argv[0]);
+}
+
+void print_help()
+{
+    wlr_log(WLR_INFO, "Usage: [-s startup command]");
+    wlr_log(WLR_INFO, "Usage: [-s startup command]");
+    wlr_log(WLR_INFO, "Usage: [-s startup command]");
+    wlr_log(WLR_INFO, "Usage: [-s startup command]");
+}
+
 int main(int argc, char *argv[])
 {
     char *startup_cmd = NULL;
     int c;
 
-    while ((c = getopt(argc, argv, "s:h")) != -1) {
-        if (c == 's')
-            startup_cmd = optarg;
-        else
-            goto usage;
+    while ((c = getopt(argc, argv, "c:s:h")) != -1) {
+        switch (c) {
+            case 's':
+                startup_cmd = optarg;
+                break;
+            case 'c':
+                break;
+            case 'h':
+                print_help();
+                return EXIT_SUCCESS;
+                break;
+            default:
+                print_usage(argv);
+                return EXIT_SUCCESS;
+        }
     }
-    if (optind < argc)
-        goto usage;
+    if (optind < argc) {
+        print_usage(argv);
+        return EXIT_SUCCESS;
+    }
 
     // TODO delete to increase performance
     /* setbuf(stdout, NULL); */
@@ -339,7 +364,4 @@ int main(int argc, char *argv[])
     run(startup_cmd);
     cleanup();
     return EXIT_SUCCESS;
-
-usage:
-    wlr_log(WLR_INFO, "Usage: %s [-s startup command]", argv[0]);
 }

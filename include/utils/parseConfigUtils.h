@@ -9,7 +9,7 @@
 
 /* returns 0 if loading file was successful else return 1
  * the error_file argument gets malloced so it has to be freed */
-int init_config(lua_State *L);
+int load_config(lua_State *L);
 int init_utils(lua_State *L);
 void init_error_file();
 void close_error_file();

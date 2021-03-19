@@ -70,7 +70,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     m->root = create_root(m);
 
     if (is_first_monitor) {
-        init_config(L);
+        load_config(L);
         set_selected_monitor(m);
 
         if (server.default_layout.options.tag_names.length <= 0) {
