@@ -475,20 +475,20 @@ struct wlr_fbox lua_togeometry(lua_State *L)
 }
 
 
-void apply_bounds(struct container *con, struct wlr_box bbox)
+void apply_bounds(struct container *con, struct wlr_box box)
 {
     /* set minimum possible */
-    con->geom.width = MAX(1, con->geom.width);
-    con->geom.height = MAX(1, con->geom.height);
+    con->geom.width = MAX(30, con->geom.width);
+    con->geom.height = MAX(30, con->geom.height);
 
-    if (con->geom.x >= bbox.x + bbox.width)
-        con->geom.x = bbox.x + bbox.width - con->geom.width;
-    if (con->geom.y >= bbox.y + bbox.height)
-        con->geom.y = bbox.y + bbox.height - con->geom.height;
-    if (con->geom.x + con->geom.width + 2 * con->client->bw <= bbox.x)
-        con->geom.x = bbox.x;
-    if (con->geom.y + con->geom.height + 2 * con->client->bw <= bbox.y)
-        con->geom.y = bbox.y;
+    if (con->geom.x >= box.x + box.width)
+        con->geom.x = box.x + box.width - con->geom.width;
+    if (con->geom.y >= box.y + box.height)
+        con->geom.y = box.y + box.height - con->geom.height;
+    if (con->geom.x + con->geom.width + 2 * con->client->bw <= box.x)
+        con->geom.x = box.x;
+    if (con->geom.y + con->geom.height + 2 * con->client->bw <= box.y)
+        con->geom.y = box.y;
 }
 
 void apply_rules(struct container *con)
