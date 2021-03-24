@@ -376,23 +376,6 @@ void call_function(lua_State *L, struct layout lt)
     lua_call_safe(L, 1, 0, 0);
 }
 
-static struct layout get_config_array_layout(lua_State *L, const char *name, size_t i)
-{
-    lua_rawgeti(L, -1, i);
-    struct layout layout = {
-        .symbol = get_config_array_str(L, name, 1),
-        .name = get_config_array_str(L, name, 2),
-        .n = 1,
-        .nmaster = 1,
-        .lua_layout_ref = 0,
-        .lua_layout_copy_data_ref = 0,
-        .lua_layout_original_copy_data_ref = 0,
-    };
-    layout.options = get_default_options();
-    lua_pop(L, 1);
-    return layout;
-}
-
 struct layout get_config_layout(lua_State *L, char *name)
 {
     lua_getglobal_safe(L, name);

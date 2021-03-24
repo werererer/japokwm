@@ -93,7 +93,7 @@ static void apply_nmaster_transformation(struct wlr_box *box, struct layout *lt,
         return;
 
     // get layout
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->options.master_layout_data_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->master_layout_data_ref);
     int len = luaL_len(L, -1);
     int g = MIN(lt->nmaster_abs, lt->nmaster);
     g = MAX(MIN(len, g), 1);

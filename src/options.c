@@ -4,6 +4,7 @@
 
 #include "client.h"
 #include "utils/coreUtils.h"
+#include "layout.h"
 
 void reset_tag_names(struct wlr_list *tag_names)
 {
@@ -53,12 +54,6 @@ struct options get_default_options()
         .modkey = 0,
         .arrange_by_focus = false,
     };
-
-    lua_get_default_master_layout_data();
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &options.master_layout_data_ref);
-
-    lua_get_default_resize_data();
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &options.resize_data_ref);
 
     reset_tag_names(&options.tag_names);
     return options;

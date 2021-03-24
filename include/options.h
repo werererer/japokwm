@@ -48,9 +48,6 @@ struct options {
     bool arrange_by_focus;
     int resize_dir;
 
-    int master_layout_data_ref;
-    int resize_data_ref;
-
     struct event_handler event_handler;
     int tag_names_ref;
     int default_layout_ref;

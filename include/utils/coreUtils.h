@@ -83,6 +83,7 @@ void lua_get_default_resize_data();
 
 void wlr_list_clear(struct wlr_list *list);
 void lua_tocolor(float dest_color[static 4]);
+// like lua_ref but override the old value if *ref > 0
 void lua_ref_safe(lua_State *L, int t, int *ref);
 void copy_options(struct options *dest_option, struct options *src_option);
 void print_trace();

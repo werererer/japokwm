@@ -312,8 +312,8 @@ void copy_layout_from_selected_workspace(struct wlr_list *workspaces)
         if (dest_lt == src_lt)
             continue;
 
-        *dest_lt = copy_layout(src_lt);
-        *dest_prev_lt = copy_layout(src_lt);
+        copy_layout(dest_lt, src_lt);
+        copy_layout(dest_prev_lt, src_lt);
     }
 }
 

@@ -22,14 +22,22 @@ struct layout {
     int lua_layout_copy_data_ref;
     int lua_layout_original_copy_data_ref;
 
+    int master_layout_data_ref;
+    int resize_data_ref;
+
     struct options options;
 };
 
 bool is_same_layout(struct layout layout, struct layout layout2);
 bool lua_islayout_data(lua_State *L, const char *name);
 void lua_copy_table(lua_State *L, int *ref);
+// copy table and override old value
+void lua_copy_table_safe(lua_State *L, int *ref);
 struct resize_constraints lua_toresize_constrains(lua_State *L);
 void push_layout(struct layout lt_stack[static 2], struct layout lt);
-struct layout copy_layout(struct layout *src_lt);
+// copy layout and create new references
+void copy_layout(struct layout *dest_lt, struct layout *src_lt);
+// copy layout and override all references with the given ones
+void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt);
 struct layout get_default_layout();
 #endif /* LAYOUT_H */

@@ -191,7 +191,7 @@ int lib_set_rules(lua_State *L)
 int lib_create_layout_set(lua_State *L)
 {
     int *layout_set_ref = &server.layout_set.layout_sets_ref;
-    lua_copy_table(L, layout_set_ref);
+    lua_copy_table_safe(L, layout_set_ref);
     const char *layout_set_key = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
@@ -222,7 +222,7 @@ int lib_set_monrules(lua_State *L)
 
 int lib_set_keybinds(lua_State *L)
 {
-    lua_copy_table(L, &server.default_layout.options.keybinds_ref);
+    lua_copy_table_safe(L, &server.default_layout.options.keybinds_ref);
     return 0;
 }
 
@@ -250,7 +250,7 @@ int lib_set_resize_direction(lua_State *L)
 int lib_set_master_layout_data(lua_State *L)
 {
     if (lua_islayout_data(L, "master_layout_data"))
-        lua_copy_table(L, &server.default_layout.options.master_layout_data_ref);
+        lua_copy_table_safe(L, &server.default_layout.master_layout_data_ref);
     else
         lua_pop(L, 1);
     return 0;
@@ -259,7 +259,7 @@ int lib_set_master_layout_data(lua_State *L)
 int lib_set_resize_data(lua_State *L)
 {
     if (lua_istable(L, -1))
-        lua_copy_table(L, &server.default_layout.options.resize_data_ref);
+        lua_copy_table_safe(L, &server.default_layout.resize_data_ref);
     else
         lua_pop(L, 1);
     return 0;

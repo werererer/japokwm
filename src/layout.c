@@ -20,6 +20,12 @@ struct layout get_default_layout()
         .options = get_default_options(),
     };
 
+    lua_get_default_master_layout_data();
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.master_layout_data_ref);
+
+    lua_get_default_resize_data();
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.resize_data_ref);
+
     lua_get_default_layout_data();
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.lua_layout_copy_data_ref);
     lua_createtable(L, 0, 0);
@@ -28,6 +34,16 @@ struct layout get_default_layout()
 }
 
 void lua_copy_table(lua_State *L, int *ref)
+{
+    // lua copy table safe will execute lua_ref_safe. This will override the
+    // old table that is sitting in the position of *ref to prevent this we
+    // simply set *ref equals 0
+    *ref = 0;
+    lua_copy_table_safe(L, ref);
+    return;
+}
+
+void lua_copy_table_safe(lua_State *L, int *ref)
 {
     lua_getglobal_safe(L, "Deep_copy");
     lua_insert(L, -2);
@@ -66,36 +82,58 @@ bool is_same_layout(struct layout layout, struct layout layout2)
     return strcmp(c, c2) != 0;
 }
 
-struct layout copy_layout(struct layout *src_lt)
+void copy_layout(struct layout *dest_lt, struct layout *src_lt)
 {
-    struct layout dest_lt = get_default_layout();
+    dest_lt->lua_layout_copy_data_ref = 0;
+    dest_lt->lua_layout_original_copy_data_ref = 0;
+    dest_lt->lua_layout_ref = 0;
+    dest_lt->master_layout_data_ref = 0;
+    copy_layout_safe(dest_lt, src_lt);
+}
 
+void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt)
+{
     if (!src_lt)
-        return dest_lt;
+        return;
 
     if (src_lt->lua_layout_copy_data_ref > 0) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_copy_data_ref);
-        lua_copy_table(L, &dest_lt.lua_layout_copy_data_ref);
+        lua_copy_table_safe(L, &dest_lt->lua_layout_copy_data_ref);
     }
 
     if (src_lt->lua_layout_ref > 0) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_ref);
-        lua_copy_table(L, &dest_lt.lua_layout_ref);
+        lua_copy_table_safe(L, &dest_lt->lua_layout_ref);
     }
 
-    if (src_lt->options.master_layout_data_ref > 0) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->options.master_layout_data_ref);
-        lua_copy_table(L, &dest_lt.options.master_layout_data_ref);
+    if (src_lt->master_layout_data_ref > 0) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->master_layout_data_ref);
+        lua_copy_table_safe(L, &dest_lt->master_layout_data_ref);
     }
 
     if (src_lt->lua_layout_original_copy_data_ref > 0) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_original_copy_data_ref);
-        lua_copy_table(L, &dest_lt.lua_layout_original_copy_data_ref);
+        lua_copy_table_safe(L, &dest_lt->lua_layout_original_copy_data_ref);
     }
 
-    copy_options(&dest_lt.options, &src_lt->options);
+    if (src_lt->lua_layout_original_copy_data_ref > 0) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_original_copy_data_ref);
+        lua_copy_table_safe(L, &dest_lt->lua_layout_original_copy_data_ref);
+    }
 
-    return dest_lt;
+    if (src_lt->master_layout_data_ref > 0) {
+        lua_get_default_master_layout_data();
+        lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->master_layout_data_ref);
+    }
+
+    if (src_lt->resize_data_ref > 0) {
+        lua_get_default_resize_data();
+        lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->resize_data_ref);
+    }
+
+    copy_options(&dest_lt->options, &src_lt->options);
+
+    return;
 }
 
 void push_layout(struct layout lt_stack[static 2], struct layout lt)
