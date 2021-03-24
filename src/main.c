@@ -350,7 +350,7 @@ int main(int argc, char *argv[])
     }
 
     // TODO delete to increase performance
-    /* setbuf(stdout, NULL); */
+    setbuf(stdout, NULL);
 
     // Wayland requires XDG_RUNTIME_DIR for creating its communications
     // socket

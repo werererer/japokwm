@@ -295,7 +295,9 @@ void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
     m->ws_ids[0] = ws->id;
     ws->m = m;
 
-    // TODO is wlr_output_damage_whole better? because of floating windows
+    // fix focus
+    arrange();
+    focus_container(container_position_to_container(m->ws_ids[0], 0), FOCUS_NOOP);
     root_damage_whole(m->root);
 }
 
@@ -374,8 +376,13 @@ void load_layout(lua_State *L, struct workspace *ws, const char *layout_name, co
     lua_call_safe(L, 0, 0, 0);
 }
 
-void push_workspace(int ws_ids[static 2], int ws_id)
+void push_workspace(struct monitor *m,  struct wlr_list *workspaces, int ws_id)
 {
-    ws_ids[1] = ws_ids[0];
-    focus_workspace(selected_monitor, &server.workspaces, ws_id);
+    if (m->ws_ids[0] == ws_id)
+        return;
+
+    if (m->ws_ids[0] != m->ws_ids[1])
+        m->ws_ids[1] = m->ws_ids[0];
+
+    focus_workspace(m, workspaces, ws_id);
 }

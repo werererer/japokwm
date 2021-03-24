@@ -221,11 +221,7 @@ int lib_view(lua_State *L)
     if (!ws)
         return 0;
 
-    focus_workspace(m, &server.workspaces, ws->id);
-    arrange();
-    focus_container(container_position_to_container(m->ws_ids[0], 0), FOCUS_NOOP);
-
-    root_damage_whole(m->root);
+    push_workspace(m, &server.workspaces, ws->id);
     return 0;
 }
 
@@ -459,8 +455,7 @@ int lib_toggle_layout(lua_State *L)
 int lib_toggle_workspace(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    push_workspace(m->ws_ids, m->ws_ids[1]);
-    arrange();
+    push_workspace(m, &server.workspaces, m->ws_ids[1]);
     return 0;
 }
 

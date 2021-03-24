@@ -118,6 +118,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
         case X11_MANAGED:
             {
                 wl_list_insert(&clients, &c->link);
+                printf("X11_MANAGED\n");
 
                 con->on_top = false;
                 if (wants_floating(con->client)) {
@@ -129,6 +130,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
         case X11_UNMANAGED:
             {
                 wl_list_insert(&server.independents, &con->ilink);
+                printf("X11_UNMANAGED\n");
 
                 if (is_popup_menu(c) || xwayland_surface->parent) {
                     wl_list_remove(&con->flink);

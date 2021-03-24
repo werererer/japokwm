@@ -153,15 +153,14 @@ void reset_floating_client_borders(int border_px)
 
 bool wants_floating(struct client *c)
 {
-    if (c->type != X11_MANAGED && c->type != X11_UNMANAGED) {
+    if (c->type != X11_MANAGED && c->type != X11_UNMANAGED)
         return false;
-    }
+
     struct wlr_xwayland_surface *surface = c->surface.xwayland;
     struct xwayland xwayland = server.xwayland;
 
-    if (surface->modal) {
+    if (surface->modal)
         return true;
-    }
 
     for (size_t i = 0; i < surface->window_type_len; ++i) {
         xcb_atom_t type = surface->window_type[i];
