@@ -111,7 +111,7 @@ int local_set_master_layout_data(lua_State *L)
     struct layout *lt = get_layout_on_monitor(selected_monitor);
 
     if (lua_islayout_data(L, "master_layout_data"))
-        lua_copy_table_safe(L, &lt->master_layout_data_ref);
+        lua_copy_table_safe(L, &lt->lua_master_layout_data_ref);
     else
         lua_pop(L, 1);
     return 0;
@@ -122,7 +122,7 @@ int local_set_resize_data(lua_State *L)
     struct layout *lt = get_layout_on_monitor(selected_monitor);
 
     if (lua_istable(L, -1)) {
-        lua_copy_table_safe(L, &lt->resize_data_ref);
+        lua_copy_table_safe(L, &lt->lua_resize_data_ref);
     } else {
         lua_pop(L, 1);
     }

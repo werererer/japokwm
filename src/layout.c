@@ -21,10 +21,10 @@ struct layout get_default_layout()
     };
 
     lua_get_default_master_layout_data();
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.master_layout_data_ref);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.lua_master_layout_data_ref);
 
     lua_get_default_resize_data();
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.resize_data_ref);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.lua_resize_data_ref);
 
     lua_get_default_layout_data();
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.lua_layout_copy_data_ref);
@@ -87,7 +87,7 @@ void copy_layout(struct layout *dest_lt, struct layout *src_lt)
     dest_lt->lua_layout_copy_data_ref = 0;
     dest_lt->lua_layout_original_copy_data_ref = 0;
     dest_lt->lua_layout_ref = 0;
-    dest_lt->master_layout_data_ref = 0;
+    dest_lt->lua_master_layout_data_ref = 0;
     copy_layout_safe(dest_lt, src_lt);
 }
 
@@ -106,9 +106,9 @@ void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt)
         lua_copy_table_safe(L, &dest_lt->lua_layout_ref);
     }
 
-    if (src_lt->master_layout_data_ref > 0) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->master_layout_data_ref);
-        lua_copy_table_safe(L, &dest_lt->master_layout_data_ref);
+    if (src_lt->lua_master_layout_data_ref > 0) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_master_layout_data_ref);
+        lua_copy_table_safe(L, &dest_lt->lua_master_layout_data_ref);
     }
 
     if (src_lt->lua_layout_original_copy_data_ref > 0) {
@@ -121,14 +121,14 @@ void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt)
         lua_copy_table_safe(L, &dest_lt->lua_layout_original_copy_data_ref);
     }
 
-    if (src_lt->master_layout_data_ref > 0) {
+    if (src_lt->lua_master_layout_data_ref > 0) {
         lua_get_default_master_layout_data();
-        lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->master_layout_data_ref);
+        lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->lua_master_layout_data_ref);
     }
 
-    if (src_lt->resize_data_ref > 0) {
+    if (src_lt->lua_resize_data_ref > 0) {
         lua_get_default_resize_data();
-        lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->resize_data_ref);
+        lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->lua_resize_data_ref);
     }
 
     copy_options(&dest_lt->options, &src_lt->options);

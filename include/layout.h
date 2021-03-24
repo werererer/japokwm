@@ -22,8 +22,8 @@ struct layout {
     int lua_layout_copy_data_ref;
     int lua_layout_original_copy_data_ref;
 
-    int master_layout_data_ref;
-    int resize_data_ref;
+    int lua_master_layout_data_ref;
+    int lua_resize_data_ref;
 
     struct options options;
 };

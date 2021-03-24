@@ -250,7 +250,7 @@ int lib_set_resize_direction(lua_State *L)
 int lib_set_master_layout_data(lua_State *L)
 {
     if (lua_islayout_data(L, "master_layout_data"))
-        lua_copy_table_safe(L, &server.default_layout.master_layout_data_ref);
+        lua_copy_table_safe(L, &server.default_layout.lua_master_layout_data_ref);
     else
         lua_pop(L, 1);
     return 0;
@@ -259,7 +259,7 @@ int lib_set_master_layout_data(lua_State *L)
 int lib_set_resize_data(lua_State *L)
 {
     if (lua_istable(L, -1))
-        lua_copy_table_safe(L, &server.default_layout.resize_data_ref);
+        lua_copy_table_safe(L, &server.default_layout.lua_resize_data_ref);
     else
         lua_pop(L, 1);
     return 0;
