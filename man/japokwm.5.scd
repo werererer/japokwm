@@ -266,6 +266,11 @@ integers
 	<where> ++
 		n: integer - n represents the amount of containers  
 
+*set_on_start_function(func)* ++
+	set the function that is executed on start of the windowmanager.
+<where> ++
+	func: function() - it will be called when the windowmanager launches
+
 *set_create_container_function()* ++
 	set the create_container function
 <where> ++
