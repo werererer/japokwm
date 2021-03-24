@@ -108,11 +108,15 @@ void maprequestx11(struct wl_listener *listener, void *data)
     struct container *con = create_container(c, m, true);
 
     struct wlr_box prefered_geom = (struct wlr_box) {
-        .x = c->surface.xwayland->x,
+        .x = c->surface.xwayland->x, 
         .y = c->surface.xwayland->y,
         .width = c->surface.xwayland->width,
         .height = c->surface.xwayland->height,
     };
+
+    if (prefered_geom.width <= MIN_CONTAINER_WIDTH ||
+            prefered_geom.height <= MIN_CONTAINER_HEIGHT)
+        prefered_geom = get_center_box(m->geom);
 
     switch (c->type) {
         case X11_MANAGED:

@@ -21,9 +21,14 @@
 #define END(A)                  ((A) + LENGTH(A))
 /* number of chars a string should contain */
 #define ARR_STRING_LENGTH(X) strlen(X) + 2*(strlen("[]") + NUM_DIGITS)
+
+// those constants are arbitrary and are bound to change
 #define MAXLEN 15
 #define NUM_CHARS 64
 #define NUM_DIGITS 9
+
+#define MIN_CONTAINER_WIDTH 30
+#define MIN_CONTAINER_HEIGHT 30
 
 /* rules */
 struct rule {

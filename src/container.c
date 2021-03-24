@@ -478,8 +478,8 @@ struct wlr_fbox lua_togeometry(lua_State *L)
 void apply_bounds(struct container *con, struct wlr_box box)
 {
     /* set minimum possible */
-    con->geom.width = MAX(30, con->geom.width);
-    con->geom.height = MAX(30, con->geom.height);
+    con->geom.width = MAX(MIN_CONTAINER_WIDTH, con->geom.width);
+    con->geom.height = MAX(MIN_CONTAINER_HEIGHT, con->geom.height);
 
     if (con->geom.x >= box.x + box.width)
         con->geom.x = box.x + box.width - con->geom.width;
