@@ -58,7 +58,6 @@ void lua_ref_safe(lua_State *L, int t, int *ref)
     }
 
     *ref = luaL_ref(L, t);
-    printf("ref: %i\n", *ref);
 }
 
 static void lua_create_container(struct wlr_fbox con)
