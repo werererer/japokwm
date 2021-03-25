@@ -36,8 +36,6 @@ void buttonpress(struct wl_listener *listener, void *data)
     switch (event->state) {
         case WLR_BUTTON_PRESSED:
             {
-                /* Change focus if the button was _pressed_ over a client */
-
                 /* Translate libinput to xkbcommon code */
                 unsigned sym = event->button + 64985;
 
@@ -86,7 +84,7 @@ void create_keyboard(struct wlr_input_device *device)
     struct xkb_keymap *keymap;
     struct keyboard *kb;
 
-    kb = device->data = calloc(1, sizeof(struct keyboard));
+    kb = device->data = calloc(1, sizeof(*kb));
     kb->device = device;
 
     /* Prepare an XKB keymap and assign it to the keyboard. */

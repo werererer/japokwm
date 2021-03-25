@@ -113,10 +113,20 @@ void maprequestx11(struct wl_listener *listener, void *data)
         .width = c->surface.xwayland->width,
         .height = c->surface.xwayland->height,
     };
+    struct wlr_xwayland_surface_size_hints *size_hints = 
+        c->surface.xwayland->size_hints;
+    if (size_hints) {
+        prefered_geom = (struct wlr_box) {
+            .x = size_hints->x,
+            .y = size_hints->y,
+            .width = size_hints->width,
+            .height = size_hints->height,
+        };
+    }
 
-    if (prefered_geom.width <= MIN_CONTAINER_WIDTH ||
-            prefered_geom.height <= MIN_CONTAINER_HEIGHT)
-        prefered_geom = get_center_box(m->geom);
+    /* if (prefered_geom.width <= MIN_CONTAINER_WIDTH || */
+    /*         prefered_geom.height <= MIN_CONTAINER_HEIGHT) { */
+    /* } */
 
     switch (c->type) {
         case X11_MANAGED:
