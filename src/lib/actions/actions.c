@@ -278,6 +278,9 @@ int lib_zoom(lua_State *L)
     struct monitor *m = selected_monitor;
     struct container *sel = focused_container(m);
 
+    if (!sel)
+        return 0;
+
     if (sel->position != 0)
         repush(sel->position, 0);
     else
