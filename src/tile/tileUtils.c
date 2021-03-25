@@ -26,7 +26,6 @@ void arrange()
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
         arrange_monitor(m);
-        printf("end root.geom.x: %i\n", m->root->geom.x);
         root_damage_whole(m->root);
     }
 
@@ -208,9 +207,7 @@ void arrange_monitor(struct monitor *m)
     struct layout *lt = get_layout_on_monitor(m);
 
     set_root_area(m->root, m->geom);
-    printf("root.geom.x: %i\n", m->root->geom.x);
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);
-    printf("root.geom.x: %i\n", m->root->geom.x);
 
     update_layout_counters(L, m);
     call_update_function(&lt->options.event_handler, lt->n);
