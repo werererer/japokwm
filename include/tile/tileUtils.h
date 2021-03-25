@@ -7,7 +7,7 @@
 struct client *focustop(struct monitor *m);
 void arrange();
 void arrange_monitor(struct monitor *m);
-void arrange_container(struct container *con, int arrange_position);
+void arrange_containers(struct monitor *m, struct wlr_box root_geom);
 void resize(struct container *con, struct wlr_box geom);
 void update_hidden_containers(struct monitor *m);
 void update_container_positions(struct monitor *m);

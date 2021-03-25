@@ -12,6 +12,14 @@
 #define GREEN {0.0f, 1.0f, 0.0f, 1.0f}
 #define BLUE {0.0f, 0.0f, 1.0f, 1.0f}
 
+enum hidden_edge_borders {
+    NONE,
+    VERTICAL,
+    HORIZONTAL,
+    BOTH,
+    SMART
+};
+
 struct resize_constraints {
     float min_width;
     float max_width;
@@ -52,6 +60,8 @@ struct options {
     int tag_names_ref;
     int default_layout_ref;
     int keybinds_ref;
+
+    enum hidden_edge_borders hidden_edge_borders;
 };
 
 struct options get_default_options();

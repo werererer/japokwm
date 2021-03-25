@@ -18,15 +18,19 @@
 #include "utils/parseConfigUtils.h"
 #include "event_handler.h"
 
+static void arrange_container(struct container *con, int arrange_position,
+        struct wlr_box root_geom, int inner_gap);
+
 void arrange()
 {
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
         arrange_monitor(m);
+        printf("end root.geom.x: %i\n", m->root->geom.x);
+        root_damage_whole(m->root);
     }
 
     update_cursor(&server.cursor);
-    root_damage_whole(m->root);
 }
 
 // TODO what does this fucntion even do?
@@ -107,7 +111,7 @@ static void apply_nmaster_transformation(struct wlr_box *box, struct layout *lt,
     memcpy(box, &obox, sizeof(struct wlr_box));
 }
 
-static struct wlr_box get_geom_in_layout(lua_State *L, struct layout *lt, struct root *root, int arrange_position)
+static struct wlr_box get_geom_in_layout(lua_State *L, struct layout *lt, struct wlr_box geom, int arrange_position)
 {
     // relative position
     int n = MAX(0, arrange_position+1 - lt->nmaster) + 1;
@@ -116,7 +120,7 @@ static struct wlr_box get_geom_in_layout(lua_State *L, struct layout *lt, struct
     struct wlr_fbox rel_geom = lua_unbox_layout_geom(L, n);
     lua_pop(L, 1);
 
-    struct wlr_box box = get_absolute_box(rel_geom, root->geom);
+    struct wlr_box box = get_absolute_box(rel_geom, geom);
 
     // TODO fix this function, hard to read
     apply_nmaster_transformation(&box, lt, arrange_position+1);
@@ -204,7 +208,9 @@ void arrange_monitor(struct monitor *m)
     struct layout *lt = get_layout_on_monitor(m);
 
     set_root_area(m->root, m->geom);
+    printf("root.geom.x: %i\n", m->root->geom.x);
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);
+    printf("root.geom.x: %i\n", m->root->geom.x);
 
     update_layout_counters(L, m);
     call_update_function(&lt->options.event_handler, lt->n);
@@ -213,6 +219,22 @@ void arrange_monitor(struct monitor *m)
     update_container_focus_stack_positions(m);
     update_container_positions(m);
 
+    arrange_containers(m, m->root->geom);
+}
+
+void arrange_containers(struct monitor *m, struct wlr_box root_geom)
+{
+    struct layout *lt = get_layout_on_monitor(m);
+
+    /* each container will get an inner_gap. If two containers are adjacent the
+     * inner_gap is applied twice. To counter this effect we divide the
+     * inner_gap by 2 */
+    int actual_inner_gap = (int)lt->options.inner_gap/2;
+
+    /* the root_geom must be reduced by the inner_gap to ensure that the
+     * outer_gap stays unchanged when each container is surrounded by the
+     * inner_gap. */
+    container_surround_gaps(&root_geom, -actual_inner_gap);
     struct container *con;
     if (lt->options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
@@ -223,7 +245,7 @@ void arrange_monitor(struct monitor *m)
             if (con->client->type == LAYER_SHELL)
                 continue;
 
-            arrange_container(con, con->focus_stack_position);
+            arrange_container(con, con->focus_stack_position, root_geom, actual_inner_gap);
         }
     } else {
         wl_list_for_each(con, &containers, mlink) {
@@ -232,12 +254,13 @@ void arrange_monitor(struct monitor *m)
             if (con->floating)
                 continue;
 
-            arrange_container(con, con->position);
+            arrange_container(con, con->position, root_geom, actual_inner_gap);
         }
     }
 }
 
-void arrange_container(struct container *con, int arrange_position)
+static void arrange_container(struct container *con, int arrange_position, 
+        struct wlr_box root_geom, int inner_gap)
 {
     if (con->floating || con->hidden)
         return;
@@ -245,11 +268,10 @@ void arrange_container(struct container *con, int arrange_position)
     struct monitor *m = con->m;
     struct workspace *ws = get_workspace_on_monitor(m);
     struct layout *lt = &ws->layout[0];
-    // the 1 added represents the master area
 
-    struct wlr_box geom = get_geom_in_layout(L, lt, m->root, arrange_position);
+    struct wlr_box geom = get_geom_in_layout(L, lt, root_geom, arrange_position);
+    container_surround_gaps(&geom, inner_gap);
 
-    container_surround_gaps(&geom, lt->options.inner_gap);
     // since gaps are halfed we need to multiply it by 2
     container_surround_gaps(&geom, 2*lt->options.tile_border_px);
 

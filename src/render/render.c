@@ -233,6 +233,10 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
             w = con->geom.width;
             h = con->geom.height;
 
+            printf("con.x: %d\n", con->geom.x);
+            printf("ox: %f\n", ox);
+            printf("root.x: %d\n", m->root->geom.x);
+
             struct wlr_box *borders;
             borders = (struct wlr_box[4]) {
                 {ox, oy, w + 2 * con->client->bw, con->client->bw},             /* top */
