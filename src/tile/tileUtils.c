@@ -26,7 +26,6 @@ void arrange()
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
         arrange_monitor(m);
-        root_damage_whole(m->root);
     }
 
     update_cursor(&server.cursor);
@@ -217,6 +216,8 @@ void arrange_monitor(struct monitor *m)
     update_container_positions(m);
 
     arrange_containers(m, m->root->geom);
+
+    root_damage_whole(m->root);
 }
 
 void arrange_containers(struct monitor *m, struct wlr_box root_geom)
