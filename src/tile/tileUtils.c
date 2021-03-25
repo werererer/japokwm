@@ -233,6 +233,18 @@ void arrange_containers(struct monitor *m, struct wlr_box root_geom)
      * outer_gap stays unchanged when each container is surrounded by the
      * inner_gap. */
     container_surround_gaps(&root_geom, -actual_inner_gap);
+
+    switch (lt->options.hidden_edge_borders) {
+        case VERTICAL:
+            container_add_gaps(&root_geom, -2*lt->options.tile_border_px, WLR_EDGE_LEFT | WLR_EDGE_RIGHT);
+            break;
+        case HORIZONTAL:
+            container_add_gaps(&root_geom, -2*lt->options.tile_border_px, WLR_EDGE_TOP | WLR_EDGE_BOTTOM);
+            break;
+        default:
+            break;
+    }
+
     struct container *con;
     if (lt->options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
@@ -271,7 +283,7 @@ static void arrange_container(struct container *con, int arrange_position,
     container_surround_gaps(&geom, inner_gap);
 
     // since gaps are halfed we need to multiply it by 2
-    container_surround_gaps(&geom, 2*lt->options.tile_border_px);
+    container_surround_gaps(&geom, 2*con->client->bw);
 
     resize(con, geom);
 }

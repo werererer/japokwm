@@ -1,5 +1,5 @@
 config.set_sloppy_focus(true)
-config.set_tile_borderpx(2)
+config.set_tile_borderpx(10)
 config.set_float_borderpx(2)
 config.set_inner_gaps(80)
 config.set_outer_gaps(0)

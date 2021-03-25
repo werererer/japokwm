@@ -5,6 +5,7 @@
 #include <wordexp.h>
 #include <stdlib.h>
 #include <execinfo.h>
+#include <math.h>
 
 struct lua_State *L;
 
@@ -220,4 +221,9 @@ int exec(const char *cmd)
     }
 
     return ret_val;
+}
+
+bool is_approx_equal(double a, double b, double error_range)
+{
+    return fabs(a - b) < error_range;
 }

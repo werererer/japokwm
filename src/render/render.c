@@ -213,9 +213,80 @@ static void scissor_output(struct wlr_output *output, pixman_box32_t *rect)
     wlr_renderer_scissor(renderer, &box);
 }
 
+static void render_borders(struct container *con, pixman_region32_t *output_damage)
+{
+    struct monitor *m = con->m;
+    struct container *sel = focused_container(m);
+
+    if (con->has_border) {
+        double ox, oy;
+        int w, h;
+        ox = con->geom.x - con->client->bw;
+        oy = con->geom.y - con->client->bw;
+        wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
+        w = con->geom.width;
+        h = con->geom.height;
+
+        enum wlr_edges hidden_edges = WLR_EDGE_NONE;
+
+        struct layout *lt = get_layout_on_monitor(m);
+
+        struct wlr_box *borders = (struct wlr_box[4]) {
+            {ox, oy, w + 2 * con->client->bw, con->client->bw},             /* top */
+                {ox, oy + con->client->bw + h, w + 2 * con->client->bw, con->client->bw}, /* bottom */
+                {ox, oy + con->client->bw, con->client->bw, h},                 /* left */
+                {ox + con->client->bw + w, oy + con->client->bw, con->client->bw, h},     /* right */
+        };
+
+        switch (lt->options.hidden_edge_borders) {
+            case VERTICAL:
+                if (con->geom.x == m->root->geom.x) {
+                    hidden_edges |= WLR_EDGE_LEFT;
+                    borders[0].x += con->client->bw;
+                    borders[0].width -= con->client->bw;
+                    borders[1].x += con->client->bw;
+                    borders[1].width -= con->client->bw;
+                }
+
+                if (con->geom.x + w == m->root->geom.x + m->root->geom.width) {
+                    hidden_edges |= WLR_EDGE_RIGHT;
+                    borders[0].width -= con->client->bw;
+                    borders[1].width -= con->client->bw;
+                }
+                break;
+            case HORIZONTAL:
+                if (con->geom.y == m->root->geom.y) {
+                    hidden_edges |= WLR_EDGE_LEFT;
+                    borders[0].y += con->client->bw;
+                    borders[0].height -= con->client->bw;
+                    borders[1].y += con->client->bw;
+                    borders[1].height -= con->client->bw;
+                }
+
+                if (con->geom.y + h == m->root->geom.y + m->root->geom.height) {
+                    hidden_edges |= WLR_EDGE_RIGHT;
+                    borders[0].height -= con->client->bw;
+                    borders[1].height -= con->client->bw;
+                }
+                break;
+            default:
+                break;
+        }
+
+        /* Draw window borders */
+        const float *color = (con == sel) ? lt->options.focus_color : lt->options.border_color;
+        for (int i = 0; i < 4; i++) {
+            if ((hidden_edges & (1 << i)) == 0) {
+                scale_box(&borders[i], m->wlr_output->scale);
+                render_rect(m, output_damage, &borders[i], color);
+            }
+        }
+    }
+}
+
 static void render_containers(struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct container *con, *sel = focused_container(m);
+    struct container *con;
 
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
@@ -223,40 +294,12 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
         if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
             continue;
 
-        struct wlr_surface *surface = get_wlrsurface(con->client);
-        if (con->has_border) {
-            double ox, oy;
-            int w, h;
-            ox = con->geom.x - con->client->bw;
-            oy = con->geom.y - con->client->bw;
-            wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
-            w = con->geom.width;
-            h = con->geom.height;
-
-            printf("con.x: %d\n", con->geom.x);
-            printf("ox: %f\n", ox);
-            printf("root.x: %d\n", m->root->geom.x);
-
-            struct wlr_box *borders;
-            borders = (struct wlr_box[4]) {
-                {ox, oy, w + 2 * con->client->bw, con->client->bw},             /* top */
-                    {ox, oy + con->client->bw, con->client->bw, h},                 /* left */
-                    {ox + con->client->bw + w, oy + con->client->bw, con->client->bw, h},     /* right */
-                    {ox, oy + con->client->bw + h, w + 2 * con->client->bw, con->client->bw}, /* bottom */
-            };
-
-            struct layout *lt = get_layout_on_monitor(m);
-            /* Draw window borders */
-            const float *color = (con == sel) ? lt->options.focus_color : lt->options.border_color;
-            for (int i = 0; i < 4; i++) {
-                scale_box(&borders[i], m->wlr_output->scale);
-                render_rect(m, output_damage, &borders[i], color);
-            }
-        }
+        render_borders(con, output_damage);
 
         /* This calls our render function for each surface among the
          * xdg_surface's toplevel and popups. */
 
+        struct wlr_surface *surface = get_wlrsurface(con->client);
         render_surface_iterator(m, surface, con->geom, output_damage);
 
         struct timespec now;

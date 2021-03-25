@@ -53,7 +53,7 @@ struct options get_default_options()
         .rules = NULL,
         .modkey = 0,
         .arrange_by_focus = false,
-        .hidden_edge_borders = NONE,
+        .hidden_edge_borders = VERTICAL,
     };
 
     reset_tag_names(&options.tag_names);
