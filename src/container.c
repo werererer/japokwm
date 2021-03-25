@@ -581,7 +581,7 @@ void repush(int pos1, int pos2)
 {
     struct monitor *m = selected_monitor;
 
-    struct container *con1 = get_container(m, pos2);
+    struct container *con1 = container_position_to_container(m->ws_ids[0], pos2);
 
     if (!con1)
         return;
@@ -590,8 +590,10 @@ void repush(int pos1, int pos2)
 
     struct container *master = wl_container_of(containers.next, master, mlink);
 
-    struct container *con2 = get_container(selected_monitor, pos1);
+    struct container *con2 = container_position_to_container(selected_monitor->ws_ids[0], pos1);
 
+    if (!con2)
+        return;
     if (con2 == con1)
         return;
 
