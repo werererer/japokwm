@@ -15,6 +15,7 @@
 #include "root.h"
 #include "server.h"
 #include "tile/tileUtils.h"
+#include "utils/gapUtils.h"
 
 struct wlr_renderer *drw;
 struct render_data render_data;
@@ -240,6 +241,15 @@ static void render_borders(struct container *con, pixman_region32_t *output_dama
 
         switch (lt->options.hidden_edge_borders) {
             case VERTICAL:
+                if (con->geom.y == m->root->geom.y) {
+                    hidden_edges |= WLR_EDGE_TOP;
+                }
+
+                if (con->geom.y + h == m->root->geom.y + m->root->geom.height) {
+                    hidden_edges |= WLR_EDGE_BOTTOM;
+                }
+                break;
+            case HORIZONTAL:
                 if (con->geom.x == m->root->geom.x) {
                     hidden_edges |= WLR_EDGE_LEFT;
                     borders[0].x += con->client->bw;
@@ -252,21 +262,6 @@ static void render_borders(struct container *con, pixman_region32_t *output_dama
                     hidden_edges |= WLR_EDGE_RIGHT;
                     borders[0].width -= con->client->bw;
                     borders[1].width -= con->client->bw;
-                }
-                break;
-            case HORIZONTAL:
-                if (con->geom.y == m->root->geom.y) {
-                    hidden_edges |= WLR_EDGE_LEFT;
-                    borders[0].y += con->client->bw;
-                    borders[0].height -= con->client->bw;
-                    borders[1].y += con->client->bw;
-                    borders[1].height -= con->client->bw;
-                }
-
-                if (con->geom.y + h == m->root->geom.y + m->root->geom.height) {
-                    hidden_edges |= WLR_EDGE_RIGHT;
-                    borders[0].height -= con->client->bw;
-                    borders[1].height -= con->client->bw;
                 }
                 break;
             default:
