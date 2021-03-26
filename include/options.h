@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <wlr/types/wlr_list.h>
+#include <wlr/util/edges.h>
 #include "event_handler.h"
 
 #define BLACK {0.0f, 0.0f, 0.0f, 1.0f}
@@ -61,7 +62,7 @@ struct options {
     int default_layout_ref;
     int keybinds_ref;
 
-    enum hidden_edge_borders hidden_edge_borders;
+    enum wlr_edges hidden_edges;
 };
 
 struct options get_default_options();

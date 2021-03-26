@@ -4,6 +4,7 @@
 static void container_add_gap_left(struct wlr_box *con, float gap)
 {
     con->x += gap;
+    con->width -= gap;
 }
 
 static void container_add_gap_right(struct wlr_box *con, float gap)
@@ -14,6 +15,7 @@ static void container_add_gap_right(struct wlr_box *con, float gap)
 static void container_add_gap_top(struct wlr_box *con, float gap)
 {
     con->y += gap;
+    con->height -= gap;
 }
 
 static void container_add_gap_bottom(struct wlr_box *con, float gap)
@@ -22,14 +24,15 @@ static void container_add_gap_bottom(struct wlr_box *con, float gap)
 }
 
 void container_add_gaps(struct wlr_box *con, double gap, enum wlr_edges edges) {
+    int half_gap = gap/2;
     if (edges & WLR_EDGE_LEFT)
-        container_add_gap_left(con, gap/2);
+        container_add_gap_left(con, half_gap);
     if (edges & WLR_EDGE_RIGHT)
-        container_add_gap_right(con, gap);
+        container_add_gap_right(con, half_gap);
     if (edges & WLR_EDGE_TOP)
-        container_add_gap_top(con, gap/2);
+        container_add_gap_top(con, half_gap);
     if (edges & WLR_EDGE_BOTTOM)
-        container_add_gap_bottom(con, gap);
+        container_add_gap_bottom(con, half_gap);
 }
 
 void container_surround_gaps(struct wlr_box *con, double gap)

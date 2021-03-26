@@ -234,16 +234,7 @@ void arrange_containers(struct monitor *m, struct wlr_box root_geom)
      * inner_gap. */
     container_surround_gaps(&root_geom, -actual_inner_gap);
 
-    switch (lt->options.hidden_edge_borders) {
-        case VERTICAL:
-            container_add_gaps(&root_geom, -2*lt->options.tile_border_px, WLR_EDGE_TOP | WLR_EDGE_BOTTOM);
-            break;
-        case HORIZONTAL:
-            container_add_gaps(&root_geom, -2*lt->options.tile_border_px, WLR_EDGE_LEFT | WLR_EDGE_RIGHT);
-            break;
-        default:
-            break;
-    }
+    container_add_gaps(&root_geom, -2*lt->options.tile_border_px, lt->options.hidden_edges);
 
     struct container *con;
     if (lt->options.arrange_by_focus) {
