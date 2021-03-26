@@ -30,7 +30,7 @@ config.set_rules({
 })
 
 config.set_hidden_edges(info.direction.all)
-config.set_smart_hidden_edges(false)
+config.set_smart_hidden_edges(true)
 
 config.set_monrules({
     -- {"", function() monitor.set_scale(0.6) end},

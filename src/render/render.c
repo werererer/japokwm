@@ -270,7 +270,7 @@ static void render_borders(struct container *con, pixman_region32_t *output_dama
                 {ox + con->client->bw + w, oy + con->client->bw, con->client->bw, h},     /* right */
         };
 
-        enum wlr_edges hidden_edges = lt->options.hidden_edges;
+        enum wlr_edges hidden_edges = WLR_EDGE_NONE;
         if (lt->options.smart_hidden_edges) {
             if (wl_list_length(&containers) <= 1) {
                 hidden_edges = get_hidden_edges(con, borders, lt->options.hidden_edges);
