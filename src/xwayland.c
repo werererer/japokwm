@@ -117,7 +117,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     struct wlr_xwayland_surface_size_hints *size_hints = 
         c->surface.xwayland->size_hints;
     if (size_hints) {
-        if (size_hints->width > 0 && size_hints->height > 0) {
+        if (size_hints->width > MIN_CONTAINER_WIDTH && size_hints->height > MIN_CONTAINER_WIDTH) {
             prefered_geom = (struct wlr_box) {
                 .x = size_hints->x,
                     .y = size_hints->y,

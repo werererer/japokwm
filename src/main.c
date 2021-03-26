@@ -2,6 +2,7 @@
  * See LICENSE file for copyright and license details.
  */
 
+#include <getopt.h>
 #include <systemd/sd-bus.h>
 #include <unistd.h>
 #include <wlr/types/wlr_data_device.h>
@@ -307,17 +308,18 @@ Atom getatom(xcb_connection_t *xc, const char *name)
     return atom;
 }
 
-void print_usage(char *argv[])
-{
-    wlr_log(WLR_INFO, "Usage: %s [-s startup command]", argv[0]);
-}
-
 void print_help()
 {
-    wlr_log(WLR_INFO, "Usage: [-s startup command]");
-    wlr_log(WLR_INFO, "Usage: [-s startup command]");
-    wlr_log(WLR_INFO, "Usage: [-s startup command]");
-    wlr_log(WLR_INFO, "Usage: [-s startup command]");
+    printf("  -h, --help             Show help message and quit.\n"
+            "  -c, --config <config>  Specify a config file.\n"
+            "  -s, --startup          Specify the program which is executed on startup\n"
+            "\n");
+}
+
+void print_usage()
+{
+    printf("Usage: japokwm [options] [command]\n\n");
+    print_help();
 }
 
 int main(int argc, char *argv[])
@@ -326,8 +328,16 @@ int main(int argc, char *argv[])
 
     init_server();
 
+    static struct option long_options[] = {
+        {"help", no_argument, NULL, 'h'},
+        {"config", required_argument, NULL, 'c'},
+        {"startup", no_argument, NULL, 's'},
+        {0, 0, 0, 0}
+    };
+
     int c;
-    while ((c = getopt(argc, argv, "c:s:h")) != -1) {
+    int option_index = 0;
+    while ((c = getopt_long(argc, argv, "h:c:s", long_options, &option_index)) != -1) {
         switch (c) {
             case 's':
                 startup_cmd = optarg;
@@ -340,12 +350,12 @@ int main(int argc, char *argv[])
                 return EXIT_SUCCESS;
                 break;
             default:
-                print_usage(argv);
+                print_usage();
                 return EXIT_SUCCESS;
         }
     }
     if (optind < argc) {
-        print_usage(argv);
+        print_usage();
         return EXIT_SUCCESS;
     }
 
