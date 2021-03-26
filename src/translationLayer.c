@@ -91,6 +91,7 @@ static const struct luaL_Reg config[] =
     {"set_default_layout", lib_set_default_layout},
     {"set_float_borderpx", lib_set_float_borderpx},
     {"set_focus_color", lib_set_focus_color},
+    {"set_hidden_edges", lib_set_hidden_edges},
     {"set_inner_gaps", lib_set_inner_gaps},
     {"set_keybinds", lib_set_keybinds},
     {"set_layout_constraints", lib_set_layout_constraints},
@@ -106,6 +107,7 @@ static const struct luaL_Reg config[] =
     {"set_root_color", lib_set_root_color},
     {"set_rules", lib_set_rules},
     {"set_sloppy_focus", lib_set_sloppy_focus},
+    {"set_smart_hidden_edges", lib_set_smart_hidden_edges},
     {"set_tile_borderpx", lib_set_tile_borderpx},
     {NULL, NULL},
 };
@@ -114,17 +116,19 @@ static const struct luaL_Reg localconfig[] =
 {
     {"set_arrange_by_focus", local_set_arrange_by_focus},
     {"set_border_color", local_set_border_color},
-    {"set_tile_borderpx", local_set_tile_borderpx},
     {"set_float_borderpx", local_set_float_borderpx},
     {"set_focus_color", local_set_focus_color},
+    {"set_hidden_edges", local_set_hidden_edges},
     {"set_inner_gaps", local_set_inner_gaps},
-    {"set_outer_gaps", local_set_outer_gaps},
-    {"set_sloppy_focus", local_set_sloppy_focus},
     {"set_layout_constraints", local_set_layout_constraints},
     {"set_master_constraints", local_set_master_constraints},
-    {"set_resize_direction", local_set_resize_direction},
     {"set_master_layout_data", local_set_master_layout_data},
+    {"set_outer_gaps", local_set_outer_gaps},
     {"set_resize_data", local_set_resize_data},
+    {"set_resize_direction", local_set_resize_direction},
+    {"set_sloppy_focus", local_set_sloppy_focus},
+    {"set_smart_hidden_edges", local_set_smart_hidden_edges},
+    {"set_tile_borderpx", local_set_tile_borderpx},
     {NULL, NULL},
 };
 
@@ -193,6 +197,9 @@ static void load_info()
     lua_setfield(L, -2 ,"monitor");
 
     lua_createtable(L, 0, 0);
+
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "none");
 
     lua_pushinteger(L, WLR_DIRECTION_DOWN);
     lua_setfield(L, -2, "bottom");

@@ -53,7 +53,8 @@ struct options get_default_options()
         .rules = NULL,
         .modkey = 0,
         .arrange_by_focus = false,
-        .hidden_edges = WLR_EDGE_NONE,
+        .hidden_edges = WLR_EDGE_LEFT,
+        .smart_hidden_edges = false,
     };
 
     reset_tag_names(&options.tag_names);

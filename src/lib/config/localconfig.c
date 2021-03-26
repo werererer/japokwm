@@ -88,6 +88,24 @@ int local_set_layout_constraints(lua_State *L)
     return 0;
 }
 
+int local_set_hidden_edges(lua_State *L)
+{
+    struct layout *lt = get_layout_on_monitor(selected_monitor);
+
+    lt->options.hidden_edges = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    return 0;
+}
+
+int local_set_smart_hidden_edges(lua_State *L)
+{
+    struct layout *lt = get_layout_on_monitor(selected_monitor);
+
+    lt->options.smart_hidden_edges = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+    return 0;
+}
+
 int local_set_master_constraints(lua_State *L)
 {
     struct layout *lt = get_layout_on_monitor(selected_monitor);

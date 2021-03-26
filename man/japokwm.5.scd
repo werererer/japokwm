@@ -371,10 +371,15 @@ integers
 <where> ++
 	color: color
 
-*set_inner_gaps(i)* ++
-	set how large the gap between windows is ++
+*set_focus_color(color)* ++
+	set the color of the focused window ++
 <where> ++
-	i: integer - the size of those gaps in pixel
+	color: color
+
+*set_hidden_edges(d)* ++
+	set the directions edge borders will be hidden ++
+<where> ++
+	d: direction
 
 *set_keybinds(k)*
 	set all keybindings existing in Japokwm and overwrite old keybindings ++
@@ -465,7 +470,13 @@ integers
 	set whether to use sloppy focus or not. If sloppy focus is activated you ++
 	will focus windows by hovering above them. ++
 <where> ++
-	b: boolean - border width in pixel
+	b: boolean
+
+*set_smart_hidden_edges(b)* ++
+	if true edges are only hidden (see set_hidden_edges) if the number of ++
+	containers in the current workspace <= 1 ++
+<where> ++
+	b: boolean
 
 *set_tile_borderpx(i)* ++
 	set the border width of tiled windows in pixel ++
@@ -494,6 +505,7 @@ set_arrange_by_focus ++
 set_border_color ++
 set_float_borderpx ++
 set_focus_color ++
+set_hidden_edges ++
 set_inner_gaps ++
 set_layout_constraints ++
 set_master_constraints ++
@@ -502,8 +514,8 @@ set_outer_gaps ++
 set_resize_data ++
 set_resize_direction ++
 set_sloppy_focus ++
-set_tile_borderpx ++
- 
+set_smart_hidden_edges ++
+set_tile_borderpx
 
 ## EVENT
 set_create_container_function ++

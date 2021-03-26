@@ -63,6 +63,7 @@ struct options {
     int keybinds_ref;
 
     enum wlr_edges hidden_edges;
+    bool smart_hidden_edges;
 };
 
 struct options get_default_options();

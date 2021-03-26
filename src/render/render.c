@@ -214,6 +214,39 @@ static void scissor_output(struct wlr_output *output, pixman_box32_t *rect)
     wlr_renderer_scissor(renderer, &box);
 }
 
+// TODO refactor the name it doesn't represent what this does perfectly
+static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *borders, enum wlr_edges hidden_edges)
+{
+    struct monitor *m = con->m;
+
+    enum wlr_edges containers_hidden_edges = WLR_EDGE_NONE;
+    // hide edges if needed
+    if (hidden_edges & WLR_EDGE_LEFT) {
+        if (con->geom.x == m->root->geom.x) {
+            containers_hidden_edges |= WLR_EDGE_LEFT;
+            container_add_gaps(&borders[0], con->client->bw, WLR_EDGE_LEFT);
+            container_add_gaps(&borders[1], con->client->bw, WLR_EDGE_LEFT);
+        }
+    }
+    if (hidden_edges & WLR_EDGE_RIGHT) {
+        if (is_approx_equal(con->geom.x + con->geom.width, m->root->geom.x + m->root->geom.width, 3)) {
+            containers_hidden_edges |= WLR_EDGE_RIGHT;
+            container_add_gaps(&borders[0], con->client->bw, WLR_EDGE_RIGHT);
+            container_add_gaps(&borders[1], con->client->bw, WLR_EDGE_RIGHT);
+        }
+    }
+    if (hidden_edges & WLR_EDGE_TOP) {
+        if (con->geom.y == m->root->geom.y)
+            containers_hidden_edges |= WLR_EDGE_TOP;
+    }
+    if (hidden_edges & WLR_EDGE_BOTTOM) {
+        if (is_approx_equal(con->geom.y + con->geom.height, m->root->geom.y + m->root->geom.height, 3))
+            containers_hidden_edges |= WLR_EDGE_BOTTOM;
+    }
+
+    return containers_hidden_edges;
+}
+
 static void render_borders(struct container *con, pixman_region32_t *output_damage)
 {
     struct monitor *m = con->m;
@@ -228,8 +261,6 @@ static void render_borders(struct container *con, pixman_region32_t *output_dama
         w = con->geom.width;
         h = con->geom.height;
 
-        enum wlr_edges hidden_edges = WLR_EDGE_NONE;
-
         struct layout *lt = get_layout_on_monitor(m);
 
         struct wlr_box *borders = (struct wlr_box[4]) {
@@ -239,27 +270,13 @@ static void render_borders(struct container *con, pixman_region32_t *output_dama
                 {ox + con->client->bw + w, oy + con->client->bw, con->client->bw, h},     /* right */
         };
 
-        if (lt->options.hidden_edges & WLR_EDGE_LEFT) {
-            if (con->geom.x == m->root->geom.x) {
-                hidden_edges |= WLR_EDGE_LEFT;
-                container_add_gaps(&borders[0], con->client->bw, WLR_EDGE_LEFT);
-                container_add_gaps(&borders[1], con->client->bw, WLR_EDGE_LEFT);
+        enum wlr_edges hidden_edges = lt->options.hidden_edges;
+        if (lt->options.smart_hidden_edges) {
+            if (wl_list_length(&containers) <= 1) {
+                hidden_edges = get_hidden_edges(con, borders, lt->options.hidden_edges);
             }
-        }
-        if (lt->options.hidden_edges & WLR_EDGE_RIGHT) {
-            if (is_approx_equal(con->geom.x + w, m->root->geom.x + m->root->geom.width, 3)) {
-                hidden_edges |= WLR_EDGE_RIGHT;
-                container_add_gaps(&borders[0], con->client->bw, WLR_EDGE_RIGHT);
-                container_add_gaps(&borders[1], con->client->bw, WLR_EDGE_RIGHT);
-            }
-        }
-        if (lt->options.hidden_edges & WLR_EDGE_TOP) {
-            if (con->geom.y == m->root->geom.y)
-                hidden_edges |= WLR_EDGE_TOP;
-        }
-        if (lt->options.hidden_edges & WLR_EDGE_BOTTOM) {
-            if (is_approx_equal(con->geom.y + h, m->root->geom.y + m->root->geom.height, 3))
-                hidden_edges |= WLR_EDGE_BOTTOM;
+        } else {
+            hidden_edges = get_hidden_edges(con, borders, lt->options.hidden_edges);
         }
 
         /* Draw window borders */

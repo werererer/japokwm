@@ -261,6 +261,20 @@ int lib_set_master_layout_data(lua_State *L)
     return 0;
 }
 
+int lib_set_hidden_edges(lua_State *L)
+{
+    server.default_layout.options.hidden_edges = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    return 0;
+}
+
+int lib_set_smart_hidden_edges(lua_State *L)
+{
+    server.default_layout.options.smart_hidden_edges = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+    return 0;
+}
+
 int lib_set_resize_data(lua_State *L)
 {
     if (lua_istable(L, -1))
