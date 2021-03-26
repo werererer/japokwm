@@ -94,8 +94,13 @@ static void run(char *startup_cmd)
 
     /* Add a Unix socket to the Wayland display. */
     const char *socket = wl_display_add_socket_auto(server.display);
+
     if (!socket)
         wlr_log(WLR_INFO, "startup: display_add_socket_auto");
+
+    /* Set the WAYLAND_DISPLAY environment variable to our socket and run the
+     * startup command if requested. */
+    setenv("WAYLAND_DISPLAY", socket, 1);
 
     /* Start the backend. This will enumerate outputs and inputs, become the DRM
      * master, etc */
@@ -114,9 +119,6 @@ static void run(char *startup_cmd)
     wlr_cursor_warp_closest(server.cursor.wlr_cursor, NULL, server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
     wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "left_ptr", server.cursor.wlr_cursor);
 
-    /* Set the WAYLAND_DISPLAY environment variable to our socket and run the
-     * startup command if requested. */
-    setenv("WAYLAND_DISPLAY", socket, 1);
     if (startup_cmd) {
         startup_pid = fork();
         if (startup_pid < 0)
@@ -359,8 +361,8 @@ int main(int argc, char *argv[])
         return EXIT_SUCCESS;
     }
 
-    // TODO delete to increase performance
-    setbuf(stdout, NULL);
+    /* // TODO delete to increase performance */
+    /* setbuf(stdout, NULL); */
 
     // Wayland requires XDG_RUNTIME_DIR for creating its communications
     // socket
