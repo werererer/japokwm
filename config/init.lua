@@ -29,9 +29,6 @@ config.set_rules({
     -- {"termite", "", function(n) container.set_ratio(n, 1) end},
 })
 
-config.set_hidden_edges(info.direction.all)
-config.set_smart_hidden_edges(true)
-
 config.set_monrules({
     -- {"", function() monitor.set_scale(0.6) end},
     -- {"", function() monitor.set_transform(info.monitor.transform.rotate_90) end},
