@@ -241,7 +241,6 @@ void create_notify(struct wl_listener *listener, void *data)
     /* popups */
     c->new_popup.notify = popup_handle_new_popup;
     wl_signal_add(&xdg_surface->events.new_popup, &c->new_popup);
-    wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "left_ptr", server.cursor.wlr_cursor);
 }
 
 void destroy_notify(struct wl_listener *listener, void *data)
