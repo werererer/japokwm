@@ -428,6 +428,8 @@ int lib_kill(lua_State *L)
     struct container *con = get_container(m, i);
     struct client *sel = con->client;
 
+    if (!con)
+        return 0;
     if (!sel)
         return 0;
 
