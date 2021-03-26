@@ -1,0 +1,13 @@
+name: Action
+on:
+  push:
+      branches:
+          - main
+  workflow_dispatch:
+jobs:
+    first_job:
+        name: my first job
+        runs-on: ubuntu-latest
+        steps:
+        - id: step1
+          run: echo "hello world"

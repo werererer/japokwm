@@ -6,13 +6,21 @@ deps = [\
     dependency('wayland-server'),
     dependency('wayland-egl'),
     dependency('pixman-1'),
-    dependency('wlroots'),
-    dependency('cairo'),
-    dependency('lua'),
+    dependency('wlroots', version: '>=0.12'),
     dependency('x11'),
     dependency('json-c'),
-    dependency('threads'),
     ]
+
+foreach name : ['lua', 'lua5.3', 'lua-5.3', 'lua53']
+    luaDep = dependency(name, version: '>=5.3', required: false)
+    if luaDep.found()
+        break
+    endif
+endforeach
+if not luaDep.found()
+    error('Lua could not be found!')
+endif
+deps += [luaDep]
 
 main = files('main.c')
 srcs = files(
