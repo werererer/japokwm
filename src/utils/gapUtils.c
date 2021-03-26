@@ -1,57 +1,44 @@
 #include "utils/gapUtils.h"
 #include <math.h>
 
-static void container_add_gap_left(struct wlr_box *con, float gap)
+static void container_add_gap_left(struct wlr_box *con, double gap)
 {
     con->x += gap;
     con->width -= gap;
 }
 
-static void container_add_gap_right(struct wlr_box *con, float gap)
+static void container_add_gap_right(struct wlr_box *con, double gap)
 {
     con->width = MAX(1, con->width - gap);
 }
 
-static void container_add_gap_top(struct wlr_box *con, float gap)
+static void container_add_gap_top(struct wlr_box *con, double gap)
 {
     con->y += gap;
     con->height -= gap;
 }
 
-static void container_add_gap_bottom(struct wlr_box *con, float gap)
+static void container_add_gap_bottom(struct wlr_box *con, double gap)
 {
     con->height = MAX(1, con->height - gap);
 }
 
 void container_add_gaps(struct wlr_box *con, double gap, enum wlr_edges edges) {
-    int half_gap = gap/2;
     if (edges & WLR_EDGE_LEFT)
-        container_add_gap_left(con, half_gap);
+        container_add_gap_left(con, gap);
     if (edges & WLR_EDGE_RIGHT)
-        container_add_gap_right(con, half_gap);
+        container_add_gap_right(con, gap);
     if (edges & WLR_EDGE_TOP)
-        container_add_gap_top(con, half_gap);
+        container_add_gap_top(con, gap);
     if (edges & WLR_EDGE_BOTTOM)
-        container_add_gap_bottom(con, half_gap);
+        container_add_gap_bottom(con, gap);
 }
 
 void container_surround_gaps(struct wlr_box *con, double gap)
 {
-    /* *
-     * left = x and top = y
-     * right = width and bottom = height
-     * +------------+
-     * |            |
-     * |   +----+   |
-     * |-->|    |<--|
-     * | x +----+ x |
-     * |            |
-     * +------------+
-     * therefore x and y need to be 1/2ed and the width has to be decreased
-     * by the whole amound
-     * */
-        container_add_gaps(con, gap, WLR_EDGE_TOP | WLR_EDGE_LEFT);
-        container_add_gaps(con, gap, WLR_EDGE_RIGHT | WLR_EDGE_BOTTOM);
+    /* gaps are applied twice (because auf adjacent sides) therefore half the
+     * gap*/
+    container_add_gaps(con, gap/2, WLR_EDGE_TOP | WLR_EDGE_BOTTOM | WLR_EDGE_LEFT | WLR_EDGE_RIGHT);
 }
 
 void configure_gaps(int *inner_gap, int *outer_gap)

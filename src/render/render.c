@@ -242,30 +242,24 @@ static void render_borders(struct container *con, pixman_region32_t *output_dama
         if (lt->options.hidden_edges & WLR_EDGE_LEFT) {
             if (con->geom.x == m->root->geom.x) {
                 hidden_edges |= WLR_EDGE_LEFT;
-                borders[0].x += con->client->bw;
-                borders[0].width -= con->client->bw;
-                borders[1].x += con->client->bw;
-                borders[1].width -= con->client->bw;
+                container_add_gaps(&borders[0], con->client->bw, WLR_EDGE_LEFT);
+                container_add_gaps(&borders[1], con->client->bw, WLR_EDGE_LEFT);
             }
         }
         if (lt->options.hidden_edges & WLR_EDGE_RIGHT) {
-            if (con->geom.x + w == m->root->geom.x + m->root->geom.width) {
+            if (is_approx_equal(con->geom.x + w, m->root->geom.x + m->root->geom.width, 3)) {
                 hidden_edges |= WLR_EDGE_RIGHT;
-                borders[0].width -= con->client->bw;
-                borders[1].width -= con->client->bw;
+                container_add_gaps(&borders[0], con->client->bw, WLR_EDGE_RIGHT);
+                container_add_gaps(&borders[1], con->client->bw, WLR_EDGE_RIGHT);
             }
         }
         if (lt->options.hidden_edges & WLR_EDGE_TOP) {
             if (con->geom.y == m->root->geom.y)
                 hidden_edges |= WLR_EDGE_TOP;
-
         }
         if (lt->options.hidden_edges & WLR_EDGE_BOTTOM) {
-            /* if (con->geom.y + h == m->root->geom.y + m->root->geom.height) */
-            /*     hidden_edges |= WLR_EDGE_BOTTOM; */
             if (is_approx_equal(con->geom.y + h, m->root->geom.y + m->root->geom.height, 3))
                 hidden_edges |= WLR_EDGE_BOTTOM;
-
         }
 
         /* Draw window borders */
