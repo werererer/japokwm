@@ -14,13 +14,13 @@ static bool handle_VT_keys(struct keyboard *kb, uint32_t keycode)
         if (syms[i] < XKB_KEY_XF86Switch_VT_1 || syms[i] > XKB_KEY_XF86Switch_VT_12)
             continue;
         if (!wlr_backend_is_multi(server.backend))
-            continue;
+            break;
 
         /* if required switch to different virtual terminal */
         struct wlr_session *session =
             wlr_backend_get_session(server.backend);
         if (!session)
-            continue;
+            break;
 
         int vt = syms[i] - XKB_KEY_XF86Switch_VT_1 + 1;
         wlr_session_change_vt(session, vt);
@@ -132,7 +132,6 @@ void keypress(struct wl_listener *listener, void *data)
     uint32_t mods = wlr_keyboard_get_modifiers(kb->device->keyboard);
 
     bool handled = false;
-    /* uint32_t mods = wlr_keyboard_get_modifiers(kb->device->keyboard); */
     /* On _press_, attempt to process a compositor keybinding. */
 
     if (handle_VT_keys(kb, keycode))
