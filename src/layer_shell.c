@@ -24,7 +24,7 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     wl_signal_add(&layer_surface->events.map, &c->map);
     c->unmap.notify = unmapnotify;
     wl_signal_add(&layer_surface->events.unmap, &c->unmap);
-    c->destroy.notify = destroynotify;
+    c->destroy.notify = destroy_notify;
     wl_signal_add(&layer_surface->events.destroy, &c->destroy);
     // TODO: remove this line
     wlr_layer_surface_v1_configure(c->surface.layer,

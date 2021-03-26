@@ -4,6 +4,7 @@
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "popup.h"
+#include <wlr/xcursor.h>
 
 struct wl_listener request_set_cursor = {.notify = handle_set_cursor};
 

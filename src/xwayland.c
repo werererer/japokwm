@@ -39,7 +39,7 @@ void create_notifyx11(struct wl_listener *listener, void *data)
     wl_signal_add(&xwayland_surface->events.unmap, &c->unmap);
     c->activate.notify = activatex11;
     wl_signal_add(&xwayland_surface->events.request_activate, &c->activate);
-    c->destroy.notify = destroynotify;
+    c->destroy.notify = destroy_notify;
     wl_signal_add(&xwayland_surface->events.destroy, &c->destroy);
 }
 
@@ -164,4 +164,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
     }
     arrange();
     apply_rules(con);
+    wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
+            "left_ptr", server.cursor.wlr_cursor);
 }

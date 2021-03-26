@@ -236,14 +236,15 @@ void create_notify(struct wl_listener *listener, void *data)
     wl_signal_add(&xdg_surface->events.map, &c->map);
     c->unmap.notify = unmapnotify;
     wl_signal_add(&xdg_surface->events.unmap, &c->unmap);
-    c->destroy.notify = destroynotify;
+    c->destroy.notify = destroy_notify;
     wl_signal_add(&xdg_surface->events.destroy, &c->destroy);
     /* popups */
     c->new_popup.notify = popup_handle_new_popup;
     wl_signal_add(&xdg_surface->events.new_popup, &c->new_popup);
+    wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "left_ptr", server.cursor.wlr_cursor);
 }
 
-void destroynotify(struct wl_listener *listener, void *data)
+void destroy_notify(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is destroyed and should never be shown again. */
     struct client *c = wl_container_of(listener, c, destroy);

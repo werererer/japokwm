@@ -47,7 +47,7 @@ bool is_popup_menu(struct client *c);
 
 void commit_notify(struct wl_listener *listener, void *data);
 void create_notify(struct wl_listener *listener, void *data);
-void destroynotify(struct wl_listener *listener, void *data);
+void destroy_notify(struct wl_listener *listener, void *data);
 void maprequest(struct wl_listener *listener, void *data);
 void unmapnotify(struct wl_listener *listener, void *data);
 
