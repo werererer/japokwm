@@ -54,7 +54,7 @@ static void cleanup()
 {
     close_error_file();
     wlr_xwayland_destroy(server.xwayland.wlr_xwayland);
-    wl_display_destroy_clients(server.display);
+    wl_display_destroy_clients(server.wl_display);
 
     wlr_xcursor_manager_destroy(server.cursor_mgr);
     wlr_cursor_destroy(server.cursor.wlr_cursor);
@@ -93,7 +93,7 @@ static void run(char *startup_cmd)
     pid_t startup_pid = -1;
 
     /* Add a Unix socket to the Wayland display. */
-    const char *socket = wl_display_add_socket_auto(server.display);
+    const char *socket = wl_display_add_socket_auto(server.wl_display);
 
     if (!socket)
         wlr_log(WLR_INFO, "startup: display_add_socket_auto");
@@ -133,7 +133,7 @@ static void run(char *startup_cmd)
      * compositor. Starting the backend rigged up all of the necessary event
      * loop configuration to listen to libinput events, DRM events, generate
      * frame events at the refresh rate, and so on. */
-    wl_display_run(server.display);
+    wl_display_run(server.wl_display);
 
     if (startup_cmd) {
         kill(startup_pid, SIGTERM);
@@ -163,8 +163,8 @@ static int setup()
 
     /* The Wayland display is managed by libwayland. It handles accepting
      * clients from the Unix socket, manging Wayland globals, and so on. */
-    server.display = wl_display_create();
-    server.wl_event_loop = wl_display_get_event_loop(server.display);
+    server.wl_display = wl_display_create();
+    server.wl_event_loop = wl_display_get_event_loop(server.wl_display);
     ipc_init(server.wl_event_loop);
 
     /* The backend is a wlroots feature which abstracts the underlying input and
@@ -175,14 +175,16 @@ static int setup()
      * backend uses the renderer, for example, to fall back to software cursors
      * if the backend does not support hardware cursors (some older GPUs
      * don't). */
-    if (!(server.backend = wlr_backend_autocreate(server.display, NULL)))
+    if (!(server.backend = wlr_backend_autocreate(server.wl_display, NULL))) {
         wlr_log(WLR_INFO, "couldn't create backend");
+        return EXIT_FAILURE;
+    }
 
     /* If we don't provide a renderer, autocreate makes a GLES2 renderer for us.
      * The renderer is responsible for defining the various pixel formats it
      * supports for shared memory, this configures that for clients. */
     drw = wlr_backend_get_renderer(server.backend);
-    wlr_renderer_init_wl_display(drw, server.display);
+    wlr_renderer_init_wl_display(drw, server.wl_display);
 
     /* This creates some hands-off wlroots interfaces. The compositor is
      * necessary for clients to allocate surfaces and the data device manager
@@ -190,18 +192,18 @@ static int setup()
      * to dig your fingers in and play with their behavior if you want. Note that
      * the clients cannot set the selection directly without compositor approval,
      * see the setsel() function. */
-    server.compositor = wlr_compositor_create(server.display, drw);
-    wlr_export_dmabuf_manager_v1_create(server.display);
-    wlr_screencopy_manager_v1_create(server.display);
-    wlr_data_device_manager_create(server.display);
-    wlr_gamma_control_manager_v1_create(server.display);
-    wlr_primary_selection_v1_device_manager_create(server.display);
-    wlr_viewporter_create(server.display);
+    server.compositor = wlr_compositor_create(server.wl_display, drw);
+    wlr_export_dmabuf_manager_v1_create(server.wl_display);
+    wlr_screencopy_manager_v1_create(server.wl_display);
+    wlr_data_device_manager_create(server.wl_display);
+    wlr_gamma_control_manager_v1_create(server.wl_display);
+    wlr_primary_selection_v1_device_manager_create(server.wl_display);
+    wlr_viewporter_create(server.wl_display);
 
     /* Creates an output layout, which a wlroots utility for working with an
      * arrangement of screens in a physical layout. */
     server.output_layout = wlr_output_layout_create();
-    wlr_xdg_output_manager_v1_create(server.display, server.output_layout);
+    wlr_xdg_output_manager_v1_create(server.wl_display, server.output_layout);
 
     /* Configure textures */
     wlr_list_init(&render_data.textures);
@@ -218,19 +220,19 @@ static int setup()
     wl_list_init(&clients);
     wl_list_init(&server.independents);
 
-    server.xdg_shell = wlr_xdg_shell_create(server.display);
+    server.xdg_shell = wlr_xdg_shell_create(server.wl_display);
     wl_signal_add(&server.xdg_shell->events.new_surface, &new_xdg_surface);
     // remove csd(client side decorations) completely from xdg based windows
     wlr_server_decoration_manager_set_default_mode(
-            wlr_server_decoration_manager_create(server.display),
+            wlr_server_decoration_manager_create(server.wl_display),
             WLR_SERVER_DECORATION_MANAGER_MODE_SERVER);
 
-    server.layer_shell = wlr_layer_shell_v1_create(server.display);
+    server.layer_shell = wlr_layer_shell_v1_create(server.wl_display);
     wl_signal_add(&server.layer_shell->events.new_surface,
             &new_layer_shell_surface);
 
     /* Use xdg_decoration protocol to negotiate server-side decorations */
-    server.xdeco_mgr = wlr_xdg_decoration_manager_v1_create(server.display);
+    server.xdeco_mgr = wlr_xdg_decoration_manager_v1_create(server.wl_display);
     wl_signal_add(&server.xdeco_mgr->events.new_toplevel_decoration, &new_xdeco);
 
     /*
@@ -273,7 +275,7 @@ static int setup()
      */
     wl_list_init(&server.keyboards);
     wl_signal_add(&server.backend->events.new_input, &new_input);
-    server.seat = wlr_seat_create(server.display, "seat0");
+    server.seat = wlr_seat_create(server.wl_display, "seat0");
     wl_signal_add(&server.seat->events.request_set_cursor, &request_set_cursor);
     wl_signal_add(&server.seat->events.request_set_selection, &request_set_sel);
     wl_signal_add(&server.seat->events.request_set_primary_selection, &request_set_psel);
@@ -282,7 +284,8 @@ static int setup()
      * Initialise the XWayland X server.
      * It will be started when the first X client is started.
      */
-    server.xwayland.wlr_xwayland = wlr_xwayland_create(server.display, server.compositor, true);
+    server.xwayland.wlr_xwayland = wlr_xwayland_create(server.wl_display,
+            server.compositor, true);
     if (server.xwayland.wlr_xwayland) {
         server.xwayland_ready.notify = handle_xwayland_ready;
         wl_signal_add(&server.xwayland.wlr_xwayland->events.ready, &server.xwayland_ready);
@@ -291,6 +294,7 @@ static int setup()
         setenv("DISPLAY", server.xwayland.wlr_xwayland->display_name, true);
     } else {
         wlr_log(WLR_ERROR, "failed to setup XWayland X server, continuing without it");
+        unsetenv("DISPLAY");
     }
 
     return 0;

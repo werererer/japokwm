@@ -269,7 +269,7 @@ int lib_move_container_to_workspace(lua_State *L)
 
 int lib_quit(lua_State *L)
 {
-    wl_display_terminate(server.display);
+    wl_display_terminate(server.wl_display);
     close_error_file();
     return 0;
 }

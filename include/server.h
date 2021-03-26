@@ -15,7 +15,7 @@ struct server {
     /* associated with ilink in client */
     struct wl_list independents;
 
-    struct wl_display *display;
+    struct wl_display *wl_display;
     struct wl_event_loop *wl_event_loop;
     struct wlr_backend *backend;
     struct wlr_compositor *compositor;
