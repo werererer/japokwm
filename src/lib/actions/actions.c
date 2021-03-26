@@ -134,11 +134,12 @@ int lib_focus_on_stack(lua_State *L)
 
     struct monitor *m = selected_monitor;
     struct container *sel = focused_container(m);
+
     if (!sel)
         return 0;
-
     if (sel->client->type == LAYER_SHELL) {
-        focus_top_container(m, FOCUS_NOOP);
+        struct container *con = container_position_to_container(m->ws_ids[0], 0);
+        focus_container(con, FOCUS_NOOP);
         return 0;
     }
 
