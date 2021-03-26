@@ -201,6 +201,10 @@ static void load_info()
     lua_pushinteger(L, 0);
     lua_setfield(L, -2, "none");
 
+    lua_pushinteger(L, WLR_DIRECTION_UP | WLR_DIRECTION_DOWN |
+            WLR_DIRECTION_LEFT | WLR_DIRECTION_RIGHT);
+    lua_setfield(L, -2, "all");
+
     lua_pushinteger(L, WLR_DIRECTION_DOWN);
     lua_setfield(L, -2, "bottom");
 
