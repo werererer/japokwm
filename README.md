@@ -23,7 +23,7 @@ japokwm
 ```
 
 ## Known limitations and issues
-japokwm is in it's alpha stage and bug may accour (If you find them please report them here)
+japokwm is in it's alpha stage and bugs may accour (If you find them please report them here)
 
 ## TODO
 - unittests
