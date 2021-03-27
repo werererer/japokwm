@@ -1,9 +1,8 @@
-name: Action
+name: Tests
 on:
   push:
       branches:
-          - main
-          - addGithubActions
+          - master
   workflow_dispatch:
 jobs:
     vm:
