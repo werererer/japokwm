@@ -1,0 +1,47 @@
+name: Action
+on:
+  push:
+      branches:
+          - main
+          - addGithubActions
+  workflow_dispatch:
+jobs:
+    vm:
+        runs-on: ubuntu-latest
+        steps:
+            - run: |
+                echo This job doesnt specify a container.
+                echo test.
+              name: Run in VM
+    container:
+        runs-on: ubuntu-latest
+        container: archlinux
+        steps:
+            - uses: actions/checkout@v2
+            - run: |
+                uname -a
+                pacman -Sy --noconfirm
+                pacman -S --noconfirm base-devel
+                pacman -S --noconfirm meson
+                pacman -S --noconfirm wlroots
+                pacman -S --noconfirm lua
+                pacman -S --noconfirm wayland
+                pacman -S --noconfirm wayland-protocols
+                pacman -S --noconfirm check
+                pacman -S --noconfirm gcovr
+                pacman -S --noconfirm scdoc
+              name: Run in container
+            - run: |
+                meson -Db_coverage=true build
+                cd build
+                meson compile
+                meson test
+                cd ..
+            - name: Upload Test Results
+              uses: actions/upload-artifact@v2
+              with:
+                  path: build/meson-logs
+            - run: |
+                ninja -C build coverage
+                bash <(curl -s https://codecov.io/bash)
+              name: Run in container2
