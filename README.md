@@ -6,11 +6,8 @@
 ![](edit_layout.gif)
 - Layout specific configs
 
-## Known limitations and issues
-japokwm is in it's alpha stage and bug may accour (If you find them please report them here)
-
-## TODO
-- unittests
+## Download
+  [AUR](https://aur.archlinux.org/packages/japokwm-git)
 
 ## Building
 Run:
@@ -24,5 +21,12 @@ now you can execute japokwm:
 ```
 japokwm
 ```
+
+## Known limitations and issues
+japokwm is in it's alpha stage and bug may accour (If you find them please report them here)
+
+## TODO
+- unittests
+
 ## Acknowledgements
 japokwm forked dwl and uses wlroots to do the heavy lifting
