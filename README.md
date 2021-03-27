@@ -1,17 +1,15 @@
 # japokwm - tiling made easy [![CircleCI](https://github.com/werererer/japokwm/actions/workflows/Test.yml/badge.svg)](https://github.com/werererer/japokwm/actions/workflows/Test.yml)
 ## Features:
-- you can create any layout you want by editing a 3 dimensional Array:
-![](edit_layout.gif)
-- layout specific configurations
-- sane default settings
+- Gaps!
 - Damage Tracking
+- Create any layout you want with a 3 dimensional Array:
+![](edit_layout.gif)
+- Layout specific configs
+
 ## Known limitations and issues
-japokwm is not ready for use yet.
+japokwm is in it's alpha stage and bug may accour (If you find them please report them here)
 
 ## TODO
-- fix a lot of annoying bugs
-- write man pages / documentation
-- test it on other machines
 - unittests
 
 ## Building
