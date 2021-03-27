@@ -1,5 +1,4 @@
-# japokwm - tiling made easy [![CircleCI](https://circleci.com/gh/werererer/japokwm.svg?style=shield)](https://app.circleci.com/pipelines/github/werererer)
-
+# japokwm - tiling made easy [![CircleCI](https://github.com/github/docs/actions/workflows/Test.yml/badge.svg)](https://app.circleci.com/pipelines/github/werererer)
 ## Features:
 - you can create any layout you want by editing a 3 dimensional Array:
 ![](edit_layout.gif)
