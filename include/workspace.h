@@ -53,6 +53,7 @@ void workspace_assign_monitor(struct workspace *ws, struct monitor *m);
 /* sets the value of selTag[0] */
 void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id);
 void push_workspace(struct monitor *m,  struct wlr_list *workspaces, int ws_id);
+void push_layout(struct workspace *ws, struct layout lt);
 
 struct layout *get_layout_on_workspace(int ws_id);
 

@@ -456,7 +456,7 @@ int lib_toggle_layout(lua_State *L)
 {
     struct monitor *m = selected_monitor;
     struct workspace *ws = get_workspace_on_monitor(m);
-    push_layout(ws->layout, ws->layout[1]);
+    push_layout(ws, ws->layout[1]);
     arrange();
     return 0;
 }

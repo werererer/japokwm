@@ -136,12 +136,6 @@ void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt)
     return;
 }
 
-void push_layout(struct layout lt_stack[static 2], struct layout lt)
-{
-    lt_stack[1] = lt_stack[0];
-    lt_stack[0] = lt;
-}
-
 bool lua_islayout_data(lua_State *L, const char *name)
 {
     if (!lua_istable(L, -1))

@@ -31,6 +31,8 @@ struct layout {
     int lua_master_layout_data_ref;
     int lua_resize_data_ref;
 
+    int ws_id;
+
     struct options options;
 };
 
@@ -40,7 +42,6 @@ void lua_copy_table(lua_State *L, int *ref);
 // copy table and override old value
 void lua_copy_table_safe(lua_State *L, int *ref);
 struct resize_constraints lua_toresize_constrains(lua_State *L);
-void push_layout(struct layout lt_stack[static 2], struct layout lt);
 // copy layout and create new references
 void copy_layout(struct layout *dest_lt, struct layout *src_lt);
 // copy layout and override all references with the given ones

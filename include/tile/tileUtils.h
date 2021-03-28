@@ -9,7 +9,7 @@ void arrange();
 void arrange_monitor(struct monitor *m);
 void arrange_containers(int ws_id, struct wlr_box root_geom);
 void resize(struct container *con, struct wlr_box geom);
-void update_hidden_containers(struct monitor *m);
+void update_hidden_status_of_containers(struct monitor *m);
 void update_container_positions(struct monitor *m);
 int lib_get_this_container_count();
 int get_container_count(struct workspace *ws);

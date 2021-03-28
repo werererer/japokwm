@@ -26,12 +26,11 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
 {
     struct workspace *ws = calloc(1, sizeof(struct workspace));
     ws->name = name;
+    ws->id = id;
 
     // fill layout stack with reasonable values
-    push_layout(ws->layout, lt);
-    push_layout(ws->layout, lt);
-
-    ws->id = id;
+    push_layout(ws, lt);
+    push_layout(ws, lt);
     return ws;
 }
 
@@ -253,7 +252,7 @@ void set_selected_layout(struct workspace *ws, struct layout layout)
         wlr_log(WLR_ERROR, "ERROR: tag not initialized");
         return;
     }
-    push_layout(ws->layout, layout);
+    push_layout(ws, layout);
 }
 
 void focus_next_unoccupied_workspace(struct monitor *m, struct wlr_list *workspaces, struct workspace *ws)
@@ -384,6 +383,13 @@ void push_workspace(struct monitor *m,  struct wlr_list *workspaces, int ws_id)
         m->ws_ids[1] = m->ws_ids[0];
 
     focus_workspace(m, workspaces, ws_id);
+}
+
+void push_layout(struct workspace *ws, struct layout lt)
+{
+    lt.ws_id = ws->id;
+    ws->layout[1] = ws->layout[0];
+    ws->layout[0] = lt;
 }
 
 struct layout *get_layout_on_workspace(int ws_id)

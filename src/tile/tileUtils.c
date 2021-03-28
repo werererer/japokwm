@@ -31,6 +31,23 @@ void arrange()
     update_cursor(&server.cursor);
 }
 
+static int get_all_container_count(struct workspace *ws)
+{
+    int n_all = 0;
+    struct container *con;
+    wl_list_for_each(con, &focus_stack, flink) {
+        if (con->floating)
+            continue;
+        if (!existon(con, &server.workspaces, ws->id))
+            continue;
+        if (con->client->type == LAYER_SHELL)
+            continue;
+
+        n_all++;
+    }
+    return n_all;
+}
+
 // TODO what does this fucntion even do?
 static int get_layout_container_count(struct workspace *ws)
 {
@@ -51,16 +68,15 @@ static int get_layout_container_count(struct workspace *ws)
     return n;
 }
 
-/* update layout and was set in the arrange function */
-// TODO what does this fucntion even do?
-static void update_layout_counters(lua_State *L, struct monitor *m)
+static void update_layout_counters(struct layout *lt)
 {
-    struct workspace *ws = get_workspace_on_monitor(m);
-    struct layout *lt = get_layout_on_workspace(ws->id);
+    struct workspace *ws = get_workspace(&server.workspaces, lt->ws_id);
 
+    lt->n_all = get_all_container_count(ws);
     lt->n = get_layout_container_count(ws);
     lt->nmaster_abs = get_master_container_count(ws);
     lt->n_visible = lt->n + lt->nmaster_abs-1;
+    lt->n_hidden = lt->n_all - lt->n_visible;
 }
 
 static struct wlr_fbox lua_unbox_layout_geom(lua_State *L, int i) {
@@ -203,15 +219,15 @@ static void update_container_focus_stack_positions(struct monitor *m)
 
 void arrange_monitor(struct monitor *m)
 {
-    struct layout *lt = get_layout_on_monitor(m);
-
     set_root_area(m->root, m->geom);
+
+    struct layout *lt = get_layout_on_monitor(m);
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);
 
-    update_layout_counters(L, m);
+    update_layout_counters(lt);
     call_update_function(&lt->options.event_handler, lt->n);
 
-    update_hidden_containers(m);
+    update_hidden_status_of_containers(m);
     update_container_focus_stack_positions(m);
     update_container_positions(m);
 
@@ -334,7 +350,7 @@ void resize(struct container *con, struct wlr_box geom)
     }
 }
 
-void update_hidden_containers(struct monitor *m)
+void update_hidden_status_of_containers(struct monitor *m)
 {
     struct container *con;
     struct workspace *ws = get_workspace_on_monitor(m);
@@ -355,7 +371,6 @@ void update_hidden_containers(struct monitor *m)
             con->hidden = i + 1 > lt->n_visible;
             i++;
         }
-        lt->n_all = i;
     } else {
         wl_list_for_each(con, &containers, mlink) {
             if (con->floating)
@@ -368,9 +383,7 @@ void update_hidden_containers(struct monitor *m)
             con->hidden = i + 1 > lt->n_visible;
             i++;
         }
-        lt->n_all = i;
     }
-    lt->n_hidden = lt->n_all - lt->n_visible;
 }
 
 int get_tiled_container_count(struct workspace *ws)
