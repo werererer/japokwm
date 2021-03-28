@@ -301,11 +301,12 @@ void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
 
 void copy_layout_from_selected_workspace(struct wlr_list *workspaces)
 {
+    struct layout *src_lt = get_layout_on_monitor(selected_monitor);
+
     for (int i = 0; i < workspaces->length; i++) {
         struct workspace *ws = workspaces->items[i];
         struct layout *dest_lt = &ws->layout[0];
         struct layout *dest_prev_lt = &ws->layout[1];
-        struct layout *src_lt = get_layout_on_workspace(ws->id);
 
         if (dest_lt == src_lt)
             continue;
