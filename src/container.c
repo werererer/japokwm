@@ -649,6 +649,7 @@ void set_container_workspace(struct container *con, int ws_id)
 
 void set_container_monitor(struct container *con, struct monitor *m)
 {
+    assert(m != NULL);
     if (!con)
         return;
     if (con->m == m)
@@ -657,6 +658,11 @@ void set_container_monitor(struct container *con, struct monitor *m)
     if (con->prev_m != m)
         con->prev_m = con->m;
     con->m = m;
+
+    /* ensure that prev_m is not = NULL after this function finished
+    successfully */
+    if (con->prev_m == NULL)
+        con->prev_m = m;
 }
 
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety)
