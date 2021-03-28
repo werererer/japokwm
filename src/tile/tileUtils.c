@@ -56,7 +56,7 @@ static int get_layout_container_count(struct workspace *ws)
 static void update_layout_counters(lua_State *L, struct monitor *m)
 {
     struct workspace *ws = get_workspace_on_monitor(m);
-    struct layout *lt = get_layout_on_monitor(m);
+    struct layout *lt = get_layout_on_workspace(ws->id);
 
     lt->n = get_layout_container_count(ws);
     lt->nmaster_abs = get_master_container_count(ws);
@@ -215,14 +215,14 @@ void arrange_monitor(struct monitor *m)
     update_container_focus_stack_positions(m);
     update_container_positions(m);
 
-    arrange_containers(m, m->root->geom);
+    arrange_containers(m->ws_ids[0], m->root->geom);
 
     root_damage_whole(m->root);
 }
 
-void arrange_containers(struct monitor *m, struct wlr_box root_geom)
+void arrange_containers(int ws_id, struct wlr_box root_geom)
 {
-    struct layout *lt = get_layout_on_monitor(m);
+    struct layout *lt = get_layout_on_workspace(ws_id);
 
     /* each container will get an inner_gap. If two containers are adjacent the
      * inner_gap is applied twice. To counter this effect we divide the
@@ -246,7 +246,7 @@ void arrange_containers(struct monitor *m, struct wlr_box root_geom)
     struct container *con;
     if (lt->options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
-            if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
+            if (!visibleon(con, &server.workspaces, ws_id))
                 continue;
             if (con->floating)
                 continue;
@@ -257,7 +257,7 @@ void arrange_containers(struct monitor *m, struct wlr_box root_geom)
         }
     } else {
         wl_list_for_each(con, &containers, mlink) {
-            if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
+            if (!visibleon(con, &server.workspaces, ws_id))
                 continue;
             if (con->floating)
                 continue;

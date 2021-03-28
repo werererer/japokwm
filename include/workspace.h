@@ -34,7 +34,7 @@ int get_workspace_container_count(struct wlr_list *workspaces, size_t ws_id);
 bool is_workspace_empty(struct wlr_list *workspaces, size_t ws_id);
 
 struct workspace *find_next_unoccupied_workspace(struct wlr_list *workspaces, struct workspace *ws);
-struct workspace *get_workspace(struct wlr_list *workspaces, int i);
+struct workspace *get_workspace(struct wlr_list *workspaces, int id);
 struct workspace *get_next_empty_workspace(struct wlr_list *workspaces, size_t i);
 struct workspace *get_prev_empty_workspace(struct wlr_list *workspaces, size_t i);
 
@@ -53,5 +53,7 @@ void workspace_assign_monitor(struct workspace *ws, struct monitor *m);
 /* sets the value of selTag[0] */
 void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id);
 void push_workspace(struct monitor *m,  struct wlr_list *workspaces, int ws_id);
+
+struct layout *get_layout_on_workspace(int ws_id);
 
 #endif /* WORKSPACE_H */

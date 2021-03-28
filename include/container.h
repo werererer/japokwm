@@ -50,16 +50,14 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 void destroy_container(struct container *con);
 
 struct container *get_container(struct monitor *m, int i);
-struct container *get_relative_container(struct monitor *m, struct container *con, int i);
-struct container *get_relative_hidden_container(struct monitor *m, int i);
-struct container *last_container(struct monitor *m);
-struct container *next_container(struct monitor *m);
+struct container *get_relative_container(int ws_id, struct container *con, int i);
+struct container *get_relative_hidden_container(int ws_id, int i);
 struct container *focused_container(struct monitor *m);
 struct container *xy_to_container(double x, double y);
 struct container *container_position_to_container(int ws_id, int position);
 struct container *container_position_to_hidden_container(int ws_id, int position);
 struct container *focus_container_position_to_container(int ws_id, int position);
-struct container *get_relative_focus_container(struct monitor *m, struct container *con, int i);
+struct container *get_relative_focus_container(int ws_id, struct container *con, int i);
 
 struct wlr_box get_center_box(struct wlr_box ref);
 struct wlr_box get_absolute_box(struct wlr_fbox ref, struct wlr_box box);

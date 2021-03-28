@@ -149,21 +149,6 @@ struct container *focused_container(struct monitor *m)
     return con;
 }
 
-struct container *next_container(struct monitor *m)
-{
-    if (wl_list_length(&focus_stack) >= 2)
-    {
-        struct container *con =
-            wl_container_of(focus_stack.next->next, con, flink);
-        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
-            return NULL;
-        else
-            return con;
-    } else {
-        return NULL;
-    }
-}
-
 struct container *get_container(struct monitor *m, int i)
 {
     struct container *con;
@@ -204,48 +189,44 @@ struct container *focus_container_position_to_container(int ws_id, int position)
     return NULL;
 }
 
-struct container *get_relative_focus_container(struct monitor *m, struct container *con, int i)
+struct container *get_relative_focus_container(int ws_id, struct container *con, int i)
 {
-    struct layout *lt = get_layout_on_monitor(m);
+    struct layout *lt = get_layout_on_workspace(ws_id);
 
     int new_position = (con->position + i) % (lt->n_abs);
     while (new_position < 0) {
         new_position += lt->n_abs;
     }
 
-    return focus_container_position_to_container(m->ws_ids[0], new_position);
+    return focus_container_position_to_container(ws_id, new_position);
 }
 
-struct container *get_relative_container(struct monitor *m, struct container *con, int i)
+struct container *get_relative_container(int ws_id, struct container *con, int i)
 {
-    struct layout *lt = get_layout_on_monitor(m);
+    struct layout *lt = get_layout_on_workspace(ws_id);
 
     int new_position = (con->position + i) % (lt->n_abs);
     while (new_position < 0) {
         new_position += lt->n_abs;
     }
 
-    return container_position_to_container(m->ws_ids[0], new_position);
+    return container_position_to_container(ws_id, new_position);
 }
 
-struct container *get_relative_hidden_container(struct monitor *m, int i)
+struct container *get_relative_hidden_container(int ws_id, int i)
 {
-    struct layout *lt = get_layout_on_monitor(m);
+    struct layout *lt = get_layout_on_workspace(ws_id);
     int n_hidden_containers = wl_list_length(&containers) - lt->n_abs;
 
-    if (n_hidden_containers == 0) {
-        printf("n_hidden_containers == 0\n");
-        printf("numbers: length: %i, n_abs: %i", wl_list_length(&containers), lt->n_abs);
+    if (n_hidden_containers == 0)
         return NULL;
-    }
 
     int new_position = (i) % (n_hidden_containers);
-    while (new_position < 0) {
+    while (new_position < 0)
         new_position += n_hidden_containers;
-    }
     new_position += lt->n_abs;
 
-    struct container *con = container_position_to_hidden_container(m->ws_ids[0], new_position);
+    struct container *con = container_position_to_hidden_container(ws_id, new_position);
     return con;
 }
 
@@ -621,7 +602,7 @@ void set_container_floating(struct container *con, bool floating)
     if (con->floating == floating)
         return;
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = con->m;
     struct layout *lt = get_layout_on_monitor(m);
 
     con->floating = floating;

@@ -204,14 +204,14 @@ struct workspace *find_next_unoccupied_workspace(struct wlr_list *workspaces, st
     return NULL;
 }
 
-struct workspace *get_workspace(struct wlr_list *workspaces, int i)
+struct workspace *get_workspace(struct wlr_list *workspaces, int id)
 {
-    if (i < 0)
+    if (id < 0)
         return NULL;
-    if (i >= workspaces->length)
+    if (id >= workspaces->length)
         return NULL;
 
-    return workspaces->items[i];
+    return workspaces->items[id];
 }
 
 struct workspace *get_next_empty_workspace(struct wlr_list *workspaces, size_t i)
@@ -306,7 +306,7 @@ void copy_layout_from_selected_workspace(struct wlr_list *workspaces)
         struct workspace *ws = workspaces->items[i];
         struct layout *dest_lt = &ws->layout[0];
         struct layout *dest_prev_lt = &ws->layout[1];
-        struct layout *src_lt = get_layout_on_monitor(selected_monitor);
+        struct layout *src_lt = get_layout_on_workspace(ws->id);
 
         if (dest_lt == src_lt)
             continue;
@@ -384,4 +384,10 @@ void push_workspace(struct monitor *m,  struct wlr_list *workspaces, int ws_id)
         m->ws_ids[1] = m->ws_ids[0];
 
     focus_workspace(m, workspaces, ws_id);
+}
+
+struct layout *get_layout_on_workspace(int ws_id)
+{
+    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
+    return &ws->layout[0];
 }

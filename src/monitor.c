@@ -266,8 +266,7 @@ inline struct workspace *get_workspace_on_monitor(struct monitor *m)
     return get_workspace(&server.workspaces, m->ws_ids[0]);
 }
 
-struct layout *get_layout_on_monitor(struct monitor *m)
+inline struct layout *get_layout_on_monitor(struct monitor *m)
 {
-    struct workspace *ws = get_workspace_on_monitor(m);
-    return &ws->layout[0];
+    return get_layout_on_workspace(m->ws_ids[0]);
 }

@@ -143,7 +143,7 @@ int lib_focus_on_stack(lua_State *L)
         return 0;
     }
 
-    struct container *con = get_relative_container(m, sel, i);
+    struct container *con = get_relative_container(m->ws_ids[0], sel, i);
     if (!con)
         return 0;
 
@@ -165,7 +165,7 @@ int lib_focus_on_hidden_stack(lua_State *L)
     if (sel->client->type == LAYER_SHELL)
         return 0;
 
-    struct container *con = get_relative_hidden_container(m, i);
+    struct container *con = get_relative_hidden_container(m->ws_ids[0], i);
 
     if (!con) {
         printf("contaier not found\n");
@@ -190,8 +190,10 @@ int lib_focus_on_hidden_stack(lua_State *L)
         // container to the first position that is not visible
         wl_list_remove(&sel->mlink);
         update_container_positions(m);
-        struct container *last_container = container_position_to_container(m->ws_ids[0], 0);
-        struct container *container_hidden = get_relative_container(m, last_container, -1);
+        struct container *last_container = 
+            container_position_to_container(m->ws_ids[0], 0);
+        struct container *container_hidden = 
+            get_relative_container(m->ws_ids[0], last_container, -1);
         wl_list_insert(&container_hidden->mlink, &sel->mlink);
         sel->hidden = true;
     }
@@ -426,7 +428,7 @@ int lib_kill(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct container *con = get_container(m, i);
+    struct container *con = container_position_to_container(m->ws_ids[0], i);
     struct client *sel = con->client;
 
     if (!con)
