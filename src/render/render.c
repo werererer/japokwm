@@ -178,6 +178,7 @@ damage_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct w
 
 void output_damage_surface(struct monitor *m, struct wlr_surface *surface, struct wlr_box *geom, bool whole)
 {
+    assert(m != NULL);
     if (!m->wlr_output->enabled)
         return;
 

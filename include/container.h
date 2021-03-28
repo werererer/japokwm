@@ -33,6 +33,7 @@ struct container {
     struct client *client;
 
     struct monitor *m;
+    struct monitor *prev_m;
     bool floating;
     bool focusable;
     bool has_border;

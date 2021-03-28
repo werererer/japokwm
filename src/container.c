@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <wayland-util.h>
 #include <string.h>
+#include <assert.h>
 
 #include "client.h"
 #include "server.h"
@@ -20,11 +21,13 @@ static void add_container_to_stack(struct container *con);
 struct container *create_container(struct client *c, struct monitor *m, bool has_border)
 {
     struct container *con = calloc(1, sizeof(struct container));
-    con->m = m;
     con->client = c;
+    c->con = con;
+
+    set_container_monitor(con, m);
+
     con->has_border = has_border;
     con->focusable = true;
-    c->con = con;
     add_container_to_monitor(con, con->m);
 
     struct layout *lt = get_layout_on_monitor(con->m);
@@ -76,23 +79,25 @@ static void damage_border(struct monitor *m, struct wlr_box *geom, int border_wi
     }
 }
 
-static void con_damage(struct container *con, struct wlr_box *geom, bool whole)
+static void damage_container_area(struct container *con, struct wlr_box *geom, 
+        struct monitor *m, bool whole)
 {
-    struct monitor *m = con->m;
-
     output_damage_surface(m, get_wlrsurface(con->client), geom, whole);
-
     damage_border(m, geom, con->client->bw);
 }
 
 static void container_damage(struct container *con, bool whole)
 {
-    con_damage(con, &con->geom, whole);
+    damage_container_area(con, &con->geom, con->m, whole);
 
     struct client *c = con->client;
-    if (c->resize) {
-        con_damage(con, &con->prev_geom, whole);
-        c->resize = false;
+    if (c->resized) {
+        damage_container_area(con, &con->prev_geom, con->m, whole);
+        c->resized = false;
+    }
+    if (c->moved_workspace) {
+        damage_container_area(con, &con->prev_geom, con->prev_m, whole);
+        c->moved_workspace = false;
     }
 }
 
@@ -384,7 +389,7 @@ static void add_container_to_monitor(struct container *con, struct monitor *m)
     if (!m || !con)
         return;
 
-    con->m = m;
+    set_container_monitor(con, m);
     switch (con->client->type) {
         case LAYER_SHELL:
             // layer shell programs aren't pushed to the stack because they use the
@@ -613,7 +618,7 @@ void set_container_floating(struct container *con, bool floating)
 
     lift_container(con);
     con->client->bw = lt->options.float_border_px;
-    con->client->resize = true;
+    con->client->resized = true;
     container_damage_whole(con);
 }
 
@@ -631,7 +636,9 @@ void set_container_workspace(struct container *con, int ws_id)
     if (!ws)
         return;
 
-    con->m = ws->m;
+    if (ws->m == NULL)
+        ws->m = con->m;
+    set_container_monitor(con, ws->m);
     con->client->ws_id = ws_id;
 
     if (con->floating)
@@ -642,11 +649,14 @@ void set_container_workspace(struct container *con, int ws_id)
 
 void set_container_monitor(struct container *con, struct monitor *m)
 {
+    if (!con)
+        return;
     if (con->m == m)
         return;
 
+    if (con->prev_m != m)
+        con->prev_m = con->m;
     con->m = m;
-    con->client->ws_id = m->ws_ids[0];
 }
 
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety)

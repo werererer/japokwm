@@ -30,9 +30,12 @@ struct client {
     int id;
     char *title;
     bool sticky;
-    bool resize;
     // workspace id
     int ws_id;
+
+    // used to determine what to damage
+    bool resized;
+    bool moved_workspace;
 };
 
 /* it ignores bool  hiding which visibleon doesn't */
