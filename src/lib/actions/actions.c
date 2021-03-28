@@ -263,8 +263,8 @@ int lib_move_container_to_workspace(lua_State *L)
     con->client->moved_workspace = true;
     container_damage_whole(con);
 
-    focus_most_recent_container(m->ws_ids[0], FOCUS_NOOP);
     arrange();
+    focus_most_recent_container(m->ws_ids[0], FOCUS_NOOP);
 
     ipc_event_workspace();
 

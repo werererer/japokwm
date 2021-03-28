@@ -96,7 +96,7 @@ static void container_damage(struct container *con, bool whole)
         c->resized = false;
     }
     if (c->moved_workspace) {
-        damage_container_area(con, &con->prev_geom, con->prev_m, whole);
+        damage_container_area(con, &con->prev_geom, selected_monitor, whole);
         c->moved_workspace = false;
     }
 }
