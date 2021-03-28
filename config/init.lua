@@ -1,18 +1,8 @@
-config.set_sloppy_focus(true)
-config.set_tile_borderpx(10)
-config.set_float_borderpx(2)
-config.set_inner_gaps(0)
-config.set_outer_gaps(20)
-config.set_root_color({0.3, 0.3, 0.3, 1.0})
-config.set_focus_color({1.0, 0.0, 0.0, 1.0})
-config.set_border_color({0.0, 0.0, 1.0, 1.0})
-config.set_repeat_rate(25)
-config.set_repeat_delay(600)
-
 config.create_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
 
 local function on_start()
-    print("works")
+    -- execute programs or do what ever you want e.g.:
+    -- action.exec("...")
 end
 
 event.set_on_start_function(on_start)
@@ -23,16 +13,6 @@ local layouts = {
     {"||",  "monocle"},
     {"--",  "tmp" },
 }
-
-config.set_rules({
-    -- {"termite", "termite", function(n) container.set_sticky(n, true) end},
-    -- {"termite", "", function(n) container.set_ratio(n, 1) end},
-})
-
-config.set_monrules({
-    -- {"", function() monitor.set_scale(0.6) end},
-    -- {"", function() monitor.set_transform(info.monitor.transform.rotate_90) end},
-})
 
 config.create_layout_set("default", layouts)
 
