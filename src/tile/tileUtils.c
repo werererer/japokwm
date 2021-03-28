@@ -60,7 +60,7 @@ static void update_layout_counters(lua_State *L, struct monitor *m)
 
     lt->n = get_layout_container_count(ws);
     lt->nmaster_abs = get_master_container_count(ws);
-    lt->n_abs = lt->n + lt->nmaster_abs-1;
+    lt->n_visible = lt->n + lt->nmaster_abs-1;
 }
 
 static struct wlr_fbox lua_unbox_layout_geom(lua_State *L, int i) {
@@ -342,7 +342,7 @@ void update_hidden_containers(struct monitor *m)
     // subtract the solution by one to count
     struct layout *lt = &ws->layout[0];
 
-    int i = 1;
+    int i = 0;
     if (ws->layout[0].options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
             if (con->floating)
@@ -352,9 +352,10 @@ void update_hidden_containers(struct monitor *m)
             if (con->client->type == LAYER_SHELL)
                 continue;
 
-            con->hidden = i > lt->n_abs;
+            con->hidden = i + 1 > lt->n_visible;
             i++;
         }
+        lt->n_all = i;
     } else {
         wl_list_for_each(con, &containers, mlink) {
             if (con->floating)
@@ -364,10 +365,12 @@ void update_hidden_containers(struct monitor *m)
             if (con->client->type == LAYER_SHELL)
                 continue;
 
-            con->hidden = i > lt->n_abs;
+            con->hidden = i + 1 > lt->n_visible;
             i++;
         }
+        lt->n_all = i;
     }
+    lt->n_hidden = lt->n_all - lt->n_visible;
 }
 
 int get_tiled_container_count(struct workspace *ws)

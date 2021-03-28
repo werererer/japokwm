@@ -193,9 +193,9 @@ struct container *get_relative_focus_container(int ws_id, struct container *con,
 {
     struct layout *lt = get_layout_on_workspace(ws_id);
 
-    int new_position = (con->position + i) % (lt->n_abs);
+    int new_position = (con->position + i) % (lt->n_visible);
     while (new_position < 0) {
-        new_position += lt->n_abs;
+        new_position += lt->n_visible;
     }
 
     return focus_container_position_to_container(ws_id, new_position);
@@ -205,9 +205,9 @@ struct container *get_relative_container(int ws_id, struct container *con, int i
 {
     struct layout *lt = get_layout_on_workspace(ws_id);
 
-    int new_position = (con->position + i) % (lt->n_abs);
+    int new_position = (con->position + i) % (lt->n_visible);
     while (new_position < 0) {
-        new_position += lt->n_abs;
+        new_position += lt->n_visible;
     }
 
     return container_position_to_container(ws_id, new_position);
@@ -216,7 +216,7 @@ struct container *get_relative_container(int ws_id, struct container *con, int i
 struct container *get_relative_hidden_container(int ws_id, int i)
 {
     struct layout *lt = get_layout_on_workspace(ws_id);
-    int n_hidden_containers = wl_list_length(&containers) - lt->n_abs;
+    int n_hidden_containers = lt->n_hidden;
 
     if (n_hidden_containers == 0)
         return NULL;
@@ -224,7 +224,7 @@ struct container *get_relative_hidden_container(int ws_id, int i)
     int new_position = (i) % (n_hidden_containers);
     while (new_position < 0)
         new_position += n_hidden_containers;
-    new_position += lt->n_abs;
+    new_position += lt->n_visible;
 
     struct container *con = container_position_to_hidden_container(ws_id, new_position);
     return con;

@@ -178,6 +178,7 @@ int lib_focus_on_hidden_stack(lua_State *L)
 
     wl_list_remove(&con->mlink);
     wl_list_insert(&sel->mlink, &con->mlink);
+
     con->hidden = false;
     if (i >= 0) {
         // replace selected container with a hidden one and move the selected
