@@ -266,7 +266,7 @@ void destroy_notify(struct wl_listener *listener, void *data)
     c = NULL;
 
     arrange();
-    focus_most_recent_container(selected_monitor, FOCUS_NOOP);
+    focus_most_recent_container(selected_monitor->ws_ids[0], FOCUS_NOOP);
 }
 
 
@@ -301,7 +301,7 @@ void maprequest(struct wl_listener *listener, void *data)
             break;
     }
     arrange();
-    focus_most_recent_container(m, FOCUS_NOOP);
+    focus_most_recent_container(m->ws_ids[0], FOCUS_NOOP);
 }
 
 void unmapnotify(struct wl_listener *listener, void *data)

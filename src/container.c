@@ -108,7 +108,6 @@ void container_damage_whole(struct container *con)
 
 struct container *container_position_to_container(int ws_id, int position)
 {
-    // TODO debug
     struct container *con;
     wl_list_for_each(con, &containers, mlink) {
         if (!visibleon(con, &server.workspaces, ws_id))
@@ -190,36 +189,37 @@ struct container *get_container(struct monitor *m, int i)
     return con;
 }
 
-struct container *get_container_on_focus_stack(struct monitor *m, int i)
+struct container *focus_container_position_to_container(int ws_id, int position)
 {
     struct container *con;
+    wl_list_for_each(con, &containers, mlink) {
+        if (!visibleon(con, &server.workspaces, ws_id))
+            continue;
+        if (con->floating)
+            continue;
 
-    if (abs(i) > wl_list_length(&focus_stack))
-        return NULL;
-    if (i >= 0) {
-        struct wl_list *pos = &focus_stack;
-        while (i >= 0) {
-            if (pos->next)
-                pos = pos->next;
-            i--;
-        }
-        con = wl_container_of(pos, con, flink);
-    } else { // i < 0
-        struct wl_list *pos = &focus_stack;
-        while (i < 0) {
-            pos = pos->prev;
-            i++;
-        }
-        con = wl_container_of(pos, con, flink);
+        if (con->focus_stack_position == position)
+            return con;
     }
-    return con;
+    return NULL;
+}
+
+struct container *get_relative_focus_container(struct monitor *m, struct container *con, int i)
+{
+    struct layout *lt = get_layout_on_monitor(m);
+
+    int new_position = (con->position + i) % (lt->n_abs);
+    while (new_position < 0) {
+        new_position += lt->n_abs;
+    }
+
+    return focus_container_position_to_container(m->ws_ids[0], new_position);
 }
 
 struct container *get_relative_container(struct monitor *m, struct container *con, int i)
 {
     struct layout *lt = get_layout_on_monitor(m);
 
-    printf("n_abs: %i\n", lt->n_abs);
     int new_position = (con->position + i) % (lt->n_abs);
     while (new_position < 0) {
         new_position += lt->n_abs;
@@ -556,12 +556,15 @@ void focus_container(struct container *con, enum focus_actions a)
     focus_client(old_c, new_c);
 }
 
-void focus_most_recent_container(struct monitor *m, enum focus_actions a)
+void focus_most_recent_container(int ws_id, enum focus_actions a)
 {
-    struct container *con = get_container_on_focus_stack(m, 0);
+    struct container *con = focus_container_position_to_container(ws_id, 0);
 
-    if (!con)
-        return;
+    if (!con) {
+        con = container_position_to_container(ws_id, 0);
+        if (!con)
+            return;
+    }
 
     focus_container(con, a);
 }

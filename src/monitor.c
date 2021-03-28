@@ -167,7 +167,7 @@ void focusmon(int i)
     struct monitor *m = dirtomon(i);
     set_selected_monitor(m);
     center_mouse_in_monitor(m);
-    focus_most_recent_container(m, FOCUS_LIFT);
+    focus_most_recent_container(m->ws_ids[0], FOCUS_LIFT);
 }
 
 void destroy_monitor(struct wl_listener *listener, void *data)

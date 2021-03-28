@@ -296,8 +296,7 @@ void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
     ws->m = m;
 
     arrange();
-    focus_most_recent_container(m, FOCUS_NOOP);
-    focus_container(container_position_to_container(m->ws_ids[0], 0), FOCUS_NOOP);
+    focus_most_recent_container(ws->id, FOCUS_NOOP);
     root_damage_whole(m->root);
 }
 

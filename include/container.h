@@ -50,7 +50,6 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 void destroy_container(struct container *con);
 
 struct container *get_container(struct monitor *m, int i);
-struct container *get_container_on_focus_stack(struct monitor *m, int i);
 struct container *get_relative_container(struct monitor *m, struct container *con, int i);
 struct container *get_relative_hidden_container(struct monitor *m, int i);
 struct container *last_container(struct monitor *m);
@@ -59,6 +58,8 @@ struct container *focused_container(struct monitor *m);
 struct container *xy_to_container(double x, double y);
 struct container *container_position_to_container(int ws_id, int position);
 struct container *container_position_to_hidden_container(int ws_id, int position);
+struct container *focus_container_position_to_container(int ws_id, int position);
+struct container *get_relative_focus_container(struct monitor *m, struct container *con, int i);
 
 struct wlr_box get_center_box(struct wlr_box ref);
 struct wlr_box get_absolute_box(struct wlr_fbox ref, struct wlr_box box);
@@ -71,7 +72,7 @@ void apply_rules(struct container *con);
 void container_damage_part(struct container *con);
 void container_damage_whole(struct container *con);
 void focus_container(struct container *con, enum focus_actions a);
-void focus_most_recent_container(struct monitor *m, enum focus_actions a);
+void focus_most_recent_container(int ws_id, enum focus_actions a);
 /* Find the topmost visible client (if any) at point (x, y), including
  * borders. This relies on stack being ordered from top to bottom. */
 void lift_container(struct container *con);
