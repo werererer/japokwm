@@ -269,7 +269,7 @@ void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
         return;
     assert(m->damage != NULL);
 
-    // focus the workspace in the monitor it appears if such a monitor exist
+    // focus the workspace in the monitor it appears in if such a monitor exist
     // and is not the selected one
     if (is_workspace_occupied(ws) && ws->m != selected_monitor) {
         center_mouse_in_monitor(ws->m);
@@ -295,8 +295,8 @@ void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
     m->ws_ids[0] = ws->id;
     ws->m = m;
 
-    // fix focus
     arrange();
+    focus_most_recent_container(m, FOCUS_NOOP);
     focus_container(container_position_to_container(m->ws_ids[0], 0), FOCUS_NOOP);
     root_damage_whole(m->root);
 }

@@ -56,7 +56,7 @@ struct container *get_relative_hidden_container(struct monitor *m, int i);
 struct container *last_container(struct monitor *m);
 struct container *next_container(struct monitor *m);
 struct container *focused_container(struct monitor *m);
-struct container *xytocontainer(double x, double y);
+struct container *xy_to_container(double x, double y);
 struct container *container_position_to_container(int ws_id, int position);
 struct container *container_position_to_hidden_container(int ws_id, int position);
 
@@ -71,7 +71,7 @@ void apply_rules(struct container *con);
 void container_damage_part(struct container *con);
 void container_damage_whole(struct container *con);
 void focus_container(struct container *con, enum focus_actions a);
-void focus_top_container(struct monitor *m, enum focus_actions a);
+void focus_most_recent_container(struct monitor *m, enum focus_actions a);
 /* Find the topmost visible client (if any) at point (x, y), including
  * borders. This relies on stack being ordered from top to bottom. */
 void lift_container(struct container *con);

@@ -55,7 +55,7 @@ void buttonpress(struct wl_listener *listener, void *data)
                         server.cursor.wlr_cursor);
                 server.cursor.cursor_mode = CURSOR_NORMAL;
                 /* Drop the window off on its new monitor */
-                struct monitor *m = xytomon(server.cursor.wlr_cursor->x,
+                struct monitor *m = xy_to_monitor(server.cursor.wlr_cursor->x,
                         server.cursor.wlr_cursor->y);
                 set_selected_monitor(m);
                 return;

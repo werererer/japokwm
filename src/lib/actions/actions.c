@@ -229,7 +229,7 @@ int lib_view(lua_State *L)
 int lib_toggle_view(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    focus_top_container(m, FOCUS_LIFT);
+    focus_most_recent_container(m, FOCUS_LIFT);
     arrange(false);
     return 0;
 }
@@ -257,7 +257,7 @@ int lib_move_container_to_workspace(lua_State *L)
         return 0;
 
     set_container_workspace(con, ws->id);
-    focus_top_container(m, FOCUS_NOOP);
+    focus_most_recent_container(m, FOCUS_NOOP);
     arrange();
 
     ipc_event_workspace();
@@ -295,7 +295,7 @@ int lib_zoom(lua_State *L)
 
     struct layout *lt = get_layout_on_monitor(m);
     if (lt->options.arrange_by_focus) {
-        focus_top_container(m, FOCUS_NOOP);
+        focus_most_recent_container(m, FOCUS_NOOP);
         arrange();
     }
     return 0;
@@ -487,7 +487,7 @@ int lib_swap_workspace(lua_State *L)
 
     struct monitor *m = selected_monitor;
     arrange();
-    focus_top_container(m, FOCUS_NOOP);
+    focus_most_recent_container(m, FOCUS_NOOP);
     root_damage_whole(m->root);
     return 0;
 }

@@ -249,9 +249,9 @@ struct container *get_relative_hidden_container(struct monitor *m, int i)
     return con;
 }
 
-struct container *xytocontainer(double x, double y)
+struct container *xy_to_container(double x, double y)
 {
-    struct monitor *m = xytomon(x, y);
+    struct monitor *m = xy_to_monitor(x, y);
     if (!m)
         return NULL;
 
@@ -556,7 +556,7 @@ void focus_container(struct container *con, enum focus_actions a)
     focus_client(old_c, new_c);
 }
 
-void focus_top_container(struct monitor *m, enum focus_actions a)
+void focus_most_recent_container(struct monitor *m, enum focus_actions a)
 {
     struct container *con = get_container_on_focus_stack(m, 0);
 

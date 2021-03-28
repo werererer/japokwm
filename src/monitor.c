@@ -167,7 +167,7 @@ void focusmon(int i)
     struct monitor *m = dirtomon(i);
     set_selected_monitor(m);
     center_mouse_in_monitor(m);
-    focus_top_container(m, FOCUS_LIFT);
+    focus_most_recent_container(m, FOCUS_LIFT);
 }
 
 void destroy_monitor(struct wl_listener *listener, void *data)
@@ -214,7 +214,7 @@ void set_selected_monitor(struct monitor *m)
     int x = server.cursor.wlr_cursor->x;
     int y = server.cursor.wlr_cursor->y;
 
-    focus_container(xytocontainer(x, y), FOCUS_NOOP);
+    focus_container(xy_to_container(x, y), FOCUS_NOOP);
 }
 
 void push_selected_workspace(struct monitor *m, struct workspace *ws)
@@ -252,7 +252,7 @@ struct monitor *output_to_monitor(struct wlr_output *output)
     return found ? m : NULL;
 }
 
-struct monitor *xytomon(double x, double y)
+struct monitor *xy_to_monitor(double x, double y)
 {
     struct wlr_output *o = wlr_output_layout_output_at(server.output_layout, x, y);
     return o ? o->data : NULL;

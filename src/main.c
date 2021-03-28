@@ -109,7 +109,7 @@ static void run(char *startup_cmd)
 
     /* Now that outputs are initialized, choose initial selMon based on
      * cursor position, and set default cursor image */
-    struct monitor *m = xytomon(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
+    struct monitor *m = xy_to_monitor(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
     set_selected_monitor(m);
 
     /* XXX hack to get cursor to display in its initial location (100, 100)

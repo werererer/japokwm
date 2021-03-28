@@ -124,7 +124,7 @@ void motion_notify(uint32_t time)
     int cursorx = server.cursor.wlr_cursor->x;
     int cursory = server.cursor.wlr_cursor->y;
 
-    set_selected_monitor(xytomon(cursorx, cursory));
+    set_selected_monitor(xy_to_monitor(cursorx, cursory));
 
     /* If handled successfully return */
     if (handle_move_resize(server.cursor.cursor_mode))
@@ -136,7 +136,7 @@ void motion_notify(uint32_t time)
 
     struct wlr_surface *focus_surface = popup_surface;
 
-    struct container *focus_con = xytocontainer(cursorx, cursory);
+    struct container *focus_con = xy_to_container(cursorx, cursory);
     if (!is_popup_under_cursor && focus_con) {
         focus_surface = wlr_surface_surface_at(get_wlrsurface(focus_con->client),
                 absolute_x_to_container_relative(focus_con, cursorx),
@@ -154,7 +154,7 @@ void motion_notify(uint32_t time)
 
 void move_resize(int ui)
 {
-    grabc = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
+    grabc = xy_to_container(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
     if (!grabc)
         return;
     if (grabc->client->type == LAYER_SHELL)
@@ -215,7 +215,7 @@ void update_cursor(struct cursor *cursor)
     if (cursor->cursor_mode != CURSOR_NORMAL)
         return;
 
-    if (!xytocontainer(cursor->wlr_cursor->x, cursor->wlr_cursor->y)) {
+    if (!xy_to_container(cursor->wlr_cursor->x, cursor->wlr_cursor->y)) {
         wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
             "left_ptr", server.cursor.wlr_cursor);
         return;

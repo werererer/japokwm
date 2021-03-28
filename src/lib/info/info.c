@@ -81,7 +81,7 @@ int lib_get_workspace(lua_State *L)
 int lib_get_container_under_cursor(lua_State *L)
 {
     struct wlr_cursor *cursor = server.cursor.wlr_cursor;
-    struct container *con = xytocontainer(cursor->x, cursor->y);
+    struct container *con = xy_to_container(cursor->x, cursor->y);
 
     int pos = 0;
     if (con)
