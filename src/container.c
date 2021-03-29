@@ -119,6 +119,8 @@ struct container *container_position_to_container(int ws_id, int position)
             continue;
         if (con->floating)
             continue;
+        if (con->client->type == LAYER_SHELL)
+            continue;
 
         if (con->position == position)
             return con;
@@ -586,9 +588,11 @@ void focus_container(struct container *con, enum focus_actions a)
 
 void focus_most_recent_container(int ws_id, enum focus_actions a)
 {
+    printf("focus_most_recent_container\n");
     struct container *con = focus_container_position_to_container(ws_id, 0);
 
     if (!con) {
+        printf("failed get\n");
         con = container_position_to_container(ws_id, 0);
         if (!con)
             return;
