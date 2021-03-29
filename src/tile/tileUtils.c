@@ -163,10 +163,13 @@ int get_container_count(struct workspace *ws)
 
 void update_container_positions(struct monitor *m)
 {
-    /* struct layout *lt = get_layout_on_monitor(m); */
+    struct container *con;
+
+    wl_list_for_each(con, &focus_stack, flink) {
+        con->position = INVALID_POSITION;
+    }
 
     int position = 0;
-    struct container *con;
     wl_list_for_each(con, &containers, mlink) {
         if (!existon(con, &server.workspaces, m->ws_ids[0]))
             continue;
@@ -200,6 +203,11 @@ void update_container_focus_stack_positions(struct monitor *m)
 {
     int position = 0;
     struct container *con;
+
+    wl_list_for_each(con, &focus_stack, flink) {
+        con->focus_stack_position = INVALID_POSITION;
+    }
+
     wl_list_for_each(con, &focus_stack, flink) {
         if (!existon(con, &server.workspaces, m->ws_ids[0]))
             continue;
