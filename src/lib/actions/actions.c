@@ -156,51 +156,7 @@ int lib_focus_on_hidden_stack(lua_State *L)
 {
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-
-    struct monitor *m = selected_monitor;
-    struct container *sel = focused_container(m);
-
-    if (!sel)
-        return 0;
-    if (sel->client->type == LAYER_SHELL)
-        return 0;
-
-    struct container *con = get_relative_hidden_container(m->ws_ids[0], i);
-
-    if (!con) {
-        printf("contaier not found\n");
-        return 0;
-    }
-    if (sel == con) {
-        printf("selected equals con\n");
-        return 0;
-    }
-
-    wl_list_remove(&con->mlink);
-    wl_list_insert(&sel->mlink, &con->mlink);
-
-    con->hidden = false;
-    if (i >= 0) {
-        // replace selected container with a hidden one and move the selected
-        // container to the end of containers
-        wl_list_remove(&sel->mlink);
-        wl_list_insert(containers.prev, &sel->mlink);
-        sel->hidden = true;
-    } else if (i < 0) {
-        // replace current container with a hidden one and move the selected
-        // container to the first position that is not visible
-        wl_list_remove(&sel->mlink);
-        update_container_positions(m);
-        struct container *last_container = 
-            container_position_to_container(m->ws_ids[0], 0);
-        struct container *container_hidden = 
-            get_relative_container(m->ws_ids[0], last_container, -1);
-        wl_list_insert(&container_hidden->mlink, &sel->mlink);
-        sel->hidden = true;
-    }
-
-    focus_container(con, FOCUS_NOOP);
-    arrange();
+    focus_on_hidden_stack(i);
     return 0;
 }
 

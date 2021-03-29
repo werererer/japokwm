@@ -163,20 +163,19 @@ int get_container_count(struct workspace *ws)
 
 void update_container_positions(struct monitor *m)
 {
-    struct container *con;
-    int position = 0;
+    /* struct layout *lt = get_layout_on_monitor(m); */
 
+    int position = 0;
+    struct container *con;
     wl_list_for_each(con, &containers, mlink) {
         if (!existon(con, &server.workspaces, m->ws_ids[0]))
+            continue;
+        if (con->client->type == LAYER_SHELL)
             continue;
         if (con->floating)
             continue;
-        if (con->client->type == LAYER_SHELL)
-            continue;
 
         con->position = position;
-
-        apply_rules(con);
 
         // then use the layout that may have been reseted
         position++;
@@ -185,26 +184,24 @@ void update_container_positions(struct monitor *m)
     wl_list_for_each(con, &containers, mlink) {
         if (!existon(con, &server.workspaces, m->ws_ids[0]))
             continue;
-        if (!con->floating)
-            continue;
         if (con->client->type == LAYER_SHELL)
+            continue;
+        if (!con->floating)
             continue;
 
         con->position = position;
 
-        apply_rules(con);
-
         // then use the layout that may have been reseted
         position++;
-    }
+        }
 }
 
-static void update_container_focus_stack_positions(struct monitor *m)
+void update_container_focus_stack_positions(struct monitor *m)
 {
     int position = 0;
     struct container *con;
     wl_list_for_each(con, &focus_stack, flink) {
-        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
+        if (!existon(con, &server.workspaces, m->ws_ids[0]))
             continue;
         if (con->floating)
             continue;
