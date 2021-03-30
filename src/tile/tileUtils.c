@@ -207,8 +207,6 @@ void update_container_focus_stack_positions(struct monitor *m)
     wl_list_for_each(con, &focus_stack, flink) {
         if (!existon(con, &server.workspaces, m->ws_ids[0]))
             continue;
-        if (con->floating)
-            continue;
         if (con->client->type == LAYER_SHELL)
             continue;
 
