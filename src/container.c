@@ -150,7 +150,7 @@ struct container *focus_container_position_to_hidden_container(int ws_id, int po
     wl_list_for_each(con, &focus_stack, flink) {
         if (!hiddenon(con, &server.workspaces, ws_id))
             continue;
-        if (con->floating)
+        if (con->focus_stack_position == INVALID_POSITION)
             continue;
 
         printf("container position: %i\n", con->focus_stack_position);
@@ -203,11 +203,6 @@ struct container *focus_container_position_to_container(int ws_id, int position)
 {
     struct container *con;
     wl_list_for_each(con, &focus_stack, flink) {
-        if (!visibleon(con, &server.workspaces, ws_id))
-            continue;
-        if (con->floating)
-            continue;
-
         if (con->focus_stack_position == position)
             return con;
     }

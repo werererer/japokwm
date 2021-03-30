@@ -36,11 +36,7 @@ static int get_all_container_count(struct workspace *ws)
     int n_all = 0;
     struct container *con;
     wl_list_for_each(con, &focus_stack, flink) {
-        if (con->floating)
-            continue;
-        if (!existon(con, &server.workspaces, ws->id))
-            continue;
-        if (con->client->type == LAYER_SHELL)
+        if (con->focus_stack_position == INVALID_POSITION)
             continue;
 
         n_all++;
@@ -165,7 +161,7 @@ void update_container_positions(struct monitor *m)
 {
     struct container *con;
 
-    wl_list_for_each(con, &focus_stack, flink) {
+    wl_list_for_each(con, &containers, mlink) {
         con->position = INVALID_POSITION;
     }
 
@@ -267,13 +263,10 @@ void arrange_containers(int ws_id, struct wlr_box root_geom)
     struct container *con;
     if (lt->options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
-            if (!visibleon(con, &server.workspaces, ws_id))
+            if (con->focus_stack_position == INVALID_POSITION)
                 continue;
             if (con->floating)
                 continue;
-            if (con->client->type == LAYER_SHELL)
-                continue;
-
             arrange_container(con, con->focus_stack_position, root_geom, actual_inner_gap);
         }
     } else {
@@ -366,11 +359,9 @@ void update_hidden_status_of_containers(struct monitor *m)
     int i = 0;
     if (ws->layout[0].options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
+            if (con->focus_stack_position == INVALID_POSITION)
+                continue;
             if (con->floating)
-                continue;
-            if (!existon(con, &server.workspaces, ws->id))
-                continue;
-            if (con->client->type == LAYER_SHELL)
                 continue;
 
             con->hidden = i + 1 > lt->n_visible;
