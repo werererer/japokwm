@@ -17,11 +17,15 @@ struct layout {
     int n_visible;
     // number of hidden windows
     int n_hidden;
+    // number of floating windows
+    int n_floating;
+    // number of tiled windows
+    int n_tiled;
     /* number of all windows in layout even if they are invisible). Note that
      * floating windows don't belong to the layout and are thereby not counted */
     int n_all;
     // the absolute amount of windows
-    int nmaster_abs;
+    int n_master_abs;
     // the amount master windows
     int nmaster;
     int lua_layout_ref;

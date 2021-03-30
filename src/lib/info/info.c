@@ -18,7 +18,7 @@ int lib_get_this_container_count(lua_State *L)
 
 int lib_this_container_position(lua_State *L)
 {
-    struct container *con, *sel = focused_container(selected_monitor);
+    struct container *con, *sel = get_focused_container(selected_monitor);
     int n = 0;
     bool handled = false;
 

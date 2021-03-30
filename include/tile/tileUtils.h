@@ -14,8 +14,10 @@ void update_container_positions(struct monitor *m);
 void update_container_focus_stack_positions(struct monitor *m);
 int lib_get_this_container_count();
 int get_container_count(struct workspace *ws);
-int get_tiled_container_count(struct workspace *ws);
+int get_existing_container_count(struct workspace *ws);
 int get_slave_container_count(struct workspace *ws);
+int get_floating_container_count(struct workspace *ws);
 int get_master_container_count(struct workspace *ws);
+int get_visible_container_count(struct workspace *ws);
 
 #endif

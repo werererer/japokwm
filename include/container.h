@@ -54,7 +54,7 @@ struct container *get_container(struct monitor *m, int i);
 struct container *get_relative_container(int ws_id, struct container *con, int i);
 struct container *get_relative_hidden_container(int ws_id, int i);
 struct container *get_focus_relative_hidden_container(int ws_id, int i);
-struct container *focused_container(struct monitor *m);
+struct container *get_focused_container(struct monitor *m);
 struct container *xy_to_container(double x, double y);
 struct container *container_position_to_container(int ws_id, int position);
 struct container *container_position_to_hidden_container(int ws_id, int position);
@@ -82,6 +82,8 @@ void set_container_floating(struct container *con, bool floating);
 void set_container_geom(struct container *con, struct wlr_box geom);
 void set_container_workspace(struct container *con, int ws_id);
 void set_container_monitor(struct container *con, struct monitor *m);
+void swap_container_positions(struct container *con1, struct container *con2);
+void swap_container_focus_positions(struct container *con1, struct container *con2);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
 

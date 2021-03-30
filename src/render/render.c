@@ -251,7 +251,7 @@ static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *bo
 static void render_borders(struct container *con, pixman_region32_t *output_damage)
 {
     struct monitor *m = con->m;
-    struct container *sel = focused_container(m);
+    struct container *sel = get_focused_container(m);
 
     if (con->has_border) {
         double ox, oy;

@@ -80,7 +80,7 @@ int lib_set_floating(lua_State *L)
     printf("lib set floating\n");
     bool floating = lua_toboolean(L, -1);
     lua_pop(L, 1);
-    struct container *sel = focused_container(selected_monitor);
+    struct container *sel = get_focused_container(selected_monitor);
     if (!sel)
         return 0;
     set_container_floating(sel, floating);
@@ -133,7 +133,7 @@ int lib_focus_on_stack(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
-    struct container *sel = focused_container(m);
+    struct container *sel = get_focused_container(m);
 
     if (!sel)
         return 0;
@@ -195,7 +195,7 @@ int lib_toggle_view(lua_State *L)
 
 int lib_toggle_floating(lua_State *L)
 {
-    struct container *sel = focused_container(selected_monitor);
+    struct container *sel = get_focused_container(selected_monitor);
     if (!sel)
         return 0;
     set_container_floating(sel, !sel->floating);
@@ -210,7 +210,7 @@ int lib_move_container_to_workspace(lua_State *L)
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
     struct workspace *ws = get_workspace(&server.workspaces, ws_id);
-    struct container *con = focused_container(m);
+    struct container *con = get_focused_container(m);
 
     if (!con || con->client->type == LAYER_SHELL)
         return 0;
@@ -237,7 +237,7 @@ int lib_quit(lua_State *L)
 int lib_zoom(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    struct container *sel = focused_container(m);
+    struct container *sel = get_focused_container(m);
 
     if (!sel)
         return 0;

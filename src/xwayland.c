@@ -147,7 +147,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
                 if (is_popup_menu(c) || xwayland_surface->parent) {
                     wl_list_remove(&con->flink);
-                    wl_list_insert(&focused_container(m)->flink, &con->flink);
+                    wl_list_insert(&get_focused_container(m)->flink, &con->flink);
                 } else {
                     con->on_top = true;
                     focus_container(con, FOCUS_NOOP);
