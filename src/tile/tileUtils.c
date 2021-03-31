@@ -193,7 +193,7 @@ void update_container_positions(struct monitor *m)
 
     int position = 0;
     wl_list_for_each(con, &containers, mlink) {
-        if (!existon(con, &server.workspaces, m->ws_ids[0]))
+        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
             continue;
         if (con->floating)
             continue;
@@ -207,7 +207,21 @@ void update_container_positions(struct monitor *m)
     }
 
     wl_list_for_each(con, &containers, mlink) {
-        if (!existon(con, &server.workspaces, m->ws_ids[0]))
+        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
+            continue;
+        if (!con->floating)
+            continue;
+        if (con->client->type == LAYER_SHELL)
+            continue;
+
+        con->position = position;
+
+        // then use the layout that may have been reseted
+        position++;
+    }
+
+    wl_list_for_each(con, &containers, mlink) {
+        if (!hiddenon(con, &server.workspaces, m->ws_ids[0]))
             continue;
         if (!con->floating)
             continue;

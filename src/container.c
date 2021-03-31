@@ -223,9 +223,9 @@ struct container *get_relative_container(int ws_id, struct container *con, int i
 
     struct layout *lt = get_layout_on_workspace(ws_id);
 
-    int new_position = (con->position + i) % (lt->n_tiled);
+    int new_position = (con->position + i) % (lt->n_visible);
     while (new_position < 0) {
-        new_position += lt->n_tiled;
+        new_position += lt->n_visible;
     }
 
     return container_position_to_container(ws_id, new_position);
