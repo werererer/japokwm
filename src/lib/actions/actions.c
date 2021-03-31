@@ -34,7 +34,7 @@ int lib_focus_container(lua_State *L)
     int pos = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
-    struct container *con = focus_container_position_to_container(m->ws_ids[0], pos);
+    struct container *con = container_focus_position_to_container(m->ws_ids[0], pos);
 
     if (!con)
         return 0;

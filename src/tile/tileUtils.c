@@ -36,7 +36,7 @@ static int get_all_container_count(struct workspace *ws)
     int n_all = 0;
     struct container *con;
     wl_list_for_each(con, &focus_stack, flink) {
-        if (con->focus_stack_position == INVALID_POSITION)
+        if (con->focus_position == INVALID_POSITION)
             continue;
         if (con->client->type == LAYER_SHELL)
             continue;
@@ -221,13 +221,13 @@ void update_container_positions(struct monitor *m)
     }
 }
 
-void update_container_focus_stack_positions(struct monitor *m)
+void update_container_focus_positions(struct monitor *m)
 {
     int position = 0;
     struct container *con;
 
     wl_list_for_each(con, &focus_stack, flink) {
-        con->focus_stack_position = INVALID_POSITION;
+        con->focus_position = INVALID_POSITION;
     }
 
     wl_list_for_each(con, &focus_stack, flink) {
@@ -236,11 +236,35 @@ void update_container_focus_stack_positions(struct monitor *m)
         if (con->client->type == LAYER_SHELL)
             continue;
 
-        con->focus_stack_position = position;
+        con->focus_position = position;
         // then use the layout that may have been reseted
         position++;
     }
 }
+
+void update_container_focus_stack_positions(struct monitor *m)
+{
+    int position = 0;
+    struct container *con;
+
+    wl_list_for_each(con, &focus_stack, flink) {
+        con->focus_position = INVALID_POSITION;
+    }
+
+    wl_list_for_each(con, &focus_stack, flink) {
+        if (!existon(con, &server.workspaces, m->ws_ids[0]))
+            continue;
+        if (con->floating)
+            continue;
+        if (con->client->type == LAYER_SHELL)
+            continue;
+
+        con->focus_position = position;
+        // then use the layout that may have been reseted
+        position++;
+    }
+}
+
 
 void arrange_monitor(struct monitor *m)
 {
@@ -256,6 +280,7 @@ void arrange_monitor(struct monitor *m)
 
     update_layout_visibility_counters(lt);
 
+    update_container_focus_positions(m);
     update_container_focus_stack_positions(m);
     update_container_positions(m);
 
@@ -292,17 +317,11 @@ void arrange_containers(int ws_id, struct wlr_box root_geom)
         wl_list_for_each(con, &focus_stack, flink) {
             if (con->focus_stack_position == INVALID_POSITION)
                 continue;
-            if (con->client->type == LAYER_SHELL)
-                continue;
-            if (con->floating)
-                continue;
             arrange_container(con, con->focus_stack_position, root_geom, actual_inner_gap);
         }
     } else {
         wl_list_for_each(con, &containers, mlink) {
-            if (!visibleon(con, &server.workspaces, ws_id))
-                continue;
-            if (con->floating)
+            if (con->position == INVALID_POSITION)
                 continue;
 
             arrange_container(con, con->position, root_geom, actual_inner_gap);
@@ -320,6 +339,8 @@ static void arrange_container(struct container *con, int arrange_position,
     struct workspace *ws = get_workspace_on_monitor(m);
     struct layout *lt = &ws->layout[0];
 
+    // TODO seg fault here
+    printf("arrange_position: %i\n", arrange_position);
     struct wlr_box geom = get_geom_in_layout(L, lt, root_geom, arrange_position);
     container_surround_gaps(&geom, inner_gap);
 
@@ -388,7 +409,7 @@ void update_hidden_status_of_containers(struct monitor *m)
     int i = 0;
     if (ws->layout[0].options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
-            if (con->focus_stack_position == INVALID_POSITION)
+            if (con->focus_position == INVALID_POSITION)
                 continue;
             if (con->client->type == LAYER_SHELL)
                 continue;

@@ -85,7 +85,7 @@ int lib_get_container_under_cursor(lua_State *L)
 
     int pos = INVALID_POSITION;
     if (con)
-        pos = con->focus_stack_position;
+        pos = con->focus_position;
     lua_pushinteger(L, pos);
     return 1;
 }

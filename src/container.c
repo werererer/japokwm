@@ -150,11 +150,11 @@ struct container *focus_container_position_to_hidden_container(int ws_id, int po
             continue;
         if (con->client->type == LAYER_SHELL)
             continue;
-        if (con->focus_stack_position == INVALID_POSITION)
+        if (con->focus_position == INVALID_POSITION)
             continue;
 
-        printf("container position: %i\n", con->focus_stack_position);
-        if (con->focus_stack_position == position)
+        printf("container position: %i\n", con->focus_position);
+        if (con->focus_position == position)
             return con;
     }
     return NULL;
@@ -165,7 +165,7 @@ struct container *get_focused_container(struct monitor *m)
 {
     assert(m != NULL);
 
-    return focus_container_position_to_container(m->ws_ids[0], 0);
+    return container_focus_position_to_container(m->ws_ids[0], 0);
 }
 
 struct container *get_container(struct monitor *m, int i)
@@ -193,13 +193,13 @@ struct container *get_container(struct monitor *m, int i)
     return con;
 }
 
-struct container *focus_container_position_to_container(int ws_id, int position)
+struct container *container_focus_position_to_container(int ws_id, int position)
 {
     struct container *con;
     wl_list_for_each(con, &focus_stack, flink) {
         if (con->client->type == LAYER_SHELL)
             continue;
-        if (con->focus_stack_position == position)
+        if (con->focus_position == position)
             return con;
     }
     return NULL;
@@ -214,7 +214,7 @@ struct container *get_relative_focus_container(int ws_id, struct container *con,
         new_position += lt->n_tiled;
     }
 
-    return focus_container_position_to_container(ws_id, new_position);
+    return container_focus_position_to_container(ws_id, new_position);
 }
 
 struct container *get_relative_container(int ws_id, struct container *con, int i)
@@ -387,7 +387,7 @@ static void add_container_to_focus_stack(struct container *con)
     struct monitor *m = con->m;
 
     update_hidden_status_of_containers(m);
-    update_container_focus_stack_positions(m);
+    update_container_focus_positions(m);
 }
 
 static void add_container_to_stack(struct container *con)
@@ -583,7 +583,7 @@ void focus_container(struct container *con, enum focus_actions a)
 void focus_most_recent_container(int ws_id, enum focus_actions a)
 {
     printf("focus_most_recent_container\n");
-    struct container *con = focus_container_position_to_container(ws_id, 0);
+    struct container *con = container_focus_position_to_container(ws_id, 0);
 
     if (!con) {
         printf("failed get\n");
@@ -673,8 +673,8 @@ static struct container *focus_on_hidden_stack_if_arrange_by_focus(int i)
         // container to the first position that is not visible
         wl_list_remove(&sel->flink);
         update_hidden_status_of_containers(m);
-        update_container_focus_stack_positions(m);
-        struct container *last = focus_container_position_to_container(m->ws_ids[0], lt->n_tiled-1);
+        update_container_focus_positions(m);
+        struct container *last = container_focus_position_to_container(m->ws_ids[0], lt->n_tiled-1);
 
         wl_list_insert(&last->flink, &sel->flink);
     }
@@ -685,9 +685,12 @@ void focus_on_hidden_stack(int i)
 {
     struct monitor *m = selected_monitor;
     struct container *sel = get_focused_container(m);
+
     if (!sel)
         return;
     if (sel->client->type == LAYER_SHELL)
+        return;
+    if (sel->floating)
         return;
 
     struct layout *lt = get_layout_on_monitor(m);
@@ -823,9 +826,9 @@ void swap_container_positions(struct container *con1, struct container *con2)
 
 void swap_container_focus_positions(struct container *con1, struct container *con2)
 {
-    int focus_stack_position1 = con1->focus_stack_position;
-    con1->focus_stack_position = con2->focus_stack_position;
-    con2->focus_stack_position = focus_stack_position1;
+    int focus_stack_position1 = con1->focus_position;
+    con1->focus_position = con2->focus_position;
+    con2->focus_position = focus_stack_position1;
 }
 
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety)

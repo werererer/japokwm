@@ -42,6 +42,7 @@ struct container {
     // if position -1 it is floating
     int stack_position;
     int focus_stack_position;
+    int focus_position;
     int position;
     // height = ratio * width
     float ratio;
@@ -58,7 +59,7 @@ struct container *get_focused_container(struct monitor *m);
 struct container *xy_to_container(double x, double y);
 struct container *container_position_to_container(int ws_id, int position);
 struct container *container_position_to_hidden_container(int ws_id, int position);
-struct container *focus_container_position_to_container(int ws_id, int position);
+struct container *container_focus_position_to_container(int ws_id, int position);
 struct container *get_relative_focus_container(int ws_id, struct container *con, int i);
 
 struct wlr_box get_center_box(struct wlr_box ref);
