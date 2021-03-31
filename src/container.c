@@ -119,7 +119,6 @@ struct container *container_position_to_container(int ws_id, int position)
             continue;
         if (con->client->type == LAYER_SHELL)
             continue;
-
         if (con->position == position)
             return con;
     }
@@ -132,7 +131,7 @@ struct container *container_position_to_hidden_container(int ws_id, int position
     wl_list_for_each(con, &containers, mlink) {
         if (!hiddenon(con, &server.workspaces, ws_id))
             continue;
-        if (con->floating)
+        if (con->client->type == LAYER_SHELL)
             continue;
 
         printf("container position: %i\n", con->position);
@@ -239,11 +238,10 @@ struct container *get_relative_hidden_container(int ws_id, int i)
     if (n_hidden_containers == 0)
         return NULL;
 
-    printf("i: %i\n", lt->n_hidden);
     int new_position = (i) % (n_hidden_containers);
     while (new_position < 0)
         new_position += n_hidden_containers;
-    new_position += lt->n_tiled;
+    new_position += lt->n_visible;
     printf("new_position: %i\n", new_position);
 
     struct container *con = container_position_to_hidden_container(ws_id, new_position);
@@ -262,7 +260,7 @@ struct container *get_focus_relative_hidden_container(int ws_id, int i)
     int new_position = (i) % (n_hidden_containers);
     while (new_position < 0)
         new_position += n_hidden_containers;
-    new_position += lt->n_tiled;
+    new_position += lt->n_visible;
 
     struct container *con = focus_container_position_to_hidden_container(ws_id, new_position);
     return con;
@@ -582,11 +580,9 @@ void focus_container(struct container *con, enum focus_actions a)
 
 void focus_most_recent_container(int ws_id, enum focus_actions a)
 {
-    printf("focus_most_recent_container\n");
     struct container *con = container_focus_position_to_container(ws_id, 0);
 
     if (!con) {
-        printf("failed get\n");
         con = container_position_to_container(ws_id, 0);
         if (!con)
             return;
@@ -613,6 +609,12 @@ static struct container *focus_on_hidden_stack_if_arrange_normally(int i)
     if (!con)
         return NULL;
 
+    if (sel->floating) {
+        set_container_floating(con, true);
+        set_container_floating(sel, false);
+        set_container_geom(con, sel->geom);
+    }
+
     wl_list_remove(&con->mlink);
     wl_list_insert(&sel->mlink, &con->mlink);
 
@@ -627,12 +629,20 @@ static struct container *focus_on_hidden_stack_if_arrange_normally(int i)
         /* replace current container with a hidden one and move the selected
          * container to the first position that is not visible */
         wl_list_remove(&sel->mlink);
+
         update_hidden_status_of_containers(m);
         update_container_positions(m);
-        struct container *last = container_position_to_container(m->ws_ids[0], lt->n_tiled-1);
 
-        if (!last)
+        printf("n_visible: %i\n", lt->n_visible);
+        struct container *last = container_position_to_container(m->ws_ids[0], lt->n_visible-1);
+        printf("last: pos: %i\n", last->position);
+        printf("last: floating: %i\n", last->floating);
+        printf("last: hidden: %i\n", last->hidden);
+
+        if (!last) {
+            wl_list_insert(containers.prev, &sel->mlink);
             return NULL;
+        }
 
         wl_list_insert(&last->mlink, &sel->mlink);
         sel->hidden = true;
@@ -657,6 +667,12 @@ static struct container *focus_on_hidden_stack_if_arrange_by_focus(int i)
 
     if (!con)
         return NULL;
+
+    if (sel->floating) {
+        set_container_floating(con, true);
+        set_container_floating(sel, false);
+        set_container_geom(con, sel->geom);
+    }
 
     wl_list_remove(&con->flink);
     wl_list_insert(&sel->flink, &con->flink);
@@ -690,11 +706,10 @@ void focus_on_hidden_stack(int i)
         return;
     if (sel->client->type == LAYER_SHELL)
         return;
-    if (sel->floating)
-        return;
 
     struct layout *lt = get_layout_on_monitor(m);
     struct container *con;
+    printf("n_visible: %i\n", lt->n_visible);
     if (lt->options.arrange_by_focus)
         con = focus_on_hidden_stack_if_arrange_by_focus(i);
     else
@@ -762,6 +777,7 @@ void set_container_floating(struct container *con, bool floating)
     struct monitor *m = con->m;
     struct layout *lt = get_layout_on_monitor(m);
 
+    printf("set floating\n");
     con->floating = floating;
 
     // move container to the selected workspace

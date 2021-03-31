@@ -279,15 +279,16 @@ int lib_load_next_layout_in_set(lua_State *L)
 
     struct workspace *ws = get_workspace_on_monitor(selected_monitor);
 
+    // arg 2
     lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
     if (!lua_is_index_defined(L, layout_set_key)) {
-        printf("is nil return\n");
         lua_pop(L, 1);
         return 0;
     }
     lua_pop(L, 1);
     server.layout_set.key = layout_set_key;
 
+    // arg1
     lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
     lua_get_layout_set_element(L, layout_set_key);
     int n_layouts = luaL_len(L, -1);
