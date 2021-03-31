@@ -75,13 +75,7 @@ static void update_layout_counters(struct layout *lt)
     lt->n_master_abs = get_master_container_count(ws);
     lt->n_floating = get_floating_container_count(ws);
     lt->n_tiled = lt->n + lt->n_master_abs-1;
-}
-
-static void update_layout_visibility_counters(struct layout *lt)
-{
-    struct workspace *ws = get_workspace(&server.workspaces, lt->ws_id);
-
-    lt->n_visible = get_visible_container_count(ws);
+    lt->n_visible = lt->n_tiled + lt->n_floating;
     lt->n_hidden = lt->n_all - lt->n_visible;
 }
 
@@ -294,8 +288,6 @@ void arrange_monitor(struct monitor *m)
 
     update_hidden_status_of_containers(m);
 
-    update_layout_visibility_counters(lt);
-
     update_container_focus_positions(m);
     update_container_positions(m);
 
@@ -427,10 +419,8 @@ void update_hidden_status_of_containers(struct monitor *m)
                 continue;
             if (con->client->type == LAYER_SHELL)
                 continue;
-            if (con->floating)
-                continue;
 
-            con->hidden = i + 1 > lt->n_tiled;
+            con->hidden = i + 1 > lt->n_visible;
             i++;
         }
     } else {
@@ -439,10 +429,8 @@ void update_hidden_status_of_containers(struct monitor *m)
                 continue;
             if (con->client->type == LAYER_SHELL)
                 continue;
-            if (con->floating)
-                continue;
 
-            con->hidden = i + 1 > lt->n_tiled;
+            con->hidden = i + 1 > lt->n_visible;
             i++;
         }
     }
@@ -457,21 +445,6 @@ int get_existing_container_count(struct workspace *ws)
         if (con->floating)
             continue;
         if (!existon(con, &server.workspaces, ws->id))
-            continue;
-        if (con->client->type == LAYER_SHELL)
-            continue;
-        n++;
-    }
-    return n;
-}
-
-int get_visible_container_count(struct workspace *ws)
-{
-    struct container *con;
-    int n = 0;
-
-    wl_list_for_each(con, &containers, mlink) {
-        if (!visibleon(con, &server.workspaces, ws->id))
             continue;
         if (con->client->type == LAYER_SHELL)
             continue;

@@ -381,11 +381,6 @@ static void add_container_to_focus_stack(struct container *con)
         wl_list_insert(c->flink.prev, &con->flink);
     else
         wl_list_insert(c->flink.next, &con->flink);
-
-    struct monitor *m = con->m;
-
-    update_hidden_status_of_containers(m);
-    update_container_focus_positions(m);
 }
 
 static void add_container_to_stack(struct container *con)
@@ -570,6 +565,8 @@ void focus_container(struct container *con, enum focus_actions a)
     /* Put the new client atop the focus stack */
     wl_list_remove(&con->flink);
     add_container_to_focus_stack(con);
+    update_container_focus_positions(m);
+    update_hidden_status_of_containers(m);
 
     struct container *new_focus_con = get_focused_container(m);
 
@@ -633,11 +630,7 @@ static struct container *focus_on_hidden_stack_if_arrange_normally(int i)
         update_hidden_status_of_containers(m);
         update_container_positions(m);
 
-        printf("n_visible: %i\n", lt->n_visible);
         struct container *last = container_position_to_container(m->ws_ids[0], lt->n_visible-1);
-        printf("last: pos: %i\n", last->position);
-        printf("last: floating: %i\n", last->floating);
-        printf("last: hidden: %i\n", last->hidden);
 
         if (!last) {
             wl_list_insert(containers.prev, &sel->mlink);

@@ -19,6 +19,5 @@ int get_existing_container_count(struct workspace *ws);
 int get_slave_container_count(struct workspace *ws);
 int get_floating_container_count(struct workspace *ws);
 int get_master_container_count(struct workspace *ws);
-int get_visible_container_count(struct workspace *ws);
 
 #endif
