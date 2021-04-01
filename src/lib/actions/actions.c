@@ -132,23 +132,8 @@ int lib_focus_on_stack(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct monitor *m = selected_monitor;
-    struct container *sel = get_focused_container(m);
+    focus_on_stack(i);
 
-    if (!sel)
-        return 0;
-    if (sel->client->type == LAYER_SHELL) {
-        struct container *con = container_position_to_container(m->ws_ids[0], 0);
-        focus_container(con, FOCUS_NOOP);
-        return 0;
-    }
-
-    struct container *con = get_relative_container(m->ws_ids[0], sel, i);
-    if (!con)
-        return 0;
-
-    /* If only one client is visible on selMon, then c == sel */
-    focus_container(con, FOCUS_LIFT);
     return 0;
 }
 

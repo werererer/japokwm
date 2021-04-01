@@ -143,7 +143,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
         case X11_UNMANAGED:
             {
                 wl_list_insert(&server.independents, &con->ilink);
-                printf("con.hidden0: %i\n", con->hidden);
 
                 if (is_popup_menu(c) || xwayland_surface->parent) {
                     wl_list_remove(&con->flink);

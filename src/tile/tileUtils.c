@@ -419,8 +419,10 @@ void update_hidden_status_of_containers(struct monitor *m)
                 continue;
             if (con->client->type == LAYER_SHELL)
                 continue;
+            if (con->floating)
+                continue;
 
-            con->hidden = i + 1 > lt->n_visible;
+            con->hidden = i + 1 > lt->n_tiled;
             i++;
         }
     } else {
@@ -429,8 +431,10 @@ void update_hidden_status_of_containers(struct monitor *m)
                 continue;
             if (con->client->type == LAYER_SHELL)
                 continue;
+            if (con->floating)
+                continue;
 
-            con->hidden = i + 1 > lt->n_visible;
+            con->hidden = i + 1 > lt->n_tiled;
             i++;
         }
     }
