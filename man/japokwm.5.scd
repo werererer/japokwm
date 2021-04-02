@@ -196,6 +196,11 @@ integers
 <where> ++
 	e: enum - given by info.cursor.mode
 
+*move_to_scratchpad(i)* ++
+	move the window at position i to the scratchpad
+<where> ++
+	i: integer - position on the stack
+
 *quit()* ++
 	quit the window manager
 
@@ -219,6 +224,10 @@ integers
 	set the amount of master windows ++
 <where> ++
 	i: integer - the number of master windows
+
+*show_scratchpad()*
+	show the first window on the scratchpad. If it is already visible hide it
+	instead and move it to the end of the scratchpad.
 
 *swap_workspace(i, i2)*
 	swap the workspace i with the workspace i2 ++
