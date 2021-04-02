@@ -34,6 +34,8 @@ config.set_keybinds({
     {"mod-S-c",       function() action.kill(info.this_container_position()) end},
     {"mod-S-q",       function() action.quit() end},
     {"mod-space",     function() action.load_next_layout_in_set("default") end},
+    {"mod-minus",     function() action.move_to_scratchpad(info.this_container_position()) end},
+    {"mod-S-minus",   function() action.show_scratchpad() end},
     {"mod-S-space",   function() action.load_prev_layout_in_set("default") end},
     {"mod-m",         function() action.load_layout_in_set("default", 1) end},
     {"mod-S-t",       function() action.load_layout_in_set("default", 2) end},

@@ -22,6 +22,7 @@
 #include "utils/parseConfigUtils.h"
 #include "workspace.h"
 #include "xdg-shell-protocol.h"
+#include "scratchpad.h"
 
 int lib_arrange(lua_State *L)
 {
@@ -94,6 +95,12 @@ int lib_set_floating(lua_State *L)
     return 0;
 }
 
+int lib_show_scratchpad(lua_State *L)
+{
+    show_scratchpad();
+    return 0;
+}
+
 int lib_set_nmaster(lua_State *L)
 {
     struct layout *lt = get_layout_in_monitor(selected_monitor);
@@ -156,6 +163,16 @@ int lib_move_resize(lua_State *L)
     int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     move_resize(ui);
+    return 0;
+}
+
+int lib_move_to_scratchpad(lua_State *L)
+{
+    int i = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    struct monitor *m = selected_monitor;
+    struct container *con = container_position_to_container(m->ws_ids[0], i);
+    move_to_scratchpad(con, 0);
     return 0;
 }
 

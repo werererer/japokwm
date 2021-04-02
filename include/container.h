@@ -26,6 +26,8 @@ struct container {
     struct wl_list ilink;
     /* sticky containers */
     struct wl_list stlink;
+    /* scratchpad */
+    struct wl_list scratchpad_link;
 
     /* layout-relative, includes border */
     struct wlr_box geom;
@@ -39,10 +41,10 @@ struct container {
     bool focusable;
     bool has_border;
     bool hidden;
+    bool on_scratchpad;
     bool on_top;
     // if position -1 it is floating
     bool geom_was_changed;
-    int stack_position;
     int focus_position;
     int position;
     // height = ratio * width
@@ -52,7 +54,7 @@ struct container {
 struct container *create_container(struct client *c, struct monitor *m, bool has_border);
 void destroy_container(struct container *con);
 
-struct container *get_container(struct monitor *m, int i);
+struct container *get_container(int i);
 struct container *get_relative_container(int ws_id, struct container *con, int i);
 struct container *get_relative_hidden_container(int ws_id, int i);
 struct container *get_focus_relative_hidden_container(int ws_id, int i);

@@ -21,6 +21,7 @@
 #include "keyboard.h"
 #include "layer_shell.h"
 #include "render/render.h"
+#include "scratchpad.h"
 #include "server.h"
 #include "translationLayer.h"
 #include "utils/parseConfigUtils.h"
@@ -150,6 +151,7 @@ static int setup()
     wl_list_init(&layer_stack);
     wl_list_init(&popups);
     wl_list_init(&sticky_stack);
+    wl_list_init(&scratchpad);
 
     L = luaL_newstate();
     luaL_openlibs(L);

@@ -165,12 +165,12 @@ struct container *get_focused_container(struct monitor *m)
     return container_focus_position_to_container(m->ws_ids[0], 0);
 }
 
-struct container *get_container(struct monitor *m, int i)
+struct container *get_container(int i)
 {
-    struct container *con;
-
     if (abs(i) > wl_list_length(&containers))
         return NULL;
+
+    struct container *con;
     if (i >= 0) {
         struct wl_list *pos = &containers;
         while (i >= 0) {
@@ -312,7 +312,6 @@ struct container *xy_to_container(double x, double y)
 
 void add_container_to_containers(struct container *con, int i)
 {
-    struct monitor *m = con->m;
     if (!con)
         return;
 
@@ -320,7 +319,7 @@ void add_container_to_containers(struct container *con, int i)
     if (i == 0) {
         wl_list_insert(&containers, &con->mlink);
     } else {
-        struct container *con2 = get_container(m, i-1);
+        struct container *con2 = get_container(i-1);
         if (!con2) {
             wl_list_insert(&containers, &con->mlink);
         }

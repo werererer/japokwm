@@ -69,6 +69,7 @@ srcs = files(
     'lib/monitor/lib_monitor.c',
     'xdg_shell.c',
     'clipboard.c',
+    'scratchpad.c',
   )
 
 libName = 'japokwm'

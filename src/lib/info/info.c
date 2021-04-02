@@ -18,24 +18,8 @@ int lib_get_this_container_count(lua_State *L)
 
 int lib_this_container_position(lua_State *L)
 {
-    struct container *con, *sel = get_focused_container(selected_monitor);
-    int n = 0;
-    bool handled = false;
-
-    wl_list_for_each(con, &containers, mlink) {
-        if (!visibleon(con, &server.workspaces, selected_monitor->ws_ids[0]))
-            continue;
-        if (con->floating)
-            continue;
-        if (con == sel) {
-            handled = true;
-            break;
-        }
-        n++;
-    }
-    if (!handled)
-        n = 0;
-    lua_pushinteger(L, n);
+    struct container *sel = get_focused_container(selected_monitor);
+    lua_pushinteger(L, sel->position);
     return 1;
 }
 
