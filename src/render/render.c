@@ -262,7 +262,7 @@ static void render_borders(struct container *con, pixman_region32_t *output_dama
         w = con->geom.width;
         h = con->geom.height;
 
-        struct layout *lt = get_layout_on_monitor(m);
+        struct layout *lt = get_layout_in_monitor(m);
 
         struct wlr_box *borders = (struct wlr_box[4]) {
             {ox, oy, w + 2 * con->client->bw, con->client->bw},             /* top */

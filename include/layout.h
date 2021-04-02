@@ -12,7 +12,7 @@ struct layout {
     const char *name;
     const char *symbol;
     // the amount of slave windows plus the master are (+1)
-    int n;
+    int n_area;
     // the amount of visible windows
     int n_visible;
     // number of hidden windows

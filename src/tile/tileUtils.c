@@ -1,5 +1,6 @@
 #include "tile/tileUtils.h"
 #include <client.h>
+#include <assert.h>
 #include <execinfo.h>
 #include <string.h>
 #include <sys/param.h>
@@ -11,6 +12,7 @@
 #include <wlr/util/log.h>
 
 #include "container.h"
+#include "monitor.h"
 #include "root.h"
 #include "server.h"
 #include "utils/coreUtils.h"
@@ -46,24 +48,23 @@ static int get_all_container_count(struct workspace *ws)
     return n_all;
 }
 
-// TODO what does this fucntion even do?
-static int get_layout_container_count(struct workspace *ws)
+static int get_layout_container_area_count(struct workspace *ws)
 {
     struct layout *lt = &ws->layout[0];
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
 
     int len = luaL_len(L, -1);
-    int container_count = get_container_count(ws);
-    int n = MAX(MIN(len, container_count), 1);
+    int container_area_count = get_container_area_count(ws);
+    int n_area = MAX(MIN(len, container_area_count), 1);
 
-    lua_rawgeti(L, -1, n);
+    lua_rawgeti(L, -1, n_area);
 
     // TODO refactor
     len = luaL_len(L, -1);
-    n = MAX(MIN(len, n), 1);
+    n_area = MAX(MIN(len, n_area), 1);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_ref);
     lua_pop(L, 1);
-    return n;
+    return n_area;
 }
 
 static void update_layout_counters(struct layout *lt)
@@ -71,10 +72,10 @@ static void update_layout_counters(struct layout *lt)
     struct workspace *ws = get_workspace(&server.workspaces, lt->ws_id);
 
     lt->n_all = get_all_container_count(ws);
-    lt->n = get_layout_container_count(ws);
+    lt->n_area = get_layout_container_area_count(ws);
     lt->n_master_abs = get_master_container_count(ws);
     lt->n_floating = get_floating_container_count(ws);
-    lt->n_tiled = lt->n + lt->n_master_abs-1;
+    lt->n_tiled = lt->n_area + lt->n_master_abs-1;
     lt->n_visible = lt->n_tiled + lt->n_floating;
     lt->n_hidden = lt->n_all - lt->n_visible;
 }
@@ -144,7 +145,7 @@ static struct wlr_box get_geom_in_layout(lua_State *L, struct layout *lt, struct
 int get_slave_container_count(struct workspace *ws)
 {
     struct layout *lt = &ws->layout[0];
-    int abs_count = get_existing_container_count(ws);
+    int abs_count = get_tiled_container_count(ws);
     return MAX(abs_count - lt->nmaster, 0);
 }
 
@@ -166,13 +167,13 @@ int get_floating_container_count(struct workspace *ws)
 
 int get_master_container_count(struct workspace *ws)
 {
-    int abs_count = get_existing_container_count(ws);
+    int abs_count = get_tiled_container_count(ws);
     int slave_container_count = get_slave_container_count(ws);
     return MAX(abs_count - slave_container_count, 0);
 }
 
 // amount of slave containers plus the one master area
-int get_container_count(struct workspace *ws)
+int get_container_area_count(struct workspace *ws)
 {
     return get_slave_container_count(ws) + 1;
 }
@@ -195,10 +196,15 @@ void update_container_positions(struct monitor *m)
             continue;
 
         con->position = position;
+        wl_list_remove(&con->mlink);
+        add_container_to_containers(con, position);
 
         // then use the layout that may have been reseted
         position++;
     }
+
+    struct layout *lt = get_layout_in_monitor(m);
+    printf("n_tiled: %i\n", lt->n_tiled);
 
     wl_list_for_each(con, &containers, mlink) {
         if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
@@ -208,7 +214,10 @@ void update_container_positions(struct monitor *m)
         if (con->client->type == LAYER_SHELL)
             continue;
 
+        printf("pos: %i\n", position);
         con->position = position;
+        wl_list_remove(&con->mlink);
+        add_container_to_containers(con, position);
 
         // then use the layout that may have been reseted
         position++;
@@ -223,6 +232,8 @@ void update_container_positions(struct monitor *m)
             continue;
 
         con->position = position;
+        wl_list_remove(&con->mlink);
+        add_container_to_containers(con, position);
 
         // then use the layout that may have been reseted
         position++;
@@ -248,48 +259,35 @@ void update_container_focus_positions(struct monitor *m)
         // then use the layout that may have been reseted
         position++;
     }
-
-    update_container_focus_stack_positions(m);
 }
-
-void update_container_focus_stack_positions(struct monitor *m)
-{
-    int position = 0;
-    struct container *con;
-
-    wl_list_for_each(con, &focus_stack, flink) {
-        con->focus_stack_position = INVALID_POSITION;
-    }
-
-    wl_list_for_each(con, &focus_stack, flink) {
-        if (!existon(con, &server.workspaces, m->ws_ids[0]))
-            continue;
-        if (con->client->type == LAYER_SHELL)
-            continue;
-        if (con->floating)
-            continue;
-
-        con->focus_stack_position = position;
-        // then use the layout that may have been reseted
-        position++;
-    }
-}
-
 
 void arrange_monitor(struct monitor *m)
 {
     set_root_area(m->root, m->geom);
 
-    struct layout *lt = get_layout_on_monitor(m);
+    struct layout *lt = get_layout_in_monitor(m);
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);
 
     update_layout_counters(lt);
-    call_update_function(&lt->options.event_handler, lt->n);
+    call_update_function(&lt->options.event_handler, lt->n_area);
 
     update_hidden_status_of_containers(m);
 
     update_container_focus_positions(m);
     update_container_positions(m);
+
+    if (!lt->options.arrange_by_focus) {
+        for (int i = lt->n_tiled; i < lt->n_visible; i++) {
+            struct container *con = container_position_to_container(m->ws_ids[0], i);
+            if (!con)
+                break;
+            assert(con->floating);
+            if (con->geom_was_changed) {
+                set_container_geom(con, con->prev_floating_geom);
+                con->geom_was_changed = false;
+            }
+        }
+    }
 
     arrange_containers(m->ws_ids[0], m->root->geom);
 
@@ -321,18 +319,24 @@ void arrange_containers(int ws_id, struct wlr_box root_geom)
 
     struct container *con;
     if (lt->options.arrange_by_focus) {
+        int i = 0;
         wl_list_for_each(con, &focus_stack, flink) {
-            if (con->focus_stack_position == INVALID_POSITION)
+            if (con->focus_position == INVALID_POSITION)
                 continue;
 
-            arrange_container(con, con->focus_stack_position, root_geom, actual_inner_gap);
+            arrange_container(con, con->focus_position, root_geom, actual_inner_gap);
+            i++;
         }
     } else {
+        int i = 0;
         wl_list_for_each(con, &containers, mlink) {
             if (con->position == INVALID_POSITION)
                 continue;
+            if (con->floating)
+                continue;
 
             arrange_container(con, con->position, root_geom, actual_inner_gap);
+            i++;
         }
     }
 }
@@ -340,7 +344,7 @@ void arrange_containers(int ws_id, struct wlr_box root_geom)
 static void arrange_container(struct container *con, int arrange_position, 
         struct wlr_box root_geom, int inner_gap)
 {
-    if (con->floating || con->hidden)
+    if (con->hidden)
         return;
 
     struct monitor *m = con->m;
@@ -352,6 +356,9 @@ static void arrange_container(struct container *con, int arrange_position,
 
     // since gaps are halfed we need to multiply it by 2
     container_surround_gaps(&geom, 2*con->client->bw);
+
+    if (con->floating)
+        con->geom_was_changed = true;
 
     resize(con, geom);
 }
@@ -419,8 +426,6 @@ void update_hidden_status_of_containers(struct monitor *m)
                 continue;
             if (con->client->type == LAYER_SHELL)
                 continue;
-            if (con->floating)
-                continue;
 
             con->hidden = i + 1 > lt->n_tiled;
             i++;
@@ -431,8 +436,13 @@ void update_hidden_status_of_containers(struct monitor *m)
                 continue;
             if (con->client->type == LAYER_SHELL)
                 continue;
-            if (con->floating)
+            if (con->floating) {
+                // all floating windows are visible when arranging normally be
+                // aware that even floating containers may be hidden which is
+                // why we unhide them here.
+                con->hidden = false;
                 continue;
+            }
 
             con->hidden = i + 1 > lt->n_tiled;
             i++;
@@ -440,7 +450,22 @@ void update_hidden_status_of_containers(struct monitor *m)
     }
 }
 
-int get_existing_container_count(struct workspace *ws)
+static int get_tiled_container_count_if_arranged_by_focus(struct workspace *ws)
+{
+    struct container *con;
+    int n = 0;
+
+    wl_list_for_each(con, &containers, mlink) {
+        if (!existon(con, &server.workspaces, ws->id))
+            continue;
+        if (con->client->type == LAYER_SHELL)
+            continue;
+        n++;
+    }
+    return n;
+}
+
+static int get_tiled_container_count_if_arranged_normally(struct workspace *ws)
 {
     struct container *con;
     int n = 0;
@@ -453,6 +478,17 @@ int get_existing_container_count(struct workspace *ws)
         if (con->client->type == LAYER_SHELL)
             continue;
         n++;
+    }
+    return n;
+}
+
+int get_tiled_container_count(struct workspace *ws)
+{
+    int n = 0;
+    if (ws->layout[0].options.arrange_by_focus) {
+        n = get_tiled_container_count_if_arranged_by_focus(ws);
+    } else {
+        n = get_tiled_container_count_if_arranged_normally(ws);
     }
     return n;
 }

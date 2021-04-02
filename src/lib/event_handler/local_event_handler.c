@@ -5,7 +5,7 @@
 
 int local_set_update_function(lua_State *L)
 {
-    struct layout *lt = get_layout_on_monitor(selected_monitor);
+    struct layout *lt = get_layout_in_monitor(selected_monitor);
     struct event_handler *ev = &lt->options.event_handler;
 
     lua_ref_safe(L, LUA_REGISTRYINDEX, &ev->update_func_ref);
@@ -14,7 +14,7 @@ int local_set_update_function(lua_State *L)
 
 int local_set_create_container_function(lua_State *L)
 {
-    struct layout *lt = get_layout_on_monitor(selected_monitor);
+    struct layout *lt = get_layout_in_monitor(selected_monitor);
     struct event_handler *ev = &lt->options.event_handler;
 
     lua_ref_safe(L, LUA_REGISTRYINDEX, &ev->create_container_func_ref);

@@ -161,15 +161,23 @@ void move_resize(int ui)
         return;
 
     struct wlr_cursor *cursor = server.cursor.wlr_cursor;
+    struct monitor *m = grabc->m;
+
     /* Float the window and tell motion_notify to grab it */
     set_container_floating(grabc, true);
+    update_container_positions(m);
+
+    struct layout *lt = get_layout_in_monitor(m);
+    if (lt->options.arrange_by_focus) {
+        return;
+    }
+
     switch (server.cursor.cursor_mode = ui) {
         case CURSOR_MOVE:
             wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "fleur", cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
             offsetx = absolute_x_to_container_relative(grabc, cursor->x);
             offsety = absolute_y_to_container_relative(grabc, cursor->y);
-            arrange();
             break;
         case CURSOR_RESIZE:
             /* Doesn't work for X11 output - the next absolute motion event
@@ -180,11 +188,11 @@ void move_resize(int ui)
             wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
                     "bottom_right_corner", server.cursor.wlr_cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
-            arrange();
             break;
         default:
             break;
     }
+    arrange();
 }
 
 void handle_set_cursor(struct wl_listener *listener, void *data)

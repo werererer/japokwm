@@ -90,7 +90,7 @@ int lib_set_floating(lua_State *L)
 
 int lib_set_nmaster(lua_State *L)
 {
-    struct layout *lt = get_layout_on_monitor(selected_monitor);
+    struct layout *lt = get_layout_in_monitor(selected_monitor);
     lt->nmaster = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     arrange();
@@ -99,7 +99,7 @@ int lib_set_nmaster(lua_State *L)
 
 int lib_increase_nmaster(lua_State *L)
 {
-    struct layout *lt = get_layout_on_monitor(selected_monitor);
+    struct layout *lt = get_layout_in_monitor(selected_monitor);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_master_layout_data_ref);
     int max_nmaster = luaL_len(L, -1);
     lua_pop(L, 1);
@@ -113,7 +113,7 @@ int lib_increase_nmaster(lua_State *L)
 
 int lib_decrease_nmaster(lua_State *L)
 {
-    struct layout *lt = get_layout_on_monitor(selected_monitor);
+    struct layout *lt = get_layout_in_monitor(selected_monitor);
 
     lt->nmaster = MAX(1, lt->nmaster - 1);
     arrange();
@@ -238,7 +238,7 @@ int lib_zoom(lua_State *L)
     struct container *con0 = container_position_to_container(m->ws_ids[0], 0);
     focus_container(con0, FOCUS_NOOP);
 
-    struct layout *lt = get_layout_on_monitor(m);
+    struct layout *lt = get_layout_in_monitor(m);
     if (lt->options.arrange_by_focus) {
         focus_most_recent_container(m->ws_ids[0], FOCUS_NOOP);
         arrange();

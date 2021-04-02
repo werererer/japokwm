@@ -66,7 +66,7 @@ int lib_get_next_empty_workspace(lua_State *L)
 
 int lib_get_nmaster(lua_State *L)
 {
-    struct layout *lt = get_layout_on_monitor(selected_monitor);
+    struct layout *lt = get_layout_in_monitor(selected_monitor);
     lua_pushinteger(L, lt->nmaster);
     return 1;
 }
@@ -92,7 +92,7 @@ int lib_get_container_under_cursor(lua_State *L)
 
 int lib_is_container_not_in_limit(lua_State *L)
 {
-    struct layout *lt = get_layout_on_monitor(selected_monitor);
+    struct layout *lt = get_layout_in_monitor(selected_monitor);
 
     struct wlr_fbox geom = lua_togeometry(L);
     lua_pop(L, 1);
@@ -103,7 +103,7 @@ int lib_is_container_not_in_limit(lua_State *L)
 
 int lib_is_container_not_in_master_limit(lua_State *L)
 {
-    struct layout *lt = get_layout_on_monitor(selected_monitor);
+    struct layout *lt = get_layout_in_monitor(selected_monitor);
 
     struct wlr_fbox geom = lua_togeometry(L);
     lua_pop(L, 1);

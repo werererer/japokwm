@@ -15,7 +15,7 @@ struct layout get_default_layout()
     struct layout lt = (struct layout) {
         .symbol = "",
         .name = "",
-        .n = 1,
+        .n_area = 1,
         .nmaster = 1,
         .options = get_default_options(),
     };

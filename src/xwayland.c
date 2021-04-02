@@ -96,7 +96,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
     struct wlr_xwayland_surface *xwayland_surface = c->surface.xwayland;
     struct monitor *m = selected_monitor;
-    struct layout *lt = get_layout_on_monitor(m);
+    struct layout *lt = get_layout_in_monitor(m);
 
     c->commit.notify = commit_notify;
     wl_signal_add(&xwayland_surface->surface->events.commit, &c->commit);

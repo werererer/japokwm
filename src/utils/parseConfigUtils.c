@@ -372,7 +372,7 @@ void call_arrange_func(lua_State *L, int funcId, int n)
 void call_function(lua_State *L, struct layout lt)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt.lua_layout_ref);
-    lua_pushinteger(L, lt.n);
+    lua_pushinteger(L, lt.n_area);
     lua_call_safe(L, 1, 0, 0);
 }
 
@@ -382,7 +382,7 @@ struct layout get_config_layout(lua_State *L, char *name)
     struct layout layout = {
         .symbol = get_config_array_str(L, name, 1),
         .name = get_config_array_str(L, name, 2),
-        .n = 1,
+        .n_area = 1,
         .nmaster = 1,
         .lua_layout_ref = 0,
         .lua_layout_copy_data_ref = 0,

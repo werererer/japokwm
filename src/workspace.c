@@ -129,8 +129,6 @@ bool hiddenon(struct container *con, struct wlr_list *workspaces, int ws_id)
     struct workspace *ws = get_workspace(workspaces, ws_id);
     if (!con || !ws)
         return false;
-    if (con->floating)
-        return false;
     if (con->m != ws->m)
         return false;
     if (!con->hidden)
@@ -146,7 +144,7 @@ bool hiddenon(struct container *con, struct wlr_list *workspaces, int ws_id)
     if (c->sticky)
         return true;
 
-    return c->ws_id == ws->id;
+    return c->ws_id == ws->id || con->floating;
 }
 
 bool visibleon(struct container *con, struct wlr_list *workspaces, int ws_id)
@@ -154,8 +152,6 @@ bool visibleon(struct container *con, struct wlr_list *workspaces, int ws_id)
     struct workspace *ws = get_workspace(workspaces, ws_id);
     if (!con || !ws)
         return false;
-    if (con->floating)
-        return true;
     if (con->m != ws->m)
         return false;
     if (con->hidden)
@@ -172,7 +168,7 @@ bool visibleon(struct container *con, struct wlr_list *workspaces, int ws_id)
     if (c->sticky)
         return true;
 
-    return c->ws_id == ws->id;
+    return c->ws_id == ws->id || con->floating;
 }
 
 int get_workspace_container_count(struct wlr_list *workspaces, size_t ws_id)
@@ -301,7 +297,7 @@ void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
 
 void copy_layout_from_selected_workspace(struct wlr_list *workspaces)
 {
-    struct layout *src_lt = get_layout_on_monitor(selected_monitor);
+    struct layout *src_lt = get_layout_in_monitor(selected_monitor);
 
     for (int i = 0; i < workspaces->length; i++) {
         struct workspace *ws = workspaces->items[i];

@@ -7,7 +7,7 @@
 // TODO refactor
 int lib_set_layout(lua_State *L)
 {
-    struct layout *lt = get_layout_on_monitor(selected_monitor);
+    struct layout *lt = get_layout_in_monitor(selected_monitor);
 
     int layout_index = server.layout_set.lua_layout_index;
     server.layout_set.lua_layout_index = layout_index;

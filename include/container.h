@@ -30,6 +30,7 @@ struct container {
     /* layout-relative, includes border */
     struct wlr_box geom;
     struct wlr_box prev_geom;
+    struct wlr_box prev_floating_geom;
     struct client *client;
 
     struct monitor *m;
@@ -40,8 +41,8 @@ struct container {
     bool hidden;
     bool on_top;
     // if position -1 it is floating
+    bool geom_was_changed;
     int stack_position;
-    int focus_stack_position;
     int focus_position;
     int position;
     // height = ratio * width
@@ -85,6 +86,7 @@ void set_container_geom(struct container *con, struct wlr_box geom);
 void set_container_workspace(struct container *con, int ws_id);
 void set_container_monitor(struct container *con, struct monitor *m);
 void swap_container_positions(struct container *con1, struct container *con2);
+void swap_container_properties(struct container *con1, struct container *con2);
 void swap_container_focus_positions(struct container *con1, struct container *con2);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);

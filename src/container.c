@@ -30,7 +30,7 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     con->focusable = true;
     add_container_to_monitor(con, con->m);
 
-    struct layout *lt = get_layout_on_monitor(con->m);
+    struct layout *lt = get_layout_in_monitor(con->m);
     struct event_handler *ev = &lt->options.event_handler;
     call_create_container_function(ev, con->position);
     return con;
@@ -316,33 +316,15 @@ void add_container_to_containers(struct container *con, int i)
     if (!con)
         return;
 
-    if (!con->floating) {
-        /* Insert container at position i and push back container at i*/
-        struct container *con2 = get_container(m, i);
-        if (con2) {
-            wl_list_insert(&con2->mlink, &con->mlink);
-            wl_list_remove(&con2->mlink);
-            wl_list_insert(&con->mlink, &con2->mlink);
-            con->position = con2->stack_position;
-        } else {
-            wl_list_insert(&containers, &con->mlink);
-            con->position = i;
-        }
+    /* Insert container at position i and push back container at i*/
+    if (i == 0) {
+        wl_list_insert(&containers, &con->mlink);
     } else {
-        /* Insert container after the last non floating container */
-        struct container *con2;
-        wl_list_for_each_reverse(con2, &containers, mlink) {
-            if (!con2->floating)
-                break;
+        struct container *con2 = get_container(m, i-1);
+        if (!con2) {
+            wl_list_insert(&containers, &con->mlink);
         }
-
-        if (wl_list_empty(&containers)) {
-            wl_list_insert(containers.prev, &con->mlink);
-            con->position = wl_list_length(containers.prev)-1;
-        } else {
-            wl_list_insert(&con2->mlink, &con->mlink);
-            con->position = con2->position+1;
-        }
+        wl_list_insert(&con2->mlink, &con->mlink);
     }
 }
 
@@ -595,12 +577,18 @@ static struct container *focus_on_hidden_stack_if_arrange_normally(int i)
     if (sel->client->type == LAYER_SHELL)
         return NULL;
 
-    struct layout *lt = get_layout_on_monitor(m);
+    struct layout *lt = get_layout_in_monitor(m);
 
     struct container *con = get_relative_hidden_container(m->ws_ids[0], i);
 
     if (!con)
         return NULL;
+
+    if (sel->floating) {
+        set_container_floating(con, true);
+        set_container_floating(sel, false);
+        set_container_geom(con, sel->geom);
+    }
 
     if (i >= 0) {
         /* replace selected container with a hidden one and move the selected
@@ -613,15 +601,12 @@ static struct container *focus_on_hidden_stack_if_arrange_normally(int i)
         wl_list_insert(containers.prev, &sel->mlink);
         sel->hidden = true;
     } else if (i < 0) {
-        /* replace current container with a hidden one and move the selected
-         * container to the first position that is not visible */
-
         struct container *last = container_position_to_container(m->ws_ids[0], lt->n_visible-1);
-
         wl_list_remove(&con->mlink);
         wl_list_insert(&sel->mlink, &con->mlink);
-        con->hidden = false;
-        /* update_container_positions(m); */
+
+        /* replace current container with a hidden one and move the selected
+         * container to the first position that is not visible */
 
         if (last == sel) {
             /* if the selected container is the last visible container it will
@@ -636,14 +621,8 @@ static struct container *focus_on_hidden_stack_if_arrange_normally(int i)
 
         wl_list_remove(&sel->mlink);
         wl_list_insert(&last->mlink, &sel->mlink);
+        con->hidden = false;
         sel->hidden = true;
-    }
-    printf("con->hidden: %i\n", con->hidden);
-
-    if (sel->floating) {
-        set_container_floating(con, true);
-        set_container_floating(sel, false);
-        set_container_geom(con, sel->geom);
     }
 
     return con;
@@ -661,7 +640,7 @@ static struct container *focus_on_hidden_stack_if_arrange_by_focus(int i)
     if (sel->client->type == LAYER_SHELL)
         return NULL;
 
-    struct layout *lt = get_layout_on_monitor(m);
+    struct layout *lt = get_layout_in_monitor(m);
     struct container *con = get_focus_relative_hidden_container(m->ws_ids[0], i);
 
     if (!con)
@@ -689,7 +668,7 @@ static struct container *focus_on_hidden_stack_if_arrange_by_focus(int i)
 
         struct container *last = container_focus_position_to_container(m->ws_ids[0], lt->n_visible-1);
         if (last == sel) {
-            last = container_focus_position_to_container(m->ws_ids[0], lt->n_visible);
+            last = con;
         }
         if (!last) {
             return NULL;
@@ -752,7 +731,7 @@ static void focus_on_stack_if_arrange_by_focus(int i)
 void focus_on_stack(int i)
 {
     struct monitor *m = selected_monitor;
-    struct layout *lt = get_layout_on_monitor(m);
+    struct layout *lt = get_layout_in_monitor(m);
 
     if (lt->options.arrange_by_focus)
         focus_on_stack_if_arrange_by_focus(i);
@@ -770,7 +749,7 @@ void focus_on_hidden_stack(int i)
     if (sel->client->type == LAYER_SHELL)
         return;
 
-    struct layout *lt = get_layout_on_monitor(m);
+    struct layout *lt = get_layout_in_monitor(m);
     struct container *con;
     if (lt->options.arrange_by_focus)
         con = focus_on_hidden_stack_if_arrange_by_focus(i);
@@ -822,7 +801,7 @@ void repush(int pos1, int pos2)
 
     arrange();
 
-    struct layout *lt = get_layout_on_monitor(m);
+    struct layout *lt = get_layout_in_monitor(m);
     if (lt->options.arrange_by_focus)
         arrange();
 }
@@ -837,7 +816,7 @@ void set_container_floating(struct container *con, bool floating)
         return;
 
     struct monitor *m = con->m;
-    struct layout *lt = get_layout_on_monitor(m);
+    struct layout *lt = get_layout_in_monitor(m);
 
     con->floating = floating;
 
@@ -853,6 +832,12 @@ void set_container_floating(struct container *con, bool floating)
 
 void set_container_geom(struct container *con, struct wlr_box geom)
 {
+    struct monitor *m = con->m;
+    struct layout *lt = get_layout_in_monitor(m);
+
+    if (con->floating && !lt->options.arrange_by_focus)
+        con->prev_floating_geom = geom;
+
     con->prev_geom = con->geom;
     con->geom = geom;
 }
@@ -894,11 +879,43 @@ void set_container_monitor(struct container *con, struct monitor *m)
         con->prev_m = m;
 }
 
+static void swap_booleans(bool *b1, bool *b2)
+{
+    bool b = *b2;
+    *b2 = *b1;
+    *b1 = b;
+}
+
+static void swap_integers(int *i1, int *i2)
+{
+    int b = *i2;
+    *i2 = *i1;
+    *i1 = b;
+}
+
+void swap_container_properties(struct container *con1, struct container *con2)
+{
+    if (con1->floating != con2->floating) {
+        if (con1->floating)
+            set_container_geom(con2, con1->geom);
+        if (con2->floating)
+            set_container_geom(con1, con2->geom);
+
+        swap_booleans(&con1->floating, &con2->floating);
+    }
+
+    swap_booleans(&con1->hidden, &con2->hidden);
+}
+
 void swap_container_positions(struct container *con1, struct container *con2)
 {
-    int position = con1->position;
-    con1->position = con2->position;
-    con2->position = position;
+    wl_list_remove(&con2->mlink);
+    add_container_to_containers(con2, con1->position);
+
+    wl_list_remove(&con1->mlink);
+    add_container_to_containers(con1, con2->position);
+
+    swap_container_properties(con1, con2);
 }
 
 void swap_container_focus_positions(struct container *con1, struct container *con2)
