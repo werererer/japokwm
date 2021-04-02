@@ -88,6 +88,13 @@ bool is_workspace_occupied(struct workspace *ws)
 
 static bool container_intersects_with_monitor(struct container *con, struct monitor *m)
 {
+    if (!con)
+        return false;
+    // is assumed that the container intercepts so that floating windows may be
+    // dragged to other monitors
+    if (!m)
+        return true;
+
     struct wlr_box tmp_geom;
     return wlr_box_intersection(&tmp_geom, &con->geom, &m->geom);
 }
