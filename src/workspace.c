@@ -276,7 +276,7 @@ void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
     // unset old workspace
     if (!workspace_has_clients(old_ws)) {
         struct workspace *old_ws = get_workspace_on_monitor(m);
-        old_ws->m = m;
+        old_ws->m = NULL;
     }
 
     m->ws_ids[0] = ws->id;

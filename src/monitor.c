@@ -162,14 +162,6 @@ static void handle_output_mode(struct wl_listener *listener, void *data)
     arrange_monitor(m);
 }
 
-void focusmon(int i)
-{
-    struct monitor *m = dirtomon(i);
-    set_selected_monitor(m);
-    center_mouse_in_monitor(m);
-    focus_most_recent_container(m->ws_ids[0], FOCUS_LIFT);
-}
-
 void destroy_monitor(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, destroy);
