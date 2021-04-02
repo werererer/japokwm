@@ -763,24 +763,20 @@ void focus_on_hidden_stack(int i)
         set_container_geom(con, sel->geom);
     }
 
+    struct container *last = container_position_to_container(m->ws_ids[0], lt->n_visible-1);
+    wl_list_remove(&con->mlink);
+    wl_list_insert(&sel->mlink, &con->mlink);
+    con->hidden = false;
+    sel->hidden = true;
     if (i >= 0) {
         /* replace selected container with a hidden one and move the selected
-         * container to the end of containers */
-        wl_list_remove(&con->mlink);
-        wl_list_insert(&sel->mlink, &con->mlink);
-        con->hidden = false;
-
+         * container to the end of the containers array */
         wl_list_remove(&sel->mlink);
         wl_list_insert(containers.prev, &sel->mlink);
-        sel->hidden = true;
     } else if (i < 0) {
-        struct container *last = container_position_to_container(m->ws_ids[0], lt->n_visible-1);
-        wl_list_remove(&con->mlink);
-        wl_list_insert(&sel->mlink, &con->mlink);
 
         /* replace current container with a hidden one and move the selected
          * container to the first position that is not visible */
-
         if (last == sel) {
             /* if the selected container is the last visible container it will
              * be placed after con because it will be the last container because
@@ -794,8 +790,6 @@ void focus_on_hidden_stack(int i)
 
         wl_list_remove(&sel->mlink);
         wl_list_insert(&last->mlink, &sel->mlink);
-        con->hidden = false;
-        sel->hidden = true;
     }
 
     if (!con)
