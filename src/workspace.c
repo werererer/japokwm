@@ -86,15 +86,22 @@ bool is_workspace_occupied(struct workspace *ws)
     return ws->m ? true : false;
 }
 
+static bool container_intersects_with_monitor(struct container *con, struct monitor *m)
+{
+    struct wlr_box tmp_geom;
+    return wlr_box_intersection(&tmp_geom, &con->geom, &m->geom);
+}
+
 bool existon(struct container *con, struct wlr_list *workspaces, int ws_id)
 {
     struct workspace *ws = get_workspace(workspaces, ws_id);
     if (!con || !ws)
         return false;
-    if (con->floating)
-        return true;
-    if (con->m != ws->m)
-        return false;
+    if (con->m != ws->m) {
+        if (con->floating) {
+            return container_intersects_with_monitor(con, ws->m);
+        }
+    }
 
     struct client *c = con->client;
 
@@ -129,10 +136,13 @@ bool hiddenon(struct container *con, struct wlr_list *workspaces, int ws_id)
     struct workspace *ws = get_workspace(workspaces, ws_id);
     if (!con || !ws)
         return false;
-    if (con->m != ws->m)
-        return false;
     if (!con->hidden)
         return false;
+    if (con->m != ws->m) {
+        if (con->floating) {
+            return container_intersects_with_monitor(con, ws->m);
+        }
+    }
 
     struct client *c = con->client;
 
@@ -144,7 +154,7 @@ bool hiddenon(struct container *con, struct wlr_list *workspaces, int ws_id)
     if (c->sticky)
         return true;
 
-    return c->ws_id == ws->id || con->floating;
+    return c->ws_id == ws->id;
 }
 
 bool visibleon(struct container *con, struct wlr_list *workspaces, int ws_id)
@@ -152,10 +162,13 @@ bool visibleon(struct container *con, struct wlr_list *workspaces, int ws_id)
     struct workspace *ws = get_workspace(workspaces, ws_id);
     if (!con || !ws)
         return false;
-    if (con->m != ws->m)
-        return false;
     if (con->hidden)
         return false;
+    if (con->m != ws->m) {
+        if (con->floating) {
+            return container_intersects_with_monitor(con, ws->m);
+        }
+    }
 
     struct client *c = con->client;
 
@@ -168,7 +181,7 @@ bool visibleon(struct container *con, struct wlr_list *workspaces, int ws_id)
     if (c->sticky)
         return true;
 
-    return c->ws_id == ws->id || con->floating;
+    return c->ws_id == ws->id;
 }
 
 int get_workspace_container_count(struct wlr_list *workspaces, size_t ws_id)
