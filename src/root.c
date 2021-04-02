@@ -71,7 +71,6 @@ static bool equals_anchor(const struct anchor *anchor, uint32_t anchor_value)
     return is_anchor_triplet || is_singular_anchor;
 }
 
-// TODO fix this to allow placement on all sides on screen
 static struct wlr_box fit_root_area(struct root *root)
 {
     struct wlr_box d_box = root->m->geom;
@@ -92,6 +91,7 @@ static struct wlr_box fit_root_area(struct root *root)
 
         // resize the root area
         if (equals_anchor(&anchors.top, anchor)) {
+            box.x = d_box.x;
             int diff_height = d_box.y - (d_box.y - box.y);
             box.y = MAX(diff_height, desired_height);
             box.height = d_box.height - box.y;

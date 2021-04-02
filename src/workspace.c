@@ -133,28 +133,7 @@ bool workspace_has_clients(struct workspace *ws)
 
 bool hiddenon(struct container *con, struct wlr_list *workspaces, int ws_id)
 {
-    struct workspace *ws = get_workspace(workspaces, ws_id);
-    if (!con || !ws)
-        return false;
-    if (!con->hidden)
-        return false;
-    if (con->m != ws->m) {
-        if (con->floating) {
-            return container_intersects_with_monitor(con, ws->m);
-        }
-    }
-
-    struct client *c = con->client;
-
-    if (!c)
-        return false;
-    // LayerShell based programs are visible on all workspaces
-    if (c->type == LAYER_SHELL)
-        return false;
-    if (c->sticky)
-        return true;
-
-    return c->ws_id == ws->id;
+    return !visibleon(con, workspaces, ws_id) && existon(con, workspaces, ws_id);
 }
 
 bool visibleon(struct container *con, struct wlr_list *workspaces, int ws_id)
