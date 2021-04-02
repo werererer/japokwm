@@ -6,10 +6,21 @@
 #include <stdlib.h>
 #include <execinfo.h>
 #include <math.h>
+#include <dirent.h>
+#include <errno.h>
 
 struct lua_State *L;
 
-bool file_exists(const char *path) {
+bool dir_exists(const char *path)
+{
+    DIR *dir = opendir(path);
+    bool exists = errno == ENOENT;
+    closedir(dir);
+    return exists;
+}
+
+bool file_exists(const char *path)
+{
     return access(path, R_OK) != -1;
 }
 

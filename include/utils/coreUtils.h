@@ -40,6 +40,7 @@ struct rule {
 
 extern struct lua_State *L;
 
+bool dir_exists(const char *path);
 bool file_exists(const char *path);
 char last_char(const char *str);
 // returns exactly the same values as strcmp

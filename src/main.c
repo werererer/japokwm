@@ -337,19 +337,23 @@ int main(int argc, char *argv[])
     static struct option long_options[] = {
         {"help", no_argument, NULL, 'h'},
         {"config", required_argument, NULL, 'c'},
+        {"config", required_argument, NULL, 'd'},
         {"startup", no_argument, NULL, 's'},
         {0, 0, 0, 0}
     };
 
     int c;
     int option_index = 0;
-    while ((c = getopt_long(argc, argv, "h:c:s", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "h:c:d:s", long_options, &option_index)) != -1) {
         switch (c) {
             case 's':
                 startup_cmd = optarg;
                 break;
             case 'c':
                 server.config_file = optarg;
+                break;
+            case 'd':
+                server.config_dir = optarg;
                 break;
             case 'h':
                 print_help();

@@ -16,8 +16,13 @@ japokwm - tiling made easy
 *-c, --config* <config>
 	Specifies a config file.
 
-*-d, --debug*
-	Enables full logging, including debug information.
+*--dir* <path>
+	Specifies the directory where the config files are located in (Note: -c
+	option overwrites the init.lua found in the path)
+
+# TODO add this in the future
+# *-d, --debug*
+# 	Enables full logging, including debug information.
 
 *-v, --version*
 	Show the version number and quit.

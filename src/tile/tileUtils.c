@@ -209,9 +209,6 @@ static void update_container_positions_if_arranged_normally(struct monitor *m)
         position++;
     }
 
-    struct layout *lt = get_layout_in_monitor(m);
-    printf("n_tiled: %i\n", lt->n_tiled);
-
     wl_list_for_each(con, &containers, mlink) {
         if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
             continue;
@@ -220,7 +217,6 @@ static void update_container_positions_if_arranged_normally(struct monitor *m)
         if (con->client->type == LAYER_SHELL)
             continue;
 
-        printf("pos: %i\n", position);
         con->position = position;
         wl_list_remove(&con->mlink);
         add_container_to_containers(con, position);

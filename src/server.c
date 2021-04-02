@@ -6,5 +6,6 @@ void init_server()
 {
     server = (struct server) {
         .config_file = "",
+        .config_dir = "",
     };
 }

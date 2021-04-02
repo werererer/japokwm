@@ -202,7 +202,6 @@ function Get_directions(d)
         table.insert(list, 1)
         d = d - 1
     end
-    print("directions: end")
     return list
 end
 

@@ -70,6 +70,10 @@ char *get_config_layout_path()
 
 char *get_config_dir(const char *file)
 {
+    if (strcmp(server.config_dir, "") != 0 && dir_exists(server.config_dir)) {
+        return strdup(server.config_dir);
+    }
+
     char *abs_file = get_config_file(file);
     return dirname(abs_file);
 }
@@ -96,6 +100,7 @@ void append_to_lua_path(lua_State *L, const char *path)
 static int load_default_config(lua_State *L)
 {
     char *config_path = get_config_dir(config_file);
+    printf("config_dir: %s\n", config_path);
 
     // get the value of the
     int defaultId = 0;
@@ -108,8 +113,21 @@ static int load_default_config(lua_State *L)
         }
     }
 
+    // load file
+    bool loaded_file = false;
+    char *path = strdup(config_path);
+    expand_path(&path);
+
+    append_to_lua_path(L, config_path);
+
+    loaded_file = (load_file(L, path, config_file) == EXIT_SUCCESS);
+    free(path);
+
     if (config_path)
         free(config_path);
+
+    if (loaded_file)
+        return EXIT_SUCCESS;
 
     int success = 1;
     // repeat loop until the first config file was loaded successfully
@@ -122,7 +140,7 @@ static int load_default_config(lua_State *L)
 
         append_to_lua_path(L, config_paths[i]);
 
-        if (load_file(L, path, config_file)) {
+        if (load_file(L, path, config_file) == EXIT_FAILURE) {
             free(path);
             continue;
         }

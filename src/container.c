@@ -698,7 +698,6 @@ static void focus_on_stack_normally(int i)
         return;
     }
 
-    printf("n_visible: %i\n", get_layout_in_monitor(m)->n_visible);
     struct container *con = get_relative_container(m->ws_ids[0], sel, i);
     if (!con)
         return;

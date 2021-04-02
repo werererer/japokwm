@@ -40,6 +40,7 @@ struct server {
     struct wlr_list workspaces;
 
     const char *config_file;
+    const char *config_dir;
 };
 
 extern struct server server;
