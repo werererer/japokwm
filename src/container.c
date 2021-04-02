@@ -13,6 +13,7 @@
 #include "render/render.h"
 #include "options.h"
 #include "utils/parseConfigUtils.h"
+#include "scratchpad.h"
 
 static void add_container_to_monitor(struct container *con, struct monitor *m);
 static void add_container_to_focus_stack(struct container *con);
@@ -854,9 +855,12 @@ void set_container_floating(struct container *con, bool floating)
 
     con->floating = floating;
 
-    // move container to the selected workspace
-    if (!con->floating)
+    if (!con->floating) {
         set_container_workspace(con, m->ws_ids[0]);
+        if (con->on_scratchpad) {
+            remove_container_from_scratchpad(con);
+        }
+    }
 
     lift_container(con);
     con->client->bw = lt->options.float_border_px;
@@ -964,10 +968,10 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
     struct wlr_box geom = con->geom;
     geom.x = cursor->x - offsetx;
     geom.y = cursor->y - offsety;
-    /* geom.x = server.cursor.wlr_cursor->x - geom.x, */
-    /* geom.y = server.cursor.wlr_cursor->y - geom.y, */
-    /* geom.x = container_relative_x_to_absolute(con, dx); */
-    /* geom.y = container_relative_y_to_absolute(con, dy); */
+
+    if (con->on_scratchpad) {
+        remove_container_from_scratchpad(con);
+    }
     resize(con, geom);
     container_damage(con, true);
 }
@@ -978,6 +982,10 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
 
     geom.width = absolute_x_to_container_relative(con, cursor->x - offsetx);
     geom.height = absolute_y_to_container_relative(con, cursor->y - offsety);
+
+    if (con->on_scratchpad) {
+        remove_container_from_scratchpad(con);
+    }
     resize(con, geom);
 }
 

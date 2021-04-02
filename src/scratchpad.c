@@ -41,7 +41,9 @@ void move_to_scratchpad(struct container *con, int position)
 
     struct monitor *m = con->m;
 
-    if (position == 0) {
+    if (wl_list_empty(&scratchpad) 
+            || abs(position) > wl_list_length(&containers)
+            || position == 0) {
         wl_list_insert(&scratchpad, &con->scratchpad_link);
     } else {
         struct container *con1 = get_container_on_scratchpad(position);
@@ -59,11 +61,17 @@ void move_to_scratchpad(struct container *con, int position)
     arrange();
 }
 
+void remove_container_from_scratchpad(struct container *con)
+{
+    wl_list_remove(&con->scratchpad_link);
+    con->on_scratchpad = false;
+}
+
 void show_scratchpad()
 {
+    struct monitor *m = selected_monitor;
+    struct container *sel = get_focused_container(m);
     struct container *con = wl_container_of(scratchpad.next, con, scratchpad_link);
-    struct monitor *m = con->m;
-    /* struct layout *lt = get_layout_in_monitor(m); */
 
     if (con->hidden) {
         wl_list_insert(&containers, &con->mlink);
@@ -72,11 +80,15 @@ void show_scratchpad()
         update_container_positions(m);
         set_container_geom(con, get_center_box(m->geom));
         con->hidden = false;
-        focus_container(con, FOCUS_NOOP);
+        focus_container(con, FOCUS_LIFT);
     } else {
+        if (!sel->on_scratchpad) {
+            focus_container(con, FOCUS_LIFT);
+            return;
+        }
+
         wl_list_remove(&con->scratchpad_link);
         move_to_scratchpad(con, -1);
-        printf("length: %i\n", wl_list_length(&scratchpad));
     }
     arrange();
 }

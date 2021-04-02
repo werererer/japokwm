@@ -19,7 +19,9 @@ int lib_get_this_container_count(lua_State *L)
 int lib_this_container_position(lua_State *L)
 {
     struct container *sel = get_focused_container(selected_monitor);
-    lua_pushinteger(L, sel->position);
+
+    int position = sel ? sel->position : INVALID_POSITION;
+    lua_pushinteger(L, position);
     return 1;
 }
 

@@ -6,6 +6,7 @@
 #include "container.h"
 
 void move_to_scratchpad(struct container *con, int position);
+void remove_container_from_scratchpad(struct container *con);
 void show_scratchpad();
 
 extern struct wl_list scratchpad;
