@@ -151,6 +151,12 @@ int get_slave_container_count(struct workspace *ws)
 
 int get_floating_container_count(struct workspace *ws)
 {
+    struct layout *lt = &ws->layout[0];
+
+    // there are no floating windows when using arrange by focus
+    if (lt->options.arrange_by_focus)
+        return 0;
+
     int n = 0;
     struct container *con;
     wl_list_for_each(con, &containers, mlink) {
@@ -178,7 +184,7 @@ int get_container_area_count(struct workspace *ws)
     return get_slave_container_count(ws) + 1;
 }
 
-void update_container_positions(struct monitor *m)
+static void update_container_positions_if_arranged_normally(struct monitor *m)
 {
     struct container *con;
 
@@ -237,6 +243,24 @@ void update_container_positions(struct monitor *m)
 
         // then use the layout that may have been reseted
         position++;
+    }
+}
+
+static void update_container_positions_if_arranged_by_focus(struct monitor *m)
+{
+    struct container *con;
+    wl_list_for_each(con, &containers, mlink) {
+        con->position = con->focus_position;
+    }
+}
+
+void update_container_positions(struct monitor *m)
+{
+    struct layout *lt = get_layout_in_monitor(m);
+    if (lt->options.arrange_by_focus) {
+        update_container_positions_if_arranged_by_focus(m);
+    } else {
+        update_container_positions_if_arranged_normally(m);
     }
 }
 
