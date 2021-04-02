@@ -102,37 +102,42 @@ static int load_default_config(lua_State *L)
     char *config_path = get_config_dir(config_file);
     printf("config_dir: %s\n", config_path);
 
-    // get the value of the
-    int defaultId = 0;
+    // get the index of the config file in config_paths array
+    int default_id = -1;
     for (int i = 0; i < LENGTH(config_paths); i++) {
-        char *path = strdup(config_paths[defaultId]);
+        char *path = strdup(config_paths[i]);
         expand_path(&path);
         if (path_compare(path, config_path) == 0) {
-            defaultId = i;
+            default_id = i;
+            free(path);
             break;
         }
+        free(path);
     }
 
-    // load file
-    bool loaded_file = false;
-    char *path = strdup(config_path);
-    expand_path(&path);
+    bool loaded_custom_path = false;
+    if (default_id == -1) {
+        default_id = 0;
+        // try to load the file given by config_path
+        char *path = strdup(config_path);
+        expand_path(&path);
 
-    append_to_lua_path(L, config_path);
+        append_to_lua_path(L, config_path);
 
-    loaded_file = (load_file(L, path, config_file) == EXIT_SUCCESS);
-    free(path);
+        loaded_custom_path = (load_file(L, path, config_file) == EXIT_SUCCESS);
+        free(path);
+    }
 
     if (config_path)
         free(config_path);
 
-    if (loaded_file)
+    if (loaded_custom_path)
         return EXIT_SUCCESS;
 
-    int success = 1;
+    int success = EXIT_SUCCESS;
     // repeat loop until the first config file was loaded successfully
     for (int i = 0; i < LENGTH(config_paths); i++) {
-        if (i < defaultId)
+        if (i < default_id)
             continue;
 
         char *path = strdup(config_paths[i]);

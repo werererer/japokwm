@@ -16,7 +16,7 @@ japokwm - tiling made easy
 *-c, --config* <config>
 	Specifies a config file.
 
-*--dir* <path>
+*-p, --path* <path>
 	Specifies the directory where the config files are located in (Note: -c
 	option overwrites the init.lua found in the path)
 
