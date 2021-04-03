@@ -632,27 +632,6 @@ static struct container *focus_on_hidden_stack_if_arrange_normally(int i)
     return con;
 }
 
-static void focus_on_stack_normally(int i)
-{
-    struct monitor *m = selected_monitor;
-    struct container *sel = get_focused_container(m);
-
-    if (!sel)
-        return;
-    if (sel->client->type == LAYER_SHELL) {
-        struct container *con = container_position_to_container(m->ws_ids[0], 0);
-        focus_container(con, FOCUS_NOOP);
-        return;
-    }
-
-    struct container *con = get_relative_container(m->ws_ids[0], sel, i);
-    if (!con)
-        return;
-
-    /* If only one client is visible on selMon, then c == sel */
-    focus_container(con, FOCUS_LIFT);
-}
-
 static void focus_on_stack_if_arrange_by_focus(int i)
 {
     struct monitor *m = selected_monitor;
@@ -678,12 +657,22 @@ static void focus_on_stack_if_arrange_by_focus(int i)
 void focus_on_stack(int i)
 {
     struct monitor *m = selected_monitor;
-    struct layout *lt = get_layout_in_monitor(m);
+    struct container *sel = get_focused_container(m);
 
-    if (lt->options.arrange_by_focus)
-        focus_on_stack_normally(i);
-    else
-        focus_on_stack_normally(i);
+    if (!sel)
+        return;
+    if (sel->client->type == LAYER_SHELL) {
+        struct container *con = container_position_to_container(m->ws_ids[0], 0);
+        focus_container(con, FOCUS_NOOP);
+        return;
+    }
+
+    struct container *con = get_relative_container(m->ws_ids[0], sel, i);
+    if (!con)
+        return;
+
+    /* If only one client is visible on selMon, then c == sel */
+    focus_container(con, FOCUS_LIFT);
 }
 
 void focus_on_hidden_stack(int i)
