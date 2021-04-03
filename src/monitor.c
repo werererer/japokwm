@@ -208,6 +208,7 @@ void update_monitor_geometries()
 
 void focus_monitor(struct monitor *m)
 {
+    printf("focus_monitor: %p\n", m);
     if (!m)
         return;
     if (selected_monitor == m)

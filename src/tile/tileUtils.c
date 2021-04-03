@@ -268,12 +268,7 @@ void update_container_focus_positions(struct monitor *m)
 
 void arrange_monitor(struct monitor *m)
 {
-    printf("arrange_monitor\n");
-    printf("%p\n", server.output_layout);
-    m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     set_root_geom(m->root, m->geom);
-    printf("box.x: %i\n", m->geom.x);
-    printf("box.y: %i\n", m->geom.y);
 
     struct layout *lt = get_layout_in_monitor(m);
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);
