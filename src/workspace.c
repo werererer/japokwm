@@ -105,9 +105,10 @@ bool existon(struct container *con, struct wlr_list *workspaces, int ws_id)
     if (!con || !ws)
         return false;
     if (con->m != ws->m) {
-        if (con->floating) {
+        if (con->floating)
             return container_intersects_with_monitor(con, ws->m);
-        }
+        else
+            return false;
     }
 
     struct client *c = con->client;
