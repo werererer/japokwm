@@ -14,6 +14,7 @@ void update_container_positions(struct monitor *m);
 void update_container_focus_positions(struct monitor *m);
 void update_container_focus_stack_positions(struct monitor *m);
 int lib_get_this_container_count();
+int get_container_count(struct workspace *ws);
 int get_container_area_count(struct workspace *ws);
 int get_tiled_container_count(struct workspace *ws);
 int get_slave_container_count(struct workspace *ws);

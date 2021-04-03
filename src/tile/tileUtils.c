@@ -55,12 +55,11 @@ static int get_layout_container_area_count(struct workspace *ws)
 static void update_layout_counters(struct layout *lt)
 {
     struct workspace *ws = get_workspace(&server.workspaces, lt->ws_id);
-
+    lt->n_all = get_container_count(ws);
     lt->n_area = get_layout_container_area_count(ws);
     lt->n_master_abs = get_master_container_count(ws);
     lt->n_floating = get_floating_container_count(ws);
     lt->n_tiled = lt->n_area + lt->n_master_abs-1;
-    lt->n_all = lt->n_tiled + lt->n_floating;
     lt->n_visible = lt->n_tiled + lt->n_floating;
     lt->n_hidden = lt->n_all - lt->n_visible;
 }
@@ -461,6 +460,22 @@ void update_hidden_status_of_containers(struct monitor *m)
         }
     }
 }
+
+int get_container_count(struct workspace *ws)
+{
+    int n_all = 0;
+    struct container *con;
+    wl_list_for_each(con, &containers, mlink) {
+        if (!exist_on(con, &server.workspaces, ws->id))
+            continue;
+        if (con->client->type == LAYER_SHELL)
+            continue;
+
+        n_all++;
+    }
+    return n_all;
+}
+
 
 static int get_tiled_container_count_if_arranged_by_focus(struct workspace *ws)
 {
