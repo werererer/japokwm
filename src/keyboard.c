@@ -57,7 +57,7 @@ void buttonpress(struct wl_listener *listener, void *data)
                 /* Drop the window off on its new monitor */
                 struct monitor *m = xy_to_monitor(server.cursor.wlr_cursor->x,
                         server.cursor.wlr_cursor->y);
-                set_selected_monitor(m);
+                focus_monitor(m);
                 return;
             }
             break;

@@ -269,7 +269,7 @@ void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
     // and is not the selected one
     if (is_workspace_occupied(ws) && ws->m != selected_monitor) {
         center_mouse_in_monitor(ws->m);
-        set_selected_monitor(ws->m);
+        focus_monitor(ws->m);
         focus_workspace(ws->m, &server.workspaces, ws->id);
         return;
     }

@@ -85,7 +85,7 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     if (is_first_monitor) {
         load_config(L);
-        set_selected_monitor(m);
+        focus_monitor(m);
 
         if (server.default_layout.options.tag_names.length <= 0) {
             handle_error("tag_names is empty, loading default tag_names");
@@ -206,7 +206,7 @@ void update_monitor_geometries()
     }
 }
 
-void set_selected_monitor(struct monitor *m)
+void focus_monitor(struct monitor *m)
 {
     if (!m)
         return;

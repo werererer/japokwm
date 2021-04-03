@@ -112,7 +112,7 @@ static void run(char *startup_cmd)
      * cursor position, and set default cursor image */
     update_monitor_geometries();
     struct monitor *m = xy_to_monitor(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
-    set_selected_monitor(m);
+    focus_monitor(m);
 
     /* XXX hack to get cursor to display in its initial location (100, 100)
      * instead of (0, 0) and then jumping.  still may not be fully

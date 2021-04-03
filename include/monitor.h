@@ -48,7 +48,7 @@ void center_mouse_in_monitor(struct monitor *m);
 void create_monitor(struct wl_listener *listener, void *data);
 void destroy_monitor(struct wl_listener *listener, void *data);
 void scale_monitor(struct monitor *m, float scale);
-void set_selected_monitor(struct monitor *m);
+void focus_monitor(struct monitor *m);
 void transform_monitor(struct monitor *m, enum wl_output_transform transform);
 void update_monitor_geometries();
 

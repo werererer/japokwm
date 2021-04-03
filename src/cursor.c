@@ -124,7 +124,7 @@ void motion_notify(uint32_t time)
     int cursorx = server.cursor.wlr_cursor->x;
     int cursory = server.cursor.wlr_cursor->y;
 
-    set_selected_monitor(xy_to_monitor(cursorx, cursory));
+    focus_monitor(xy_to_monitor(cursorx, cursory));
 
     /* If handled successfully return */
     if (handle_move_resize(server.cursor.cursor_mode))
