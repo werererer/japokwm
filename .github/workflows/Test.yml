@@ -6,13 +6,6 @@ on:
           - development
   workflow_dispatch:
 jobs:
-    vm:
-        runs-on: ubuntu-latest
-        steps:
-            - run: |
-                echo This job doesnt specify a container.
-                echo test.
-              name: Run in VM
     container:
         runs-on: ubuntu-latest
         container: archlinux
