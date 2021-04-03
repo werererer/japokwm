@@ -69,9 +69,9 @@ int lib_get_container_under_cursor(lua_State *L)
     struct wlr_cursor *cursor = server.cursor.wlr_cursor;
     struct container *con = xy_to_container(cursor->x, cursor->y);
 
-    int pos = INVALID_POSITION;
-    if (con)
-        pos = con->focus_position;
+    int pos = con->focus_position;
+    if (!con)
+        pos = INVALID_POSITION;
     lua_pushinteger(L, pos);
     return 1;
 }
