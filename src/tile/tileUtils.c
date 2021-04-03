@@ -173,10 +173,6 @@ static void update_container_positions_if_arranged_normally(struct monitor *m)
 {
     struct container *con;
 
-    wl_list_for_each(con, &containers, mlink) {
-        con->position = INVALID_POSITION;
-    }
-
     int position = 0;
     wl_list_for_each(con, &containers, mlink) {
         if (!visible_on(con, &server.workspaces, m->ws_ids[0]))

@@ -152,8 +152,6 @@ struct container *container_position_to_hidden_container_in_focus_stack(int ws_i
             continue;
         if (con->client->type == LAYER_SHELL)
             continue;
-        if (con->focus_position == INVALID_POSITION)
-            continue;
 
         if (con->focus_position == position)
             return con;
