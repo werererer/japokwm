@@ -57,7 +57,7 @@ void destroy_container(struct container *con);
 struct container *get_container(int i);
 struct container *get_relative_container(int ws_id, struct container *con, int i);
 struct container *get_relative_hidden_container(int ws_id, int i);
-struct container *get_focus_relative_hidden_container(int ws_id, int i);
+struct container *get_relative_hidden_container_in_focus_stack(int ws_id, int i);
 struct container *get_focused_container(struct monitor *m);
 struct container *xy_to_container(double x, double y);
 struct container *container_position_to_container(int ws_id, int position);

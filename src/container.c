@@ -144,7 +144,7 @@ struct container *container_position_to_hidden_container(int ws_id, int position
     return NULL;
 }
 
-struct container *focus_container_position_to_hidden_container(int ws_id, int position)
+struct container *container_position_to_hidden_container_in_focus_stack(int ws_id, int position)
 {
     struct container *con;
     wl_list_for_each(con, &focus_stack, flink) {
@@ -249,7 +249,7 @@ struct container *get_relative_hidden_container(int ws_id, int i)
     return con;
 }
 
-struct container *get_focus_relative_hidden_container(int ws_id, int i)
+struct container *get_relative_hidden_container_in_focus_stack(int ws_id, int i)
 {
     struct layout *lt = get_layout_on_workspace(ws_id);
     int n_hidden_containers = lt->n_hidden;
@@ -262,7 +262,8 @@ struct container *get_focus_relative_hidden_container(int ws_id, int i)
         new_position += n_hidden_containers;
     new_position += lt->n_visible;
 
-    struct container *con = focus_container_position_to_hidden_container(ws_id, new_position);
+    struct container *con = 
+        container_position_to_hidden_container_in_focus_stack(ws_id, new_position);
     return con;
 }
 
@@ -628,63 +629,6 @@ static struct container *focus_on_hidden_stack_if_arrange_normally(int i)
         sel->hidden = true;
     }
 
-    return con;
-}
-
-// TODO refactor this (a bit too messy)
-// return the newly focused container. If it is not new it will return NULL
-static struct container *focus_on_hidden_stack_if_arrange_by_focus(int i)
-{
-    struct monitor *m = selected_monitor;
-    struct container *sel = get_focused_container(m);
-
-    if (!sel)
-        return NULL;
-    if (sel->client->type == LAYER_SHELL)
-        return NULL;
-
-    struct layout *lt = get_layout_in_monitor(m);
-    struct container *con = get_focus_relative_hidden_container(m->ws_ids[0], i);
-
-    if (!con)
-        return NULL;
-
-    if (sel->floating) {
-        set_container_floating(con, true);
-        set_container_floating(sel, false);
-        set_container_geom(con, sel->geom);
-    }
-
-    if (i >= 0) {
-        wl_list_remove(&con->flink);
-        wl_list_insert(&sel->flink, &con->flink);
-
-        con->hidden = false;
-        // replace selected container with a hidden one and move the selected
-        // container to the end of containers
-        wl_list_remove(&sel->flink);
-        wl_list_insert(focus_stack.prev, &sel->flink);
-        sel->hidden = true;
-    } else if (i < 0) {
-        /* replace current container with a hidden one and move the selected
-         * container to the first position that is not visible */
-
-        struct container *last = container_focus_position_to_container(m->ws_ids[0], lt->n_visible-1);
-        if (last == sel) {
-            last = con;
-        }
-        if (!last) {
-            return NULL;
-        }
-
-        wl_list_remove(&con->flink);
-        wl_list_insert(&sel->flink, &con->flink);
-        con->hidden = false;
-
-        wl_list_remove(&sel->flink);
-        wl_list_insert(&last->flink, &sel->flink);
-        sel->hidden = true;
-    }
     return con;
 }
 
