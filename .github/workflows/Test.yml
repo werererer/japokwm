@@ -30,15 +30,11 @@ jobs:
                 meson compile
                 meson test
                 cd ..
-            - name: Upload Test Results
-              uses: actions/upload-artifact@v2
-              with:
-                  path: build/meson-logs
             - name: Publish Unit Test Results
               uses: EnricoMi/publish-unit-test-result-action@v1
               if: always()
               with:
-                  files: build/meson-logs/*
+                  files: build/meson-logs/*.xml
             - run: |
                 ninja -C build coverage
                 bash <(curl -s https://codecov.io/bash)
