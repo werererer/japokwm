@@ -38,7 +38,6 @@ srcs = files(
     'lib/config/localconfig.c',
     'lib/info/info.c',
     'lib/layout/lib_layout.c',
-    'main.c',
     'monitor.c',
     'options.c',
     'output.c',
@@ -72,8 +71,7 @@ srcs = files(
     'scratchpad.c',
   )
 
-libName = 'japokwm'
-wmlib = executable(libName,
+executable('japokwm',
               [main, srcs],
               dependencies: deps,
               include_directories: inc,
