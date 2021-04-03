@@ -28,6 +28,9 @@ struct monitor *selected_monitor;
 static void handle_output_damage_frame(struct wl_listener *listener, void *data);
 static void handle_output_frame(struct wl_listener *listener, void *data);
 static void handle_output_mode(struct wl_listener *listener, void *data);
+static void handle_output_enabled(struct wl_listener *listener, void *data);
+static void handle_output_scale(struct wl_listener *listener, void *data);
+static void handle_output_transform(struct wl_listener *listener, void *data);
 static void evaluate_monrules(struct wlr_output *output);
 
 void create_monitor(struct wl_listener *listener, void *data)
@@ -63,11 +66,31 @@ void create_monitor(struct wl_listener *listener, void *data)
     wl_signal_add(&output->events.destroy, &m->destroy);
     m->mode.notify = handle_output_mode;
     wl_signal_add(&output->events.mode, &m->mode);
+    m->enable.notify = handle_output_enabled;
+    wl_signal_add(&output->events.enable, &m->enable);
+    m->scalel.notify = handle_output_scale;
+    wl_signal_add(&output->events.scale, &m->scalel);
+    m->transform.notify = handle_output_transform;
+    wl_signal_add(&output->events.transform, &m->transform);
 
     bool is_first_monitor = wl_list_empty(&mons);
     wl_list_insert(&mons, &m->link);
 
-    m->root = create_root(m);
+    /* Adds this to the output layout. The add_auto function arranges outputs
+     * from left-to-right in the order they appear. A more sophisticated
+     * compositor would let the user configure the arrangement of outputs in the
+     * layout.
+     *
+     * The output layout utility automatically adds a wl_output global to the
+     * display, which Wayland clients can see to find out information about the
+     * output (such as DPI, scale factor, manufacturer, etc).
+     */
+    wlr_output_layout_add_auto(server.output_layout, output);
+
+    wlr_output_enable(output, true);
+
+    m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
+    m->root = create_root(m, m->geom);
 
     if (is_first_monitor) {
         load_config(L);
@@ -93,21 +116,11 @@ void create_monitor(struct wl_listener *listener, void *data)
     copy_layout_from_selected_workspace(&server.workspaces);
     set_root_color(m->root, ws->layout[0].options.root_color);
 
-    /* Adds this to the output layout. The add_auto function arranges outputs
-     * from left-to-right in the order they appear. A more sophisticated
-     * compositor would let the user configure the arrangement of outputs in the
-     * layout.
-     *
-     * The output layout utility automatically adds a wl_output global to the
-     * display, which Wayland clients can see to find out information about the
-     * output (such as DPI, scale factor, manufacturer, etc).
-     */
-    wlr_output_layout_add_auto(server.output_layout, output);
-
-    wlr_output_enable(output, true);
-
     if (!wlr_output_commit(output))
         return;
+
+    m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
+    set_root_geom(m->root, m->geom);
 }
 
 static void evaluate_monrules(struct wlr_output *output)
@@ -162,6 +175,21 @@ static void handle_output_mode(struct wl_listener *listener, void *data)
     arrange_monitor(m);
 }
 
+static void handle_output_enabled(struct wl_listener *listener, void *data)
+{
+    // NO-OP
+}
+
+static void handle_output_scale(struct wl_listener *listener, void *data)
+{
+    // NO-OP
+}
+
+static void handle_output_transform(struct wl_listener *listener, void *data)
+{
+    // NO-OP
+}
+
 void destroy_monitor(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, destroy);
@@ -192,6 +220,14 @@ void transform_monitor(struct monitor *m, enum wl_output_transform transform)
 {
     struct wlr_output *output = m->wlr_output;
     wlr_output_set_transform(output, transform);
+}
+
+void update_monitor_geometries()
+{
+    struct monitor *m;
+    wl_list_for_each(m, &mons, link) {
+        m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
+    }
 }
 
 void set_selected_monitor(struct monitor *m)

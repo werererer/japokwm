@@ -25,6 +25,7 @@ static void arrange_container(struct container *con, int arrange_position,
 
 void arrange()
 {
+    printf("arrange\n");
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
         arrange_monitor(m);
@@ -284,7 +285,12 @@ void update_container_focus_positions(struct monitor *m)
 
 void arrange_monitor(struct monitor *m)
 {
-    set_root_area(m->root, m->geom);
+    printf("arrange_monitor\n");
+    printf("%p\n", server.output_layout);
+    m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
+    set_root_geom(m->root, m->geom);
+    printf("box.x: %i\n", m->geom.x);
+    printf("box.y: %i\n", m->geom.y);
 
     struct layout *lt = get_layout_in_monitor(m);
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);

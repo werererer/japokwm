@@ -267,8 +267,6 @@ void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
 
     // focus the workspace in the monitor it appears in if such a monitor exist
     // and is not the selected one
-    printf("m: %p, selected_monitor->geom.x: %i\n", selected_monitor, m->geom.x);
-    printf("m: %p, selected_monitor->geom.y: %i\n", selected_monitor, m->geom.y);
     if (is_workspace_occupied(ws) && ws->m != selected_monitor) {
         center_mouse_in_monitor(ws->m);
         set_selected_monitor(ws->m);

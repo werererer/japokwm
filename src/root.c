@@ -51,11 +51,12 @@ static const struct anchors anchors = {
     },
 };
 
-struct root *create_root(struct monitor *m)
+struct root *create_root(struct monitor *m, struct wlr_box geom)
 {
     struct root *root = calloc(1, sizeof(struct root));
     root->consider_layer_shell = true;
     root->m = m;
+    set_root_geom(root, geom);
     return root;
 }
 
@@ -140,7 +141,7 @@ void set_root_color(struct root *root, float color[static 4])
     memcpy(root->color, color, sizeof(float)*4);
 }
 
-void set_root_area(struct root *root, struct wlr_box geom)
+void set_root_geom(struct root *root, struct wlr_box geom)
 {
     root->geom = geom;
 

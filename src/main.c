@@ -110,6 +110,7 @@ static void run(char *startup_cmd)
 
     /* Now that outputs are initialized, choose initial selMon based on
      * cursor position, and set default cursor image */
+    update_monitor_geometries();
     struct monitor *m = xy_to_monitor(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
     set_selected_monitor(m);
 
