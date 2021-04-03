@@ -106,7 +106,7 @@ static struct wlr_fbox lua_unbox_layout_geom(lua_State *L, int i) {
 }
 
 /* update layout and was set in the arrange function */
-static void apply_nmaster_transformation(struct wlr_box *box, struct layout *lt, int position)
+static void apply_nmaster_layout(struct wlr_box *box, struct layout *lt, int position)
 {
     if (position > lt->nmaster)
         return;
@@ -126,7 +126,8 @@ static void apply_nmaster_transformation(struct wlr_box *box, struct layout *lt,
     memcpy(box, &obox, sizeof(struct wlr_box));
 }
 
-static struct wlr_box get_geom_in_layout(lua_State *L, struct layout *lt, struct wlr_box geom, int arrange_position)
+static struct wlr_box get_nth_geom_in_layout(lua_State *L, struct layout *lt, 
+        struct wlr_box root_geom, int arrange_position)
 {
     // relative position
     int n = MAX(0, arrange_position+1 - lt->nmaster) + 1;
@@ -135,10 +136,10 @@ static struct wlr_box get_geom_in_layout(lua_State *L, struct layout *lt, struct
     struct wlr_fbox rel_geom = lua_unbox_layout_geom(L, n);
     lua_pop(L, 1);
 
-    struct wlr_box box = get_absolute_box(rel_geom, geom);
+    struct wlr_box box = get_absolute_box(rel_geom, root_geom);
 
     // TODO fix this function, hard to read
-    apply_nmaster_transformation(&box, lt, arrange_position+1);
+    apply_nmaster_layout(&box, lt, arrange_position+1);
     return box;
 }
 
@@ -371,7 +372,7 @@ static void arrange_container(struct container *con, int arrange_position,
     struct workspace *ws = get_workspace_on_monitor(m);
     struct layout *lt = &ws->layout[0];
 
-    struct wlr_box geom = get_geom_in_layout(L, lt, root_geom, arrange_position);
+    struct wlr_box geom = get_nth_geom_in_layout(L, lt, root_geom, arrange_position);
     container_surround_gaps(&geom, inner_gap);
 
     // since gaps are halfed we need to multiply it by 2
