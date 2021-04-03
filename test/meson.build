@@ -33,3 +33,10 @@ t = executable('gapUtils_test', ['utils/gapUtils_test.c', srcs],
                include_directories: inc,
               )
 test('gapUtils', t)
+t = executable('tileUtils_test', ['tile/tileUtils_test.c', srcs], 
+               c_args: c_args,
+               link_args: link_args,
+               dependencies: [deps, extraLibs],
+               include_directories: inc,
+              )
+test('tileUtils', t)

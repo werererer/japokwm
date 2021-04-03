@@ -25,28 +25,12 @@ static void arrange_container(struct container *con, int arrange_position,
 
 void arrange()
 {
-    printf("arrange\n");
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
         arrange_monitor(m);
     }
 
     update_cursor(&server.cursor);
-}
-
-static int get_all_container_count(struct workspace *ws)
-{
-    int n_all = 0;
-    struct container *con;
-    wl_list_for_each(con, &focus_stack, flink) {
-        if (con->focus_position == INVALID_POSITION)
-            continue;
-        if (con->client->type == LAYER_SHELL)
-            continue;
-
-        n_all++;
-    }
-    return n_all;
 }
 
 static int get_layout_container_area_count(struct workspace *ws)
@@ -72,11 +56,11 @@ static void update_layout_counters(struct layout *lt)
 {
     struct workspace *ws = get_workspace(&server.workspaces, lt->ws_id);
 
-    lt->n_all = get_all_container_count(ws);
     lt->n_area = get_layout_container_area_count(ws);
     lt->n_master_abs = get_master_container_count(ws);
     lt->n_floating = get_floating_container_count(ws);
     lt->n_tiled = lt->n_area + lt->n_master_abs-1;
+    lt->n_all = lt->n_tiled + lt->n_floating;
     lt->n_visible = lt->n_tiled + lt->n_floating;
     lt->n_hidden = lt->n_all - lt->n_visible;
 }
@@ -348,7 +332,7 @@ void arrange_containers(int ws_id, struct wlr_box root_geom)
     if (lt->options.arrange_by_focus) {
         int i = 0;
         wl_list_for_each(con, &focus_stack, flink) {
-            if (con->focus_position == INVALID_POSITION)
+            if (!visible_on(con, &server.workspaces, ws_id))
                 continue;
 
             arrange_container(con, con->focus_position, root_geom, actual_inner_gap);
@@ -357,7 +341,7 @@ void arrange_containers(int ws_id, struct wlr_box root_geom)
     } else {
         int i = 0;
         wl_list_for_each(con, &containers, mlink) {
-            if (con->position == INVALID_POSITION)
+            if (!visible_on(con, &server.workspaces, ws_id))
                 continue;
             if (con->floating)
                 continue;
@@ -450,7 +434,7 @@ void update_hidden_status_of_containers(struct monitor *m)
     int i = 0;
     if (ws->layout[0].options.arrange_by_focus) {
         wl_list_for_each(con, &focus_stack, flink) {
-            if (con->focus_position == INVALID_POSITION)
+            if (!exist_on(con, &server.workspaces, ws->id))
                 continue;
             if (con->client->type == LAYER_SHELL)
                 continue;
@@ -465,7 +449,7 @@ void update_hidden_status_of_containers(struct monitor *m)
             if (con->client->type == LAYER_SHELL)
                 continue;
             if (con->floating) {
-                // all floating windows are visible when arranging normally be
+                // all floating windows are visible when arranging normally. Be
                 // aware that even floating containers may be hidden which is
                 // why we unhide them here.
                 con->hidden = false;
