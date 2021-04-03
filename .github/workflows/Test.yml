@@ -34,6 +34,11 @@ jobs:
               uses: actions/upload-artifact@v2
               with:
                   path: build/meson-logs
+            - name: Publish Unit Test Results
+              uses: EnricoMi/publish-unit-test-result-action@v1
+              if: always()
+              with:
+                  files: test-results/**/*.xml
             - run: |
                 ninja -C build coverage
                 bash <(curl -s https://codecov.io/bash)
