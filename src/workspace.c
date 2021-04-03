@@ -99,7 +99,7 @@ static bool container_intersects_with_monitor(struct container *con, struct moni
     return wlr_box_intersection(&tmp_geom, &con->geom, &m->geom);
 }
 
-bool existon(struct container *con, struct wlr_list *workspaces, int ws_id)
+bool exist_on(struct container *con, struct wlr_list *workspaces, int ws_id)
 {
     struct workspace *ws = get_workspace(workspaces, ws_id);
     if (!con || !ws)
@@ -139,12 +139,12 @@ bool workspace_has_clients(struct workspace *ws)
     return count > 0;
 }
 
-bool hiddenon(struct container *con, struct wlr_list *workspaces, int ws_id)
+bool hidden_on(struct container *con, struct wlr_list *workspaces, int ws_id)
 {
-    return !visibleon(con, workspaces, ws_id) && existon(con, workspaces, ws_id);
+    return !visible_on(con, workspaces, ws_id) && exist_on(con, workspaces, ws_id);
 }
 
-bool visibleon(struct container *con, struct wlr_list *workspaces, int ws_id)
+bool visible_on(struct container *con, struct wlr_list *workspaces, int ws_id)
 {
     struct workspace *ws = get_workspace(workspaces, ws_id);
     if (!con || !ws)
@@ -177,7 +177,7 @@ int get_workspace_container_count(struct wlr_list *workspaces, size_t ws_id)
     int i = 0;
     struct container *con;
     wl_list_for_each(con, &containers, mlink) {
-        if (visibleon(con, workspaces, ws_id))
+        if (visible_on(con, workspaces, ws_id))
             i++;
     }
     return i;

@@ -444,11 +444,11 @@ int lib_swap_workspace(lua_State *L)
 
     struct container *con;
     wl_list_for_each(con, &containers, mlink) {
-        if (existon(con, &server.workspaces, ws_id1)) {
+        if (exist_on(con, &server.workspaces, ws_id1)) {
             con->client->ws_id = ws_id2;
             continue;
         }
-        if (existon(con, &server.workspaces, ws_id2)) {
+        if (exist_on(con, &server.workspaces, ws_id2)) {
             con->client->ws_id = ws_id1;
             continue;
         }

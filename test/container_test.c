@@ -29,19 +29,19 @@ START_TEST(test_visible_on)
 
     con.m = &m1;
     con.client->ws_id = 0;
-    ck_assert_int_eq(visibleon(&con, &workspaces, 0), true);
+    ck_assert_int_eq(visible_on(&con, &workspaces, 0), true);
 
     con.m = &m2;
     con.client->ws_id = 0;
-    ck_assert_int_eq(visibleon(&con, &workspaces, 0), false);
+    ck_assert_int_eq(visible_on(&con, &workspaces, 0), false);
 
     con.m = &m1;
     con.client->ws_id = 1;
-    ck_assert_int_eq(visibleon(&con, &workspaces, 1), false);
+    ck_assert_int_eq(visible_on(&con, &workspaces, 1), false);
 
     con.m = &m2;
     con.client->ws_id = 1;
-    ck_assert_int_eq(visibleon(&con, &workspaces, 1), true);
+    ck_assert_int_eq(visible_on(&con, &workspaces, 1), true);
 } END_TEST
 
 START_TEST(test_exist_on)
@@ -70,20 +70,20 @@ START_TEST(test_exist_on)
     con.m = &m1;
     con.client->ws_id = 0;
     con.hidden = true;
-    ck_assert_int_eq(existon(&con, &workspaces, 0), true);
+    ck_assert_int_eq(exist_on(&con, &workspaces, 0), true);
 
     con.m = &m2;
     con.client->ws_id = 0;
     con.hidden = false;
-    ck_assert_int_eq(existon(&con, &workspaces, 0), false);
+    ck_assert_int_eq(exist_on(&con, &workspaces, 0), false);
 
     con.m = &m1;
     con.client->ws_id = 1;
-    ck_assert_int_eq(existon(&con, &workspaces, 1), false);
+    ck_assert_int_eq(exist_on(&con, &workspaces, 1), false);
 
     con.m = &m2;
     con.client->ws_id = 1;
-    ck_assert_int_eq(existon(&con, &workspaces, 1), true);
+    ck_assert_int_eq(exist_on(&con, &workspaces, 1), true);
 } END_TEST
 
 Suite *suite() {

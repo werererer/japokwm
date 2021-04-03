@@ -119,7 +119,7 @@ struct container *container_position_to_container(int ws_id, int position)
 {
     struct container *con;
     wl_list_for_each(con, &containers, mlink) {
-        if (!existon(con, &server.workspaces, ws_id))
+        if (!exist_on(con, &server.workspaces, ws_id))
             continue;
         if (con->client->type == LAYER_SHELL)
             continue;
@@ -133,7 +133,7 @@ struct container *container_position_to_hidden_container(int ws_id, int position
 {
     struct container *con;
     wl_list_for_each(con, &containers, mlink) {
-        if (!hiddenon(con, &server.workspaces, ws_id))
+        if (!hidden_on(con, &server.workspaces, ws_id))
             continue;
         if (con->client->type == LAYER_SHELL)
             continue;
@@ -148,7 +148,7 @@ struct container *focus_container_position_to_hidden_container(int ws_id, int po
 {
     struct container *con;
     wl_list_for_each(con, &focus_stack, flink) {
-        if (!hiddenon(con, &server.workspaces, ws_id))
+        if (!hidden_on(con, &server.workspaces, ws_id))
             continue;
         if (con->client->type == LAYER_SHELL)
             continue;
@@ -279,7 +279,7 @@ struct container *xy_to_container(double x, double y)
         if (con->client->surface.layer->current.layer >
                 ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM)
             continue;
-        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
+        if (!visible_on(con, &server.workspaces, m->ws_ids[0]))
             continue;
         if (!wlr_box_contains_point(&con->geom, x, y))
             continue;
@@ -290,7 +290,7 @@ struct container *xy_to_container(double x, double y)
     wl_list_for_each(con, &stack, slink) {
         if (!con->focusable)
             continue;
-        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
+        if (!visible_on(con, &server.workspaces, m->ws_ids[0]))
             continue;
         if (!wlr_box_contains_point(&con->geom, x, y))
             continue;
@@ -304,7 +304,7 @@ struct container *xy_to_container(double x, double y)
         if (con->client->surface.layer->current.layer <
                 ZWLR_LAYER_SHELL_V1_LAYER_TOP)
             continue;
-        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
+        if (!visible_on(con, &server.workspaces, m->ws_ids[0]))
             continue;
         if (!wlr_box_contains_point(&con->geom, x, y))
             continue;

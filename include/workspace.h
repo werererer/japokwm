@@ -24,10 +24,10 @@ void destroy_workspace(struct workspace *ws);
 
 void update_workspace_ids(struct wlr_list *workspaces);
 
-bool existon(struct container *con, struct wlr_list *workspaces, int ws_id);
+bool exist_on(struct container *con, struct wlr_list *workspaces, int ws_id);
 bool is_workspace_occupied(struct workspace *ws);
-bool hiddenon(struct container *con, struct wlr_list *workspaces, int ws_id);
-bool visibleon(struct container *con, struct wlr_list *workspaces, int ws_id);
+bool hidden_on(struct container *con, struct wlr_list *workspaces, int ws_id);
+bool visible_on(struct container *con, struct wlr_list *workspaces, int ws_id);
 bool workspace_has_clients(struct workspace *ws);
 
 int get_workspace_container_count(struct wlr_list *workspaces, size_t ws_id);

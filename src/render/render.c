@@ -298,7 +298,7 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     wl_list_for_each_reverse(con, &stack, slink) {
-        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
+        if (!visible_on(con, &server.workspaces, m->ws_ids[0]))
             continue;
 
         render_borders(con, output_damage);
@@ -325,7 +325,7 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
             continue;
         if (con->client->surface.layer->current.layer != layer)
             continue;
-        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
+        if (!visible_on(con, &server.workspaces, m->ws_ids[0]))
             continue;
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
