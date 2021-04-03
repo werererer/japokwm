@@ -885,6 +885,7 @@ void set_container_geom(struct container *con, struct wlr_box geom)
 
 void set_container_workspace(struct container *con, int ws_id)
 {
+    printf("set container workspace\n");
     if (!con)
         return;
     struct workspace *ws = get_workspace(&server.workspaces, ws_id);
@@ -904,6 +905,7 @@ void set_container_workspace(struct container *con, int ws_id)
 
 void set_container_monitor(struct container *con, struct monitor *m)
 {
+    printf("set container monitor\n");
     assert(m != NULL);
     if (!con)
         return;

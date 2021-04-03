@@ -3,14 +3,13 @@ extraLibs = [dependency('check')]
 c_args = ['-I../include']
 link_args = ['-lm']
 
-# t = executable('client_test', ['client_test.c', srcs], 
-#                c_args: c_args,
-#                link_args: link_args,
-#                dependencies: [deps, extraLibs],
-#                link_with: [wmlib],
-#                include_directories: inc,
-#               )
-# test('client', t)
+t = executable('container_test', ['container_test.c', srcs], 
+               c_args: c_args,
+               link_args: link_args,
+               dependencies: [deps, extraLibs],
+               include_directories: inc,
+              )
+test('container', t)
 # t = executable('tagset_test', ['tagset_test.c', srcs], 
 #                c_args: c_args,
 #                link_args: link_args,
