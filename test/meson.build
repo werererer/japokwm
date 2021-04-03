@@ -1,7 +1,7 @@
 # unit test setup
-# extraLibs = [dependency('check')]
-# c_args = ['-I..']
-# link_args = ['-ljulia', '-lm']
+extraLibs = [dependency('check')]
+c_args = ['-I../include']
+link_args = ['-lm']
 
 # t = executable('client_test', ['client_test.c', srcs], 
 #                c_args: c_args,
@@ -27,11 +27,10 @@
 #                include_directories: inc,
 #               )
 # test('stringUtils', t)
-# t = executable('gapUtils_test', ['utils/gapUtils_test.c', srcs], 
-#                c_args: c_args,
-#                link_args: link_args,
-#                dependencies: [deps, extraLibs],
-#                link_with: [wmlib],
-#                include_directories: inc,
-#               )
-# test('gapUtils', t)
+t = executable('gapUtils_test', ['utils/gapUtils_test.c', srcs], 
+               c_args: c_args,
+               link_args: link_args,
+               dependencies: [deps, extraLibs],
+               include_directories: inc,
+              )
+test('gapUtils', t)
