@@ -24,16 +24,23 @@ START_TEST(get_container_count_test)
 
     const int container_count = 3;
     struct client clients[container_count];
-    clients[0].ws_id = 0;
+    for (int i = 0; i < container_count; i++) {
+        clients[0].type = XDG_SHELL;
+        clients[0].sticky = false;
+    }
+    clients[0].ws_id = 1;
     clients[1].ws_id = 0;
     clients[2].ws_id = 1;
+
     struct container cons[container_count];
     for (int i = 0; i < container_count; i++) {
         cons[i].client = &clients[i];
+        cons[i].floating = false;
+        cons[i].m = &m0;
         wl_list_insert(&containers, &cons[i].mlink);
     }
 
-    /* ck_assert_int_eq(get_container_count(ws0), 2); */
+    ck_assert_int_eq(get_container_count(ws0), 2);
 } END_TEST
 
 Suite *suite()
