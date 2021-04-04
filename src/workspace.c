@@ -255,11 +255,20 @@ void set_selected_layout(struct workspace *ws, struct layout layout)
 void focus_next_unoccupied_workspace(struct monitor *m, struct wlr_list *workspaces, struct workspace *ws)
 {
     struct workspace *w = find_next_unoccupied_workspace(workspaces, ws);
+
+    if (!w)
+        return;
+
+    printf("0 workspace: %p : mon: %p: ws->m: %p\n", ws->m, m, ws->m);
+    /* printf("0 next workspace: %zu : mon: %p: ws->m: %p\n", w->id, m, w->m); */
     focus_workspace(m, workspaces, w->id);
+    printf("1 workspace: %p : mon: %p: ws->m: %p\n", ws->m, m, ws->m);
+    /* printf("1 next workspace: %zu : mon: %p: ws->m: %p\n", w->id, m, w->m); */
 }
 
 void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
 {
+    printf("focus_workspace\n");
     struct workspace *ws = get_workspace(workspaces, ws_id);
     if (!m || !ws)
         return;
@@ -283,13 +292,15 @@ void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
 
     struct workspace *old_ws = get_workspace_on_monitor(m);
     // unset old workspace
-    if (!workspace_has_clients(old_ws)) {
+    if (old_ws && !workspace_has_clients(old_ws)) {
         struct workspace *old_ws = get_workspace_on_monitor(m);
         old_ws->m = NULL;
     }
 
+    printf("printf set stuff\n");
     m->ws_ids[0] = ws->id;
     ws->m = m;
+    printf("m->ws_ids[0]: %p . %i\n", m, m->ws_ids[0]);
 
     arrange();
     focus_most_recent_container(ws->id, FOCUS_NOOP);

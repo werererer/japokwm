@@ -114,18 +114,25 @@ void maprequestx11(struct wl_listener *listener, void *data)
         .height = c->surface.xwayland->height,
     };
 
-    struct wlr_xwayland_surface_size_hints *size_hints = 
-        c->surface.xwayland->size_hints;
-    if (size_hints) {
-        if (size_hints->width > MIN_CONTAINER_WIDTH && size_hints->height > MIN_CONTAINER_WIDTH) {
-            prefered_geom = (struct wlr_box) {
-                .x = size_hints->x,
-                    .y = size_hints->y,
-                    .width = size_hints->width,
-                    .height = size_hints->height,
-            };
-        }
-    }
+/*     struct wlr_xwayland_surface_size_hints *size_hints = */ 
+/*         c->surface.xwayland->size_hints; */
+/*     if (size_hints) { */
+/*         if (size_hints->width > MIN_CONTAINER_WIDTH && size_hints->height > MIN_CONTAINER_WIDTH) { */
+/*             prefered_geom = (struct wlr_box) { */
+/*                 .x = size_hints->x, */
+/*                     .y = size_hints->y, */
+/*                     .width = size_hints->width, */
+/*                     .height = size_hints->height, */
+/*             }; */
+/*         } */
+/*     } */
+
+    /* // add this so that the container will appear in the correct workspace when */
+    /* // multiple monitors are connected */
+    /* prefered_geom.x += selected_monitor->geom.x; */
+    /* prefered_geom.y += selected_monitor->geom.y; */
+    /* prefered_geom.width *= selected_monitor->wlr_output->width; */
+    /* prefered_geom.height *= selected_monitor->wlr_output->height; */
 
     switch (c->type) {
         case X11_MANAGED:

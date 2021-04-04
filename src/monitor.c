@@ -82,6 +82,8 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     m->root = create_root(m, m->geom);
+    m->ws_ids[0] = INVALID_WORKSPACE_ID;
+    m->ws_ids[1] = INVALID_WORKSPACE_ID;
 
     if (is_first_monitor) {
         load_config(L);
@@ -109,9 +111,6 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     if (!wlr_output_commit(output))
         return;
-
-    m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
-    set_root_geom(m->root, m->geom);
 }
 
 static void evaluate_monrules(struct wlr_output *output)
@@ -208,18 +207,15 @@ void update_monitor_geometries()
 
 void focus_monitor(struct monitor *m)
 {
-    printf("focus_monitor: %p\n", m);
     if (!m)
         return;
     if (selected_monitor == m)
         return;
 
+    /* wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, m->wlr_output.) */
+
     selected_monitor = m;
     focus_workspace(m, &server.workspaces, m->ws_ids[0]);
-    int x = server.cursor.wlr_cursor->x;
-    int y = server.cursor.wlr_cursor->y;
-
-    focus_container(xy_to_container(x, y), FOCUS_NOOP);
 }
 
 void push_selected_workspace(struct monitor *m, struct workspace *ws)

@@ -27,6 +27,10 @@ void arrange()
 {
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
+        printf("m.geom.x: %i\n", m->geom.x);
+        printf("m.geom.y: %i\n", m->geom.y);
+        printf("m.geom.width: %i\n", m->geom.width);
+        printf("m.geom.height: %i\n", m->geom.height);
         arrange_monitor(m);
     }
 
@@ -227,6 +231,8 @@ static void update_container_positions_if_arranged_by_focus(struct monitor *m)
 {
     struct container *con;
     wl_list_for_each(con, &containers, mlink) {
+        if (!exist_on(con, &server.workspaces, m->ws_ids[0]))
+            continue;
         con->position = con->focus_position;
     }
 }
@@ -264,6 +270,7 @@ void update_container_focus_positions(struct monitor *m)
 
 void arrange_monitor(struct monitor *m)
 {
+    m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     set_root_geom(m->root, m->geom);
 
     struct layout *lt = get_layout_in_monitor(m);

@@ -26,21 +26,21 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface, do
         return;
     }
 
-    /* If surface is already focused, only notify motion */
-    if (surface == server.seat->pointer_state.focused_surface) {
-        wlr_seat_pointer_notify_motion(server.seat, time, sx, sy);
-        return;
-    }
-    /* Otherwise, let the client know that the mouse cursor has entered one
-     * of its surfaces, and make keyboard focus follow if desired. */
-    wlr_seat_pointer_notify_enter(server.seat, surface, sx, sy);
+/*     /1* If surface is already focused, only notify motion *1/ */
+/*     if (surface == server.seat->pointer_state.focused_surface) { */
+/*         wlr_seat_pointer_notify_motion(server.seat, time, sx, sy); */
+/*         return; */
+/*     } */
+/*     /1* Otherwise, let the client know that the mouse cursor has entered one */
+/*      * of its surfaces, and make keyboard focus follow if desired. *1/ */
+/*     wlr_seat_pointer_notify_enter(server.seat, surface, sx, sy); */
 
-    if (!con)
-        return;
+/*     if (!con) */
+/*         return; */
 
-    struct workspace *ws = get_workspace(&server.workspaces, con->m->ws_ids[0]);
-    if (ws->layout[0].options.sloppy_focus)
-        focus_container(con, FOCUS_NOOP);
+/*     struct workspace *ws = get_workspace(&server.workspaces, con->m->ws_ids[0]); */
+/*     if (ws->layout[0].options.sloppy_focus) */
+/*         focus_container(con, FOCUS_NOOP); */
 }
 
 void axisnotify(struct wl_listener *listener, void *data)

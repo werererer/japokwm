@@ -262,8 +262,6 @@ static void render_borders(struct container *con, pixman_region32_t *output_dama
         w = con->geom.width;
         h = con->geom.height;
 
-        struct layout *lt = get_layout_in_monitor(m);
-
         struct wlr_box *borders = (struct wlr_box[4]) {
             {ox, oy, w + 2 * con->client->bw, con->client->bw},             /* top */
                 {ox, oy + con->client->bw + h, w + 2 * con->client->bw, con->client->bw}, /* bottom */
@@ -272,6 +270,7 @@ static void render_borders(struct container *con, pixman_region32_t *output_dama
         };
 
         enum wlr_edges hidden_edges = WLR_EDGE_NONE;
+        struct layout *lt = get_layout_in_monitor(m);
         if (lt->options.smart_hidden_edges) {
             if (wl_list_length(&containers) <= 1) {
                 hidden_edges = get_hidden_edges(con, borders, lt->options.hidden_edges);
