@@ -248,10 +248,9 @@ static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *bo
     return containers_hidden_edges;
 }
 
-static void render_borders(struct container *con, pixman_region32_t *output_damage)
+static void render_borders(struct container *con, struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct monitor *m = con->m;
-    struct container *sel = get_focused_container(m);
+    struct container *sel = get_focused_container(con->m);
 
     if (con->has_border) {
         double ox, oy;
@@ -300,7 +299,7 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
         if (!visible_on(con, &server.workspaces, m->ws_ids[0]))
             continue;
 
-        render_borders(con, output_damage);
+        render_borders(con, m, output_damage);
 
         /* This calls our render function for each surface among the
          * xdg_surface's toplevel and popups. */
