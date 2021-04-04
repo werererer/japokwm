@@ -90,10 +90,8 @@ static bool container_intersects_with_monitor(struct container *con, struct moni
 {
     if (!con)
         return false;
-    // is assumed that the container intercepts so that floating windows may be
-    // dragged to other monitors
     if (!m)
-        return true;
+        return false;
 
     struct wlr_box tmp_geom;
     return wlr_box_intersection(&tmp_geom, &con->geom, &m->geom);
@@ -259,16 +257,11 @@ void focus_next_unoccupied_workspace(struct monitor *m, struct wlr_list *workspa
     if (!w)
         return;
 
-    printf("0 workspace: %p : mon: %p: ws->m: %p\n", ws->m, m, ws->m);
-    /* printf("0 next workspace: %zu : mon: %p: ws->m: %p\n", w->id, m, w->m); */
     focus_workspace(m, workspaces, w->id);
-    printf("1 workspace: %p : mon: %p: ws->m: %p\n", ws->m, m, ws->m);
-    /* printf("1 next workspace: %zu : mon: %p: ws->m: %p\n", w->id, m, w->m); */
 }
 
 void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
 {
-    printf("focus_workspace\n");
     struct workspace *ws = get_workspace(workspaces, ws_id);
     if (!m || !ws)
         return;
@@ -297,10 +290,8 @@ void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
         old_ws->m = NULL;
     }
 
-    printf("printf set stuff\n");
     m->ws_ids[0] = ws->id;
     ws->m = m;
-    printf("m->ws_ids[0]: %p . %i\n", m, m->ws_ids[0]);
 
     arrange();
     focus_most_recent_container(ws->id, FOCUS_NOOP);

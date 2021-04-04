@@ -196,6 +196,8 @@ struct container *container_focus_position_to_container(int ws_id, int position)
 {
     struct container *con;
     wl_list_for_each(con, &focus_stack, flink) {
+        if (!exist_on(con, &server.workspaces, ws_id))
+            continue;
         if (con->client->type == LAYER_SHELL)
             continue;
         if (con->focus_position == position)

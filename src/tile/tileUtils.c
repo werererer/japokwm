@@ -27,10 +27,6 @@ void arrange()
 {
     struct monitor *m;
     wl_list_for_each(m, &mons, link) {
-        printf("m.geom.x: %i\n", m->geom.x);
-        printf("m.geom.y: %i\n", m->geom.y);
-        printf("m.geom.width: %i\n", m->geom.width);
-        printf("m.geom.height: %i\n", m->geom.height);
         arrange_monitor(m);
     }
 
@@ -249,13 +245,8 @@ void update_container_positions(struct monitor *m)
 
 void update_container_focus_positions(struct monitor *m)
 {
-    int position = 0;
     struct container *con;
-
-    wl_list_for_each(con, &focus_stack, flink) {
-        con->focus_position = INVALID_POSITION;
-    }
-
+    int position = 0;
     wl_list_for_each(con, &focus_stack, flink) {
         if (!exist_on(con, &server.workspaces, m->ws_ids[0]))
             continue;
@@ -404,6 +395,9 @@ void resize(struct container *con, struct wlr_box geom)
     /* wlroots makes this a no-op if size hasn't changed */
     switch (con->client->type) {
         case XDG_SHELL:
+            printf("con->geom.width: %i\n", con->geom.width);
+            printf("con->geom.height: %i\n", con->geom.height);
+            printf("con->client->surface.xdg: %p\n", con->client->surface.xdg);
             wlr_xdg_toplevel_set_size(con->client->surface.xdg,
                     con->geom.width, con->geom.height);
             break;

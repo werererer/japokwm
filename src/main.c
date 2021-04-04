@@ -126,7 +126,6 @@ static void run(char *startup_cmd)
         if (startup_pid < 0)
             wlr_log(WLR_ERROR, "startup: fork");
         if (startup_pid == 0) {
-            printf("exec: %s\n", startup_cmd);
             execl("/bin/sh", "/bin/sh", "-c", startup_cmd, (void *)NULL);
             wlr_log(WLR_ERROR, "startup: execl");
         }
