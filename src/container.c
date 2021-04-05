@@ -462,6 +462,16 @@ struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box ref)
     return b;
 }
 
+struct wlr_box get_monitor_local_box(struct wlr_box box, struct monitor *m)
+{
+    double x = box.x;
+    double y = box.y;
+    wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &x, &y);
+    box.x = x;
+    box.y = y;
+    return box;
+}
+
 struct wlr_fbox lua_togeometry(lua_State *L)
 {
     struct wlr_fbox geom;

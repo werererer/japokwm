@@ -192,7 +192,9 @@ void root_damage_whole(struct root *root)
 {
     if (!root)
         return;
-    wlr_output_damage_add_box(root->m->damage, &root->geom);
+    struct monitor *m = root->m;
+    struct wlr_box geom = get_monitor_local_box(root->geom, m);
+    wlr_output_damage_add_box(m->damage, &geom);
 }
 
 void set_bars_visible(struct monitor *m, bool visible)

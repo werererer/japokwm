@@ -69,6 +69,7 @@ struct wlr_box get_center_box(struct wlr_box ref);
 struct wlr_box get_centered_box(struct wlr_box box, struct wlr_box ref);
 struct wlr_box get_absolute_box(struct wlr_fbox ref, struct wlr_box box);
 struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box ref);
+struct wlr_box get_monitor_local_box(struct wlr_box box, struct monitor *m);
 struct wlr_fbox lua_togeometry(lua_State *L);
 
 void add_container_to_containers(struct container *con, int i);
