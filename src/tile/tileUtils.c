@@ -169,6 +169,12 @@ int get_container_area_count(struct workspace *ws)
     return get_slave_container_count(ws) + 1;
 }
 
+void update_container_positions(struct monitor *m)
+{
+    update_container_focus_stack_positions(selected_monitor);
+    update_container_stack_positions(selected_monitor);
+}
+
 static void update_container_positions_if_arranged_normally(struct monitor *m)
 {
     struct container *con;
@@ -230,12 +236,6 @@ static void update_container_positions_if_arranged_by_focus(struct monitor *m)
             continue;
         con->position = con->focus_position;
     }
-}
-
-void update_container_positions(struct monitor *m)
-{
-    update_container_focus_stack_positions(selected_monitor);
-    update_container_stack_positions(selected_monitor);
 }
 
 void update_container_stack_positions(struct monitor *m)
