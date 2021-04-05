@@ -186,7 +186,6 @@ static void update_container_positions_if_arranged_normally(struct monitor *m)
         wl_list_remove(&con->mlink);
         add_container_to_containers(con, position);
 
-        // then use the layout that may have been reseted
         position++;
     }
 
@@ -202,7 +201,6 @@ static void update_container_positions_if_arranged_normally(struct monitor *m)
         wl_list_remove(&con->mlink);
         add_container_to_containers(con, position);
 
-        // then use the layout that may have been reseted
         position++;
     }
 
@@ -218,7 +216,6 @@ static void update_container_positions_if_arranged_normally(struct monitor *m)
         wl_list_remove(&con->mlink);
         add_container_to_containers(con, position);
 
-        // then use the layout that may have been reseted
         position++;
     }
 }
