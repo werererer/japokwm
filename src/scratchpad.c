@@ -77,7 +77,7 @@ void show_scratchpad()
         wl_list_insert(&containers, &con->mlink);
         wl_list_insert(&focus_stack, &con->flink);
         wl_list_insert(&stack, &con->slink);
-        update_container_positions(m);
+        update_container_stack_positions(m);
         set_container_geom(con, get_center_box(m->geom));
         con->hidden = false;
         focus_container(con, FOCUS_LIFT);

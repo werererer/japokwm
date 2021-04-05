@@ -235,6 +235,12 @@ static void update_container_positions_if_arranged_by_focus(struct monitor *m)
 
 void update_container_positions(struct monitor *m)
 {
+    update_container_focus_stack_positions(selected_monitor);
+    update_container_stack_positions(selected_monitor);
+}
+
+void update_container_stack_positions(struct monitor *m)
+{
     struct layout *lt = get_layout_in_monitor(m);
     if (lt->options.arrange_by_focus) {
         update_container_positions_if_arranged_by_focus(m);
@@ -243,7 +249,7 @@ void update_container_positions(struct monitor *m)
     }
 }
 
-void update_container_focus_positions(struct monitor *m)
+void update_container_focus_stack_positions(struct monitor *m)
 {
     struct container *con;
     int position = 0;
@@ -270,10 +276,8 @@ void arrange_monitor(struct monitor *m)
     update_layout_counters(lt);
     call_update_function(&lt->options.event_handler, lt->n_area);
 
-    update_hidden_status_of_containers(m);
-
-    update_container_focus_positions(m);
-    update_container_positions(m);
+    update_hidden_status_of_containers(selected_monitor);
+    update_container_positions(selected_monitor);
 
     if (!lt->options.arrange_by_focus) {
         for (int i = lt->n_tiled; i < lt->n_visible; i++) {

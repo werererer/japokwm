@@ -548,7 +548,7 @@ void focus_container(struct container *con, enum focus_actions a)
     wl_list_remove(&con->flink);
     add_container_to_focus_stack(con);
     update_hidden_status_of_containers(m);
-    update_container_focus_positions(m);
+    update_container_focus_stack_positions(m);
 
     struct container *new_focus_con = get_focused_container(m);
 
@@ -630,28 +630,6 @@ static struct container *focus_on_hidden_stack_if_arrange_normally(int i)
     }
 
     return con;
-}
-
-static void focus_on_stack_if_arrange_by_focus(int i)
-{
-    struct monitor *m = selected_monitor;
-    struct container *sel = get_focused_container(m);
-
-    if (!sel)
-        return;
-    if (sel->client->type == LAYER_SHELL) {
-        struct container *con = container_focus_position_to_container(m->ws_ids[0], 0);
-        focus_container(con, FOCUS_NOOP);
-        return;
-    }
-
-    struct container *con = get_relative_focus_container(m->ws_ids[0], sel, i);
-    if (!con)
-        return;
-
-    /* If only one client is visible on selMon, then c == sel */
-    focus_container(con, FOCUS_LIFT);
-    arrange();
 }
 
 void focus_on_stack(int i)

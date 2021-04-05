@@ -165,7 +165,7 @@ void move_resize(int ui)
 
     /* Float the window and tell motion_notify to grab it */
     set_container_floating(grabc, true);
-    update_container_positions(m);
+    update_container_stack_positions(m);
 
     struct layout *lt = get_layout_in_monitor(m);
     if (lt->options.arrange_by_focus) {
