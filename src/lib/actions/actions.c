@@ -84,13 +84,16 @@ int lib_set_floating(lua_State *L)
     struct container *sel = get_focused_container(selected_monitor);
     if (!sel)
         return 0;
+
+    struct monitor *m = selected_monitor;
+    set_container_monitor(sel, m);
     set_container_floating(sel, floating);
+
     arrange();
+
     if (!sel->floating) {
-        wl_list_remove(&sel->mlink);
-        struct monitor *m = selected_monitor;
-        set_container_monitor(sel, m);
         struct layout *lt = get_layout_in_monitor(m);
+        wl_list_remove(&sel->mlink);
         add_container_to_containers(sel, lt->n_tiled-1);
     }
     return 0;
