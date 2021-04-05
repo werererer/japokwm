@@ -42,49 +42,62 @@ START_TEST(get_container_count_test)
     ck_assert_int_eq(get_container_count(ws0), 2);
 } END_TEST
 
-START_TEST(get_tiled_container_count_test)
+START_TEST(update_container_positions_test)
 {
+    struct layout lt;
     struct wlr_list tag_names;
     wlr_list_init(&tag_names);
     wlr_list_push(&tag_names, "1");
-    wlr_list_push(&tag_names, "2");
-    struct layout lt;
     create_workspaces(&server.workspaces, tag_names, lt);
 
-    struct monitor m0, m1;
-    struct workspace *ws0 = get_workspace(&server.workspaces, 0);
-    ws0->m = &m0;
-    struct workspace *ws1 = get_workspace(&server.workspaces, 1);
-    ws1->m = &m1;
+    struct monitor m1, m2;
+    m1.ws_ids[0] = 0;
+    m2.ws_ids[0] = 0;
 
     wl_list_init(&containers);
 
-    const int container_count = 3;
-    struct client clients[container_count];
-    for (int i = 0; i < container_count; i++) {
-        clients[0].type = XDG_SHELL;
-        clients[0].sticky = false;
+    const int n = 4;
+    struct client clients[n];
+    struct container cons[n];
+    for (int i = 0; i < n; i++) {
+        cons[i].client = &clients[i]; 
+        cons[i].position = INVALID_POSITION; 
+        cons[i].hidden = false;
+        wl_list_insert(&containers, &cons[i].mlink);
     }
+
+    clients[0].type = LAYER_SHELL;
     clients[0].ws_id = 0;
+    clients[1].type = XDG_SHELL;
     clients[1].ws_id = 0;
-    clients[2].ws_id = 1;
+    clients[2].type = XDG_SHELL;
+    clients[2].ws_id = 0;
+    clients[3].type = XDG_SHELL;
+    clients[3].ws_id = 0;
 
-    struct container cons[3];
-    cons[0].client = &clients[0];
     cons[0].floating = false;
-    cons[0].m = &m0;
-    wl_list_insert(&containers, &cons[0].mlink);
-    cons[1].client = &clients[1];
+    cons[0].m = &m1;
     cons[1].floating = false;
-    cons[1].m = &m0;
-    wl_list_insert(&containers, &cons[1].mlink);
-    cons[2].client = &clients[2];
+    cons[1].m = &m1;
     cons[2].floating = false;
-    cons[2].m = &m0;
-    wl_list_insert(&containers, &cons[2].mlink);
+    cons[2].m = &m2;
+    cons[3].floating = true;
+    cons[3].m = &m1;
 
-    lt.options.arrange_by_focus = true;
-    ck_assert_int_eq(get_tiled_container_count(ws0), 3);
+    struct layout *lt_ptr = get_layout_in_monitor(&m1);
+    lt_ptr->options.arrange_by_focus = false;
+    update_container_stack_positions(&m1);
+    ck_assert_int_eq(cons[0].position, INVALID_POSITION);
+    ck_assert_int_ne(cons[1].position, INVALID_POSITION);
+    ck_assert_int_eq(cons[2].position, INVALID_POSITION);
+    ck_assert_int_ne(cons[3].position, INVALID_POSITION);
+
+    lt_ptr->options.arrange_by_focus = true;
+    update_container_stack_positions(&m1);
+    ck_assert_int_eq(cons[0].position, INVALID_POSITION);
+    ck_assert_int_ne(cons[1].position, INVALID_POSITION);
+    ck_assert_int_eq(cons[2].position, INVALID_POSITION);
+    ck_assert_int_ne(cons[3].position, INVALID_POSITION);
 } END_TEST
 
 Suite *suite()
@@ -96,7 +109,7 @@ Suite *suite()
     tc = tcase_create("core");
 
     tcase_add_test(tc, get_container_count_test);
-    tcase_add_test(tc, get_tiled_container_count_test);
+    tcase_add_test(tc, update_container_positions_test);
     suite_add_tcase(s, tc);
 
     return s;
