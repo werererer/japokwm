@@ -428,7 +428,17 @@ struct wlr_box get_center_box(struct wlr_box ref)
             .x = ref.width/4,
             .y = ref.height/4,
             .width = ref.width/2,
-            .height = ref.height/2
+            .height = ref.height/2,
+        };
+}
+
+struct wlr_box get_centered_box(struct wlr_box box, struct wlr_box ref)
+{
+    return (struct wlr_box) {
+            .x = (ref.width-box.width)/2 + ref.x,
+            .y = (ref.height-box.height)/2 + ref.y,
+            .width = box.width,
+            .height = box.height,
         };
 }
 
