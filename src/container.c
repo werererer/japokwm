@@ -327,6 +327,7 @@ void add_container_to_containers(struct container *con, int i)
         struct container *con2 = get_container(i-1);
         if (!con2) {
             wl_list_insert(&containers, &con->mlink);
+            return;
         }
         wl_list_insert(&con2->mlink, &con->mlink);
     }
@@ -849,6 +850,8 @@ void set_container_monitor(struct container *con, struct monitor *m)
     successfully */
     if (con->prev_m == NULL)
         con->prev_m = m;
+
+    set_container_workspace(con, m->ws_ids[0]);
 }
 
 static void swap_booleans(bool *b1, bool *b2)
