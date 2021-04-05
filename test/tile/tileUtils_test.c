@@ -42,17 +42,21 @@ START_TEST(get_container_count_test)
     ck_assert_int_eq(get_container_count(ws0), 2);
 } END_TEST
 
-START_TEST(update_container_positions_test)
+START_TEST(update_container_stack_positions_test)
 {
     struct layout lt;
     struct wlr_list tag_names;
     wlr_list_init(&tag_names);
     wlr_list_push(&tag_names, "1");
+    wlr_list_push(&tag_names, "2");
     create_workspaces(&server.workspaces, tag_names, lt);
 
-    struct monitor m1, m2;
+    struct monitor m0, m1;
+    m0.ws_ids[0] = 0;
     m1.ws_ids[0] = 0;
-    m2.ws_ids[0] = 0;
+
+    struct workspace *ws0 = get_workspace(&server.workspaces, 0);
+    ws0->m = &m0;
 
     wl_list_init(&containers);
 
@@ -60,8 +64,8 @@ START_TEST(update_container_positions_test)
     struct client clients[n];
     struct container cons[n];
     for (int i = 0; i < n; i++) {
-        cons[i].client = &clients[i]; 
-        cons[i].position = INVALID_POSITION; 
+        cons[i].client = &clients[i];
+        cons[i].position = INVALID_POSITION;
         cons[i].hidden = false;
         wl_list_insert(&containers, &cons[i].mlink);
     }
@@ -76,24 +80,24 @@ START_TEST(update_container_positions_test)
     clients[3].ws_id = 0;
 
     cons[0].floating = false;
-    cons[0].m = &m1;
+    cons[0].m = &m0;
     cons[1].floating = false;
-    cons[1].m = &m1;
+    cons[1].m = &m0;
     cons[2].floating = false;
-    cons[2].m = &m2;
+    cons[2].m = &m1;
     cons[3].floating = true;
-    cons[3].m = &m1;
+    cons[3].m = &m0;
 
-    struct layout *lt_ptr = get_layout_in_monitor(&m1);
+    struct layout *lt_ptr = get_layout_in_monitor(&m0);
     lt_ptr->options.arrange_by_focus = false;
-    update_container_stack_positions(&m1);
+    update_container_stack_positions(&m0);
     ck_assert_int_eq(cons[0].position, INVALID_POSITION);
     ck_assert_int_ne(cons[1].position, INVALID_POSITION);
     ck_assert_int_eq(cons[2].position, INVALID_POSITION);
     ck_assert_int_ne(cons[3].position, INVALID_POSITION);
 
     lt_ptr->options.arrange_by_focus = true;
-    update_container_stack_positions(&m1);
+    update_container_stack_positions(&m0);
     ck_assert_int_eq(cons[0].position, INVALID_POSITION);
     ck_assert_int_ne(cons[1].position, INVALID_POSITION);
     ck_assert_int_eq(cons[2].position, INVALID_POSITION);
@@ -109,7 +113,7 @@ Suite *suite()
     tc = tcase_create("core");
 
     tcase_add_test(tc, get_container_count_test);
-    tcase_add_test(tc, update_container_positions_test);
+    tcase_add_test(tc, update_container_stack_positions_test);
     suite_add_tcase(s, tc);
 
     return s;
