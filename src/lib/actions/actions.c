@@ -245,15 +245,19 @@ int lib_zoom(lua_State *L)
 {
     struct monitor *m = selected_monitor;
     struct workspace *ws = get_workspace_in_monitor(m);
+
     struct container *sel = get_focused_container(m);
 
     if (!sel)
         return 0;
 
+    int position = wlr_list_find(&ws->tiled_containers, cmp_ptr, sel);
+    if (position == INVALID_POSITION)
+        return 0;
+
     if (sel == ws->tiled_containers.items[0]) {
         repush(1, 0);
     } else {
-        int position = wlr_list_find(&ws->tiled_containers, cmp_ptr, sel);
         repush(position, 0);
     }
 
