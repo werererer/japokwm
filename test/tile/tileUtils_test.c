@@ -114,6 +114,40 @@ START_TEST(update_container_stack_positions_test)
     /* ck_assert_int_ne(cons[3].position, INVALID_POSITION); */
 } END_TEST
 
+START_TEST(get_relative_item_test)
+{
+    struct wlr_list lists;
+
+    struct wlr_list list1;
+    struct wlr_list list2;
+    struct wlr_list list3;
+
+    wlr_list_init(&lists);
+
+    wlr_list_init(&list1);
+    wlr_list_init(&list2);
+    wlr_list_init(&list3);
+
+    wlr_list_push(&lists, &list1);
+    wlr_list_push(&lists, &list2);
+    wlr_list_push(&lists, &list3);
+
+    wlr_list_push(&list1, "0");
+    wlr_list_push(&list1, "1");
+
+    wlr_list_push(&list1, "2");
+    wlr_list_push(&list2, "3");
+    wlr_list_push(&list2, "4");
+    wlr_list_push(&list2, "5");
+
+    wlr_list_push(&list3, "6");
+    wlr_list_push(&list3, "7");
+    wlr_list_push(&list3, "8");
+
+    ck_assert_str_eq(get_relative_item_in_composed_list(&lists, 4, 1), "5");
+} END_TEST
+
+
 Suite *suite()
 {
     Suite *s;
@@ -124,6 +158,7 @@ Suite *suite()
 
     tcase_add_test(tc, get_container_count_test);
     tcase_add_test(tc, update_container_stack_positions_test);
+    tcase_add_test(tc, get_relative_item_test);
     suite_add_tcase(s, tc);
 
     return s;

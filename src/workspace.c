@@ -43,6 +43,7 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
     wlr_list_push(&ws->visible_container_lists, &ws->floating_containers);
 
     wlr_list_init(&ws->focus_stack_lists);
+    wlr_list_init(&ws->focus_stack_lists_with_layer_shell);
 
     wlr_list_init(&ws->focus_stack_on_top);
     wlr_list_init(&ws->focus_stack_normal);
@@ -51,6 +52,11 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
     wlr_list_push(&ws->focus_stack_lists, &ws->focus_stack_on_top);
     wlr_list_push(&ws->focus_stack_lists, &ws->focus_stack_normal);
     wlr_list_push(&ws->focus_stack_lists, &ws->focus_stack_not_focusable);
+
+    wlr_list_push(&ws->focus_stack_lists_with_layer_shell, &ws->focus_stack_layer_shell);
+    wlr_list_push(&ws->focus_stack_lists_with_layer_shell, &ws->focus_stack_on_top);
+    wlr_list_push(&ws->focus_stack_lists_with_layer_shell, &ws->focus_stack_normal);
+    wlr_list_push(&ws->focus_stack_lists_with_layer_shell, &ws->focus_stack_not_focusable);
 
     // fill layout stack with reasonable values
     push_layout(ws, lt);

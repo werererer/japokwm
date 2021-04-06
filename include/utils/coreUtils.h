@@ -104,9 +104,13 @@ void print_trace();
 
 /* a composed list is just a list consisting of lists so that if an index i is
  * given it returns the same value as if all the lists where concatenated */
-void *get_on_composed_list(struct wlr_list *lists, int i);
+void *get_in_composed_list(struct wlr_list *lists, int i);
+struct wlr_list *get_list_at_i_in_composed_list(struct wlr_list *lists, int i);
 void remove_from_composed_list(struct wlr_list *lists, int i);
+int length_of_list(struct wlr_list *list);
 int length_of_composed_list(struct wlr_list *lists);
+void *get_relative_item_in_list(struct wlr_list *list, int i, int j);
+void *get_relative_item_in_composed_list(struct wlr_list *lists, int i, int j);
 
 int exec(const char *cmd);
 bool is_approx_equal(double a, double b, double error_range);

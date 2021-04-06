@@ -285,7 +285,15 @@ bool is_approx_equal(double a, double b, double error_range)
     return fabs(a - b) < error_range;
 }
 
-void *get_on_composed_list(struct wlr_list *lists, int i)
+void *get_on_list(struct wlr_list *list, int i)
+{
+    if (i >= list->length)
+        return NULL;
+
+    return list->items[i];
+}
+
+void *get_in_composed_list(struct wlr_list *lists, int i)
 {
     for (int j = 0; j < lists->length; j++) {
         struct wlr_list *list = lists->items[j];
@@ -301,6 +309,50 @@ void *get_on_composed_list(struct wlr_list *lists, int i)
 
     // no item found
     return NULL;
+}
+
+struct wlr_list *get_list_at_i_in_composed_list(struct wlr_list *lists, int i)
+{
+    for (int j = 0; j < lists->length; j++) {
+        struct wlr_list *list = lists->items[j];
+        if (i >= 0 && i < list->length) {
+            return list;
+        }
+        i -= list->length;
+
+        if (i < 0)
+            break;
+    }
+
+    // no item found
+    return NULL;
+}
+
+static void *get_relative_item(struct wlr_list *list, 
+        void *(*get_item)(struct wlr_list *, int i),
+        int (*length_of)(struct wlr_list *), int i, int j)
+{
+    const int length = length_of(list);
+    if (length == 0)
+        return NULL;
+
+    int new_position = i + j % length;
+    while (new_position < 0)
+        new_position += length;
+
+    return get_item(list, new_position);
+}
+
+
+void *get_relative_item_in_list(struct wlr_list *list, int i, int j)
+{
+    return get_relative_item(list, get_on_list, length_of_list, i, j);
+}
+
+void *get_relative_item_in_composed_list(struct wlr_list *lists, int i, int j)
+{
+    return get_relative_item(lists, get_in_composed_list, length_of_composed_list,
+            i, j);
 }
 
 void remove_from_composed_list(struct wlr_list *lists, int i)
@@ -319,6 +371,11 @@ void remove_from_composed_list(struct wlr_list *lists, int i)
 
     // no item found
     return;
+}
+
+int length_of_list(struct wlr_list *list)
+{
+    return list->length;
 }
 
 int length_of_composed_list(struct wlr_list *lists)

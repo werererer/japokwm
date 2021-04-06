@@ -173,24 +173,6 @@ int get_container_area_count(struct workspace *ws)
     return get_slave_container_count(ws) + 1;
 }
 
-void update_container_positions(struct monitor *m)
-{
-    update_container_focus_stack_positions(selected_monitor);
-}
-
-void update_container_focus_stack_positions(struct monitor *m)
-{
-    struct workspace *ws = get_workspace(&server.workspaces, m->ws_ids[0]);
-    for (int i = 0; i < length_of_composed_list(&ws->focus_stack_lists); i++) {
-        struct container *con = get_container_on_focus_stack(ws->id, i);
-
-        if (con->client->type == LAYER_SHELL)
-            continue;
-
-        con->focus_position = i;
-    }
-}
-
 void arrange_monitor(struct monitor *m)
 {
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
@@ -202,8 +184,7 @@ void arrange_monitor(struct monitor *m)
 
     update_layout_counters(ws);
     call_update_function(&lt->options.event_handler, lt->n_area);
-    update_hidden_status_of_containers(selected_monitor);
-    update_container_positions(selected_monitor);
+    update_hidden_status_of_containers(m);
 
     if (!lt->options.arrange_by_focus) {
         for (int i = 0; i < ws->floating_containers.length; i++) {
@@ -250,10 +231,8 @@ void arrange_containers(int ws_id, struct wlr_box root_geom)
     if (lt->options.arrange_by_focus) {
         for (int i = 0; i < ws->focus_stack_normal.length; i++) {
             struct container *con = get_container_on_focus_stack(ws_id, i);
-            if (!visible_on(con, &server.workspaces, ws_id))
-                continue;
 
-            arrange_container(con, con->focus_position, root_geom, actual_inner_gap);
+            arrange_container(con, i, root_geom, actual_inner_gap);
         }
     } else {
         for (int i = 0; i < ws->tiled_containers.length; i++) {
@@ -354,32 +333,28 @@ void update_hidden_status_of_containers(struct monitor *m)
         }
     } else {
         if (lt->n_tiled > ws->tiled_containers.length) {
-            int n_missing = MIN(lt->n_tiled - ws->tiled_containers.length, ws->hidden_containers.length);
+            int n_missing = lt->n_tiled - ws->tiled_containers.length;
             for (int i = 0; i < n_missing; i++) {
+                if (n_missing > ws->hidden_containers.length)
+                    break;
+
                 struct container *con = ws->hidden_containers.items[0];
 
                 con->hidden = false;
                 wlr_list_del(&ws->hidden_containers, 0);
                 wlr_list_push(&ws->tiled_containers, con);
             }
-            for (int i = 0; i < ws->hidden_containers.length; i++) {
-                struct container *con = ws->hidden_containers.items[i];
-                con->hidden = true;
-            }
         } else {
-            int visible_containers_length = ws->tiled_containers.length;
-            for (int i = lt->n_visible; i < visible_containers_length; i++) {
+            int tile_containers_length = ws->tiled_containers.length;
+            for (int i = lt->n_tiled; i < tile_containers_length; i++) {
                 struct container *con = wlr_list_pop(&ws->tiled_containers);
                 con->hidden = true;
                 wlr_list_insert(&ws->hidden_containers, 0, con);
             }
-            for (int i = 0; i < ws->tiled_containers.length; i++) {
-                struct container *con = ws->tiled_containers.items[i];
-                con->hidden = false;
-            }
         }
-        for (int i = 0; i < ws->tiled_containers.length; i++) {
-            struct container *con = ws->tiled_containers.items[i];
+
+        for (int i = 0; i < length_of_composed_list(&ws->visible_container_lists); i++) {
+            struct container *con = get_in_composed_list(&ws->visible_container_lists, i);
             con->hidden = false;
         }
         for (int i = 0; i < ws->hidden_containers.length; i++) {
@@ -393,7 +368,6 @@ int get_container_count(struct workspace *ws)
 {
     return length_of_composed_list(&ws->container_lists);
 }
-
 
 static int get_tiled_container_count_if_arranged_by_focus(struct workspace *ws)
 {
