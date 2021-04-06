@@ -9,7 +9,7 @@ t = executable('container_test', ['container_test.c'],
                link_with: [wmlib],
               )
 test('container', t)
-t = executable('coreUtils_test', ['container_test.c'], 
+t = executable('coreUtils_test', ['utils/coreUtils_test.c'], 
                c_args: c_args,
                dependencies: [deps, extraLibs],
                include_directories: inc,
