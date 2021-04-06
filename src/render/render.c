@@ -269,9 +269,10 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
         };
 
         enum wlr_edges hidden_edges = WLR_EDGE_NONE;
-        struct layout *lt = get_layout_in_monitor(m);
+        struct workspace *ws = get_workspace_in_monitor(m);
+        struct layout *lt = ws->layout;
         if (lt->options.smart_hidden_edges) {
-            if (wl_list_length(&containers) <= 1) {
+            if (ws->visible_containers.length <= 1) {
                 hidden_edges = get_hidden_edges(con, borders, lt->options.hidden_edges);
             }
         } else {

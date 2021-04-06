@@ -147,7 +147,6 @@ static int setup()
     wl_list_init(&mons);
     wl_list_init(&focus_stack);
     wl_list_init(&stack);
-    wl_list_init(&containers);
     wl_list_init(&layer_stack);
     wl_list_init(&popups);
     wl_list_init(&sticky_stack);

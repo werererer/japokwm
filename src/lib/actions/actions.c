@@ -92,9 +92,9 @@ int lib_set_floating(lua_State *L)
     arrange();
 
     if (!sel->floating) {
-        struct layout *lt = get_layout_in_monitor(m);
-        wl_list_remove(&sel->mlink);
-        add_container_to_containers(sel, lt->n_tiled-1);
+        struct workspace *ws = get_workspace_in_monitor(m);
+        wlr_list_del(&ws->visible_containers, sel->position);
+        add_container_to_containers(sel, ws->layout->n_tiled-1);
     }
     return 0;
 }
@@ -241,6 +241,7 @@ int lib_move_container_to_workspace(lua_State *L)
 
 int lib_quit(lua_State *L)
 {
+    printf("quit\n");
     wl_display_terminate(server.wl_display);
     close_error_file();
     return 0;
@@ -289,7 +290,7 @@ int lib_load_next_layout_in_set(lua_State *L)
     const char *layout_set_key = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    struct workspace *ws = get_workspace_on_monitor(selected_monitor);
+    struct workspace *ws = get_workspace_in_monitor(selected_monitor);
 
     // arg 2
     lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
@@ -323,7 +324,7 @@ int lib_load_prev_layout_in_set(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace_on_monitor(m);
+    struct workspace *ws = get_workspace_in_monitor(m);
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
     if (!lua_is_index_defined(L, layout_set_key)) {
@@ -352,7 +353,7 @@ int lib_load_prev_layout_in_set(lua_State *L)
 
 int lib_load_layout_in_set(lua_State *L)
 {
-    struct workspace *ws = get_workspace_on_monitor(selected_monitor);
+    struct workspace *ws = get_workspace_in_monitor(selected_monitor);
 
     server.layout_set.lua_layout_index = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
@@ -377,7 +378,7 @@ int lib_load_layout_in_set(lua_State *L)
 
 int lib_load_layout(lua_State *L)
 {
-    struct workspace *ws = get_workspace_on_monitor(selected_monitor);
+    struct workspace *ws = get_workspace_in_monitor(selected_monitor);
 
     lua_rawgeti(L, -1, 1);
     const char *layout_symbol = luaL_checkstring(L, -1);
@@ -425,7 +426,7 @@ int lib_kill(lua_State *L)
 int lib_toggle_layout(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace_on_monitor(m);
+    struct workspace *ws = get_workspace_in_monitor(m);
     push_layout(ws, ws->layout[1]);
     arrange();
     return 0;
@@ -446,8 +447,11 @@ int lib_swap_workspace(lua_State *L)
     int ws_id2 = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct container *con;
-    wl_list_for_each(con, &containers, mlink) {
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = get_workspace_in_monitor(m);
+
+    for (int i = 0; i < ws->visible_containers.length; i++) {
+        struct container *con = container_position_to_container(0, i);
         if (exist_on(con, &server.workspaces, ws_id1)) {
             con->client->ws_id = ws_id2;
             continue;
@@ -458,7 +462,6 @@ int lib_swap_workspace(lua_State *L)
         }
     }
 
-    struct monitor *m = selected_monitor;
     arrange();
     focus_most_recent_container(m->ws_ids[0], FOCUS_NOOP);
     root_damage_whole(m->root);

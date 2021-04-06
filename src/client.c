@@ -277,7 +277,7 @@ void maprequest(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
 
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace_on_monitor(m);
+    struct workspace *ws = get_workspace_in_monitor(m);
     struct layout *lt = &ws->layout[0];
 
     c->ws_id = ws->id;

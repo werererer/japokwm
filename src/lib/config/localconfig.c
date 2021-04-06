@@ -6,7 +6,7 @@
 
 int local_set_arrange_by_focus(lua_State *L)
 {
-    struct workspace *ws = get_workspace_on_monitor(selected_monitor);
+    struct workspace *ws = get_workspace_in_monitor(selected_monitor);
 
     // 1. argument
     ws->layout[0].options.arrange_by_focus = lua_toboolean(L, -1);

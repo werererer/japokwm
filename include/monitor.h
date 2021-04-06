@@ -35,8 +35,6 @@ struct monrule {
 extern struct wl_list stack;
 /* associated with flink in container */
 extern struct wl_list focus_stack;
-/* associated with link in container */
-extern struct wl_list containers;
 /* associated with llink in container */
 extern struct wl_list layer_stack;
 /* associated with plink in container  */
@@ -61,7 +59,7 @@ void push_selected_workspace(struct monitor *m, struct workspace *ws);
 struct monitor *dirtomon(int dir);
 struct monitor *output_to_monitor(struct wlr_output *output);
 struct monitor *xy_to_monitor(double x, double y);
-struct workspace *get_workspace_on_monitor(struct monitor *m);
+struct workspace *get_workspace_in_monitor(struct monitor *m);
 struct layout *get_layout_in_monitor(struct monitor *m);
 
 extern struct wl_list mons;

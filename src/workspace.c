@@ -11,6 +11,30 @@
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "utils/parseConfigUtils.h"
+#include "container.h"
+
+struct container *get_container(int ws_id, int i)
+{
+    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
+
+    if (!ws)
+        return NULL;
+
+    struct container *con = NULL;
+    if (i < ws->visible_containers.length) {
+        con = ws->visible_containers.items[i];
+    }
+    i -= ws->visible_containers.length;
+    if (!con && i >= 0 && i < ws->floating_containers.length) {
+        con = ws->floating_containers.items[i];
+    }
+    i -= ws->floating_containers.length;
+    if (!con && i >= 0 && i < ws->hidden_containers.length) {
+        con = ws->hidden_containers.items[i];
+    }
+
+    return con;
+}
 
 static void update_workspaces_id(struct wlr_list *workspaces)
 {
@@ -27,6 +51,10 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
     struct workspace *ws = calloc(1, sizeof(struct workspace));
     ws->name = name;
     ws->id = id;
+    wlr_list_init(&ws->containers);
+    wlr_list_init(&ws->visible_containers);
+    wlr_list_init(&ws->hidden_containers);
+    wlr_list_init(&ws->floating_containers);
 
     // fill layout stack with reasonable values
     push_layout(ws, lt);
@@ -172,9 +200,12 @@ bool visible_on(struct container *con, struct wlr_list *workspaces, int ws_id)
 
 int get_workspace_container_count(struct wlr_list *workspaces, size_t ws_id)
 {
+    struct workspace *ws = get_workspace(workspaces, ws_id);
+
     int i = 0;
-    struct container *con;
-    wl_list_for_each(con, &containers, mlink) {
+    for (int i = 0; i < ws->visible_containers.length; i++) {
+        struct container *con = get_container(ws_id, i);
+
         if (visible_on(con, workspaces, ws_id))
             i++;
     }
@@ -283,10 +314,10 @@ void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
 
     ipc_event_workspace();
 
-    struct workspace *old_ws = get_workspace_on_monitor(m);
+    struct workspace *old_ws = get_workspace_in_monitor(m);
     // unset old workspace
     if (old_ws && !workspace_has_clients(old_ws)) {
-        struct workspace *old_ws = get_workspace_on_monitor(m);
+        struct workspace *old_ws = get_workspace_in_monitor(m);
         old_ws->m = NULL;
     }
 
@@ -295,7 +326,6 @@ void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
 
     arrange();
     focus_most_recent_container(ws->id, FOCUS_NOOP);
-    printf("m0: %p\n", m);
     root_damage_whole(m->root);
 }
 

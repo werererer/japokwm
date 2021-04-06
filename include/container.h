@@ -14,8 +14,6 @@ enum focus_actions {
 };
 
 struct container {
-    /* monitor containers */
-    struct wl_list mlink;
     /* container stack */
     struct wl_list slink;
     /* container focus_stack */
@@ -54,7 +52,6 @@ struct container {
 struct container *create_container(struct client *c, struct monitor *m, bool has_border);
 void destroy_container(struct container *con);
 
-struct container *get_container(int i);
 struct container *get_relative_container(int ws_id, struct container *con, int i);
 struct container *get_relative_hidden_container(int ws_id, int i);
 struct container *get_relative_hidden_container_in_focus_stack(int ws_id, int i);
@@ -100,6 +97,7 @@ int container_relative_x_to_absolute(struct container *con, int lx);
 int container_relative_y_to_absolute(struct container *con, int ly);
 int absolute_x_to_container_relative(struct container *con, int x);
 int absolute_y_to_container_relative(struct container *con, int y);
+int compare_containers(struct container *con1, struct container *con2);
 
 bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *resize_constraints);
 #endif /* CONTAINER_H */

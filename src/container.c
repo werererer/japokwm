@@ -41,6 +41,7 @@ void destroy_container(struct container *con)
 {
     wl_list_remove(&con->flink);
 
+    struct workspace *ws = get_workspace_in_monitor(con->m);
     switch (con->client->type) {
         case LAYER_SHELL:
             wl_list_remove(&con->llink);
@@ -48,11 +49,11 @@ void destroy_container(struct container *con)
         case X11_UNMANAGED:
             wl_list_remove(&con->slink);
             wl_list_remove(&con->ilink);
-            wl_list_remove(&con->mlink);
+            wlr_list_del(&ws->visible_containers, con->position);
             break;
         default:
             wl_list_remove(&con->slink);
-            wl_list_remove(&con->mlink);
+            wlr_list_del(&ws->visible_containers, con->position);
             break;
     }
     free(con);
@@ -117,8 +118,9 @@ void container_damage_whole(struct container *con)
 
 struct container *container_position_to_container(int ws_id, int position)
 {
-    struct container *con;
-    wl_list_for_each(con, &containers, mlink) {
+    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
+    for (int i = 0; i < ws->visible_containers.length; i++) {
+        struct container *con = get_container(ws_id, i);
         if (!exist_on(con, &server.workspaces, ws_id))
             continue;
         if (con->client->type == LAYER_SHELL)
@@ -131,8 +133,9 @@ struct container *container_position_to_container(int ws_id, int position)
 
 struct container *container_position_to_hidden_container(int ws_id, int position)
 {
-    struct container *con;
-    wl_list_for_each(con, &containers, mlink) {
+    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
+    for (int i = 0; i < ws->visible_containers.length; i++) {
+        struct container *con = get_container(ws_id, i);
         if (!hidden_on(con, &server.workspaces, ws_id))
             continue;
         if (con->client->type == LAYER_SHELL)
@@ -165,31 +168,6 @@ struct container *get_focused_container(struct monitor *m)
     assert(m != NULL);
 
     return container_focus_position_to_container(m->ws_ids[0], 0);
-}
-
-struct container *get_container(int i)
-{
-    if (abs(i) > wl_list_length(&containers))
-        return NULL;
-
-    struct container *con;
-    if (i >= 0) {
-        struct wl_list *pos = &containers;
-        while (i >= 0) {
-            if (pos->next)
-                pos = pos->next;
-            i--;
-        }
-        con = wl_container_of(pos, con, mlink);
-    } else { // i < 0
-        struct wl_list *pos = &containers;
-        while (i < 0) {
-            pos = pos->prev;
-            i++;
-        }
-        con = wl_container_of(pos, con, mlink);
-    }
-    return con;
 }
 
 struct container *container_focus_position_to_container(int ws_id, int position)
@@ -320,17 +298,12 @@ void add_container_to_containers(struct container *con, int i)
     if (!con)
         return;
 
-    /* Insert container at position i and push back container at i*/
-    if (i == 0) {
-        wl_list_insert(&containers, &con->mlink);
-    } else {
-        struct container *con2 = get_container(i-1);
-        if (!con2) {
-            wl_list_insert(&containers, &con->mlink);
-            return;
-        }
-        wl_list_insert(&con2->mlink, &con->mlink);
-    }
+    printf("\nadd container: %p\n", con);
+    struct monitor *m = con->m;
+    struct workspace *ws = get_workspace(&server.workspaces, m->ws_ids[0]);
+    con->position = i;
+    wlr_list_insert(&ws->visible_containers, i, con);
+    printf("add to workspace: %zu: length: %zu\n", ws->id, ws->visible_containers.length);
 }
 
 static void add_container_to_focus_stack(struct container *con)
@@ -615,20 +588,21 @@ static struct container *focus_on_hidden_stack_if_arrange_normally(int i)
         set_container_geom(con, sel->geom);
     }
 
+    struct workspace *ws = get_workspace_in_monitor(m);
     if (i >= 0) {
         /* replace selected container with a hidden one and move the selected
          * container to the end of containers */
-        wl_list_remove(&con->mlink);
-        wl_list_insert(&sel->mlink, &con->mlink);
+        wlr_list_del(&ws->visible_containers, con->position);
+        wlr_list_insert(&ws->visible_containers, sel->position+1, con);
         con->hidden = false;
 
-        wl_list_remove(&sel->mlink);
-        wl_list_insert(containers.prev, &sel->mlink);
+        wlr_list_del(&ws->visible_containers, sel->position);
+        wlr_list_insert(&ws->visible_containers, ws->visible_containers.length-1, sel);
         sel->hidden = true;
     } else if (i < 0) {
         struct container *last = container_position_to_container(m->ws_ids[0], lt->n_visible-1);
-        wl_list_remove(&con->mlink);
-        wl_list_insert(&sel->mlink, &con->mlink);
+        wlr_list_del(&ws->visible_containers, con->position);
+        wlr_list_insert(&ws->visible_containers, sel->position+1, con);
 
         /* replace current container with a hidden one and move the selected
          * container to the first position that is not visible */
@@ -644,8 +618,8 @@ static struct container *focus_on_hidden_stack_if_arrange_normally(int i)
             return NULL;
         }
 
-        wl_list_remove(&sel->mlink);
-        wl_list_insert(&last->mlink, &sel->mlink);
+        wlr_list_del(&ws->visible_containers, sel->position);
+        wlr_list_insert(&ws->visible_containers, last->position+1, sel);
         con->hidden = false;
         sel->hidden = true;
     }
@@ -698,15 +672,16 @@ void focus_on_hidden_stack(int i)
     }
 
     struct container *last = container_position_to_container(m->ws_ids[0], lt->n_visible-1);
-    wl_list_remove(&con->mlink);
-    wl_list_insert(&sel->mlink, &con->mlink);
+    struct workspace *ws = get_workspace_in_monitor(m);
+    wlr_list_del(&ws->visible_containers, con->position);
+    wlr_list_insert(&ws->visible_containers, sel->position+1, con);
     con->hidden = false;
     sel->hidden = true;
     if (i >= 0) {
         /* replace selected container with a hidden one and move the selected
          * container to the end of the containers array */
-        wl_list_remove(&sel->mlink);
-        wl_list_insert(containers.prev, &sel->mlink);
+        wlr_list_del(&ws->visible_containers, sel->position);
+        wlr_list_insert(&ws->visible_containers, ws->visible_containers.length-1, sel);
     } else if (i < 0) {
 
         /* replace current container with a hidden one and move the selected
@@ -722,8 +697,8 @@ void focus_on_hidden_stack(int i)
             return;
         }
 
-        wl_list_remove(&sel->mlink);
-        wl_list_insert(&last->mlink, &sel->mlink);
+        wlr_list_del(&ws->visible_containers, sel->position);
+        wlr_list_insert(&ws->visible_containers, ws->visible_containers.length-1, sel);
     }
 
     if (!con)
@@ -755,8 +730,6 @@ void repush(int pos1, int pos2)
     if (con1->floating)
         return;
 
-    struct container *master = wl_container_of(containers.next, master, mlink);
-
     struct container *con2 = container_position_to_container(selected_monitor->ws_ids[0], pos1);
 
     if (!con2)
@@ -764,10 +737,11 @@ void repush(int pos1, int pos2)
     if (con2 == con1)
         return;
 
-    wl_list_remove(&con2->mlink);
-    wl_list_insert(&con1->mlink, &con2->mlink);
-    wl_list_remove(&con1->mlink);
-    wl_list_insert(&con2->mlink, &con1->mlink);
+    struct workspace *ws = get_workspace_in_monitor(m);
+    wlr_list_del(&ws->visible_containers, con2->position);
+    wlr_list_insert(&ws->visible_containers, con1->position+1, &con2);
+    wlr_list_del(&ws->visible_containers, con1->position);
+    wlr_list_insert(&ws->visible_containers, con2->position+1, &con1);
 
     arrange();
 
@@ -884,10 +858,13 @@ void swap_container_properties(struct container *con1, struct container *con2)
 
 void swap_container_positions(struct container *con1, struct container *con2)
 {
-    wl_list_remove(&con2->mlink);
+    assert(con1->m == con2->m);
+
+    struct workspace *ws = get_workspace_in_monitor(con1->m);
+    wlr_list_del(&ws->visible_containers, con2->position);
     add_container_to_containers(con2, con1->position);
 
-    wl_list_remove(&con1->mlink);
+    wlr_list_del(&ws->visible_containers, con1->position);
     add_container_to_containers(con1, con2->position);
 
     swap_container_properties(con1, con2);
@@ -944,6 +921,11 @@ inline int absolute_x_to_container_relative(struct container *con, int x)
 inline int absolute_y_to_container_relative(struct container *con, int y)
 {
     return y - con->geom.y;
+}
+
+int compare_containers(struct container *con1, struct container *con2)
+{
+    return (con1 == con2) ? 0 : 1;
 }
 
 bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *resize_constraints)

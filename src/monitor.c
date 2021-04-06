@@ -17,7 +17,6 @@
 
 struct wl_list stack;
 struct wl_list focus_stack;
-struct wl_list containers;
 struct wl_list layer_stack;
 struct wl_list popups;
 struct wl_list sticky_stack;
@@ -104,7 +103,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     struct workspace *ws = get_workspace(&server.workspaces, 0);
     focus_next_unoccupied_workspace(m, &server.workspaces, ws);
     // TODO is this needed?
-    ws = get_workspace_on_monitor(m);
+    ws = get_workspace_in_monitor(m);
     load_default_layout(L, ws);
     copy_layout_from_selected_workspace(&server.workspaces);
     set_root_color(m->root, ws->layout[0].options.root_color);
@@ -261,7 +260,7 @@ struct monitor *xy_to_monitor(double x, double y)
     return o ? o->data : NULL;
 }
 
-inline struct workspace *get_workspace_on_monitor(struct monitor *m)
+inline struct workspace *get_workspace_in_monitor(struct monitor *m)
 {
     if (!m)
         return NULL;

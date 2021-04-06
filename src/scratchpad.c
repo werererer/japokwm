@@ -9,9 +9,11 @@ static struct container *get_container_on_scratchpad(int i);
 
 static struct container *get_container_on_scratchpad(int i)
 {
-    if (wl_list_empty(&containers))
+    struct workspace *ws = get_workspace_in_monitor(selected_monitor);
+
+    if (ws->visible_containers.length == 0)
         return NULL;
-    if (abs(i) > wl_list_length(&containers))
+    if (abs(i) > ws->visible_containers.length)
         return NULL;
 
     struct container *con;
@@ -40,9 +42,10 @@ void move_to_scratchpad(struct container *con, int position)
         return;
 
     struct monitor *m = con->m;
+    struct workspace *ws = get_workspace_in_monitor(m);
 
-    if (wl_list_empty(&scratchpad) 
-            || abs(position) > wl_list_length(&containers)
+    if (wl_list_empty(&scratchpad)
+            || abs(position) > ws->visible_containers.length
             || position == 0) {
         wl_list_insert(&scratchpad, &con->scratchpad_link);
     } else {
@@ -52,7 +55,7 @@ void move_to_scratchpad(struct container *con, int position)
 
     con->on_scratchpad = true;
     set_container_floating(con, true);
-    wl_list_remove(&con->mlink);
+    wlr_list_del(&ws->visible_containers, con->position);
     wl_list_remove(&con->flink);
     wl_list_remove(&con->slink);
     container_damage_whole(con);
@@ -70,11 +73,12 @@ void remove_container_from_scratchpad(struct container *con)
 void show_scratchpad()
 {
     struct monitor *m = selected_monitor;
+    struct workspace *ws = get_workspace_in_monitor(m);
     struct container *sel = get_focused_container(m);
     struct container *con = wl_container_of(scratchpad.next, con, scratchpad_link);
 
     if (con->hidden) {
-        wl_list_insert(&containers, &con->mlink);
+        wlr_list_push(&ws->visible_containers, con);
         wl_list_insert(&focus_stack, &con->flink);
         wl_list_insert(&stack, &con->slink);
         update_container_stack_positions(m);
