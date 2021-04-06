@@ -152,9 +152,10 @@ void maprequestx11(struct wl_listener *listener, void *data)
             {
                 wl_list_insert(&server.independents, &con->ilink);
 
+                struct workspace *ws = get_workspace_in_monitor(m);
                 if (is_popup_menu(c) || xwayland_surface->parent) {
-                    wl_list_remove(&con->flink);
-                    wl_list_insert(&get_focused_container(m)->flink, &con->flink);
+                    wlr_list_del(&ws->focus_stack_normal, con->focus_position);
+                    wlr_list_insert(&ws->focus_stack_normal, 1, con);
                 } else {
                     con->on_top = true;
                     focus_container(con, FOCUS_NOOP);

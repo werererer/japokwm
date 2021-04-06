@@ -1,6 +1,7 @@
 #include "scratchpad.h"
 
 #include "monitor.h"
+#include "server.h"
 #include "tile/tileUtils.h"
 
 struct wl_list scratchpad;
@@ -11,9 +12,9 @@ static struct container *get_container_on_scratchpad(int i)
 {
     struct workspace *ws = get_workspace_in_monitor(selected_monitor);
 
-    if (ws->visible_containers.length == 0)
+    if (ws->tiled_containers.length == 0)
         return NULL;
-    if (abs(i) > ws->visible_containers.length)
+    if (abs(i) > ws->tiled_containers.length)
         return NULL;
 
     struct container *con;
@@ -45,7 +46,7 @@ void move_to_scratchpad(struct container *con, int position)
     struct workspace *ws = get_workspace_in_monitor(m);
 
     if (wl_list_empty(&scratchpad)
-            || abs(position) > ws->visible_containers.length
+            || abs(position) > ws->tiled_containers.length
             || position == 0) {
         wl_list_insert(&scratchpad, &con->scratchpad_link);
     } else {
@@ -55,8 +56,8 @@ void move_to_scratchpad(struct container *con, int position)
 
     con->on_scratchpad = true;
     set_container_floating(con, true);
-    wlr_list_del(&ws->visible_containers, con->position);
-    wl_list_remove(&con->flink);
+    wlr_list_del(&ws->tiled_containers, con->position);
+    wlr_list_del(&ws->focus_stack_normal, con->focus_position);
     wl_list_remove(&con->slink);
     container_damage_whole(con);
     focus_most_recent_container(m->ws_ids[0], FOCUS_NOOP);
@@ -78,8 +79,8 @@ void show_scratchpad()
     struct container *con = wl_container_of(scratchpad.next, con, scratchpad_link);
 
     if (con->hidden) {
-        wlr_list_push(&ws->visible_containers, con);
-        wl_list_insert(&focus_stack, &con->flink);
+        wlr_list_push(&ws->tiled_containers, con);
+        wlr_list_insert(&ws->focus_stack_normal, 0, con);
         wl_list_insert(&stack, &con->slink);
         update_container_stack_positions(m);
         set_container_geom(con, get_center_box(m->geom));

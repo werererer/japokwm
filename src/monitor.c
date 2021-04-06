@@ -16,7 +16,6 @@
 #include "utils/parseConfigUtils.h"
 
 struct wl_list stack;
-struct wl_list focus_stack;
 struct wl_list layer_stack;
 struct wl_list popups;
 struct wl_list sticky_stack;

@@ -17,15 +17,25 @@ struct workspace {
     const char *name;
     struct layout layout[2];
     struct monitor *m;
-    struct wlr_list containers;
 
     /* number of all windows in layout even if they are invisible). Note that
      * floating windows don't belong to the layout and are thereby not counted */
     int n_all;
 
+    /* consists out of the lists of tiled_containers, hidden_containers and
+     * floating_containers */
+    struct wlr_list container_lists;
+    struct wlr_list visible_container_lists;
+
     struct wlr_list floating_containers;
-    struct wlr_list visible_containers;
+    struct wlr_list tiled_containers;
     struct wlr_list hidden_containers;
+
+    struct wlr_list focus_stack_lists;
+
+    struct wlr_list focus_stack_normal;
+    struct wlr_list focus_stack_on_top;
+    struct wlr_list focus_stack_not_focusable;
 };
 
 struct workspace *create_workspace(const char *name, size_t id, struct layout lt);
@@ -42,13 +52,12 @@ bool workspace_has_clients(struct workspace *ws);
 int get_workspace_container_count(struct wlr_list *workspaces, size_t ws_id);
 bool is_workspace_empty(struct wlr_list *workspaces, size_t ws_id);
 
-struct container *get_container(int ws_id, int i);
-
 struct workspace *find_next_unoccupied_workspace(struct wlr_list *workspaces, struct workspace *ws);
 struct workspace *get_workspace(struct wlr_list *workspaces, int id);
 struct workspace *get_next_empty_workspace(struct wlr_list *workspaces, size_t i);
 struct workspace *get_prev_empty_workspace(struct wlr_list *workspaces, size_t i);
 
+void remove_container_from_workspace(int ws_id, int i);
 void focus_next_unoccupied_workspace(struct monitor *m, struct wlr_list *workspaces, struct workspace *ws);
 void copy_layout_from_selected_workspace(struct wlr_list *workspaces);
 void create_workspaces(struct wlr_list *workspaces, struct wlr_list tagNames, struct layout default_layout);

@@ -55,7 +55,6 @@ static int get_layout_container_area_count(struct workspace *ws)
 static void update_layout_counters(struct workspace *ws)
 {
     struct layout *lt = ws->layout;
-    printf("update_layout_counters: %p\n", lt);
     ws->n_all = get_container_count(ws);
     printf("n_all: %i\n", ws->n_all);
     lt->n_area = get_layout_container_area_count(ws);
@@ -152,7 +151,7 @@ int get_floating_container_count(struct workspace *ws)
 
     int n = 0;
 
-    for (int i = 0; i < ws->visible_containers.length; i++) {
+    for (int i = 0; i < ws->tiled_containers.length; i++) {
         struct container *con = get_container(ws->id, i);
         if (!con->floating)
             continue;
@@ -201,7 +200,7 @@ static void update_container_positions_if_arranged_normally(struct workspace *ws
 static void update_container_positions_if_arranged_by_focus(struct monitor *m)
 {
     struct workspace *ws = get_workspace_in_monitor(m);
-    for (int i = 0; i < ws->visible_containers.length; i++) {
+    for (int i = 0; i < ws->tiled_containers.length; i++) {
         struct container *con = get_container(m->ws_ids[0], i);
         if (!exist_on(con, &server.workspaces, m->ws_ids[0]))
             continue;
@@ -224,17 +223,17 @@ void update_container_stack_positions(struct monitor *m)
 
 void update_container_focus_stack_positions(struct monitor *m)
 {
-    struct container *con;
-    int position = 0;
-    wl_list_for_each(con, &focus_stack, flink) {
+    struct workspace *ws = get_workspace(&server.workspaces, m->ws_ids[0]);
+    for (int i = 0; i < ws->focus_stack_normal.length; i++) {
+        struct container *con = ws->focus_stack_normal.items[i];
         if (!exist_on(con, &server.workspaces, m->ws_ids[0]))
             continue;
         if (con->client->type == LAYER_SHELL)
             continue;
 
-        con->focus_position = position;
+        con->focus_position = i;
         // then use the layout that may have been reseted
-        position++;
+        i++;
     }
 }
 
@@ -286,7 +285,7 @@ void arrange_containers(int ws_id, struct wlr_box root_geom)
 
     struct workspace *ws = get_workspace(&server.workspaces, ws_id);
     if (lt->options.smart_hidden_edges) {
-        if (ws->visible_containers.length <= 1) {
+        if (ws->tiled_containers.length <= 1) {
             container_add_gaps(&root_geom, -lt->options.tile_border_px,
                     lt->options.hidden_edges);
         }
@@ -295,21 +294,16 @@ void arrange_containers(int ws_id, struct wlr_box root_geom)
     }
 
     if (lt->options.arrange_by_focus) {
-        struct container *con;
-        wl_list_for_each(con, &focus_stack, flink) {
+        for (int i = 0; i < ws->focus_stack_normal.length; i++) {
+            struct container *con = container_focus_position_to_container(ws_id, i);
             if (!visible_on(con, &server.workspaces, ws_id))
-                continue;
-            if (con->hidden)
                 continue;
 
             arrange_container(con, con->focus_position, root_geom, actual_inner_gap);
         }
     } else {
-        for (int i = 0; i < ws->visible_containers.length; i++) {
-            struct container *con = ws->visible_containers.items[i];
-
-            if (con->hidden)
-                continue;
+        for (int i = 0; i < ws->tiled_containers.length; i++) {
+            struct container *con = ws->tiled_containers.items[i];
 
             arrange_container(con, con->position, root_geom, actual_inner_gap);
         }
@@ -319,6 +313,9 @@ void arrange_containers(int ws_id, struct wlr_box root_geom)
 static void arrange_container(struct container *con, int arrange_position, 
         struct wlr_box root_geom, int inner_gap)
 {
+    if (con->hidden)
+        return;
+
     struct monitor *m = con->m;
     struct workspace *ws = get_workspace_in_monitor(m);
     struct layout *lt = &ws->layout[0];
@@ -386,15 +383,14 @@ void resize(struct container *con, struct wlr_box geom)
 
 void update_hidden_status_of_containers(struct monitor *m)
 {
-    struct container *con;
     struct workspace *ws = get_workspace_in_monitor(m);
     // because the master are is included in n aswell as nmaster we have to
     // subtract the solution by one to count
     struct layout *lt = &ws->layout[0];
 
-    int i = 0;
     if (ws->layout[0].options.arrange_by_focus) {
-        wl_list_for_each(con, &focus_stack, flink) {
+        for (int i = 0; i < ws->focus_stack_normal.length; i++) {
+            struct container *con = container_focus_position_to_container(ws->id, i);
             if (!exist_on(con, &server.workspaces, ws->id))
                 continue;
             if (con->client->type == LAYER_SHELL)
@@ -404,34 +400,33 @@ void update_hidden_status_of_containers(struct monitor *m)
             i++;
         }
     } else {
-        printf("lt->n_tiled: %i ws->visible_containers.length: %zu\n", lt->n_tiled, ws->visible_containers.length);
-        if (lt->n_tiled > ws->visible_containers.length) {
-            int n_missing = MIN(lt->n_tiled - ws->visible_containers.length, ws->hidden_containers.length);
+        if (lt->n_tiled > ws->tiled_containers.length) {
+            int n_missing = MIN(lt->n_tiled - ws->tiled_containers.length, ws->hidden_containers.length);
             for (int i = 0; i < n_missing; i++) {
                 struct container *con = ws->hidden_containers.items[0];
 
                 con->hidden = false;
                 wlr_list_del(&ws->hidden_containers, 0);
-                wlr_list_push(&ws->visible_containers, con);
+                wlr_list_push(&ws->tiled_containers, con);
             }
             for (int i = 0; i < ws->hidden_containers.length; i++) {
                 struct container *con = ws->hidden_containers.items[i];
                 con->hidden = true;
             }
         } else {
-            int visible_containers_length = ws->visible_containers.length;
+            int visible_containers_length = ws->tiled_containers.length;
             for (int i = lt->n_visible; i < visible_containers_length; i++) {
-                struct container *con = wlr_list_pop(&ws->visible_containers);
+                struct container *con = wlr_list_pop(&ws->tiled_containers);
                 con->hidden = true;
                 wlr_list_insert(&ws->hidden_containers, 0, con);
             }
-            for (int i = 0; i < ws->visible_containers.length; i++) {
-                struct container *con = ws->visible_containers.items[i];
+            for (int i = 0; i < ws->tiled_containers.length; i++) {
+                struct container *con = ws->tiled_containers.items[i];
                 con->hidden = false;
             }
         }
-        for (int i = 0; i < ws->visible_containers.length; i++) {
-            struct container *con = ws->visible_containers.items[i];
+        for (int i = 0; i < ws->tiled_containers.length; i++) {
+            struct container *con = ws->tiled_containers.items[i];
             con->hidden = false;
         }
         for (int i = 0; i < ws->hidden_containers.length; i++) {
@@ -443,7 +438,7 @@ void update_hidden_status_of_containers(struct monitor *m)
 
 int get_container_count(struct workspace *ws)
 {
-    return ws->visible_containers.length + ws->hidden_containers.length + 
+    return ws->tiled_containers.length + ws->hidden_containers.length + 
         ws->floating_containers.length;
 }
 
@@ -452,7 +447,7 @@ static int get_tiled_container_count_if_arranged_by_focus(struct workspace *ws)
 {
     int n = 0;
 
-    for (int i = 0; i < ws->visible_containers.length; i++) {
+    for (int i = 0; i < ws->tiled_containers.length; i++) {
         struct container *con = get_container(ws->id, i);
         if (!exist_on(con, &server.workspaces, ws->id))
             continue;
@@ -465,7 +460,7 @@ static int get_tiled_container_count_if_arranged_by_focus(struct workspace *ws)
 
 static int get_tiled_container_count_if_arranged_normally(struct workspace *ws)
 {
-    return ws->visible_containers.length + ws->hidden_containers.length;
+    return ws->tiled_containers.length + ws->hidden_containers.length;
 }
 
 int get_tiled_container_count(struct workspace *ws)

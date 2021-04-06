@@ -33,8 +33,6 @@ struct monrule {
 
 /* associated with slink in container */
 extern struct wl_list stack;
-/* associated with flink in container */
-extern struct wl_list focus_stack;
 /* associated with llink in container */
 extern struct wl_list layer_stack;
 /* associated with plink in container  */

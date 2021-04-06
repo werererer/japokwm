@@ -13,29 +13,6 @@
 #include "utils/parseConfigUtils.h"
 #include "container.h"
 
-struct container *get_container(int ws_id, int i)
-{
-    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
-
-    if (!ws)
-        return NULL;
-
-    struct container *con = NULL;
-    if (i < ws->visible_containers.length) {
-        con = ws->visible_containers.items[i];
-    }
-    i -= ws->visible_containers.length;
-    if (!con && i >= 0 && i < ws->floating_containers.length) {
-        con = ws->floating_containers.items[i];
-    }
-    i -= ws->floating_containers.length;
-    if (!con && i >= 0 && i < ws->hidden_containers.length) {
-        con = ws->hidden_containers.items[i];
-    }
-
-    return con;
-}
-
 static void update_workspaces_id(struct wlr_list *workspaces)
 {
     int id = 0;
@@ -51,15 +28,50 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
     struct workspace *ws = calloc(1, sizeof(struct workspace));
     ws->name = name;
     ws->id = id;
-    wlr_list_init(&ws->containers);
-    wlr_list_init(&ws->visible_containers);
+    wlr_list_init(&ws->container_lists);
+    wlr_list_init(&ws->visible_container_lists);
+
+    wlr_list_init(&ws->tiled_containers);
     wlr_list_init(&ws->hidden_containers);
     wlr_list_init(&ws->floating_containers);
+
+    wlr_list_push(&ws->container_lists, &ws->tiled_containers);
+    wlr_list_push(&ws->container_lists, &ws->floating_containers);
+    wlr_list_push(&ws->container_lists, &ws->hidden_containers);
+
+    wlr_list_push(&ws->container_lists, &ws->tiled_containers);
+    wlr_list_push(&ws->visible_container_lists, &ws->floating_containers);
+
+    wlr_list_init(&ws->focus_stack_lists);
+
+    wlr_list_init(&ws->focus_stack_on_top);
+    wlr_list_init(&ws->focus_stack_normal);
+    wlr_list_init(&ws->focus_stack_not_focusable);
+
+    wlr_list_push(&ws->focus_stack_lists, &ws->focus_stack_on_top);
+    wlr_list_push(&ws->focus_stack_lists, &ws->focus_stack_normal);
+    wlr_list_push(&ws->focus_stack_lists, &ws->focus_stack_not_focusable);
 
     // fill layout stack with reasonable values
     push_layout(ws, lt);
     push_layout(ws, lt);
     return ws;
+}
+
+void remove_container_from_workspace(int ws_id, int i)
+{
+    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
+    for (int j = 0; j < ws->container_lists.length; j++) {
+        struct wlr_list *list = ws->container_lists.items[j];
+        if (i < list->length) {
+            wlr_list_del(list, i);
+            return;
+        }
+        i -= list->length;
+
+        if (i < 0)
+            break;
+    }
 }
 
 void destroy_workspace(struct workspace *ws)
@@ -203,7 +215,7 @@ int get_workspace_container_count(struct wlr_list *workspaces, size_t ws_id)
     struct workspace *ws = get_workspace(workspaces, ws_id);
 
     int i = 0;
-    for (int i = 0; i < ws->visible_containers.length; i++) {
+    for (int i = 0; i < ws->tiled_containers.length; i++) {
         struct container *con = get_container(ws_id, i);
 
         if (visible_on(con, workspaces, ws_id))

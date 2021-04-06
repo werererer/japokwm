@@ -93,7 +93,7 @@ int lib_set_floating(lua_State *L)
 
     if (!sel->floating) {
         struct workspace *ws = get_workspace_in_monitor(m);
-        wlr_list_del(&ws->visible_containers, sel->position);
+        wlr_list_del(&ws->tiled_containers, sel->position);
         add_container_to_containers(sel, ws->layout->n_tiled-1);
     }
     return 0;
@@ -175,7 +175,7 @@ int lib_move_to_scratchpad(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
-    struct container *con = container_position_to_container(m->ws_ids[0], i);
+    struct container *con = get_container(m->ws_ids[0], i);
     move_to_scratchpad(con, 0);
     return 0;
 }
@@ -263,7 +263,7 @@ int lib_zoom(lua_State *L)
     arrange();
 
     // focus new master window
-    struct container *con0 = container_position_to_container(m->ws_ids[0], 0);
+    struct container *con0 = get_container(m->ws_ids[0], 0);
     focus_container(con0, FOCUS_NOOP);
 
     struct layout *lt = get_layout_in_monitor(m);
@@ -400,7 +400,7 @@ int lib_kill(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct container *con = container_position_to_container(m->ws_ids[0], i);
+    struct container *con = get_container(m->ws_ids[0], i);
     struct client *sel = con->client;
 
     if (!con)
@@ -450,8 +450,8 @@ int lib_swap_workspace(lua_State *L)
     struct monitor *m = selected_monitor;
     struct workspace *ws = get_workspace_in_monitor(m);
 
-    for (int i = 0; i < ws->visible_containers.length; i++) {
-        struct container *con = container_position_to_container(0, i);
+    for (int i = 0; i < ws->tiled_containers.length; i++) {
+        struct container *con = get_container(0, i);
         if (exist_on(con, &server.workspaces, ws_id1)) {
             con->client->ws_id = ws_id2;
             continue;

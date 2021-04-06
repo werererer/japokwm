@@ -16,8 +16,6 @@ enum focus_actions {
 struct container {
     /* container stack */
     struct wl_list slink;
-    /* container focus_stack */
-    struct wl_list flink;
     /* layer shell based clients */
     struct wl_list llink;
     /* independents list */
@@ -52,12 +50,13 @@ struct container {
 struct container *create_container(struct client *c, struct monitor *m, bool has_border);
 void destroy_container(struct container *con);
 
+struct container *get_container(int ws_id, int i);
+struct container *get_visible_container(int ws_id, int i);
 struct container *get_relative_container(int ws_id, struct container *con, int i);
 struct container *get_relative_hidden_container(int ws_id, int i);
 struct container *get_relative_hidden_container_in_focus_stack(int ws_id, int i);
 struct container *get_focused_container(struct monitor *m);
 struct container *xy_to_container(double x, double y);
-struct container *container_position_to_container(int ws_id, int position);
 struct container *container_position_to_hidden_container(int ws_id, int position);
 struct container *container_focus_position_to_container(int ws_id, int position);
 struct container *get_relative_focus_container(int ws_id, struct container *con, int i);

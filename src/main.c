@@ -145,7 +145,6 @@ static void run(char *startup_cmd)
 static int setup()
 {
     wl_list_init(&mons);
-    wl_list_init(&focus_stack);
     wl_list_init(&stack);
     wl_list_init(&layer_stack);
     wl_list_init(&popups);
