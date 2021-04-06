@@ -242,8 +242,8 @@ void arrange_containers(int ws_id, struct wlr_box root_geom)
     }
 
     if (lt->options.arrange_by_focus) {
-        for (int i = 0; i < ws->focus_stack_normal.length; i++) {
-            struct container *con = get_container_on_focus_stack(ws_id, i);
+        for (int i = 0; i < length_of_composed_list(&ws->focus_stack_lists); i++) {
+            struct container *con = get_in_composed_list(&ws->focus_stack_lists, i);
 
             arrange_container(con, i, root_geom, actual_inner_gap);
         }
@@ -335,8 +335,8 @@ void update_hidden_status_of_containers(struct monitor *m)
     struct layout *lt = &ws->layout[0];
 
     if (ws->layout[0].options.arrange_by_focus) {
-        for (int i = 0; i < ws->focus_stack_normal.length; i++) {
-            struct container *con = get_container_on_focus_stack(ws->id, i);
+        for (int i = 0; i < length_of_composed_list(&ws->focus_stack_lists); i++) {
+            struct container *con = get_in_composed_list(&ws->focus_stack_lists, i);
             if (!exist_on(con, &server.workspaces, ws->id))
                 continue;
             if (con->client->type == LAYER_SHELL)

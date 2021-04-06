@@ -250,11 +250,11 @@ int lib_zoom(lua_State *L)
     if (!sel)
         return 0;
 
-    if (sel == get_container(ws->id, 0)) {
-        int position = wlr_list_find(&ws->container_lists, cmp_ptr, sel);
-        repush(position, 0);
-    } else {
+    if (sel == ws->tiled_containers.items[0]) {
         repush(1, 0);
+    } else {
+        int position = wlr_list_find(&ws->tiled_containers, cmp_ptr, sel);
+        repush(position, 0);
     }
 
     arrange();

@@ -627,16 +627,17 @@ void lift_container(struct container *con)
 
 void repush(int pos1, int pos2)
 {
+    /* pos1 > pos2 */
     struct monitor *m = selected_monitor;
+    struct workspace *ws = get_workspace_in_monitor(m);
 
-    struct container *con = get_container(m->ws_ids[0], pos2);
+    struct container *con = ws->tiled_containers.items[pos1];
 
     if (!con)
         return;
     if (con->floating)
         return;
 
-    struct workspace *ws = get_workspace_in_monitor(m);
     wlr_list_remove(&ws->tiled_containers, cmp_ptr, con);
     wlr_list_insert(&ws->tiled_containers, pos2, con);
 
