@@ -82,4 +82,6 @@ executable('japokwm',
       [main],
       dependencies: deps,
       include_directories: inc,
-      link_with: [wmlib])
+      link_with: [wmlib],
+      install: true,
+      )
