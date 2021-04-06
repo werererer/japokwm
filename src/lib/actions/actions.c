@@ -93,7 +93,7 @@ int lib_set_floating(lua_State *L)
 
     if (!sel->floating) {
         struct workspace *ws = get_workspace_in_monitor(m);
-        wlr_list_del(&ws->tiled_containers, sel->position);
+        wlr_list_remove_in_composed_list(&ws->tiled_containers, cmp_ptr, sel);
         add_container_to_containers(sel, ws->layout->n_tiled-1);
     }
     return 0;
@@ -250,15 +250,18 @@ int lib_quit(lua_State *L)
 int lib_zoom(lua_State *L)
 {
     struct monitor *m = selected_monitor;
+    struct workspace *ws = get_workspace_in_monitor(m);
     struct container *sel = get_focused_container(m);
 
     if (!sel)
         return 0;
 
-    if (sel->position != 0)
-        repush(sel->position, 0);
-    else
+    if (sel == get_container(ws->id, 0)) {
+        int position = wlr_list_find(&ws->container_lists, cmp_ptr, sel);
+        repush(position, 0);
+    } else {
         repush(1, 0);
+    }
 
     arrange();
 

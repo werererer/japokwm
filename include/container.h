@@ -43,7 +43,6 @@ struct container {
     bool geom_was_changed;
     int focus_position;
     int visible_position;
-    int position;
     // height = ratio * width
     float ratio;
 };
@@ -54,7 +53,8 @@ void destroy_container(struct container *con);
 
 struct container *get_container(int ws_id, int i);
 struct container *get_visible_container(int ws_id, int i);
-struct container *get_relative_container(int ws_id, struct container *con, int i);
+struct container *get_hidden_container(int ws_id, int i);
+struct container *get_relative_visible_container(int ws_id, struct container *con, int i);
 struct container *get_relative_hidden_container(int ws_id, int i);
 struct container *get_relative_hidden_container_in_focus_stack(int ws_id, int i);
 struct container *get_focused_container(struct monitor *m);
@@ -70,7 +70,7 @@ struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box ref);
 struct wlr_box get_monitor_local_box(struct wlr_box box, struct monitor *m);
 struct wlr_fbox lua_togeometry(lua_State *L);
 
-void remove_container_from_stack(int ws_id, int i);
+void remove_container_from_stack(int ws_id, struct container *con);
 void remove_container_from_focus_stack(int ws_id, int i);
 
 void add_container_to_containers(struct container *con, int i);
@@ -101,7 +101,6 @@ int container_relative_x_to_absolute(struct container *con, int lx);
 int container_relative_y_to_absolute(struct container *con, int ly);
 int absolute_x_to_container_relative(struct container *con, int x);
 int absolute_y_to_container_relative(struct container *con, int y);
-int compare_containers(struct container *con1, struct container *con2);
 
 bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *resize_constraints);
 #endif /* CONTAINER_H */

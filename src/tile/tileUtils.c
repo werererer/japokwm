@@ -176,46 +176,7 @@ int get_container_area_count(struct workspace *ws)
 void update_container_positions(struct monitor *m)
 {
     update_container_focus_stack_positions(selected_monitor);
-    update_container_stack_positions(selected_monitor);
     update_container_visible_positions(selected_monitor);
-}
-
-static void update_container_positions_if_arranged_normally(struct workspace *ws)
-{
-    int position = 0;
-    for (int i = 0; i < ws->n_all; i++) {
-        struct container *con = get_container(ws->id, i);
-        if (con->client->type == LAYER_SHELL)
-            continue;
-
-        con->position = position;
-
-        position++;
-    }
-}
-
-static void update_container_positions_if_arranged_by_focus(struct monitor *m)
-{
-    struct workspace *ws = get_workspace_in_monitor(m);
-    for (int i = 0; i < ws->n_all; i++) {
-        struct container *con = get_container(m->ws_ids[0], i);
-        if (!exist_on(con, &server.workspaces, m->ws_ids[0]))
-            continue;
-        if (con->client->type == LAYER_SHELL)
-            continue;
-        con->position = con->focus_position;
-    }
-}
-
-void update_container_stack_positions(struct monitor *m)
-{
-    struct layout *lt = get_layout_in_monitor(m);
-    if (lt->options.arrange_by_focus) {
-        update_container_positions_if_arranged_by_focus(m);
-    } else {
-        struct workspace *ws = get_workspace(&server.workspaces, m->ws_ids[0]);
-        update_container_positions_if_arranged_normally(ws);
-    }
 }
 
 void update_container_visible_positions(struct monitor *m)
@@ -323,7 +284,7 @@ void arrange_containers(int ws_id, struct wlr_box root_geom)
         for (int i = 0; i < ws->tiled_containers.length; i++) {
             struct container *con = ws->tiled_containers.items[i];
 
-            arrange_container(con, con->position, root_geom, actual_inner_gap);
+            arrange_container(con, i, root_geom, actual_inner_gap);
         }
     }
 }

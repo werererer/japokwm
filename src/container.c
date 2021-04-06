@@ -31,9 +31,12 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     con->focusable = true;
     add_container_to_monitor(con, con->m);
 
-    struct layout *lt = get_layout_in_monitor(con->m);
+    struct workspace *ws = get_workspace_in_monitor(m);
+    struct layout *lt = ws->layout;
     struct event_handler *ev = &lt->options.event_handler;
-    call_create_container_function(ev, con->position);
+
+    int position = wlr_list_find_in_composed_list(&ws->container_lists, &cmp_ptr, con);
+    call_create_container_function(ev, position);
     return con;
 }
 
@@ -50,11 +53,11 @@ void destroy_container(struct container *con)
         case X11_UNMANAGED:
             wl_list_remove(&con->slink);
             wl_list_remove(&con->ilink);
-            remove_container_from_stack(ws->id, con->position);
+            remove_container_from_stack(ws->id, con);
             break;
         default:
             wl_list_remove(&con->slink);
-            remove_container_from_stack(ws->id, con->position);
+            remove_container_from_stack(ws->id, con);
             break;
     }
 
@@ -121,17 +124,9 @@ void container_damage_whole(struct container *con)
 struct container *container_position_to_hidden_container(int ws_id, int position)
 {
     struct workspace *ws = get_workspace(&server.workspaces, ws_id);
-    for (int i = 0; i < ws->tiled_containers.length; i++) {
-        struct container *con = get_container(ws_id, i);
-        if (!hidden_on(con, &server.workspaces, ws_id))
-            continue;
-        if (con->client->type == LAYER_SHELL)
-            continue;
-
-        if (con->position == position)
-            return con;
-    }
-    return NULL;
+    if (position >= ws->hidden_containers.length)
+        return NULL;
+    return ws->hidden_containers.items[position];
 }
 
 struct container *container_position_to_hidden_container_in_focus_stack(int ws_id, int position)
@@ -171,6 +166,16 @@ struct container *get_visible_container(int ws_id, int i)
     return get_on_composed_list(&ws->visible_container_lists, i);
 }
 
+struct container *get_hidden_container(int ws_id, int i)
+{
+    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
+
+    if (!ws)
+        return NULL;
+
+    return ws->hidden_containers.items[i];
+}
+
 struct container *get_focused_container(struct monitor *m)
 {
     assert(m != NULL);
@@ -200,18 +205,16 @@ struct container *get_relative_focus_container(int ws_id, struct container *con,
     return get_container_on_focus_stack(ws_id, new_position);
 }
 
-struct container *get_relative_container(int ws_id, struct container *con, int i)
+struct container *get_relative_visible_container(int ws_id, struct container *con, int i)
 {
     assert(con != NULL);
 
     struct layout *lt = get_layout_on_workspace(ws_id);
 
-    int new_position = (con->position + i) % (lt->n_visible);
+    int new_position = (con->visible_position + i) % (lt->n_visible);
     while (new_position < 0) {
         new_position += lt->n_visible;
     }
-    printf("highest: %i\n", lt->n_visible);
-    printf("new_position: %i\n", new_position);
 
     return get_visible_container(ws_id, new_position);
 }
@@ -299,14 +302,14 @@ struct container *xy_to_container(double x, double y)
     return NULL;
 }
 
-void remove_container_from_stack(int ws_id, int i)
+void remove_container_from_stack(int ws_id, struct container *con)
 {
     struct workspace *ws = get_workspace(&server.workspaces, ws_id);
 
     if (!ws)
         return;
 
-    remove_from_composed_list(&ws->container_lists, i);
+    wlr_list_remove_in_composed_list(&ws->container_lists, cmp_ptr, con);
 }
 
 void remove_container_from_focus_stack(int ws_id, int i)
@@ -327,7 +330,6 @@ void add_container_to_containers(struct container *con, int i)
     printf("\nadd container: %p\n", con);
     struct monitor *m = con->m;
     struct workspace *ws = get_workspace(&server.workspaces, m->ws_ids[0]);
-    con->position = i;
     wlr_list_insert(&ws->tiled_containers, i, con);
     printf("add to workspace: %zu: length: %zu\n", ws->id, ws->tiled_containers.length);
 }
@@ -527,7 +529,10 @@ void apply_rules(struct container *con)
         bool title_empty = strcmp(r.title, "") == 0;
         if ((same_id || id_empty) && (same_title || title_empty)) {
             lua_geti(L, LUA_REGISTRYINDEX, r.lua_func_ref);
-            lua_pushinteger(L, con->position);
+            struct monitor *m = con->m;
+            struct workspace *ws = get_workspace_in_monitor(m);
+            int position = wlr_list_find(&ws->container_lists, cmp_ptr, con);
+            lua_pushinteger(L, position);
             lua_call_safe(L, 1, 0, 0);
         }
     }
@@ -604,17 +609,19 @@ static struct container *focus_on_hidden_stack_if_arrange_normally(int i)
     if (i >= 0) {
         /* replace selected container with a hidden one and move the selected
          * container to the end of containers */
-        wlr_list_del(&ws->tiled_containers, con->position);
-        wlr_list_insert(&ws->tiled_containers, sel->position+1, con);
+        wlr_list_remove_in_composed_list(&ws->tiled_containers, cmp_ptr, con);
+        int position = wlr_list_find(&ws->tiled_containers, cmp_ptr, sel);
+        wlr_list_insert(&ws->tiled_containers, position+1, con);
         con->hidden = false;
 
-        wlr_list_del(&ws->tiled_containers, sel->position);
+        wlr_list_remove_in_composed_list(&ws->visible_container_lists, cmp_ptr, sel);
         wlr_list_insert(&ws->tiled_containers, ws->tiled_containers.length-1, sel);
         sel->hidden = true;
     } else if (i < 0) {
         struct container *last = get_container(m->ws_ids[0], lt->n_visible-1);
-        wlr_list_del(&ws->tiled_containers, con->position);
-        wlr_list_insert(&ws->tiled_containers, sel->position+1, con);
+        wlr_list_remove(&ws->tiled_containers, cmp_ptr, con);
+        int position = wlr_list_find_in_composed_list(&ws->container_lists, cmp_ptr, sel);
+        wlr_list_insert(&ws->tiled_containers, position+1, con);
 
         /* replace current container with a hidden one and move the selected
          * container to the first position that is not visible */
@@ -630,8 +637,9 @@ static struct container *focus_on_hidden_stack_if_arrange_normally(int i)
             return NULL;
         }
 
-        wlr_list_del(&ws->tiled_containers, sel->position);
-        wlr_list_insert(&ws->tiled_containers, last->position+1, sel);
+        wlr_list_remove(&ws->tiled_containers, cmp_ptr, sel);
+        position = wlr_list_find(&ws->tiled_containers, cmp_ptr, last);
+        wlr_list_insert(&ws->tiled_containers, position+1, sel);
         con->hidden = false;
         sel->hidden = true;
     }
@@ -658,7 +666,7 @@ void focus_on_stack(int i)
         printf("visible_position: %i\n", con->visible_position);
     }
 
-    struct container *con = get_relative_container(m->ws_ids[0], sel, i);
+    struct container *con = get_relative_visible_container(m->ws_ids[0], sel, i);
     if (!con)
         return;
 
@@ -691,14 +699,15 @@ void focus_on_hidden_stack(int i)
 
     struct container *last = get_container(m->ws_ids[0], lt->n_visible-1);
     struct workspace *ws = get_workspace_in_monitor(m);
-    wlr_list_del(&ws->tiled_containers, con->position);
-    wlr_list_insert(&ws->tiled_containers, sel->position+1, con);
+    wlr_list_remove(&ws->tiled_containers, cmp_ptr, con);
+    int position = wlr_list_find(&ws->tiled_containers, cmp_ptr, sel);
+    wlr_list_insert(&ws->tiled_containers, position+1, con);
     con->hidden = false;
     sel->hidden = true;
     if (i >= 0) {
         /* replace selected container with a hidden one and move the selected
          * container to the end of the containers array */
-        wlr_list_del(&ws->tiled_containers, sel->position);
+        wlr_list_remove(&ws->tiled_containers, cmp_ptr, sel);
         wlr_list_insert(&ws->tiled_containers, ws->tiled_containers.length-1, sel);
     } else if (i < 0) {
 
@@ -715,7 +724,7 @@ void focus_on_hidden_stack(int i)
             return;
         }
 
-        wlr_list_del(&ws->tiled_containers, sel->position);
+        wlr_list_remove_in_composed_list(&ws->tiled_containers, cmp_ptr, sel);
         wlr_list_insert(&ws->tiled_containers, ws->tiled_containers.length-1, sel);
     }
 
@@ -741,25 +750,16 @@ void repush(int pos1, int pos2)
 {
     struct monitor *m = selected_monitor;
 
-    struct container *con1 = get_container(m->ws_ids[0], pos2);
+    struct container *con = get_container(m->ws_ids[0], pos2);
 
-    if (!con1)
+    if (!con)
         return;
-    if (con1->floating)
-        return;
-
-    struct container *con2 = get_container(selected_monitor->ws_ids[0], pos1);
-
-    if (!con2)
-        return;
-    if (con2 == con1)
+    if (con->floating)
         return;
 
     struct workspace *ws = get_workspace_in_monitor(m);
-    wlr_list_del(&ws->tiled_containers, con2->position);
-    wlr_list_insert(&ws->tiled_containers, con1->position+1, &con2);
-    wlr_list_del(&ws->tiled_containers, con1->position);
-    wlr_list_insert(&ws->tiled_containers, con2->position+1, &con1);
+    wlr_list_remove(&ws->tiled_containers, cmp_ptr, con);
+    wlr_list_insert(&ws->tiled_containers, pos2, con);
 
     arrange();
 
@@ -786,7 +786,7 @@ void set_container_floating(struct container *con, bool floating)
     if (!con->floating) {
         set_container_workspace(con, m->ws_ids[0]);
 
-        remove_container_from_stack(ws->id, con->position);
+        wlr_list_remove_in_composed_list(&ws->container_lists, cmp_ptr, con);
         wlr_list_push(&ws->tiled_containers, con);
         update_container_positions(m);
 
@@ -794,7 +794,7 @@ void set_container_floating(struct container *con, bool floating)
             remove_container_from_scratchpad(con);
         }
     } else {
-        remove_container_from_stack(ws->id, con->position);
+        wlr_list_remove(&ws->tiled_containers, cmp_ptr, con);
         wlr_list_insert(&ws->floating_containers, 0, con);
         update_container_positions(m);
     }
@@ -889,11 +889,14 @@ void swap_container_positions(struct container *con1, struct container *con2)
     assert(con1->m == con2->m);
 
     struct workspace *ws = get_workspace_in_monitor(con1->m);
-    wlr_list_del(&ws->tiled_containers, con2->position);
-    add_container_to_containers(con2, con1->position);
+    int position2 = wlr_list_find_in_composed_list(&ws->container_lists, cmp_ptr, con2);
 
-    wlr_list_del(&ws->tiled_containers, con1->position);
-    add_container_to_containers(con1, con2->position);
+    wlr_list_remove_in_composed_list(&ws->container_lists, cmp_ptr, con2);
+    int position1 = wlr_list_find_in_composed_list(&ws->container_lists, cmp_ptr, con1);
+    add_container_to_containers(con2, position1+1);
+
+    wlr_list_del(&ws->tiled_containers, position1);
+    add_container_to_containers(con1, position2);
 
     swap_container_properties(con1, con2);
 }
@@ -949,11 +952,6 @@ inline int absolute_x_to_container_relative(struct container *con, int x)
 inline int absolute_y_to_container_relative(struct container *con, int y)
 {
     return y - con->geom.y;
-}
-
-int compare_containers(struct container *con1, struct container *con2)
-{
-    return (con1 == con2) ? 0 : 1;
 }
 
 bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *resize_constraints)

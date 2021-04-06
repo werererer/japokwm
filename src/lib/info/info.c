@@ -18,9 +18,11 @@ int lib_get_this_container_count(lua_State *L)
 
 int lib_this_container_position(lua_State *L)
 {
-    struct container *sel = get_focused_container(selected_monitor);
+    struct monitor *m = selected_monitor;
+    struct container *sel = get_focused_container(m);
+    struct workspace *ws = get_workspace_in_monitor(m);
 
-    int position = sel ? sel->position : INVALID_POSITION;
+    int position = wlr_list_find_in_composed_list(&ws->container_lists, cmp_ptr, sel);
     lua_pushinteger(L, position);
     return 1;
 }

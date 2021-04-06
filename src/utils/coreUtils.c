@@ -30,6 +30,52 @@ void wlr_list_clear(struct wlr_list *list)
     wlr_list_init(list);
 }
 
+int wlr_list_remove(struct wlr_list *list,
+        int (*compare)(const void *, const void *), const void *cmp_to)
+{
+    for (int i = 0; i < list->length; i++) {
+        void *item = list->items[i];
+        if (compare(item, cmp_to) == 0) {
+            wlr_list_del(list, i);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int wlr_list_remove_in_composed_list(struct wlr_list *lists,
+        int (*compare)(const void *, const void *), const void *cmp_to)
+{
+    for (int i = 0; i < lists->length; i++) {
+        struct wlr_list *list = lists->items[i];
+        if (wlr_list_remove(list, compare, cmp_to) == 0)
+            return 0;
+    }
+    return 1;
+}
+
+int cmp_ptr(const void *ptr1, const void *ptr2)
+{
+    return ptr1 == ptr2 ? 0 : 1;
+}
+
+int wlr_list_find_in_composed_list(struct wlr_list *lists,
+        int (*compare)(const void *, const void *), const void *cmp_to)
+{
+    int position = 0;
+    for (int i = 0; i < lists->length; i++) {
+        struct wlr_list *list = lists->items[i];
+        for (int j = 0; j < list->length; j++) {
+            void *item = list->items[i];
+            if (compare(item, cmp_to) == 0) {
+                return position;
+            }
+            position++;
+        }
+    }
+    return -1;
+}
+
 char last_char(const char *str)
 {
     return str[strlen(str)-1];

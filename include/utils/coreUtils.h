@@ -85,6 +85,17 @@ void lua_get_default_master_layout_data();
 void lua_get_default_resize_data();
 
 void wlr_list_clear(struct wlr_list *list);
+/* return 0 on success and 1 on failure */
+int wlr_list_remove(struct wlr_list *list,
+        int (*compare)(const void *, const void *), const void *cmp_to);
+/* return 0 on success and 1 on failure */
+int wlr_list_remove_in_composed_list(struct wlr_list *lists,
+        int (*compare)(const void *, const void *), const void *cmp_to);
+int wlr_list_find_in_composed_list(struct wlr_list *lists,
+        int (*compare)(const void *, const void *), const void *cmp_to);
+// compare pointers and return 0 if they are equal and 1 otherwise
+int cmp_ptr(const void *ptr1, const void *ptr2);
+
 void lua_tocolor(float dest_color[static 4]);
 // like lua_ref but override the old value if *ref > 0
 void lua_ref_safe(lua_State *L, int t, int *ref);
