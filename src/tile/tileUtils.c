@@ -151,12 +151,8 @@ int get_floating_container_count(struct workspace *ws)
 
     int n = 0;
 
-    for (int i = 0; i < ws->tiled_containers.length; i++) {
+    for (int i = 0; i < ws->floating_containers.length; i++) {
         struct container *con = get_container(ws->id, i);
-        if (!con->floating)
-            continue;
-        if (!exist_on(con, &server.workspaces, ws->id))
-            continue;
         if (con->client->type == LAYER_SHELL)
             continue;
         n++;
@@ -181,6 +177,7 @@ void update_container_positions(struct monitor *m)
 {
     update_container_focus_stack_positions(selected_monitor);
     update_container_stack_positions(selected_monitor);
+    update_container_visible_positions(selected_monitor);
 }
 
 static void update_container_positions_if_arranged_normally(struct workspace *ws)
@@ -200,7 +197,7 @@ static void update_container_positions_if_arranged_normally(struct workspace *ws
 static void update_container_positions_if_arranged_by_focus(struct monitor *m)
 {
     struct workspace *ws = get_workspace_in_monitor(m);
-    for (int i = 0; i < ws->tiled_containers.length; i++) {
+    for (int i = 0; i < ws->n_all; i++) {
         struct container *con = get_container(m->ws_ids[0], i);
         if (!exist_on(con, &server.workspaces, m->ws_ids[0]))
             continue;
@@ -221,17 +218,40 @@ void update_container_stack_positions(struct monitor *m)
     }
 }
 
+void update_container_visible_positions(struct monitor *m)
+{
+    struct layout *lt = get_layout_in_monitor(m);
+    if (lt->options.arrange_by_focus) {
+        struct workspace *ws = get_workspace_in_monitor(m);
+        for (int i = 0; i < length_of_composed_list(&ws->visible_container_lists); i++) {
+            struct container *con = get_container(m->ws_ids[0], i);
+            if (con->client->type == LAYER_SHELL)
+                continue;
+            con->visible_position = con->focus_position;
+        }
+    } else {
+        struct workspace *ws = get_workspace(&server.workspaces, m->ws_ids[0]);
+        int position = 0;
+        for (int i = 0; i < length_of_composed_list(&ws->visible_container_lists); i++) {
+            struct container *con = get_visible_container(ws->id, i);
+            if (con->client->type == LAYER_SHELL)
+                continue;
+            con->visible_position = position;
+            position++;
+        }
+    }
+}
+
 void update_container_focus_stack_positions(struct monitor *m)
 {
     struct workspace *ws = get_workspace(&server.workspaces, m->ws_ids[0]);
-    for (int i = 0; i < ws->focus_stack_normal.length; i++) {
+    for (int i = 0; i < length_of_composed_list(&ws->focus_stack_lists); i++) {
         struct container *con = get_container_on_focus_stack(ws->id, i);
+
         if (con->client->type == LAYER_SHELL)
             continue;
 
         con->focus_position = i;
-        // then use the layout that may have been reseted
-        i++;
     }
 }
 
@@ -395,7 +415,6 @@ void update_hidden_status_of_containers(struct monitor *m)
                 continue;
 
             con->hidden = i + 1 > lt->n_tiled;
-            i++;
         }
     } else {
         if (lt->n_tiled > ws->tiled_containers.length) {
@@ -436,8 +455,7 @@ void update_hidden_status_of_containers(struct monitor *m)
 
 int get_container_count(struct workspace *ws)
 {
-    return ws->tiled_containers.length + ws->hidden_containers.length + 
-        ws->floating_containers.length;
+    return length_of_composed_list(&ws->container_lists);
 }
 
 

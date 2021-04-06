@@ -95,6 +95,7 @@ void print_trace();
  * given it returns the same value as if all the lists where concatenated */
 void *get_on_composed_list(struct wlr_list *lists, int i);
 void remove_from_composed_list(struct wlr_list *lists, int i);
+int length_of_composed_list(struct wlr_list *lists);
 
 int exec(const char *cmd);
 bool is_approx_equal(double a, double b, double error_range);

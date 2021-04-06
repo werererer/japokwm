@@ -239,7 +239,8 @@ bool is_approx_equal(double a, double b, double error_range)
     return fabs(a - b) < error_range;
 }
 
-void *get_on_composed_list(struct wlr_list *lists, int i) {
+void *get_on_composed_list(struct wlr_list *lists, int i)
+{
     for (int j = 0; j < lists->length; j++) {
         struct wlr_list *list = lists->items[j];
         if (i >= 0 && i < list->length) {
@@ -256,7 +257,8 @@ void *get_on_composed_list(struct wlr_list *lists, int i) {
     return NULL;
 }
 
-void remove_from_composed_list(struct wlr_list *lists, int i) {
+void remove_from_composed_list(struct wlr_list *lists, int i)
+{
     for (int j = 0; j < lists->length; j++) {
         struct wlr_list *list = lists->items[j];
         if (i >= 0 && i < list->length) {
@@ -273,4 +275,12 @@ void remove_from_composed_list(struct wlr_list *lists, int i) {
     return;
 }
 
-
+int length_of_composed_list(struct wlr_list *lists)
+{
+    int length = 0;
+    for (int i = 0; i < lists->length; i++) {
+        struct wlr_list *list = lists->items[i];
+        length += list->length;
+    }
+    return length;
+}

@@ -41,12 +41,6 @@ void destroy_container(struct container *con)
 {
     struct workspace *ws = get_workspace_in_monitor(con->m);
 
-    printf("con->position: %i\n", con->position);
-    printf("destroy_container\n");
-    for (int i = 0; i < ws->n_all; i++) {
-        struct container *con = get_container(ws->id, i);
-        printf("con->position: %i\n", con->position);
-    }
     remove_container_from_focus_stack(ws->id, con->focus_position);
 
     switch (con->client->type) {
@@ -62,12 +56,6 @@ void destroy_container(struct container *con)
             wl_list_remove(&con->slink);
             remove_container_from_stack(ws->id, con->position);
             break;
-    }
-
-    printf("destroy_container\n");
-    for (int i = 0; i < ws->n_all; i++) {
-        struct container *con = get_container(ws->id, i);
-        printf("con->position1: %i\n", con->position);
     }
 
     free(con);
@@ -222,8 +210,10 @@ struct container *get_relative_container(int ws_id, struct container *con, int i
     while (new_position < 0) {
         new_position += lt->n_visible;
     }
+    printf("highest: %i\n", lt->n_visible);
+    printf("new_position: %i\n", new_position);
 
-    return get_container(ws_id, new_position);
+    return get_visible_container(ws_id, new_position);
 }
 
 struct container *get_relative_hidden_container(int ws_id, int i)
@@ -316,7 +306,6 @@ void remove_container_from_stack(int ws_id, int i)
     if (!ws)
         return;
 
-    // TODO unit_test
     remove_from_composed_list(&ws->container_lists, i);
 }
 
@@ -661,6 +650,12 @@ void focus_on_stack(int i)
         struct container *con = get_container(m->ws_ids[0], 0);
         focus_container(con, FOCUS_NOOP);
         return;
+    }
+
+    struct workspace *ws = get_workspace_in_monitor(m);
+    for (int i = 0; i < ws->layout->n_visible; i++) {
+        struct container *con = get_visible_container(ws->id, i);
+        printf("visible_position: %i\n", con->visible_position);
     }
 
     struct container *con = get_relative_container(m->ws_ids[0], sel, i);

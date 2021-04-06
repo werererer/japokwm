@@ -39,7 +39,7 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
     wlr_list_push(&ws->container_lists, &ws->floating_containers);
     wlr_list_push(&ws->container_lists, &ws->hidden_containers);
 
-    wlr_list_push(&ws->container_lists, &ws->tiled_containers);
+    wlr_list_push(&ws->visible_container_lists, &ws->tiled_containers);
     wlr_list_push(&ws->visible_container_lists, &ws->floating_containers);
 
     wlr_list_init(&ws->focus_stack_lists);
