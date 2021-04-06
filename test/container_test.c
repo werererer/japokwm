@@ -17,12 +17,6 @@ START_TEST(test_visible_on)
     lt.options.arrange_by_focus = false;
     struct wlr_list workspaces;
     create_workspaces(&workspaces, tag_names, lt);
-    struct workspace *ws0 = get_workspace(&workspaces, 0);
-    ws0->layout[0].options.arrange_by_focus = false;
-    struct workspace *ws1 = get_workspace(&workspaces, 1);
-    ws1->layout[1].options.arrange_by_focus = false;
-    struct workspace *ws2 = get_workspace(&workspaces, 2);
-    ws2->layout[2].options.arrange_by_focus = false;
 
     struct monitor m1;
     struct monitor m2;
