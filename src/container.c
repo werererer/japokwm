@@ -193,23 +193,17 @@ struct container *get_focused_container(struct monitor *m)
 {
     assert(m != NULL);
 
-    return container_focus_position_to_container(m->ws_ids[0], 0);
+    return get_container_on_focus_stack(m->ws_ids[0], 0);
 }
 
-struct container *container_focus_position_to_container(int ws_id, int position)
+struct container *get_container_on_focus_stack(int ws_id, int i)
 {
     struct workspace *ws = get_workspace(&server.workspaces, ws_id);
 
-    for (int i = 0; i < ws->focus_stack_normal.length; i++) {
-        struct container *con = ws->focus_stack_normal.items[i];
-        if (!exist_on(con, &server.workspaces, ws_id))
-            continue;
-        if (con->client->type == LAYER_SHELL)
-            continue;
-        if (con->focus_position == position)
-            return con;
-    }
-    return NULL;
+    if (!ws)
+        return NULL;
+
+    return get_on_composed_list(&ws->focus_stack_lists, i);
 }
 
 struct container *get_relative_focus_container(int ws_id, struct container *con, int i)
@@ -221,7 +215,7 @@ struct container *get_relative_focus_container(int ws_id, struct container *con,
         new_position += lt->n_visible;
     }
 
-    return container_focus_position_to_container(ws_id, new_position);
+    return get_container_on_focus_stack(ws_id, new_position);
 }
 
 struct container *get_relative_container(int ws_id, struct container *con, int i)
@@ -567,7 +561,7 @@ void focus_container(struct container *con, enum focus_actions a)
 
 void focus_most_recent_container(int ws_id, enum focus_actions a)
 {
-    struct container *con = container_focus_position_to_container(ws_id, 0);
+    struct container *con = get_container_on_focus_stack(ws_id, 0);
 
     if (!con) {
         con = get_container(ws_id, 0);

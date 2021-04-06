@@ -58,7 +58,7 @@ struct container *get_relative_hidden_container_in_focus_stack(int ws_id, int i)
 struct container *get_focused_container(struct monitor *m);
 struct container *xy_to_container(double x, double y);
 struct container *container_position_to_hidden_container(int ws_id, int position);
-struct container *container_focus_position_to_container(int ws_id, int position);
+struct container *get_container_on_focus_stack(int ws_id, int position);
 struct container *get_relative_focus_container(int ws_id, struct container *con, int i);
 
 struct wlr_box get_center_box(struct wlr_box ref);

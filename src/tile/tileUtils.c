@@ -295,7 +295,7 @@ void arrange_containers(int ws_id, struct wlr_box root_geom)
 
     if (lt->options.arrange_by_focus) {
         for (int i = 0; i < ws->focus_stack_normal.length; i++) {
-            struct container *con = container_focus_position_to_container(ws_id, i);
+            struct container *con = get_container_on_focus_stack(ws_id, i);
             if (!visible_on(con, &server.workspaces, ws_id))
                 continue;
 
@@ -390,7 +390,7 @@ void update_hidden_status_of_containers(struct monitor *m)
 
     if (ws->layout[0].options.arrange_by_focus) {
         for (int i = 0; i < ws->focus_stack_normal.length; i++) {
-            struct container *con = container_focus_position_to_container(ws->id, i);
+            struct container *con = get_container_on_focus_stack(ws->id, i);
             if (!exist_on(con, &server.workspaces, ws->id))
                 continue;
             if (con->client->type == LAYER_SHELL)
