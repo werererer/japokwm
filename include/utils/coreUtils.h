@@ -90,6 +90,12 @@ void lua_tocolor(float dest_color[static 4]);
 void lua_ref_safe(lua_State *L, int t, int *ref);
 void copy_options(struct options *dest_option, struct options *src_option);
 void print_trace();
+
+/* a composed list is just a list consisting of lists so that if an index i is
+ * given it returns the same value as if all the lists where concatenated */
+void *get_on_composed_list(struct wlr_list *lists, int i);
+void remove_from_composed_list(struct wlr_list *lists, int i);
+
 int exec(const char *cmd);
 bool is_approx_equal(double a, double b, double error_range);
 #endif

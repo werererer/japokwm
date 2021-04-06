@@ -71,10 +71,15 @@ srcs = files(
     'scratchpad.c',
   )
 
-executable('japokwm',
-              [main, srcs],
+libName = 'japokwm_lib'
+wmlib = static_library(libName,
+              [srcs],
               dependencies: deps,
               include_directories: inc,
               link_args: ['-lm'],
-              install: true,
               )
+executable('japokwm',
+      [main],
+      dependencies: deps,
+      include_directories: inc,
+      link_with: [wmlib])

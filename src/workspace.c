@@ -58,22 +58,6 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
     return ws;
 }
 
-void remove_container_from_workspace(int ws_id, int i)
-{
-    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
-    for (int j = 0; j < ws->container_lists.length; j++) {
-        struct wlr_list *list = ws->container_lists.items[j];
-        if (i < list->length) {
-            wlr_list_del(list, i);
-            return;
-        }
-        i -= list->length;
-
-        if (i < 0)
-            break;
-    }
-}
-
 void destroy_workspace(struct workspace *ws)
 {
     free(ws);

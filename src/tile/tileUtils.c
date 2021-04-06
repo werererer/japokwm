@@ -225,9 +225,7 @@ void update_container_focus_stack_positions(struct monitor *m)
 {
     struct workspace *ws = get_workspace(&server.workspaces, m->ws_ids[0]);
     for (int i = 0; i < ws->focus_stack_normal.length; i++) {
-        struct container *con = ws->focus_stack_normal.items[i];
-        if (!exist_on(con, &server.workspaces, m->ws_ids[0]))
-            continue;
+        struct container *con = get_container_on_focus_stack(ws->id, i);
         if (con->client->type == LAYER_SHELL)
             continue;
 

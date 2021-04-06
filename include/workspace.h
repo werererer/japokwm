@@ -57,7 +57,6 @@ struct workspace *get_workspace(struct wlr_list *workspaces, int id);
 struct workspace *get_next_empty_workspace(struct wlr_list *workspaces, size_t i);
 struct workspace *get_prev_empty_workspace(struct wlr_list *workspaces, size_t i);
 
-void remove_container_from_workspace(int ws_id, int i);
 void focus_next_unoccupied_workspace(struct monitor *m, struct wlr_list *workspaces, struct workspace *ws);
 void copy_layout_from_selected_workspace(struct wlr_list *workspaces);
 void create_workspaces(struct wlr_list *workspaces, struct wlr_list tagNames, struct layout default_layout);

@@ -238,3 +238,39 @@ bool is_approx_equal(double a, double b, double error_range)
 {
     return fabs(a - b) < error_range;
 }
+
+void *get_on_composed_list(struct wlr_list *lists, int i) {
+    for (int j = 0; j < lists->length; j++) {
+        struct wlr_list *list = lists->items[j];
+        if (i >= 0 && i < list->length) {
+            void *item = list->items[i];
+            return item;
+        }
+        i -= list->length;
+
+        if (i < 0)
+            break;
+    }
+
+    // no item found
+    return NULL;
+}
+
+void remove_from_composed_list(struct wlr_list *lists, int i) {
+    for (int j = 0; j < lists->length; j++) {
+        struct wlr_list *list = lists->items[j];
+        if (i >= 0 && i < list->length) {
+            wlr_list_del(list, i);
+            return;
+        }
+        i -= list->length;
+
+        if (i < 0)
+            break;
+    }
+
+    // no item found
+    return;
+}
+
+

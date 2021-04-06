@@ -88,7 +88,8 @@ START_TEST(test_exist_on)
     ck_assert_int_eq(exist_on(&con, &workspaces, 1), true);
 } END_TEST
 
-Suite *suite() {
+Suite *suite()
+{
     Suite *s;
     TCase *tc;
 
@@ -104,7 +105,7 @@ Suite *suite() {
 
 int main()
 {
-    int numberFailed;
+    int number_failed;
     Suite *s;
     SRunner *sr;
 
@@ -113,8 +114,8 @@ int main()
 
     srunner_run_all(sr, CK_NORMAL);
     srunner_ntests_run(sr);
-    numberFailed = srunner_ntests_failed(sr);
+    number_failed = srunner_ntests_failed(sr);
     srunner_free(sr);
 
-    return (numberFailed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

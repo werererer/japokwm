@@ -41,7 +41,13 @@ void destroy_container(struct container *con)
 {
     struct workspace *ws = get_workspace_in_monitor(con->m);
 
-    wlr_list_del(&ws->focus_stack_normal, con->focus_position);
+    printf("con->position: %i\n", con->position);
+    printf("destroy_container\n");
+    for (int i = 0; i < ws->n_all; i++) {
+        struct container *con = get_container(ws->id, i);
+        printf("con->position: %i\n", con->position);
+    }
+    remove_container_from_focus_stack(ws->id, con->focus_position);
 
     switch (con->client->type) {
         case LAYER_SHELL:
@@ -50,13 +56,20 @@ void destroy_container(struct container *con)
         case X11_UNMANAGED:
             wl_list_remove(&con->slink);
             wl_list_remove(&con->ilink);
-            wlr_list_del(&ws->tiled_containers, con->position);
+            remove_container_from_stack(ws->id, con->position);
             break;
         default:
             wl_list_remove(&con->slink);
-            wlr_list_del(&ws->tiled_containers, con->position);
+            remove_container_from_stack(ws->id, con->position);
             break;
     }
+
+    printf("destroy_container\n");
+    for (int i = 0; i < ws->n_all; i++) {
+        struct container *con = get_container(ws->id, i);
+        printf("con->position1: %i\n", con->position);
+    }
+
     free(con);
 }
 
@@ -147,25 +160,6 @@ struct container *container_position_to_hidden_container_in_focus_stack(int ws_i
         if (con->focus_position == position)
             return con;
     }
-    return NULL;
-}
-
-/* a composed list is just a list consisting of lists so that if an index i is
- * given it returns the same value as if all the lists where concatenated */
-static void *get_on_composed_list(struct wlr_list *lists, int i) {
-    for (int j = 0; j < lists->length; j++) {
-        struct wlr_list *list = lists->items[j];
-        if (i >= 0 && i < list->length) {
-            void *item = list->items[i];
-            return item;
-        }
-        i -= list->length;
-
-        if (i < 0)
-            break;
-    }
-
-    // no item found
     return NULL;
 }
 
@@ -313,6 +307,27 @@ struct container *xy_to_container(double x, double y)
         return con;
     }
     return NULL;
+}
+
+void remove_container_from_stack(int ws_id, int i)
+{
+    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
+
+    if (!ws)
+        return;
+
+    // TODO unit_test
+    remove_from_composed_list(&ws->container_lists, i);
+}
+
+void remove_container_from_focus_stack(int ws_id, int i)
+{
+    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
+
+    if (!ws)
+        return;
+
+    remove_from_composed_list(&ws->focus_stack_lists, i);
 }
 
 void add_container_to_containers(struct container *con, int i)
@@ -776,7 +791,7 @@ void set_container_floating(struct container *con, bool floating)
     if (!con->floating) {
         set_container_workspace(con, m->ws_ids[0]);
 
-        remove_container_from_workspace(ws->id, con->position);
+        remove_container_from_stack(ws->id, con->position);
         wlr_list_push(&ws->tiled_containers, con);
         update_container_positions(m);
 
@@ -784,7 +799,7 @@ void set_container_floating(struct container *con, bool floating)
             remove_container_from_scratchpad(con);
         }
     } else {
-        remove_container_from_workspace(ws->id, con->position);
+        remove_container_from_stack(ws->id, con->position);
         wlr_list_insert(&ws->floating_containers, 0, con);
         update_container_positions(m);
     }
