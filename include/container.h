@@ -42,7 +42,6 @@ struct container {
     // if position -1 it is floating
     bool geom_was_changed;
     int focus_position;
-    int visible_position;
     // height = ratio * width
     float ratio;
 };

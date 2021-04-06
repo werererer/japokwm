@@ -66,7 +66,7 @@ int wlr_list_find_in_composed_list(struct wlr_list *lists,
     for (int i = 0; i < lists->length; i++) {
         struct wlr_list *list = lists->items[i];
         for (int j = 0; j < list->length; j++) {
-            void *item = list->items[i];
+            void *item = list->items[j];
             if (compare(item, cmp_to) == 0) {
                 return position;
             }

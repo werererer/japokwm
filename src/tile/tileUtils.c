@@ -176,31 +176,6 @@ int get_container_area_count(struct workspace *ws)
 void update_container_positions(struct monitor *m)
 {
     update_container_focus_stack_positions(selected_monitor);
-    update_container_visible_positions(selected_monitor);
-}
-
-void update_container_visible_positions(struct monitor *m)
-{
-    struct layout *lt = get_layout_in_monitor(m);
-    if (lt->options.arrange_by_focus) {
-        struct workspace *ws = get_workspace_in_monitor(m);
-        for (int i = 0; i < length_of_composed_list(&ws->visible_container_lists); i++) {
-            struct container *con = get_container(m->ws_ids[0], i);
-            if (con->client->type == LAYER_SHELL)
-                continue;
-            con->visible_position = con->focus_position;
-        }
-    } else {
-        struct workspace *ws = get_workspace(&server.workspaces, m->ws_ids[0]);
-        int position = 0;
-        for (int i = 0; i < length_of_composed_list(&ws->visible_container_lists); i++) {
-            struct container *con = get_visible_container(ws->id, i);
-            if (con->client->type == LAYER_SHELL)
-                continue;
-            con->visible_position = position;
-            position++;
-        }
-    }
 }
 
 void update_container_focus_stack_positions(struct monitor *m)

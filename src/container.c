@@ -209,12 +209,21 @@ struct container *get_relative_visible_container(int ws_id, struct container *co
 {
     assert(con != NULL);
 
-    struct layout *lt = get_layout_on_workspace(ws_id);
+    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
 
-    int new_position = (con->visible_position + i) % (lt->n_visible);
+    if (!ws)
+        return NULL;
+
+    struct layout *lt = get_layout_on_workspace(ws->id);
+
+    int position = wlr_list_find_in_composed_list(&ws->visible_container_lists,
+            cmp_ptr, con);
+    printf("position: %i\n", position);
+    int new_position = (position + i) % (lt->n_visible);
     while (new_position < 0) {
         new_position += lt->n_visible;
     }
+    printf("new_position: %i\n", new_position);
 
     return get_visible_container(ws_id, new_position);
 }
@@ -658,12 +667,6 @@ void focus_on_stack(int i)
         struct container *con = get_container(m->ws_ids[0], 0);
         focus_container(con, FOCUS_NOOP);
         return;
-    }
-
-    struct workspace *ws = get_workspace_in_monitor(m);
-    for (int i = 0; i < ws->layout->n_visible; i++) {
-        struct container *con = get_visible_container(ws->id, i);
-        printf("visible_position: %i\n", con->visible_position);
     }
 
     struct container *con = get_relative_visible_container(m->ws_ids[0], sel, i);
