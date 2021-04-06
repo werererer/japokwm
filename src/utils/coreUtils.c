@@ -30,6 +30,11 @@ void wlr_list_clear(struct wlr_list *list)
     wlr_list_init(list);
 }
 
+bool wlr_list_empty(struct wlr_list *list)
+{
+    return list->length <= 0;
+}
+
 int wlr_list_remove(struct wlr_list *list,
         int (*compare)(const void *, const void *), const void *cmp_to)
 {

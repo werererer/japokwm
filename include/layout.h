@@ -13,6 +13,7 @@ struct layout {
     const char *symbol;
     // the amount of slave windows plus the master are (+1)
     int n_area;
+    int n_area_max;
     // the amount of visible windows
     int n_visible;
     // number of hidden windows
@@ -21,6 +22,7 @@ struct layout {
     int n_floating;
     // number of tiled windows
     int n_tiled;
+    int n_tiled_max;
     // the absolute amount of windows
     int n_master_abs;
     // the amount master windows

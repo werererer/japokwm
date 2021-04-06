@@ -85,6 +85,7 @@ void lua_get_default_master_layout_data();
 void lua_get_default_resize_data();
 
 void wlr_list_clear(struct wlr_list *list);
+bool wlr_list_empty(struct wlr_list *list);
 /* return 0 on success and 1 on failure */
 int wlr_list_remove(struct wlr_list *list,
         int (*compare)(const void *, const void *), const void *cmp_to);

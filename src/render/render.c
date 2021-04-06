@@ -292,11 +292,10 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
 
 static void render_containers(struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct container *con;
-
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    wl_list_for_each_reverse(con, &stack, slink) {
+    for (int i = length_of_composed_list(&server.normal_visual_stack_lists); i >= 0; i--) {
+        struct container *con = get_in_composed_list(&server.normal_visual_stack_lists, i);
         if (!visible_on(con, &server.workspaces, m->ws_ids[0]))
             continue;
 
@@ -316,10 +315,11 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
 
 static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer layer, pixman_region32_t *output_damage)
 {
-    struct container *con;
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    wl_list_for_each_reverse(con, &layer_stack, llink) {
+    for (int i = 0; i < server.layer_visual_stack_background.length; i++) {
+        struct container *con = server.layer_visual_stack_background.items[i];
+
         if (con->client->type != LAYER_SHELL)
             continue;
         if (con->client->surface.layer->current.layer != layer)

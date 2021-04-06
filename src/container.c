@@ -51,12 +51,12 @@ void destroy_container(struct container *con)
             wl_list_remove(&con->llink);
             break;
         case X11_UNMANAGED:
-            wl_list_remove(&con->slink);
+            wlr_list_remove(&server.tiled_visual_stack, cmp_ptr, con);
             wl_list_remove(&con->ilink);
             remove_container_from_stack(ws->id, con);
             break;
         default:
-            wl_list_remove(&con->slink);
+            wlr_list_remove(&server.tiled_visual_stack, cmp_ptr, con);
             remove_container_from_stack(ws->id, con);
             break;
     }
@@ -250,22 +250,9 @@ struct container *xy_to_container(double x, double y)
     if (!m)
         return NULL;
 
-    struct container *con;
-    wl_list_for_each(con, &layer_stack, llink) {
-        if (!con->focusable)
-            continue;
-        if (con->client->surface.layer->current.layer >
-                ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM)
-            continue;
-        if (!visible_on(con, &server.workspaces, m->ws_ids[0]))
-            continue;
-        if (!wlr_box_contains_point(&con->geom, x, y))
-            continue;
-
-        return con;
-    }
-
-    wl_list_for_each(con, &stack, slink) {
+    for (int i = 0; i < length_of_composed_list(&server.visual_stack_lists); i++) {
+        struct container *con =
+            get_in_composed_list(&server.visual_stack_lists, i);
         if (!con->focusable)
             continue;
         if (!visible_on(con, &server.workspaces, m->ws_ids[0]))
@@ -276,19 +263,6 @@ struct container *xy_to_container(double x, double y)
         return con;
     }
 
-    wl_list_for_each(con, &layer_stack, llink) {
-        if (!con->focusable)
-            continue;
-        if (con->client->surface.layer->current.layer <
-                ZWLR_LAYER_SHELL_V1_LAYER_TOP)
-            continue;
-        if (!visible_on(con, &server.workspaces, m->ws_ids[0]))
-            continue;
-        if (!wlr_box_contains_point(&con->geom, x, y))
-            continue;
-
-        return con;
-    }
     return NULL;
 }
 
@@ -346,31 +320,30 @@ static void add_container_to_stack(struct container *con)
     if (!con)
         return;
 
+    if (con->client->type == LAYER_SHELL) {
+        switch (con->client->surface.layer->current.layer) {
+            case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
+                wlr_list_insert(&server.layer_visual_stack_background, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
+                wlr_list_insert(&server.layer_visual_stack_bottom, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
+                wlr_list_insert(&server.layer_visual_stack_top, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
+                wlr_list_insert(&server.layer_visual_stack_overlay, 0, con);
+                break;
+        }
+        return;
+    }
+
     if (con->floating) {
-        wl_list_insert(&stack, &con->slink);
+        wlr_list_push(&server.floating_visual_stack, con);
         return;
     }
 
-    if (wl_list_empty(&stack)) {
-        wl_list_insert(&stack, &con->slink);
-        return;
-    }
-
-    /* Insert container after the last floating container */
-    struct container *con2;
-    int stack_length = wl_list_length(&stack);
-    int i = 0;
-    wl_list_for_each(con2, &stack, slink) {
-        if (!con2->floating)
-            break;
-        i++;
-        // needs to break early because wl_list_for_each will mess up con2 if
-        // it continues after reaching the last item in stack
-        if (i >= stack_length)
-            break;
-    }
-
-    wl_list_insert(&con2->slink, &con->slink);
+    wlr_list_insert(&server.tiled_visual_stack, 0, con);
 }
 
 static void add_container_to_monitor(struct container *con, struct monitor *m)
@@ -383,7 +356,7 @@ static void add_container_to_monitor(struct container *con, struct monitor *m)
         case LAYER_SHELL:
             // layer shell programs aren't pushed to the stack because they use the
             // layer system to set the correct render position
-            wl_list_insert(&layer_stack, &con->llink);
+            add_container_to_stack(con);
             break;
         case XDG_SHELL:
         case X11_MANAGED:
@@ -606,8 +579,10 @@ void focus_on_hidden_stack(int i)
         return;
 
     if (sel->floating) {
-        set_container_floating(con, true);
-        set_container_floating(sel, false);
+        con->floating = true;
+        sel->floating = false;
+        /* set_container_floating(con, true); */
+        /* set_container_floating(sel, false); */
         set_container_geom(con, sel->geom);
     }
 
@@ -646,7 +621,7 @@ void lift_container(struct container *con)
     if (con->client->type == LAYER_SHELL)
         return;
 
-    wl_list_remove(&con->slink);
+    wlr_list_remove(&server.tiled_visual_stack, cmp_ptr, con);
     add_container_to_stack(con);
 }
 
@@ -690,15 +665,23 @@ void set_container_floating(struct container *con, bool floating)
     if (!con->floating) {
         set_container_workspace(con, m->ws_ids[0]);
 
-        wlr_list_remove_in_composed_list(&ws->container_lists, cmp_ptr, con);
-        wlr_list_push(&ws->tiled_containers, con);
+        wlr_list_remove(&ws->floating_containers, cmp_ptr, con);
+
+        int position = MIN(ws->tiled_containers.length, ws->layout[0].n_tiled_max-1);
+        printf("position: %i\n", position);
+        wlr_list_insert(&ws->tiled_containers, position, con);
 
         if (con->on_scratchpad) {
             remove_container_from_scratchpad(con);
         }
+
+        wlr_list_remove(&server.floating_visual_stack, cmp_ptr, con);
+        wlr_list_insert(&server.tiled_visual_stack, position, con);
     } else {
         wlr_list_remove(&ws->tiled_containers, cmp_ptr, con);
         wlr_list_insert(&ws->floating_containers, 0, con);
+        wlr_list_remove(&server.tiled_visual_stack, cmp_ptr, con);
+        wlr_list_insert(&server.floating_visual_stack, 0, con);
     }
 
     lift_container(con);

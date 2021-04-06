@@ -77,8 +77,10 @@ static struct wlr_box fit_root_area(struct root *root)
     struct wlr_box d_box = root->m->geom;
     struct wlr_box box = root->geom;
 
-    struct container *con;
-    wl_list_for_each(con, &layer_stack, llink) {
+    for (int i = 0; i < length_of_composed_list(&server.layer_visual_stack_lists); i++) {
+        struct container *con =
+            get_in_composed_list(&server.layer_visual_stack_lists, i);
+
         if (!exist_on(con, &server.workspaces, root->m->ws_ids[0]))
             continue;
 
@@ -150,8 +152,10 @@ void set_root_geom(struct root *root, struct wlr_box geom)
     }
 
     // arrange layer stack based programs
-    struct container *con;
-    wl_list_for_each(con, &layer_stack, llink) {
+    for (int i = 0; i < length_of_composed_list(&server.layer_visual_stack_lists); i++) {
+        struct container *con =
+            get_in_composed_list(&server.layer_visual_stack_lists, i);
+
         if (!exist_on(con, &server.workspaces, root->m->ws_ids[0]))
             continue;
 

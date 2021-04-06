@@ -39,6 +39,17 @@ struct server {
 
     struct wlr_list workspaces;
 
+    struct wlr_list visual_stack_lists;
+    struct wlr_list normal_visual_stack_lists;
+    struct wlr_list layer_visual_stack_lists;
+
+    struct wlr_list tiled_visual_stack;
+    struct wlr_list floating_visual_stack;
+    struct wlr_list layer_visual_stack_background;
+    struct wlr_list layer_visual_stack_bottom;
+    struct wlr_list layer_visual_stack_top;
+    struct wlr_list layer_visual_stack_overlay;
+
     const char *config_file;
     const char *config_dir;
 };

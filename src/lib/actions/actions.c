@@ -90,12 +90,6 @@ int lib_set_floating(lua_State *L)
     set_container_floating(sel, floating);
 
     arrange();
-
-    if (!sel->floating) {
-        struct workspace *ws = get_workspace_in_monitor(m);
-        wlr_list_remove_in_composed_list(&ws->tiled_containers, cmp_ptr, sel);
-        add_container_to_containers(sel, ws->layout->n_tiled-1);
-    }
     return 0;
 }
 

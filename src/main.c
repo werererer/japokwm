@@ -145,11 +145,35 @@ static void run(char *startup_cmd)
 static int setup()
 {
     wl_list_init(&mons);
-    wl_list_init(&stack);
-    wl_list_init(&layer_stack);
     wl_list_init(&popups);
     wl_list_init(&sticky_stack);
     wl_list_init(&scratchpad);
+
+    wlr_list_init(&server.visual_stack_lists);
+    wlr_list_init(&server.normal_visual_stack_lists);
+    wlr_list_init(&server.layer_visual_stack_lists);
+
+    wlr_list_init(&server.tiled_visual_stack);
+    wlr_list_init(&server.floating_visual_stack);
+    wlr_list_init(&server.layer_visual_stack_background);
+    wlr_list_init(&server.layer_visual_stack_bottom);
+    wlr_list_init(&server.layer_visual_stack_top);
+    wlr_list_init(&server.layer_visual_stack_overlay);
+
+    wlr_list_push(&server.visual_stack_lists, &server.layer_visual_stack_overlay);
+    wlr_list_push(&server.visual_stack_lists, &server.layer_visual_stack_top);
+    wlr_list_push(&server.visual_stack_lists, &server.floating_visual_stack);
+    wlr_list_push(&server.visual_stack_lists, &server.tiled_visual_stack);
+    wlr_list_push(&server.visual_stack_lists, &server.layer_visual_stack_bottom);
+    wlr_list_push(&server.visual_stack_lists, &server.layer_visual_stack_background);
+
+    wlr_list_push(&server.normal_visual_stack_lists, &server.floating_visual_stack);
+    wlr_list_push(&server.normal_visual_stack_lists, &server.tiled_visual_stack);
+
+    wlr_list_push(&server.layer_visual_stack_lists, &server.layer_visual_stack_overlay);
+    wlr_list_push(&server.layer_visual_stack_lists, &server.layer_visual_stack_top);
+    wlr_list_push(&server.layer_visual_stack_lists, &server.layer_visual_stack_bottom);
+    wlr_list_push(&server.layer_visual_stack_lists, &server.layer_visual_stack_background);
 
     L = luaL_newstate();
     luaL_openlibs(L);

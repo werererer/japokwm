@@ -58,7 +58,7 @@ void move_to_scratchpad(struct container *con, int position)
     set_container_floating(con, true);
     wlr_list_remove_in_composed_list(&ws->container_lists, cmp_ptr, con);
     wlr_list_remove(&ws->focus_stack_normal, cmp_ptr, con);
-    wl_list_remove(&con->slink);
+    wlr_list_remove(&server.tiled_visual_stack, cmp_ptr, con);
     container_damage_whole(con);
     focus_most_recent_container(m->ws_ids[0], FOCUS_NOOP);
     con->hidden = true;
@@ -81,7 +81,7 @@ void show_scratchpad()
     if (con->hidden) {
         wlr_list_push(&ws->tiled_containers, con);
         wlr_list_insert(&ws->focus_stack_normal, 0, con);
-        wl_list_insert(&stack, &con->slink);
+        wlr_list_insert(&server.tiled_visual_stack, 0, con);
         set_container_geom(con, get_center_box(m->geom));
         con->hidden = false;
         focus_container(con, FOCUS_LIFT);

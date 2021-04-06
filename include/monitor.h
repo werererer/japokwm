@@ -31,10 +31,6 @@ struct monrule {
     int lua_func_ref;
 };
 
-/* associated with slink in container */
-extern struct wl_list stack;
-/* associated with llink in container */
-extern struct wl_list layer_stack;
 /* associated with plink in container  */
 extern struct wl_list popups;
 /* associated with stlink in container  */

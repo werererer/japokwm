@@ -52,23 +52,36 @@ static int get_layout_container_area_count(struct workspace *ws)
     return n_area;
 }
 
+static int get_layout_container_max_area_count(struct workspace *ws)
+{
+    struct layout *lt = &ws->layout[0];
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
+
+    int len = luaL_len(L, -1);
+
+    lua_rawgeti(L, -1, len);
+
+
+    // TODO refactor
+    int max_n_area = luaL_len(L, -1);
+
+    lua_pop(L, 2);
+    return max_n_area;
+}
+
+
 static void update_layout_counters(struct workspace *ws)
 {
     struct layout *lt = ws->layout;
     ws->n_all = get_container_count(ws);
-    printf("n_all: %i\n", ws->n_all);
     lt->n_area = get_layout_container_area_count(ws);
-    printf("n_area: %i\n", lt->n_area);
+    lt->n_area_max = get_layout_container_max_area_count(ws);
     lt->n_master_abs = get_master_container_count(ws);
-    printf("n_master_abs: %i\n", lt->n_master_abs);
     lt->n_floating = get_floating_container_count(ws);
-    printf("n_floating: %i\n", lt->n_floating);
     lt->n_tiled = lt->n_area + lt->n_master_abs-1;
-    printf("n_tiled: %i\n", lt->n_tiled);
+    lt->n_tiled_max = lt->n_area_max + lt->n_master_abs-1;
     lt->n_visible = lt->n_tiled + lt->n_floating;
-    printf("n_visible: %i\n", lt->n_visible);
     lt->n_hidden = ws->n_all - lt->n_visible;
-    printf("n_hidden: %i\n", lt->n_hidden);
 }
 
 static struct wlr_fbox lua_unbox_layout_geom(lua_State *L, int i) {
@@ -333,11 +346,8 @@ void update_hidden_status_of_containers(struct monitor *m)
         }
     } else {
         if (lt->n_tiled > ws->tiled_containers.length) {
-            int n_missing = lt->n_tiled - ws->tiled_containers.length;
+            int n_missing = MIN(lt->n_tiled - ws->tiled_containers.length, ws->hidden_containers.length);
             for (int i = 0; i < n_missing; i++) {
-                if (n_missing > ws->hidden_containers.length)
-                    break;
-
                 struct container *con = ws->hidden_containers.items[0];
 
                 con->hidden = false;
