@@ -210,8 +210,15 @@ void focus_monitor(struct monitor *m)
 
     /* wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, m->wlr_output.) */
 
+/*     struct workspace *ws2 = get_workspace_in_monitor(m); */
+/*     for (int i = 0; i < ws2->floating_containers.length; i++) { */
+/*         struct container *con = ws2->floating_containers.items[i]; */
+/*         if (visible_on(con, &server.workspaces, ws2->id)) { */
+/*             move_container_to_workspace(con, m->ws_ids[0]); */
+/*         } */
+/*     } */
+
     selected_monitor = m;
-    printf("set selected_monitor\n");
     focus_workspace(m, &server.workspaces, m->ws_ids[0]);
 }
 

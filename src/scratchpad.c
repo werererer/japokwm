@@ -4,6 +4,7 @@
 #include "server.h"
 #include "tile/tileUtils.h"
 
+// TODO rewrite this function so it is easier to read
 void move_to_scratchpad(struct container *con, int position)
 {
     if (!con)
@@ -18,13 +19,10 @@ void move_to_scratchpad(struct container *con, int position)
     if (server.scratchpad.length == 0) {
         wlr_list_push(&server.scratchpad, con);
     } else {
-        // TODO write better
-        int new_position = relative_index_to_absolute_index(0, position, server.scratchpad.length+1);
-        printf("new_position: %i\n", new_position);
-        printf("length: %zu\n", server.scratchpad.length);
+        int new_position = relative_index_to_absolute_index(0,
+                position, server.scratchpad.length+1);
         wlr_list_insert(&server.scratchpad, new_position, con);
     }
-    printf("length: %zu\n", server.scratchpad.length);
 
     wlr_list_remove_in_composed_list(&ws->container_lists, cmp_ptr, con);
     wlr_list_remove(&ws->focus_stack_normal, cmp_ptr, con);

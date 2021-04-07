@@ -209,27 +209,15 @@ int lib_toggle_floating(lua_State *L)
     return 0;
 }
 
-// TODO optimize
 int lib_move_container_to_workspace(lua_State *L)
 {
     unsigned int ws_id = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
+
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
     struct container *con = get_focused_container(m);
 
-    if (!con || con->client->type == LAYER_SHELL)
-        return 0;
-
-    set_container_workspace(con, ws->id);
-    con->client->moved_workspace = true;
-    container_damage_whole(con);
-
-    arrange();
-    focus_most_recent_container(m->ws_ids[0], FOCUS_NOOP);
-
-    ipc_event_workspace();
-
+    move_container_to_workspace(con, ws_id);
     return 0;
 }
 

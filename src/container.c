@@ -14,6 +14,8 @@
 #include "options.h"
 #include "utils/parseConfigUtils.h"
 #include "scratchpad.h"
+#include "workspace.h"
+#include "ipc-server.h"
 
 static void add_container_to_monitor(struct container *con, struct monitor *m);
 static void add_container_to_focus_stack(struct container *con, int ws_id);
@@ -217,7 +219,6 @@ struct container *get_relative_visible_container(int ws_id, struct container *co
     while (new_position < 0) {
         new_position += lt->n_visible;
     }
-    printf("new_position: %i\n", new_position);
 
     return get_visible_container(ws_id, new_position);
 }
@@ -650,6 +651,24 @@ void lift_container(struct container *con)
 
     wlr_list_remove_in_composed_list(&server.normal_visual_stack_lists, cmp_ptr, con);
     add_container_to_stack(con);
+}
+
+void move_container_to_workspace(struct container *con, int ws_id)
+{
+    struct monitor *m = con->m;
+    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
+
+    if (!con || con->client->type == LAYER_SHELL)
+        return;
+
+    set_container_workspace(con, ws->id);
+    con->client->moved_workspace = true;
+    container_damage_whole(con);
+
+    arrange();
+    focus_most_recent_container(m->ws_ids[0], FOCUS_NOOP);
+
+    ipc_event_workspace();
 }
 
 void repush(int pos1, int pos2)

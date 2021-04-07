@@ -197,14 +197,27 @@ void arrange_monitor(struct monitor *m)
 
     update_layout_counters(ws);
     call_update_function(&lt->options.event_handler, lt->n_area);
-    update_hidden_status_of_containers(m);
+
+    struct wlr_list *visible_container_lists;
+    struct wlr_list *tiled_containers;
+    struct wlr_list *hidden_containers; 
+    if (lt->options.arrange_by_focus) {
+        visible_container_lists = &ws->focus_stack_visible_lists;
+        tiled_containers = &ws->focus_stack_normal;
+        hidden_containers = &ws->focus_stack_hidden;
+    } else {
+        visible_container_lists = &ws->visible_container_lists;
+        tiled_containers = &ws->tiled_containers;
+        hidden_containers = &ws->hidden_containers;
+    }
+
+    update_hidden_status_of_containers(m, visible_container_lists,
+            tiled_containers, hidden_containers);
+
 
     if (!lt->options.arrange_by_focus) {
         for (int i = 0; i < ws->floating_containers.length; i++) {
             struct container *con = ws->floating_containers.items[i];
-            if (!con)
-                break;
-            assert(con->floating);
             if (con->geom_was_changed) {
                 set_container_geom(con, con->prev_floating_geom);
                 con->geom_was_changed = false;
@@ -212,12 +225,13 @@ void arrange_monitor(struct monitor *m)
         }
     }
 
-    arrange_containers(m->ws_ids[0], m->root->geom);
+    arrange_containers(m->ws_ids[0], m->root->geom, tiled_containers);
 
     root_damage_whole(m->root);
 }
 
-void arrange_containers(int ws_id, struct wlr_box root_geom)
+void arrange_containers(int ws_id, struct wlr_box root_geom,
+        struct wlr_list *tiled_containers)
 {
     struct layout *lt = get_layout_on_workspace(ws_id);
 
@@ -231,28 +245,20 @@ void arrange_containers(int ws_id, struct wlr_box root_geom)
      * inner_gap. */
     container_surround_gaps(&root_geom, -actual_inner_gap);
 
-    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
     if (lt->options.smart_hidden_edges) {
-        if (ws->tiled_containers.length <= 1) {
+        if (tiled_containers->length <= 1) {
             container_add_gaps(&root_geom, -lt->options.tile_border_px,
                     lt->options.hidden_edges);
         }
     } else {
-        container_add_gaps(&root_geom, -lt->options.tile_border_px, lt->options.hidden_edges);
+        container_add_gaps(&root_geom, -lt->options.tile_border_px,
+                lt->options.hidden_edges);
     }
 
-    if (lt->options.arrange_by_focus) {
-        for (int i = 0; i < length_of_composed_list(&ws->focus_stack_lists); i++) {
-            struct container *con = get_in_composed_list(&ws->focus_stack_lists, i);
+    for (int i = 0; i < tiled_containers->length; i++) {
+        struct container *con = tiled_containers->items[i];
 
-            arrange_container(con, i, root_geom, actual_inner_gap);
-        }
-    } else {
-        for (int i = 0; i < ws->tiled_containers.length; i++) {
-            struct container *con = ws->tiled_containers.items[i];
-
-            arrange_container(con, i, root_geom, actual_inner_gap);
-        }
+        arrange_container(con, i, root_geom, actual_inner_gap);
     }
 }
 
@@ -327,50 +333,39 @@ void resize(struct container *con, struct wlr_box geom)
     }
 }
 
-void update_hidden_status_of_containers(struct monitor *m)
+void update_hidden_status_of_containers(struct monitor *m, 
+        struct wlr_list *visible_container_lists, struct wlr_list *tiled_containers,
+        struct wlr_list *hidden_containers)
 {
-    struct workspace *ws = get_workspace_in_monitor(m);
     // because the master are is included in n aswell as nmaster we have to
     // subtract the solution by one to count
-    struct layout *lt = &ws->layout[0];
+    struct layout *lt = get_layout_in_monitor(m);
 
-    if (ws->layout[0].options.arrange_by_focus) {
-        for (int i = 0; i < length_of_composed_list(&ws->focus_stack_lists); i++) {
-            struct container *con = get_in_composed_list(&ws->focus_stack_lists, i);
-            if (!exist_on(con, &server.workspaces, ws->id))
-                continue;
-            if (con->client->type == LAYER_SHELL)
-                continue;
+    if (lt->n_tiled > tiled_containers->length) {
+        int n_missing = MIN(lt->n_tiled - tiled_containers->length, hidden_containers->length);
+        for (int i = 0; i < n_missing; i++) {
+            struct container *con = hidden_containers->items[0];
 
-            con->hidden = i + 1 > lt->n_tiled;
+            con->hidden = false;
+            wlr_list_del(hidden_containers, 0);
+            wlr_list_push(tiled_containers, con);
         }
     } else {
-        if (lt->n_tiled > ws->tiled_containers.length) {
-            int n_missing = MIN(lt->n_tiled - ws->tiled_containers.length, ws->hidden_containers.length);
-            for (int i = 0; i < n_missing; i++) {
-                struct container *con = ws->hidden_containers.items[0];
-
-                con->hidden = false;
-                wlr_list_del(&ws->hidden_containers, 0);
-                wlr_list_push(&ws->tiled_containers, con);
-            }
-        } else {
-            int tile_containers_length = ws->tiled_containers.length;
-            for (int i = lt->n_tiled; i < tile_containers_length; i++) {
-                struct container *con = wlr_list_pop(&ws->tiled_containers);
-                con->hidden = true;
-                wlr_list_insert(&ws->hidden_containers, 0, con);
-            }
-        }
-
-        for (int i = 0; i < length_of_composed_list(&ws->visible_container_lists); i++) {
-            struct container *con = get_in_composed_list(&ws->visible_container_lists, i);
-            con->hidden = false;
-        }
-        for (int i = 0; i < ws->hidden_containers.length; i++) {
-            struct container *con = ws->hidden_containers.items[i];
+        int tile_containers_length = tiled_containers->length;
+        for (int i = lt->n_tiled; i < tile_containers_length; i++) {
+            struct container *con = wlr_list_pop(tiled_containers);
             con->hidden = true;
+            wlr_list_insert(hidden_containers, 0, con);
         }
+    }
+
+    for (int i = 0; i < length_of_composed_list(visible_container_lists); i++) {
+        struct container *con = get_in_composed_list(visible_container_lists, i);
+        con->hidden = false;
+    }
+    for (int i = 0; i < hidden_containers->length; i++) {
+        struct container *con = hidden_containers->items[i];
+        con->hidden = true;
     }
 }
 
@@ -379,33 +374,20 @@ int get_container_count(struct workspace *ws)
     return length_of_composed_list(&ws->container_lists);
 }
 
-static int get_tiled_container_count_if_arranged_by_focus(struct workspace *ws)
-{
-    int n = 0;
-
-    for (int i = 0; i < ws->tiled_containers.length; i++) {
-        struct container *con = get_container(ws->id, i);
-        if (!exist_on(con, &server.workspaces, ws->id))
-            continue;
-        if (con->client->type == LAYER_SHELL)
-            continue;
-        n++;
-    }
-    return n;
-}
-
-static int get_tiled_container_count_if_arranged_normally(struct workspace *ws)
-{
-    return ws->tiled_containers.length + ws->hidden_containers.length;
-}
-
 int get_tiled_container_count(struct workspace *ws)
 {
     int n = 0;
+    struct wlr_list *tiled_containers = &ws->tiled_containers;
+    struct wlr_list *hidden_containers = &ws->hidden_containers;
+
     if (ws->layout[0].options.arrange_by_focus) {
-        n = get_tiled_container_count_if_arranged_by_focus(ws);
+        tiled_containers = &ws->focus_stack_normal;
+        hidden_containers = &ws->focus_stack_hidden;
     } else {
-        n = get_tiled_container_count_if_arranged_normally(ws);
+        tiled_containers = &ws->tiled_containers;
+        hidden_containers = &ws->hidden_containers;
     }
+
+    n = tiled_containers->length + hidden_containers->length;
     return n;
 }

@@ -40,15 +40,22 @@ static void setup_lists(struct workspace *ws)
     wlr_list_push(&ws->visible_container_lists, &ws->floating_containers);
 
     wlr_list_init(&ws->focus_stack_lists);
+    wlr_list_init(&ws->focus_stack_visible_lists);
     wlr_list_init(&ws->focus_stack_lists_with_layer_shell);
 
     wlr_list_init(&ws->focus_stack_on_top);
     wlr_list_init(&ws->focus_stack_normal);
+    wlr_list_init(&ws->focus_stack_hidden);
     wlr_list_init(&ws->focus_stack_not_focusable);
 
     wlr_list_push(&ws->focus_stack_lists, &ws->focus_stack_on_top);
     wlr_list_push(&ws->focus_stack_lists, &ws->focus_stack_normal);
     wlr_list_push(&ws->focus_stack_lists, &ws->focus_stack_not_focusable);
+    wlr_list_push(&ws->focus_stack_lists, &ws->focus_stack_hidden);
+
+    wlr_list_push(&ws->focus_stack_visible_lists, &ws->focus_stack_on_top);
+    wlr_list_push(&ws->focus_stack_visible_lists, &ws->focus_stack_normal);
+    wlr_list_push(&ws->focus_stack_visible_lists, &ws->focus_stack_not_focusable);
 
     wlr_list_push(&ws->focus_stack_lists_with_layer_shell, &ws->focus_stack_layer_shell);
     wlr_list_push(&ws->focus_stack_lists_with_layer_shell, &ws->focus_stack_on_top);
@@ -306,11 +313,23 @@ void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
         return;
     assert(m->damage != NULL);
 
+    printf("works\n");
     // focus the workspace in the monitor it appears in if such a monitor exist
     // and is not the selected one
     if (is_workspace_occupied(ws) && ws->m != selected_monitor) {
+        printf("works2\n");
+        struct workspace *wss = get_workspace_in_monitor(m);
+        printf("floating_containers: %zu\n", wss->floating_containers.length);
+        for (int i = 0; i < wss->floating_containers.length; i++) {
+            struct container *con = wss->floating_containers.items[i];
+            /* if (visible_on(con, workspaces, wss->id)) { */
+            move_container_to_workspace(con, ws_id);
+            /* } */
+        }
+
         center_mouse_in_monitor(ws->m);
-        focus_monitor(ws->m);
+        selected_monitor = ws->m;
+        printf("ws.monitor: %p\n", ws->m);
         focus_workspace(ws->m, &server.workspaces, ws->id);
         return;
     }

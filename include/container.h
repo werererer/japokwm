@@ -77,6 +77,7 @@ void focus_on_hidden_stack(struct monitor *m, int i);
 /* Find the topmost visible client (if any) at point (x, y), including
  * borders. This relies on stack being ordered from top to bottom. */
 void lift_container(struct container *con);
+void move_container_to_workspace(struct container *con, int ws_id);
 void repush(int pos, int pos2);
 void set_container_floating(struct container *con, bool floating);
 void set_container_geom(struct container *con, struct wlr_box geom);

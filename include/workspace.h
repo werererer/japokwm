@@ -31,12 +31,15 @@ struct workspace {
     struct wlr_list tiled_containers;
     struct wlr_list hidden_containers;
 
+    /* 2D lists */
     struct wlr_list focus_stack_lists_with_layer_shell;
+    struct wlr_list focus_stack_visible_lists;
     struct wlr_list focus_stack_lists;
 
     struct wlr_list focus_stack_layer_shell;
-    struct wlr_list focus_stack_normal;
     struct wlr_list focus_stack_on_top;
+    struct wlr_list focus_stack_normal;
+    struct wlr_list focus_stack_hidden;
     struct wlr_list focus_stack_not_focusable;
 };
 
