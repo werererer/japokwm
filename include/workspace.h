@@ -83,8 +83,6 @@ void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id);
 void push_workspace(struct monitor *m,  struct wlr_list *workspaces, int ws_id);
 void push_layout(struct workspace *ws, struct layout lt);
 
-void remove_container_from_containers(struct container *con);
-
 struct layout *get_layout_on_workspace(int ws_id);
 
 #endif /* WORKSPACE_H */

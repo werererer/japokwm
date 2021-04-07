@@ -57,12 +57,12 @@ void destroy_container(struct container *con)
             wlr_list_remove_in_composed_list(&server.normal_visual_stack_lists,
                     cmp_ptr, con);
             wl_list_remove(&con->ilink);
-            remove_container_from_stack(ws->id, con);
+            wlr_list_remove_in_composed_list(&server.visual_stack_lists, cmp_ptr, con);
             break;
         default:
             wlr_list_remove_in_composed_list(&server.normal_visual_stack_lists,
                     cmp_ptr, con);
-            remove_container_from_stack(ws->id, con);
+            wlr_list_remove_in_composed_list(&server.visual_stack_lists, cmp_ptr, con);
             break;
     }
 
@@ -242,26 +242,6 @@ struct container *xy_to_container(double x, double y)
     }
 
     return NULL;
-}
-
-void remove_container_from_stack(int ws_id, struct container *con)
-{
-    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
-
-    if (!ws)
-        return;
-
-    wlr_list_remove_in_composed_list(&ws->container_lists, cmp_ptr, con);
-}
-
-void remove_container_from_focus_stack(struct container *con)
-{
-    struct workspace *ws = get_workspace_in_monitor(con->m);
-
-    if (!ws)
-        return;
-
-    wlr_list_remove_in_composed_list(&ws->focus_stack_lists, cmp_ptr, con);
 }
 
 void add_container_to_containers(struct container *con, int ws_id, int i)
@@ -742,13 +722,13 @@ void set_container_workspace(struct container *con, int ws_id)
         set_container_monitor(con, ws->m);
     con->client->ws_id = ws_id;
 
-    remove_container_from_containers(con);
+    struct workspace *sel_ws = get_workspace_in_monitor(selected_monitor);
+
+    wlr_list_remove_in_composed_list(&sel_ws->container_lists, cmp_ptr, con);
     add_container_to_containers(con, ws_id, 0);
 
-    remove_container_from_focus_stack(con);
+    wlr_list_remove_in_composed_list(&sel_ws->focus_stack_lists, cmp_ptr, con);
     add_container_to_focus_stack(con, ws_id);
-
-    focus_most_recent_container(con->m->ws_ids[0], FOCUS_NOOP);
 
     if (con->floating)
         con->client->bw = ws->layout->options.float_border_px;

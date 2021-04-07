@@ -480,13 +480,6 @@ void push_layout(struct workspace *ws, struct layout lt)
     ws->layout[0] = lt;
 }
 
-void remove_container_from_containers(struct container *con)
-{
-    struct monitor *m = con->m;
-    struct workspace *ws = get_workspace_in_monitor(m);
-    wlr_list_remove_in_composed_list(&ws->container_lists, cmp_ptr, con);
-}
-
 struct layout *get_layout_on_workspace(int ws_id)
 {
     struct workspace *ws = get_workspace(&server.workspaces, ws_id);

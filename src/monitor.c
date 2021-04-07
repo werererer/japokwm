@@ -83,7 +83,6 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     if (is_first_monitor) {
         load_config(L);
-        focus_monitor(m);
 
         if (server.default_layout.options.tag_names.length <= 0) {
             handle_error("tag_names is empty, loading default tag_names");
@@ -99,6 +98,9 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     struct workspace *ws = get_workspace(&server.workspaces, 0);
     focus_next_unoccupied_workspace(m, &server.workspaces, ws);
+    if (is_first_monitor) {
+        focus_monitor(m);
+    }
     // TODO is this needed?
     ws = get_workspace_in_monitor(m);
     load_default_layout(L, ws);
@@ -210,13 +212,15 @@ void focus_monitor(struct monitor *m)
 
     /* wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, m->wlr_output.) */
 
-/*     struct workspace *ws2 = get_workspace_in_monitor(m); */
-/*     for (int i = 0; i < ws2->floating_containers.length; i++) { */
-/*         struct container *con = ws2->floating_containers.items[i]; */
-/*         if (visible_on(con, &server.workspaces, ws2->id)) { */
-/*             move_container_to_workspace(con, m->ws_ids[0]); */
-/*         } */
-/*     } */
+    if (selected_monitor) {
+        struct workspace *ws2 = get_workspace_in_monitor(selected_monitor);
+        for (int i = 0; i < ws2->floating_containers.length; i++) {
+            struct container *con = ws2->floating_containers.items[i];
+            if (visible_on(con, &server.workspaces, ws2->id)) {
+                move_container_to_workspace(con, m->ws_ids[0]);
+            }
+        }
+    }
 
     selected_monitor = m;
     focus_workspace(m, &server.workspaces, m->ws_ids[0]);
