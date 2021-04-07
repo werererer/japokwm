@@ -65,8 +65,11 @@ void destroy_container(struct container *con)
     free(con);
 }
 
-static void damage_border(struct monitor *m, struct wlr_box *geom, int border_width)
+void container_damage_borders(struct container *con)
 {
+    struct monitor *m = con->m;
+    struct wlr_box *geom = &con->geom;
+    int border_width = con->client->bw;
     double ox = geom->x - border_width;
     double oy = geom->y - border_width;
     wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
@@ -91,7 +94,7 @@ static void damage_container_area(struct container *con, struct wlr_box *geom,
         struct monitor *m, bool whole)
 {
     output_damage_surface(m, get_wlrsurface(con->client), geom, whole);
-    damage_border(m, geom, con->client->bw);
+    container_damage_borders(con);
 }
 
 static void container_damage(struct container *con, bool whole)
@@ -349,7 +352,7 @@ void focus_container(struct container *con, enum focus_actions a)
         return;
 
     struct monitor *m = con->m;
-    struct container *fcon = get_focused_container(m);
+    struct container *sel = get_focused_container(m);
 
     if (a == FOCUS_LIFT)
         lift_container(con);
@@ -359,10 +362,13 @@ void focus_container(struct container *con, enum focus_actions a)
     remove_in_composed_list(&ws->focus_stack_lists, cmp_ptr, con);
     add_container_to_focus_stack(con, get_workspace(m->ws_id));
 
-    struct container *new_focus_con = get_focused_container(m);
+    struct container *new_sel = get_focused_container(m);
 
-    struct client *old_c = fcon ? fcon->client : NULL;
-    struct client *new_c = new_focus_con ? new_focus_con->client : NULL;
+    container_damage_borders(sel);
+    container_damage_borders(new_sel);
+
+    struct client *old_c = sel ? sel->client : NULL;
+    struct client *new_c = new_sel ? new_sel->client : NULL;
     focus_client(old_c, new_c);
 }
 

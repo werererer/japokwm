@@ -1,4 +1,5 @@
 #include "lib/config/config.h"
+#include "options.h"
 #include "utils/gapUtils.h"
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"
@@ -10,12 +11,27 @@
 
 int lib_reload(lua_State *L)
 {
-    load_config(L);
     struct monitor *m = selected_monitor;
     struct workspace *ws = get_workspace(m->ws_id);
 
-    load_default_layout(L, ws);
+    for (int i = 0; i < server.default_layout.options.tag_names.length; i++)
+        free(wlr_list_pop(&server.default_layout.options.tag_names));
+    wlr_list_finish(&server.default_layout.options.tag_names);
+    server.default_layout.options = get_default_options();
 
+    destroy_workspaces(&server.workspaces);
+    load_config(L);
+    create_workspaces(&server.workspaces, server.default_layout.options.tag_names, server.default_layout);
+
+    ws = get_workspace(m->ws_id);
+    struct layout *lt = &ws->layout[0];
+
+    struct client *c;
+    wl_list_for_each(c, &clients, link) {
+        c->bw = lt->options.tile_border_px;
+    }
+
+    load_default_layout(L, ws);
     return 0;
 }
 

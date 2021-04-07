@@ -145,7 +145,6 @@ int lib_focus_on_stack(lua_State *L)
     lua_pop(L, 1);
 
     focus_on_stack(selected_monitor, i);
-
     return 0;
 }
 
