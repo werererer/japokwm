@@ -29,7 +29,7 @@ void move_to_scratchpad(struct container *con, int position)
     wlr_list_remove(&server.tiled_visual_stack, cmp_ptr, con);
 
     container_damage_whole(con);
-    focus_most_recent_container(m->ws_ids[0], FOCUS_NOOP);
+    focus_most_recent_container(m->ws_id, FOCUS_NOOP);
     con->hidden = true;
     arrange();
 }

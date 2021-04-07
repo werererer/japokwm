@@ -156,7 +156,7 @@ bool exist_on(struct container *con, struct wlr_list *workspaces, int ws_id)
     if (con->m != ws->m) {
         if (con->floating)
             return container_intersects_with_monitor(con, ws->m)
-                && con->client->ws_id == con->m->ws_ids[0];
+                && con->client->ws_id == con->m->ws_id;
         else
             return false;
     }
@@ -379,7 +379,7 @@ void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
         old_ws->m = NULL;
     }
 
-    m->ws_ids[0] = ws->id;
+    m->ws_id = ws->id;
     ws->m = m;
 
     arrange();
@@ -463,13 +463,13 @@ void load_layout(lua_State *L, struct workspace *ws, const char *layout_name, co
     lua_call_safe(L, 0, 0, 0);
 }
 
-void push_workspace(struct monitor *m,  struct wlr_list *workspaces, int ws_id)
+void push_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id)
 {
-    if (m->ws_ids[0] == ws_id)
+    if (m->ws_id == ws_id)
         return;
 
-    if (m->ws_ids[0] != m->ws_ids[1])
-        m->ws_ids[1] = m->ws_ids[0];
+    if (m->ws_id != server.previous_workspace_id)
+        server.previous_workspace_id = m->ws_id;
 
     focus_workspace(m, workspaces, ws_id);
 }

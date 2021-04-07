@@ -78,8 +78,7 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     m->root = create_root(m, m->geom);
-    m->ws_ids[0] = INVALID_WORKSPACE_ID;
-    m->ws_ids[1] = INVALID_WORKSPACE_ID;
+    m->ws_id = INVALID_WORKSPACE_ID;
 
     if (is_first_monitor) {
         load_config(L);
@@ -217,13 +216,13 @@ void focus_monitor(struct monitor *m)
         for (int i = 0; i < ws2->floating_containers.length; i++) {
             struct container *con = ws2->floating_containers.items[i];
             if (visible_on(con, &server.workspaces, ws2->id)) {
-                move_container_to_workspace(con, m->ws_ids[0]);
+                move_container_to_workspace(con, m->ws_id);
             }
         }
     }
 
     selected_monitor = m;
-    focus_workspace(m, &server.workspaces, m->ws_ids[0]);
+    focus_workspace(m, &server.workspaces, m->ws_id);
 }
 
 void push_selected_workspace(struct monitor *m, struct workspace *ws)
@@ -272,10 +271,10 @@ inline struct workspace *get_workspace_in_monitor(struct monitor *m)
     if (!m)
         return NULL;
 
-    return get_workspace(&server.workspaces, m->ws_ids[0]);
+    return get_workspace(&server.workspaces, m->ws_id);
 }
 
 inline struct layout *get_layout_in_monitor(struct monitor *m)
 {
-    return get_layout_on_workspace(m->ws_ids[0]);
+    return get_layout_on_workspace(m->ws_id);
 }

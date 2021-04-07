@@ -23,7 +23,7 @@ struct monitor {
     struct wlr_box geom;
     struct root *root;
     float scale;
-    int ws_ids[2];
+    int ws_id;
 };
 
 struct monrule {

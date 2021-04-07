@@ -62,7 +62,7 @@ int lib_get_nmaster(lua_State *L)
 int lib_get_workspace(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    lua_pushinteger(L, m->ws_ids[0]);
+    lua_pushinteger(L, m->ws_id);
     return 1;
 }
 

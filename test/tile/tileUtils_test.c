@@ -52,8 +52,8 @@ START_TEST(update_container_stack_positions_test)
     create_workspaces(&server.workspaces, tag_names, lt);
 
     struct monitor m0, m1;
-    m0.ws_ids[0] = 0;
-    m1.ws_ids[0] = 1;
+    m0.ws_id = 0;
+    m1.ws_id = 1;
 
     struct workspace *ws0 = get_workspace(&server.workspaces, 0);
     ws0->m = &m0;

@@ -217,7 +217,7 @@ void arrange_monitor(struct monitor *m)
         }
     }
 
-    arrange_containers(m->ws_ids[0], m->root->geom, tiled_containers);
+    arrange_containers(m->ws_id, m->root->geom, tiled_containers);
 
     root_damage_whole(m->root);
 }

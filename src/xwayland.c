@@ -102,7 +102,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     wl_signal_add(&xwayland_surface->surface->events.commit, &c->commit);
 
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
-    c->ws_id = m->ws_ids[0];
+    c->ws_id = m->ws_id;
     c->bw = lt->options.tile_border_px;
 
     struct container *con = create_container(c, m, true);

@@ -54,6 +54,8 @@ struct server {
 
     const char *config_file;
     const char *config_dir;
+
+    int previous_workspace_id;
 };
 
 extern struct server server;
