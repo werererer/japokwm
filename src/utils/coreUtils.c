@@ -350,10 +350,7 @@ struct wlr_list *get_list_at_i_in_composed_list(struct wlr_list *lists, int i)
 
 int relative_index_to_absolute_index(int i, int j, int length)
 {
-    if (length == 0)
-        return -1;
-
-    int new_position = i + j % length;
+    int new_position = (i + j) % length;
     while (new_position < 0)
         new_position += length;
 
