@@ -309,6 +309,8 @@ void *get_on_list(struct wlr_list *list, int i)
 {
     if (i >= list->length)
         return NULL;
+    if (i == INVALID_POSITION)
+        return NULL;
 
     return list->items[i];
 }

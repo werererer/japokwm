@@ -57,12 +57,12 @@ void destroy_container(struct container *con)
             wlr_list_remove_in_composed_list(&server.normal_visual_stack_lists,
                     cmp_ptr, con);
             wl_list_remove(&con->ilink);
-            wlr_list_remove_in_composed_list(&server.visual_stack_lists, cmp_ptr, con);
+            wlr_list_remove_in_composed_list(&ws->container_lists, cmp_ptr, con);
             break;
         default:
             wlr_list_remove_in_composed_list(&server.normal_visual_stack_lists,
                     cmp_ptr, con);
-            wlr_list_remove_in_composed_list(&server.visual_stack_lists, cmp_ptr, con);
+            wlr_list_remove_in_composed_list(&ws->container_lists, cmp_ptr, con);
             break;
     }
 
