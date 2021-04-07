@@ -48,15 +48,18 @@ void destroy_container(struct container *con)
 
     switch (con->client->type) {
         case LAYER_SHELL:
-            wl_list_remove(&con->llink);
+            wlr_list_remove_in_composed_list(&server.layer_visual_stack_lists,
+                    cmp_ptr, con);
             break;
         case X11_UNMANAGED:
-            wlr_list_remove(&server.tiled_visual_stack, cmp_ptr, con);
+            wlr_list_remove_in_composed_list(&server.normal_visual_stack_lists,
+                    cmp_ptr, con);
             wl_list_remove(&con->ilink);
             remove_container_from_stack(ws->id, con);
             break;
         default:
-            wlr_list_remove(&server.tiled_visual_stack, cmp_ptr, con);
+            wlr_list_remove_in_composed_list(&server.normal_visual_stack_lists,
+                    cmp_ptr, con);
             remove_container_from_stack(ws->id, con);
             break;
     }

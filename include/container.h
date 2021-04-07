@@ -14,8 +14,6 @@ enum focus_actions {
 };
 
 struct container {
-    /* layer shell based clients */
-    struct wl_list llink;
     /* independents list */
     struct wl_list ilink;
     /* sticky containers */

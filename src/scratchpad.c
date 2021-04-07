@@ -15,8 +15,16 @@ void move_to_scratchpad(struct container *con, int position)
     con->on_scratchpad = true;
     set_container_floating(con, true);
 
-    int new_position = relative_index_to_absolute_index(0, position, server.scratchpad.length);
-    wlr_list_insert(&server.scratchpad, new_position, con);
+    if (server.scratchpad.length == 0) {
+        wlr_list_push(&server.scratchpad, con);
+    } else {
+        // TODO write better
+        int new_position = relative_index_to_absolute_index(0, position, server.scratchpad.length+1);
+        printf("new_position: %i\n", new_position);
+        printf("length: %zu\n", server.scratchpad.length);
+        wlr_list_insert(&server.scratchpad, new_position, con);
+    }
+    printf("length: %zu\n", server.scratchpad.length);
 
     wlr_list_remove_in_composed_list(&ws->container_lists, cmp_ptr, con);
     wlr_list_remove(&ws->focus_stack_normal, cmp_ptr, con);
@@ -42,9 +50,9 @@ void show_scratchpad()
     struct container *con = server.scratchpad.items[0];
 
     if (con->hidden) {
-        wlr_list_push(&ws->tiled_containers, con);
+        wlr_list_push(&ws->floating_containers, con);
         wlr_list_insert(&ws->focus_stack_normal, 0, con);
-        wlr_list_insert(&server.tiled_visual_stack, 0, con);
+        wlr_list_insert(&server.floating_visual_stack, 0, con);
 
         set_container_geom(con, get_center_box(m->geom));
 
@@ -56,8 +64,13 @@ void show_scratchpad()
             return;
         }
 
+        wlr_list_remove(&ws->floating_containers, cmp_ptr, con);
+        wlr_list_remove(&ws->focus_stack_normal, cmp_ptr, con);
+        wlr_list_remove(&server.floating_visual_stack, cmp_ptr, con);
+
         wlr_list_remove(&server.scratchpad, cmp_ptr, con);
         move_to_scratchpad(con, -1);
+        con->hidden = true;
     }
     arrange();
 }
