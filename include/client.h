@@ -38,7 +38,6 @@ struct client {
     bool moved_workspace;
 };
 
-/* it ignores bool  hiding which visibleon doesn't */
 void focus_client(struct client *old, struct client *c);
 void client_setsticky(struct client *c, bool sticky);
 void reset_tiled_client_borders(int border_bx);
