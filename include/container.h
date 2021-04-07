@@ -76,8 +76,8 @@ void container_damage_part(struct container *con);
 void container_damage_whole(struct container *con);
 void focus_container(struct container *con, enum focus_actions a);
 void focus_most_recent_container(int ws_id, enum focus_actions a);
-void focus_on_stack(int i);
-void focus_on_hidden_stack(int i);
+void focus_on_stack(struct monitor *m, int i);
+void focus_on_hidden_stack(struct monitor *m, int i);
 /* Find the topmost visible client (if any) at point (x, y), including
  * borders. This relies on stack being ordered from top to bottom. */
 void lift_container(struct container *con);

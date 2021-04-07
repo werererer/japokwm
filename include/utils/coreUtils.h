@@ -94,6 +94,8 @@ int wlr_list_remove_in_composed_list(struct wlr_list *lists,
         int (*compare)(const void *, const void *), const void *cmp_to);
 int wlr_list_find_in_composed_list(struct wlr_list *lists,
         int (*compare)(const void *, const void *), const void *cmp_to);
+struct wlr_list *wlr_list_find_list_in_composed_list(struct wlr_list *lists,
+        int (*compare)(const void *, const void *), const void *cmp_to);
 // compare pointers and return 0 if they are equal and 1 otherwise
 int cmp_ptr(const void *ptr1, const void *ptr2);
 

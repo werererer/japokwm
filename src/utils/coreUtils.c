@@ -81,6 +81,21 @@ int wlr_list_find_in_composed_list(struct wlr_list *lists,
     return -1;
 }
 
+struct wlr_list *wlr_list_find_list_in_composed_list(struct wlr_list *lists,
+        int (*compare)(const void *, const void *), const void *cmp_to)
+{
+    for (int i = 0; i < lists->length; i++) {
+        struct wlr_list *list = lists->items[i];
+        for (int j = 0; j < list->length; j++) {
+            void *item = list->items[j];
+            if (compare(item, cmp_to) == 0) {
+                return list;
+            }
+        }
+    }
+    return NULL;
+}
+
 char last_char(const char *str)
 {
     return str[strlen(str)-1];

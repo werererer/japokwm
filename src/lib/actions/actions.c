@@ -143,7 +143,7 @@ int lib_focus_on_stack(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    focus_on_stack(i);
+    focus_on_stack(selected_monitor, i);
 
     return 0;
 }
@@ -152,7 +152,7 @@ int lib_focus_on_hidden_stack(lua_State *L)
 {
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    focus_on_hidden_stack(i);
+    focus_on_hidden_stack(selected_monitor, i);
     return 0;
 }
 

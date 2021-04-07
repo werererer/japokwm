@@ -3,6 +3,7 @@
 #include "monitor.h"
 #include "container.h"
 #include "workspace.h"
+#include "utils/coreUtils.h"
 
 START_TEST(test_visible_on)
 {
@@ -88,6 +89,52 @@ START_TEST(test_exist_on)
     ck_assert_int_eq(exist_on(&con, &workspaces, 1), true);
 } END_TEST
 
+START_TEST(focus_on_hidden_stack_test)
+{
+    /* struct monitor m1; */
+    /* m1.ws_ids[0] = 0; */
+
+    /* struct client c1; */
+    /* c1.type = XDG_SHELL; */
+    /* c1.ws_id = 0; */
+
+    /* struct wlr_list tag_names; */
+    /* wlr_list_init(&tag_names); */
+    /* wlr_list_push(&tag_names, "0"); */
+
+    /* struct layout lt; */
+    /* struct wlr_list workspaces; */
+    /* create_workspaces(&workspaces, tag_names, lt); */
+    /* struct workspace *ws0 = get_workspace(&workspaces, 0); */
+
+    /* const int n; */
+    /* struct container con[5]; */
+    /* for (int i = 0; i < n; i++) { */
+    /*     con[i].client = &c1; */
+    /*     wlr_list_push(&ws0->focus_stack_normal, &con[i]); */
+    /* } */
+
+    /* wlr_list_push(&ws0->tiled_containers, &con[0]); */
+    /* wlr_list_push(&ws0->tiled_containers, &con[1]); */
+    /* wlr_list_push(&ws0->tiled_containers, &con[1]); */
+    /* wlr_list_push(&ws0->hidden_containers, &con[2]); */
+    /* wlr_list_push(&ws0->hidden_containers, &con[3]); */
+    /* wlr_list_push(&ws0->floating_containers, &con[4]); */
+
+    /* focus_on_hidden_stack(&m1, 0); */
+
+    /* printf("focused: %p -- con: %p\n", get_focused_container(&m1), &con[0]); */
+    /* struct wlr_list *list0 = */
+    /*     wlr_list_find_list_in_composed_list(&ws0->container_lists, cmp_ptr, &con[0]); */
+
+    /* struct wlr_list *list1 = */
+    /*     wlr_list_find_list_in_composed_list(&ws0->container_lists, cmp_ptr, &con[1]); */
+
+    /* ck_assert_ptr_eq(list0, &ws0->hidden_containers); */
+    /* ck_assert_ptr_eq(list1, &ws0->tiled_containers); */
+    // TODO fix this unittest
+} END_TEST
+
 Suite *suite()
 {
     Suite *s;
@@ -98,6 +145,7 @@ Suite *suite()
 
     tcase_add_test(tc, test_visible_on);
     tcase_add_test(tc, test_exist_on);
+    tcase_add_test(tc, focus_on_hidden_stack_test);
     suite_add_tcase(s, tc);
 
     return s;
@@ -105,6 +153,7 @@ Suite *suite()
 
 int main()
 {
+    setbuf(stdout, NULL);
     int number_failed;
     Suite *s;
     SRunner *sr;

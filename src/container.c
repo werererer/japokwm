@@ -547,9 +547,8 @@ void focus_most_recent_container(int ws_id, enum focus_actions a)
     focus_container(con, a);
 }
 
-void focus_on_stack(int i)
+void focus_on_stack(struct monitor *m, int i)
 {
-    struct monitor *m = selected_monitor;
     struct container *sel = get_focused_container(m);
 
     if (!sel)
@@ -568,9 +567,9 @@ void focus_on_stack(int i)
     focus_container(con, FOCUS_LIFT);
 }
 
-void focus_on_hidden_stack(int i)
+// TODO refactor
+void focus_on_hidden_stack(struct monitor *m, int i)
 {
-    struct monitor *m = selected_monitor;
     struct container *sel = get_focused_container(m);
 
     if (!sel)
@@ -590,6 +589,25 @@ void focus_on_hidden_stack(int i)
         /* set_container_floating(con, true); */
         /* set_container_floating(sel, false); */
         set_container_geom(con, sel->geom);
+
+
+        if (!con->floating) {
+            int position = MIN(ws->tiled_containers.length, ws->layout[0].n_tiled_max-1);
+            wlr_list_remove(&server.floating_visual_stack, cmp_ptr, con);
+            wlr_list_insert(&server.tiled_visual_stack, position, con);
+        } else {
+            wlr_list_remove(&server.tiled_visual_stack, cmp_ptr, con);
+            wlr_list_insert(&server.floating_visual_stack, 0, con);
+        }
+
+        if (!sel->floating) {
+            int position = MIN(ws->tiled_containers.length, ws->layout[0].n_tiled_max-1);
+            wlr_list_remove(&server.floating_visual_stack, cmp_ptr,sel);
+            wlr_list_insert(&server.tiled_visual_stack, position,sel);
+        } else {
+            wlr_list_remove(&server.tiled_visual_stack, cmp_ptr,sel);
+            wlr_list_insert(&server.floating_visual_stack, 0,sel);
+        }
     }
 
     con->hidden = false;
@@ -598,14 +616,14 @@ void focus_on_hidden_stack(int i)
     /* replace selected container with a hidden one and move the selected
      * container to the end of the containers array */
     wlr_list_remove(&ws->hidden_containers, cmp_ptr, con);
-    int sel_pos = wlr_list_find_in_composed_list(&ws->visible_container_lists,
-            cmp_ptr, sel);
-    struct wlr_list *list = get_list_at_i_in_composed_list(
-            &ws->visible_container_lists, sel_pos);
-    int position = wlr_list_find(list, cmp_ptr, sel);
-    wlr_list_insert(list, position, con);
 
-    wlr_list_remove_in_composed_list(&ws->visible_container_lists, cmp_ptr, sel);
+    struct wlr_list *focus_list = wlr_list_find_list_in_composed_list(
+            &ws->visible_container_lists, cmp_ptr, sel);
+    int focus_position = wlr_list_find(focus_list, cmp_ptr, sel);
+
+    wlr_list_insert(focus_list, focus_position, con);
+
+    wlr_list_remove(focus_list, cmp_ptr, sel);
 
     if (i < 0) {
         wlr_list_insert(&ws->hidden_containers, 0, sel);
