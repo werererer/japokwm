@@ -136,7 +136,7 @@ START_TEST(wlr_list_remove_in_composed_list_test)
     wlr_list_push(&list3, "7");
     wlr_list_push(&list3, "8");
 
-    wlr_list_remove_in_composed_list(&lists, (int (*)(const void *, const void *))strcmp, "1");
+    remove_in_composed_list(&lists, (int (*)(const void *, const void *))strcmp, "1");
     ck_assert_str_eq(get_in_composed_list(&lists, 1), "2");
 } END_TEST
 
@@ -170,7 +170,7 @@ START_TEST(wlr_list_find_in_composed_list_test)
     wlr_list_push(&list3, "7");
     wlr_list_push(&list3, "8");
 
-    int position = wlr_list_find_in_composed_list(&lists, (int (*)(const void *, const void *))strcmp, "1");
+    int position = find_in_composed_list(&lists, (int (*)(const void *, const void *))strcmp, "1");
     ck_assert_int_eq(position, 1);
 } END_TEST
 

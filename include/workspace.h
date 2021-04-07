@@ -51,17 +51,19 @@ void destroy_workspace(struct workspace *ws);
 
 void update_workspace_ids(struct wlr_list *workspaces);
 
-bool exist_on(struct container *con, struct wlr_list *workspaces, int ws_id);
+bool exist_on(struct container *con, struct workspace *ws);
 bool is_workspace_occupied(struct workspace *ws);
-bool hidden_on(struct container *con, struct wlr_list *workspaces, int ws_id);
-bool visible_on(struct container *con, struct wlr_list *workspaces, int ws_id);
+bool hidden_on(struct container *con, struct workspace *ws);
+bool visible_on(struct container *con, struct workspace *ws);
 bool workspace_has_clients(struct workspace *ws);
 
-int get_workspace_container_count(struct wlr_list *workspaces, size_t ws_id);
-bool is_workspace_empty(struct wlr_list *workspaces, size_t ws_id);
+int get_workspace_container_count(struct workspace *ws);
+bool is_workspace_empty(struct workspace *ws);
+
+struct container *get_container(struct workspace *ws, int i);
 
 struct workspace *find_next_unoccupied_workspace(struct wlr_list *workspaces, struct workspace *ws);
-struct workspace *get_workspace(struct wlr_list *workspaces, int id);
+struct workspace *get_workspace(int id);
 struct workspace *get_next_empty_workspace(struct wlr_list *workspaces, size_t i);
 struct workspace *get_prev_empty_workspace(struct wlr_list *workspaces, size_t i);
 
@@ -70,23 +72,24 @@ struct wlr_list *get_tiled_list(struct workspace *ws);
 struct wlr_list *get_floating_list(struct workspace *ws);
 struct wlr_list *get_hidden_list(struct workspace *ws);
 
+void add_container_to_containers(struct container *con, struct workspace *ws, int i);
+void add_container_to_focus_stack(struct container *con, struct workspace *ws);
+void add_container_to_stack(struct container *con);
+void focus_most_recent_container(struct workspace *ws, enum focus_actions a);
 void focus_next_unoccupied_workspace(struct monitor *m, struct wlr_list *workspaces, struct workspace *ws);
 void copy_layout_from_selected_workspace(struct wlr_list *workspaces);
 void create_workspaces(struct wlr_list *workspaces, struct wlr_list tagNames, struct layout default_layout);
 void destroy_workspaces(struct wlr_list *workspaces);
-void delete_workspace(struct wlr_list *workspaces, size_t id);
-void rename_workspace(size_t i, struct wlr_list *workspaces, const char *name);
 void load_default_layout(lua_State *L, struct workspace *ws);
 void load_layout(lua_State *L, struct workspace *ws, const char *layout_name, const char *layout_symbol);
+void set_container_workspace(struct container *con, struct workspace *ws);
 void set_layout(lua_State *L, struct workspace *ws);
 struct workspace *find_next_unoccupied_workspace(struct wlr_list *workspaces, struct workspace *ws);
 void set_selected_layout(struct workspace *ws, struct layout layout);
+void move_container_to_workspace(struct container *con, struct workspace *ws);
 void workspace_assign_monitor(struct workspace *ws, struct monitor *m);
-/* sets the value of selTag[0] */
-void focus_workspace(struct monitor *m, struct wlr_list *workspaces, int ws_id);
-void push_workspace(struct monitor *m,  struct wlr_list *workspaces, int ws_id);
+void focus_workspace(struct monitor *m, struct workspace *ws);
+void push_workspace(struct monitor *m, struct workspace *ws);
 void push_layout(struct workspace *ws, struct layout lt);
-
-struct layout *get_layout_on_workspace(int ws_id);
 
 #endif /* WORKSPACE_H */

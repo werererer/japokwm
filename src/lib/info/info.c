@@ -22,7 +22,7 @@ int lib_this_container_position(lua_State *L)
     struct container *sel = get_focused_container(m);
     struct workspace *ws = get_workspace_in_monitor(m);
 
-    int position = wlr_list_find_in_composed_list(&ws->container_lists, cmp_ptr, sel);
+    int position = find_in_composed_list(&ws->container_lists, cmp_ptr, sel);
     lua_pushinteger(L, position);
     return 1;
 }
@@ -44,7 +44,7 @@ int lib_get_next_empty_workspace(lua_State *L)
             ws = get_next_empty_workspace(&server.workspaces, id);
             break;
         default:
-            ws = get_workspace(&server.workspaces, id);
+            ws = get_workspace(id);
     }
 
     int ws_id = (ws) ? ws->id : id;
@@ -72,7 +72,7 @@ int lib_get_container_under_cursor(lua_State *L)
     struct workspace *ws = get_workspace_in_monitor(selected_monitor);
 
     struct container *con = xy_to_container(cursor->x, cursor->y);
-    int pos = wlr_list_find_in_composed_list(&ws->focus_stack_lists, cmp_ptr, con);
+    int pos = find_in_composed_list(&ws->focus_stack_lists, cmp_ptr, con);
     lua_pushinteger(L, pos);
     return 1;
 }

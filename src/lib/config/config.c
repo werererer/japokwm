@@ -12,7 +12,7 @@ int lib_reload(lua_State *L)
 {
     load_config(L);
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace(&server.workspaces, m->ws_id);
+    struct workspace *ws = get_workspace(m->ws_id);
 
     load_default_layout(L, ws);
 

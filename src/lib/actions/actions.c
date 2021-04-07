@@ -35,7 +35,8 @@ int lib_focus_container(lua_State *L)
     int pos = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
-    struct container *con = get_container_on_focus_stack(m->ws_id, pos);
+    struct workspace *ws = get_workspace_in_monitor(m);
+    struct container *con = get_in_composed_list(&ws->focus_stack_lists, pos);
 
     if (!con)
         return 0;
@@ -58,7 +59,7 @@ int lib_resize_main(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace(&server.workspaces, m->ws_id);
+    struct workspace *ws = get_workspace(m->ws_id);
     struct layout *lt = &ws->layout[0];
     int dir = lt->options.resize_dir;
 
@@ -169,7 +170,7 @@ int lib_move_to_scratchpad(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
-    struct container *con = get_container(m->ws_id, i);
+    struct container *con = get_container(get_workspace(m->ws_id), i);
     move_to_scratchpad(con, 0);
     return 0;
 }
@@ -183,18 +184,18 @@ int lib_view(lua_State *L)
     if (!m)
         return 0;
 
-    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
+    struct workspace *ws = get_workspace(ws_id);
     if (!ws)
         return 0;
 
-    push_workspace(m, &server.workspaces, ws->id);
+    push_workspace(m, ws);
     return 0;
 }
 
 int lib_toggle_view(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    focus_most_recent_container(m->ws_id, FOCUS_LIFT);
+    focus_most_recent_container(get_workspace(m->ws_id), FOCUS_LIFT);
     arrange(false);
     return 0;
 }
@@ -217,7 +218,7 @@ int lib_move_container_to_workspace(lua_State *L)
     struct monitor *m = selected_monitor;
     struct container *con = get_focused_container(m);
 
-    move_container_to_workspace(con, ws_id);
+    move_container_to_workspace(con, get_workspace(ws_id));
     return 0;
 }
 
@@ -252,12 +253,12 @@ int lib_zoom(lua_State *L)
     arrange();
 
     // focus new master window
-    struct container *con0 = get_container(m->ws_id, 0);
+    struct container *con0 = get_container(ws, 0);
     focus_container(con0, FOCUS_NOOP);
 
     struct layout *lt = get_layout_in_monitor(m);
     if (lt->options.arrange_by_focus) {
-        focus_most_recent_container(m->ws_id, FOCUS_NOOP);
+        focus_most_recent_container(ws, FOCUS_NOOP);
         arrange();
     }
     return 0;
@@ -389,7 +390,8 @@ int lib_kill(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct container *con = get_container(m->ws_id, i);
+    struct workspace *ws = get_workspace(m->ws_id);
+    struct container *con = get_container(ws, i);
     struct client *sel = con->client;
 
     if (!con)
@@ -424,7 +426,7 @@ int lib_toggle_layout(lua_State *L)
 int lib_toggle_workspace(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    push_workspace(m, &server.workspaces, server.previous_workspace_id);
+    push_workspace(m, get_workspace(server.previous_workspace_id));
     return 0;
 }
 
@@ -441,18 +443,18 @@ int lib_swap_workspace(lua_State *L)
 
     for (int i = 0; i < ws->tiled_containers.length; i++) {
         struct container *con = get_container(0, i);
-        if (exist_on(con, &server.workspaces, ws_id1)) {
+        if (exist_on(con, get_workspace(ws_id1))) {
             con->client->ws_id = ws_id2;
             continue;
         }
-        if (exist_on(con, &server.workspaces, ws_id2)) {
+        if (exist_on(con, get_workspace(ws_id2))) {
             con->client->ws_id = ws_id1;
             continue;
         }
     }
 
     arrange();
-    focus_most_recent_container(m->ws_id, FOCUS_NOOP);
+    focus_most_recent_container(ws, FOCUS_NOOP);
     root_damage_whole(m->root);
     return 0;
 }

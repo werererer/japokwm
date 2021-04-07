@@ -43,16 +43,16 @@ void execute_command(const char *_exec)
         bool handled = false;
         int i;
         for (i = 0; i < server.workspaces.length; i++) {
-            if (strcmp(get_workspace(&server.workspaces, i)->name, argv[2]) == 0) {
+            if (strcmp(get_workspace(i)->name, argv[2]) == 0) {
                 handled = true;
                 break;
             }
         }
         if (handled) {
             if (key_state_has_modifiers(MOD_SHIFT)) {
-                focus_workspace(selected_monitor, &server.workspaces, i);
+                focus_workspace(selected_monitor, get_workspace(i));
             } else {
-                struct workspace *ws = get_workspace(&server.workspaces, i);
+                struct workspace *ws = get_workspace(i);
                 push_selected_workspace(selected_monitor, ws);
             }
         }

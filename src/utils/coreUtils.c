@@ -48,7 +48,7 @@ int wlr_list_remove(struct wlr_list *list,
     return 1;
 }
 
-int wlr_list_remove_in_composed_list(struct wlr_list *lists,
+int remove_in_composed_list(struct wlr_list *lists,
         int (*compare)(const void *, const void *), const void *cmp_to)
 {
     for (int i = 0; i < lists->length; i++) {
@@ -64,7 +64,7 @@ int cmp_ptr(const void *ptr1, const void *ptr2)
     return ptr1 == ptr2 ? 0 : 1;
 }
 
-int wlr_list_find_in_composed_list(struct wlr_list *lists,
+int find_in_composed_list(struct wlr_list *lists,
         int (*compare)(const void *, const void *), const void *cmp_to)
 {
     int position = 0;
@@ -81,7 +81,7 @@ int wlr_list_find_in_composed_list(struct wlr_list *lists,
     return -1;
 }
 
-struct wlr_list *wlr_list_find_list_in_composed_list(struct wlr_list *lists,
+struct wlr_list *find_list_in_composed_list(struct wlr_list *lists,
         int (*compare)(const void *, const void *), const void *cmp_to)
 {
     for (int i = 0; i < lists->length; i++) {

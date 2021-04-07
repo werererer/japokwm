@@ -43,15 +43,9 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 
 void destroy_container(struct container *con);
 
-struct container *get_container(int ws_id, int i);
-struct container *get_visible_container(int ws_id, int i);
-struct container *get_hidden_container(int ws_id, int i);
-struct container *get_relative_visible_container(struct container *con, int i);
 struct container *get_focused_container(struct monitor *m);
 struct container *xy_to_container(double x, double y);
-struct container *container_position_to_hidden_container(int ws_id, int position);
 struct container *get_container_on_focus_stack(int ws_id, int position);
-struct container *get_relative_focus_container(int ws_id, struct container *con, int i);
 
 struct wlr_box get_center_box(struct wlr_box ref);
 struct wlr_box get_centered_box(struct wlr_box box, struct wlr_box ref);
@@ -60,26 +54,20 @@ struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box ref);
 struct wlr_box get_monitor_local_box(struct wlr_box box, struct monitor *m);
 struct wlr_fbox lua_togeometry(lua_State *L);
 
-void add_container_to_containers(struct container *con, int ws_id, int i);
 void apply_bounds(struct container *con, struct wlr_box bbox);
 void apply_rules(struct container *con);
 void container_damage_part(struct container *con);
 void container_damage_whole(struct container *con);
 void fix_position(struct container *con);
 void focus_container(struct container *con, enum focus_actions a);
-void focus_most_recent_container(int ws_id, enum focus_actions a);
 void focus_on_stack(struct monitor *m, int i);
 void focus_on_hidden_stack(struct monitor *m, int i);
 /* Find the topmost visible client (if any) at point (x, y), including
  * borders. This relies on stack being ordered from top to bottom. */
 void lift_container(struct container *con);
-void move_container_to_workspace(struct container *con, int ws_id);
 void repush(int pos, int pos2);
 void set_container_floating(struct container *con, void (*fix_position)(struct container *con), bool floating);
-void set_container_workspace(struct container *con, int ws_id);
 void set_container_monitor(struct container *con, struct monitor *m);
-void swap_container_positions(struct container *con1, struct container *con2);
-void swap_container_properties(struct container *con1, struct container *con2);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
 

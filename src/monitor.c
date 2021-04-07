@@ -95,7 +95,7 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     evaluate_monrules(output);
 
-    struct workspace *ws = get_workspace(&server.workspaces, 0);
+    struct workspace *ws = get_workspace(0);
     focus_next_unoccupied_workspace(m, &server.workspaces, ws);
     if (is_first_monitor) {
         focus_monitor(m);
@@ -166,7 +166,7 @@ void destroy_monitor(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, destroy);
 
-    focus_workspace(m, &server.workspaces, -1);
+    focus_workspace(m, NULL);
     destroy_root(m->root);
     wl_list_remove(&m->link);
 }
@@ -211,25 +211,26 @@ void focus_monitor(struct monitor *m)
 
     /* wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, m->wlr_output.) */
 
+    struct workspace *ws = get_workspace(m->ws_id);
     if (selected_monitor) {
-        struct workspace *ws2 = get_workspace_in_monitor(selected_monitor);
-        for (int i = 0; i < ws2->floating_containers.length; i++) {
-            struct container *con = ws2->floating_containers.items[i];
-            if (visible_on(con, &server.workspaces, ws2->id)) {
-                move_container_to_workspace(con, m->ws_id);
+        struct workspace *sel_ws = get_workspace_in_monitor(selected_monitor);
+        for (int i = 0; i < sel_ws->floating_containers.length; i++) {
+            struct container *con = sel_ws->floating_containers.items[i];
+            if (visible_on(con, get_workspace(sel_ws->id))) {
+                move_container_to_workspace(con, ws);
             }
         }
     }
 
     selected_monitor = m;
-    focus_workspace(m, &server.workspaces, m->ws_id);
+    focus_workspace(m, ws);
 }
 
 void push_selected_workspace(struct monitor *m, struct workspace *ws)
 {
     if (!m || !ws)
         return;
-    focus_workspace(m, &server.workspaces, ws->id);
+    focus_workspace(m, get_workspace(ws->id));
 }
 
 struct monitor *dirtomon(int dir)
@@ -271,10 +272,10 @@ inline struct workspace *get_workspace_in_monitor(struct monitor *m)
     if (!m)
         return NULL;
 
-    return get_workspace(&server.workspaces, m->ws_id);
+    return get_workspace(m->ws_id);
 }
 
 inline struct layout *get_layout_in_monitor(struct monitor *m)
 {
-    return get_layout_on_workspace(m->ws_id);
+    return &get_workspace(m->ws_id)->layout[0];
 }

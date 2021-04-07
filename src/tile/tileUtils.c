@@ -166,7 +166,7 @@ int get_floating_container_count(struct workspace *ws)
     int n = 0;
 
     for (int i = 0; i < ws->floating_containers.length; i++) {
-        struct container *con = get_container(ws->id, i);
+        struct container *con = get_container(ws, i);
         if (con->client->type == LAYER_SHELL)
             continue;
         n++;
@@ -217,15 +217,15 @@ void arrange_monitor(struct monitor *m)
         }
     }
 
-    arrange_containers(m->ws_id, m->root->geom, tiled_containers);
+    arrange_containers(ws, m->root->geom, tiled_containers);
 
     root_damage_whole(m->root);
 }
 
-void arrange_containers(int ws_id, struct wlr_box root_geom,
+void arrange_containers(struct workspace *ws, struct wlr_box root_geom,
         struct wlr_list *tiled_containers)
 {
-    struct layout *lt = get_layout_on_workspace(ws_id);
+    struct layout *lt = ws->layout;
 
     /* each container will get an inner_gap. If two containers are adjacent the
      * inner_gap is applied twice. To counter this effect we divide the

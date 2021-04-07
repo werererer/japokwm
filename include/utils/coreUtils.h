@@ -90,11 +90,11 @@ bool wlr_list_empty(struct wlr_list *list);
 int wlr_list_remove(struct wlr_list *list,
         int (*compare)(const void *, const void *), const void *cmp_to);
 /* return 0 on success and 1 on failure */
-int wlr_list_remove_in_composed_list(struct wlr_list *lists,
+int remove_in_composed_list(struct wlr_list *lists,
         int (*compare)(const void *, const void *), const void *cmp_to);
-int wlr_list_find_in_composed_list(struct wlr_list *lists,
+int find_in_composed_list(struct wlr_list *lists,
         int (*compare)(const void *, const void *), const void *cmp_to);
-struct wlr_list *wlr_list_find_list_in_composed_list(struct wlr_list *lists,
+struct wlr_list *find_list_in_composed_list(struct wlr_list *lists,
         int (*compare)(const void *, const void *), const void *cmp_to);
 
 struct wlr_list *list_insert_into_relative_position(struct wlr_list *lists,

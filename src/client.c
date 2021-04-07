@@ -131,7 +131,8 @@ void reset_tiled_client_borders(int border_px)
 {
     struct client *c;
     wl_list_for_each(c, &clients, link) {
-        if (!exist_on(c->con, &server.workspaces, selected_monitor->ws_id))
+        struct workspace *ws = get_workspace(selected_monitor->ws_id);
+        if (!exist_on(c->con, ws))
             continue;
         if (c->con->floating)
             continue;
@@ -143,7 +144,8 @@ void reset_floating_client_borders(int border_px)
 {
     struct client *c;
     wl_list_for_each(c, &clients, link) {
-        if (!exist_on(c->con, &server.workspaces, selected_monitor->ws_id))
+        struct workspace *ws = get_workspace(selected_monitor->ws_id);
+        if (!exist_on(c->con, ws))
             continue;
         if (!c->con->floating)
             continue;
@@ -266,7 +268,8 @@ void destroy_notify(struct wl_listener *listener, void *data)
     c = NULL;
 
     arrange();
-    focus_most_recent_container(selected_monitor->ws_id, FOCUS_NOOP);
+    struct monitor *m = selected_monitor;
+    focus_most_recent_container(get_workspace(m->ws_id), FOCUS_NOOP);
 }
 
 
@@ -301,7 +304,7 @@ void maprequest(struct wl_listener *listener, void *data)
             break;
     }
     arrange();
-    focus_most_recent_container(m->ws_id, FOCUS_NOOP);
+    focus_most_recent_container(get_workspace(m->ws_id), FOCUS_NOOP);
 }
 
 void unmapnotify(struct wl_listener *listener, void *data)

@@ -19,31 +19,34 @@ START_TEST(test_visible_on)
     struct wlr_list workspaces;
     create_workspaces(&workspaces, tag_names, lt);
 
+    struct monitor m0;
     struct monitor m1;
-    struct monitor m2;
-    get_workspace(&workspaces, 0)->m = &m1;
-    get_workspace(&workspaces, 1)->m = &m2;
+
+    struct workspace *ws0 = workspaces.items[0];
+    struct workspace *ws1 = workspaces.items[1];
+    ws0->m = &m0;
+    ws1->m = &m1;
 
     struct client c;
     struct container con = {
         .client = &c,
     };
 
+    con.m = &m0;
+    con.client->ws_id = 0;
+    ck_assert_int_eq(visible_on(&con, ws0), true);
+
     con.m = &m1;
     con.client->ws_id = 0;
-    ck_assert_int_eq(visible_on(&con, &workspaces, 0), true);
+    ck_assert_int_eq(visible_on(&con, ws0), false);
 
-    con.m = &m2;
-    con.client->ws_id = 0;
-    ck_assert_int_eq(visible_on(&con, &workspaces, 0), false);
+    con.m = &m0;
+    con.client->ws_id = 1;
+    ck_assert_int_eq(visible_on(&con, ws1), false);
 
     con.m = &m1;
     con.client->ws_id = 1;
-    ck_assert_int_eq(visible_on(&con, &workspaces, 1), false);
-
-    con.m = &m2;
-    con.client->ws_id = 1;
-    ck_assert_int_eq(visible_on(&con, &workspaces, 1), true);
+    ck_assert_int_eq(visible_on(&con, ws1), true);
 } END_TEST
 
 START_TEST(test_exist_on)
@@ -60,33 +63,37 @@ START_TEST(test_exist_on)
     struct wlr_list workspaces;
     create_workspaces(&workspaces, tag_names, lt);
 
+    struct monitor m0;
     struct monitor m1;
-    struct monitor m2;
-    get_workspace(&workspaces, 0)->m = &m1;
-    get_workspace(&workspaces, 1)->m = &m2;
+
+    struct workspace *ws0 = workspaces.items[0];
+    struct workspace *ws1 = workspaces.items[1];
+
+    ws0->m = &m0;
+    ws1->m = &m1;
 
     struct client c;
     struct container con = {
         .client = &c,
     };
 
-    con.m = &m1;
+    con.m = &m0;
     con.client->ws_id = 0;
     con.hidden = true;
-    ck_assert_int_eq(exist_on(&con, &workspaces, 0), true);
+    ck_assert_int_eq(exist_on(&con, ws0), true);
 
-    con.m = &m2;
+    con.m = &m1;
     con.client->ws_id = 0;
     con.hidden = false;
-    ck_assert_int_eq(exist_on(&con, &workspaces, 0), false);
+    ck_assert_int_eq(exist_on(&con, ws0), false);
+
+    con.m = &m0;
+    con.client->ws_id = 1;
+    ck_assert_int_eq(exist_on(&con, ws1), false);
 
     con.m = &m1;
     con.client->ws_id = 1;
-    ck_assert_int_eq(exist_on(&con, &workspaces, 1), false);
-
-    con.m = &m2;
-    con.client->ws_id = 1;
-    ck_assert_int_eq(exist_on(&con, &workspaces, 1), true);
+    ck_assert_int_eq(exist_on(&con, ws1), true);
 } END_TEST
 
 START_TEST(focus_on_hidden_stack_test)
