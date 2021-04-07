@@ -65,10 +65,9 @@ void destroy_container(struct container *con)
     free(con);
 }
 
-void container_damage_borders(struct container *con)
+void container_damage_borders(struct container *con, struct wlr_box *geom)
 {
     struct monitor *m = con->m;
-    struct wlr_box *geom = &con->geom;
     int border_width = con->client->bw;
     double ox = geom->x - border_width;
     double oy = geom->y - border_width;
@@ -94,7 +93,7 @@ static void damage_container_area(struct container *con, struct wlr_box *geom,
         struct monitor *m, bool whole)
 {
     output_damage_surface(m, get_wlrsurface(con->client), geom, whole);
-    container_damage_borders(con);
+    container_damage_borders(con, geom);
 }
 
 static void container_damage(struct container *con, bool whole)
@@ -129,17 +128,8 @@ struct container *get_focused_container(struct monitor *m)
 {
     assert(m != NULL);
 
-    return get_container_on_focus_stack(m->ws_id, 0);
-}
-
-struct container *get_container_on_focus_stack(int ws_id, int i)
-{
-    struct workspace *ws = get_workspace(ws_id);
-
-    if (!ws)
-        return NULL;
-
-    return get_in_composed_list(&ws->focus_stack_lists, i);
+    struct workspace *ws = get_workspace(m->ws_id);
+    return get_in_composed_list(&ws->focus_stack_lists, ws->id);
 }
 
 struct container *xy_to_container(double x, double y)
@@ -364,8 +354,8 @@ void focus_container(struct container *con, enum focus_actions a)
 
     struct container *new_sel = get_focused_container(m);
 
-    container_damage_borders(sel);
-    container_damage_borders(new_sel);
+    container_damage_borders(sel, &sel->geom);
+    container_damage_borders(new_sel, &new_sel->geom);
 
     struct client *old_c = sel ? sel->client : NULL;
     struct client *new_c = new_sel ? new_sel->client : NULL;
