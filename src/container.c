@@ -16,7 +16,7 @@
 #include "scratchpad.h"
 
 static void add_container_to_monitor(struct container *con, struct monitor *m);
-static void add_container_to_focus_stack(struct container *con);
+static void add_container_to_focus_stack(struct container *con, int ws_id);
 static void add_container_to_stack(struct container *con);
 
 struct container *create_container(struct client *c, struct monitor *m, bool has_border)
@@ -276,32 +276,38 @@ void remove_container_from_stack(int ws_id, struct container *con)
     wlr_list_remove_in_composed_list(&ws->container_lists, cmp_ptr, con);
 }
 
-void remove_container_from_focus_stack(int ws_id, int i)
+void remove_container_from_focus_stack(struct container *con)
 {
-    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
+    struct workspace *ws = get_workspace_in_monitor(con->m);
 
     if (!ws)
         return;
 
-    remove_from_composed_list(&ws->focus_stack_lists, i);
+    wlr_list_remove_in_composed_list(&ws->focus_stack_lists, cmp_ptr, con);
 }
 
-void add_container_to_containers(struct container *con, int i)
+void add_container_to_containers(struct container *con, int ws_id, int i)
 {
     if (!con)
         return;
+    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
+    if (!ws)
+        return;
 
-    printf("\nadd container: %p\n", con);
-    struct monitor *m = con->m;
-    struct workspace *ws = get_workspace(&server.workspaces, m->ws_ids[0]);
+    if (con->floating) {
+        wlr_list_insert(&ws->floating_containers, i, con);
+        return;
+    }
+    if (con->hidden) {
+        wlr_list_insert(&ws->hidden_containers, i, con);
+        return;
+    }
     wlr_list_insert(&ws->tiled_containers, i, con);
-    printf("add to workspace: %zu: length: %zu\n", ws->id, ws->tiled_containers.length);
 }
 
-static void add_container_to_focus_stack(struct container *con)
+static void add_container_to_focus_stack(struct container *con, int ws_id)
 {
-    struct monitor *m = con->m;
-    struct workspace *ws = get_workspace_in_monitor(m);
+    struct workspace *ws = get_workspace(&server.workspaces, ws_id);
 
     if (con->on_top) {
         wlr_list_insert(&ws->focus_stack_on_top, 0, con);
@@ -361,14 +367,14 @@ static void add_container_to_monitor(struct container *con, struct monitor *m)
         case XDG_SHELL:
         case X11_MANAGED:
         case X11_UNMANAGED:
-            add_container_to_containers(con, 0);
+            add_container_to_containers(con, con->m->ws_ids[0], 0);
             add_container_to_stack(con);
             break;
     }
 
     if (con->client->type == LAYER_SHELL)
         con->focusable = con->client->surface.layer->current.layer != ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND;
-    add_container_to_focus_stack(con);
+    add_container_to_focus_stack(con, m->ws_ids[0]);
 }
 
 struct wlr_box get_center_box(struct wlr_box ref)
@@ -519,7 +525,7 @@ void focus_container(struct container *con, enum focus_actions a)
     /* Put the new client atop the focus stack */
     struct workspace *ws = get_workspace_in_monitor(m);
     wlr_list_remove_in_composed_list(&ws->focus_stack_lists, cmp_ptr, con);
-    add_container_to_focus_stack(con);
+    add_container_to_focus_stack(con, m->ws_ids[0]);
 
     struct container *new_focus_con = get_focused_container(m);
 
@@ -710,11 +716,22 @@ void set_container_workspace(struct container *con, int ws_id)
     struct workspace *ws = get_workspace(&server.workspaces, ws_id);
     if (!ws)
         return;
+    if (con->m->ws_ids[0] == ws_id)
+        return;
 
     if (ws->m == NULL)
         ws->m = con->m;
-    set_container_monitor(con, ws->m);
+    else
+        set_container_monitor(con, ws->m);
     con->client->ws_id = ws_id;
+
+    remove_container_from_containers(con);
+    add_container_to_containers(con, ws_id, 0);
+
+    remove_container_from_focus_stack(con);
+    add_container_to_focus_stack(con, ws_id);
+
+    focus_most_recent_container(con->m->ws_ids[0], FOCUS_NOOP);
 
     if (con->floating)
         con->client->bw = ws->layout->options.float_border_px;
@@ -779,10 +796,10 @@ void swap_container_positions(struct container *con1, struct container *con2)
 
     wlr_list_remove_in_composed_list(&ws->container_lists, cmp_ptr, con2);
     int position1 = wlr_list_find_in_composed_list(&ws->container_lists, cmp_ptr, con1);
-    add_container_to_containers(con2, position1+1);
+    add_container_to_containers(con2, con1->m->ws_ids[0], position1+1);
 
     wlr_list_del(&ws->tiled_containers, position1);
-    add_container_to_containers(con1, position2);
+    add_container_to_containers(con1, con1->m->ws_ids[0], position2);
 
     swap_container_properties(con1, con2);
 }

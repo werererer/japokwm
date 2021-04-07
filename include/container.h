@@ -67,9 +67,9 @@ struct wlr_box get_monitor_local_box(struct wlr_box box, struct monitor *m);
 struct wlr_fbox lua_togeometry(lua_State *L);
 
 void remove_container_from_stack(int ws_id, struct container *con);
-void remove_container_from_focus_stack(int ws_id, int i);
+void remove_container_from_focus_stack(struct container *con);
 
-void add_container_to_containers(struct container *con, int i);
+void add_container_to_containers(struct container *con, int ws_id, int i);
 void apply_bounds(struct container *con, struct wlr_box bbox);
 void apply_rules(struct container *con);
 void container_damage_part(struct container *con);
