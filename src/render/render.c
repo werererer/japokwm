@@ -317,8 +317,8 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
 {
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    for (int i = 0; i < server.layer_visual_stack_background.length; i++) {
-        struct container *con = server.layer_visual_stack_background.items[i];
+    for (int i = 0; i < length_of_composed_list(&server.layer_visual_stack_lists); i++) {
+        struct container *con = get_in_composed_list(&server.layer_visual_stack_lists, i);
 
         if (con->client->type != LAYER_SHELL)
             continue;

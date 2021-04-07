@@ -348,21 +348,25 @@ struct wlr_list *get_list_at_i_in_composed_list(struct wlr_list *lists, int i)
     return NULL;
 }
 
-static void *get_relative_item(struct wlr_list *list, 
-        void *(*get_item)(struct wlr_list *, int i),
-        int (*length_of)(struct wlr_list *), int i, int j)
+int relative_index_to_absolute_index(int i, int j, int length)
 {
-    const int length = length_of(list);
     if (length == 0)
-        return NULL;
+        return -1;
 
     int new_position = i + j % length;
     while (new_position < 0)
         new_position += length;
 
-    return get_item(list, new_position);
+    return new_position;
 }
 
+static void *get_relative_item(struct wlr_list *list, 
+        void *(*get_item)(struct wlr_list *, int i),
+        int (*length_of)(struct wlr_list *), int i, int j)
+{
+    int new_position = relative_index_to_absolute_index(i, j, length_of(list));
+    return get_item(list, new_position);
+}
 
 void *get_relative_item_in_list(struct wlr_list *list, int i, int j)
 {

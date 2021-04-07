@@ -20,8 +20,6 @@ struct container {
     struct wl_list ilink;
     /* sticky containers */
     struct wl_list stlink;
-    /* scratchpad */
-    struct wl_list scratchpad_link;
 
     /* layout-relative, includes border */
     struct wlr_box geom;

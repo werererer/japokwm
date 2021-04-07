@@ -96,6 +96,10 @@ int wlr_list_find_in_composed_list(struct wlr_list *lists,
         int (*compare)(const void *, const void *), const void *cmp_to);
 struct wlr_list *wlr_list_find_list_in_composed_list(struct wlr_list *lists,
         int (*compare)(const void *, const void *), const void *cmp_to);
+
+struct wlr_list *list_insert_into_relative_position(struct wlr_list *lists,
+        int index, void *item);
+
 // compare pointers and return 0 if they are equal and 1 otherwise
 int cmp_ptr(const void *ptr1, const void *ptr2);
 
@@ -110,8 +114,11 @@ void print_trace();
 void *get_in_composed_list(struct wlr_list *lists, int i);
 struct wlr_list *get_list_at_i_in_composed_list(struct wlr_list *lists, int i);
 void remove_from_composed_list(struct wlr_list *lists, int i);
+
 int length_of_list(struct wlr_list *list);
 int length_of_composed_list(struct wlr_list *lists);
+int relative_index_to_absolute_index(int i, int j, int length);
+
 void *get_relative_item_in_list(struct wlr_list *list, int i, int j);
 void *get_relative_item_in_composed_list(struct wlr_list *lists, int i, int j);
 

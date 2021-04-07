@@ -50,6 +50,8 @@ struct server {
     struct wlr_list layer_visual_stack_top;
     struct wlr_list layer_visual_stack_overlay;
 
+    struct wlr_list scratchpad;
+
     const char *config_file;
     const char *config_dir;
 };
