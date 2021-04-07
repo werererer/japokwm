@@ -267,6 +267,23 @@ static void add_container_to_focus_stack(struct container *con, int ws_id)
 {
     struct workspace *ws = get_workspace(&server.workspaces, ws_id);
 
+    if (con->client->type == LAYER_SHELL) {
+        switch (con->client->surface.layer->current.layer) {
+            case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
+                wlr_list_insert(&ws->focus_stack_layer_background, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
+                wlr_list_insert(&ws->focus_stack_layer_bottom, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
+                wlr_list_insert(&ws->focus_stack_layer_top, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
+                wlr_list_insert(&ws->focus_stack_layer_overlay, 0, con);
+                break;
+        }
+        return;
+    }
     if (con->on_top) {
         wlr_list_insert(&ws->focus_stack_on_top, 0, con);
         return;
@@ -321,6 +338,10 @@ static void add_container_to_monitor(struct container *con, struct monitor *m)
             // layer shell programs aren't pushed to the stack because they use the
             // layer system to set the correct render position
             add_container_to_stack(con);
+            if (con->client->surface.layer->current.layer
+                    == ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND) {
+                con->focusable = false;
+            }
             break;
         case XDG_SHELL:
         case X11_MANAGED:
@@ -329,9 +350,6 @@ static void add_container_to_monitor(struct container *con, struct monitor *m)
             add_container_to_stack(con);
             break;
     }
-
-    if (con->client->type == LAYER_SHELL)
-        con->focusable = con->client->surface.layer->current.layer != ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND;
     add_container_to_focus_stack(con, m->ws_ids[0]);
 }
 
@@ -539,6 +557,7 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     struct wlr_list *visible_container_lists = get_visible_lists(ws);
     struct wlr_list *hidden_containers = get_hidden_list(ws);
     struct wlr_list *tiled_containers = get_tiled_list(ws);
+    printf("hidden_containers.length: %zu\n", hidden_containers->length);
     struct container *con = get_relative_item_in_list(hidden_containers, 0, i);
 
     if (!con)

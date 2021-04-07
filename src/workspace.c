@@ -43,6 +43,11 @@ static void setup_lists(struct workspace *ws)
     wlr_list_init(&ws->focus_stack_visible_lists);
     wlr_list_init(&ws->focus_stack_lists_with_layer_shell);
 
+    wlr_list_init(&ws->focus_stack_layer_background);
+    wlr_list_init(&ws->focus_stack_layer_bottom);
+    wlr_list_init(&ws->focus_stack_layer_top);
+    wlr_list_init(&ws->focus_stack_layer_overlay);
+    wlr_list_init(&ws->focus_stack_layer_bottom);
     wlr_list_init(&ws->focus_stack_on_top);
     wlr_list_init(&ws->focus_stack_normal);
     wlr_list_init(&ws->focus_stack_hidden);
@@ -57,10 +62,13 @@ static void setup_lists(struct workspace *ws)
     wlr_list_push(&ws->focus_stack_visible_lists, &ws->focus_stack_normal);
     wlr_list_push(&ws->focus_stack_visible_lists, &ws->focus_stack_not_focusable);
 
-    wlr_list_push(&ws->focus_stack_lists_with_layer_shell, &ws->focus_stack_layer_shell);
+    wlr_list_push(&ws->focus_stack_lists_with_layer_shell, &ws->focus_stack_layer_background);
+    wlr_list_push(&ws->focus_stack_lists_with_layer_shell, &ws->focus_stack_layer_bottom);
     wlr_list_push(&ws->focus_stack_lists_with_layer_shell, &ws->focus_stack_on_top);
     wlr_list_push(&ws->focus_stack_lists_with_layer_shell, &ws->focus_stack_normal);
     wlr_list_push(&ws->focus_stack_lists_with_layer_shell, &ws->focus_stack_not_focusable);
+    wlr_list_push(&ws->focus_stack_lists_with_layer_shell, &ws->focus_stack_layer_top);
+    wlr_list_push(&ws->focus_stack_lists_with_layer_shell, &ws->focus_stack_layer_overlay);
 }
 
 struct workspace *create_workspace(const char *name, size_t id, struct layout lt)
@@ -148,7 +156,7 @@ bool exist_on(struct container *con, struct wlr_list *workspaces, int ws_id)
     if (con->m != ws->m) {
         if (con->floating)
             return container_intersects_with_monitor(con, ws->m)
-                && con->client->ws_id == ws->m->ws_ids[0];
+                && con->client->ws_id == con->m->ws_ids[0];
         else
             return false;
     }

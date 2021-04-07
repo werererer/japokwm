@@ -82,6 +82,7 @@ static void update_layout_counters(struct workspace *ws)
     lt->n_tiled_max = lt->n_area_max + lt->n_master_abs-1;
     lt->n_visible = lt->n_tiled + lt->n_floating;
     lt->n_hidden = ws->n_all - lt->n_visible;
+    printf("n_hidden: %i\n", lt->n_hidden);
 }
 
 static struct wlr_fbox lua_unbox_layout_geom(lua_State *L, int i) {

@@ -36,7 +36,10 @@ struct workspace {
     struct wlr_list focus_stack_visible_lists;
     struct wlr_list focus_stack_lists;
 
-    struct wlr_list focus_stack_layer_shell;
+    struct wlr_list focus_stack_layer_background;
+    struct wlr_list focus_stack_layer_bottom;
+    struct wlr_list focus_stack_layer_top;
+    struct wlr_list focus_stack_layer_overlay;
     struct wlr_list focus_stack_on_top;
     struct wlr_list focus_stack_normal;
     struct wlr_list focus_stack_hidden;
