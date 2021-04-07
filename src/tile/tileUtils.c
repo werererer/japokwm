@@ -198,18 +198,9 @@ void arrange_monitor(struct monitor *m)
     update_layout_counters(ws);
     call_update_function(&lt->options.event_handler, lt->n_area);
 
-    struct wlr_list *visible_container_lists;
-    struct wlr_list *tiled_containers;
-    struct wlr_list *hidden_containers; 
-    if (lt->options.arrange_by_focus) {
-        visible_container_lists = &ws->focus_stack_visible_lists;
-        tiled_containers = &ws->focus_stack_normal;
-        hidden_containers = &ws->focus_stack_hidden;
-    } else {
-        visible_container_lists = &ws->visible_container_lists;
-        tiled_containers = &ws->tiled_containers;
-        hidden_containers = &ws->hidden_containers;
-    }
+    struct wlr_list *visible_container_lists = get_visible_lists(ws);
+    struct wlr_list *tiled_containers = get_tiled_list(ws);
+    struct wlr_list *hidden_containers = get_hidden_list(ws); 
 
     update_hidden_status_of_containers(m, visible_container_lists,
             tiled_containers, hidden_containers);
@@ -377,16 +368,8 @@ int get_container_count(struct workspace *ws)
 int get_tiled_container_count(struct workspace *ws)
 {
     int n = 0;
-    struct wlr_list *tiled_containers = &ws->tiled_containers;
-    struct wlr_list *hidden_containers = &ws->hidden_containers;
-
-    if (ws->layout[0].options.arrange_by_focus) {
-        tiled_containers = &ws->focus_stack_normal;
-        hidden_containers = &ws->focus_stack_hidden;
-    } else {
-        tiled_containers = &ws->tiled_containers;
-        hidden_containers = &ws->hidden_containers;
-    }
+    struct wlr_list *tiled_containers = get_tiled_list(ws);
+    struct wlr_list *hidden_containers = get_hidden_list(ws);
 
     n = tiled_containers->length + hidden_containers->length;
     return n;

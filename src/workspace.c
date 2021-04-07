@@ -279,6 +279,36 @@ struct workspace *get_prev_empty_workspace(struct wlr_list *workspaces, size_t i
     return ws;
 }
 
+struct wlr_list *get_visible_lists(struct workspace *ws)
+{
+    struct layout *lt = ws->layout;
+
+    if (lt->options.arrange_by_focus)
+        return &ws->focus_stack_visible_lists;
+    else
+        return &ws->visible_container_lists;
+}
+
+struct wlr_list *get_tiled_list(struct workspace *ws)
+{
+    struct layout *lt = ws->layout;
+
+    if (lt->options.arrange_by_focus)
+        return &ws->focus_stack_normal;
+    else
+        return &ws->tiled_containers;
+}
+
+struct wlr_list *get_hidden_list(struct workspace *ws)
+{
+    struct layout *lt = ws->layout;
+
+    if (lt->options.arrange_by_focus)
+        return &ws->focus_stack_hidden;
+    else
+        return &ws->hidden_containers;
+}
+
 void workspace_assign_monitor(struct workspace *ws, struct monitor *m)
 {
     ws->m = m;
