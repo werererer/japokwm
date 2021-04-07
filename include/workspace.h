@@ -67,6 +67,7 @@ struct workspace *get_prev_empty_workspace(struct wlr_list *workspaces, size_t i
 
 struct wlr_list *get_visible_lists(struct workspace *ws);
 struct wlr_list *get_tiled_list(struct workspace *ws);
+struct wlr_list *get_floating_list(struct workspace *ws);
 struct wlr_list *get_hidden_list(struct workspace *ws);
 
 void focus_next_unoccupied_workspace(struct monitor *m, struct wlr_list *workspaces, struct workspace *ws);

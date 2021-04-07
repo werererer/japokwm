@@ -14,7 +14,7 @@ void move_to_scratchpad(struct container *con, int position)
     struct workspace *ws = get_workspace_in_monitor(m);
 
     con->on_scratchpad = true;
-    set_container_floating(con, true);
+    set_container_floating(con, fix_position, true);
 
     if (server.scratchpad.length == 0) {
         wlr_list_push(&server.scratchpad, con);
@@ -52,7 +52,7 @@ void show_scratchpad()
         wlr_list_insert(&ws->focus_stack_normal, 0, con);
         wlr_list_insert(&server.floating_visual_stack, 0, con);
 
-        set_container_geom(con, get_center_box(m->geom));
+        resize(con, get_center_box(m->geom));
 
         con->hidden = false;
         focus_container(con, FOCUS_LIFT);

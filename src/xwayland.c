@@ -143,7 +143,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
                 con->on_top = false;
                 if (wants_floating(con->client)) {
-                    set_container_floating(con, true);
+                    set_container_floating(con, fix_position, true);
                     resize(con, prefered_geom);
                 }
                 break;
@@ -163,7 +163,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
                 con->has_border = false;
                 lift_container(con);
-                set_container_floating(con, true);
+                set_container_floating(con, fix_position, true);
                 resize(con, prefered_geom);
                 break;
             }

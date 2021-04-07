@@ -162,14 +162,14 @@ void move_resize(int ui)
 
     struct wlr_cursor *cursor = server.cursor.wlr_cursor;
     struct monitor *m = grabc->m;
+    struct layout *lt = get_layout_in_monitor(m);
+    // all floating windows will be tiled. Thats why you can't make new windows
+    // tiled
+    if (lt->options.arrange_by_focus)
+        return;
 
     /* Float the window and tell motion_notify to grab it */
-    set_container_floating(grabc, true);
-
-    struct layout *lt = get_layout_in_monitor(m);
-    if (lt->options.arrange_by_focus) {
-        return;
-    }
+    set_container_floating(grabc, fix_position, true);
 
     switch (server.cursor.cursor_mode = ui) {
         case CURSOR_MOVE:

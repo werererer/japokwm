@@ -211,7 +211,7 @@ void arrange_monitor(struct monitor *m)
         for (int i = 0; i < ws->floating_containers.length; i++) {
             struct container *con = ws->floating_containers.items[i];
             if (con->geom_was_changed) {
-                set_container_geom(con, con->prev_floating_geom);
+                resize(con, con->prev_floating_geom);
                 con->geom_was_changed = false;
             }
         }
@@ -274,6 +274,18 @@ static void arrange_container(struct container *con, int arrange_position,
         con->geom_was_changed = true;
 
     resize(con, geom);
+}
+
+static void set_container_geom(struct container *con, struct wlr_box geom)
+{
+    struct monitor *m = con->m;
+    struct layout *lt = get_layout_in_monitor(m);
+
+    if (con->floating && !lt->options.arrange_by_focus)
+        con->prev_floating_geom = geom;
+
+    con->prev_geom = con->geom;
+    con->geom = geom;
 }
 
 void resize(struct container *con, struct wlr_box geom)

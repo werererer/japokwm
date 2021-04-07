@@ -290,6 +290,16 @@ struct wlr_list *get_tiled_list(struct workspace *ws)
         return &ws->tiled_containers;
 }
 
+struct wlr_list *get_floating_list(struct workspace *ws)
+{
+    struct layout *lt = ws->layout;
+
+    if (lt->options.arrange_by_focus)
+        return &ws->focus_stack_normal;
+    else
+        return &ws->floating_containers;
+}
+
 struct wlr_list *get_hidden_list(struct workspace *ws)
 {
     struct layout *lt = ws->layout;

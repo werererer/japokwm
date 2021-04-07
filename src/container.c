@@ -244,6 +244,28 @@ struct container *xy_to_container(double x, double y)
     return NULL;
 }
 
+void add_container_to_composed_list(struct wlr_list *lists, struct container *con, int i)
+{
+    if (!con)
+        return;
+    struct workspace *ws = get_workspace(&server.workspaces, con->m->ws_ids[0]);
+    if (!ws)
+        return;
+
+    struct wlr_list *hidden_containers = get_hidden_list(ws);
+    struct wlr_list *tiled_containers = get_tiled_list(ws);
+    struct wlr_list *floating_containers = get_floating_list(ws);
+    if (con->floating) {
+        wlr_list_insert(floating_containers, i, con);
+        return;
+    }
+    if (con->hidden) {
+        wlr_list_insert(hidden_containers, i, con);
+        return;
+    }
+    wlr_list_insert(tiled_containers, i, con);
+}
+
 void add_container_to_containers(struct container *con, int ws_id, int i)
 {
     if (!con)
@@ -554,40 +576,16 @@ void focus_on_hidden_stack(struct monitor *m, int i)
         return;
 
     struct workspace *ws = get_workspace_in_monitor(m);
-    struct wlr_list *visible_container_lists = get_visible_lists(ws);
     struct wlr_list *hidden_containers = get_hidden_list(ws);
-    struct wlr_list *tiled_containers = get_tiled_list(ws);
-    printf("hidden_containers.length: %zu\n", hidden_containers->length);
     struct container *con = get_relative_item_in_list(hidden_containers, 0, i);
 
     if (!con)
         return;
 
     if (sel->floating) {
-        con->floating = true;
-        sel->floating = false;
-        /* set_container_floating(con, true); */
-        /* set_container_floating(sel, false); */
-        set_container_geom(con, sel->geom);
-
-
-        if (!con->floating) {
-            int position = MIN(tiled_containers->length, ws->layout[0].n_tiled_max-1);
-            wlr_list_remove(&server.floating_visual_stack, cmp_ptr, con);
-            wlr_list_insert(&server.tiled_visual_stack, position, con);
-        } else {
-            wlr_list_remove(&server.tiled_visual_stack, cmp_ptr, con);
-            wlr_list_insert(&server.floating_visual_stack, 0, con);
-        }
-
-        if (!sel->floating) {
-            int position = MIN(tiled_containers->length, ws->layout[0].n_tiled_max-1);
-            wlr_list_remove(&server.floating_visual_stack, cmp_ptr,sel);
-            wlr_list_insert(&server.tiled_visual_stack, position,sel);
-        } else {
-            wlr_list_remove(&server.tiled_visual_stack, cmp_ptr,sel);
-            wlr_list_insert(&server.floating_visual_stack, 0,sel);
-        }
+        set_container_floating(con, NULL, true);
+        set_container_floating(sel, NULL, false);
+        resize(con, sel->geom);
     }
 
     con->hidden = false;
@@ -597,13 +595,13 @@ void focus_on_hidden_stack(struct monitor *m, int i)
      * container to the end of the containers array */
     wlr_list_remove(hidden_containers, cmp_ptr, con);
 
+    struct wlr_list *visible_container_lists = get_visible_lists(ws);
     struct wlr_list *focus_list = wlr_list_find_list_in_composed_list(
             visible_container_lists, cmp_ptr, sel);
-    int focus_position = wlr_list_find(focus_list, cmp_ptr, sel);
+    int sel_index = wlr_list_find(focus_list, cmp_ptr, sel);
 
-    wlr_list_insert(focus_list, focus_position, con);
-
-    wlr_list_remove(focus_list, cmp_ptr, sel);
+    wlr_list_insert(focus_list, sel_index+1, con);
+    wlr_list_del(focus_list, sel_index);
 
     if (i < 0) {
         wlr_list_insert(hidden_containers, 0, sel);
@@ -670,7 +668,27 @@ void repush(int pos1, int pos2)
         arrange();
 }
 
-void set_container_floating(struct container *con, bool floating)
+void fix_position(struct container *con)
+{
+    if (!con)
+        return;
+
+    struct workspace *ws = get_workspace_in_monitor(con->m);
+
+    struct wlr_list *tiled_containers = get_tiled_list(ws);
+    struct wlr_list *floating_containers = get_floating_list(ws);
+
+    if (!con->floating) {
+        wlr_list_remove(floating_containers, cmp_ptr, con);
+        int position = MIN(tiled_containers->length, ws->layout[0].n_tiled_max-1);
+        wlr_list_insert(tiled_containers, position, con);
+    } else {
+        wlr_list_remove(tiled_containers, cmp_ptr, con);
+        wlr_list_insert(floating_containers, 0, con);
+    }
+}
+
+void set_container_floating(struct container *con, void (*fix_position)(struct container *con), bool floating)
 {
     if (!con)
         return;
@@ -685,24 +703,19 @@ void set_container_floating(struct container *con, bool floating)
 
     con->floating = floating;
 
+    if (fix_position)
+        fix_position(con);
+
     if (!con->floating) {
         set_container_workspace(con, m->ws_ids[0]);
-
-        wlr_list_remove(&ws->floating_containers, cmp_ptr, con);
-
-        int position = MIN(ws->tiled_containers.length, ws->layout[0].n_tiled_max-1);
-        printf("position: %i\n", position);
-        wlr_list_insert(&ws->tiled_containers, position, con);
 
         if (con->on_scratchpad) {
             remove_container_from_scratchpad(con);
         }
 
         wlr_list_remove(&server.floating_visual_stack, cmp_ptr, con);
-        wlr_list_insert(&server.tiled_visual_stack, position, con);
+        wlr_list_insert(&server.tiled_visual_stack, 0, con);
     } else {
-        wlr_list_remove(&ws->tiled_containers, cmp_ptr, con);
-        wlr_list_insert(&ws->floating_containers, 0, con);
         wlr_list_remove(&server.tiled_visual_stack, cmp_ptr, con);
         wlr_list_insert(&server.floating_visual_stack, 0, con);
     }
@@ -711,18 +724,6 @@ void set_container_floating(struct container *con, bool floating)
     con->client->bw = lt->options.float_border_px;
     con->client->resized = true;
     container_damage_whole(con);
-}
-
-void set_container_geom(struct container *con, struct wlr_box geom)
-{
-    struct monitor *m = con->m;
-    struct layout *lt = get_layout_in_monitor(m);
-
-    if (con->floating && !lt->options.arrange_by_focus)
-        con->prev_floating_geom = geom;
-
-    con->prev_geom = con->geom;
-    con->geom = geom;
 }
 
 void set_container_workspace(struct container *con, int ws_id)
@@ -793,9 +794,9 @@ void swap_container_properties(struct container *con1, struct container *con2)
 {
     if (con1->floating != con2->floating) {
         if (con1->floating)
-            set_container_geom(con2, con1->geom);
+            resize(con2, con1->geom);
         if (con2->floating)
-            set_container_geom(con1, con2->geom);
+            resize(con1, con2->geom);
 
         swap_booleans(&con1->floating, &con2->floating);
     }
