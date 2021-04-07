@@ -345,7 +345,7 @@ static void add_container_to_stack(struct container *con)
     }
 
     if (con->floating) {
-        wlr_list_push(&server.floating_visual_stack, con);
+        wlr_list_insert(&server.floating_visual_stack, 0, con);
         return;
     }
 
@@ -627,7 +627,7 @@ void lift_container(struct container *con)
     if (con->client->type == LAYER_SHELL)
         return;
 
-    wlr_list_remove(&server.tiled_visual_stack, cmp_ptr, con);
+    wlr_list_remove_in_composed_list(&server.normal_visual_stack_lists, cmp_ptr, con);
     add_container_to_stack(con);
 }
 
