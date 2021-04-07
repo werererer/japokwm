@@ -147,7 +147,8 @@ bool exist_on(struct container *con, struct wlr_list *workspaces, int ws_id)
         return false;
     if (con->m != ws->m) {
         if (con->floating)
-            return container_intersects_with_monitor(con, ws->m);
+            return container_intersects_with_monitor(con, ws->m)
+                && con->client->ws_id == ws->m->ws_ids[0];
         else
             return false;
     }
@@ -187,30 +188,12 @@ bool hidden_on(struct container *con, struct wlr_list *workspaces, int ws_id)
 
 bool visible_on(struct container *con, struct wlr_list *workspaces, int ws_id)
 {
-    struct workspace *ws = get_workspace(workspaces, ws_id);
-    if (!con || !ws)
+    if (!con)
         return false;
     if (con->hidden)
         return false;
-    if (con->m != ws->m) {
-        if (con->floating)
-            return container_intersects_with_monitor(con, ws->m);
-        else
-            return false;
-    }
 
-    struct client *c = con->client;
-
-    if (!c)
-        return false;
-
-    // LayerShell based programs are visible on all workspaces
-    if (c->type == LAYER_SHELL)
-        return true;
-    if (c->sticky)
-        return true;
-
-    return c->ws_id == ws->id;
+    return exist_on(con, workspaces, ws_id);
 }
 
 int get_workspace_container_count(struct wlr_list *workspaces, size_t ws_id)
