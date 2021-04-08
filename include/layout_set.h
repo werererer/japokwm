@@ -7,6 +7,7 @@
 
 struct layout_set {
     const char *key;
+    // preloaded layouts
     int layout_sets_ref;
     int lua_layout_index;
 };
