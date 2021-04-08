@@ -218,7 +218,7 @@ Suite *suite()
     Suite *s;
     TCase *tc;
 
-    s = suite_create("client");
+    s = suite_create("coreUtils");
     tc = tcase_create("core");
 
     tcase_add_test(tc, get_on_composed_list_test);

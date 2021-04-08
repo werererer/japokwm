@@ -147,7 +147,7 @@ Suite *suite()
     Suite *s;
     TCase *tc;
 
-    s = suite_create("client");
+    s = suite_create("container");
     tc = tcase_create("core");
 
     tcase_add_test(tc, test_visible_on);
@@ -161,6 +161,7 @@ Suite *suite()
 int main()
 {
     setbuf(stdout, NULL);
+
     int number_failed;
     Suite *s;
     SRunner *sr;

@@ -59,7 +59,7 @@ Suite *suite()
     Suite *s;
     TCase *tc;
 
-    s = suite_create("tagset");
+    s = suite_create("gapUtils");
     tc = tcase_create("Core");
     tcase_add_test(tc, containerAddGapsTest);
     tcase_add_test(tc, containerSurroundGapsTest);

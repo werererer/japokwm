@@ -31,7 +31,7 @@ Suite *suite()
     Suite *s;
     TCase *tc;
 
-    s = suite_create("tagset");
+    s = suite_create("stringUtils");
     tc = tcase_create("Core");
 
     tcase_add_test(tc, doubleToStringTest);

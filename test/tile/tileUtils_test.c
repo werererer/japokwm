@@ -81,7 +81,7 @@ Suite *suite()
     Suite *s;
     TCase *tc;
 
-    s = suite_create("tagset");
+    s = suite_create("tileUtils");
     tc = tcase_create("core");
 
     tcase_add_test(tc, get_container_count_test);
