@@ -130,6 +130,11 @@ int lib_set_default_layout(lua_State *L)
     return 0;
 }
 
+static void h(struct container *con, int i)
+{
+
+}
+
 // TODO refactor this function hard to read
 int lib_create_workspaces(lua_State *L)
 {
@@ -143,30 +148,27 @@ int lib_create_workspaces(lua_State *L)
     }
     lua_pop(L, 1);
 
-    struct wlr_list workspaces_tmp;
-    wlr_list_init(&workspaces_tmp);
-    for (int i = 0; i < server.workspaces.length; i++) {
-        struct workspace *ws = calloc(1, sizeof(struct workspace));
-        memcpy(ws, server.workspaces.items[i], sizeof(struct workspace));
-        wlr_list_push(&workspaces_tmp, ws);
+    if (tag_names->length > server.workspaces.length) {
+        for (int i = server.workspaces.length-1; i < tag_names->length; i++) {
+            const char *name = tag_names->items[0];
+
+            struct workspace *ws = create_workspace(name, i, &server.default_layout);
+            wlr_list_push(&server.workspaces, ws);
+        }
+    } else {
+        int tile_containers_length = server.workspaces.length;
+        for (int i = tag_names->length; i < tile_containers_length; i++) {
+            struct workspace *ws = wlr_list_pop(&server.workspaces);
+            destroy_workspace(ws);
+        }
     }
 
-    printf("tag_names.length: %zu\n", tag_names->length);
-    destroy_workspaces(&server.workspaces);
-    create_workspaces(&server.workspaces, tag_names, &server.default_layout);
-
-    for (int i = 0 ; i < server.workspaces.length; i++) {
-        if (i >= workspaces_tmp.length)
-            break;
-        struct workspace *tmp_ws = workspaces_tmp.items[i];
+    for (int i = 0; i < tag_names->length; i++) {
         struct workspace *ws = server.workspaces.items[i];
-        memcpy(ws->layout, tmp_ws->layout, 2*sizeof(struct layout));
-        ws->m = tmp_ws->m;
+        rename_workspace(ws, tag_names->items[i]);
     }
-    destroy_workspaces(&workspaces_tmp);
 
     ipc_event_workspace();
-    printf("tag_names.length: %zu\n", tag_names->length);
 
     return 0;
 }

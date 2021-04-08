@@ -68,6 +68,7 @@ void focus_on_hidden_stack(struct monitor *m, int i);
 void lift_container(struct container *con);
 void repush(int pos, int pos2);
 void set_container_floating(struct container *con, void (*fix_position)(struct container *con), bool floating);
+void set_container_hidden_status(struct container *con, bool b);
 void set_container_monitor(struct container *con, struct monitor *m);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);

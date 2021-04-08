@@ -111,6 +111,25 @@ float calc_ratio(float width, float height)
     return height / width;
 }
 
+void kill_client(struct client *c)
+{
+    if (!c)
+        return;
+
+    switch (c->type) {
+        case XDG_SHELL:
+            wlr_xdg_toplevel_send_close(c->surface.xdg);
+            break;
+        case LAYER_SHELL:
+            wlr_layer_surface_v1_close(c->surface.layer);
+            break;
+        case X11_MANAGED:
+        case X11_UNMANAGED:
+            wlr_xwayland_surface_close(c->surface.xwayland);
+            break;
+    }
+}
+
 void reset_tiled_client_borders(int border_px)
 {
     for (int i = 0; i < server.normal_clients.length; i++) {

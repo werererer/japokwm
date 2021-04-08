@@ -548,6 +548,11 @@ void set_container_floating(struct container *con, void (*fix_position)(struct c
     container_damage_whole(con);
 }
 
+void set_container_hidden_status(struct container *con, bool b)
+{
+    con->hidden = true;
+}
+
 void set_container_monitor(struct container *con, struct monitor *m)
 {
     assert(m != NULL);

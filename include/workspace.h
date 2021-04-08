@@ -91,6 +91,7 @@ struct workspace *find_next_unoccupied_workspace(struct wlr_list *workspaces, st
 void set_selected_layout(struct workspace *ws, struct layout layout);
 void move_container_to_workspace(struct container *con, struct workspace *ws);
 void workspace_assign_monitor(struct workspace *ws, struct monitor *m);
+void rename_workspace(struct workspace *ws, const char *name);
 void focus_workspace(struct monitor *m, struct workspace *ws);
 void push_workspace(struct monitor *m, struct workspace *ws);
 void push_layout(struct workspace *ws, struct layout lt);

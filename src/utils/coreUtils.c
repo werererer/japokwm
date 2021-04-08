@@ -268,6 +268,27 @@ void lua_get_default_resize_data()
     }
 }
 
+void flow_list(struct wlr_list *list, struct wlr_list *ref_list, int goal, void (*func)(void *, bool))
+{
+    if (goal > list->length) {
+        int n_missing = MIN(goal - list->length, ref_list->length);
+        for (int i = 0; i < n_missing; i++) {
+            void *item = ref_list->items[0];
+
+            func(item, false);
+            wlr_list_del(ref_list, 0);
+            wlr_list_push(list, item);
+        }
+    } else {
+        int tile_containers_length = list->length;
+        for (int i = goal; i < tile_containers_length; i++) {
+            void *item = wlr_list_pop(list);
+            func(item, true);
+            wlr_list_insert(ref_list, 0, item);
+        }
+    }
+}
+
 void lua_tocolor(float dest_color[static 4])
 {
     for (int i = 0; i < 4; i++) {

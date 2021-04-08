@@ -390,25 +390,12 @@ int lib_kill(lua_State *L)
 
     struct workspace *ws = get_workspace(m->ws_id);
     struct container *con = get_container(ws, i);
-    struct client *sel = con->client;
 
     if (!con)
         return 0;
-    if (!sel)
-        return 0;
 
-    switch (sel->type) {
-        case XDG_SHELL:
-            wlr_xdg_toplevel_send_close(sel->surface.xdg);
-            break;
-        case LAYER_SHELL:
-            wlr_layer_surface_v1_close(sel->surface.layer);
-            break;
-        case X11_MANAGED:
-        case X11_UNMANAGED:
-            wlr_xwayland_surface_close(sel->surface.xwayland);
-            break;
-    }
+    struct client *c = con->client;
+    kill_client(c);
     return 0;
 }
 

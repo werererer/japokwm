@@ -88,6 +88,11 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
 
 void destroy_workspace(struct workspace *ws)
 {
+    for (int i = 0; i < length_of_composed_list(&ws->container_lists); i++) {
+        struct container *con = get_in_composed_list(&ws->container_lists, i);
+        struct client *c = con->client;
+        kill_client(c);
+    }
     free(ws);
 }
 
@@ -444,6 +449,13 @@ void focus_next_unoccupied_workspace(struct monitor *m, struct wlr_list *workspa
         return;
 
     focus_workspace(m, w);
+}
+
+void rename_workspace(struct workspace *ws, const char *name)
+{
+    if (!ws)
+        return;
+    ws->name = name;
 }
 
 void focus_workspace(struct monitor *m, struct workspace *ws)

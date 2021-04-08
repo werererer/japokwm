@@ -38,6 +38,7 @@ void client_setsticky(struct client *c, bool sticky);
 void reset_tiled_client_borders(int border_bx);
 void reset_floating_client_borders(int border_px);
 float calc_ratio(float width, float height);
+void kill_client(struct client *c);
 
 bool wants_floating(struct client *c);
 bool is_popup_menu(struct client *c);
