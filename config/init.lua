@@ -1,11 +1,12 @@
+-- print("execute")
 config.create_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
 
-local function on_start()
-    -- execute programs or do what ever you want e.g.:
-    -- action.exec("...")
-end
+-- local function on_start()
+--     -- execute programs or do what ever you want e.g.:
+--     -- action.exec("...")
+-- end
 
-event.set_on_start_function(on_start)
+-- event.set_on_start_function(on_start)
 
 local layouts = {
     {"[M]", "tile"},
@@ -84,3 +85,4 @@ config.set_keybinds({
     {"mod-M1",  function() action.move_resize(info.cursor.mode.move) end},
     {"mod-M2",  function() action.move_resize(info.cursor.mode.resize) end},
 })
+-- print("execute finished")

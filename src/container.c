@@ -69,6 +69,8 @@ void container_damage_borders(struct container *con, struct wlr_box *geom)
 {
     if (!con)
         return;
+    if (!geom)
+        return;
 
     struct monitor *m = con->m;
     int border_width = con->client->bw;
@@ -132,7 +134,7 @@ struct container *get_focused_container(struct monitor *m)
     assert(m != NULL);
 
     struct workspace *ws = get_workspace(m->ws_id);
-    return get_in_composed_list(&ws->focus_stack_lists, ws->id);
+    return get_in_composed_list(&ws->focus_stack_lists, 0);
 }
 
 struct container *xy_to_container(double x, double y)
