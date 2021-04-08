@@ -103,8 +103,6 @@ struct wlr_list *list_insert_into_relative_position(struct wlr_list *lists,
 // compare pointers and return 0 if they are equal and 1 otherwise
 int cmp_ptr(const void *ptr1, const void *ptr2);
 
-void flow_list(struct wlr_list *list, struct wlr_list *ref_list, int goal, void (*func)(void *, bool));
-
 void lua_tocolor(float dest_color[static 4]);
 // like lua_ref but override the old value if *ref > 0
 void lua_ref_safe(lua_State *L, int t, int *ref);

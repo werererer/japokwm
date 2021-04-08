@@ -343,8 +343,23 @@ void update_hidden_status_of_containers(struct monitor *m,
     // subtract the solution by one to count
     struct layout *lt = get_layout_in_monitor(m);
 
-    flow_list(tiled_containers, hidden_containers, lt->n_tiled,
-            (void (*)(void *, bool))set_container_hidden_status);
+    if (lt->n_tiled > tiled_containers->length) {
+        int n_missing = MIN(lt->n_tiled - tiled_containers->length, hidden_containers->length);
+        for (int i = 0; i < n_missing; i++) {
+            struct container *con = hidden_containers->items[0];
+
+            con->hidden = false;
+            wlr_list_del(hidden_containers, 0);
+            wlr_list_push(tiled_containers, con);
+        }
+    } else {
+        int tile_containers_length = tiled_containers->length;
+        for (int i = lt->n_tiled; i < tile_containers_length; i++) {
+            struct container *con = wlr_list_pop(tiled_containers);
+            con->hidden = true;
+            wlr_list_insert(hidden_containers, 0, con);
+        }
+    }
 
     for (int i = 0; i < length_of_composed_list(visible_container_lists); i++) {
         struct container *con = get_in_composed_list(visible_container_lists, i);
