@@ -26,7 +26,6 @@ jobs:
               name: Run in container
             - run: |
                 meson -Db_coverage=true build
-                cd build
                 meson -C build compile
                 meson -C build test
                 ninja -C build coverage
