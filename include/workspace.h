@@ -51,6 +51,7 @@ struct workspace {
 struct workspace *create_workspace(const char *name, size_t id, struct layout *lt);
 void destroy_workspace(struct workspace *ws);
 
+void update_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names);
 void update_workspace_ids(struct wlr_list *workspaces);
 
 bool exist_on(struct container *con, struct workspace *ws);
@@ -84,7 +85,7 @@ void create_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names,
         struct layout *default_layout);
 void destroy_workspaces(struct wlr_list *workspaces);
 void load_default_layout(lua_State *L, struct workspace *ws);
-void load_layout(lua_State *L, struct workspace *ws, const char *layout_name, const char *layout_symbol);
+void load_layout(lua_State *L, struct layout *lt);
 void set_container_workspace(struct container *con, struct workspace *ws);
 void set_layout(lua_State *L, struct workspace *ws);
 struct workspace *find_next_unoccupied_workspace(struct wlr_list *workspaces, struct workspace *ws);

@@ -86,6 +86,29 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     return ws;
 }
 
+void update_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names)
+{
+    if (tag_names->length > server.workspaces.length) {
+        for (int i = server.workspaces.length-1; i < tag_names->length; i++) {
+            const char *name = tag_names->items[0];
+
+            struct workspace *ws = create_workspace(name, i, &server.default_layout);
+            wlr_list_push(&server.workspaces, ws);
+        }
+    } else {
+        int tile_containers_length = server.workspaces.length;
+        for (int i = tag_names->length; i < tile_containers_length; i++) {
+            struct workspace *ws = wlr_list_pop(&server.workspaces);
+            destroy_workspace(ws);
+        }
+    }
+
+    for (int i = 0; i < tag_names->length; i++) {
+        struct workspace *ws = server.workspaces.items[i];
+        rename_workspace(ws, tag_names->items[i]);
+    }
+}
+
 void destroy_workspace(struct workspace *ws)
 {
     for (int i = 0; i < length_of_composed_list(&ws->container_lists); i++) {
@@ -522,7 +545,7 @@ void copy_layout_from_selected_workspace(struct wlr_list *workspaces)
 
 void load_default_layout(lua_State *L, struct workspace *ws)
 {
-    load_layout(L, ws, server.default_layout.name, server.default_layout.symbol);
+    load_layout(L, &server.default_layout);
 }
 
 void set_container_workspace(struct container *con, struct workspace *ws)
@@ -580,20 +603,25 @@ void set_layout(lua_State *L, struct workspace *ws)
     lua_pop(L, 1);
 
     lua_pop(L, 1);
-    load_layout(L, ws, layout_name, layout_symbol);
-}
 
-void load_layout(lua_State *L, struct workspace *ws, const char *layout_name, const char *layout_symbol)
-{
-    struct layout *lt = &ws->layout[0];
+    struct layout *lt = ws->layout;
     lt->name = layout_name;
     lt->symbol = layout_symbol;
+    load_layout(L, lt);
+}
+
+void load_layout(lua_State *L, struct layout *lt)
+{
+    struct workspace *ws = get_workspace(lt->ws_id);
+
+    if (!ws)
+        return;
 
     char *config_path = get_config_file("layouts");
     char file[NUM_CHARS] = "";
     strcpy(file, "");
     join_path(file, config_path);
-    join_path(file, layout_name);
+    join_path(file, lt->name);
     join_path(file, "init.lua");
     if (config_path)
         free(config_path);

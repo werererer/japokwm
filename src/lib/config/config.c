@@ -10,9 +10,16 @@
 
 int lib_reload(lua_State *L)
 {
-    load_config(L);
     struct workspace *ws = get_workspace(selected_monitor->ws_id);
-    load_layout(L, ws, ws->layout->name, ws->layout->symbol);
+    server.default_layout.options = get_default_options();
+
+    load_config(L);
+
+    update_workspaces(&server.workspaces, &server.default_layout.options.tag_names);
+    ipc_event_workspace();
+    struct layout *lt = &ws->layout[0];
+    load_layout(L, lt);
+
     arrange();
     return 0;
 }
@@ -133,11 +140,6 @@ int lib_set_default_layout(lua_State *L)
     return 0;
 }
 
-static void h(struct container *con, int i)
-{
-
-}
-
 // TODO refactor this function hard to read
 int lib_create_workspaces(lua_State *L)
 {
@@ -151,25 +153,7 @@ int lib_create_workspaces(lua_State *L)
     }
     lua_pop(L, 1);
 
-    if (tag_names->length > server.workspaces.length) {
-        for (int i = server.workspaces.length-1; i < tag_names->length; i++) {
-            const char *name = tag_names->items[0];
-
-            struct workspace *ws = create_workspace(name, i, &server.default_layout);
-            wlr_list_push(&server.workspaces, ws);
-        }
-    } else {
-        int tile_containers_length = server.workspaces.length;
-        for (int i = tag_names->length; i < tile_containers_length; i++) {
-            struct workspace *ws = wlr_list_pop(&server.workspaces);
-            destroy_workspace(ws);
-        }
-    }
-
-    for (int i = 0; i < tag_names->length; i++) {
-        struct workspace *ws = server.workspaces.items[i];
-        rename_workspace(ws, tag_names->items[i]);
-    }
+    update_workspaces(&server.workspaces, tag_names);
 
     ipc_event_workspace();
 

@@ -375,7 +375,10 @@ int lib_load_layout(lua_State *L)
     const char *layout_name = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    load_layout(L, ws, layout_name, layout_symbol);
+    struct layout *lt = ws->layout;
+    lt->name = layout_name;
+    lt->symbol = layout_symbol;
+    load_layout(L, lt);
 
     arrange();
     return 0;
