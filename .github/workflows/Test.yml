@@ -27,15 +27,12 @@ jobs:
             - run: |
                 meson -Db_coverage=true build
                 cd build
-                meson compile
-                meson test
-                cd ..
+                meson -C build compile
+                meson -C build test
+                ninja -C build coverage
+                bash <(curl -s https://codecov.io/bash)
             - name: Publish Unit Test Results
               uses: EnricoMi/publish-unit-test-result-action@v1
               if: always()
               with:
                   files: build/meson-logs/*.xml
-            - run: |
-                ninja -C build coverage
-                bash <(curl -s https://codecov.io/bash)
-              name: Run in container2
