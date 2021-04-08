@@ -449,13 +449,10 @@ void focus_workspace(struct monitor *m, struct workspace *ws)
         return;
     assert(m->damage != NULL);
 
-    printf("works\n");
     // focus the workspace in the monitor it appears in if such a monitor exist
     // and is not the selected one
     if (is_workspace_occupied(ws) && ws->m != selected_monitor) {
-        printf("works2\n");
         struct workspace *wss = get_workspace_in_monitor(m);
-        printf("floating_containers: %zu\n", wss->floating_containers.length);
         for (int i = 0; i < wss->floating_containers.length; i++) {
             struct container *con = wss->floating_containers.items[i];
             /* if (visible_on(con, workspaces, wss->id)) { */
@@ -465,7 +462,6 @@ void focus_workspace(struct monitor *m, struct workspace *ws)
 
         center_mouse_in_monitor(ws->m);
         selected_monitor = ws->m;
-        printf("ws.monitor: %p\n", ws->m);
         focus_workspace(ws->m, ws);
         return;
     }
