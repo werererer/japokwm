@@ -1,4 +1,4 @@
--- print("execute")
+print("execute")
 config.create_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
 
 -- local function on_start()
@@ -7,6 +7,8 @@ config.create_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"
 -- end
 
 -- event.set_on_start_function(on_start)
+
+config.set_inner_gaps(100)
 
 local layouts = {
     {"[M]", "tile"},

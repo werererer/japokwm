@@ -11,6 +11,9 @@
 int lib_reload(lua_State *L)
 {
     load_config(L);
+    struct workspace *ws = get_workspace(selected_monitor->ws_id);
+    load_layout(L, ws, ws->layout->name, ws->layout->symbol);
+    arrange();
     return 0;
 }
 
