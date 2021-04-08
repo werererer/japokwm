@@ -3,17 +3,17 @@
 #include <string.h>
 #include <wlr/util/log.h>
 
-void intToString(char *res, int i)
+void int_to_string(char *res, int i)
 {
     sprintf(res, "%d", i);
 }
 
-void doubleToString(char *res, double f)
+void double_to_string(char *res, double f)
 {
     sprintf(res, "%.3f", f);
 }
 
-void repeatString(char *str, int n)
+void repeat_string(char *str, int n)
 {
     char res[NUM_CHARS] = "";
     for (int i = 0; i < n; i++) {

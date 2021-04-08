@@ -151,6 +151,7 @@ int lib_create_workspaces(lua_State *L)
         wlr_list_push(&workspaces_tmp, ws);
     }
 
+    printf("tag_names.length: %zu\n", tag_names->length);
     destroy_workspaces(&server.workspaces);
     create_workspaces(&server.workspaces, tag_names, &server.default_layout);
 
@@ -165,6 +166,7 @@ int lib_create_workspaces(lua_State *L)
     destroy_workspaces(&workspaces_tmp);
 
     ipc_event_workspace();
+    printf("tag_names.length: %zu\n", tag_names->length);
 
     return 0;
 }

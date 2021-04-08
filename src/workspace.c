@@ -103,6 +103,7 @@ void create_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names,
 {
     wlr_list_init(workspaces);
     for (int i = 0; i < tag_names->length; i++) {
+        // TODO: error is that wlr_lists are stored here
         struct workspace *ws = create_workspace(tag_names->items[i], i, default_layout);
         wlr_list_push(workspaces, ws);
     }
@@ -596,6 +597,11 @@ void load_layout(lua_State *L, struct workspace *ws, const char *layout_name, co
 
 void push_workspace(struct monitor *m, struct workspace *ws)
 {
+    if (!m)
+        return;
+    if (!ws)
+        return;
+
     if (m->ws_id == ws->id)
         return;
 

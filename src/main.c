@@ -175,6 +175,7 @@ static int setup()
     wlr_list_push(&server.layer_visual_stack_lists, &server.layer_visual_stack_background);
 
     wlr_list_init(&server.scratchpad);
+    wlr_list_init(&server.workspaces);
 
     L = luaL_newstate();
     luaL_openlibs(L);
