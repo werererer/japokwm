@@ -60,7 +60,7 @@ int lib_resize_main(lua_State *L)
 
     struct monitor *m = selected_monitor;
     struct workspace *ws = get_workspace(m->ws_id);
-    struct layout *lt = &ws->layout[0];
+    struct layout *lt = &ws->layout;
     int dir = lt->options.resize_dir;
 
     lua_getglobal_safe(L, "Resize_main_all");
@@ -375,7 +375,7 @@ int lib_load_layout(lua_State *L)
     const char *layout_name = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    struct layout *lt = ws->layout;
+    struct layout *lt = &ws->layout;
     lt->name = layout_name;
     lt->symbol = layout_symbol;
     load_layout(L, lt);
@@ -406,7 +406,7 @@ int lib_toggle_layout(lua_State *L)
 {
     struct monitor *m = selected_monitor;
     struct workspace *ws = get_workspace_in_monitor(m);
-    push_layout(ws, ws->layout[1]);
+    push_layout(ws, ws->previous_layout);
     arrange();
     return 0;
 }

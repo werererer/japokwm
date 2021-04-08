@@ -103,7 +103,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     ws = get_workspace_in_monitor(m);
     load_default_layout(L, ws);
     copy_layout_from_selected_workspace(&server.workspaces);
-    set_root_color(m->root, ws->layout[0].options.root_color);
+    set_root_color(m->root, ws->layout.options.root_color);
 
     if (!wlr_output_commit(output))
         return;
@@ -276,5 +276,5 @@ inline struct workspace *get_workspace_in_monitor(struct monitor *m)
 
 inline struct layout *get_layout_in_monitor(struct monitor *m)
 {
-    return &get_workspace(m->ws_id)->layout[0];
+    return &get_workspace(m->ws_id)->layout;
 }

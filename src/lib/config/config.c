@@ -17,7 +17,7 @@ int lib_reload(lua_State *L)
 
     update_workspaces(&server.workspaces, &server.default_layout.options.tag_names);
     ipc_event_workspace();
-    struct layout *lt = &ws->layout[0];
+    struct layout *lt = &ws->layout;
     load_layout(L, lt);
 
     arrange();

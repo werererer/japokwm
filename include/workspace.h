@@ -15,7 +15,9 @@
 struct workspace {
     size_t id;
     const char *name;
-    struct layout layout[2];
+    struct wlr_list loaded_layouts;
+    struct layout previous_layout;
+    struct layout layout;
     struct monitor *m;
 
     /* number of all windows in layout even if they are invisible). Note that

@@ -25,6 +25,8 @@ static void update_workspaces_id(struct wlr_list *workspaces)
 
 static void setup_lists(struct workspace *ws)
 {
+    wlr_list_init(&ws->loaded_layouts);
+
     wlr_list_init(&ws->container_lists);
     wlr_list_init(&ws->visible_container_lists);
 
@@ -297,7 +299,7 @@ struct workspace *get_prev_empty_workspace(struct wlr_list *workspaces, size_t i
 
 struct wlr_list *get_visible_lists(struct workspace *ws)
 {
-    struct layout *lt = ws->layout;
+    struct layout *lt = &ws->layout;
 
     if (lt->options.arrange_by_focus)
         return &ws->focus_stack_visible_lists;
@@ -307,7 +309,7 @@ struct wlr_list *get_visible_lists(struct workspace *ws)
 
 struct wlr_list *get_tiled_list(struct workspace *ws)
 {
-    struct layout *lt = ws->layout;
+    struct layout *lt = &ws->layout;
 
     if (lt->options.arrange_by_focus)
         return &ws->focus_stack_normal;
@@ -317,7 +319,7 @@ struct wlr_list *get_tiled_list(struct workspace *ws)
 
 struct wlr_list *get_floating_list(struct workspace *ws)
 {
-    struct layout *lt = ws->layout;
+    struct layout *lt = &ws->layout;
 
     if (lt->options.arrange_by_focus)
         return &ws->focus_stack_normal;
@@ -327,7 +329,7 @@ struct wlr_list *get_floating_list(struct workspace *ws)
 
 struct wlr_list *get_hidden_list(struct workspace *ws)
 {
-    struct layout *lt = ws->layout;
+    struct layout *lt = &ws->layout;
 
     if (lt->options.arrange_by_focus)
         return &ws->focus_stack_hidden;
@@ -532,8 +534,8 @@ void copy_layout_from_selected_workspace(struct wlr_list *workspaces)
 
     for (int i = 0; i < workspaces->length; i++) {
         struct workspace *ws = workspaces->items[i];
-        struct layout *dest_lt = &ws->layout[0];
-        struct layout *dest_prev_lt = &ws->layout[1];
+        struct layout *dest_lt = &ws->layout;
+        struct layout *dest_prev_lt = &ws->previous_layout;
 
         if (dest_lt == src_lt)
             continue;
@@ -572,9 +574,9 @@ void set_container_workspace(struct container *con, struct workspace *ws)
     add_container_to_focus_stack(con, ws);
 
     if (con->floating)
-        con->client->bw = ws->layout->options.float_border_px;
+        con->client->bw = ws->layout.options.float_border_px;
     else 
-        con->client->bw = ws->layout->options.tile_border_px;
+        con->client->bw = ws->layout.options.tile_border_px;
 }
 
 // TODO refactor this function
@@ -604,7 +606,7 @@ void set_layout(lua_State *L, struct workspace *ws)
 
     lua_pop(L, 1);
 
-    struct layout *lt = ws->layout;
+    struct layout *lt = &ws->layout;
     lt->name = layout_name;
     lt->symbol = layout_symbol;
     load_layout(L, lt);
@@ -655,6 +657,6 @@ void push_workspace(struct monitor *m, struct workspace *ws)
 void push_layout(struct workspace *ws, struct layout lt)
 {
     lt.ws_id = ws->id;
-    ws->layout[1] = ws->layout[0];
-    ws->layout[0] = lt;
+    ws->previous_layout = ws->layout;
+    ws->layout = lt;
 }

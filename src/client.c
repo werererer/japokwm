@@ -279,7 +279,7 @@ void maprequest(struct wl_listener *listener, void *data)
         m = output_to_monitor(c->surface.layer->output);
     }
     struct workspace *ws = get_workspace_in_monitor(m);
-    struct layout *lt = &ws->layout[0];
+    struct layout *lt = &ws->layout;
 
     c->ws_id = ws->id;
     c->bw = lt->options.tile_border_px;
