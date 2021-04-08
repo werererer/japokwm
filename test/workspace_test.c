@@ -13,7 +13,7 @@ Suite *suite()
     Suite *s;
     TCase *tc;
 
-    s = suite_create("client");
+    s = suite_create("workspace");
     tc = tcase_create("core");
 
     tcase_add_test(tc, push_workspace_crash_test);
