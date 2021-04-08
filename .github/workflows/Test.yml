@@ -28,8 +28,11 @@ jobs:
                 meson -Db_coverage=true build
                 meson compile -C build
                 meson test -C build
+              name: Build
+            - run: |
                 ninja coverage -C build
                 bash <(curl -s https://codecov.io/bash)
+              name: Upload coverage
             - name: Publish Unit Test Results
               uses: EnricoMi/publish-unit-test-result-action@v1
               if: always()
