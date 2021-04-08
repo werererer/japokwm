@@ -11,7 +11,7 @@ START_TEST(get_container_count_test)
     wlr_list_push(&tag_names, "1");
     wlr_list_push(&tag_names, "2");
     struct layout lt;
-    create_workspaces(&server.workspaces, tag_names, lt);
+    create_workspaces(&server.workspaces, &tag_names, &lt);
 
     struct monitor m0, m1;
     struct workspace *ws0 = get_workspace(0);

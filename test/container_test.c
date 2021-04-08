@@ -17,7 +17,7 @@ START_TEST(test_visible_on)
     struct layout lt;
     lt.options.arrange_by_focus = false;
     struct wlr_list workspaces;
-    create_workspaces(&workspaces, tag_names, lt);
+    create_workspaces(&workspaces, &tag_names, &lt);
 
     struct monitor m0;
     struct monitor m1;
@@ -61,7 +61,7 @@ START_TEST(test_exist_on)
     struct layout lt;
     lt.options.arrange_by_focus = false;
     struct wlr_list workspaces;
-    create_workspaces(&workspaces, tag_names, lt);
+    create_workspaces(&workspaces, &tag_names, &lt);
 
     struct monitor m0;
     struct monitor m1;

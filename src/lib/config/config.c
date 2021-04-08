@@ -152,7 +152,7 @@ int lib_create_workspaces(lua_State *L)
     }
 
     destroy_workspaces(&server.workspaces);
-    create_workspaces(&server.workspaces, *tag_names, server.default_layout);
+    create_workspaces(&server.workspaces, tag_names, &server.default_layout);
 
     for (int i = 0 ; i < server.workspaces.length; i++) {
         if (i >= workspaces_tmp.length)

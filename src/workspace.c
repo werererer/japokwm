@@ -71,7 +71,7 @@ static void setup_lists(struct workspace *ws)
     wlr_list_push(&ws->focus_stack_lists_with_layer_shell, &ws->focus_stack_layer_overlay);
 }
 
-struct workspace *create_workspace(const char *name, size_t id, struct layout lt)
+struct workspace *create_workspace(const char *name, size_t id, struct layout *lt)
 {
     struct workspace *ws = calloc(1, sizeof(struct workspace));
     ws->name = name;
@@ -80,8 +80,8 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout lt
     setup_lists(ws);
 
     // fill layout stack with reasonable values
-    push_layout(ws, lt);
-    push_layout(ws, lt);
+    push_layout(ws, *lt);
+    push_layout(ws, *lt);
     return ws;
 }
 
@@ -98,11 +98,12 @@ void update_workspace_ids(struct wlr_list *workspaces)
     }
 }
 
-void create_workspaces(struct wlr_list *workspaces, struct wlr_list tagNames, struct layout default_layout)
+void create_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names,
+        struct layout *default_layout)
 {
     wlr_list_init(workspaces);
-    for (int i = 0; i < tagNames.length; i++) {
-        struct workspace *ws = create_workspace(tagNames.items[i], i, default_layout);
+    for (int i = 0; i < tag_names->length; i++) {
+        struct workspace *ws = create_workspace(tag_names->items[i], i, default_layout);
         wlr_list_push(workspaces, ws);
     }
 }

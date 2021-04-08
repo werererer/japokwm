@@ -89,7 +89,8 @@ void create_monitor(struct wl_listener *listener, void *data)
             reset_tag_names(&server.default_layout.options.tag_names);
         }
 
-        create_workspaces(&server.workspaces, server.default_layout.options.tag_names, server.default_layout);
+        create_workspaces(&server.workspaces,
+                &server.default_layout.options.tag_names, &server.default_layout);
 
         call_on_start_function(&server.default_layout.options.event_handler);
     }

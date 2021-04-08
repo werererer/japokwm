@@ -46,7 +46,7 @@ struct workspace {
     struct wlr_list focus_stack_not_focusable;
 };
 
-struct workspace *create_workspace(const char *name, size_t id, struct layout lt);
+struct workspace *create_workspace(const char *name, size_t id, struct layout *lt);
 void destroy_workspace(struct workspace *ws);
 
 void update_workspace_ids(struct wlr_list *workspaces);
@@ -78,7 +78,8 @@ void add_container_to_stack(struct container *con);
 void focus_most_recent_container(struct workspace *ws, enum focus_actions a);
 void focus_next_unoccupied_workspace(struct monitor *m, struct wlr_list *workspaces, struct workspace *ws);
 void copy_layout_from_selected_workspace(struct wlr_list *workspaces);
-void create_workspaces(struct wlr_list *workspaces, struct wlr_list tagNames, struct layout default_layout);
+void create_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names,
+        struct layout *default_layout);
 void destroy_workspaces(struct wlr_list *workspaces);
 void load_default_layout(lua_State *L, struct workspace *ws);
 void load_layout(lua_State *L, struct workspace *ws, const char *layout_name, const char *layout_symbol);
