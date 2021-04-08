@@ -79,7 +79,6 @@ int lib_resize_main(lua_State *L)
 
 int lib_set_floating(lua_State *L)
 {
-    printf("lib set floating\n");
     bool floating = lua_toboolean(L, -1);
     lua_pop(L, 1);
     struct container *sel = get_focused_container(selected_monitor);
