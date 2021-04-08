@@ -67,6 +67,9 @@ void destroy_container(struct container *con)
 
 void container_damage_borders(struct container *con, struct wlr_box *geom)
 {
+    if (!con)
+        return;
+
     struct monitor *m = con->m;
     int border_width = con->client->bw;
     double ox = geom->x - border_width;

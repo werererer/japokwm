@@ -20,8 +20,9 @@ int lib_reload(lua_State *L)
     server.default_layout.options = get_default_options();
 
     destroy_workspaces(&server.workspaces);
+    wlr_list_init(&server.workspaces);
     load_config(L);
-    create_workspaces(&server.workspaces, server.default_layout.options.tag_names, server.default_layout);
+    /* create_workspaces(&server.workspaces, server.default_layout.options.tag_names, server.default_layout); */
 
     ws = get_workspace(m->ws_id);
     struct layout *lt = &ws->layout[0];
