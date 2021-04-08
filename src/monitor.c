@@ -83,6 +83,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     if (is_first_monitor) {
         load_config(L);
 
+        focus_monitor(m);
         if (server.default_layout.options.tag_names.length <= 0) {
             handle_error("tag_names is empty, loading default tag_names");
             reset_tag_names(&server.default_layout.options.tag_names);
@@ -97,9 +98,6 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     struct workspace *ws = get_workspace(0);
     focus_next_unoccupied_workspace(m, &server.workspaces, ws);
-    if (is_first_monitor) {
-        focus_monitor(m);
-    }
     // TODO is this needed?
     ws = get_workspace_in_monitor(m);
     load_default_layout(L, ws);

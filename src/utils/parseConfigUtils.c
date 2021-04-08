@@ -153,6 +153,7 @@ static int load_default_config(lua_State *L)
         // when config loaded successfully break;
         success = 0;
         free(path);
+        break;
     }
     return success;
 }

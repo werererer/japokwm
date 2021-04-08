@@ -26,7 +26,6 @@ local layout_data = {
     },
 }
 
-print("tile")
 layout.set(layout_data)
 l.config.set_hidden_edges(info.direction.all)
 l.config.set_smart_hidden_edges(false)
