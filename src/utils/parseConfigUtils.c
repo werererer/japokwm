@@ -146,12 +146,12 @@ static int load_default_config(lua_State *L)
         append_to_lua_path(L, config_paths[i]);
 
         if (load_file(L, path, config_file) == EXIT_FAILURE) {
+            success = EXIT_FAILURE;
             free(path);
             continue;
         }
 
         // when config loaded successfully break;
-        success = 0;
         free(path);
         break;
     }
