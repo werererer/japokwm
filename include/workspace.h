@@ -31,6 +31,8 @@ struct workspace {
     struct wlr_list tiled_containers;
     struct wlr_list hidden_containers;
 
+    struct wlr_list independent_containers;
+
     /* 2D lists */
     struct wlr_list focus_stack_lists_with_layer_shell;
     struct wlr_list focus_stack_visible_lists;

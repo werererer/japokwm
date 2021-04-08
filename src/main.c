@@ -177,6 +177,14 @@ static int setup()
     wlr_list_init(&server.scratchpad);
     wlr_list_init(&server.workspaces);
 
+    wlr_list_init(&server.client_lists);
+
+    wlr_list_init(&server.normal_clients);
+    wlr_list_init(&server.independent_clients);
+
+    wlr_list_push(&server.client_lists, &server.normal_clients);
+    wlr_list_push(&server.client_lists, &server.independent_clients);
+
     L = luaL_newstate();
     luaL_openlibs(L);
     load_libs(L);
@@ -243,8 +251,6 @@ static int setup()
      *
      * https://drewdevault.com/2018/07/29/Wayland-shells.html
      */
-    wl_list_init(&clients);
-    wl_list_init(&server.independents);
 
     server.xdg_shell = wlr_xdg_shell_create(server.wl_display);
     wl_signal_add(&server.xdg_shell->events.new_surface, &new_xdg_surface);

@@ -142,6 +142,18 @@ START_TEST(focus_on_hidden_stack_test)
     // TODO fix this unittest
 } END_TEST
 
+START_TEST(get_focused_container_crash_test)
+{
+    get_focused_container(NULL);
+
+    struct monitor m;
+    m.ws_id = -1;
+    get_focused_container(&m);
+
+    m.ws_id = 700;
+    get_focused_container(&m);
+} END_TEST
+
 Suite *suite()
 {
     Suite *s;
@@ -153,6 +165,7 @@ Suite *suite()
     tcase_add_test(tc, test_visible_on);
     tcase_add_test(tc, test_exist_on);
     tcase_add_test(tc, focus_on_hidden_stack_test);
+    tcase_add_test(tc, get_focused_container_crash_test);
     suite_add_tcase(s, tc);
 
     return s;

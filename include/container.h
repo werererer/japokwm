@@ -14,10 +14,10 @@ enum focus_actions {
 };
 
 struct container {
-    /* independents list */
-    struct wl_list ilink;
     /* sticky containers */
     struct wl_list stlink;
+
+    struct wl_listener commit;
 
     /* layout-relative, includes border */
     struct wlr_box geom;

@@ -10,9 +10,6 @@
 #include "tile/tileUtils.h"
 #include "utils/coreUtils.h"
 
-//global variables
-struct wl_list clients; /* tiling order */
-
 struct wlr_surface *get_base_wlrsurface(struct client *c)
 {
     if (!c)
@@ -102,19 +99,6 @@ void focus_client(struct client *old, struct client *c)
     /* Have a client, so focus its top-level wlr_surface */
     wlr_seat_keyboard_notify_enter(server.seat, get_wlrsurface(c), kb->keycodes,
             kb->num_keycodes, &kb->modifiers);
-
-    /* Activate the new client */
-    switch (c->type) {
-        case XDG_SHELL:
-            wlr_xdg_toplevel_set_activated(c->surface.xdg, true);
-            break;
-        case X11_MANAGED:
-        case X11_UNMANAGED:
-            wlr_xwayland_surface_activate(c->surface.xwayland, true);
-            break;
-        default:
-            break;
-    }
 }
 
 void client_setsticky(struct client *c, bool sticky)
@@ -129,8 +113,8 @@ float calc_ratio(float width, float height)
 
 void reset_tiled_client_borders(int border_px)
 {
-    struct client *c;
-    wl_list_for_each(c, &clients, link) {
+    for (int i = 0; i < server.normal_clients.length; i++) {
+        struct client *c = server.normal_clients.items[i];
         struct workspace *ws = get_workspace(selected_monitor->ws_id);
         if (!exist_on(c->con, ws))
             continue;
@@ -142,8 +126,8 @@ void reset_tiled_client_borders(int border_px)
 
 void reset_floating_client_borders(int border_px)
 {
-    struct client *c;
-    wl_list_for_each(c, &clients, link) {
+    for (int i = 0; i < server.normal_clients.length; i++) {
+        struct client *c = server.normal_clients.items[i];
         struct workspace *ws = get_workspace(selected_monitor->ws_id);
         if (!exist_on(c->con, ws))
             continue;
@@ -203,8 +187,7 @@ bool is_popup_menu(struct client *c)
 
 void commit_notify(struct wl_listener *listener, void *data)
 {
-    struct client *c = wl_container_of(listener, c, commit);
-    struct container *con = c->con;
+    struct container *con = wl_container_of(listener, con, commit);
 
     if (!con)
         return;
@@ -232,11 +215,9 @@ void create_notify(struct wl_listener *listener, void *data)
             WLR_EDGE_BOTTOM | WLR_EDGE_LEFT | WLR_EDGE_RIGHT);
 
     /* Listen to the various events it can emit */
-    c->commit.notify = commit_notify;
-    wl_signal_add(&xdg_surface->surface->events.commit, &c->commit);
     c->map.notify = maprequest;
     wl_signal_add(&xdg_surface->events.map, &c->map);
-    c->unmap.notify = unmapnotify;
+    c->unmap.notify = unmap_notify;
     wl_signal_add(&xdg_surface->events.unmap, &c->unmap);
     c->destroy.notify = destroy_notify;
     wl_signal_add(&xdg_surface->events.destroy, &c->destroy);
@@ -249,16 +230,15 @@ void destroy_notify(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is destroyed and should never be shown again. */
     struct client *c = wl_container_of(listener, c, destroy);
+
     wl_list_remove(&c->map.link);
     wl_list_remove(&c->unmap.link);
     wl_list_remove(&c->destroy.link);
 
     switch (c->type) {
+        case LAYER_SHELL:
         case XDG_SHELL:
-            wl_list_remove(&c->commit.link);
-            break;
-        case X11_MANAGED:
-            wl_list_remove(&c->activate.link);
+            wl_list_remove(&c->new_popup.link);
             break;
         default:
             break;
@@ -266,10 +246,6 @@ void destroy_notify(struct wl_listener *listener, void *data)
 
     free(c);
     c = NULL;
-
-    arrange();
-    struct monitor *m = selected_monitor;
-    focus_most_recent_container(get_workspace(m->ws_id), FOCUS_NOOP);
 }
 
 
@@ -280,34 +256,23 @@ void maprequest(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
 
     struct monitor *m = selected_monitor;
+    if (c->type == LAYER_SHELL) {
+        m = output_to_monitor(c->surface.layer->output);
+    }
     struct workspace *ws = get_workspace_in_monitor(m);
     struct layout *lt = &ws->layout[0];
 
     c->ws_id = ws->id;
     c->bw = lt->options.tile_border_px;
 
-    switch (c->type) {
-        case XDG_SHELL:
-            {
-                wl_list_insert(&clients, &c->link);
-                create_container(c, m, true);
-                break;
-            }
-        case LAYER_SHELL:
-            {
-                struct monitor *m = output_to_monitor(c->surface.layer->output);
-                wl_list_insert(&clients, &c->link);
-                create_container(c, m, true);
-                break;
-            }
-        default:
-            break;
-    }
+    wlr_list_push(&server.normal_clients, c);
+    create_container(c, m, true);
+
     arrange();
     focus_most_recent_container(get_workspace(m->ws_id), FOCUS_NOOP);
 }
 
-void unmapnotify(struct wl_listener *listener, void *data)
+void unmap_notify(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
@@ -316,17 +281,9 @@ void unmapnotify(struct wl_listener *listener, void *data)
     destroy_container(c->con);
     c->con = NULL;
 
-    switch (c->type) {
-        case LAYER_SHELL:
-            wl_list_remove(&c->link);
-            break;
-        case XDG_SHELL:
-            wl_list_remove(&c->link);
-            break;
-        case X11_MANAGED:
-            wl_list_remove(&c->link);
-            break;
-        case X11_UNMANAGED:
-            break;
-    }
+    remove_in_composed_list(&server.client_lists, cmp_ptr, c);
+
+    arrange();
+    struct monitor *m = selected_monitor;
+    focus_most_recent_container(get_workspace(m->ws_id), FOCUS_NOOP);
 }

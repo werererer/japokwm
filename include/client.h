@@ -7,9 +7,6 @@
 enum shell { XDG_SHELL, X11_MANAGED, X11_UNMANAGED, LAYER_SHELL }; /* client types */
 
 struct client {
-    /* clients */
-    struct wl_list link;
-
     float ratio;
     /* containers containing this client */
     struct container *con;
@@ -18,8 +15,6 @@ struct client {
         struct wlr_layer_surface_v1 *layer;
         struct wlr_xwayland_surface *xwayland;
     } surface;
-    struct wl_listener activate;
-    struct wl_listener commit;
     struct wl_listener map;
     struct wl_listener unmap;
     struct wl_listener destroy;
@@ -51,10 +46,8 @@ void commit_notify(struct wl_listener *listener, void *data);
 void create_notify(struct wl_listener *listener, void *data);
 void destroy_notify(struct wl_listener *listener, void *data);
 void maprequest(struct wl_listener *listener, void *data);
-void unmapnotify(struct wl_listener *listener, void *data);
+void unmap_notify(struct wl_listener *listener, void *data);
 
 struct wlr_surface *get_base_wlrsurface(struct client *c);
 struct wlr_surface *get_wlrsurface(struct client *c);
-
-extern struct wl_list clients; /* tiling order */
 #endif

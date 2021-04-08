@@ -342,7 +342,8 @@ static void render_independents(struct monitor *m, pixman_region32_t *output_dam
 {
     struct container *con;
 
-    wl_list_for_each_reverse(con, &server.independents, ilink) {
+    struct workspace *ws = get_workspace_in_monitor(m);
+    for (int i = 0; i < ws->independent_containers.length; i++) {
         struct wlr_surface *surface = get_wlrsurface(con->client);
 
         con->geom.width = surface->current.width;

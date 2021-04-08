@@ -28,6 +28,7 @@ static void setup_lists(struct workspace *ws)
     wlr_list_init(&ws->container_lists);
     wlr_list_init(&ws->visible_container_lists);
 
+    wlr_list_init(&ws->independent_containers);
     wlr_list_init(&ws->tiled_containers);
     wlr_list_init(&ws->hidden_containers);
     wlr_list_init(&ws->floating_containers);
@@ -164,14 +165,14 @@ bool workspace_has_clients(struct workspace *ws)
     if (!ws)
         return 0;
 
-    int count = 0;
+    for (int i = 0; i < length_of_composed_list(&server.client_lists); i++) {
+        struct client *c = get_in_composed_list(&server.client_lists, i);
 
-    struct client *c;
-    wl_list_for_each(c, &clients, link)
         if (c->ws_id == ws->id)
-            count++;
+            return true;
+    }
 
-    return count > 0;
+    return false;
 }
 
 bool hidden_on(struct container *con, struct workspace *ws)

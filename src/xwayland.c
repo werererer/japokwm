@@ -35,10 +35,8 @@ void create_notifyx11(struct wl_listener *listener, void *data)
     /* Listen to the various events it can emit */
     c->map.notify = maprequestx11;
     wl_signal_add(&xwayland_surface->events.map, &c->map);
-    c->unmap.notify = unmapnotify;
+    c->unmap.notify = unmap_notify;
     wl_signal_add(&xwayland_surface->events.unmap, &c->unmap);
-    c->activate.notify = activatex11;
-    wl_signal_add(&xwayland_surface->events.request_activate, &c->activate);
     c->destroy.notify = destroy_notify;
     wl_signal_add(&xwayland_surface->events.destroy, &c->destroy);
 }
@@ -81,15 +79,6 @@ void handle_xwayland_ready(struct wl_listener *listener, void *data)
     xcb_disconnect(xcb_conn);
 }
 
-void activatex11(struct wl_listener *listener, void *data)
-{
-       struct client *c = wl_container_of(listener, c, activate);
-
-       /* Only "managed" windows can be activated */
-       if (c->type == X11_MANAGED)
-           wlr_xwayland_surface_activate(c->surface.xwayland, true);
-}
-
 void maprequestx11(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is mapped, or ready to display on-screen. */
@@ -97,9 +86,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
     struct wlr_xwayland_surface *xwayland_surface = c->surface.xwayland;
     struct monitor *m = selected_monitor;
     struct layout *lt = get_layout_in_monitor(m);
-
-    c->commit.notify = commit_notify;
-    wl_signal_add(&xwayland_surface->surface->events.commit, &c->commit);
 
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
     c->ws_id = m->ws_id;
@@ -139,7 +125,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     switch (c->type) {
         case X11_MANAGED:
             {
-                wl_list_insert(&clients, &c->link);
+                wlr_list_push(&server.normal_clients, c);
 
                 con->on_top = false;
                 if (wants_floating(con->client)) {
@@ -150,7 +136,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
             }
         case X11_UNMANAGED:
             {
-                wl_list_insert(&server.independents, &con->ilink);
+                wlr_list_push(&server.independent_clients, c);
 
                 struct workspace *ws = get_workspace_in_monitor(m);
                 if (is_popup_menu(c) || xwayland_surface->parent) {
@@ -163,7 +149,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
                 con->has_border = false;
                 lift_container(con);
-                set_container_floating(con, fix_position, true);
+                set_container_floating(con, NULL, true);
                 resize(con, prefered_geom);
                 break;
             }

@@ -25,6 +25,10 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     con->client = c;
     c->con = con;
 
+    // must be done for the container damage event
+    con->commit.notify = commit_notify;
+    wl_signal_add(&get_wlrsurface(c)->events.commit, &con->commit);
+
     con->has_border = has_border;
     con->focusable = true;
     add_container_to_workspace(con, get_workspace(m->ws_id));
@@ -40,6 +44,9 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 
 void destroy_container(struct container *con)
 {
+    // surfaces cant commit anything anymore if their container is destroyed
+    wl_list_remove(&con->commit.link);
+
     struct workspace *ws = get_workspace_in_monitor(con->m);
 
     remove_in_composed_list(&ws->focus_stack_lists, cmp_ptr, con);
@@ -52,8 +59,7 @@ void destroy_container(struct container *con)
         case X11_UNMANAGED:
             remove_in_composed_list(&server.normal_visual_stack_lists,
                     cmp_ptr, con);
-            wl_list_remove(&con->ilink);
-            remove_in_composed_list(&ws->container_lists, cmp_ptr, con);
+            wlr_list_remove(&ws->independent_containers, cmp_ptr, con);
             break;
         default:
             remove_in_composed_list(&server.normal_visual_stack_lists,
@@ -131,9 +137,14 @@ void container_damage_whole(struct container *con)
 
 struct container *get_focused_container(struct monitor *m)
 {
-    assert(m != NULL);
+    if (!m)
+        return NULL;
 
     struct workspace *ws = get_workspace(m->ws_id);
+
+    if (!ws)
+        return NULL;
+
     return get_in_composed_list(&ws->focus_stack_lists, 0);
 }
 
@@ -197,9 +208,12 @@ static void add_container_to_workspace(struct container *con, struct workspace *
                 con->focusable = false;
             }
             break;
+        case X11_UNMANAGED:
+            wlr_list_insert(&ws->independent_containers, 0, con);
+            add_container_to_stack(con);
+            break;
         case XDG_SHELL:
         case X11_MANAGED:
-        case X11_UNMANAGED:
             add_container_to_containers(con, ws, 0);
             add_container_to_stack(con);
             break;

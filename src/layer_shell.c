@@ -18,11 +18,9 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     c->type = LAYER_SHELL;
 
     /* Listen to the various events it can emit */
-    c->commit.notify = commit_notify;
-    wl_signal_add(&layer_surface->surface->events.commit, &c->commit);
     c->map.notify = maprequest;
     wl_signal_add(&layer_surface->events.map, &c->map);
-    c->unmap.notify = unmapnotify;
+    c->unmap.notify = unmap_notify;
     wl_signal_add(&layer_surface->events.unmap, &c->unmap);
     c->destroy.notify = destroy_notify;
     wl_signal_add(&layer_surface->events.destroy, &c->destroy);
