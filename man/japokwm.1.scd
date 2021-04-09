@@ -20,18 +20,18 @@ japokwm - tiling made easy
 	Specifies the directory where the config files are located in (Note: -c
 	option overwrites the init.lua found in the path)
 
-# TODO add this in the future
-# *-d, --debug*
-# 	Enables full logging, including debug information.
+; TODO add this in the future
+; *-d, --debug*
+; 	Enables full logging, including debug information.
 
-*-v, --version*
-	Show the version number and quit.
+; 	*-v, --version*
+; 	Show the version number and quit.
 
-*-V, --verbose*
-	Enables more verbose logging.
+; *-V, --verbose*
+; 	Enables more verbose logging.
 
-*--get-socketpath*
-	Gets the IPC socket path and prints it, then exits.
+; *--get-socketpath*
+; 	Gets the IPC socket path and prints it, then exits.
 
 # DESCRIPTION
 

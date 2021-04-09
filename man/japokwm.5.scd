@@ -89,9 +89,8 @@ integers
    used
 :< { { {0.3, 0.1, 0.5, 0.7}, {0.3, 0.1, 0.5, 0.7}, }, { {0.3, 0.1, 0.5, 0.7}, {0.3, 0.1, 0.5, 0.7},} }
 |  layout_info
-:< array(string, string) the 1st argument represents the symbol of the layout
-   the 2nd argument represents the directory/name of the layout
-:< {"+", "main"} -- symbol is "+" and directory "main"
+:< array(string) The 1st argument represents the directory/name of the layout
+:< {"main"} -- the directory/name is "main"
 |  color
 :< array(number, number, number, number) the arguments represents rgba
    respectively between 0..1
@@ -289,10 +288,11 @@ integers
 		n: integer - n represents the current container position
 
 # LAYOUT
-*set(layout_data)* ++
+*set(name, layout_data)* ++
 	set layout ++
 <where> ++
-	layout_data - layout_data for the layout
+	name: (string) - name of this layout
+	layout_data: layout_data - layout_data for the layout
 
 # INFO
 *get_this_container_count()* ++
@@ -343,7 +343,7 @@ integers
 	create a new layout_set ++
 <where> ++
 	name: string - name of the layout set ++
-	layouts: layouts that belong to this set
+	layouts: layout_info - layouts that belong to this set
 
 *create_workspaces(names)*
 	create or recreate all workspaces with an array of names for each ++
@@ -368,7 +368,7 @@ integers
 *set_default_layout(l)* ++
 	set the default layout ++
 <where> ++
-	l: layout_info
+	l: string - name/directory of the layout
 
 *set_float_borderpx(f)* ++
 	set the border width of floating windows in pixel ++
