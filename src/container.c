@@ -403,6 +403,7 @@ void focus_on_stack(struct monitor *m, int i)
 
     /* If only one client is visible on selMon, then c == sel */
     focus_container(con, FOCUS_LIFT);
+    ipc_event_window();
 }
 
 // TODO refactor

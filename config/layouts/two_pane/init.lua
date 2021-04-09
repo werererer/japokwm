@@ -18,6 +18,7 @@ end
 
 layout.set("two_pane", layout_data)
 l.event.set_update_function(update)
+l.config.set_hidden_edges(info.direction.all)
 l.config.set_inner_gaps(0)
 l.config.set_outer_gaps(0)
 l.config.set_resize_direction(info.direction.right)

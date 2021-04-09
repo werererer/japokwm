@@ -17,6 +17,8 @@
 #include <unistd.h>
 #include <wayland-server-core.h>
 #include <wlr/types/wlr_list.h>
+#include <wlr/util/log.h>
+
 #include "ipc-json.h"
 #include "ipc-server.h"
 #include "server.h"
@@ -269,6 +271,7 @@ int ipc_client_handle_readable(int client_fd, uint32_t mask, void *data) {
 
 static void ipc_send_event(const char *json_string, enum ipc_command_type event) {
     struct ipc_client *client;
+    printf("ipc_client_list.length: %zu\n", ipc_client_list.length);
     for (size_t i = 0; i < ipc_client_list.length; i++) {
         client = ipc_client_list.items[i];
         if ((client->subscribed_events & event_mask(event)) == 0) {
@@ -363,6 +366,11 @@ void ipc_client_disconnect(struct ipc_client *client) {
 /*     json_object_array_add((json_object *)tagJson, tagJson); */
 /* } */
 
+void ipc_event_window() {
+    printf("send event window\n");
+    ipc_send_event("", IPC_EVENT_WINDOW);
+}
+
 void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_length,
         enum ipc_command_type payload_type) {
     if (client == NULL) {
@@ -433,6 +441,14 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
                     const char *event_type = json_object_get_string(json_object_array_get_idx(request, i));
                     if (strcmp(event_type, "workspace") == 0) {
                         client->subscribed_events |= event_mask(IPC_EVENT_WORKSPACE);
+                    } else if (strcmp(event_type, "window") == 0) {
+                        client->subscribed_events |= event_mask(IPC_EVENT_WINDOW);
+                    } else {
+                        const char msg[] = "{\"success\": false}";
+                        ipc_send_reply(client, payload_type, msg, strlen(msg));
+                        json_object_put(request);
+                        wlr_log(WLR_INFO, "Unsupported event type in subscribe request");
+                        goto exit_cleanup;
                     }
                 }
 
@@ -449,8 +465,20 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
 
         case IPC_GET_TREE:
             {
+                printf("get-tree\n");
                 // TODO which clinet?
-                ipc_send_reply(client, payload_type, "", strlen(""));
+                /* struct monitor *m = selected_monitor; */
+                /* struct container *sel = get_focused_container(m); */
+                if (false) {
+                    /* json_object *tree = ipc_json_describe_node_recursive(m, sel); */
+                    /* const char *json_string = json_object_to_json_string(tree); */
+                    /* printf("json_string: %s\n", json_string); */
+
+                    /* ipc_send_reply(client, payload_type, json_string, strlen(json_string)); */
+                    /* json_object_put(tree); */
+                } else {
+                    ipc_send_reply(client, payload_type, "", strlen(""));
+                }
                 goto exit_cleanup;
             }
 

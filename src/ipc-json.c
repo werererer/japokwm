@@ -14,6 +14,7 @@
 #include "client.h"
 #include "workspace.h"
 #include "monitor.h"
+#include "utils/coreUtils.h"
 
 static json_object *ipc_json_create_rect(struct wlr_box *box) {
     json_object *rect = json_object_new_object();
@@ -93,8 +94,9 @@ json_object *ipc_json_describe_workspace(struct monitor *m, struct workspace *ws
     return object;
 }
 
-json_object *ipc_json_describe_node(struct monitor *m, struct client *c) {
-    bool focused = get_focused_container(m)->client == c;
+json_object *ipc_json_describe_node(struct monitor *m, struct container *con) {
+    bool focused = get_focused_container(m) == con;
+    struct client *c = con->client;
     char *title = c->title;
 
     struct wlr_box *box;
@@ -103,7 +105,22 @@ json_object *ipc_json_describe_node(struct monitor *m, struct client *c) {
     json_object *focus = json_object_new_array();
 
     json_object *object = ipc_json_create_node(
-            c->id, title, focused, false, focus, box);
+            0, title, focused, false, focus, box);
 
     return object;
 }
+
+json_object *ipc_json_describe_node_recursive(struct monitor *m, struct container *con) {
+	json_object *object = ipc_json_describe_node(m, con);
+
+    /* struct workspace *ws = get_workspace_in_monitor(m); */
+	/* json_object *children = json_object_new_array(); */
+    /* for (int i = 0; i < length_of_composed_list(&ws->focus_stack_visible_lists); i++) { */
+    /*     struct container *con = get_in_composed_list(&ws->focus_stack_visible_lists, i); */
+    /*     json_object_array_add(children, ipc_json_describe_node(m, con)); */
+    /* } */
+	/* json_object_object_add(object, "nodes", children); */
+
+	return object;
+}
+
