@@ -24,9 +24,15 @@ bool file_exists(const char *path)
     return access(path, R_OK) != -1;
 }
 
-void wlr_list_clear(struct wlr_list *list)
+void wlr_list_clear(struct wlr_list *list, void (*destroy_func)(void *))
 {
-    wlr_list_finish(list);
+    for (int i = 0; i < list->length; i++) {
+        void *item = list->items[i];
+        if (destroy_func) {
+            destroy_func(item);
+        }
+    }
+
     wlr_list_init(list);
 }
 
@@ -138,7 +144,7 @@ void lua_ref_safe(lua_State *L, int t, int *ref)
     *ref = luaL_ref(L, t);
 }
 
-static void lua_create_container(struct wlr_fbox con)
+static void lua_create_container(lua_State *L, struct wlr_fbox con)
 {
     lua_createtable(L, 4, 0);
     lua_pushnumber(L, con.x);
@@ -151,7 +157,7 @@ static void lua_create_container(struct wlr_fbox con)
     lua_rawseti(L, -2, 4);
 }
 
-void lua_get_default_layout_data()
+void lua_get_default_layout_data(lua_State *L)
 {
     struct wlr_fbox con;
     lua_createtable(L, 1, 0);
@@ -164,29 +170,28 @@ void lua_get_default_layout_data()
                     .width = 1,
                     .height = 1,
             };
-            lua_create_container(con);
+            lua_create_container(L, con);
             lua_rawseti(L, -2, 1);
         }
         lua_rawseti(L, -2, 1);
     }
 }
 
-void lua_get_default_master_layout_data()
+void lua_get_default_master_layout_data(lua_State *L)
 {
-    struct wlr_fbox con;
     lua_createtable(L, 1, 0);
     int i = 1;
     {
         lua_createtable(L, 1, 0);
         int j = 1;
         {
-            con = (struct wlr_fbox) {
+            struct wlr_fbox con = (struct wlr_fbox) {
                 .x = 0,
                 .y = 0,
                 .width = 1,
                 .height = 1,
             };
-            lua_create_container(con);
+            lua_create_container(L, con);
             lua_rawseti(L, -2, j++);
         }
         lua_rawseti(L, -2, i++);
@@ -195,23 +200,23 @@ void lua_get_default_master_layout_data()
         lua_createtable(L, 1, 0);
         int j = 1;
         {
-            con = (struct wlr_fbox) {
+            struct wlr_fbox con = (struct wlr_fbox) {
                 .x = 0,
                 .y = 0,
                 .width = 1,
                 .height = 0.5,
             };
-            lua_create_container(con);
+            lua_create_container(L, con);
             lua_rawseti(L, -2, j++);
         }
         {
-            con = (struct wlr_fbox) {
+            struct wlr_fbox con = (struct wlr_fbox) {
                 .x = 0,
                 .y = 0.5,
                 .width = 1,
                 .height = 0.5,
             };
-            lua_create_container(con);
+            lua_create_container(L, con);
             lua_rawseti(L, -2, j++);
         }
         lua_rawseti(L, -2, i++);
@@ -220,40 +225,40 @@ void lua_get_default_master_layout_data()
         lua_createtable(L, 1, 0);
         int j = 1;
         {
-            con = (struct wlr_fbox) {
+            struct wlr_fbox con = (struct wlr_fbox) {
                 .x = 0,
                 .y = 0,
                 .width = 1,
                 .height = 0.333,
             };
-            lua_create_container(con);
+            lua_create_container(L, con);
             lua_rawseti(L, -2, j++);
         }
         {
-            con = (struct wlr_fbox) {
+            struct wlr_fbox con = (struct wlr_fbox) {
                 .x = 0,
                 .y = 0.333,
                 .width = 1,
                 .height = 0.333,
             };
-            lua_create_container(con);
+            lua_create_container(L, con);
             lua_rawseti(L, -2, j++);
         }
         {
-            con = (struct wlr_fbox) {
+            struct wlr_fbox con = (struct wlr_fbox) {
                 .x = 0,
                 .y = 0.666,
                 .width = 1,
                 .height = 0.333,
             };
-            lua_create_container(con);
+            lua_create_container(L, con);
             lua_rawseti(L, -2, j++);
         }
         lua_rawseti(L, -2, i++);
     }
 }
 
-void lua_get_default_resize_data()
+void lua_get_default_resize_data(lua_State *L)
 {
     lua_createtable(L, 1, 0);
     {

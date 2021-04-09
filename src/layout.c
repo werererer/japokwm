@@ -10,7 +10,7 @@
 #include "utils/parseConfigUtils.h"
 #include "workspace.h"
 
-struct layout *create_layout()
+struct layout *create_layout(lua_State *L)
 {
     struct layout *lt = calloc(1, sizeof(struct layout));
     lt->nmaster = 1;
@@ -22,13 +22,13 @@ struct layout *create_layout()
         .options = get_default_options(),
     };
 
-    lua_get_default_master_layout_data();
+    lua_get_default_master_layout_data(L);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_master_layout_data_ref);
 
-    lua_get_default_resize_data();
+    lua_get_default_resize_data(L);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_resize_data_ref);
 
-    lua_get_default_layout_data();
+    lua_get_default_layout_data(L);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_copy_data_ref);
     lua_createtable(L, 0, 0);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_ref);
@@ -130,12 +130,12 @@ void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt)
     }
 
     if (src_lt->lua_master_layout_data_ref > 0) {
-        lua_get_default_master_layout_data();
+        lua_get_default_master_layout_data(L);
         lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->lua_master_layout_data_ref);
     }
 
     if (src_lt->lua_resize_data_ref > 0) {
-        lua_get_default_resize_data();
+        lua_get_default_resize_data(L);
         lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->lua_resize_data_ref);
     }
 

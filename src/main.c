@@ -190,7 +190,7 @@ static int setup()
     load_libs(L);
     init_error_file();
 
-    server.default_layout = create_layout();
+    server.default_layout = create_layout(L);
     server.layout_set = get_default_layout_set();
 
     init_utils(L);

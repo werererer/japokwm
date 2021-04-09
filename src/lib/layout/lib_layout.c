@@ -20,7 +20,7 @@ int lib_set_layout(lua_State *L)
     lua_pop(L, 1);
     printf("\nsymbol: %s\n", symbol);
 
-    struct layout *lt = create_layout();
+    struct layout *lt = create_layout(L);
 
     int layout_index = server.layout_set.lua_layout_index;
     server.layout_set.lua_layout_index = layout_index;

@@ -56,7 +56,7 @@ void join_path(char *base, const char *file);
  *   }
  * }
  */
-void lua_get_default_layout_data();
+void lua_get_default_layout_data(lua_State *L);
 
 /*
  * create a lua table that looks like this:
@@ -75,16 +75,16 @@ void lua_get_default_layout_data();
  *   },
  * }
  */
-void lua_get_default_master_layout_data();
+void lua_get_default_master_layout_data(lua_State *L);
 /*
  * create a lua table that looks like this:
  * {
  *   {2, 3, 4, 5, 6, 7, 8, 9}
  * }
  */
-void lua_get_default_resize_data();
+void lua_get_default_resize_data(lua_State *L);
 
-void wlr_list_clear(struct wlr_list *list);
+void wlr_list_clear(struct wlr_list *list, void (*destroy_func)(void *));
 bool wlr_list_empty(struct wlr_list *list);
 
 typedef int (*cmp_func_t)(const void*, const void*);

@@ -9,7 +9,7 @@
 void reset_tag_names(struct wlr_list *tag_names)
 {
     wlr_list_init(tag_names);
-    wlr_list_clear(tag_names);
+    wlr_list_clear(tag_names, NULL);
     wlr_list_push(tag_names, "1:1");
     wlr_list_push(tag_names, "2:2");
     wlr_list_push(tag_names, "3:3");
