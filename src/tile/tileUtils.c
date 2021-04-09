@@ -35,7 +35,7 @@ void arrange()
 
 static int get_layout_container_area_count(struct workspace *ws)
 {
-    struct layout *lt = &ws->layout;
+    struct layout *lt = ws->layout;
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
 
     int len = luaL_len(L, -1);
@@ -54,7 +54,7 @@ static int get_layout_container_area_count(struct workspace *ws)
 
 static int get_layout_container_max_area_count(struct workspace *ws)
 {
-    struct layout *lt = &ws->layout;
+    struct layout *lt = ws->layout;
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
 
     int len = luaL_len(L, -1);
@@ -72,7 +72,7 @@ static int get_layout_container_max_area_count(struct workspace *ws)
 
 static void update_layout_counters(struct workspace *ws)
 {
-    struct layout *lt = &ws->layout;
+    struct layout *lt = ws->layout;
     ws->n_all = get_container_count(ws);
     lt->n_area = get_layout_container_area_count(ws);
     lt->n_area_max = get_layout_container_max_area_count(ws);
@@ -149,14 +149,14 @@ static struct wlr_box get_nth_geom_in_layout(lua_State *L, struct layout *lt,
 
 int get_slave_container_count(struct workspace *ws)
 {
-    struct layout *lt = &ws->layout;
+    struct layout *lt = ws->layout;
     int abs_count = get_tiled_container_count(ws);
     return MAX(abs_count - lt->nmaster, 0);
 }
 
 int get_floating_container_count(struct workspace *ws)
 {
-    struct layout *lt = &ws->layout;
+    struct layout *lt = ws->layout;
 
     // there are no floating windows when using arrange by focus
     if (lt->options.arrange_by_focus)
@@ -192,7 +192,7 @@ void arrange_monitor(struct monitor *m)
     set_root_geom(m->root, m->geom);
 
     struct workspace *ws = get_workspace_in_monitor(m);
-    struct layout *lt = &ws->layout;
+    struct layout *lt = ws->layout;
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);
 
     update_layout_counters(ws);
@@ -223,7 +223,7 @@ void arrange_monitor(struct monitor *m)
 void arrange_containers(struct workspace *ws, struct wlr_box root_geom,
         struct wlr_list *tiled_containers)
 {
-    struct layout *lt = &ws->layout;
+    struct layout *lt = ws->layout;
 
     /* each container will get an inner_gap. If two containers are adjacent the
      * inner_gap is applied twice. To counter this effect we divide the
@@ -260,7 +260,7 @@ static void arrange_container(struct container *con, int arrange_position,
 
     struct monitor *m = con->m;
     struct workspace *ws = get_workspace_in_monitor(m);
-    struct layout *lt = &ws->layout;
+    struct layout *lt = ws->layout;
 
     struct wlr_box geom = get_nth_geom_in_layout(L, lt, root_geom, arrange_position);
     container_surround_gaps(&geom, inner_gap);

@@ -16,8 +16,8 @@ struct workspace {
     size_t id;
     const char *name;
     struct wlr_list loaded_layouts;
-    struct layout previous_layout;
-    struct layout layout;
+    struct layout *previous_layout;
+    struct layout *layout;
     struct monitor *m;
 
     /* number of all windows in layout even if they are invisible). Note that
@@ -87,16 +87,17 @@ void create_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names,
         struct layout *default_layout);
 void destroy_workspaces(struct wlr_list *workspaces);
 void load_default_layout(lua_State *L, struct workspace *ws);
-void load_layout(lua_State *L, struct layout *lt);
+void load_layout(lua_State *L, const char *name);
+void reset_loaded_layout(struct workspace *ws);
+void reset_loaded_layouts(struct wlr_list *workspaces);
 void set_container_workspace(struct container *con, struct workspace *ws);
-void set_layout(lua_State *L, struct workspace *ws);
-struct workspace *find_next_unoccupied_workspace(struct wlr_list *workspaces, struct workspace *ws);
-void set_selected_layout(struct workspace *ws, struct layout layout);
+void set_layout(lua_State *L);
+void set_selected_layout(struct workspace *ws, struct layout *layout);
 void move_container_to_workspace(struct container *con, struct workspace *ws);
 void workspace_assign_monitor(struct workspace *ws, struct monitor *m);
 void rename_workspace(struct workspace *ws, const char *name);
 void focus_workspace(struct monitor *m, struct workspace *ws);
 void push_workspace(struct monitor *m, struct workspace *ws);
-void push_layout(struct workspace *ws, struct layout lt);
+void push_layout(struct workspace *ws, struct layout *lt);
 
 #endif /* WORKSPACE_H */

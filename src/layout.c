@@ -10,9 +10,11 @@
 #include "utils/parseConfigUtils.h"
 #include "workspace.h"
 
-struct layout get_default_layout()
+struct layout *create_layout()
 {
-    struct layout lt = (struct layout) {
+    struct layout *lt = calloc(1, sizeof(struct layout));
+    lt->nmaster = 1;
+    *lt = (struct layout) {
         .symbol = "",
         .name = "",
         .n_area = 1,
@@ -21,16 +23,22 @@ struct layout get_default_layout()
     };
 
     lua_get_default_master_layout_data();
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.lua_master_layout_data_ref);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_master_layout_data_ref);
 
     lua_get_default_resize_data();
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.lua_resize_data_ref);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_resize_data_ref);
 
     lua_get_default_layout_data();
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.lua_layout_copy_data_ref);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_copy_data_ref);
     lua_createtable(L, 0, 0);
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.lua_layout_ref);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_ref);
+
     return lt;
+}
+
+void destroy_layout(struct layout *lt)
+{
+    free(lt);
 }
 
 void lua_copy_table(lua_State *L, int *ref)
@@ -169,4 +177,9 @@ bool lua_islayout_data(lua_State *L, const char *name)
         lua_pop(L, 1);
     }
     return true;
+}
+
+int cmp_layout(const struct layout *lt1, const struct layout *lt2)
+{
+    return strcmp(lt1->symbol, lt2->symbol);
 }

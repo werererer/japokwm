@@ -11,14 +11,15 @@
 int lib_reload(lua_State *L)
 {
     struct workspace *ws = get_workspace(selected_monitor->ws_id);
-    server.default_layout.options = get_default_options();
+    server.default_layout->options = get_default_options();
 
     load_config(L);
 
-    update_workspaces(&server.workspaces, &server.default_layout.options.tag_names);
+    update_workspaces(&server.workspaces, &server.default_layout->options.tag_names);
+    reset_loaded_layouts(&server.workspaces);
+
     ipc_event_workspace();
-    struct layout *lt = &ws->layout;
-    load_layout(L, lt);
+    load_default_layout(L, ws);
 
     arrange();
     return 0;
@@ -26,7 +27,7 @@ int lib_reload(lua_State *L)
 
 int lib_set_arrange_by_focus(lua_State *L)
 {
-    struct layout *lt = &server.default_layout;
+    struct layout *lt = server.default_layout;
 
     // 1. argument
     lt->options.arrange_by_focus = lua_toboolean(L, -1);
@@ -36,7 +37,7 @@ int lib_set_arrange_by_focus(lua_State *L)
 
 int lib_set_inner_gaps(lua_State *L)
 {
-    struct layout *lt = &server.default_layout;
+    struct layout *lt = server.default_layout;
 
     lt->options.inner_gap = luaL_checkinteger(L ,-1);
     lua_pop(L, 1);
@@ -45,29 +46,28 @@ int lib_set_inner_gaps(lua_State *L)
 
 int lib_set_outer_gaps(lua_State *L)
 {
-    server.default_layout.options.outer_gap = luaL_checkinteger(L ,-1);
+    server.default_layout->options.outer_gap = luaL_checkinteger(L ,-1);
     lua_pop(L, 1);
-    /* configure_gaps(&server.default_layout.options.inner_gap, &server.default_layout.options.outer_gap); */
     return 0;
 }
 
 int lib_set_tile_borderpx(lua_State *L)
 {
-    server.default_layout.options.tile_border_px = luaL_checkinteger(L, -1);
+    server.default_layout->options.tile_border_px = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     return 0;
 }
 
 int lib_set_float_borderpx(lua_State *L)
 {
-    server.default_layout.options.float_border_px = luaL_checkinteger(L, -1);
+    server.default_layout->options.float_border_px = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     return 0;
 }
 
 int lib_set_focus_color(lua_State *L)
 {
-    lua_tocolor(server.default_layout.options.focus_color);
+    lua_tocolor(server.default_layout->options.focus_color);
     lua_pop(L, 1);
     return 0;
 }
@@ -85,65 +85,59 @@ int lib_set_mod(lua_State *L)
     // there are only 4 mods ranging from 1-4
     i = MAX(MIN(i, 3), 0);
 
-    server.default_layout.options.modkey = i;
+    server.default_layout->options.modkey = i;
     lua_pop(L, 1);
     return 0;
 }
 
 int lib_set_border_color(lua_State *L)
 {
-    lua_tocolor(server.default_layout.options.border_color);
+    lua_tocolor(server.default_layout->options.border_color);
     lua_pop(L, 1);
     return 0;
 }
 
 int lib_set_root_color(lua_State *L)
 {
-    lua_tocolor(server.default_layout.options.root_color);
+    lua_tocolor(server.default_layout->options.root_color);
     lua_pop(L, 1);
     return 0;
 }
 
 int lib_set_sloppy_focus(lua_State *L)
 {
-    server.default_layout.options.sloppy_focus = lua_toboolean(L, -1);
+    server.default_layout->options.sloppy_focus = lua_toboolean(L, -1);
     lua_pop(L, 1);
     return 0;
 }
 
 int lib_set_repeat_rate(lua_State *L)
 {
-    server.default_layout.options.repeat_rate = luaL_checkinteger(L, -1);
+    server.default_layout->options.repeat_rate = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     return 0;
 }
 
 int lib_set_repeat_delay(lua_State *L)
 {
-    server.default_layout.options.repeat_delay = luaL_checkinteger(L, -1);
+    server.default_layout->options.repeat_delay = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     return 0;
 }
 
 int lib_set_default_layout(lua_State *L)
 {
-    lua_rawgeti(L, -1, 1);
-    const char *symbol = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-    lua_rawgeti(L, -1, 2);
     const char *name = luaL_checkstring(L, -1);
     lua_pop(L, 1);
-    lua_pop(L, 1);
 
-    server.default_layout.name = name;
-    server.default_layout.symbol = symbol;
+    server.default_layout->name = name;
     return 0;
 }
 
 // TODO refactor this function hard to read
 int lib_create_workspaces(lua_State *L)
 {
-    struct wlr_list *tag_names = &server.default_layout.options.tag_names;
+    struct wlr_list *tag_names = &server.default_layout->options.tag_names;
     wlr_list_clear(tag_names);
 
     size_t len = lua_rawlen(L, -1);
@@ -162,15 +156,15 @@ int lib_create_workspaces(lua_State *L)
 
 int lib_set_rules(lua_State *L)
 {
-    if (server.default_layout.options.rules)
-        free(server.default_layout.options.rules);
+    if (server.default_layout->options.rules)
+        free(server.default_layout->options.rules);
 
     size_t len = lua_rawlen(L, -1);
-    server.default_layout.options.rule_count = len;
-    server.default_layout.options.rules = calloc(len, sizeof(struct rule));
-    struct rule *rules = server.default_layout.options.rules;
+    server.default_layout->options.rule_count = len;
+    server.default_layout->options.rules = calloc(len, sizeof(struct rule));
+    struct rule *rules = server.default_layout->options.rules;
 
-    for (int i = 0; i < server.default_layout.options.rule_count; i++) {
+    for (int i = 0; i < server.default_layout->options.rule_count; i++) {
         struct rule r = get_config_array_rule(L, "rules", i+1);
         rules[i] = r;
     }
@@ -194,13 +188,13 @@ int lib_create_layout_set(lua_State *L)
 
 int lib_set_monrules(lua_State *L)
 {
-    if (server.default_layout.options.monrules)
-        free(server.default_layout.options.monrules);
+    if (server.default_layout->options.monrules)
+        free(server.default_layout->options.monrules);
 
     size_t len = lua_rawlen(L, -1);
-    server.default_layout.options.monrule_count = len;
-    server.default_layout.options.monrules = calloc(len, sizeof(struct monrule));
-    struct monrule *rules = server.default_layout.options.monrules;
+    server.default_layout->options.monrule_count = len;
+    server.default_layout->options.monrules = calloc(len, sizeof(struct monrule));
+    struct monrule *rules = server.default_layout->options.monrules;
 
     for (int i = 0; i < len; i++) {
         struct monrule r = get_config_array_monrule(L, "rules", i+1);
@@ -213,27 +207,27 @@ int lib_set_monrules(lua_State *L)
 
 int lib_set_keybinds(lua_State *L)
 {
-    lua_copy_table_safe(L, &server.default_layout.options.keybinds_ref);
+    lua_copy_table_safe(L, &server.default_layout->options.keybinds_ref);
     return 0;
 }
 
 int lib_set_layout_constraints(lua_State *L)
 {
-    server.default_layout.options.layout_constraints = lua_toresize_constrains(L);
+    server.default_layout->options.layout_constraints = lua_toresize_constrains(L);
     lua_pop(L, 1);
     return 0;
 }
 
 int lib_set_master_constraints(lua_State *L)
 {
-    server.default_layout.options.master_constraints = lua_toresize_constrains(L);
+    server.default_layout->options.master_constraints = lua_toresize_constrains(L);
     lua_pop(L, 1);
     return 0;
 }
 
 int lib_set_resize_direction(lua_State *L)
 {
-    server.default_layout.options.resize_dir = luaL_checkinteger(L, -1);
+    server.default_layout->options.resize_dir = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     return 0;
 }
@@ -241,7 +235,7 @@ int lib_set_resize_direction(lua_State *L)
 int lib_set_master_layout_data(lua_State *L)
 {
     if (lua_islayout_data(L, "master_layout_data"))
-        lua_copy_table_safe(L, &server.default_layout.lua_master_layout_data_ref);
+        lua_copy_table_safe(L, &server.default_layout->lua_master_layout_data_ref);
     else
         lua_pop(L, 1);
     return 0;
@@ -249,14 +243,14 @@ int lib_set_master_layout_data(lua_State *L)
 
 int lib_set_hidden_edges(lua_State *L)
 {
-    server.default_layout.options.hidden_edges = luaL_checkinteger(L, -1);
+    server.default_layout->options.hidden_edges = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     return 0;
 }
 
 int lib_set_smart_hidden_edges(lua_State *L)
 {
-    server.default_layout.options.smart_hidden_edges = lua_toboolean(L, -1);
+    server.default_layout->options.smart_hidden_edges = lua_toboolean(L, -1);
     lua_pop(L, 1);
     return 0;
 }
@@ -264,7 +258,7 @@ int lib_set_smart_hidden_edges(lua_State *L)
 int lib_set_resize_data(lua_State *L)
 {
     if (lua_istable(L, -1))
-        lua_copy_table_safe(L, &server.default_layout.lua_resize_data_ref);
+        lua_copy_table_safe(L, &server.default_layout->lua_resize_data_ref);
     else
         lua_pop(L, 1);
     return 0;

@@ -6,7 +6,7 @@ local layout_data = {
 
 local resize_data = {}
 
-layout.set(layout_data)
+layout.set("monocle", layout_data)
 l.config.set_resize_data(resize_data)
 l.config.set_arrange_by_focus(true);
 l.config.set_tile_borderpx(0)

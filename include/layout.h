@@ -39,6 +39,9 @@ struct layout {
     struct options options;
 };
 
+struct layout *create_layout();
+void destroy_layout(struct layout *lt);
+
 bool is_same_layout(struct layout layout, struct layout layout2);
 bool lua_islayout_data(lua_State *L, const char *name);
 void lua_copy_table(lua_State *L, int *ref);
@@ -49,5 +52,6 @@ struct resize_constraints lua_toresize_constrains(lua_State *L);
 void copy_layout(struct layout *dest_lt, struct layout *src_lt);
 // copy layout and override all references with the given ones
 void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt);
-struct layout get_default_layout();
+
+int cmp_layout(const struct layout *lt1, const struct layout *lt2);
 #endif /* LAYOUT_H */

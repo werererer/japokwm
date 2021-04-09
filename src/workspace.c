@@ -83,8 +83,8 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     setup_lists(ws);
 
     // fill layout stack with reasonable values
-    push_layout(ws, *lt);
-    push_layout(ws, *lt);
+    push_layout(ws, lt);
+    push_layout(ws, lt);
     return ws;
 }
 
@@ -94,7 +94,7 @@ void update_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names)
         for (int i = server.workspaces.length-1; i < tag_names->length; i++) {
             const char *name = tag_names->items[0];
 
-            struct workspace *ws = create_workspace(name, i, &server.default_layout);
+            struct workspace *ws = create_workspace(name, i, server.default_layout);
             wlr_list_push(&server.workspaces, ws);
         }
     } else {
@@ -105,7 +105,7 @@ void update_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names)
         }
     }
 
-    for (int i = 0; i < tag_names->length; i++) {
+    for (int i = 0; i < server.workspaces.length; i++) {
         struct workspace *ws = server.workspaces.items[i];
         rename_workspace(ws, tag_names->items[i]);
     }
@@ -299,7 +299,7 @@ struct workspace *get_prev_empty_workspace(struct wlr_list *workspaces, size_t i
 
 struct wlr_list *get_visible_lists(struct workspace *ws)
 {
-    struct layout *lt = &ws->layout;
+    struct layout *lt = ws->layout;
 
     if (lt->options.arrange_by_focus)
         return &ws->focus_stack_visible_lists;
@@ -309,7 +309,7 @@ struct wlr_list *get_visible_lists(struct workspace *ws)
 
 struct wlr_list *get_tiled_list(struct workspace *ws)
 {
-    struct layout *lt = &ws->layout;
+    struct layout *lt = ws->layout;
 
     if (lt->options.arrange_by_focus)
         return &ws->focus_stack_normal;
@@ -319,7 +319,7 @@ struct wlr_list *get_tiled_list(struct workspace *ws)
 
 struct wlr_list *get_floating_list(struct workspace *ws)
 {
-    struct layout *lt = &ws->layout;
+    struct layout *lt = ws->layout;
 
     if (lt->options.arrange_by_focus)
         return &ws->focus_stack_normal;
@@ -329,7 +329,7 @@ struct wlr_list *get_floating_list(struct workspace *ws)
 
 struct wlr_list *get_hidden_list(struct workspace *ws)
 {
-    struct layout *lt = &ws->layout;
+    struct layout *lt = ws->layout;
 
     if (lt->options.arrange_by_focus)
         return &ws->focus_stack_hidden;
@@ -342,7 +342,7 @@ void workspace_assign_monitor(struct workspace *ws, struct monitor *m)
     ws->m = m;
 }
 
-void set_selected_layout(struct workspace *ws, struct layout layout)
+void set_selected_layout(struct workspace *ws, struct layout *layout)
 {
     if (!ws)
         return;
@@ -534,8 +534,8 @@ void copy_layout_from_selected_workspace(struct wlr_list *workspaces)
 
     for (int i = 0; i < workspaces->length; i++) {
         struct workspace *ws = workspaces->items[i];
-        struct layout *dest_lt = &ws->layout;
-        struct layout *dest_prev_lt = &ws->previous_layout;
+        struct layout *dest_lt = ws->layout;
+        struct layout *dest_prev_lt = ws->previous_layout;
 
         if (dest_lt == src_lt)
             continue;
@@ -547,7 +547,7 @@ void copy_layout_from_selected_workspace(struct wlr_list *workspaces)
 
 void load_default_layout(lua_State *L, struct workspace *ws)
 {
-    load_layout(L, &server.default_layout);
+    load_layout(L, server.default_layout->name);
 }
 
 void set_container_workspace(struct container *con, struct workspace *ws)
@@ -574,13 +574,13 @@ void set_container_workspace(struct container *con, struct workspace *ws)
     add_container_to_focus_stack(con, ws);
 
     if (con->floating)
-        con->client->bw = ws->layout.options.float_border_px;
+        con->client->bw = ws->layout->options.float_border_px;
     else 
-        con->client->bw = ws->layout.options.tile_border_px;
+        con->client->bw = ws->layout->options.tile_border_px;
 }
 
 // TODO refactor this function
-void set_layout(lua_State *L, struct workspace *ws)
+void set_layout(lua_State *L)
 {
     if (server.layout_set.layout_sets_ref <= 0) {
         return;
@@ -594,36 +594,23 @@ void set_layout(lua_State *L, struct workspace *ws)
     lua_get_layout_set_element(L, server.layout_set.key);
 
     lua_rawgeti(L, -1, server.layout_set.lua_layout_index);
-    lua_rawgeti(L, -1, 1);
-    const char *layout_symbol = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-    lua_rawgeti(L, -1, 2);
     const char *layout_name = luaL_checkstring(L, -1);
     lua_pop(L, 1);
-    lua_pop(L, 1);
 
     lua_pop(L, 1);
 
     lua_pop(L, 1);
 
-    struct layout *lt = &ws->layout;
-    lt->name = layout_name;
-    lt->symbol = layout_symbol;
-    load_layout(L, lt);
+    load_layout(L, layout_name);
 }
 
-void load_layout(lua_State *L, struct layout *lt)
+void load_layout(lua_State *L, const char *name)
 {
-    struct workspace *ws = get_workspace(lt->ws_id);
-
-    if (!ws)
-        return;
-
     char *config_path = get_config_file("layouts");
     char file[NUM_CHARS] = "";
     strcpy(file, "");
     join_path(file, config_path);
-    join_path(file, lt->name);
+    join_path(file, name);
     join_path(file, "init.lua");
     if (config_path)
         free(config_path);
@@ -636,6 +623,23 @@ void load_layout(lua_State *L, struct layout *lt)
         return;
     }
     lua_call_safe(L, 0, 0, 0);
+}
+
+void reset_loaded_layout(struct workspace *ws)
+{
+    for (int j = 0; j < ws->loaded_layouts.length; j++) {
+        struct layout *lt = ws->loaded_layouts.items[0];
+        destroy_layout(lt);
+        wlr_list_del(&ws->loaded_layouts, 0);
+    }
+}
+
+void reset_loaded_layouts(struct wlr_list *workspaces)
+{
+    for (int i = 0; i < workspaces->length; i++) {
+        struct workspace *ws = workspaces->items[i];
+        reset_loaded_layout(ws);
+    }
 }
 
 void push_workspace(struct monitor *m, struct workspace *ws)
@@ -654,9 +658,9 @@ void push_workspace(struct monitor *m, struct workspace *ws)
     focus_workspace(m, ws);
 }
 
-void push_layout(struct workspace *ws, struct layout lt)
+void push_layout(struct workspace *ws, struct layout *lt)
 {
-    lt.ws_id = ws->id;
+    lt->ws_id = ws->id;
     ws->previous_layout = ws->layout;
     ws->layout = lt;
 }

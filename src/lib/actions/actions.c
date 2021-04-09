@@ -60,7 +60,7 @@ int lib_resize_main(lua_State *L)
 
     struct monitor *m = selected_monitor;
     struct workspace *ws = get_workspace(m->ws_id);
-    struct layout *lt = &ws->layout;
+    struct layout *lt = ws->layout;
     int dir = lt->options.resize_dir;
 
     lua_getglobal_safe(L, "Resize_main_all");
@@ -278,9 +278,6 @@ int lib_load_next_layout_in_set(lua_State *L)
     const char *layout_set_key = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    struct workspace *ws = get_workspace_in_monitor(selected_monitor);
-
-    // arg 2
     lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
     if (!lua_is_index_defined(L, layout_set_key)) {
         lua_pop(L, 1);
@@ -300,7 +297,7 @@ int lib_load_next_layout_in_set(lua_State *L)
         server.layout_set.lua_layout_index = 1;
     }
 
-    set_layout(L, ws);
+    set_layout(L);
 
     arrange();
     return 0;
@@ -310,9 +307,6 @@ int lib_load_prev_layout_in_set(lua_State *L)
 {
     const char *layout_set_key = luaL_checkstring(L, -1);
     lua_pop(L, 1);
-
-    struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace_in_monitor(m);
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
     if (!lua_is_index_defined(L, layout_set_key)) {
@@ -333,7 +327,7 @@ int lib_load_prev_layout_in_set(lua_State *L)
         server.layout_set.lua_layout_index = n_layouts;
     }
 
-    set_layout(L, ws);
+    set_layout(L);
 
     arrange();
     return 0;
@@ -341,8 +335,6 @@ int lib_load_prev_layout_in_set(lua_State *L)
 
 int lib_load_layout_in_set(lua_State *L)
 {
-    struct workspace *ws = get_workspace_in_monitor(selected_monitor);
-
     server.layout_set.lua_layout_index = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
@@ -358,7 +350,7 @@ int lib_load_layout_in_set(lua_State *L)
     lua_pop(L, 1);
 
     server.layout_set.key = layout_set_key;
-    set_layout(L, ws);
+    set_layout(L);
 
     arrange();
     return 0;
@@ -366,19 +358,11 @@ int lib_load_layout_in_set(lua_State *L)
 
 int lib_load_layout(lua_State *L)
 {
-    struct workspace *ws = get_workspace_in_monitor(selected_monitor);
-
     lua_rawgeti(L, -1, 1);
-    const char *layout_symbol = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-    lua_rawgeti(L, -1, 2);
     const char *layout_name = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    struct layout *lt = &ws->layout;
-    lt->name = layout_name;
-    lt->symbol = layout_symbol;
-    load_layout(L, lt);
+    load_layout(L, layout_name);
 
     arrange();
     return 0;

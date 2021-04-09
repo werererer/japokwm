@@ -95,8 +95,9 @@ void create_keyboard(struct wlr_input_device *device)
     wlr_keyboard_set_keymap(device->keyboard, keymap);
     xkb_keymap_unref(keymap);
     xkb_context_unref(context);
-    wlr_keyboard_set_repeat_info(device->keyboard, server.default_layout.options.repeat_rate,
-            server.default_layout.options.repeat_delay);
+    wlr_keyboard_set_repeat_info(device->keyboard,
+            server.default_layout->options.repeat_rate,
+            server.default_layout->options.repeat_delay);
 
     /* Here we set up listeners for keyboard events. */
     kb->modifiers.notify = keypressmod;

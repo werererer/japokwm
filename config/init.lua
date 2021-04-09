@@ -9,12 +9,7 @@
 
 config.set_inner_gaps(0)
 
-local layouts = {
-    {"[M]", "tile"},
-    {"[]=", "two_pane"},
-    {"||",  "monocle"},
-    {"--",  "tmp" },
-}
+local layouts = {"tile", "two_pane", "monocle", "tmp"}
 
 config.create_layout_set("default", layouts)
 
@@ -43,7 +38,7 @@ config.set_keybinds({
     {"mod-S-t",       function() action.load_layout_in_set("default", 2) end},
     {"mod-w",         function() action.load_layout_in_set("default", 3) end},
     {"mod-S-w",       function() action.load_layout_in_set("default", 4) end},
-    {"mod-S-p",       function() action.load_layout({"g", "tmp"}) end},
+    {"mod-S-p",       function() action.load_layout("tmp") end},
     {"mod-b",         function() action.toggle_bars() end},
     {"mod-S-h",       function() action.resize_main(-1/10) end},
     {"mod-S-l",       function() action.resize_main(1/10) end},

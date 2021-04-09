@@ -84,15 +84,15 @@ void create_monitor(struct wl_listener *listener, void *data)
         focus_monitor(m);
         load_config(L);
 
-        if (server.default_layout.options.tag_names.length <= 0) {
+        if (server.default_layout->options.tag_names.length <= 0) {
             handle_error("tag_names is empty, loading default tag_names");
-            reset_tag_names(&server.default_layout.options.tag_names);
+            reset_tag_names(&server.default_layout->options.tag_names);
         }
 
         create_workspaces(&server.workspaces,
-                &server.default_layout.options.tag_names, &server.default_layout);
+                &server.default_layout->options.tag_names, server.default_layout);
 
-        call_on_start_function(&server.default_layout.options.event_handler);
+        call_on_start_function(&server.default_layout->options.event_handler);
     }
 
     evaluate_monrules(output);
@@ -103,7 +103,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     ws = get_workspace_in_monitor(m);
     load_default_layout(L, ws);
     copy_layout_from_selected_workspace(&server.workspaces);
-    set_root_color(m->root, ws->layout.options.root_color);
+    set_root_color(m->root, ws->layout->options.root_color);
 
     if (!wlr_output_commit(output))
         return;
@@ -111,8 +111,8 @@ void create_monitor(struct wl_listener *listener, void *data)
 
 static void evaluate_monrules(struct wlr_output *output)
 {
-    for (int i = 0; i < server.default_layout.options.monrule_count; i++) {
-        struct monrule r = server.default_layout.options.monrules[i];
+    for (int i = 0; i < server.default_layout->options.monrule_count; i++) {
+        struct monrule r = server.default_layout->options.monrules[i];
         if (!r.name || strstr(output->name, r.name)) {
             if (!r.lua_func_ref)
                 continue;
@@ -276,5 +276,5 @@ inline struct workspace *get_workspace_in_monitor(struct monitor *m)
 
 inline struct layout *get_layout_in_monitor(struct monitor *m)
 {
-    return &get_workspace(m->ws_id)->layout;
+    return get_workspace(m->ws_id)->layout;
 }
