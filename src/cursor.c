@@ -143,9 +143,6 @@ void motion_notify(uint32_t time)
                 absolute_y_to_container_relative(focus_con, cursory),
                 &sx, &sy);
 
-        if (popups_exist())
-            destroy_popups();
-
         update_cursor(&server.cursor);
     }
 

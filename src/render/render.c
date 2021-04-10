@@ -140,8 +140,8 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
          * part of the puzzle, dwl does not fully support HiDPI. */
         .x = ox,
         .y = oy,
-        .width = box.width,
-        .height = box.height,
+        .width = surface->current.width,
+        .height = surface->current.height,
     };
 
     render_texture(wlr_output, output_damage, texture, &obox);

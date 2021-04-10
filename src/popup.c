@@ -39,7 +39,6 @@ static struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *x
     box.height = m->geom.height;
 
     wlr_xdg_popup_unconstrain_from_box(popup->xdg, &box);
-
     // the root window may be resized. This must be adjusted
     popup->geom.x = popup->xdg->geometry.x + parent_geom.x;
     popup->geom.y = popup->xdg->geometry.y + parent_geom.y;
