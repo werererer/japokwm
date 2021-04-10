@@ -15,7 +15,6 @@
 #include "workspace.h"
 #include "utils/parseConfigUtils.h"
 
-struct wl_list popups;
 struct wl_list sticky_stack;
 
 struct monitor *selected_monitor;

@@ -271,7 +271,6 @@ int ipc_client_handle_readable(int client_fd, uint32_t mask, void *data) {
 
 static void ipc_send_event(const char *json_string, enum ipc_command_type event) {
     struct ipc_client *client;
-    printf("ipc_client_list.length: %zu\n", ipc_client_list.length);
     for (size_t i = 0; i < ipc_client_list.length; i++) {
         client = ipc_client_list.items[i];
         if ((client->subscribed_events & event_mask(event)) == 0) {
@@ -354,20 +353,7 @@ void ipc_client_disconnect(struct ipc_client *client) {
     free(client);
 }
 
-/* static void ipc_get_tags_callback(struct tagset *tagset, json_object *tagJson) { */
-/*     json_object *data = ipc_json_describe_tagset(tagset); */
-/*     // override the default focused indicator because */
-/*     // it's set differently for the get_workspaces reply */
-/*     unsigned int focusedTag = selMon->tagset.focusedTag; */
-/*     bool focused = tagset->focusedTag == focusedTag; */
-/*     json_object_object_del(data, "focused"); */
-/*     json_object_object_add(data, "focused", */
-/*             json_object_new_boolean(focused)); */
-/*     json_object_array_add((json_object *)tagJson, tagJson); */
-/* } */
-
 void ipc_event_window() {
-    printf("send event window\n");
     ipc_send_event("", IPC_EVENT_WINDOW);
 }
 

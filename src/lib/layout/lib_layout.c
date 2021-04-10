@@ -18,7 +18,6 @@ int lib_set_layout(lua_State *L)
     // 1. argument
     const char *symbol = luaL_checkstring(L, -1);
     lua_pop(L, 1);
-    printf("\nsymbol: %s\n", symbol);
 
     struct layout *lt = create_layout(L);
 
@@ -32,14 +31,11 @@ int lib_set_layout(lua_State *L)
 
     struct workspace *ws = get_workspace(lt->ws_id);
 
-    printf("loaded_layouts: %zu\n", ws->loaded_layouts.length);
     int i = wlr_list_find(&ws->loaded_layouts, (cmp_func_t)cmp_layout, &lt);
     if (i != -1) {
         struct layout *old_lt = ws->loaded_layouts.items[i];
         lt->lua_layout_copy_data_ref = old_lt->lua_layout_copy_data_ref;
     } else {
-        printf("-1 route\n");
-        printf("not found\n");
         wlr_list_insert(&ws->loaded_layouts, 0, lt);
 
         if (ref > 0) {

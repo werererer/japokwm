@@ -144,10 +144,10 @@ static void run(char *startup_cmd)
 
 static int setup()
 {
-    wl_list_init(&popups);
     wl_list_init(&sticky_stack);
 
     wlr_list_init(&server.mons);
+    wlr_list_init(&server.popups);
     wlr_list_init(&server.visual_stack_lists);
     wlr_list_init(&server.normal_visual_stack_lists);
     wlr_list_init(&server.layer_visual_stack_lists);

@@ -358,8 +358,8 @@ static void render_independents(struct monitor *m, pixman_region32_t *output_dam
 
 static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct xdg_popup *popup;
-    wl_list_for_each_reverse(popup, &popups, plink) {
+    for (int i = 0; i < server.popups.length; i++) {
+        struct xdg_popup *popup = server.popups.items[i];
         struct wlr_surface *surface = popup->xdg->base->surface;
         render_surface_iterator(m, surface, popup->geom, output_damage);
 

@@ -6,8 +6,6 @@
 #include "client.h"
 
 struct xdg_popup {
-    struct wl_list plink;
-
     struct wlr_xdg_popup *xdg;
     struct container *toplevel;
     struct wlr_box geom;

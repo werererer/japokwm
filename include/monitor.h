@@ -28,8 +28,6 @@ struct monrule {
     int lua_func_ref;
 };
 
-/* associated with plink in container  */
-extern struct wl_list popups;
 /* associated with stlink in container  */
 extern struct wl_list sticky_stack;
 
