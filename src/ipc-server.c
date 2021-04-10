@@ -418,8 +418,9 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
                         if (ws->m != m)
                             continue;
 
-                        json_object *tag = ipc_json_describe_workspace(m, ws, is_workspace_active);
-                        json_object_array_add(array, tag);
+                        json_object *ws_object = ipc_json_describe_workspace(
+                                ws, is_workspace_active);
+                        json_object_array_add(array, ws_object);
                     }
                 }
 
@@ -466,8 +467,7 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
         case IPC_GET_TREE:
             {
                 struct monitor *m = selected_monitor;
-                struct container *sel = get_focused_container(m);
-                json_object *tree = ipc_json_describe_node_recursive(m, sel);
+                json_object *tree = ipc_json_describe_selected_container(m);
                 const char *json_string = json_object_to_json_string(tree);
 
                 ipc_send_reply(client, payload_type, json_string, strlen(json_string));
