@@ -458,8 +458,10 @@ void focus_most_recent_container(struct workspace *ws, enum focus_actions a)
 
     if (!con) {
         con = get_container(ws, 0);
-        if (!con)
+        if (!con) {
+            ipc_event_window();
             return;
+        }
     }
 
     focus_container(con, a);
