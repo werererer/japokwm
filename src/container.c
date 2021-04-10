@@ -352,6 +352,8 @@ void focus_container(struct container *con, enum focus_actions a)
 
     struct container *new_sel = get_focused_container(m);
 
+    ipc_event_window();
+
     container_damage_borders(sel, &sel->geom);
     container_damage_borders(new_sel, &new_sel->geom);
 
@@ -382,7 +384,6 @@ void focus_on_stack(struct monitor *m, int i)
 
     /* If only one client is visible on selMon, then c == sel */
     focus_container(con, FOCUS_LIFT);
-    ipc_event_window();
 }
 
 // TODO refactor
