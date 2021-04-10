@@ -57,6 +57,8 @@ struct server {
     struct wlr_list client_lists;
     struct wlr_list normal_clients;
     struct wlr_list independent_clients;
+
+    struct wlr_list mons;
 };
 
 extern struct server server;

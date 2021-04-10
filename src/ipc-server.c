@@ -406,8 +406,8 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
             {
                 json_object *array = json_object_new_array();
 
-                struct monitor *m;
-                wl_list_for_each(m, &mons, link) {
+                for (int i = 0; i < server.mons.length; i++) {
+                    struct monitor *m = server.mons.items[i];
                     for (int i = 0; i < server.workspaces.length; i++) {
                         struct workspace *ws = get_workspace(i);
                         bool has_clients = workspace_has_clients(ws);
@@ -465,20 +465,18 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
 
         case IPC_GET_TREE:
             {
-                printf("get-tree\n");
-                // TODO which clinet?
-                /* struct monitor *m = selected_monitor; */
-                /* struct container *sel = get_focused_container(m); */
-                if (false) {
-                    /* json_object *tree = ipc_json_describe_node_recursive(m, sel); */
-                    /* const char *json_string = json_object_to_json_string(tree); */
-                    /* printf("json_string: %s\n", json_string); */
+                struct monitor *m = selected_monitor;
+                struct container *sel = get_focused_container(m);
+                /* if (sel) { */
+                    json_object *tree = ipc_json_describe_node_recursive(m, sel);
+                    const char *json_string = json_object_to_json_string(tree);
+                    printf("json_string: %s\n", json_string);
 
-                    /* ipc_send_reply(client, payload_type, json_string, strlen(json_string)); */
-                    /* json_object_put(tree); */
-                } else {
-                    ipc_send_reply(client, payload_type, "", strlen(""));
-                }
+                    ipc_send_reply(client, payload_type, json_string, strlen(json_string));
+                    json_object_put(tree);
+                /* } else { */
+                /*     ipc_send_reply(client, payload_type, "", strlen("")); */
+                /* } */
                 goto exit_cleanup;
             }
 

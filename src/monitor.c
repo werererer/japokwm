@@ -18,7 +18,6 @@
 struct wl_list popups;
 struct wl_list sticky_stack;
 
-struct wl_list mons;
 struct monitor *selected_monitor;
 
 static void handle_output_damage_frame(struct wl_listener *listener, void *data);
@@ -60,8 +59,8 @@ void create_monitor(struct wl_listener *listener, void *data)
     m->mode.notify = handle_output_mode;
     wl_signal_add(&output->events.mode, &m->mode);
 
-    bool is_first_monitor = wl_list_empty(&mons);
-    wl_list_insert(&mons, &m->link);
+    bool is_first_monitor = server.mons.length == 0;
+    wlr_list_push(&server.mons, m);
 
     /* Adds this to the output layout. The add_auto function arranges outputs
      * from left-to-right in the order they appear. A more sophisticated
@@ -167,7 +166,7 @@ void destroy_monitor(struct wl_listener *listener, void *data)
 
     focus_workspace(m, NULL);
     destroy_root(m->root);
-    wl_list_remove(&m->link);
+    wlr_list_remove(&server.mons, cmp_ptr, m);
 }
 
 void center_mouse_in_monitor(struct monitor *m)
@@ -195,8 +194,8 @@ void transform_monitor(struct monitor *m, enum wl_output_transform transform)
 
 void update_monitor_geometries()
 {
-    struct monitor *m;
-    wl_list_for_each(m, &mons, link) {
+    for (int i = 0; i < server.mons.length; i++) {
+        struct monitor *m = server.mons.items[i];
         m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     }
 }
@@ -234,30 +233,22 @@ void push_selected_workspace(struct monitor *m, struct workspace *ws)
 
 struct monitor *dirtomon(int dir)
 {
-    struct monitor *m;
+    struct monitor *m = selected_monitor;
+    int m_index = wlr_list_find(&server.mons, cmp_ptr, m);
 
-    if (dir > 0) {
-        if (selected_monitor->link.next == &mons)
-            return wl_container_of(mons.next, m, link);
-        return wl_container_of(selected_monitor->link.next, m, link);
-    } else {
-        if (selected_monitor->link.prev == &mons)
-            return wl_container_of(mons.prev, m, link);
-        return wl_container_of(selected_monitor->link.prev, m, link);
-    }
+    return get_relative_item_in_list(&server.mons, m_index, dir);
 }
 
 struct monitor *output_to_monitor(struct wlr_output *output)
 {
-    struct monitor *m;
-    bool found = false;
-    wl_list_for_each(m, &mons, link) {
+    for (int i = 0; i < server.mons.length; i++) {
+        struct monitor *m = server.mons.items[i];
         if (m->wlr_output == output) {
-            found = true;
-            break;
+            return m;
         }
     }
-    return found ? m : NULL;
+
+    return NULL;
 }
 
 struct monitor *xy_to_monitor(double x, double y)

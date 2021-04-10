@@ -9,9 +9,6 @@
 #include "root.h"
 
 struct monitor {
-    /* mons(monitors) list */
-    struct wl_list link;
-
     struct wlr_output *wlr_output;
     struct wlr_output_damage *damage;
 
@@ -56,6 +53,5 @@ struct monitor *xy_to_monitor(double x, double y);
 struct workspace *get_workspace_in_monitor(struct monitor *m);
 struct layout *get_layout_in_monitor(struct monitor *m);
 
-extern struct wl_list mons;
 extern struct monitor *selected_monitor;
 #endif /* MONITOR_H */

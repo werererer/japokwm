@@ -25,8 +25,8 @@ static void arrange_container(struct container *con, int arrange_position,
 
 void arrange()
 {
-    struct monitor *m;
-    wl_list_for_each(m, &mons, link) {
+    for (int i = 0; i < server.mons.length; i++) {
+        struct monitor *m = server.mons.items[i];
         arrange_monitor(m);
     }
 

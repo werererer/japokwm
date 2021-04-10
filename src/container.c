@@ -109,15 +109,15 @@ static void damage_container_area(struct container *con, struct wlr_box *geom,
 
 static void container_damage(struct container *con, bool whole)
 {
-    struct monitor *m;
-    wl_list_for_each(m, &mons, link) {
+    for (int i = 0; i < server.mons.length; i++) {
+        struct monitor *m = server.mons.items[i];
         damage_container_area(con, &con->geom, m, whole);
     }
 
     struct client *c = con->client;
     if (c->resized || c->moved_workspace) {
-        struct monitor *m;
-        wl_list_for_each(m, &mons, link) {
+        for (int i = 0; i < server.mons.length; i++) {
+            struct monitor *m = server.mons.items[i];
             damage_container_area(con, &con->prev_geom, m, whole);
         }
         c->resized = false;
