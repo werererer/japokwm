@@ -38,32 +38,33 @@ static json_object *ipc_json_create_node(int id, const char *name,
         bool focused, bool urgent, json_object *focus, struct wlr_box *box) {
     json_object *object = json_object_new_object();
 
-    /* json_object_object_add(object, "id", json_object_new_int(id)); */
+    json_object_object_add(object, "id", json_object_new_int(id));
     json_object_object_add(object, "name",
             name ? json_object_new_string(name) : NULL);
-    /* json_object_object_add(object, "rect", ipc_json_create_rect(box)); */
+    json_object_object_add(object, "rect",
+            box ? ipc_json_create_rect(box) : ipc_json_create_empty_rect());
     json_object_object_add(object, "focused", json_object_new_boolean(focused));
-    /* json_object_object_add(object, "focus", focus); */
+    json_object_object_add(object, "focus", focus);
 
     // set default values to be compatible with i3
-    /* json_object_object_add(object, "border", */
-    /*         json_object_new_string("none")); */
-    /* json_object_object_add(object, "current_border_width", */
-    /*         json_object_new_int(0)); */
-    /* json_object_object_add(object, "layout", NULL); */
-    /* json_object_object_add(object, "orientation", NULL); */
-    /* json_object_object_add(object, "percent", NULL); */
-    /* json_object_object_add(object, "window_rect", ipc_json_create_empty_rect()); */
-    /* json_object_object_add(object, "deco_rect", ipc_json_create_empty_rect()); */
-    /* json_object_object_add(object, "geometry", ipc_json_create_empty_rect()); */
-    /* json_object_object_add(object, "window", NULL); */
-    /* json_object_object_add(object, "urgent", json_object_new_boolean(urgent)); */
+    json_object_object_add(object, "border",
+            json_object_new_string("none"));
+    json_object_object_add(object, "current_border_width",
+            json_object_new_int(0));
+    json_object_object_add(object, "layout", NULL);
+    json_object_object_add(object, "orientation", NULL);
+    json_object_object_add(object, "percent", NULL);
+    json_object_object_add(object, "window_rect", ipc_json_create_empty_rect());
+    json_object_object_add(object, "deco_rect", ipc_json_create_empty_rect());
+    json_object_object_add(object, "geometry", ipc_json_create_empty_rect());
+    json_object_object_add(object, "window", NULL);
+    json_object_object_add(object, "urgent", json_object_new_boolean(urgent));
 
-    /* json_object_object_add(object, "marks", json_object_new_array()); */
-    /* json_object_object_add(object, "fullscreen_mode", json_object_new_int(0)); */
-    /* json_object_object_add(object, "nodes", json_object_new_array()); */
-    /* json_object_object_add(object, "floating_nodes", json_object_new_array()); */
-    /* json_object_object_add(object, "sticky", json_object_new_boolean(false)); */
+    json_object_object_add(object, "marks", json_object_new_array());
+    json_object_object_add(object, "fullscreen_mode", json_object_new_int(0));
+    json_object_object_add(object, "nodes", json_object_new_array());
+    json_object_object_add(object, "floating_nodes", json_object_new_array());
+    json_object_object_add(object, "sticky", json_object_new_boolean(false));
 
     return object;
 }
@@ -111,22 +112,6 @@ json_object *ipc_json_describe_workspace(struct monitor *m, struct workspace *ws
     return object;
 }
 
-json_object *ipc_json_describe_node(struct monitor *m, struct container *con) {
-    bool focused = get_focused_container(m) == con;
-    /* struct client *c = con->client; */
-    const char *title = "";
-
-    struct wlr_box *box;
-    box = &m->geom;
-
-    json_object *focus = json_object_new_array();
-
-    json_object *object = ipc_json_create_node(
-            0, title, focused, false, focus, box);
-
-    return object;
-}
-
 json_object *ipc_json_describe_monitor(struct monitor *m)
 {
     json_object *object = ipc_json_create_node(
@@ -139,7 +124,8 @@ json_object *ipc_json_describe_monitor(struct monitor *m)
 json_object *ipc_json_describe_container(struct container *con)
 {
     json_object *object = ipc_json_create_node(
-            5, con ? con->client->title : NULL, true, false, NULL, &con->geom);
+            5, con ? con->client->title : NULL, true, false, NULL,
+            con ? &con->geom : NULL);
 
     json_object_object_add(object, "type", json_object_new_string("con"));
 
@@ -149,6 +135,7 @@ json_object *ipc_json_describe_container(struct container *con)
     return object;
 }
 
+// TODO refactor this
 json_object *ipc_json_describe_node_recursive(struct monitor *m, struct container *con)
 {
     struct wlr_box box = {
