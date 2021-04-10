@@ -50,7 +50,7 @@ void push_selected_workspace(struct monitor *m, struct workspace *ws);
 struct monitor *dirtomon(int dir);
 struct monitor *output_to_monitor(struct wlr_output *output);
 struct monitor *xy_to_monitor(double x, double y);
-struct workspace *get_workspace_in_monitor(struct monitor *m);
+struct workspace *monitor_get_active_workspace(struct monitor *m);
 struct layout *get_layout_in_monitor(struct monitor *m);
 
 extern struct monitor *selected_monitor;

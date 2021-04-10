@@ -99,7 +99,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     struct workspace *ws = get_workspace(0);
     focus_next_unoccupied_workspace(m, &server.workspaces, ws);
     // TODO is this needed?
-    ws = get_workspace_in_monitor(m);
+    ws = monitor_get_active_workspace(m);
     load_default_layout(L, ws);
     copy_layout_from_selected_workspace(&server.workspaces);
     set_root_color(m->root, ws->layout->options.root_color);
@@ -211,7 +211,7 @@ void focus_monitor(struct monitor *m)
 
     struct workspace *ws = get_workspace(m->ws_id);
     if (selected_monitor) {
-        struct workspace *sel_ws = get_workspace_in_monitor(selected_monitor);
+        struct workspace *sel_ws = monitor_get_active_workspace(selected_monitor);
         for (int i = 0; i < sel_ws->floating_containers.length; i++) {
             struct container *con = sel_ws->floating_containers.items[i];
             if (visible_on(con, get_workspace(sel_ws->id))) {
@@ -257,7 +257,7 @@ struct monitor *xy_to_monitor(double x, double y)
     return o ? o->data : NULL;
 }
 
-inline struct workspace *get_workspace_in_monitor(struct monitor *m)
+inline struct workspace *monitor_get_active_workspace(struct monitor *m)
 {
     if (!m)
         return NULL;

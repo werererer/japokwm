@@ -39,6 +39,8 @@ void create_notifyx11(struct wl_listener *listener, void *data)
     wl_signal_add(&xwayland_surface->events.unmap, &c->unmap);
     c->destroy.notify = destroy_notify;
     wl_signal_add(&xwayland_surface->events.destroy, &c->destroy);
+    c->set_title.notify = client_handle_set_title;
+    wl_signal_add(&xwayland_surface->events.set_title, &c->set_title);
 }
 
 void handle_xwayland_ready(struct wl_listener *listener, void *data)
@@ -138,7 +140,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
             {
                 wlr_list_push(&server.independent_clients, c);
 
-                struct workspace *ws = get_workspace_in_monitor(m);
+                struct workspace *ws = monitor_get_active_workspace(m);
                 if (is_popup_menu(c) || xwayland_surface->parent) {
                     wlr_list_remove(&ws->focus_stack_normal, cmp_ptr, con);
                     wlr_list_insert(&ws->focus_stack_normal, 1, con);
@@ -157,7 +159,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
             break;
     }
     arrange();
-    apply_rules(con);
     wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
             "left_ptr", server.cursor.wlr_cursor);
 }

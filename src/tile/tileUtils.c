@@ -191,7 +191,7 @@ void arrange_monitor(struct monitor *m)
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     set_root_geom(m->root, m->geom);
 
-    struct workspace *ws = get_workspace_in_monitor(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = ws->layout;
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);
 
@@ -259,7 +259,7 @@ static void arrange_container(struct container *con, int arrange_position,
         return;
 
     struct monitor *m = con->m;
-    struct workspace *ws = get_workspace_in_monitor(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = ws->layout;
 
     struct wlr_box geom = get_nth_geom_in_layout(L, lt, root_geom, arrange_position);

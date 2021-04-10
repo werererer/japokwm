@@ -269,7 +269,7 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
         };
 
         enum wlr_edges hidden_edges = WLR_EDGE_NONE;
-        struct workspace *ws = get_workspace_in_monitor(m);
+        struct workspace *ws = monitor_get_active_workspace(m);
         struct layout *lt = ws->layout;
         if (lt->options.smart_hidden_edges) {
             if (ws->tiled_containers.length <= 1) {
@@ -342,7 +342,7 @@ static void render_independents(struct monitor *m, pixman_region32_t *output_dam
 {
     struct container *con;
 
-    struct workspace *ws = get_workspace_in_monitor(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
     for (int i = 0; i < ws->independent_containers.length; i++) {
         struct wlr_surface *surface = get_wlrsurface(con->client);
 

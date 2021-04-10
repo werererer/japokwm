@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <wayland-util.h>
+#include <string.h>
 
 #include "container.h"
 #include "popup.h"
@@ -9,6 +10,8 @@
 #include "tile/tile.h"
 #include "tile/tileUtils.h"
 #include "utils/coreUtils.h"
+#include "utils/parseConfigUtils.h"
+#include "ipc-server.h"
 
 struct wlr_surface *get_base_wlrsurface(struct client *c)
 {
@@ -130,6 +133,53 @@ void kill_client(struct client *c)
     }
 }
 
+void client_handle_set_title(struct wl_listener *listener, void *data)
+{
+    struct client *c = wl_container_of(listener, c, set_title);
+    const char *title;
+    /* rule matching */
+    switch (c->type) {
+        case XDG_SHELL:
+            title = c->surface.xdg->toplevel->title;
+            break;
+        case LAYER_SHELL:
+            title = "test";
+            break;
+        case X11_MANAGED:
+        case X11_UNMANAGED:
+            title = c->surface.xwayland->title;
+            break;
+    }
+    if (!title)
+        title = "broken";
+
+    c->title = title;
+    ipc_event_window();
+}
+
+void client_handle_set_app_id(struct wl_listener *listener, void *data)
+{
+    struct client *c = wl_container_of(listener, c, set_title);
+    const char *app_id;
+    /* rule matching */
+    switch (c->type) {
+        case XDG_SHELL:
+            app_id = c->surface.xdg->toplevel->app_id;
+            break;
+        case LAYER_SHELL:
+            app_id = "test";
+            break;
+        case X11_MANAGED:
+        case X11_UNMANAGED:
+            app_id = c->surface.xwayland->class;
+            break;
+    }
+    if (!app_id)
+        app_id = "broken";
+
+    c->app_id = app_id;
+}
+
 void reset_tiled_client_borders(int border_px)
 {
     for (int i = 0; i < server.normal_clients.length; i++) {
@@ -243,6 +293,10 @@ void create_notify(struct wl_listener *listener, void *data)
     /* popups */
     c->new_popup.notify = popup_handle_new_popup;
     wl_signal_add(&xdg_surface->events.new_popup, &c->new_popup);
+    c->set_title.notify = client_handle_set_title;
+    wl_signal_add(&xdg_surface->toplevel->events.set_title, &c->set_title);
+    c->set_app_id.notify = client_handle_set_app_id;
+    wl_signal_add(&xdg_surface->toplevel->events.set_app_id, &c->set_app_id);
 }
 
 void destroy_notify(struct wl_listener *listener, void *data)
@@ -256,9 +310,15 @@ void destroy_notify(struct wl_listener *listener, void *data)
 
     switch (c->type) {
         case LAYER_SHELL:
-        case XDG_SHELL:
             wl_list_remove(&c->new_popup.link);
             break;
+        case XDG_SHELL:
+            wl_list_remove(&c->new_popup.link);
+            wl_list_remove(&c->set_title.link);
+            wl_list_remove(&c->set_app_id.link);
+            break;
+        case X11_MANAGED:
+            wl_list_remove(&c->set_title.link);
         default:
             break;
     }
@@ -266,8 +326,6 @@ void destroy_notify(struct wl_listener *listener, void *data)
     free(c);
     c = NULL;
 }
-
-
 
 void maprequest(struct wl_listener *listener, void *data)
 {
@@ -278,7 +336,7 @@ void maprequest(struct wl_listener *listener, void *data)
     if (c->type == LAYER_SHELL) {
         m = output_to_monitor(c->surface.layer->output);
     }
-    struct workspace *ws = get_workspace_in_monitor(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = ws->layout;
 
     c->ws_id = ws->id;

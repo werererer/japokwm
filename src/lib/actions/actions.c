@@ -35,7 +35,7 @@ int lib_focus_container(lua_State *L)
     int pos = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace_in_monitor(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
     struct container *con = get_in_composed_list(&ws->focus_stack_lists, pos);
 
     if (!con)
@@ -231,7 +231,7 @@ int lib_quit(lua_State *L)
 int lib_zoom(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace_in_monitor(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
 
     struct container *sel = get_focused_container(m);
 
@@ -389,7 +389,7 @@ int lib_kill(lua_State *L)
 int lib_toggle_layout(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace_in_monitor(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
     push_layout(ws, ws->previous_layout);
     arrange();
     return 0;
@@ -411,7 +411,7 @@ int lib_swap_workspace(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace_in_monitor(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
 
     for (int i = 0; i < ws->tiled_containers.length; i++) {
         struct container *con = get_container(0, i);

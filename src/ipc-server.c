@@ -467,16 +467,11 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
             {
                 struct monitor *m = selected_monitor;
                 struct container *sel = get_focused_container(m);
-                /* if (sel) { */
-                    json_object *tree = ipc_json_describe_node_recursive(m, sel);
-                    const char *json_string = json_object_to_json_string(tree);
-                    printf("json_string: %s\n", json_string);
+                json_object *tree = ipc_json_describe_node_recursive(m, sel);
+                const char *json_string = json_object_to_json_string(tree);
 
-                    ipc_send_reply(client, payload_type, json_string, strlen(json_string));
-                    json_object_put(tree);
-                /* } else { */
-                /*     ipc_send_reply(client, payload_type, "", strlen("")); */
-                /* } */
+                ipc_send_reply(client, payload_type, json_string, strlen(json_string));
+                json_object_put(tree);
                 goto exit_cleanup;
             }
 

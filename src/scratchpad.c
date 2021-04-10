@@ -11,7 +11,7 @@ void move_to_scratchpad(struct container *con, int position)
         return;
 
     struct monitor *m = con->m;
-    struct workspace *ws = get_workspace_in_monitor(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
 
     con->on_scratchpad = true;
     set_container_floating(con, fix_position, true);
@@ -43,7 +43,7 @@ void remove_container_from_scratchpad(struct container *con)
 void show_scratchpad()
 {
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace_in_monitor(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
     struct container *sel = get_focused_container(m);
     struct container *con = server.scratchpad.items[0];
 

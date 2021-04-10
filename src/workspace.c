@@ -491,7 +491,7 @@ void focus_workspace(struct monitor *m, struct workspace *ws)
     // focus the workspace in the monitor it appears in if such a monitor exist
     // and is not the selected one
     if (is_workspace_occupied(ws) && ws->m != selected_monitor) {
-        struct workspace *wss = get_workspace_in_monitor(m);
+        struct workspace *wss = monitor_get_active_workspace(m);
         for (int i = 0; i < wss->floating_containers.length; i++) {
             struct container *con = wss->floating_containers.items[i];
             /* if (visible_on(con, workspaces, wss->id)) { */
@@ -512,10 +512,10 @@ void focus_workspace(struct monitor *m, struct workspace *ws)
 
     ipc_event_workspace();
 
-    struct workspace *old_ws = get_workspace_in_monitor(m);
+    struct workspace *old_ws = monitor_get_active_workspace(m);
     // unset old workspace
     if (old_ws && !workspace_has_clients(old_ws)) {
-        struct workspace *old_ws = get_workspace_in_monitor(m);
+        struct workspace *old_ws = monitor_get_active_workspace(m);
         old_ws->m = NULL;
     }
 
@@ -564,7 +564,7 @@ void set_container_workspace(struct container *con, struct workspace *ws)
         set_container_monitor(con, ws->m);
     con->client->ws_id = ws->id;
 
-    struct workspace *sel_ws = get_workspace_in_monitor(selected_monitor);
+    struct workspace *sel_ws = monitor_get_active_workspace(selected_monitor);
 
     remove_in_composed_list(&sel_ws->container_lists, cmp_ptr, con);
     add_container_to_containers(con, ws, 0);

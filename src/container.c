@@ -33,12 +33,14 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     con->focusable = true;
     add_container_to_workspace(con, get_workspace(m->ws_id));
 
-    struct workspace *ws = get_workspace_in_monitor(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = ws->layout;
     struct event_handler *ev = &lt->options.event_handler;
 
     int position = find_in_composed_list(&ws->container_lists, &cmp_ptr, con);
     call_create_container_function(ev, position);
+
+    apply_rules(con);
     return con;
 }
 
@@ -47,7 +49,7 @@ void destroy_container(struct container *con)
     // surfaces cant commit anything anymore if their container is destroyed
     wl_list_remove(&con->commit.link);
 
-    struct workspace *ws = get_workspace_in_monitor(con->m);
+    struct workspace *ws = monitor_get_active_workspace(con->m);
 
     remove_in_composed_list(&ws->focus_stack_lists, cmp_ptr, con);
 
@@ -311,39 +313,16 @@ void apply_bounds(struct container *con, struct wlr_box box)
 
 void apply_rules(struct container *con)
 {
-    const char *app_id, *title;
-    /* rule matching */
-    switch (con->client->type) {
-        case XDG_SHELL:
-            app_id = con->client->surface.xdg->toplevel->app_id;
-            title = con->client->surface.xdg->toplevel->title;
-            title = con->client->surface.xdg->toplevel->title;
-            break;
-        case LAYER_SHELL:
-            app_id = "test";
-            title = "test";
-            break;
-        case X11_MANAGED:
-        case X11_UNMANAGED:
-            app_id = con->client->surface.xwayland->class;
-            title = con->client->surface.xwayland->title;
-            break;
-    }
-    if (!app_id)
-        app_id = "broken";
-    if (!title)
-        title = "broken";
-
     for (int i = 0; i < server.default_layout->options.rule_count; i++) {
         const struct rule r = server.default_layout->options.rules[i];
-        bool same_id = strcmp(r.id, app_id) == 0;
+        bool same_id = strcmp(r.id, con->client->app_id) == 0;
         bool id_empty = strcmp(r.id, "") == 0;
-        bool same_title = strcmp(r.title, title) == 0;
+        bool same_title = strcmp(r.title, con->client->title) == 0;
         bool title_empty = strcmp(r.title, "") == 0;
         if ((same_id || id_empty) && (same_title || title_empty)) {
             lua_geti(L, LUA_REGISTRYINDEX, r.lua_func_ref);
             struct monitor *m = con->m;
-            struct workspace *ws = get_workspace_in_monitor(m);
+            struct workspace *ws = monitor_get_active_workspace(m);
             int position = wlr_list_find(&ws->container_lists, cmp_ptr, con);
             lua_pushinteger(L, position);
             lua_call_safe(L, 1, 0, 0);
@@ -367,7 +346,7 @@ void focus_container(struct container *con, enum focus_actions a)
         lift_container(con);
 
     /* Put the new client atop the focus stack */
-    struct workspace *ws = get_workspace_in_monitor(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
     remove_in_composed_list(&ws->focus_stack_lists, cmp_ptr, con);
     add_container_to_focus_stack(con, get_workspace(m->ws_id));
 
@@ -416,7 +395,7 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     if (sel->client->type == LAYER_SHELL)
         return;
 
-    struct workspace *ws = get_workspace_in_monitor(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
     struct wlr_list *hidden_containers = get_hidden_list(ws);
     struct container *con = get_relative_item_in_list(hidden_containers, 0, i);
 
@@ -472,7 +451,7 @@ void repush(int pos1, int pos2)
 {
     /* pos1 > pos2 */
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace_in_monitor(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
 
     struct container *con = ws->tiled_containers.items[pos1];
 
@@ -496,7 +475,7 @@ void fix_position(struct container *con)
     if (!con)
         return;
 
-    struct workspace *ws = get_workspace_in_monitor(con->m);
+    struct workspace *ws = monitor_get_active_workspace(con->m);
 
     struct wlr_list *tiled_containers = get_tiled_list(ws);
     struct wlr_list *floating_containers = get_floating_list(ws);
@@ -521,7 +500,7 @@ void set_container_floating(struct container *con, void (*fix_position)(struct c
         return;
 
     struct monitor *m = con->m;
-    struct workspace *ws = get_workspace_in_monitor(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = ws->layout;
 
     con->floating = floating;
