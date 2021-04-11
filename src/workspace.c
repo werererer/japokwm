@@ -412,10 +412,12 @@ void add_container_to_focus_stack(struct container *con, struct workspace *ws)
     }
     if (con->on_top) {
         wlr_list_insert(&ws->focus_stack_on_top, 0, con);
+        printf("insert on top\n");
         return;
     }
     if (!con->focusable) {
         wlr_list_insert(&ws->focus_stack_not_focusable, 0, con);
+        printf("insert on focus_stack\n");
         return;
     }
 

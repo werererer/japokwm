@@ -157,6 +157,8 @@ void maprequestx11(struct wl_listener *listener, void *data)
             break;
     }
     arrange();
+    struct container *sel = get_focused_container(m); 
+    focus_container(sel, FOCUS_NOOP);
     wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
             "left_ptr", server.cursor.wlr_cursor);
 }
