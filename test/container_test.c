@@ -99,75 +99,11 @@ START_TEST(test_exist_on)
 
 START_TEST(focus_on_hidden_stack_test)
 {
-    /* struct monitor m1; */
-    /* m1.ws_ids[0] = 0; */
-
-    /* struct client c1; */
-    /* c1.type = XDG_SHELL; */
-    /* c1.ws_id = 0; */
-
-    /* struct wlr_list tag_names; */
-    /* wlr_list_init(&tag_names); */
-    /* wlr_list_push(&tag_names, "0"); */
-
-    /* struct layout lt; */
-    /* struct wlr_list workspaces; */
-    /* create_workspaces(&workspaces, tag_names, lt); */
-    /* struct workspace *ws0 = get_workspace(&workspaces, 0); */
-
-    /* const int n; */
-    /* struct container con[5]; */
-    /* for (int i = 0; i < n; i++) { */
-    /*     con[i].client = &c1; */
-    /*     wlr_list_push(&ws0->focus_stack_normal, &con[i]); */
-    /* } */
-
-    /* wlr_list_push(&ws0->tiled_containers, &con[0]); */
-    /* wlr_list_push(&ws0->tiled_containers, &con[1]); */
-    /* wlr_list_push(&ws0->tiled_containers, &con[1]); */
-    /* wlr_list_push(&ws0->hidden_containers, &con[2]); */
-    /* wlr_list_push(&ws0->hidden_containers, &con[3]); */
-    /* wlr_list_push(&ws0->floating_containers, &con[4]); */
-
-    /* focus_on_hidden_stack(&m1, 0); */
-
-    /* printf("focused: %p -- con: %p\n", get_focused_container(&m1), &con[0]); */
-    /* struct wlr_list *list0 = */
-    /*     wlr_list_find_list_in_composed_list(&ws0->container_lists, cmp_ptr, &con[0]); */
-
-    /* struct wlr_list *list1 = */
-    /*     wlr_list_find_list_in_composed_list(&ws0->container_lists, cmp_ptr, &con[1]); */
-
-    /* ck_assert_ptr_eq(list0, &ws0->hidden_containers); */
-    /* ck_assert_ptr_eq(list1, &ws0->tiled_containers); */
     // TODO fix this unittest
 } END_TEST
 
 START_TEST(focus_container_test)
 {
-    /* init_server(); */
-
-    /* struct monitor m; */
-
-    /* wlr_list_push(&server.mons, &m); */
-
-    /* struct wlr_list tag_names; */
-    /* init_tagnames(&tag_names); */
-    /* struct layout lt; */
-    /* struct wlr_list workspaces; */
-    /* create_workspaces(&workspaces, &tag_names, &lt); */
-
-    /* m.ws_id = 0; */
-
-    /* struct client c; */
-    /* c.type = XDG_SHELL; */
-    /* struct container *con = create_container(&c, &m, false); */
-    /* con->client->ws_id = 1; */
-
-    /* printf("\n"); */
-    /* focus_container(con, FOCUS_NOOP); */
-
-    /* destroy_container(con); */
 } END_TEST
 
 START_TEST(get_focused_container_crash_test)

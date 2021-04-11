@@ -341,7 +341,6 @@ void focus_container(struct container *con, enum focus_actions a)
 
     struct monitor *m = con->m;
 
-/*     // TODO test */
     if (m->ws_id != con->client->ws_id)
         return;
 
