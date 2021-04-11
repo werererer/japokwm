@@ -4,6 +4,7 @@
 #include "container.h"
 #include "workspace.h"
 #include "utils/coreUtils.h"
+#include "server.h"
 
 START_TEST(test_visible_on)
 {
@@ -142,6 +143,33 @@ START_TEST(focus_on_hidden_stack_test)
     // TODO fix this unittest
 } END_TEST
 
+START_TEST(focus_container_test)
+{
+    /* init_server(); */
+
+    /* struct monitor m; */
+
+    /* wlr_list_push(&server.mons, &m); */
+
+    /* struct wlr_list tag_names; */
+    /* init_tagnames(&tag_names); */
+    /* struct layout lt; */
+    /* struct wlr_list workspaces; */
+    /* create_workspaces(&workspaces, &tag_names, &lt); */
+
+    /* m.ws_id = 0; */
+
+    /* struct client c; */
+    /* c.type = XDG_SHELL; */
+    /* struct container *con = create_container(&c, &m, false); */
+    /* con->client->ws_id = 1; */
+
+    /* printf("\n"); */
+    /* focus_container(con, FOCUS_NOOP); */
+
+    /* destroy_container(con); */
+} END_TEST
+
 START_TEST(get_focused_container_crash_test)
 {
     get_focused_container(NULL);
@@ -165,6 +193,7 @@ Suite *suite()
     tcase_add_test(tc, test_visible_on);
     tcase_add_test(tc, test_exist_on);
     tcase_add_test(tc, focus_on_hidden_stack_test);
+    tcase_add_test(tc, focus_container_test);
     tcase_add_test(tc, get_focused_container_crash_test);
     suite_add_tcase(s, tc);
 

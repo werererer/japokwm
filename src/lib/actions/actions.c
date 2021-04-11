@@ -217,6 +217,7 @@ int lib_move_container_to_workspace(lua_State *L)
     struct container *con = get_focused_container(m);
 
     move_container_to_workspace(con, get_workspace(ws_id));
+
     return 0;
 }
 

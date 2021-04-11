@@ -67,7 +67,7 @@ struct options {
 };
 
 struct options get_default_options();
-void reset_tag_names(struct wlr_list *tag_names);
+void init_tagnames(struct wlr_list *tag_names);
 void copy_options(struct options *dest_option, struct options *src_option);
 
 #endif /* OPTIONS_H */

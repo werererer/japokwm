@@ -75,32 +75,32 @@ START_TEST(remove_from_composed_list_test)
     wlr_list_push(&list3, "8");
     wlr_list_push(&list3, "9");
 
-    remove_from_composed_list(&lists, 0);
+    delete_from_composed_list(&lists, 0);
     ck_assert_str_eq(get_in_composed_list(&lists, 0), "1");
     ck_assert_str_eq(get_in_composed_list(&lists, 1), "2");
     wlr_list_insert(&list1, 0, "0");
 
-    remove_from_composed_list(&lists, 1);
+    delete_from_composed_list(&lists, 1);
     ck_assert_str_eq(get_in_composed_list(&lists, 0), "0");
     ck_assert_str_eq(get_in_composed_list(&lists, 1), "2");
     wlr_list_insert(&list1, 1, "1");
 
-    remove_from_composed_list(&lists, 2);
+    delete_from_composed_list(&lists, 2);
     ck_assert_str_eq(get_in_composed_list(&lists, 1), "1");
     ck_assert_str_eq(get_in_composed_list(&lists, 2), "3");
     wlr_list_insert(&list2, 0, "2");
 
-    remove_from_composed_list(&lists, 3);
+    delete_from_composed_list(&lists, 3);
     ck_assert_str_eq(get_in_composed_list(&lists, 2), "2");
     ck_assert_str_eq(get_in_composed_list(&lists, 3), "4");
     wlr_list_insert(&list2, 1, "3");
 
-    remove_from_composed_list(&lists, 7);
+    delete_from_composed_list(&lists, 7);
     ck_assert_str_eq(get_in_composed_list(&lists, 6), "6");
     ck_assert_str_eq(get_in_composed_list(&lists, 7), "8");
     wlr_list_insert(&list3, 1, "7");
 
-    remove_from_composed_list(&lists, 8);
+    delete_from_composed_list(&lists, 8);
     ck_assert_str_eq(get_in_composed_list(&lists, 7), "7");
     ck_assert_str_eq(get_in_composed_list(&lists, 8), "9");
     wlr_list_insert(&list3, 2, "8");

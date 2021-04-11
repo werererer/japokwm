@@ -340,6 +340,11 @@ void focus_container(struct container *con, enum focus_actions a)
         return;
 
     struct monitor *m = con->m;
+
+/*     // TODO test */
+    if (m->ws_id != con->client->ws_id)
+        return;
+
     struct container *sel = get_focused_container(m);
 
     if (a == FOCUS_LIFT)
@@ -347,8 +352,20 @@ void focus_container(struct container *con, enum focus_actions a)
 
     /* Put the new client atop the focus stack */
     struct workspace *ws = monitor_get_active_workspace(m);
-    remove_in_composed_list(&ws->focus_stack_lists, cmp_ptr, con);
+    printf("pos: %i\n", find_in_composed_list(&ws->focus_stack_lists, cmp_ptr, con));
+    printf("result: %i\n", remove_in_composed_list(&ws->focus_stack_lists, cmp_ptr, con));
+    printf("length_of_composed_list: %d\n", length_of_composed_list(&ws->focus_stack_lists));
+    for (int i = 0; i < server.workspaces.length; i++) {
+        struct workspace *ws = server.workspaces.items[i];
+
+        printf("workspace1: %i\n", length_of_composed_list(&ws->focus_stack_lists));
+    }
     add_container_to_focus_stack(con, get_workspace(m->ws_id));
+    for (int i = 0; i < server.workspaces.length; i++) {
+        struct workspace *ws = server.workspaces.items[i];
+
+        printf("workspace2: %i\n", length_of_composed_list(&ws->focus_stack_lists));
+    }
 
     struct container *new_sel = get_focused_container(m);
 

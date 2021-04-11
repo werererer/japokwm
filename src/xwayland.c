@@ -25,12 +25,10 @@ static const char *atom_map[ATOM_LAST] = {
 void create_notifyx11(struct wl_listener *listener, void *data)
 {
     struct wlr_xwayland_surface *xwayland_surface = data;
-    struct client *c;
     /* Allocate a Client for this surface */
-    c = xwayland_surface->data = calloc(1, sizeof(struct client));
+    struct client *c = xwayland_surface->data = create_client(X11_MANAGED);
     c->surface.xwayland = xwayland_surface;
     // set default value will be overriden on maprequest
-    c->type = X11_MANAGED;
 
     /* Listen to the various events it can emit */
     c->map.notify = maprequestx11;

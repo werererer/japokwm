@@ -37,6 +37,9 @@ struct client {
     bool moved_workspace;
 };
 
+struct client *create_client(enum shell shell_type);
+void destroy_client(struct client *c);
+
 void focus_client(struct client *old, struct client *c);
 void client_setsticky(struct client *c, bool sticky);
 void reset_tiled_client_borders(int border_bx);

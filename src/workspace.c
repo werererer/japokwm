@@ -367,7 +367,8 @@ void move_container_to_workspace(struct container *con, struct workspace *ws)
     container_damage_whole(con);
 
     arrange();
-    focus_most_recent_container(ws, FOCUS_NOOP);
+    struct workspace *selected_workspace = monitor_get_active_workspace(con->m);
+    focus_most_recent_container(selected_workspace, FOCUS_NOOP);
 
     ipc_event_workspace();
 }
@@ -560,19 +561,30 @@ void set_container_workspace(struct container *con, struct workspace *ws)
     if (con->m->ws_id == ws->id)
         return;
 
-    if (ws->m == NULL)
+    struct workspace *sel_ws = monitor_get_active_workspace(con->m);
+
+    if (!ws->m) {
         ws->m = con->m;
-    else
+    } else {
         set_container_monitor(con, ws->m);
+    }
     con->client->ws_id = ws->id;
 
-    struct workspace *sel_ws = monitor_get_active_workspace(selected_monitor);
-
+    printf("sel_ws->id: %zu\n", sel_ws->id);
+    printf("ws_id->id: %zu\n", ws->id);
     remove_in_composed_list(&sel_ws->container_lists, cmp_ptr, con);
     add_container_to_containers(con, ws, 0);
 
     remove_in_composed_list(&sel_ws->focus_stack_lists, cmp_ptr, con);
     add_container_to_focus_stack(con, ws);
+
+    for (int i = 0; i < server.workspaces.length; i++) {
+        struct workspace *ws = server.workspaces.items[i];
+        for (int j = 0; j < length_of_composed_list(&ws->focus_stack_lists); j++) {
+            struct container *c = ws->focus_stack_lists.items[j];
+            printf("stuff: %p\n", c);
+        }
+    }
 
     if (con->floating)
         con->client->bw = ws->layout->options.float_border_px;

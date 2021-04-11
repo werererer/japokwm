@@ -6,10 +6,9 @@
 #include "utils/coreUtils.h"
 #include "layout.h"
 
-void reset_tag_names(struct wlr_list *tag_names)
+void init_tagnames(struct wlr_list *tag_names)
 {
     wlr_list_init(tag_names);
-    wlr_list_clear(tag_names, NULL);
     wlr_list_push(tag_names, "1:1");
     wlr_list_push(tag_names, "2:2");
     wlr_list_push(tag_names, "3:3");
@@ -57,7 +56,7 @@ struct options get_default_options()
         .smart_hidden_edges = false,
     };
 
-    reset_tag_names(&options.tag_names);
+    init_tagnames(&options.tag_names);
     return options;
 }
 

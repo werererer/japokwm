@@ -13,6 +13,20 @@
 #include "utils/parseConfigUtils.h"
 #include "ipc-server.h"
 
+struct client *create_client(enum shell shell_type)
+{
+    struct client *c = calloc(1, sizeof(struct client));
+
+    c->type = shell_type;
+
+    return c;
+}
+
+void destroy_client(struct client *c)
+{
+
+}
+
 struct wlr_surface *get_base_wlrsurface(struct client *c)
 {
     if (!c)
@@ -274,10 +288,9 @@ void create_notify(struct wl_listener *listener, void *data)
         return;
 
     /* Allocate a Client for this surface */
-    struct client *c = xdg_surface->data = calloc(1, sizeof(struct client));
+    struct client *c = xdg_surface->data = create_client(XDG_SHELL);
 
     c->surface.xdg = xdg_surface;
-    c->type = XDG_SHELL;
 
     /* Tell the client not to try anything fancy */
     wlr_xdg_toplevel_set_tiled(c->surface.xdg, WLR_EDGE_TOP |

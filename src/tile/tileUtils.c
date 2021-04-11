@@ -25,12 +25,14 @@ static void arrange_container(struct container *con, int arrange_position,
 
 void arrange()
 {
+    printf("arrange\n");
     for (int i = 0; i < server.mons.length; i++) {
         struct monitor *m = server.mons.items[i];
         arrange_monitor(m);
     }
 
     update_cursor(&server.cursor);
+    printf("arrange end\n");
 }
 
 static int get_layout_container_area_count(struct workspace *ws)
@@ -69,10 +71,10 @@ static int get_layout_container_max_area_count(struct workspace *ws)
     return max_n_area;
 }
 
-
 static void update_layout_counters(struct workspace *ws)
 {
     struct layout *lt = ws->layout;
+
     ws->n_all = get_container_count(ws);
     lt->n_area = get_layout_container_area_count(ws);
     lt->n_area_max = get_layout_container_max_area_count(ws);

@@ -12,10 +12,9 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     struct client *c;
 
     /* Allocate a Client for this surface */
-    c = layer_surface->data = calloc(1, sizeof(struct client));
+    c = layer_surface->data = create_client(LAYER_SHELL);
     c->surface.layer = layer_surface;
     c->bw = 0;
-    c->type = LAYER_SHELL;
 
     /* Listen to the various events it can emit */
     c->map.notify = maprequest;
