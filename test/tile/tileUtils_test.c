@@ -33,11 +33,11 @@ START_TEST(get_container_count_test)
         cons[i].m = &m0;
     }
 
-    clients[0].ws_id = 0;
+    clients[0].ws_selector.ws_id = 0;
     wlr_list_push(&ws0->tiled_containers, &cons[0]);
-    clients[1].ws_id = 0;
+    clients[1].ws_selector.ws_id = 0;
     wlr_list_push(&ws0->tiled_containers, &cons[1]);
-    clients[2].ws_id = 1;
+    clients[2].ws_selector.ws_id = 1;
     wlr_list_push(&ws1->tiled_containers, &cons[2]);
     ck_assert_int_eq(get_container_count(ws0), 2);
 } END_TEST

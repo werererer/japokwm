@@ -198,7 +198,8 @@ void reset_tiled_client_borders(int border_px)
 {
     for (int i = 0; i < server.normal_clients.length; i++) {
         struct client *c = server.normal_clients.items[i];
-        struct workspace *ws = get_workspace(selected_monitor->ws_id);
+        struct workspace *ws = get_workspace(selected_monitor->ws_selector.ws_id);
+
         if (!exist_on(c->con, ws))
             continue;
         if (c->con->floating)
@@ -211,7 +212,7 @@ void reset_floating_client_borders(int border_px)
 {
     for (int i = 0; i < server.normal_clients.length; i++) {
         struct client *c = server.normal_clients.items[i];
-        struct workspace *ws = get_workspace(selected_monitor->ws_id);
+        struct workspace *ws = get_workspace(selected_monitor->ws_selector.ws_id);
         if (!exist_on(c->con, ws))
             continue;
         if (!c->con->floating)
@@ -352,14 +353,16 @@ void maprequest(struct wl_listener *listener, void *data)
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = ws->layout;
 
-    c->ws_id = ws->id;
+    c->ws_selector.ws_id = ws->id;
+    bitset_setup(&c->ws_selector.ids, server.workspaces.length);
+    bitset_assign(&c->ws_selector.ids, ws->id, true);
     c->bw = lt->options.tile_border_px;
 
     wlr_list_push(&server.normal_clients, c);
     create_container(c, m, true);
 
     arrange();
-    focus_most_recent_container(get_workspace(m->ws_id), FOCUS_NOOP);
+    focus_most_recent_container(get_workspace(m->ws_selector.ws_id), FOCUS_NOOP);
 }
 
 void unmap_notify(struct wl_listener *listener, void *data)
@@ -375,5 +378,5 @@ void unmap_notify(struct wl_listener *listener, void *data)
 
     arrange();
     struct monitor *m = selected_monitor;
-    focus_most_recent_container(get_workspace(m->ws_id), FOCUS_NOOP);
+    focus_most_recent_container(get_workspace(m->ws_selector.ws_id), FOCUS_NOOP);
 }

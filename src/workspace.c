@@ -171,7 +171,7 @@ bool exist_on(struct container *con, struct workspace *ws)
     if (con->m != ws->m) {
         if (con->floating)
             return container_intersects_with_monitor(con, ws->m)
-                && con->client->ws_id == con->m->ws_id;
+                && con->client->ws_selector.ws_id == con->m->ws_selector.ws_id;
         else
             return false;
     }
@@ -186,7 +186,7 @@ bool exist_on(struct container *con, struct workspace *ws)
     if (c->sticky)
         return true;
 
-    return c->ws_id == ws->id;
+    return c->ws_selector.ws_id == ws->id;
 }
 
 bool workspace_has_clients(struct workspace *ws)
@@ -197,7 +197,7 @@ bool workspace_has_clients(struct workspace *ws)
     for (int i = 0; i < length_of_composed_list(&server.client_lists); i++) {
         struct client *c = get_in_composed_list(&server.client_lists, i);
 
-        if (c->ws_id == ws->id)
+        if (c->ws_selector.ws_id == ws->id)
             return true;
     }
 
@@ -512,7 +512,7 @@ void focus_workspace(struct monitor *m, struct workspace *ws)
 
     struct container *con;
     wl_list_for_each(con, &sticky_stack, stlink) {
-        con->client->ws_id = ws->id;
+        con->client->ws_selector.ws_id = ws->id;
     }
 
     ipc_event_workspace();
@@ -524,7 +524,7 @@ void focus_workspace(struct monitor *m, struct workspace *ws)
         old_ws->m = NULL;
     }
 
-    m->ws_id = ws->id;
+    select_workspace(&m->ws_selector, ws->id);
     ws->m = m;
 
     arrange();
@@ -560,7 +560,7 @@ void set_container_workspace(struct container *con, struct workspace *ws)
         return;
     if (!ws)
         return;
-    if (con->m->ws_id == ws->id)
+    if (con->m->ws_selector.ws_id == ws->id)
         return;
 
     struct workspace *sel_ws = monitor_get_active_workspace(con->m);
@@ -570,7 +570,7 @@ void set_container_workspace(struct container *con, struct workspace *ws)
     } else {
         set_container_monitor(con, ws->m);
     }
-    con->client->ws_id = ws->id;
+    con->client->ws_selector.ws_id = ws->id;
 
     remove_in_composed_list(&sel_ws->container_lists, cmp_ptr, con);
     add_container_to_containers(con, ws, 0);
@@ -655,11 +655,11 @@ void push_workspace(struct monitor *m, struct workspace *ws)
     if (!ws)
         return;
 
-    if (m->ws_id == ws->id)
+    if (m->ws_selector.ws_id == ws->id)
         return;
 
-    if (m->ws_id != server.previous_workspace_id)
-        server.previous_workspace_id = m->ws_id;
+    if (m->ws_selector.ws_id != server.previous_workspace_id)
+        server.previous_workspace_id = m->ws_selector.ws_id;
 
     focus_workspace(m, ws);
 }

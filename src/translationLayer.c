@@ -38,6 +38,7 @@ static const struct luaL_Reg action[] =
     {"set_nmaster", lib_set_nmaster},
     {"show_scratchpad", lib_show_scratchpad},
     {"swap_workspace", lib_swap_workspace},
+    {"tag_workspace", lib_tag_workspace},
     {"toggle_bars", lib_toggle_bars},
     {"toggle_floating", lib_toggle_floating},
     {"toggle_layout", lib_toggle_layout},

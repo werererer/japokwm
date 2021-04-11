@@ -14,6 +14,7 @@
 #include "tile/tileUtils.h"
 #include "workspace.h"
 #include "utils/parseConfigUtils.h"
+#include "bitset/bitset.h"
 
 struct wl_list sticky_stack;
 
@@ -76,7 +77,6 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     m->root = create_root(m, m->geom);
-    m->ws_id = INVALID_WORKSPACE_ID;
 
     if (is_first_monitor) {
         focus_monitor(m);
@@ -92,6 +92,9 @@ void create_monitor(struct wl_listener *listener, void *data)
 
         call_on_start_function(&server.default_layout->options.event_handler);
     }
+
+    m->ws_selector.ws_id = INVALID_WORKSPACE_ID;
+    bitset_setup(&m->ws_selector.ids, server.workspaces.length);
 
     evaluate_monrules(output);
 
@@ -208,7 +211,7 @@ void focus_monitor(struct monitor *m)
 
     /* wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, m->wlr_output.) */
 
-    struct workspace *ws = get_workspace(m->ws_id);
+    struct workspace *ws = get_workspace(m->ws_selector.ws_id);
     if (selected_monitor) {
         struct workspace *sel_ws = monitor_get_active_workspace(selected_monitor);
         for (int i = 0; i < sel_ws->floating_containers.length; i++) {
@@ -261,10 +264,10 @@ inline struct workspace *monitor_get_active_workspace(struct monitor *m)
     if (!m)
         return NULL;
 
-    return get_workspace(m->ws_id);
+    return get_workspace(m->ws_selector.ws_id);
 }
 
 inline struct layout *get_layout_in_monitor(struct monitor *m)
 {
-    return get_workspace(m->ws_id)->layout;
+    return get_workspace(m->ws_selector.ws_id)->layout;
 }

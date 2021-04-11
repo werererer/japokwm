@@ -135,16 +135,7 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
     double oy = box.y;
     wlr_output_layout_output_coords(server.output_layout, wlr_output, &ox, &oy);
 
-    struct wlr_box obox = {
-        /* We also have to apply the scale factor for HiDPI outputs. This is only
-         * part of the puzzle, dwl does not fully support HiDPI. */
-        .x = ox,
-        .y = oy,
-        .width = surface->current.width,
-        .height = surface->current.height,
-    };
-
-    render_texture(wlr_output, output_damage, texture, &obox);
+    render_texture(wlr_output, output_damage, texture, &box);
 }
 
 static void
@@ -296,7 +287,7 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     for (int i = length_of_composed_list(&server.normal_visual_stack_lists); i >= 0; i--) {
         struct container *con = get_in_composed_list(&server.normal_visual_stack_lists, i);
-        if (!visible_on(con, get_workspace(m->ws_id)))
+        if (!visible_on(con, get_workspace(m->ws_selector.ws_id)))
             continue;
 
         render_borders(con, m, output_damage);
@@ -324,7 +315,7 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
             continue;
         if (con->client->surface.layer->current.layer != layer)
             continue;
-        if (!visible_on(con, get_workspace(m->ws_id)))
+        if (!visible_on(con, get_workspace(m->ws_selector.ws_id)))
             continue;
 
         struct wlr_surface *surface = get_wlrsurface(con->client);

@@ -7,6 +7,7 @@
 #include "container.h"
 #include "workspace.h"
 #include "root.h"
+#include "workspace_selector.h"
 
 struct monitor {
     struct wlr_output *wlr_output;
@@ -20,7 +21,7 @@ struct monitor {
     struct wlr_box geom;
     struct root *root;
     float scale;
-    int ws_id;
+    struct workspace_selector ws_selector;
 };
 
 struct monrule {

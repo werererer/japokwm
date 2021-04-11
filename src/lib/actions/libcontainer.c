@@ -12,7 +12,7 @@ int container_set_sticky(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
-    struct container *con = get_container(get_workspace(m->ws_id), i);
+    struct container *con = get_container(get_workspace(m->ws_selector.ws_id), i);
     client_setsticky(con->client, sticky);
     return 0;
 }
@@ -25,7 +25,7 @@ int container_set_ratio(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace(m->ws_id);
+    struct workspace *ws = get_workspace(m->ws_selector.ws_id);
     struct container *con = get_container(ws, position);
 
     if (!con)

@@ -59,7 +59,7 @@ int lib_resize_main(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace(m->ws_id);
+    struct workspace *ws = get_workspace(m->ws_selector.ws_id);
     struct layout *lt = ws->layout;
     int dir = lt->options.resize_dir;
 
@@ -166,8 +166,25 @@ int lib_move_to_scratchpad(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
-    struct container *con = get_container(get_workspace(m->ws_id), i);
+    struct container *con = get_container(get_workspace(m->ws_selector.ws_id), i);
     move_to_scratchpad(con, 0);
+    return 0;
+}
+
+int lib_tag_workspace(lua_State *L)
+{
+    int ws_id = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = get_workspace(ws_id);
+
+    printf("value: %zu\n", ws->id);
+    BitSet bitset;
+    bitset_setup(&bitset, server.workspaces.length);
+    bitset_set(&bitset, ws_id);
+    tag_workspace(&m->ws_selector, &bitset);
+
     return 0;
 }
 
@@ -191,7 +208,7 @@ int lib_view(lua_State *L)
 int lib_toggle_view(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    focus_most_recent_container(get_workspace(m->ws_id), FOCUS_LIFT);
+    focus_most_recent_container(get_workspace(m->ws_selector.ws_id), FOCUS_LIFT);
     arrange(false);
     return 0;
 }
@@ -374,7 +391,7 @@ int lib_kill(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct workspace *ws = get_workspace(m->ws_id);
+    struct workspace *ws = get_workspace(m->ws_selector.ws_id);
     struct container *con = get_container(ws, i);
 
     if (!con)
@@ -415,11 +432,11 @@ int lib_swap_workspace(lua_State *L)
     for (int i = 0; i < ws->tiled_containers.length; i++) {
         struct container *con = get_container(0, i);
         if (exist_on(con, get_workspace(ws_id1))) {
-            con->client->ws_id = ws_id2;
+            con->client->ws_selector.ws_id = ws_id2;
             continue;
         }
         if (exist_on(con, get_workspace(ws_id2))) {
-            con->client->ws_id = ws_id1;
+            con->client->ws_selector.ws_id = ws_id1;
             continue;
         }
     }

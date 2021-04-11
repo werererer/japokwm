@@ -3,6 +3,7 @@
 #include <X11/Xlib.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
 #include <wlr/xwayland.h>
+#include "workspace_selector.h"
 
 enum shell { XDG_SHELL, X11_MANAGED, X11_UNMANAGED, LAYER_SHELL }; /* client types */
 
@@ -30,7 +31,7 @@ struct client {
     const char *app_id;
     bool sticky;
     // workspace id
-    int ws_id;
+    struct workspace_selector ws_selector;
 
     // used to determine what to damage
     bool resized;

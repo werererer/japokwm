@@ -88,7 +88,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     struct layout *lt = get_layout_in_monitor(m);
 
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
-    c->ws_id = m->ws_id;
+    c->ws_selector.ws_id = m->ws_selector.ws_id;
     c->bw = lt->options.tile_border_px;
 
     struct container *con = create_container(c, m, true);

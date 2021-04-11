@@ -34,19 +34,19 @@ START_TEST(test_visible_on)
     };
 
     con.m = &m0;
-    con.client->ws_id = 0;
+    con.client->ws_selector.ws_id = 0;
     ck_assert_int_eq(visible_on(&con, ws0), true);
 
     con.m = &m1;
-    con.client->ws_id = 0;
+    con.client->ws_selector.ws_id = 0;
     ck_assert_int_eq(visible_on(&con, ws0), false);
 
     con.m = &m0;
-    con.client->ws_id = 1;
+    con.client->ws_selector.ws_id = 1;
     ck_assert_int_eq(visible_on(&con, ws1), false);
 
     con.m = &m1;
-    con.client->ws_id = 1;
+    con.client->ws_selector.ws_id = 1;
     ck_assert_int_eq(visible_on(&con, ws1), true);
 } END_TEST
 
@@ -79,21 +79,21 @@ START_TEST(test_exist_on)
     };
 
     con.m = &m0;
-    con.client->ws_id = 0;
+    con.client->ws_selector.ws_id = 0;
     con.hidden = true;
     ck_assert_int_eq(exist_on(&con, ws0), true);
 
     con.m = &m1;
-    con.client->ws_id = 0;
+    con.client->ws_selector.ws_id = 0;
     con.hidden = false;
     ck_assert_int_eq(exist_on(&con, ws0), false);
 
     con.m = &m0;
-    con.client->ws_id = 1;
+    con.client->ws_selector.ws_id = 1;
     ck_assert_int_eq(exist_on(&con, ws1), false);
 
     con.m = &m1;
-    con.client->ws_id = 1;
+    con.client->ws_selector.ws_id = 1;
     ck_assert_int_eq(exist_on(&con, ws1), true);
 } END_TEST
 
@@ -111,10 +111,10 @@ START_TEST(get_focused_container_crash_test)
     get_focused_container(NULL);
 
     struct monitor m;
-    m.ws_id = -1;
+    m.ws_selector.ws_id = -1;
     get_focused_container(&m);
 
-    m.ws_id = 700;
+    m.ws_selector.ws_id = 700;
     get_focused_container(&m);
 } END_TEST
 

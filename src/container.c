@@ -31,7 +31,7 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 
     con->has_border = has_border;
     con->focusable = true;
-    add_container_to_workspace(con, get_workspace(m->ws_id));
+    add_container_to_workspace(con, get_workspace(m->ws_selector.ws_id));
 
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = ws->layout;
@@ -142,7 +142,7 @@ struct container *get_focused_container(struct monitor *m)
     if (!m)
         return NULL;
 
-    struct workspace *ws = get_workspace(m->ws_id);
+    struct workspace *ws = get_workspace(m->ws_selector.ws_id);
 
     if (!ws)
         return NULL;
@@ -161,7 +161,7 @@ struct container *xy_to_container(double x, double y)
             get_in_composed_list(&server.visual_stack_lists, i);
         if (!con->focusable)
             continue;
-        if (!visible_on(con, get_workspace(m->ws_id)))
+        if (!visible_on(con, get_workspace(m->ws_selector.ws_id)))
             continue;
         if (!wlr_box_contains_point(&con->geom, x, y))
             continue;
@@ -176,7 +176,7 @@ void add_container_to_composed_list(struct wlr_list *lists, struct container *co
 {
     if (!con)
         return;
-    struct workspace *ws = get_workspace(con->m->ws_id);
+    struct workspace *ws = get_workspace(con->m->ws_selector.ws_id);
     if (!ws)
         return;
 
@@ -341,7 +341,7 @@ void focus_container(struct container *con, enum focus_actions a)
 
     struct monitor *m = con->m;
 
-    if (m->ws_id != con->client->ws_id)
+    if (m->ws_selector.ws_id != con->client->ws_selector.ws_id)
         return;
 
     struct container *sel = get_focused_container(m);
@@ -374,7 +374,7 @@ void focus_on_stack(struct monitor *m, int i)
     if (!sel)
         return;
 
-    struct workspace *ws = get_workspace(m->ws_id);
+    struct workspace *ws = get_workspace(m->ws_selector.ws_id);
     struct wlr_list *visible_container_lists = get_visible_lists(ws);
 
     if (sel->client->type == LAYER_SHELL) {
@@ -556,7 +556,7 @@ void set_container_monitor(struct container *con, struct monitor *m)
     if (con->prev_m == NULL)
         con->prev_m = m;
 
-    struct workspace *ws = get_workspace(m->ws_id);
+    struct workspace *ws = get_workspace(m->ws_selector.ws_id);
     set_container_workspace(con, ws);
 }
 

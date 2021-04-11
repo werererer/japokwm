@@ -38,7 +38,7 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface, do
     if (!con)
         return;
 
-    struct workspace *ws = get_workspace(con->m->ws_id);
+    struct workspace *ws = get_workspace(con->m->ws_selector.ws_id);
     if (ws->layout->options.sloppy_focus)
         focus_container(con, FOCUS_NOOP);
 }

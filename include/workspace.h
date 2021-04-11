@@ -6,6 +6,7 @@
 #include <wlr/types/wlr_list.h>
 #include "layout.h"
 #include "container.h"
+#include "bitset/bitset.h"
 
 /* A tag is simply a workspace that can be focused (like a normal workspace)
  * and can selected: which just means that all clients on the selected tags
@@ -13,6 +14,7 @@
  * using this struct requires to use tagsetCreate and later tagsetDestroy
  * */
 struct workspace {
+    BitSet bitset;
     size_t id;
     const char *name;
     struct wlr_list loaded_layouts;
