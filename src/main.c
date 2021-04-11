@@ -144,8 +144,6 @@ static void run(char *startup_cmd)
 
 static int setup()
 {
-    init_server();
-
     L = luaL_newstate();
     luaL_openlibs(L);
     load_libs(L);
@@ -323,6 +321,8 @@ void print_usage()
 
 int main(int argc, char *argv[])
 {
+    init_server();
+
     char *startup_cmd = "";
 
     static struct option long_options[] = {
