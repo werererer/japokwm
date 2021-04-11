@@ -93,8 +93,10 @@ void create_monitor(struct wl_listener *listener, void *data)
         call_on_start_function(&server.default_layout->options.event_handler);
     }
 
-    m->ws_selector.ws_id = INVALID_WORKSPACE_ID;
-    bitset_setup(&m->ws_selector.ids, server.workspaces.length);
+    init_workspace_selector(&m->ws_selector);
+    wlr_list_init(&m->visible_lists);
+    wlr_list_init(&m->hidden_containers);
+    wlr_list_init(&m->tiled_containers);
 
     evaluate_monrules(output);
 

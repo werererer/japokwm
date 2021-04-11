@@ -23,11 +23,9 @@ int vector_copy(Vector* destination, Vector* source) {
     assert(destination != NULL);
     assert(source != NULL);
     assert(vector_is_initialized(source));
-    assert(!vector_is_initialized(destination));
 
     if (destination == NULL) return VECTOR_ERROR;
     if (source == NULL) return VECTOR_ERROR;
-    if (vector_is_initialized(destination)) return VECTOR_ERROR;
     if (!vector_is_initialized(source)) return VECTOR_ERROR;
 
     /* Copy ALL the data */

@@ -13,6 +13,10 @@ struct monitor {
     struct wlr_output *wlr_output;
     struct wlr_output_damage *damage;
 
+    struct wlr_list visible_lists;
+    struct wlr_list tiled_containers;
+    struct wlr_list hidden_containers;
+
     struct wl_listener mode;
     struct wl_listener frame;
     struct wl_listener damage_frame;

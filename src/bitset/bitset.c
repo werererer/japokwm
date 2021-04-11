@@ -105,7 +105,6 @@ int bit_wise_operation(BitSet* destination,
 
     smaller_size = MIN(destination->size, source->size);
 
-    printf("smaller_size: %zu\n", smaller_size);
     for (size_t bit = 0; bit < smaller_size; bit++) {
         bool first = bitset_test(destination, bit);
         const bool second = bitset_test(source, bit);
@@ -126,7 +125,6 @@ int bitset_or(BitSet* destination, const BitSet* source) {
 }
 
 int bitset_xor(BitSet* destination, const BitSet* source) {
-    printf("xor\n");
     return bit_wise_operation(destination, source, _bit_xor);
 }
 
@@ -420,7 +418,6 @@ void _bit_or(bool* first, const bool* second) {
 }
 
 void _bit_xor(bool* first, const bool* second) {
-    printf("xor result: %i , %i , %i\n", *first, *second, *first ^ *second);
     *first ^= *second;
 }
 

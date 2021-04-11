@@ -186,7 +186,10 @@ bool exist_on(struct container *con, struct workspace *ws)
     if (c->sticky)
         return true;
 
-    return c->ws_selector.ws_id == ws->id;
+    BitSet result;
+    bitset_copy(&result, &ws->m->ws_selector.ids);
+    bitset_and(&result, &c->ws_selector.ids);
+    return bitset_any(&result);
 }
 
 bool workspace_has_clients(struct workspace *ws)
