@@ -46,8 +46,6 @@ int wlr_list_remove(struct wlr_list *list,
 {
     for (int i = 0; i < list->length; i++) {
         void *item = list->items[i];
-        printf("item: %p\n", item);
-        printf("cmp_to: %p\n", cmp_to);
         if (compare(item, cmp_to) == 0) {
             wlr_list_del(list, i);
             return 0;
@@ -59,14 +57,12 @@ int wlr_list_remove(struct wlr_list *list,
 int remove_in_composed_list(struct wlr_list *lists,
         int (*compare)(const void *, const void *), const void *cmp_to)
 {
-    printf("start remove\n");
     for (int i = 0; i < lists->length; i++) {
         struct wlr_list *list = lists->items[i];
         if (wlr_list_remove(list, compare, cmp_to) == 0) {
             return 0;
         }
     }
-    printf("end remove\n");
     return 1;
 }
 

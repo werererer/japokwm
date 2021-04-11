@@ -115,8 +115,6 @@ int lib_increase_nmaster(lua_State *L)
     int max_nmaster = luaL_len(L, -1);
     lua_pop(L, 1);
 
-    printf("max nmaster: %i\n", max_nmaster);
-    printf("max nmaster: %i\n", max_nmaster);
     lt->nmaster = MIN(max_nmaster, lt->nmaster + 1);
     arrange();
     return 0;
