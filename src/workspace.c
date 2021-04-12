@@ -339,6 +339,11 @@ struct wlr_list *get_hidden_list(struct workspace *ws)
         return &ws->hidden_containers;
 }
 
+struct wlr_list *get_focus_stack_lists(struct workspace *ws)
+{
+    return &ws->focus_stack_lists;
+}
+
 void workspace_assign_monitor(struct workspace *ws, struct monitor *m)
 {
     ws->m = m;

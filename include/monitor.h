@@ -17,6 +17,8 @@ struct monitor {
     struct wlr_list tiled_containers;
     struct wlr_list hidden_containers;
 
+    struct wlr_list focus_stack_lists;
+
     struct wl_listener mode;
     struct wl_listener frame;
     struct wl_listener damage_frame;

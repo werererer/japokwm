@@ -180,8 +180,9 @@ void add_container_to_composed_list(struct wlr_list *lists, struct container *co
     if (!ws)
         return;
 
-    struct wlr_list *hidden_containers = get_hidden_list(ws);
-    struct wlr_list *tiled_containers = get_tiled_list(ws);
+    struct monitor *m = con->m;
+    struct wlr_list *hidden_containers = &m->hidden_containers;
+    struct wlr_list *tiled_containers = &m->tiled_containers;
     struct wlr_list *floating_containers = get_floating_list(ws);
     if (con->floating) {
         wlr_list_insert(floating_containers, i, con);
@@ -375,7 +376,7 @@ void focus_on_stack(struct monitor *m, int i)
         return;
 
     struct workspace *ws = get_workspace(m->ws_selector.ws_id);
-    struct wlr_list *visible_container_lists = get_visible_lists(ws);
+    struct wlr_list *visible_container_lists = &m->visible_lists;
 
     if (sel->client->type == LAYER_SHELL) {
         struct container *con = get_container(ws, 0);
@@ -401,8 +402,7 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     if (sel->client->type == LAYER_SHELL)
         return;
 
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct wlr_list *hidden_containers = get_hidden_list(ws);
+    struct wlr_list *hidden_containers = &m->hidden_containers;
     struct container *con = get_relative_item_in_list(hidden_containers, 0, i);
 
     if (!con)
@@ -421,7 +421,7 @@ void focus_on_hidden_stack(struct monitor *m, int i)
      * container to the end of the containers array */
     wlr_list_remove(hidden_containers, cmp_ptr, con);
 
-    struct wlr_list *visible_container_lists = get_visible_lists(ws);
+    struct wlr_list *visible_container_lists = &m->visible_lists;
     struct wlr_list *focus_list = find_list_in_composed_list(
             visible_container_lists, cmp_ptr, sel);
     int sel_index = wlr_list_find(focus_list, cmp_ptr, sel);
@@ -483,7 +483,8 @@ void fix_position(struct container *con)
 
     struct workspace *ws = monitor_get_active_workspace(con->m);
 
-    struct wlr_list *tiled_containers = get_tiled_list(ws);
+    struct monitor *m = con->m;
+    struct wlr_list *tiled_containers = &m->tiled_containers;
     struct wlr_list *floating_containers = get_floating_list(ws);
 
     if (!con->floating) {

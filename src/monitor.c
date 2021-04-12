@@ -98,6 +98,8 @@ void create_monitor(struct wl_listener *listener, void *data)
     wlr_list_init(&m->hidden_containers);
     wlr_list_init(&m->tiled_containers);
 
+    wlr_list_init(&m->focus_stack_lists);
+
     evaluate_monrules(output);
 
     struct workspace *ws = get_workspace(0);

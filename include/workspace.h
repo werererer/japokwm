@@ -78,6 +78,7 @@ struct wlr_list *get_visible_lists(struct workspace *ws);
 struct wlr_list *get_tiled_list(struct workspace *ws);
 struct wlr_list *get_floating_list(struct workspace *ws);
 struct wlr_list *get_hidden_list(struct workspace *ws);
+struct wlr_list *get_focus_stack_lists(struct workspace *ws);
 
 void add_container_to_containers(struct container *con, struct workspace *ws, int i);
 void add_container_to_focus_stack(struct container *con, struct workspace *ws);

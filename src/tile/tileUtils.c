@@ -25,34 +25,27 @@ static void arrange_container(struct container *con, int arrange_position,
 
 void arrange()
 {
-    printf("\narrange\n");
     for (int i = 0; i < server.mons.length; i++) {
         struct monitor *m = server.mons.items[i];
         arrange_monitor(m);
     }
 
     update_cursor(&server.cursor);
-    printf("end\n");
 }
 
-static int get_layout_container_area_count(struct layout *lt, struct wlr_list *workspaces)
+static int get_layout_container_area_count(struct workspace *ws)
 {
-    int container_area_count = 0;
-    for (int i = 0; i < workspaces->length; i++) {
-        struct workspace *ws = workspaces->items[i];
-        container_area_count += get_container_area_count(ws);
-    }
-
+    struct layout *lt = ws->layout;
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
 
+    int n_area = get_container_area_count(ws);
     int len = luaL_len(L, -1);
-    int n_area = MAX(MIN(len, container_area_count), 1);
+    n_area = MAX(MIN(len, n_area), 1);
 
     lua_rawgeti(L, -1, n_area);
 
-    // TODO refactor
     len = luaL_len(L, -1);
-    n_area = MAX(MIN(len, n_area), 1);
+    n_area = MAX(MIN(len, n_area), 0);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_ref);
     lua_pop(L, 1);
     return n_area;
@@ -82,17 +75,16 @@ static void update_layout_counters(struct workspace_selector *ws_selector)
     struct layout *lt = ws->layout;
 
     struct wlr_list workspaces = get_workspaces(&ws_selector->ids);
-    printf("workspaces.length: %zu\n", workspaces.length);
     ws->n_all = get_container_count(&workspaces);
     printf("n_all: %i\n", ws->n_all);
-    lt->n_area = get_layout_container_area_count(lt, &workspaces);
+    lt->n_area = get_layout_container_area_count(ws);
     printf("n_area: %i\n", lt->n_area);
     lt->n_area_max = get_layout_container_max_area_count(ws);
     printf("n_area_max: %i\n", lt->n_area_max);
     lt->n_master_abs = get_master_container_count(ws);
-    printf("n_master_abs: %i\n", lt->n_master_abs);
+    printf("n_area_abs: %i\n", lt->n_master_abs);
     lt->n_floating = get_floating_container_count(&workspaces);
-    printf("n_floating: %i\n", lt->n_floating);
+    printf("n_area_abs: %i\n", lt->n_floating);
     lt->n_tiled = lt->n_area + lt->n_master_abs-1;
     printf("n_tiled: %i\n", lt->n_tiled);
     lt->n_tiled_max = lt->n_area_max + lt->n_master_abs-1;
@@ -230,16 +222,13 @@ void arrange_monitor(struct monitor *m)
     m->tiled_containers = get_combined_tiled_containers(&m->ws_selector);
     m->hidden_containers = get_combined_hidden_containers(&m->ws_selector);
 
-    printf("m->visible_lists0: %d\n", length_of_composed_list(&m->visible_lists));
     update_layout_counters(&m->ws_selector);
     call_update_function(&lt->options.event_handler, lt->n_area);
 
     update_hidden_status_of_containers(m, &m->visible_lists,
             &m->tiled_containers, &m->hidden_containers);
 
-    printf("m->visible_lists1: %d\n", length_of_composed_list(&m->visible_lists));
     printf("m->tiled_containers1: %zu\n", m->tiled_containers.length);
-    printf("m->hidden1: %zu\n", m->hidden_containers.length);
 
     if (!lt->options.arrange_by_focus) {
         // when arranging by focus floating windows will be tiled too. Revert it
@@ -282,7 +271,6 @@ void arrange_containers(struct wlr_list *tiled_containers, struct layout *lt,
     }
 
     int max = MIN(tiled_containers->length, lt->n_tiled_max);
-    printf("max: %i\n", max);
     for (int i = 0; i < max; i++) {
         struct container *con = tiled_containers->items[i];
 
@@ -293,10 +281,8 @@ void arrange_containers(struct wlr_list *tiled_containers, struct layout *lt,
 static void arrange_container(struct container *con, int arrange_position, 
         struct wlr_box root_geom, int inner_gap)
 {
-    printf("arrange container\n");
-    /* if (con->hidden) */
-    /*     return; */
-    printf("arrange go\n");
+    if (con->hidden)
+        return;
 
     struct monitor *m = con->m;
     struct workspace *ws = monitor_get_active_workspace(m);
@@ -416,7 +402,6 @@ void update_hidden_status_of_containers(struct monitor *m,
 int get_container_count(struct wlr_list *workspaces)
 {
     int length = 0;
-    printf("workspaces.length: %zu\n", workspaces->length);
     for (int i = 0; i < workspaces->length; i++) {
         struct workspace *ws = workspaces->items[i];
         length += length_of_composed_list(&ws->container_lists);
@@ -427,8 +412,9 @@ int get_container_count(struct wlr_list *workspaces)
 int get_tiled_container_count(struct workspace *ws)
 {
     int n = 0;
-    struct wlr_list *tiled_containers = get_tiled_list(ws);
-    struct wlr_list *hidden_containers = get_hidden_list(ws);
+    struct monitor *m = ws->m;
+    struct wlr_list *tiled_containers = &m->tiled_containers;
+    struct wlr_list *hidden_containers = &m->hidden_containers;
 
     n = tiled_containers->length + hidden_containers->length;
     return n;
