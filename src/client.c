@@ -268,12 +268,13 @@ bool wants_floating(struct client *c)
 
 bool is_popup_menu(struct client *c)
 {
-
     struct wlr_xwayland_surface *surface = c->surface.xwayland;
     struct xwayland xwayland = server.xwayland;
     for (size_t i = 0; i < surface->window_type_len; ++i) {
         xcb_atom_t type = surface->window_type[i];
         if (type == xwayland.atoms[NET_WM_WINDOW_TYPE_POPUP_MENU] ||
+                type == xwayland.atoms[NET_WM_WINDOW_TYPE_POPUP] ||
+                type == xwayland.atoms[NET_WM_WINDOW_TYPE_MENU] ||
                 type == xwayland.atoms[NET_WM_WINDOW_TYPE_NORMAL]) {
             return true;
         }
