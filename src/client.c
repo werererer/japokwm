@@ -284,7 +284,6 @@ bool is_popup_menu(struct client *c)
 
 void commit_notify(struct wl_listener *listener, void *data)
 {
-    printf("commit_notify\n");
     struct container *con = wl_container_of(listener, con, commit);
 
     if (!con)
@@ -357,7 +356,6 @@ void destroy_notify(struct wl_listener *listener, void *data)
 
 void maprequest(struct wl_listener *listener, void *data)
 {
-    printf("map\n");
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
 
@@ -376,7 +374,6 @@ void maprequest(struct wl_listener *listener, void *data)
 
     arrange();
     focus_most_recent_container(get_workspace(m->ws_id), FOCUS_NOOP);
-    printf("mapend\n");
 }
 
 void unmap_notify(struct wl_listener *listener, void *data)

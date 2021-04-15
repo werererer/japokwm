@@ -24,12 +24,11 @@ int lib_set_layout(lua_State *L)
     int layout_index = server.layout_set.lua_layout_index;
     server.layout_set.lua_layout_index = layout_index;
 
-    /* copy_layout_safe(lt, old_lt); */
     copy_layout_safe(lt, server.default_layout);
 
     lt->symbol = symbol;
 
-    struct workspace *ws = get_workspace(lt->ws_id);
+    struct workspace *ws = monitor_get_active_workspace(selected_monitor);
 
     int i = wlr_list_find(&ws->loaded_layouts, (cmp_func_t)cmp_layout, &lt);
     if (i != -1) {

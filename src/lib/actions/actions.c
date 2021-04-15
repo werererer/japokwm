@@ -296,7 +296,7 @@ int lib_load_next_layout_in_set(lua_State *L)
         server.layout_set.lua_layout_index = 1;
     }
 
-    set_layout(L);
+    layout_set_set_layout(L);
 
     arrange();
     return 0;
@@ -326,7 +326,7 @@ int lib_load_prev_layout_in_set(lua_State *L)
         server.layout_set.lua_layout_index = n_layouts;
     }
 
-    set_layout(L);
+    layout_set_set_layout(L);
 
     arrange();
     return 0;
@@ -349,7 +349,7 @@ int lib_load_layout_in_set(lua_State *L)
     lua_pop(L, 1);
 
     server.layout_set.key = layout_set_key;
-    set_layout(L);
+    layout_set_set_layout(L);
 
     arrange();
     return 0;

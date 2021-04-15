@@ -586,7 +586,7 @@ void set_container_workspace(struct container *con, struct workspace *ws)
 }
 
 // TODO refactor this function
-void set_layout(lua_State *L)
+void layout_set_set_layout(lua_State *L)
 {
     if (server.layout_set.layout_sets_ref <= 0) {
         return;

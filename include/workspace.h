@@ -91,7 +91,7 @@ void load_layout(lua_State *L, const char *name);
 void reset_loaded_layout(struct workspace *ws);
 void reset_loaded_layouts(struct wlr_list *workspaces);
 void set_container_workspace(struct container *con, struct workspace *ws);
-void set_layout(lua_State *L);
+void layout_set_set_layout(lua_State *L);
 void set_selected_layout(struct workspace *ws, struct layout *layout);
 void move_container_to_workspace(struct container *con, struct workspace *ws);
 void workspace_assign_monitor(struct workspace *ws, struct monitor *m);
