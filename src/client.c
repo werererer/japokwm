@@ -116,6 +116,19 @@ void focus_client(struct client *old, struct client *c)
     /* Have a client, so focus its top-level wlr_surface */
     wlr_seat_keyboard_notify_enter(server.seat, get_wlrsurface(c), kb->keycodes,
             kb->num_keycodes, &kb->modifiers);
+
+    /* Activate the new client */
+    switch (c->type) {
+        case XDG_SHELL:
+            wlr_xdg_toplevel_set_activated(c->surface.xdg, true);
+            break;
+        case X11_MANAGED:
+        case X11_UNMANAGED:
+            wlr_xwayland_surface_activate(c->surface.xwayland, true);
+            break;
+        default:
+            break;
+    }
 }
 
 void client_setsticky(struct client *c, bool sticky)
