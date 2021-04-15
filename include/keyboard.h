@@ -18,7 +18,6 @@ struct keyboard {
 
 typedef uint32_t xkb_keysym_t;
 
-void buttonpress(struct wl_listener *listener, void *data);
 void cleanupkeyboard(struct wl_listener *listener, void *data);
 void create_keyboard(struct wlr_input_device *device);
 void keypress(struct wl_listener *listener, void *data);

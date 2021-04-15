@@ -184,6 +184,9 @@ inline void destroy_popups()
 
 inline struct xdg_popup *get_latest_popup()
 {
+    if (!popups_exist())
+        return NULL;
+
     struct xdg_popup *popup = server.popups.items[0];
     return popup;
 }
