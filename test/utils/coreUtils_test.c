@@ -3,6 +3,12 @@
 
 #include "utils/coreUtils.h"
 
+START_TEST(dir_exists_test)
+{
+    ck_assert_int_eq(dir_exists("/"), true);
+    ck_assert_int_eq(dir_exists(""), false);
+} END_TEST
+
 START_TEST(get_on_composed_list_test)
 {
     struct wlr_list lists;
@@ -221,6 +227,7 @@ Suite *suite()
     s = suite_create("coreUtils");
     tc = tcase_create("core");
 
+    tcase_add_test(tc, dir_exists_test);
     tcase_add_test(tc, get_on_composed_list_test);
     tcase_add_test(tc, remove_from_composed_list_test);
     tcase_add_test(tc, wlr_list_remove_in_composed_list_test);

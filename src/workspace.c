@@ -641,11 +641,11 @@ void reset_loaded_layout(struct workspace *ws)
     }
 }
 
-void reset_loaded_layouts(struct wlr_list *workspaces)
+void remove_loaded_layouts(struct wlr_list *workspaces)
 {
     for (int i = 0; i < workspaces->length; i++) {
         struct workspace *ws = workspaces->items[i];
-        reset_loaded_layout(ws);
+        wlr_list_clear(&ws->loaded_layouts, (void (*)(void *))destroy_layout);
     }
 }
 

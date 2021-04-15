@@ -29,7 +29,7 @@ START_TEST(reset_loaded_layouts_test)
     wlr_list_push(&ws0->loaded_layouts, lt1);
     wlr_list_push(&ws0->loaded_layouts, lt2);
 
-    reset_loaded_layouts(&workspaces);
+    remove_loaded_layouts(&workspaces);
     ck_assert_int_eq(ws0->loaded_layouts.length, 0);
 } END_TEST
 

@@ -10,6 +10,7 @@
 #include <string.h>
 #include <translationLayer.h>
 #include <execinfo.h>
+#include <sys/stat.h>
 #include "stringop.h"
 #include "utils/coreUtils.h"
 

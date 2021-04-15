@@ -8,15 +8,18 @@
 #include <math.h>
 #include <dirent.h>
 #include <errno.h>
+#include <sys/stat.h>
 
 struct lua_State *L;
 
 bool dir_exists(const char *path)
 {
-    DIR *dir = opendir(path);
-    bool exists = errno == ENOENT;
-    closedir(dir);
-    return exists;
+    struct stat sb;
+    if (stat(path, &sb) == 0 && S_ISDIR(sb.st_mode)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 bool file_exists(const char *path)
@@ -26,11 +29,13 @@ bool file_exists(const char *path)
 
 void wlr_list_clear(struct wlr_list *list, void (*destroy_func)(void *))
 {
-    for (int i = 0; i < list->length; i++) {
-        void *item = list->items[i];
+    int length = list->length;
+    for (int i = 0; i < length; i++) {
+        void *item = list->items[0];
         if (destroy_func) {
             destroy_func(item);
         }
+        wlr_list_del(list, 0);
     }
 
     wlr_list_init(list);

@@ -89,7 +89,7 @@ void destroy_workspaces(struct wlr_list *workspaces);
 void load_default_layout(lua_State *L, struct workspace *ws);
 void load_layout(lua_State *L, const char *name);
 void reset_loaded_layout(struct workspace *ws);
-void reset_loaded_layouts(struct wlr_list *workspaces);
+void remove_loaded_layouts(struct wlr_list *workspaces);
 void set_container_workspace(struct container *con, struct workspace *ws);
 void layout_set_set_layout(lua_State *L);
 void set_selected_layout(struct workspace *ws, struct layout *layout);

@@ -378,7 +378,6 @@ void maprequest(struct wl_listener *listener, void *data)
 
 void unmap_notify(struct wl_listener *listener, void *data)
 {
-    printf("unmap\n");
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
 
@@ -391,5 +390,4 @@ void unmap_notify(struct wl_listener *listener, void *data)
     arrange();
     struct monitor *m = selected_monitor;
     focus_most_recent_container(get_workspace(m->ws_id), FOCUS_NOOP);
-    printf("unmap end\n");
 }
