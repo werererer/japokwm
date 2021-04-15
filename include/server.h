@@ -10,6 +10,7 @@
 #include "layout.h"
 #include "options.h"
 #include "xwayland.h"
+#include "view.h"
 
 struct server {
     struct wl_display *wl_display;
@@ -51,8 +52,6 @@ struct server {
 
     const char *config_file;
     const char *config_dir;
-
-    int previous_workspace_id;
 
     struct wlr_list client_lists;
     struct wlr_list normal_clients;

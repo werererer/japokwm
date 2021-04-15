@@ -24,12 +24,12 @@ void move_to_scratchpad(struct container *con, int position)
         wlr_list_insert(&server.scratchpad, new_position, con);
     }
 
-    remove_in_composed_list(&ws->container_lists, cmp_ptr, con);
-    wlr_list_remove(&ws->focus_stack_normal, cmp_ptr, con);
+    remove_in_composed_list(&ws->lists.container_lists, cmp_ptr, con);
+    wlr_list_remove(&ws->lists.focus_stack_normal, cmp_ptr, con);
     wlr_list_remove(&server.tiled_visual_stack, cmp_ptr, con);
 
     container_damage_whole(con);
-    focus_most_recent_container(get_workspace(m->ws_selector.ws_id), FOCUS_NOOP);
+    focus_most_recent_container(m, FOCUS_NOOP);
     con->hidden = true;
     arrange();
 }
@@ -48,8 +48,8 @@ void show_scratchpad()
     struct container *con = server.scratchpad.items[0];
 
     if (con->hidden) {
-        wlr_list_push(&ws->floating_containers, con);
-        wlr_list_insert(&ws->focus_stack_normal, 0, con);
+        wlr_list_push(&ws->lists.floating_containers, con);
+        wlr_list_insert(&ws->lists.focus_stack_normal, 0, con);
         wlr_list_insert(&server.floating_visual_stack, 0, con);
 
         resize(con, get_center_box(m->geom));
@@ -62,8 +62,8 @@ void show_scratchpad()
             return;
         }
 
-        wlr_list_remove(&ws->floating_containers, cmp_ptr, con);
-        wlr_list_remove(&ws->focus_stack_normal, cmp_ptr, con);
+        wlr_list_remove(&ws->lists.floating_containers, cmp_ptr, con);
+        wlr_list_remove(&ws->lists.focus_stack_normal, cmp_ptr, con);
         wlr_list_remove(&server.floating_visual_stack, cmp_ptr, con);
 
         wlr_list_remove(&server.scratchpad, cmp_ptr, con);

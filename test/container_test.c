@@ -111,10 +111,10 @@ START_TEST(get_focused_container_crash_test)
     get_focused_container(NULL);
 
     struct monitor m;
-    m.ws_selector.ws_id = -1;
+    m.view.ws_selector.ws_id = -1;
     get_focused_container(&m);
 
-    m.ws_selector.ws_id = 700;
+    m.view.ws_selector.ws_id = 700;
     get_focused_container(&m);
 } END_TEST
 

@@ -91,6 +91,8 @@ typedef int (*cmp_func_t)(const void*, const void*);
 /* return 0 on success and 1 on failure */
 int wlr_list_remove(struct wlr_list *list,
         int (*compare)(const void *, const void *), const void *cmp_to);
+int wlr_list_remove_all(struct wlr_list *list,
+        int (*compare)(const void *, const void *), struct wlr_list *items);
 /* return 0 on success and 1 on failure */
 int remove_in_composed_list(struct wlr_list *lists,
         int (*compare)(const void *, const void *), const void *cmp_to);

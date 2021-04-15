@@ -33,12 +33,12 @@ void arrange()
     update_cursor(&server.cursor);
 }
 
-static int get_layout_container_area_count(struct workspace *ws)
+static int get_layout_container_area_count(struct monitor *m)
 {
-    struct layout *lt = ws->layout;
+    struct layout *lt = get_layout_in_monitor(m);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
 
-    int n_area = get_container_area_count(ws);
+    int n_area = get_container_area_count(m);
     int len = luaL_len(L, -1);
     n_area = MAX(MIN(len, n_area), 1);
 
@@ -51,9 +51,9 @@ static int get_layout_container_area_count(struct workspace *ws)
     return n_area;
 }
 
-static int get_layout_container_max_area_count(struct workspace *ws)
+static int get_layout_container_max_area_count(struct monitor *m)
 {
-    struct layout *lt = ws->layout;
+    struct layout *lt = get_layout_in_monitor(m);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
 
     int len = luaL_len(L, -1);
@@ -69,30 +69,21 @@ static int get_layout_container_max_area_count(struct workspace *ws)
     return max_n_area;
 }
 
-static void update_layout_counters(struct workspace_selector *ws_selector)
+static void update_layout_counters(struct monitor *m)
 {
+    struct workspace_selector *ws_selector = &m->view.ws_selector;
     struct workspace *ws = get_workspace(ws_selector->ws_id);
     struct layout *lt = ws->layout;
 
-    struct wlr_list workspaces = get_workspaces(&ws_selector->ids);
-    ws->n_all = get_container_count(&workspaces);
-    printf("n_all: %i\n", ws->n_all);
-    lt->n_area = get_layout_container_area_count(ws);
-    printf("n_area: %i\n", lt->n_area);
-    lt->n_area_max = get_layout_container_max_area_count(ws);
-    printf("n_area_max: %i\n", lt->n_area_max);
-    lt->n_master_abs = get_master_container_count(ws);
-    printf("n_area_abs: %i\n", lt->n_master_abs);
-    lt->n_floating = get_floating_container_count(&workspaces);
-    printf("n_area_abs: %i\n", lt->n_floating);
+    ws->n_all = get_container_count(m);
+    lt->n_area = get_layout_container_area_count(m);
+    lt->n_area_max = get_layout_container_max_area_count(m);
+    lt->n_master_abs = get_master_container_count(m);
+    lt->n_floating = get_floating_container_count(m);
     lt->n_tiled = lt->n_area + lt->n_master_abs-1;
-    printf("n_tiled: %i\n", lt->n_tiled);
-    lt->n_tiled_max = lt->n_area_max + lt->n_master_abs-1;
-    printf("n_tiled_max: %i\n", lt->n_tiled_max);
+    lt->n_tiled_max = lt->n_area_max + lt->nmaster-1;
     lt->n_visible = lt->n_tiled + lt->n_floating;
-    printf("n_visible: %i\n", lt->n_visible);
     lt->n_hidden = ws->n_all - lt->n_visible;
-    printf("n_hidden: %i\n", lt->n_hidden);
 }
 
 static struct wlr_fbox lua_unbox_layout_geom(lua_State *L, int i) {
@@ -158,48 +149,43 @@ static struct wlr_box get_nth_geom_in_layout(lua_State *L, struct layout *lt,
     return box;
 }
 
-int get_slave_container_count(struct workspace *ws)
+int get_slave_container_count(struct monitor *m)
 {
-    struct layout *lt = ws->layout;
-    int abs_count = get_tiled_container_count(ws);
+    struct layout *lt = get_layout_in_monitor(m);
+    int abs_count = get_tiled_container_count(m);
     return MAX(abs_count - lt->nmaster, 0);
 }
 
-int get_floating_container_count(struct wlr_list *workspaces)
+int get_floating_container_count(struct monitor *m)
 {
-    int count = 0;
-    for (int i = 0; i < workspaces->length; i++) {
-        struct workspace *ws = workspaces->items[i];
-        struct layout *lt = ws->layout;
+    struct layout *lt = get_layout_in_monitor(m);
 
-        // there are no floating windows when using arrange by focus
-        if (lt->options.arrange_by_focus)
-            return 0;
+    // there are no floating windows when using arrange by focus
+    if (lt->options.arrange_by_focus)
+        return 0;
 
-        int n = 0;
+    int n = 0;
 
-        for (int i = 0; i < ws->floating_containers.length; i++) {
-            struct container *con = get_container(ws, i);
-            if (con->client->type == LAYER_SHELL)
-                continue;
-            n++;
-        }
-        count += n;
+    for (int i = 0; i < m->view.lists.floating_containers.length; i++) {
+        struct container *con = get_container(m, i);
+        if (con->client->type == LAYER_SHELL)
+            continue;
+        n++;
     }
-    return count;
+    return n;
 }
 
-int get_master_container_count(struct workspace *ws)
+int get_master_container_count(struct monitor *m)
 {
-    int abs_count = get_tiled_container_count(ws);
-    int slave_container_count = get_slave_container_count(ws);
+    int abs_count = get_tiled_container_count(m);
+    int slave_container_count = get_slave_container_count(m);
     return MAX(abs_count - slave_container_count, 0);
 }
 
 // amount of slave containers plus the one master area
-int get_container_area_count(struct workspace *ws)
+int get_container_area_count(struct monitor *m)
 {
-    return get_slave_container_count(ws) + 1;
+    return get_slave_container_count(m) + 1;
 }
 
 void arrange_monitor(struct monitor *m)
@@ -218,23 +204,17 @@ void arrange_monitor(struct monitor *m)
     /*     bitset_set(&bitset, ws->id); */
     /* } */
 
-    m->visible_lists = get_combined_visible_lists(&m->ws_selector);
-    m->tiled_containers = get_combined_tiled_containers(&m->ws_selector);
-    m->hidden_containers = get_combined_hidden_containers(&m->ws_selector);
-
-    update_layout_counters(&m->ws_selector);
+    update_layout_counters(m);
     call_update_function(&lt->options.event_handler, lt->n_area);
 
-    update_hidden_status_of_containers(m, &m->visible_lists,
-            &m->tiled_containers, &m->hidden_containers);
-
-    printf("m->tiled_containers1: %zu\n", m->tiled_containers.length);
+    update_hidden_status_of_containers(m, &m->view.lists.visible_container_lists,
+            &m->view.lists.tiled_containers, &m->view.lists.hidden_containers);
 
     if (!lt->options.arrange_by_focus) {
         // when arranging by focus floating windows will be tiled too. Revert it
         // here.
-        for (int i = 0; i < ws->floating_containers.length; i++) {
-            struct container *con = ws->floating_containers.items[i];
+        for (int i = 0; i < ws->lists.floating_containers.length; i++) {
+            struct container *con = ws->lists.floating_containers.items[i];
             if (con->geom_was_changed) {
                 resize(con, con->prev_floating_geom);
                 con->geom_was_changed = false;
@@ -242,7 +222,7 @@ void arrange_monitor(struct monitor *m)
         }
     }
 
-    arrange_containers(&m->tiled_containers, lt, m->root->geom);
+    arrange_containers(&m->view.lists.tiled_containers, lt, m->root->geom);
 
     root_damage_whole(m->root);
 }
@@ -399,22 +379,16 @@ void update_hidden_status_of_containers(struct monitor *m,
     }
 }
 
-int get_container_count(struct wlr_list *workspaces)
+int get_container_count(struct monitor *m)
 {
-    int length = 0;
-    for (int i = 0; i < workspaces->length; i++) {
-        struct workspace *ws = workspaces->items[i];
-        length += length_of_composed_list(&ws->container_lists);
-    }
-    return length;
+    return length_of_composed_list(&m->view.lists.container_lists);
 }
 
-int get_tiled_container_count(struct workspace *ws)
+int get_tiled_container_count(struct monitor *m)
 {
     int n = 0;
-    struct monitor *m = ws->m;
-    struct wlr_list *tiled_containers = &m->tiled_containers;
-    struct wlr_list *hidden_containers = &m->hidden_containers;
+    struct wlr_list *tiled_containers = &m->view.lists.tiled_containers;
+    struct wlr_list *hidden_containers = &m->view.lists.hidden_containers;
 
     n = tiled_containers->length + hidden_containers->length;
     return n;

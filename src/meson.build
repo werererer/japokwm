@@ -72,6 +72,8 @@ srcs = files(
     'bitset/bitset.c',
     'bitset/vector.c',
     'workspace_selector.c',
+    'container_lists.c',
+    'view.c'
   )
 
 libName = 'japokwm_lib'

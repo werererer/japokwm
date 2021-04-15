@@ -88,7 +88,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     struct layout *lt = get_layout_in_monitor(m);
 
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
-    c->ws_selector.ws_id = m->ws_selector.ws_id;
+    c->ws_selector.ws_id = m->view.ws_selector.ws_id;
     c->bw = lt->options.tile_border_px;
 
     struct container *con = create_container(c, m, true);
@@ -140,8 +140,8 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
                 struct workspace *ws = monitor_get_active_workspace(m);
                 if (is_popup_menu(c) || xwayland_surface->parent) {
-                    wlr_list_remove(&ws->focus_stack_normal, cmp_ptr, con);
-                    wlr_list_insert(&ws->focus_stack_normal, 1, con);
+                    wlr_list_remove(&ws->lists.focus_stack_normal, cmp_ptr, con);
+                    wlr_list_insert(&ws->lists.focus_stack_normal, 1, con);
                 } else {
                     con->on_top = true;
                     focus_container(con, FOCUS_NOOP);

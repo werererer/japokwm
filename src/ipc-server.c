@@ -397,8 +397,8 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
                     for (int i = 0; i < server.workspaces.length; i++) {
                         struct workspace *ws = get_workspace(i);
                         bool has_clients = workspace_has_clients(ws);
-                        bool is_workspace_selected = m->ws_selector.ws_id == i;
-                        bool is_workspace_active = selected_monitor->ws_selector.ws_id == i;
+                        bool is_workspace_selected = m->view.ws_selector.ws_id == i;
+                        bool is_workspace_active = selected_monitor->view.ws_selector.ws_id == i;
                         if (!has_clients && !is_workspace_selected) 
                             continue;
                         if (ws->m != m)

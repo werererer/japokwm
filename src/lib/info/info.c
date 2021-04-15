@@ -9,9 +9,8 @@
 int lib_get_this_container_count(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    struct workspace *ws = monitor_get_active_workspace(m);
 
-    int i = get_slave_container_count(ws) + 1;
+    int i = get_slave_container_count(m) + 1;
     lua_pushinteger(L, i);
     return 1;
 }
@@ -22,7 +21,7 @@ int lib_this_container_position(lua_State *L)
     struct container *sel = get_focused_container(m);
     struct workspace *ws = monitor_get_active_workspace(m);
 
-    int position = find_in_composed_list(&ws->container_lists, cmp_ptr, sel);
+    int position = find_in_composed_list(&ws->lists.container_lists, cmp_ptr, sel);
     lua_pushinteger(L, position);
     return 1;
 }
@@ -62,7 +61,7 @@ int lib_get_nmaster(lua_State *L)
 int lib_get_workspace(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    lua_pushinteger(L, m->ws_selector.ws_id);
+    lua_pushinteger(L, m->view.ws_selector.ws_id);
     return 1;
 }
 
@@ -70,9 +69,10 @@ int lib_get_container_under_cursor(lua_State *L)
 {
     struct wlr_cursor *cursor = server.cursor.wlr_cursor;
     struct workspace *ws = monitor_get_active_workspace(selected_monitor);
+    struct monitor *m = ws->m;
 
     struct container *con = xy_to_container(cursor->x, cursor->y);
-    int pos = find_in_composed_list(&ws->focus_stack_lists, cmp_ptr, con);
+    int pos = find_in_composed_list(&m->view.lists.focus_stack_lists, cmp_ptr, con);
     lua_pushinteger(L, pos);
     return 1;
 }

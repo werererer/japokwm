@@ -49,11 +49,13 @@ void execute_command(const char *_exec)
             }
         }
         if (handled) {
+            struct workspace_selector ws_selector; 
+            bitset_setup(&ws_selector.ids, server.workspaces.length);
+            workspace_selector_from_workspace_id(&ws_selector, i);
             if (key_state_has_modifiers(MOD_SHIFT)) {
-                focus_workspace(selected_monitor, get_workspace(i));
+                focus_workspace(selected_monitor, &ws_selector);
             } else {
-                struct workspace *ws = get_workspace(i);
-                push_selected_workspace(selected_monitor, ws);
+                push_selected_workspace(selected_monitor, &ws_selector);
             }
         }
     }

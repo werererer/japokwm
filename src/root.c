@@ -81,8 +81,8 @@ static struct wlr_box fit_root_area(struct root *root)
         struct container *con =
             get_in_composed_list(&server.layer_visual_stack_lists, i);
 
-        struct workspace *ws = get_workspace(root->m->ws_selector.ws_id);
-        if (!exist_on(con, ws))
+        struct monitor *m = root->m;
+        if (!exist_on(con, m))
             continue;
 
         struct client *c = con->client;
@@ -157,11 +157,10 @@ void set_root_geom(struct root *root, struct wlr_box geom)
         struct container *con =
             get_in_composed_list(&server.layer_visual_stack_lists, i);
 
-        struct workspace *ws = get_workspace(root->m->ws_selector.ws_id);
-        if (!exist_on(con, ws))
+        struct monitor *m = root->m;
+        if (!exist_on(con, m))
             continue;
 
-        struct monitor *m = root->m;
         struct client *c = con->client;
         struct wlr_layer_surface_v1_state *current = &c->surface.layer->current;
         int anchor = current->anchor;

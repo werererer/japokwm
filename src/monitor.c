@@ -93,12 +93,8 @@ void create_monitor(struct wl_listener *listener, void *data)
         call_on_start_function(&server.default_layout->options.event_handler);
     }
 
-    init_workspace_selector(&m->ws_selector);
-    wlr_list_init(&m->visible_lists);
-    wlr_list_init(&m->hidden_containers);
-    wlr_list_init(&m->tiled_containers);
-
-    wlr_list_init(&m->focus_stack_lists);
+    init_view(&m->view);
+    init_view(&m->prev_view);
 
     evaluate_monrules(output);
 
@@ -215,26 +211,29 @@ void focus_monitor(struct monitor *m)
 
     /* wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, m->wlr_output.) */
 
-    struct workspace *ws = get_workspace(m->ws_selector.ws_id);
+    struct workspace *ws = get_workspace(0);
+
     if (selected_monitor) {
-        struct workspace *sel_ws = monitor_get_active_workspace(selected_monitor);
-        for (int i = 0; i < sel_ws->floating_containers.length; i++) {
-            struct container *con = sel_ws->floating_containers.items[i];
-            if (visible_on(con, get_workspace(sel_ws->id))) {
+        struct monitor *m =selected_monitor;
+        for (int i = 0; i < m->view.lists.floating_containers.length; i++) {
+            struct container *con = m->view.lists.floating_containers.items[i];
+            if (visible_on(con, m)) {
                 move_container_to_workspace(con, ws);
             }
         }
     }
 
     selected_monitor = m;
-    focus_workspace(m, ws);
+    focus_workspace(m, &m->view.ws_selector);
 }
 
-void push_selected_workspace(struct monitor *m, struct workspace *ws)
+void push_selected_workspace(struct monitor *m, struct workspace_selector *ws_selector)
 {
-    if (!m || !ws)
+    if (!m)
         return;
-    focus_workspace(m, get_workspace(ws->id));
+    if (!ws_selector)
+        return;
+    focus_workspace(m, ws_selector);
 }
 
 struct monitor *dirtomon(int dir)
@@ -268,10 +267,10 @@ inline struct workspace *monitor_get_active_workspace(struct monitor *m)
     if (!m)
         return NULL;
 
-    return get_workspace(m->ws_selector.ws_id);
+    return get_workspace(m->view.ws_selector.ws_id);
 }
 
 inline struct layout *get_layout_in_monitor(struct monitor *m)
 {
-    return get_workspace(m->ws_selector.ws_id)->layout;
+    return get_workspace(m->view.ws_selector.ws_id)->layout;
 }

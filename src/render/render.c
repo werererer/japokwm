@@ -263,7 +263,7 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
         struct workspace *ws = monitor_get_active_workspace(m);
         struct layout *lt = ws->layout;
         if (lt->options.smart_hidden_edges) {
-            if (ws->tiled_containers.length <= 1) {
+            if (ws->lists.tiled_containers.length <= 1) {
                 hidden_edges = get_hidden_edges(con, borders, lt->options.hidden_edges);
             }
         } else {
@@ -287,7 +287,7 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     for (int i = length_of_composed_list(&server.normal_visual_stack_lists)-1; i >= 0; i--) {
         struct container *con = get_in_composed_list(&server.normal_visual_stack_lists, i);
-        if (!visible_on(con, get_workspace(m->ws_selector.ws_id)))
+        if (!visible_on(con, m))
             continue;
 
         render_borders(con, m, output_damage);
@@ -315,7 +315,7 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
             continue;
         if (con->client->surface.layer->current.layer != layer)
             continue;
-        if (!visible_on(con, get_workspace(m->ws_selector.ws_id)))
+        if (!visible_on(con, m))
             continue;
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
@@ -334,7 +334,7 @@ static void render_independents(struct monitor *m, pixman_region32_t *output_dam
     struct container *con;
 
     struct workspace *ws = monitor_get_active_workspace(m);
-    for (int i = 0; i < ws->independent_containers.length; i++) {
+    for (int i = 0; i < ws->lists.independent_containers.length; i++) {
         struct wlr_surface *surface = get_wlrsurface(con->client);
 
         con->geom.width = surface->current.width;

@@ -26,13 +26,13 @@ bool file_exists(const char *path)
 
 void wlr_list_clear(struct wlr_list *list, void (*destroy_func)(void *))
 {
-    for (int i = 0; i < list->length; i++) {
-        void *item = list->items[i];
-        if (destroy_func) {
+    if (destroy_func) {
+        for (int i = 0; i < list->length; i++) {
+            void *item = list->items[i];
             destroy_func(item);
         }
     }
-
+    wlr_list_finish(list);
     wlr_list_init(list);
 }
 
@@ -52,6 +52,17 @@ int wlr_list_remove(struct wlr_list *list,
         }
     }
     return 1;
+}
+
+int wlr_list_remove_all(struct wlr_list *list,
+        int (*compare)(const void *, const void *), struct wlr_list *items)
+{
+    for (int i = 0; i < items->length; i++) {
+        void *item = items->items[i];
+        if (wlr_list_remove(list, compare, item) == 1)
+            return 1;
+    }
+    return 0;
 }
 
 int remove_in_composed_list(struct wlr_list *lists,

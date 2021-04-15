@@ -92,6 +92,19 @@ BitSet bitset_from_value(uint64_t value) {
     return bitset;
 }
 
+int bitset_equals(BitSet* bitset1, BitSet* bitset2)
+{
+    BitSet bitset;
+    bitset_copy(&bitset, bitset1);
+
+    for (int i = 0; i < bitset.size; i++) {
+        bitset_toggle(&bitset, i);
+    }
+
+    bitset_and(&bitset, bitset2);
+    return bitset_none(&bitset);
+}
+
 int bit_wise_operation(BitSet* destination,
                                                 const BitSet* source,
                                                 bit_operator_t bit_operator) {

@@ -8,16 +8,12 @@
 #include "workspace.h"
 #include "root.h"
 #include "workspace_selector.h"
+#include "container_lists.h"
+#include "view.h"
 
 struct monitor {
     struct wlr_output *wlr_output;
     struct wlr_output_damage *damage;
-
-    struct wlr_list visible_lists;
-    struct wlr_list tiled_containers;
-    struct wlr_list hidden_containers;
-
-    struct wlr_list focus_stack_lists;
 
     struct wl_listener mode;
     struct wl_listener frame;
@@ -27,7 +23,9 @@ struct monitor {
     struct wlr_box geom;
     struct root *root;
     float scale;
-    struct workspace_selector ws_selector;
+
+    struct view view;
+    struct view prev_view;
 };
 
 struct monrule {
@@ -50,7 +48,7 @@ void update_monitor_geometries();
  * selTag[1] = selTag[0] then
  * selTag[0] = new value
  * */
-void push_selected_workspace(struct monitor *m, struct workspace *ws);
+void push_selected_workspace(struct monitor *m, struct workspace_selector *ws_selector);
 
 struct monitor *dirtomon(int dir);
 struct monitor *output_to_monitor(struct wlr_output *output);
