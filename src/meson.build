@@ -54,7 +54,6 @@ srcs = files(
     'utils/parseConfigUtils.c',
     'utils/stringUtils.c',
     'utils/writeFile.c',
-    'wlr-foreign-toplevel-management-unstable-v1-protocol.c',
     'wlr-layer-shell-unstable-v1-protocol.c',
     'workspace.c',
     'xdg-shell-protocol.c',
