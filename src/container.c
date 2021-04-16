@@ -49,6 +49,9 @@ void destroy_container(struct container *con)
     // surfaces cant commit anything anymore if their container is destroyed
     wl_list_remove(&con->commit.link);
 
+    if (con->on_scratchpad)
+        remove_container_from_scratchpad(con);
+
     struct workspace *ws = monitor_get_active_workspace(con->m);
 
     remove_in_composed_list(&ws->focus_stack_lists, cmp_ptr, con);

@@ -26,7 +26,7 @@ void move_to_scratchpad(struct container *con, int position)
 
     remove_in_composed_list(&ws->container_lists, cmp_ptr, con);
     wlr_list_remove(&ws->focus_stack_normal, cmp_ptr, con);
-    wlr_list_remove(&server.tiled_visual_stack, cmp_ptr, con);
+    remove_in_composed_list(&server.visual_stack_lists, cmp_ptr, con);
 
     container_damage_whole(con);
     focus_most_recent_container(get_workspace(m->ws_id), FOCUS_NOOP);
