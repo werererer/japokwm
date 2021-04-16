@@ -31,6 +31,15 @@ void call_create_container_function(struct event_handler *ev, int n)
     lua_call_safe(L, 1, 0, 0);
 }
 
+void call_on_focus_function(struct event_handler *ev, int n)
+{
+    if (ev->on_focus_func_ref == 0)
+        return;
+    lua_rawgeti(L, LUA_REGISTRYINDEX, ev->on_focus_func_ref);
+    lua_pushinteger(L, n);
+    lua_call_safe(L, 1, 0, 0);
+}
+
 void call_on_start_function(struct event_handler *ev)
 {
     if (ev->on_start_func_ref == 0)

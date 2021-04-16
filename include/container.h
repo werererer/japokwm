@@ -37,6 +37,7 @@ struct container {
     bool geom_was_changed;
     // height = ratio * width
     float ratio;
+    float alpha;
 };
 
 struct container *create_container(struct client *c, struct monitor *m, bool has_border);

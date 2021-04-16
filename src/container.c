@@ -29,6 +29,7 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     con->commit.notify = commit_notify;
     wl_signal_add(&get_wlrsurface(c)->events.commit, &con->commit);
 
+    con->alpha = 1.0f;
     con->has_border = has_border;
     con->focusable = true;
     add_container_to_workspace(con, get_workspace(m->ws_id));
@@ -361,6 +362,10 @@ void focus_container(struct container *con, enum focus_actions a)
 
     container_damage_borders(sel, &sel->geom);
     container_damage_borders(new_sel, &new_sel->geom);
+
+    struct layout *lt = ws->layout;
+    int pos = find_in_composed_list(&ws->container_lists, cmp_ptr, new_sel);
+    call_on_focus_function(&lt->options.event_handler, pos);
 
     struct client *old_c = sel ? sel->client : NULL;
     struct client *new_c = new_sel ? new_sel->client : NULL;

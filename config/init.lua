@@ -6,6 +6,11 @@
 -- end
 
 -- event.set_on_start_function(on_start)
+local function on_focus(n)
+    print("focus", n)
+end
+
+event.set_on_focus_function(on_focus)
 
 config.set_inner_gaps(0)
 

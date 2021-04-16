@@ -34,3 +34,21 @@ int container_set_ratio(lua_State *L)
     con->ratio = ratio;
     return 0;
 }
+
+int container_set_alpha(lua_State *L)
+{
+    float alpha = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+    int position = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = get_workspace(m->ws_id);
+    struct container *con = get_container(ws, position);
+
+    if (!con)
+        return 0;
+
+    con->alpha = alpha;
+    return 0;
+}

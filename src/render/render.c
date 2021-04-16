@@ -25,8 +25,9 @@ static void render_independents(struct monitor *m, pixman_region32_t *output_dam
 static void render_layershell(struct monitor *m,
         enum zwlr_layer_shell_v1_layer layer, pixman_region32_t *output_damage);
 static void scissor_output(struct wlr_output *output, pixman_box32_t *rect);
-static void render_texture(struct wlr_output *wlr_output, pixman_region32_t *output_damage,
-        struct wlr_texture *texture, const struct wlr_box *box);
+static void render_texture(struct wlr_output *wlr_output,
+        pixman_region32_t *output_damage, struct wlr_texture *texture,
+        const struct wlr_box *box, float alpha);
 
 /* _box.x and .y are expected to be layout-local
    _box.width and .height are expected to be output-buffer-local */
@@ -95,7 +96,7 @@ static void output_for_each_surface_iterator(struct wlr_surface *surface, int sx
 
 static void render_texture(struct wlr_output *wlr_output,
         pixman_region32_t *output_damage, struct wlr_texture *texture,
-        const struct wlr_box *box)
+        const struct wlr_box *box, float alpha)
 {
     struct wlr_renderer *renderer = wlr_backend_get_renderer(wlr_output->backend);
 
@@ -110,14 +111,16 @@ static void render_texture(struct wlr_output *wlr_output,
     pixman_box32_t *rects = pixman_region32_rectangles(&damage, &nrects);
     for (int i = 0; i < nrects; i++) {
         scissor_output(wlr_output, &rects[i]);
-        wlr_render_texture(renderer, texture, wlr_output->transform_matrix, box->x, box->y, 1.0f);
+        wlr_render_texture(renderer, texture, wlr_output->transform_matrix,
+                box->x, box->y, alpha);
     }
 
 finish_damage:
     pixman_region32_fini(&damage);
 }
 
-static void render_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct wlr_box box, pixman_region32_t *output_damage)
+static void render_surface_iterator(struct monitor *m, struct wlr_surface *surface,
+        struct wlr_box box, pixman_region32_t *output_damage, float alpha)
 {
     struct wlr_texture *texture = wlr_surface_get_texture(surface);
     struct wlr_output *wlr_output = m->wlr_output;
@@ -144,11 +147,12 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
         .height = surface->current.height,
     };
 
-    render_texture(wlr_output, output_damage, texture, &obox);
+    render_texture(wlr_output, output_damage, texture, &obox, alpha);
 }
 
 static void
-damage_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct wlr_box *box, void *user_data)
+damage_surface_iterator(struct monitor *m, struct wlr_surface *surface,
+        struct wlr_box *box, void *user_data)
 {
     struct wlr_output *wlr_output = m->wlr_output;
     bool whole = *(bool *) user_data;
@@ -305,7 +309,7 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
          * xdg_surface's toplevel and popups. */
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
-        render_surface_iterator(m, surface, con->geom, output_damage);
+        render_surface_iterator(m, surface, con->geom, output_damage, con->alpha);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -330,7 +334,7 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
         struct wlr_surface *surface = get_wlrsurface(con->client);
         con->geom.width = surface->current.width;
         con->geom.height = surface->current.height;
-        render_surface_iterator(m, surface, con->geom, output_damage);
+        render_surface_iterator(m, surface, con->geom, output_damage, con->alpha);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -348,7 +352,7 @@ static void render_independents(struct monitor *m, pixman_region32_t *output_dam
 
         con->geom.width = surface->current.width;
         con->geom.height = surface->current.height;
-        render_surface_iterator(m, surface, con->geom, output_damage);
+        render_surface_iterator(m, surface, con->geom, output_damage, 1.0f);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -361,7 +365,7 @@ static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
     for (int i = 0; i < server.popups.length; i++) {
         struct xdg_popup *popup = server.popups.items[i];
         struct wlr_surface *surface = popup->xdg->base->surface;
-        render_surface_iterator(m, surface, popup->geom, output_damage);
+        render_surface_iterator(m, surface, popup->geom, output_damage, 1.0f);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);

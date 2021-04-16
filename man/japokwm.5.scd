@@ -255,15 +255,23 @@ integers
 	like dwm's zoom
 
 # CONTAINER
-*container_set_sticky(b)* ++
-	make container sticky ++
+*container_set_alpha(i, alpha)* ++
+	set the opacity of the container ++
 <where> ++
-	b: boolean
+	i: integer - position of the container
+	alpha: float - new alpha value of the container
 
-*container_set_ratio(f)* ++
+*container_set_ratio(i, ratio)* ++
 	set the ratio of the container ++
 <where> ++
-	f: number
+	i: integer - position of the container
+	ratio: float - ratio of the container (if 0 it is interpreted as no ratio)
+
+*container_set_sticky(i, sticky)* ++
+	make container sticky ++
+<where> ++
+	i: integer - position of the container
+	sticky: boolean - whether container is sticky
 
 # EVENT
 *set_update_function(func)* ++
@@ -273,6 +281,14 @@ integers
 		layout_element will be loaded ++
 	<where> ++
 		n: integer - n represents the amount of containers  
+
+*set_on_focus_function(func)* ++
+	set the update function ++
+<where> ++
+	func: function(n) - it will be called every time a new container is ++
+	selected layout_element will be loaded ++
+	<where> ++
+		n: integer - n represents the current container position
 
 *set_on_start_function(func)* ++
 	set the function that is executed on start of the windowmanager.
