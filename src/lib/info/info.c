@@ -20,9 +20,8 @@ int lib_this_container_position(lua_State *L)
 {
     struct monitor *m = selected_monitor;
     struct container *sel = get_focused_container(m);
-    struct workspace *ws = monitor_get_active_workspace(m);
 
-    int position = find_in_composed_list(&ws->container_lists, cmp_ptr, sel);
+    int position = get_position_in_container_stack(sel);
     lua_pushinteger(L, position);
     return 1;
 }
@@ -69,10 +68,9 @@ int lib_get_workspace(lua_State *L)
 int lib_get_container_under_cursor(lua_State *L)
 {
     struct wlr_cursor *cursor = server.cursor.wlr_cursor;
-    struct workspace *ws = monitor_get_active_workspace(selected_monitor);
 
     struct container *con = xy_to_container(cursor->x, cursor->y);
-    int pos = find_in_composed_list(&ws->focus_stack_lists, cmp_ptr, con);
+    int pos = get_position_in_container_stack(con);
     lua_pushinteger(L, pos);
     return 1;
 }

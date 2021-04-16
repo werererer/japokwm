@@ -38,8 +38,7 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     struct layout *lt = ws->layout;
     struct event_handler *ev = &lt->options.event_handler;
 
-    int position = find_in_composed_list(&ws->container_lists, &cmp_ptr, con);
-    call_create_container_function(ev, position);
+    call_create_container_function(ev, get_position_in_container_stack(con));
 
     apply_rules(con);
     return con;
@@ -364,8 +363,8 @@ void focus_container(struct container *con, enum focus_actions a)
     container_damage_borders(new_sel, &new_sel->geom);
 
     struct layout *lt = ws->layout;
-    int pos = find_in_composed_list(&ws->container_lists, cmp_ptr, new_sel);
-    call_on_focus_function(&lt->options.event_handler, pos);
+    call_on_focus_function(&lt->options.event_handler,
+            get_position_in_container_stack(con));
 
     struct client *old_c = sel ? sel->client : NULL;
     struct client *new_c = new_sel ? new_sel->client : NULL;
@@ -613,6 +612,14 @@ inline int absolute_x_to_container_relative(struct container *con, int x)
 inline int absolute_y_to_container_relative(struct container *con, int y)
 {
     return y - con->geom.y;
+}
+
+int get_position_in_container_stack(struct container *con)
+{
+    struct monitor *m = con->m;
+    struct workspace *ws = monitor_get_active_workspace(m);
+    int position = find_in_composed_list(&ws->container_lists, &cmp_ptr, con);
+    return position;
 }
 
 bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *resize_constraints)
