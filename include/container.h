@@ -74,9 +74,6 @@ void set_container_monitor(struct container *con, struct monitor *m);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
 
-// TODO check if those 2 functions even work
-int container_relative_x_to_absolute(struct container *con, int lx);
-int container_relative_y_to_absolute(struct container *con, int ly);
 int absolute_x_to_container_relative(struct container *con, int x);
 int absolute_y_to_container_relative(struct container *con, int y);
 
