@@ -34,9 +34,7 @@ int lib_focus_container(lua_State *L)
 {
     int pos = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    struct monitor *m = selected_monitor;
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct container *con = get_in_composed_list(&ws->focus_stack_lists, pos);
+    struct container *con = get_container_from_container_stack_position(pos);
 
     if (!con)
         return 0;

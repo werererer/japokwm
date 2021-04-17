@@ -625,6 +625,14 @@ int get_position_in_container_stack(struct container *con)
     return position;
 }
 
+struct container *get_container_from_container_stack_position(int i)
+{
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct container *con = get_in_composed_list(&ws->container_lists, i);
+    return con;
+}
+
 bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *resize_constraints)
 {
     bool is_width_not_in_limit = geom->width < resize_constraints->min_width ||
