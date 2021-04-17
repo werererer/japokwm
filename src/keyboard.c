@@ -99,7 +99,7 @@ void keypress(struct wl_listener *listener, void *data)
     if (handle_VT_keys(kb, keycode))
         return;
 
-    if (event->state == WLR_KEY_PRESSED) {
+    if (event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
         for (i = 0; i < nsyms; i++) {
             handled = handle_keybinding(mods, syms[i]);
         }

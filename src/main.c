@@ -168,7 +168,7 @@ static int setup()
      * backend uses the renderer, for example, to fall back to software cursors
      * if the backend does not support hardware cursors (some older GPUs
      * don't). */
-    if (!(server.backend = wlr_backend_autocreate(server.wl_display, NULL))) {
+    if (!(server.backend = wlr_backend_autocreate(server.wl_display))) {
         wlr_log(WLR_INFO, "couldn't create backend");
         return EXIT_FAILURE;
     }
