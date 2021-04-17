@@ -6,7 +6,7 @@ deps = [\
     dependency('wayland-server'),
     dependency('wayland-egl'),
     dependency('pixman-1'),
-    dependency('wlroots', version: '>=0.12'),
+    dependency('wlroots', version: '>=0.13'),
     dependency('x11'),
     dependency('json-c'),
     ]
