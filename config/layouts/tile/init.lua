@@ -26,7 +26,7 @@ local layout_data = {
     },
 }
 
-layout.set(layout_data)
+layout.set("tile", layout_data)
 l.config.set_hidden_edges(info.direction.all)
 l.config.set_smart_hidden_edges(false)
 l.config.set_resize_direction(info.direction.right)

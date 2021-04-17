@@ -4,6 +4,7 @@
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "popup.h"
+#include "keybinding.h"
 #include <wlr/xcursor.h>
 
 struct wl_listener request_set_cursor = {.notify = handle_set_cursor};
@@ -38,8 +39,8 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface, do
     if (!con)
         return;
 
-    struct workspace *ws = get_workspace(&server.workspaces, con->m->ws_ids[0]);
-    if (ws->layout[0].options.sloppy_focus)
+    struct workspace *ws = get_workspace(con->m->ws_id);
+    if (ws->layout->options.sloppy_focus)
         focus_container(con, FOCUS_NOOP);
 }
 
@@ -124,7 +125,7 @@ void motion_notify(uint32_t time)
     int cursorx = server.cursor.wlr_cursor->x;
     int cursory = server.cursor.wlr_cursor->y;
 
-    set_selected_monitor(xytomon(cursorx, cursory));
+    focus_monitor(xy_to_monitor(cursorx, cursory));
 
     /* If handled successfully return */
     if (handle_move_resize(server.cursor.cursor_mode))
@@ -136,15 +137,12 @@ void motion_notify(uint32_t time)
 
     struct wlr_surface *focus_surface = popup_surface;
 
-    struct container *focus_con = xytocontainer(cursorx, cursory);
+    struct container *focus_con = xy_to_container(cursorx, cursory);
     if (!is_popup_under_cursor && focus_con) {
         focus_surface = wlr_surface_surface_at(get_wlrsurface(focus_con->client),
                 absolute_x_to_container_relative(focus_con, cursorx),
                 absolute_y_to_container_relative(focus_con, cursory),
                 &sx, &sy);
-
-        if (popups_exist())
-            destroy_popups();
 
         update_cursor(&server.cursor);
     }
@@ -152,24 +150,70 @@ void motion_notify(uint32_t time)
     pointer_focus(focus_con, focus_surface, sx, sy, time);
 }
 
+void buttonpress(struct wl_listener *listener, void *data)
+{
+    struct wlr_event_pointer_button *event = data;
+
+    switch (event->state) {
+        case WLR_BUTTON_PRESSED:
+            {
+                /* Translate libinput to xkbcommon code */
+                unsigned sym = event->button + 64985;
+
+                /* get modifiers */
+                struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
+                int mods = wlr_keyboard_get_modifiers(kb);
+
+                handle_keybinding(mods, sym);
+                break;
+            }
+        case WLR_BUTTON_RELEASED:
+            /* If you released any buttons, we exit interactive move/resize
+             * mode. */
+            /* XXX should reset to the pointer focus's current setcursor */
+            if (server.cursor.cursor_mode != CURSOR_NORMAL) {
+                wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "left_ptr",
+                        server.cursor.wlr_cursor);
+                server.cursor.cursor_mode = CURSOR_NORMAL;
+                /* Drop the window off on its new monitor */
+                struct monitor *m = xy_to_monitor(server.cursor.wlr_cursor->x,
+                        server.cursor.wlr_cursor->y);
+                focus_monitor(m);
+                return;
+            }
+            break;
+    }
+    /* If the event wasn't handled by the compositor, notify the client with
+     * pointer focus that a button press has occurred */
+    wlr_seat_pointer_notify_button(server.seat, event->time_msec, event->button,
+            event->state);
+}
+
 void move_resize(int ui)
 {
-    grabc = xytocontainer(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
+    grabc = xy_to_container(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
     if (!grabc)
         return;
     if (grabc->client->type == LAYER_SHELL)
         return;
 
     struct wlr_cursor *cursor = server.cursor.wlr_cursor;
+    struct monitor *m = grabc->m;
+    struct layout *lt = get_layout_in_monitor(m);
+    // all floating windows will be tiled. Thats why you can't make new windows
+    // tiled
+    if (lt->options.arrange_by_focus)
+        return;
+
     /* Float the window and tell motion_notify to grab it */
-    set_container_floating(grabc, true);
+    set_container_floating(grabc, fix_position, true);
+
     switch (server.cursor.cursor_mode = ui) {
         case CURSOR_MOVE:
             wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "fleur", cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
             offsetx = absolute_x_to_container_relative(grabc, cursor->x);
             offsety = absolute_y_to_container_relative(grabc, cursor->y);
-            arrange();
             break;
         case CURSOR_RESIZE:
             /* Doesn't work for X11 output - the next absolute motion event
@@ -180,11 +224,11 @@ void move_resize(int ui)
             wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
                     "bottom_right_corner", server.cursor.wlr_cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
-            arrange();
             break;
         default:
             break;
     }
+    arrange();
 }
 
 void handle_set_cursor(struct wl_listener *listener, void *data)
@@ -215,7 +259,7 @@ void update_cursor(struct cursor *cursor)
     if (cursor->cursor_mode != CURSOR_NORMAL)
         return;
 
-    if (!xytocontainer(cursor->wlr_cursor->x, cursor->wlr_cursor->y)) {
+    if (!xy_to_container(cursor->wlr_cursor->x, cursor->wlr_cursor->y)) {
         wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
             "left_ptr", server.cursor.wlr_cursor);
         return;

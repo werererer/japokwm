@@ -12,10 +12,19 @@ struct layout {
     const char *name;
     const char *symbol;
     // the amount of slave windows plus the master are (+1)
-    int n;
-    int n_abs;
+    int n_area;
+    int n_area_max;
+    // the amount of visible windows
+    int n_visible;
+    // number of hidden windows
+    int n_hidden;
+    // number of floating windows
+    int n_floating;
+    // number of tiled windows
+    int n_tiled;
+    int n_tiled_max;
     // the absolute amount of windows
-    int nmaster_abs;
+    int n_master_abs;
     // the amount master windows
     int nmaster;
     int lua_layout_ref;
@@ -25,8 +34,13 @@ struct layout {
     int lua_master_layout_data_ref;
     int lua_resize_data_ref;
 
+    int ws_id;
+
     struct options options;
 };
+
+struct layout *create_layout(lua_State *L);
+void destroy_layout(struct layout *lt);
 
 bool is_same_layout(struct layout layout, struct layout layout2);
 bool lua_islayout_data(lua_State *L, const char *name);
@@ -34,10 +48,10 @@ void lua_copy_table(lua_State *L, int *ref);
 // copy table and override old value
 void lua_copy_table_safe(lua_State *L, int *ref);
 struct resize_constraints lua_toresize_constrains(lua_State *L);
-void push_layout(struct layout lt_stack[static 2], struct layout lt);
 // copy layout and create new references
 void copy_layout(struct layout *dest_lt, struct layout *src_lt);
 // copy layout and override all references with the given ones
 void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt);
-struct layout get_default_layout();
+
+int cmp_layout(const struct layout *lt1, const struct layout *lt2);
 #endif /* LAYOUT_H */

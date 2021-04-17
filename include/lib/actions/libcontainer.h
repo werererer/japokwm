@@ -9,5 +9,6 @@
 // TODO fix later
 int container_set_sticky(lua_State *L);
 int container_set_ratio(lua_State *L);
+int container_set_alpha(lua_State *L);
 
 #endif /* LIB_CONTAINER_H */

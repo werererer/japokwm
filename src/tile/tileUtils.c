@@ -1,5 +1,6 @@
 #include "tile/tileUtils.h"
 #include <client.h>
+#include <assert.h>
 #include <execinfo.h>
 #include <string.h>
 #include <sys/param.h>
@@ -11,6 +12,7 @@
 #include <wlr/util/log.h>
 
 #include "container.h"
+#include "monitor.h"
 #include "root.h"
 #include "server.h"
 #include "utils/coreUtils.h"
@@ -23,44 +25,63 @@ static void arrange_container(struct container *con, int arrange_position,
 
 void arrange()
 {
-    struct monitor *m;
-    wl_list_for_each(m, &mons, link) {
+    for (int i = 0; i < server.mons.length; i++) {
+        struct monitor *m = server.mons.items[i];
         arrange_monitor(m);
     }
 
     update_cursor(&server.cursor);
 }
 
-// TODO what does this fucntion even do?
-static int get_layout_container_count(struct workspace *ws)
+static int get_layout_container_area_count(struct workspace *ws)
 {
-    struct layout *lt = &ws->layout[0];
+    struct layout *lt = ws->layout;
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
 
     int len = luaL_len(L, -1);
-    int container_count = get_container_count(ws);
-    int n = MAX(MIN(len, container_count), 1);
+    int container_area_count = get_container_area_count(ws);
+    int n_area = MAX(MIN(len, container_area_count), 1);
 
-    lua_rawgeti(L, -1, n);
+    lua_rawgeti(L, -1, n_area);
 
     // TODO refactor
     len = luaL_len(L, -1);
-    n = MAX(MIN(len, n), 1);
+    n_area = MAX(MIN(len, n_area), 1);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_ref);
     lua_pop(L, 1);
-    return n;
+    return n_area;
 }
 
-/* update layout and was set in the arrange function */
-// TODO what does this fucntion even do?
-static void update_layout_counters(lua_State *L, struct monitor *m)
+static int get_layout_container_max_area_count(struct workspace *ws)
 {
-    struct workspace *ws = get_workspace_on_monitor(m);
-    struct layout *lt = get_layout_on_monitor(m);
+    struct layout *lt = ws->layout;
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
 
-    lt->n = get_layout_container_count(ws);
-    lt->nmaster_abs = get_master_container_count(ws);
-    lt->n_abs = lt->n + lt->nmaster_abs-1;
+    int len = luaL_len(L, -1);
+
+    lua_rawgeti(L, -1, len);
+
+
+    // TODO refactor
+    int max_n_area = luaL_len(L, -1);
+
+    lua_pop(L, 2);
+    return max_n_area;
+}
+
+static void update_layout_counters(struct workspace *ws)
+{
+    struct layout *lt = ws->layout;
+
+    ws->n_all = get_container_count(ws);
+    lt->n_area = get_layout_container_area_count(ws);
+    lt->n_area_max = get_layout_container_max_area_count(ws);
+    lt->n_master_abs = get_master_container_count(ws);
+    lt->n_floating = get_floating_container_count(ws);
+    lt->n_tiled = lt->n_area + lt->n_master_abs-1;
+    lt->n_tiled_max = lt->n_area_max + lt->n_master_abs-1;
+    lt->n_visible = lt->n_tiled + lt->n_floating;
+    lt->n_hidden = ws->n_all - lt->n_visible;
 }
 
 static struct wlr_fbox lua_unbox_layout_geom(lua_State *L, int i) {
@@ -89,7 +110,7 @@ static struct wlr_fbox lua_unbox_layout_geom(lua_State *L, int i) {
 }
 
 /* update layout and was set in the arrange function */
-static void apply_nmaster_transformation(struct wlr_box *box, struct layout *lt, int position)
+static void apply_nmaster_layout(struct wlr_box *box, struct layout *lt, int position)
 {
     if (position > lt->nmaster)
         return;
@@ -97,7 +118,7 @@ static void apply_nmaster_transformation(struct wlr_box *box, struct layout *lt,
     // get layout
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_master_layout_data_ref);
     int len = luaL_len(L, -1);
-    int g = MIN(lt->nmaster_abs, lt->nmaster);
+    int g = MIN(lt->n_master_abs, lt->nmaster);
     g = MAX(MIN(len, g), 1);
     lua_rawgeti(L, -1, g);
     int k = MIN(position, g);
@@ -109,7 +130,8 @@ static void apply_nmaster_transformation(struct wlr_box *box, struct layout *lt,
     memcpy(box, &obox, sizeof(struct wlr_box));
 }
 
-static struct wlr_box get_geom_in_layout(lua_State *L, struct layout *lt, struct wlr_box geom, int arrange_position)
+static struct wlr_box get_nth_geom_in_layout(lua_State *L, struct layout *lt, 
+        struct wlr_box root_geom, int arrange_position)
 {
     // relative position
     int n = MAX(0, arrange_position+1 - lt->nmaster) + 1;
@@ -118,18 +140,37 @@ static struct wlr_box get_geom_in_layout(lua_State *L, struct layout *lt, struct
     struct wlr_fbox rel_geom = lua_unbox_layout_geom(L, n);
     lua_pop(L, 1);
 
-    struct wlr_box box = get_absolute_box(rel_geom, geom);
+    struct wlr_box box = get_absolute_box(rel_geom, root_geom);
 
     // TODO fix this function, hard to read
-    apply_nmaster_transformation(&box, lt, arrange_position+1);
+    apply_nmaster_layout(&box, lt, arrange_position+1);
     return box;
 }
 
 int get_slave_container_count(struct workspace *ws)
 {
-    struct layout *lt = &ws->layout[0];
+    struct layout *lt = ws->layout;
     int abs_count = get_tiled_container_count(ws);
     return MAX(abs_count - lt->nmaster, 0);
+}
+
+int get_floating_container_count(struct workspace *ws)
+{
+    struct layout *lt = ws->layout;
+
+    // there are no floating windows when using arrange by focus
+    if (lt->options.arrange_by_focus)
+        return 0;
+
+    int n = 0;
+
+    for (int i = 0; i < ws->floating_containers.length; i++) {
+        struct container *con = get_container(ws, i);
+        if (con->client->type == LAYER_SHELL)
+            continue;
+        n++;
+    }
+    return n;
 }
 
 int get_master_container_count(struct workspace *ws)
@@ -140,89 +181,49 @@ int get_master_container_count(struct workspace *ws)
 }
 
 // amount of slave containers plus the one master area
-int get_container_count(struct workspace *ws)
+int get_container_area_count(struct workspace *ws)
 {
     return get_slave_container_count(ws) + 1;
 }
 
-void update_container_positions(struct monitor *m)
-{
-    struct container *con;
-    int position = 0;
-
-    wl_list_for_each(con, &containers, mlink) {
-        if (!existon(con, &server.workspaces, m->ws_ids[0]))
-            continue;
-        if (con->floating)
-            continue;
-        if (con->client->type == LAYER_SHELL)
-            continue;
-
-        con->position = position;
-
-        apply_rules(con);
-
-        // then use the layout that may have been reseted
-        position++;
-    }
-
-    wl_list_for_each(con, &containers, mlink) {
-        if (!existon(con, &server.workspaces, m->ws_ids[0]))
-            continue;
-        if (!con->floating)
-            continue;
-        if (con->client->type == LAYER_SHELL)
-            continue;
-
-        con->position = position;
-
-        apply_rules(con);
-
-        // then use the layout that may have been reseted
-        position++;
-    }
-}
-
-static void update_container_focus_stack_positions(struct monitor *m)
-{
-    int position = 0;
-    struct container *con;
-    wl_list_for_each(con, &focus_stack, flink) {
-        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
-            continue;
-        if (con->floating)
-            continue;
-        if (con->client->type == LAYER_SHELL)
-            continue;
-
-        con->focus_stack_position = position;
-        // then use the layout that may have been reseted
-        position++;
-    }
-}
-
 void arrange_monitor(struct monitor *m)
 {
-    struct layout *lt = get_layout_on_monitor(m);
+    m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
+    set_root_geom(m->root, m->geom);
 
-    set_root_area(m->root, m->geom);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct layout *lt = ws->layout;
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);
 
-    update_layout_counters(L, m);
-    call_update_function(&lt->options.event_handler, lt->n);
+    update_layout_counters(ws);
+    call_update_function(&lt->options.event_handler, lt->n_area);
 
-    update_hidden_containers(m);
-    update_container_focus_stack_positions(m);
-    update_container_positions(m);
+    struct wlr_list *visible_container_lists = get_visible_lists(ws);
+    struct wlr_list *tiled_containers = get_tiled_list(ws);
+    struct wlr_list *hidden_containers = get_hidden_list(ws); 
 
-    arrange_containers(m, m->root->geom);
+    update_hidden_status_of_containers(m, visible_container_lists,
+            tiled_containers, hidden_containers);
+
+    if (!lt->options.arrange_by_focus) {
+        for (int i = 0; i < ws->floating_containers.length; i++) {
+            struct container *con = ws->floating_containers.items[i];
+            if (con->geom_was_changed) {
+                resize(con, con->prev_floating_geom);
+                con->geom_was_changed = false;
+            }
+        }
+    }
+
+    arrange_containers(ws, m->root->geom, tiled_containers);
 
     root_damage_whole(m->root);
 }
 
-void arrange_containers(struct monitor *m, struct wlr_box root_geom)
+void arrange_containers(struct workspace *ws, struct wlr_box root_geom,
+        struct wlr_list *tiled_containers)
 {
-    struct layout *lt = get_layout_on_monitor(m);
+    struct layout *lt = ws->layout;
 
     /* each container will get an inner_gap. If two containers are adjacent the
      * inner_gap is applied twice. To counter this effect we divide the
@@ -235,55 +236,54 @@ void arrange_containers(struct monitor *m, struct wlr_box root_geom)
     container_surround_gaps(&root_geom, -actual_inner_gap);
 
     if (lt->options.smart_hidden_edges) {
-        if (wl_list_length(&containers) <= 1) {
+        if (tiled_containers->length <= 1) {
             container_add_gaps(&root_geom, -lt->options.tile_border_px,
                     lt->options.hidden_edges);
         }
     } else {
-        container_add_gaps(&root_geom, -lt->options.tile_border_px, lt->options.hidden_edges);
+        container_add_gaps(&root_geom, -lt->options.tile_border_px,
+                lt->options.hidden_edges);
     }
 
-    struct container *con;
-    if (lt->options.arrange_by_focus) {
-        wl_list_for_each(con, &focus_stack, flink) {
-            if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
-                continue;
-            if (con->floating)
-                continue;
-            if (con->client->type == LAYER_SHELL)
-                continue;
+    for (int i = 0; i < tiled_containers->length; i++) {
+        struct container *con = tiled_containers->items[i];
 
-            arrange_container(con, con->focus_stack_position, root_geom, actual_inner_gap);
-        }
-    } else {
-        wl_list_for_each(con, &containers, mlink) {
-            if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
-                continue;
-            if (con->floating)
-                continue;
-
-            arrange_container(con, con->position, root_geom, actual_inner_gap);
-        }
+        arrange_container(con, i, root_geom, actual_inner_gap);
     }
 }
 
 static void arrange_container(struct container *con, int arrange_position, 
         struct wlr_box root_geom, int inner_gap)
 {
-    if (con->floating || con->hidden)
+    if (con->hidden)
         return;
 
     struct monitor *m = con->m;
-    struct workspace *ws = get_workspace_on_monitor(m);
-    struct layout *lt = &ws->layout[0];
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct layout *lt = ws->layout;
 
-    struct wlr_box geom = get_geom_in_layout(L, lt, root_geom, arrange_position);
+    struct wlr_box geom = get_nth_geom_in_layout(L, lt, root_geom, arrange_position);
     container_surround_gaps(&geom, inner_gap);
 
     // since gaps are halfed we need to multiply it by 2
     container_surround_gaps(&geom, 2*con->client->bw);
 
+    if (con->floating)
+        con->geom_was_changed = true;
+
     resize(con, geom);
+}
+
+static void set_container_geom(struct container *con, struct wlr_box geom)
+{
+    struct monitor *m = con->m;
+    struct layout *lt = get_layout_in_monitor(m);
+
+    if (con->floating && !lt->options.arrange_by_focus)
+        con->prev_floating_geom = geom;
+
+    con->prev_geom = con->geom;
+    con->geom = geom;
 }
 
 void resize(struct container *con, struct wlr_box geom)
@@ -293,8 +293,9 @@ void resize(struct container *con, struct wlr_box geom)
      * compositor, you'd wait for the client to prepare a buffer at
      * the new size, then commit any movement that was prepared.
      */
+
     set_container_geom(con, geom);
-    con->client->resize = true;
+    con->client->resized = true;
 
     bool preserve_ratio = con->ratio != 0;
 
@@ -318,8 +319,10 @@ void resize(struct container *con, struct wlr_box geom)
     /* wlroots makes this a no-op if size hasn't changed */
     switch (con->client->type) {
         case XDG_SHELL:
-            wlr_xdg_toplevel_set_size(con->client->surface.xdg,
-                    con->geom.width, con->geom.height);
+            if (con->client->surface.xdg->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
+                wlr_xdg_toplevel_set_size(con->client->surface.xdg,
+                        con->geom.width, con->geom.height);
+            }
             break;
         case LAYER_SHELL:
             wlr_layer_surface_v1_configure(con->client->surface.layer,
@@ -334,55 +337,53 @@ void resize(struct container *con, struct wlr_box geom)
     }
 }
 
-void update_hidden_containers(struct monitor *m)
+void update_hidden_status_of_containers(struct monitor *m, 
+        struct wlr_list *visible_container_lists, struct wlr_list *tiled_containers,
+        struct wlr_list *hidden_containers)
 {
-    struct container *con;
-    struct workspace *ws = get_workspace_on_monitor(m);
     // because the master are is included in n aswell as nmaster we have to
     // subtract the solution by one to count
-    struct layout *lt = &ws->layout[0];
+    struct layout *lt = get_layout_in_monitor(m);
 
-    int i = 1;
-    if (ws->layout[0].options.arrange_by_focus) {
-        wl_list_for_each(con, &focus_stack, flink) {
-            if (con->floating)
-                continue;
-            if (!existon(con, &server.workspaces, ws->id))
-                continue;
-            if (con->client->type == LAYER_SHELL)
-                continue;
+    if (lt->n_tiled > tiled_containers->length) {
+        int n_missing = MIN(lt->n_tiled - tiled_containers->length, hidden_containers->length);
+        for (int i = 0; i < n_missing; i++) {
+            struct container *con = hidden_containers->items[0];
 
-            con->hidden = i > lt->n_abs;
-            i++;
+            con->hidden = false;
+            wlr_list_del(hidden_containers, 0);
+            wlr_list_push(tiled_containers, con);
         }
     } else {
-        wl_list_for_each(con, &containers, mlink) {
-            if (con->floating)
-                continue;
-            if (!existon(con, &server.workspaces, ws->id))
-                continue;
-            if (con->client->type == LAYER_SHELL)
-                continue;
-
-            con->hidden = i > lt->n_abs;
-            i++;
+        int tile_containers_length = tiled_containers->length;
+        for (int i = lt->n_tiled; i < tile_containers_length; i++) {
+            struct container *con = wlr_list_pop(tiled_containers);
+            con->hidden = true;
+            wlr_list_insert(hidden_containers, 0, con);
         }
     }
+
+    for (int i = 0; i < length_of_composed_list(visible_container_lists); i++) {
+        struct container *con = get_in_composed_list(visible_container_lists, i);
+        con->hidden = false;
+    }
+    for (int i = 0; i < hidden_containers->length; i++) {
+        struct container *con = hidden_containers->items[i];
+        con->hidden = true;
+    }
+}
+
+int get_container_count(struct workspace *ws)
+{
+    return length_of_composed_list(&ws->container_lists);
 }
 
 int get_tiled_container_count(struct workspace *ws)
 {
-    struct container *con;
     int n = 0;
+    struct wlr_list *tiled_containers = get_tiled_list(ws);
+    struct wlr_list *hidden_containers = get_hidden_list(ws);
 
-    wl_list_for_each(con, &containers, mlink) {
-        if (con->floating)
-            continue;
-        if (!existon(con, &server.workspaces, ws->id))
-            continue;
-        if (con->client->type == LAYER_SHELL)
-            continue;
-        n++;
-    }
+    n = tiled_containers->length + hidden_containers->length;
     return n;
 }

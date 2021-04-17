@@ -30,11 +30,13 @@ static const struct luaL_Reg action[] =
     {"load_prev_layout_in_set", lib_load_prev_layout_in_set},
     {"move_container_to_workspace", lib_move_container_to_workspace},
     {"move_resize", lib_move_resize},
+    {"move_to_scratchpad", lib_move_to_scratchpad},
     {"quit", lib_quit},
     {"repush", lib_repush},
     {"resize_main", lib_resize_main},
     {"set_floating", lib_set_floating},
     {"set_nmaster", lib_set_nmaster},
+    {"show_scratchpad", lib_show_scratchpad},
     {"swap_workspace", lib_swap_workspace},
     {"toggle_bars", lib_toggle_bars},
     {"toggle_floating", lib_toggle_floating},
@@ -48,14 +50,16 @@ static const struct luaL_Reg action[] =
 
 static const struct luaL_Reg container[] =
 {
-    {"set_sticky", container_set_sticky},
+    {"set_alpha", container_set_alpha},
     {"set_ratio", container_set_ratio},
+    {"set_sticky", container_set_sticky},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg event[] =
 {
     {"set_create_container_function", lib_set_create_container_function},
+    {"set_on_focus_function", lib_set_on_focus_function},
     {"set_on_start_function", lib_set_on_start_function},
     {"set_update_function", lib_set_update_function},
     {NULL, NULL},

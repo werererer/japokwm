@@ -21,6 +21,7 @@
 #include "keyboard.h"
 #include "layer_shell.h"
 #include "render/render.h"
+#include "scratchpad.h"
 #include "server.h"
 #include "translationLayer.h"
 #include "utils/parseConfigUtils.h"
@@ -109,8 +110,9 @@ static void run(char *startup_cmd)
 
     /* Now that outputs are initialized, choose initial selMon based on
      * cursor position, and set default cursor image */
-    struct monitor *m = xytomon(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
-    set_selected_monitor(m);
+    update_monitor_geometries();
+    struct monitor *m = xy_to_monitor(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
+    focus_monitor(m);
 
     /* XXX hack to get cursor to display in its initial location (100, 100)
      * instead of (0, 0) and then jumping.  still may not be fully
@@ -124,7 +126,6 @@ static void run(char *startup_cmd)
         if (startup_pid < 0)
             wlr_log(WLR_ERROR, "startup: fork");
         if (startup_pid == 0) {
-            printf("exec: %s\n", startup_cmd);
             execl("/bin/sh", "/bin/sh", "-c", startup_cmd, (void *)NULL);
             wlr_log(WLR_ERROR, "startup: execl");
         }
@@ -143,20 +144,12 @@ static void run(char *startup_cmd)
 
 static int setup()
 {
-    wl_list_init(&mons);
-    wl_list_init(&focus_stack);
-    wl_list_init(&stack);
-    wl_list_init(&containers);
-    wl_list_init(&layer_stack);
-    wl_list_init(&popups);
-    wl_list_init(&sticky_stack);
-
     L = luaL_newstate();
     luaL_openlibs(L);
     load_libs(L);
     init_error_file();
 
-    server.default_layout = get_default_layout();
+    server.default_layout = create_layout(L);
     server.layout_set = get_default_layout_set();
 
     init_utils(L);
@@ -175,7 +168,7 @@ static int setup()
      * backend uses the renderer, for example, to fall back to software cursors
      * if the backend does not support hardware cursors (some older GPUs
      * don't). */
-    if (!(server.backend = wlr_backend_autocreate(server.wl_display, NULL))) {
+    if (!(server.backend = wlr_backend_autocreate(server.wl_display))) {
         wlr_log(WLR_INFO, "couldn't create backend");
         return EXIT_FAILURE;
     }
@@ -217,8 +210,6 @@ static int setup()
      *
      * https://drewdevault.com/2018/07/29/Wayland-shells.html
      */
-    wl_list_init(&clients);
-    wl_list_init(&server.independents);
 
     server.xdg_shell = wlr_xdg_shell_create(server.wl_display);
     wl_signal_add(&server.xdg_shell->events.new_surface, &new_xdg_surface);
@@ -330,26 +321,30 @@ void print_usage()
 
 int main(int argc, char *argv[])
 {
-    char *startup_cmd = "";
-
     init_server();
+
+    char *startup_cmd = "";
 
     static struct option long_options[] = {
         {"help", no_argument, NULL, 'h'},
         {"config", required_argument, NULL, 'c'},
+        {"path", required_argument, NULL, 'p'},
         {"startup", no_argument, NULL, 's'},
         {0, 0, 0, 0}
     };
 
     int c;
     int option_index = 0;
-    while ((c = getopt_long(argc, argv, "h:c:s", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "h:c:p:s", long_options, &option_index)) != -1) {
         switch (c) {
             case 's':
                 startup_cmd = optarg;
                 break;
             case 'c':
                 server.config_file = optarg;
+                break;
+            case 'p':
+                server.config_dir = optarg;
                 break;
             case 'h':
                 print_help();
@@ -365,8 +360,8 @@ int main(int argc, char *argv[])
         return EXIT_SUCCESS;
     }
 
-    /* // TODO delete to increase performance */
-    /* setbuf(stdout, NULL); */
+    // TODO delete to increase performance
+    setbuf(stdout, NULL);
 
     // Wayland requires XDG_RUNTIME_DIR for creating its communications
     // socket

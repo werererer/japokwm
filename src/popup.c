@@ -32,14 +32,13 @@ static struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *x
     popup->xdg = xdg_popup;
     popup->toplevel = toplevel;
 
-    // unconstrain
     struct wlr_box box = popup->xdg->geometry;
     box.x = 0;
     box.y = 0;
     box.width = m->geom.width;
     box.height = m->geom.height;
-    wlr_xdg_popup_unconstrain_from_box(popup->xdg, &box);
 
+    wlr_xdg_popup_unconstrain_from_box(popup->xdg, &box);
     // the root window may be resized. This must be adjusted
     popup->geom.x = popup->xdg->geometry.x + parent_geom.x;
     popup->geom.y = popup->xdg->geometry.y + parent_geom.y;
@@ -51,8 +50,6 @@ static struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *x
     wl_signal_add(&popup->xdg->base->events.map, &popup->map);
     popup->unmap.notify = popup_handle_unmap;
     wl_signal_add(&popup->xdg->base->events.unmap, &popup->unmap);
-    popup->commit.notify = popup_handle_commit;
-    wl_signal_add(&popup->xdg->base->surface->events.commit, &popup->commit);
     popup->new_popup.notify = popup_handle_new_subpopup;
     wl_signal_add(&popup->xdg->base->events.new_popup, &popup->new_popup);
     popup->destroy.notify = popup_handle_destroy;
@@ -62,6 +59,11 @@ static struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *x
 
 static void destroy_popup(struct xdg_popup *xdg_popup)
 {
+    wl_list_remove(&xdg_popup->map.link);
+    wl_list_remove(&xdg_popup->unmap.link);
+    wl_list_remove(&xdg_popup->destroy.link);
+    wl_list_remove(&xdg_popup->new_popup.link);
+
     free(xdg_popup);
     xdg_popup = NULL;
 }
@@ -76,11 +78,15 @@ static void popup_handle_map(struct wl_listener *listener, void *data)
 {
     struct xdg_popup *popup = wl_container_of(listener, popup, map);
     popup_damage(popup, true);
+
+    popup->commit.notify = popup_handle_commit;
+    wl_signal_add(&popup->xdg->base->surface->events.commit, &popup->commit);
 }
 
 static void popup_handle_unmap(struct wl_listener *listener, void *data)
 {
     struct xdg_popup *popup = wl_container_of(listener, popup, unmap);
+    wl_list_remove(&popup->commit.link);
     popup_damage(popup, true);
 }
 
@@ -105,7 +111,7 @@ void popup_handle_new_popup(struct wl_listener *listener, void *data)
     if (con->m != selected_monitor)
         return;
     struct xdg_popup *popup = create_popup(con->m, xdg_popup, con->geom, con);
-    wl_list_insert(&popups, &popup->plink);
+    wlr_list_insert(&server.popups, 0, popup);
 }
 
 static void popup_handle_new_subpopup(struct wl_listener *listener, void *data)
@@ -116,13 +122,14 @@ static void popup_handle_new_subpopup(struct wl_listener *listener, void *data)
 
     struct xdg_popup *popup = create_popup(parent_popup->m, xdg_popup,
             parent_popup->geom, parent_popup->toplevel);
-    wl_list_insert(&popups, &popup->plink);
+    wlr_list_insert(&server.popups, 0, popup);
 }
 
 void popup_handle_destroy(struct wl_listener *listener, void *data)
 {
     struct xdg_popup *popup = wl_container_of(listener, popup, destroy);
-    wl_list_remove(&popup->plink);
+    wlr_list_remove(&server.popups, cmp_ptr, popup);
+
     destroy_popup(popup);
 }
 
@@ -168,17 +175,24 @@ struct wlr_surface *get_popup_surface_under_cursor(double *sx, double *sy)
 inline void destroy_popups()
 {
     struct xdg_popup *popup = get_latest_popup();
+
+    if (!popup)
+        return;
+
     wlr_xdg_popup_destroy(popup->xdg->base);
 }
 
 inline struct xdg_popup *get_latest_popup()
 {
-    struct xdg_popup *popup = wl_container_of(popups.next, popup, plink);
+    if (!popups_exist())
+        return NULL;
+
+    struct xdg_popup *popup = server.popups.items[0];
     return popup;
 }
 
 
 inline bool popups_exist()
 {
-    return !wl_list_empty(&popups);
+    return server.popups.length > 0;
 }

@@ -16,17 +16,22 @@ japokwm - tiling made easy
 *-c, --config* <config>
 	Specifies a config file.
 
-*-d, --debug*
-	Enables full logging, including debug information.
+*-p, --path* <path>
+	Specifies the directory where the config files are located in (Note: -c
+	option overwrites the init.lua found in the path)
 
-*-v, --version*
-	Show the version number and quit.
+; TODO add this in the future
+; *-d, --debug*
+; 	Enables full logging, including debug information.
 
-*-V, --verbose*
-	Enables more verbose logging.
+; 	*-v, --version*
+; 	Show the version number and quit.
 
-*--get-socketpath*
-	Gets the IPC socket path and prints it, then exits.
+; *-V, --verbose*
+; 	Enables more verbose logging.
+
+; *--get-socketpath*
+; 	Gets the IPC socket path and prints it, then exits.
 
 # DESCRIPTION
 

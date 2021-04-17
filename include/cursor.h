@@ -24,6 +24,7 @@ struct cursor {
 };
 
 void axisnotify(struct wl_listener *listener, void *data);
+void buttonpress(struct wl_listener *listener, void *data);
 void create_pointer(struct wlr_input_device *device);
 void cursorframe(struct wl_listener *listener, void *data);
 /* This event is raised by the seat when a client provides a cursor image */

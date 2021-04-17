@@ -38,8 +38,8 @@ static void sym_to_binding(char *dest, int mods, int sym)
 static void resolve_keybind_element(char *sym_dest, const char *bind)
 {
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace(&server.workspaces, m->ws_ids[0]);
-    struct layout *lt = &ws->layout[0];
+    struct workspace *ws = get_workspace(m->ws_id);
+    struct layout *lt = ws->layout;
 
     if (strcmp(bind, "mod") == 0) {
         strcpy(sym_dest, modkeys[lt->options.modkey]);
@@ -134,7 +134,7 @@ bool handle_keybinding(int mods, int sym)
 {
     char bind[128] = "";
     sym_to_binding(bind, mods, sym);
-    bool handled = process_binding(L, bind, server.default_layout.options.keybinds_ref);
+    bool handled = process_binding(L, bind, server.default_layout->options.keybinds_ref);
     return handled;
 }
 

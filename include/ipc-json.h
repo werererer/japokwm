@@ -4,7 +4,7 @@
 #include "client.h"
 #include "workspace.h"
 
-json_object *ipc_json_describe_workspace(struct monitor *m, struct workspace *ws, bool focused);
-json_object *ipc_json_describe_node(struct monitor *m, struct client *c);
+json_object *ipc_json_describe_workspace(struct workspace *ws, bool focused);
+json_object *ipc_json_describe_selected_container(struct monitor *m);
 
 #endif

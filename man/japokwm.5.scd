@@ -89,9 +89,8 @@ integers
    used
 :< { { {0.3, 0.1, 0.5, 0.7}, {0.3, 0.1, 0.5, 0.7}, }, { {0.3, 0.1, 0.5, 0.7}, {0.3, 0.1, 0.5, 0.7},} }
 |  layout_info
-:< array(string, string) the 1st argument represents the symbol of the layout
-   the 2nd argument represents the directory/name of the layout
-:< {"+", "main"} -- symbol is "+" and directory "main"
+:< array(string) The 1st argument represents the directory/name of the layout
+:< {"main"} -- the directory/name is "main"
 |  color
 :< array(number, number, number, number) the arguments represents rgba
    respectively between 0..1
@@ -196,6 +195,11 @@ integers
 <where> ++
 	e: enum - given by info.cursor.mode
 
+*move_to_scratchpad(i)* ++
+	move the window at position i to the scratchpad
+<where> ++
+	i: integer - position on the stack
+
 *quit()* ++
 	quit the window manager
 
@@ -219,6 +223,10 @@ integers
 	set the amount of master windows ++
 <where> ++
 	i: integer - the number of master windows
+
+*show_scratchpad()*
+	show the first window on the scratchpad. If it is already visible hide it
+	instead and move it to the end of the scratchpad.
 
 *swap_workspace(i, i2)*
 	swap the workspace i with the workspace i2 ++
@@ -247,15 +255,23 @@ integers
 	like dwm's zoom
 
 # CONTAINER
-*container_set_sticky(b)* ++
-	make container sticky ++
+*container_set_alpha(i, alpha)* ++
+	set the opacity of the container ++
 <where> ++
-	b: boolean
+	i: integer - position of the container
+	alpha: float - new alpha value of the container
 
-*container_set_ratio(f)* ++
+*container_set_ratio(i, ratio)* ++
 	set the ratio of the container ++
 <where> ++
-	f: number
+	i: integer - position of the container
+	ratio: float - ratio of the container (if 0 it is interpreted as no ratio)
+
+*container_set_sticky(i, sticky)* ++
+	make container sticky ++
+<where> ++
+	i: integer - position of the container
+	sticky: boolean - whether container is sticky
 
 # EVENT
 *set_update_function(func)* ++
@@ -265,6 +281,14 @@ integers
 		layout_element will be loaded ++
 	<where> ++
 		n: integer - n represents the amount of containers  
+
+*set_on_focus_function(func)* ++
+	set the update function ++
+<where> ++
+	func: function(n) - it will be called every time a new container is ++
+	selected layout_element will be loaded ++
+	<where> ++
+		n: integer - n represents the current container position
 
 *set_on_start_function(func)* ++
 	set the function that is executed on start of the windowmanager.
@@ -280,10 +304,11 @@ integers
 		n: integer - n represents the current container position
 
 # LAYOUT
-*set(layout_data)* ++
+*set(name, layout_data)* ++
 	set layout ++
 <where> ++
-	layout_data - layout_data for the layout
+	name: (string) - name of this layout
+	layout_data: layout_data - layout_data for the layout
 
 # INFO
 *get_this_container_count()* ++
@@ -334,7 +359,7 @@ integers
 	create a new layout_set ++
 <where> ++
 	name: string - name of the layout set ++
-	layouts: layouts that belong to this set
+	layouts: layout_info - layouts that belong to this set
 
 *create_workspaces(names)*
 	create or recreate all workspaces with an array of names for each ++
@@ -359,7 +384,7 @@ integers
 *set_default_layout(l)* ++
 	set the default layout ++
 <where> ++
-	l: layout_info
+	l: string - name/directory of the layout
 
 *set_float_borderpx(f)* ++
 	set the border width of floating windows in pixel ++

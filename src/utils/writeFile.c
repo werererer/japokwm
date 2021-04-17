@@ -21,7 +21,7 @@ int write_to_file(int fd, const char *content)
 static int write_double_to_file(int fd, double d)
 {
     char content[NUM_CHARS];
-    doubleToString(content, d);
+    double_to_string(content, d);
     return write_to_file(fd, content);
 }
 

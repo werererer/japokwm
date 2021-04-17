@@ -17,23 +17,23 @@ START_TEST(containerAddGapsTest)
     struct wlr_box con2 = con;
     int gap = 5;
 
-    containerAddGaps(&con2, gap, WLR_EDGE_LEFT | WLR_EDGE_RIGHT);
+    container_add_gaps(&con2, gap, WLR_EDGE_LEFT | WLR_EDGE_RIGHT);
     ck_assert_double_eq(con2.x, 55);
     ck_assert_double_eq(con2.y, 50);
-    ck_assert_double_eq(con2.width, 95);
+    ck_assert_double_eq(con2.width, 90);
     ck_assert_double_eq(con2.height, 100);
 
     con2 = con;
 
-    containerAddGaps(&con2, gap, WLR_EDGE_TOP);
+    container_add_gaps(&con2, gap, WLR_EDGE_TOP);
     ck_assert_double_eq(con2.x, 50);
     ck_assert_double_eq(con2.y, 55);
     ck_assert_double_eq(con2.width, 100);
-    ck_assert_double_eq(con2.height, 100);
+    ck_assert_double_eq(con2.height, 95);
 
     con2 = con;
 
-    containerAddGaps(&con2, gap, WLR_EDGE_BOTTOM);
+    container_add_gaps(&con2, gap, WLR_EDGE_BOTTOM);
     ck_assert_double_eq(con2.x, 50);
     ck_assert_double_eq(con2.y, 50);
     ck_assert_double_eq(con2.width, 100);
@@ -47,7 +47,7 @@ START_TEST(containerSurroundGapsTest)
     con.y = 50;
     con.width = 100;
     con.height = 100;
-    containerSurroundGaps(&con, 4.0);
+    container_surround_gaps(&con, 4.0);
     ck_assert_double_eq(con.x, 52);
     ck_assert_double_eq(con.y, 52);
     ck_assert_double_eq(con.width, 96);
@@ -59,7 +59,7 @@ Suite *suite()
     Suite *s;
     TCase *tc;
 
-    s = suite_create("tagset");
+    s = suite_create("gapUtils");
     tc = tcase_create("Core");
     tcase_add_test(tc, containerAddGapsTest);
     tcase_add_test(tc, containerSurroundGapsTest);

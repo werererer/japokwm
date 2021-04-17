@@ -12,23 +12,26 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     struct client *c;
 
     /* Allocate a Client for this surface */
-    c = layer_surface->data = calloc(1, sizeof(struct client));
+    c = layer_surface->data = create_client(LAYER_SHELL);
     c->surface.layer = layer_surface;
     c->bw = 0;
-    c->type = LAYER_SHELL;
+
+    if (!c->surface.layer->output) {
+        c->surface.layer->output = selected_monitor->wlr_output;
+    }
+    struct monitor *m = output_to_monitor(c->surface.layer->output);
+    wlr_layer_surface_v1_configure(c->surface.layer, m->geom.width, m->geom.height);
 
     /* Listen to the various events it can emit */
-    c->commit.notify = commit_notify;
-    wl_signal_add(&layer_surface->surface->events.commit, &c->commit);
     c->map.notify = maprequest;
     wl_signal_add(&layer_surface->events.map, &c->map);
-    c->unmap.notify = unmapnotify;
+    c->unmap.notify = unmap_notify;
     wl_signal_add(&layer_surface->events.unmap, &c->unmap);
     c->destroy.notify = destroy_notify;
     wl_signal_add(&layer_surface->events.destroy, &c->destroy);
-    // TODO: remove this line
-    wlr_layer_surface_v1_configure(c->surface.layer,
-            selected_monitor->geom.width, selected_monitor->geom.height);
+    c->destroy.notify = destroy_notify;
+
+    /* wl_signal_add(&layer_surface->surface->role->commit,  .destroy, &c->destroy); */
 
     /* popups */
     c->new_popup.notify = popup_handle_new_popup;

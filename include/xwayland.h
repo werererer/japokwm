@@ -27,7 +27,6 @@ struct xwayland {
     xcb_atom_t atoms[ATOM_LAST];
 };
 
-void activatex11(struct wl_listener *listener, void *data);
 void create_notifyx11(struct wl_listener *listener, void *data);
 void handle_xwayland_ready(struct wl_listener *listener, void *data);
 void maprequestx11(struct wl_listener *listener, void *data);

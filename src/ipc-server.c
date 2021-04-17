@@ -17,6 +17,8 @@
 #include <unistd.h>
 #include <wayland-server-core.h>
 #include <wlr/types/wlr_list.h>
+#include <wlr/util/log.h>
+
 #include "ipc-json.h"
 #include "ipc-server.h"
 #include "server.h"
@@ -351,17 +353,9 @@ void ipc_client_disconnect(struct ipc_client *client) {
     free(client);
 }
 
-/* static void ipc_get_tags_callback(struct tagset *tagset, json_object *tagJson) { */
-/*     json_object *data = ipc_json_describe_tagset(tagset); */
-/*     // override the default focused indicator because */
-/*     // it's set differently for the get_workspaces reply */
-/*     unsigned int focusedTag = selMon->tagset.focusedTag; */
-/*     bool focused = tagset->focusedTag == focusedTag; */
-/*     json_object_object_del(data, "focused"); */
-/*     json_object_object_add(data, "focused", */
-/*             json_object_new_boolean(focused)); */
-/*     json_object_array_add((json_object *)tagJson, tagJson); */
-/* } */
+void ipc_event_window() {
+    ipc_send_event("", IPC_EVENT_WINDOW);
+}
 
 void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_length,
         enum ipc_command_type payload_type) {
@@ -398,20 +392,21 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
             {
                 json_object *array = json_object_new_array();
 
-                struct monitor *m;
-                wl_list_for_each(m, &mons, link) {
+                for (int i = 0; i < server.mons.length; i++) {
+                    struct monitor *m = server.mons.items[i];
                     for (int i = 0; i < server.workspaces.length; i++) {
-                        struct workspace *ws = get_workspace(&server.workspaces, i);
+                        struct workspace *ws = get_workspace(i);
                         bool has_clients = workspace_has_clients(ws);
-                        bool is_workspace_selected = m->ws_ids[0] == i;
-                        bool is_workspace_active = selected_monitor->ws_ids[0] == i;
+                        bool is_workspace_selected = m->ws_id == i;
+                        bool is_workspace_active = selected_monitor->ws_id == i;
                         if (!has_clients && !is_workspace_selected) 
                             continue;
                         if (ws->m != m)
                             continue;
 
-                        json_object *tag = ipc_json_describe_workspace(m, ws, is_workspace_active);
-                        json_object_array_add(array, tag);
+                        json_object *ws_object = ipc_json_describe_workspace(
+                                ws, is_workspace_active);
+                        json_object_array_add(array, ws_object);
                     }
                 }
 
@@ -433,6 +428,14 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
                     const char *event_type = json_object_get_string(json_object_array_get_idx(request, i));
                     if (strcmp(event_type, "workspace") == 0) {
                         client->subscribed_events |= event_mask(IPC_EVENT_WORKSPACE);
+                    } else if (strcmp(event_type, "window") == 0) {
+                        client->subscribed_events |= event_mask(IPC_EVENT_WINDOW);
+                    } else {
+                        const char msg[] = "{\"success\": false}";
+                        ipc_send_reply(client, payload_type, msg, strlen(msg));
+                        json_object_put(request);
+                        wlr_log(WLR_INFO, "Unsupported event type in subscribe request");
+                        goto exit_cleanup;
                     }
                 }
 
@@ -449,8 +452,12 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
 
         case IPC_GET_TREE:
             {
-                // TODO which clinet?
-                ipc_send_reply(client, payload_type, "", strlen(""));
+                struct monitor *m = selected_monitor;
+                json_object *tree = ipc_json_describe_selected_container(m);
+                const char *json_string = json_object_to_json_string(tree);
+
+                ipc_send_reply(client, payload_type, json_string, strlen(json_string));
+                json_object_put(tree);
                 goto exit_cleanup;
             }
 

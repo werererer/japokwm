@@ -25,8 +25,9 @@ static void render_independents(struct monitor *m, pixman_region32_t *output_dam
 static void render_layershell(struct monitor *m,
         enum zwlr_layer_shell_v1_layer layer, pixman_region32_t *output_damage);
 static void scissor_output(struct wlr_output *output, pixman_box32_t *rect);
-static void render_texture(struct wlr_output *wlr_output, pixman_region32_t *output_damage,
-        struct wlr_texture *texture, const struct wlr_box *box);
+static void render_texture(struct wlr_output *wlr_output,
+        pixman_region32_t *output_damage, struct wlr_texture *texture,
+        const struct wlr_box *box, float alpha);
 
 /* _box.x and .y are expected to be layout-local
    _box.width and .height are expected to be output-buffer-local */
@@ -95,7 +96,7 @@ static void output_for_each_surface_iterator(struct wlr_surface *surface, int sx
 
 static void render_texture(struct wlr_output *wlr_output,
         pixman_region32_t *output_damage, struct wlr_texture *texture,
-        const struct wlr_box *box)
+        const struct wlr_box *box, float alpha)
 {
     struct wlr_renderer *renderer = wlr_backend_get_renderer(wlr_output->backend);
 
@@ -110,14 +111,16 @@ static void render_texture(struct wlr_output *wlr_output,
     pixman_box32_t *rects = pixman_region32_rectangles(&damage, &nrects);
     for (int i = 0; i < nrects; i++) {
         scissor_output(wlr_output, &rects[i]);
-        wlr_render_texture(renderer, texture, wlr_output->transform_matrix, box->x, box->y, 1.0f);
+        wlr_render_texture(renderer, texture, wlr_output->transform_matrix,
+                box->x, box->y, alpha);
     }
 
 finish_damage:
     pixman_region32_fini(&damage);
 }
 
-static void render_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct wlr_box box, pixman_region32_t *output_damage)
+static void render_surface_iterator(struct monitor *m, struct wlr_surface *surface,
+        struct wlr_box box, pixman_region32_t *output_damage, float alpha)
 {
     struct wlr_texture *texture = wlr_surface_get_texture(surface);
     struct wlr_output *wlr_output = m->wlr_output;
@@ -140,15 +143,16 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
          * part of the puzzle, dwl does not fully support HiDPI. */
         .x = ox,
         .y = oy,
-        .width = box.width,
-        .height = box.height,
+        .width = surface->current.width,
+        .height = surface->current.height,
     };
 
-    render_texture(wlr_output, output_damage, texture, &obox);
+    render_texture(wlr_output, output_damage, texture, &obox, alpha);
 }
 
 static void
-damage_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct wlr_box *box, void *user_data)
+damage_surface_iterator(struct monitor *m, struct wlr_surface *surface,
+        struct wlr_box *box, void *user_data)
 {
     struct wlr_output *wlr_output = m->wlr_output;
     bool whole = *(bool *) user_data;
@@ -178,6 +182,7 @@ damage_surface_iterator(struct monitor *m, struct wlr_surface *surface, struct w
 
 void output_damage_surface(struct monitor *m, struct wlr_surface *surface, struct wlr_box *geom, bool whole)
 {
+    assert(m != NULL);
     if (!m->wlr_output->enabled)
         return;
 
@@ -247,10 +252,9 @@ static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *bo
     return containers_hidden_edges;
 }
 
-static void render_borders(struct container *con, pixman_region32_t *output_damage)
+static void render_borders(struct container *con, struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct monitor *m = con->m;
-    struct container *sel = focused_container(m);
+    struct container *sel = get_focused_container(con->m);
 
     if (con->has_border) {
         double ox, oy;
@@ -261,8 +265,6 @@ static void render_borders(struct container *con, pixman_region32_t *output_dama
         w = con->geom.width;
         h = con->geom.height;
 
-        struct layout *lt = get_layout_on_monitor(m);
-
         struct wlr_box *borders = (struct wlr_box[4]) {
             {ox, oy, w + 2 * con->client->bw, con->client->bw},             /* top */
                 {ox, oy + con->client->bw + h, w + 2 * con->client->bw, con->client->bw}, /* bottom */
@@ -271,8 +273,10 @@ static void render_borders(struct container *con, pixman_region32_t *output_dama
         };
 
         enum wlr_edges hidden_edges = WLR_EDGE_NONE;
+        struct workspace *ws = monitor_get_active_workspace(m);
+        struct layout *lt = ws->layout;
         if (lt->options.smart_hidden_edges) {
-            if (wl_list_length(&containers) <= 1) {
+            if (ws->tiled_containers.length <= 1) {
                 hidden_edges = get_hidden_edges(con, borders, lt->options.hidden_edges);
             }
         } else {
@@ -292,21 +296,20 @@ static void render_borders(struct container *con, pixman_region32_t *output_dama
 
 static void render_containers(struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct container *con;
-
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    wl_list_for_each_reverse(con, &stack, slink) {
-        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
+    for (int i = length_of_composed_list(&server.normal_visual_stack_lists); i >= 0; i--) {
+        struct container *con = get_in_composed_list(&server.normal_visual_stack_lists, i);
+        if (!visible_on(con, get_workspace(m->ws_id)))
             continue;
 
-        render_borders(con, output_damage);
+        render_borders(con, m, output_damage);
 
         /* This calls our render function for each surface among the
          * xdg_surface's toplevel and popups. */
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
-        render_surface_iterator(m, surface, con->geom, output_damage);
+        render_surface_iterator(m, surface, con->geom, output_damage, con->alpha);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -316,21 +319,22 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
 
 static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer layer, pixman_region32_t *output_damage)
 {
-    struct container *con;
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    wl_list_for_each_reverse(con, &layer_stack, llink) {
+    for (int i = 0; i < length_of_composed_list(&server.layer_visual_stack_lists); i++) {
+        struct container *con = get_in_composed_list(&server.layer_visual_stack_lists, i);
+
         if (con->client->type != LAYER_SHELL)
             continue;
         if (con->client->surface.layer->current.layer != layer)
             continue;
-        if (!visibleon(con, &server.workspaces, m->ws_ids[0]))
+        if (!visible_on(con, get_workspace(m->ws_id)))
             continue;
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
         con->geom.width = surface->current.width;
         con->geom.height = surface->current.height;
-        render_surface_iterator(m, surface, con->geom, output_damage);
+        render_surface_iterator(m, surface, con->geom, output_damage, con->alpha);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -342,12 +346,13 @@ static void render_independents(struct monitor *m, pixman_region32_t *output_dam
 {
     struct container *con;
 
-    wl_list_for_each_reverse(con, &server.independents, ilink) {
+    struct workspace *ws = monitor_get_active_workspace(m);
+    for (int i = 0; i < ws->independent_containers.length; i++) {
         struct wlr_surface *surface = get_wlrsurface(con->client);
 
         con->geom.width = surface->current.width;
         con->geom.height = surface->current.height;
-        render_surface_iterator(m, surface, con->geom, output_damage);
+        render_surface_iterator(m, surface, con->geom, output_damage, 1.0f);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -357,10 +362,10 @@ static void render_independents(struct monitor *m, pixman_region32_t *output_dam
 
 static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct xdg_popup *popup;
-    wl_list_for_each_reverse(popup, &popups, plink) {
+    for (int i = 0; i < server.popups.length; i++) {
+        struct xdg_popup *popup = server.popups.items[i];
         struct wlr_surface *surface = popup->xdg->base->surface;
-        render_surface_iterator(m, surface, popup->geom, output_damage);
+        render_surface_iterator(m, surface, popup->geom, output_damage, 1.0f);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);

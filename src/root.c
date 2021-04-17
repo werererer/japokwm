@@ -51,11 +51,12 @@ static const struct anchors anchors = {
     },
 };
 
-struct root *create_root(struct monitor *m)
+struct root *create_root(struct monitor *m, struct wlr_box geom)
 {
     struct root *root = calloc(1, sizeof(struct root));
     root->consider_layer_shell = true;
     root->m = m;
+    set_root_geom(root, geom);
     return root;
 }
 
@@ -71,15 +72,17 @@ static bool equals_anchor(const struct anchor *anchor, uint32_t anchor_value)
     return is_anchor_triplet || is_singular_anchor;
 }
 
-// TODO fix this to allow placement on all sides on screen
 static struct wlr_box fit_root_area(struct root *root)
 {
     struct wlr_box d_box = root->m->geom;
     struct wlr_box box = root->geom;
 
-    struct container *con;
-    wl_list_for_each(con, &layer_stack, llink) {
-        if (!existon(con, &server.workspaces, root->m->ws_ids[0]))
+    for (int i = 0; i < length_of_composed_list(&server.layer_visual_stack_lists); i++) {
+        struct container *con =
+            get_in_composed_list(&server.layer_visual_stack_lists, i);
+
+        struct workspace *ws = get_workspace(root->m->ws_id);
+        if (!exist_on(con, ws))
             continue;
 
         struct client *c = con->client;
@@ -92,6 +95,7 @@ static struct wlr_box fit_root_area(struct root *root)
 
         // resize the root area
         if (equals_anchor(&anchors.top, anchor)) {
+            box.x = d_box.x;
             int diff_height = d_box.y - (d_box.y - box.y);
             box.y = MAX(diff_height, desired_height);
             box.height = d_box.height - box.y;
@@ -140,7 +144,7 @@ void set_root_color(struct root *root, float color[static 4])
     memcpy(root->color, color, sizeof(float)*4);
 }
 
-void set_root_area(struct root *root, struct wlr_box geom)
+void set_root_geom(struct root *root, struct wlr_box geom)
 {
     root->geom = geom;
 
@@ -149,9 +153,12 @@ void set_root_area(struct root *root, struct wlr_box geom)
     }
 
     // arrange layer stack based programs
-    struct container *con;
-    wl_list_for_each(con, &layer_stack, llink) {
-        if (!existon(con, &server.workspaces, root->m->ws_ids[0]))
+    for (int i = 0; i < length_of_composed_list(&server.layer_visual_stack_lists); i++) {
+        struct container *con =
+            get_in_composed_list(&server.layer_visual_stack_lists, i);
+
+        struct workspace *ws = get_workspace(root->m->ws_id);
+        if (!exist_on(con, ws))
             continue;
 
         struct monitor *m = root->m;
@@ -191,7 +198,9 @@ void root_damage_whole(struct root *root)
 {
     if (!root)
         return;
-    wlr_output_damage_add_box(root->m->damage, &root->geom);
+    struct monitor *m = root->m;
+    struct wlr_box geom = get_monitor_local_box(root->geom, m);
+    wlr_output_damage_add_box(m->damage, &geom);
 }
 
 void set_bars_visible(struct monitor *m, bool visible)

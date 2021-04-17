@@ -10,27 +10,36 @@
 #include "utils/parseConfigUtils.h"
 #include "workspace.h"
 
-struct layout get_default_layout()
+struct layout *create_layout(lua_State *L)
 {
-    struct layout lt = (struct layout) {
+    printf("create_layout\n");
+    struct layout *lt = calloc(1, sizeof(struct layout));
+    lt->nmaster = 1;
+    *lt = (struct layout) {
         .symbol = "",
         .name = "",
-        .n = 1,
+        .n_area = 1,
         .nmaster = 1,
         .options = get_default_options(),
     };
 
-    lua_get_default_master_layout_data();
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.lua_master_layout_data_ref);
+    lua_get_default_master_layout_data(L);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_master_layout_data_ref);
 
-    lua_get_default_resize_data();
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.lua_resize_data_ref);
+    lua_get_default_resize_data(L);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_resize_data_ref);
 
-    lua_get_default_layout_data();
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.lua_layout_copy_data_ref);
+    lua_get_default_layout_data(L);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_copy_data_ref);
     lua_createtable(L, 0, 0);
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt.lua_layout_ref);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_ref);
+
     return lt;
+}
+
+void destroy_layout(struct layout *lt)
+{
+    free(lt);
 }
 
 void lua_copy_table(lua_State *L, int *ref)
@@ -122,24 +131,18 @@ void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt)
     }
 
     if (src_lt->lua_master_layout_data_ref > 0) {
-        lua_get_default_master_layout_data();
+        lua_get_default_master_layout_data(L);
         lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->lua_master_layout_data_ref);
     }
 
     if (src_lt->lua_resize_data_ref > 0) {
-        lua_get_default_resize_data();
+        lua_get_default_resize_data(L);
         lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->lua_resize_data_ref);
     }
 
     copy_options(&dest_lt->options, &src_lt->options);
 
     return;
-}
-
-void push_layout(struct layout lt_stack[static 2], struct layout lt)
-{
-    lt_stack[1] = lt_stack[0];
-    lt_stack[0] = lt;
 }
 
 bool lua_islayout_data(lua_State *L, const char *name)
@@ -175,4 +178,9 @@ bool lua_islayout_data(lua_State *L, const char *name)
         lua_pop(L, 1);
     }
     return true;
+}
+
+int cmp_layout(const struct layout *lt1, const struct layout *lt2)
+{
+    return strcmp(lt1->symbol, lt2->symbol);
 }

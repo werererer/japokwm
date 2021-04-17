@@ -3,15 +3,9 @@ on:
   push:
       branches:
           - master
+          - development
   workflow_dispatch:
 jobs:
-    vm:
-        runs-on: ubuntu-latest
-        steps:
-            - run: |
-                echo This job doesnt specify a container.
-                echo test.
-              name: Run in VM
     container:
         runs-on: ubuntu-latest
         container: archlinux
@@ -32,15 +26,15 @@ jobs:
               name: Run in container
             - run: |
                 meson -Db_coverage=true build
-                cd build
-                meson compile
-                meson test
-                cd ..
-            - name: Upload Test Results
-              uses: actions/upload-artifact@v2
+                meson compile -C build
+                meson test -C build
+              name: Build
+            # - run: |
+            #     ninja coverage -C build
+            #     bash <(curl -s https://codecov.io/bash)
+            #   name: Upload coverage
+            - name: Publish Unit Test Results
+              uses: EnricoMi/publish-unit-test-result-action@v1
+              if: always()
               with:
-                  path: build/meson-logs
-            - run: |
-                ninja -C build coverage
-                bash <(curl -s https://codecov.io/bash)
-              name: Run in container2
+                  files: build/meson-logs/*.xml

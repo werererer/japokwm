@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <json.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -14,6 +15,7 @@
 #include "client.h"
 #include "workspace.h"
 #include "monitor.h"
+#include "utils/coreUtils.h"
 
 static json_object *ipc_json_create_rect(struct wlr_box *box) {
     json_object *rect = json_object_new_object();
@@ -33,13 +35,14 @@ static json_object *ipc_json_create_empty_rect(void) {
 }
 
 static json_object *ipc_json_create_node(int id, const char *name,
-        bool focused, bool urgent, json_object *focus, struct wlr_box *box) {
+        bool focused, json_object *focus, struct wlr_box *box) {
     json_object *object = json_object_new_object();
 
     json_object_object_add(object, "id", json_object_new_int(id));
     json_object_object_add(object, "name",
             name ? json_object_new_string(name) : NULL);
-    json_object_object_add(object, "rect", ipc_json_create_rect(box));
+    json_object_object_add(object, "rect",
+            box ? ipc_json_create_rect(box) : ipc_json_create_empty_rect());
     json_object_object_add(object, "focused", json_object_new_boolean(focused));
     json_object_object_add(object, "focus", focus);
 
@@ -48,16 +51,14 @@ static json_object *ipc_json_create_node(int id, const char *name,
             json_object_new_string("none"));
     json_object_object_add(object, "current_border_width",
             json_object_new_int(0));
-    json_object_object_add(object, "layout",
-            json_object_new_string("tabbed"));
-    json_object_object_add(object, "orientation",
-            json_object_new_string("tabbed"));
+    json_object_object_add(object, "layout", NULL);
+    json_object_object_add(object, "orientation", NULL);
     json_object_object_add(object, "percent", NULL);
     json_object_object_add(object, "window_rect", ipc_json_create_empty_rect());
     json_object_object_add(object, "deco_rect", ipc_json_create_empty_rect());
     json_object_object_add(object, "geometry", ipc_json_create_empty_rect());
     json_object_object_add(object, "window", NULL);
-    json_object_object_add(object, "urgent", json_object_new_boolean(urgent));
+    json_object_object_add(object, "urgent", json_object_new_boolean(false));
 
     json_object_object_add(object, "marks", json_object_new_array());
     json_object_object_add(object, "fullscreen_mode", json_object_new_int(0));
@@ -73,18 +74,37 @@ struct focus_inactive_data {
     json_object *object;
 };
 
-json_object *ipc_json_describe_workspace(struct monitor *m, struct workspace *ws, bool focused)
+json_object *ipc_json_describe_workspace(struct workspace *ws, bool focused)
 {
+    struct monitor *m = ws->m;
     struct wlr_box box;
     box = m->geom;
 
     char *s = strdup(ws->name);
 
-    json_object *object = ipc_json_create_node(0, s, focused, false, NULL, &box);
-    json_object_object_add(object, "num", json_object_new_int(0));
+    json_object *object = ipc_json_create_node(0, s, focused, NULL, &box);
+
+    json_object *children = json_object_new_array();
+    json_object_object_add(object, "nodes", children);
+
+    int num;
+    if (isdigit(ws->name[0])) {
+        errno = 0;
+        char *endptr = NULL;
+        long long parsed_num = strtoll(ws->name, &endptr, 10);
+        if (errno != 0 || parsed_num > INT32_MAX || parsed_num < 0 || endptr == ws->name) {
+            num = -1;
+        } else {
+            num = (int) parsed_num;
+        }
+    } else {
+        num = -1;
+    }
+    json_object_object_add(object, "num", json_object_new_int(num));
+
     json_object_object_add(object, "fullscreen_mode", json_object_new_int(0));
     json_object_object_add(object, "output", ws->m ?
-            json_object_new_string(ws->m->wlr_output->name) : json_object_new_string(m->wlr_output->name));
+            json_object_new_string(ws->m->wlr_output->name) : NULL);
     json_object_object_add(object, "type", json_object_new_string("workspace"));
     json_object_object_add(object, "urgent",
             json_object_new_boolean(false));
@@ -93,17 +113,50 @@ json_object *ipc_json_describe_workspace(struct monitor *m, struct workspace *ws
     return object;
 }
 
-json_object *ipc_json_describe_node(struct monitor *m, struct client *c) {
-    bool focused = focused_container(m)->client == c;
-    char *title = c->title;
-
-    struct wlr_box *box;
-    box = &m->geom;
-
-    json_object *focus = json_object_new_array();
-
+json_object *ipc_json_describe_monitor(struct monitor *m)
+{
     json_object *object = ipc_json_create_node(
-            c->id, title, focused, false, focus, box);
+            3, m->wlr_output->name, false, NULL, &m->geom);
+    json_object *children = json_object_new_array();
+    json_object_object_add(object, "nodes", children);
+    return object;
+}
+
+json_object *ipc_json_describe_container(struct container *con)
+{
+    json_object *object = ipc_json_create_node(
+            5, con ? con->client->title : NULL, true, NULL,
+            con ? &con->geom : NULL);
+
+    json_object_object_add(object, "type", json_object_new_string("con"));
+
+    json_object *children = json_object_new_array();
+    json_object_object_add(object, "nodes", children);
 
     return object;
 }
+
+json_object *ipc_json_describe_selected_container(struct monitor *m)
+{
+    json_object *root_object = ipc_json_create_node(1, "root", false, NULL, NULL);
+    json_object *root_children = json_object_new_array();
+    json_object_object_add(root_object, "nodes", root_children);
+
+    json_object *monitor_object = ipc_json_describe_monitor(m);
+    json_object_array_add(root_children, monitor_object);
+    json_object *monitor_children;
+    json_object_object_get_ex(monitor_object, "nodes", &monitor_children);
+
+    struct workspace *ws = monitor_get_active_workspace(selected_monitor);
+    json_object *workspace_object = ipc_json_describe_workspace(ws, false);
+    json_object_array_add(monitor_children, workspace_object);
+    json_object *workspace_children;
+    json_object_object_get_ex(monitor_object, "nodes", &workspace_children);
+
+    struct container *sel = get_focused_container(m);
+    json_object *obj5 = ipc_json_describe_container(sel);
+    json_object_array_add(workspace_children, obj5);
+
+    return root_object;
+}
+

@@ -12,9 +12,6 @@
 #include "xwayland.h"
 
 struct server {
-    /* associated with ilink in client */
-    struct wl_list independents;
-
     struct wl_display *wl_display;
     struct wl_event_loop *wl_event_loop;
     struct wlr_backend *backend;
@@ -31,7 +28,7 @@ struct server {
     struct cursor cursor;
     struct wlr_xcursor_manager *cursor_mgr;
 
-    struct layout default_layout;
+    struct layout *default_layout;
     struct layout_set layout_set;
 
     struct wlr_output_layout *output_layout;
@@ -39,7 +36,30 @@ struct server {
 
     struct wlr_list workspaces;
 
+    struct wlr_list visual_stack_lists;
+    struct wlr_list normal_visual_stack_lists;
+    struct wlr_list layer_visual_stack_lists;
+
+    struct wlr_list tiled_visual_stack;
+    struct wlr_list floating_visual_stack;
+    struct wlr_list layer_visual_stack_background;
+    struct wlr_list layer_visual_stack_bottom;
+    struct wlr_list layer_visual_stack_top;
+    struct wlr_list layer_visual_stack_overlay;
+
+    struct wlr_list scratchpad;
+
     const char *config_file;
+    const char *config_dir;
+
+    int previous_workspace_id;
+
+    struct wlr_list client_lists;
+    struct wlr_list normal_clients;
+    struct wlr_list independent_clients;
+
+    struct wlr_list mons;
+    struct wlr_list popups;
 };
 
 extern struct server server;

@@ -6,7 +6,7 @@ deps = [\
     dependency('wayland-server'),
     dependency('wayland-egl'),
     dependency('pixman-1'),
-    dependency('wlroots', version: '>=0.12'),
+    dependency('wlroots', version: '>=0.13'),
     dependency('x11'),
     dependency('json-c'),
     ]
@@ -38,7 +38,6 @@ srcs = files(
     'lib/config/localconfig.c',
     'lib/info/info.c',
     'lib/layout/lib_layout.c',
-    'main.c',
     'monitor.c',
     'options.c',
     'output.c',
@@ -55,7 +54,6 @@ srcs = files(
     'utils/parseConfigUtils.c',
     'utils/stringUtils.c',
     'utils/writeFile.c',
-    'wlr-foreign-toplevel-management-unstable-v1-protocol.c',
     'wlr-layer-shell-unstable-v1-protocol.c',
     'workspace.c',
     'xdg-shell-protocol.c',
@@ -69,13 +67,20 @@ srcs = files(
     'lib/monitor/lib_monitor.c',
     'xdg_shell.c',
     'clipboard.c',
+    'scratchpad.c',
   )
 
-libName = 'japokwm'
-wmlib = executable(libName,
-              [main, srcs],
+libName = 'japokwm_lib'
+wmlib = static_library(libName,
+              [srcs],
               dependencies: deps,
               include_directories: inc,
               link_args: ['-lm'],
-              install: true,
               )
+executable('japokwm',
+      [main],
+      dependencies: deps,
+      include_directories: inc,
+      link_with: [wmlib],
+      install: true,
+      )

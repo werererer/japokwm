@@ -1,38 +1,15 @@
-config.set_sloppy_focus(true)
-config.set_tile_borderpx(10)
-config.set_float_borderpx(2)
-config.set_inner_gaps(0)
-config.set_outer_gaps(20)
-config.set_root_color({0.3, 0.3, 0.3, 1.0})
-config.set_focus_color({1.0, 0.0, 0.0, 1.0})
-config.set_border_color({0.0, 0.0, 1.0, 1.0})
-config.set_repeat_rate(25)
-config.set_repeat_delay(600)
-
 config.create_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
 
 local function on_start()
-    print("works")
+    -- execute programs or do what ever you want e.g.:
+    -- action.exec("...")
 end
 
 event.set_on_start_function(on_start)
 
-local layouts = {
-    {"[M]", "tile"},
-    {"[]=", "two_pane"},
-    {"||",  "monocle"},
-    {"--",  "tmp" },
-}
+config.set_inner_gaps(0)
 
-config.set_rules({
-    -- {"termite", "termite", function(n) container.set_sticky(n, true) end},
-    -- {"termite", "", function(n) container.set_ratio(n, 1) end},
-})
-
-config.set_monrules({
-    -- {"", function() monitor.set_scale(0.6) end},
-    -- {"", function() monitor.set_transform(info.monitor.transform.rotate_90) end},
-})
+local layouts = {"tile", "two_pane", "monocle", "tmp"}
 
 config.create_layout_set("default", layouts)
 
@@ -54,12 +31,14 @@ config.set_keybinds({
     {"mod-S-c",       function() action.kill(info.this_container_position()) end},
     {"mod-S-q",       function() action.quit() end},
     {"mod-space",     function() action.load_next_layout_in_set("default") end},
+    {"mod-minus",     function() action.move_to_scratchpad(info.this_container_position()) end},
+    {"mod-S-minus",   function() action.show_scratchpad() end},
     {"mod-S-space",   function() action.load_prev_layout_in_set("default") end},
     {"mod-m",         function() action.load_layout_in_set("default", 1) end},
     {"mod-S-t",       function() action.load_layout_in_set("default", 2) end},
     {"mod-w",         function() action.load_layout_in_set("default", 3) end},
     {"mod-S-w",       function() action.load_layout_in_set("default", 4) end},
-    {"mod-S-p",       function() action.load_layout({"g", "tmp"}) end},
+    {"mod-S-p",       function() action.load_layout("tmp") end},
     {"mod-b",         function() action.toggle_bars() end},
     {"mod-S-h",       function() action.resize_main(-1/10) end},
     {"mod-S-l",       function() action.resize_main(1/10) end},
@@ -102,3 +81,4 @@ config.set_keybinds({
     {"mod-M1",  function() action.move_resize(info.cursor.mode.move) end},
     {"mod-M2",  function() action.move_resize(info.cursor.mode.resize) end},
 })
+-- print("execute finished")

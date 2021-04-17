@@ -2,20 +2,19 @@
 #include <check.h>
 #include <string.h>
 
-#include "tagset.h"
 #include "utils/stringUtils.h"
 
 START_TEST(intToStringTest)
 {
     char res[NUM_DIGITS];
-    intToString(res, 30);
+    int_to_string(res, 30);
     ck_assert_str_eq("30", res);
 } END_TEST
 
 START_TEST(doubleToStringTest)
 {
     char res[MAXLEN];
-    doubleToString(res, 3.141592);
+    double_to_string(res, 3.141592);
     ck_assert_str_eq("3.142", res);
 } END_TEST
 
@@ -23,7 +22,7 @@ START_TEST(repeatStringTest)
 {
     char res[NUM_CHARS];
     strcpy(res, "g");
-    repeatString(res, 4);
+    repeat_string(res, 4);
     ck_assert_str_eq("gggg", res);
 } END_TEST
 
@@ -32,7 +31,7 @@ Suite *suite()
     Suite *s;
     TCase *tc;
 
-    s = suite_create("tagset");
+    s = suite_create("stringUtils");
     tc = tcase_create("Core");
 
     tcase_add_test(tc, doubleToStringTest);
