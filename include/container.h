@@ -78,5 +78,7 @@ int absolute_x_to_container_relative(struct container *con, int x);
 int absolute_y_to_container_relative(struct container *con, int y);
 int get_position_in_container_stack(struct container *con);
 
+struct container *get_container_from_container_stack_position(int i);
+
 bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *resize_constraints);
 #endif /* CONTAINER_H */
