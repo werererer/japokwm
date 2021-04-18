@@ -1,4 +1,5 @@
 # japokwm - tiling made easy [![CircleCI](https://github.com/werererer/japokwm/actions/workflows/Test.yml/badge.svg)](https://github.com/werererer/japokwm/actions/workflows/Test.yml)
+![](japokwm_logo.png =80x80)
 ## Features:
 - Gaps!
 - Damage Tracking
