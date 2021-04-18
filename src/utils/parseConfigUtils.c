@@ -76,6 +76,9 @@ char *get_config_dir(const char *file)
     }
 
     char *abs_file = get_config_file(file);
+    if (!abs_file)
+        return NULL;
+
     return dirname(abs_file);
 }
 
