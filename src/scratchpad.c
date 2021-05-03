@@ -42,6 +42,9 @@ void remove_container_from_scratchpad(struct container *con)
 
 void show_scratchpad()
 {
+    if (server.scratchpad.length <= 0)
+        return;
+
     struct monitor *m = selected_monitor;
     struct workspace *ws = monitor_get_active_workspace(m);
     struct container *sel = get_focused_container(m);

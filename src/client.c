@@ -328,7 +328,6 @@ void create_notify(struct wl_listener *listener, void *data)
 
 void destroy_notify(struct wl_listener *listener, void *data)
 {
-    printf("destroy\n");
     /* Called when the surface is destroyed and should never be shown again. */
     struct client *c = wl_container_of(listener, c, destroy);
 
@@ -353,7 +352,6 @@ void destroy_notify(struct wl_listener *listener, void *data)
 
     free(c);
     c = NULL;
-    printf("destroy end\n");
 }
 
 void maprequest(struct wl_listener *listener, void *data)
