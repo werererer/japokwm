@@ -46,8 +46,6 @@ static struct wl_listener new_output = {.notify = create_monitor};
 static struct wl_listener new_xdeco = {.notify = createxdeco};
 static struct wl_listener new_xdg_surface = {.notify = create_notify};
 static struct wl_listener new_layer_shell_surface = {.notify = create_notify_layer_shell};
-static struct wl_listener request_set_psel = {.notify = set_primary_selection};
-static struct wl_listener request_set_sel = {.notify = set_selection};
 
 static struct wl_listener new_xwayland_surface = {.notify = create_notifyx11};
 
@@ -268,8 +266,8 @@ static int setup()
     wl_signal_add(&server.backend->events.new_input, &new_input);
     server.seat = wlr_seat_create(server.wl_display, "seat0");
     wl_signal_add(&server.seat->events.request_set_cursor, &request_set_cursor);
-    wl_signal_add(&server.seat->events.request_set_selection, &request_set_sel);
     wl_signal_add(&server.seat->events.request_set_primary_selection, &request_set_psel);
+    wl_signal_add(&server.seat->events.request_set_selection, &request_set_sel);
 
     /*
      * Initialise the XWayland X server.
@@ -281,6 +279,7 @@ static int setup()
         server.xwayland_ready.notify = handle_xwayland_ready;
         wl_signal_add(&server.xwayland.wlr_xwayland->events.ready, &server.xwayland_ready);
         wl_signal_add(&server.xwayland.wlr_xwayland->events.new_surface, &new_xwayland_surface);
+        wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, server.seat);
 
         setenv("DISPLAY", server.xwayland.wlr_xwayland->display_name, true);
     } else {

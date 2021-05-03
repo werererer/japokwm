@@ -3,6 +3,9 @@
 #include <wlr/types/wlr_primary_selection.h>
 #include <wlr/types/wlr_data_device.h>
 
+struct wl_listener request_set_psel = {.notify = set_primary_selection};
+struct wl_listener request_set_sel = {.notify = set_selection};
+
 void set_primary_selection(struct wl_listener *listener, void *data)
 {
     /* This event is raised by the seat when a client wants to set the selection,
