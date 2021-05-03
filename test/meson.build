@@ -9,6 +9,7 @@ test_files = files(
     'utils/gapUtils_test.c',
     'utils/stringUtils_test.c',
     'workspace_test.c',
+    'scratchpad_test.c',
     )
 
 foreach test_file: test_files

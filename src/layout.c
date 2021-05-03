@@ -12,7 +12,6 @@
 
 struct layout *create_layout(lua_State *L)
 {
-    printf("create_layout\n");
     struct layout *lt = calloc(1, sizeof(struct layout));
     lt->nmaster = 1;
     *lt = (struct layout) {

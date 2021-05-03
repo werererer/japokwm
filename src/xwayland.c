@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <wlr/util/log.h>
 
+#include "clipboard.h"
 #include "container.h"
 #include "server.h"
 #include "tile/tileUtils.h"

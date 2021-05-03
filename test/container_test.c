@@ -106,6 +106,11 @@ START_TEST(focus_container_test)
 {
 } END_TEST
 
+START_TEST(get_position_in_container_stack_crash_test)
+{
+    get_position_in_container_stack(NULL);
+} END_TEST
+
 START_TEST(get_focused_container_crash_test)
 {
     get_focused_container(NULL);
@@ -130,6 +135,7 @@ Suite *suite()
     tcase_add_test(tc, test_exist_on);
     tcase_add_test(tc, focus_on_hidden_stack_test);
     tcase_add_test(tc, focus_container_test);
+    tcase_add_test(tc, get_position_in_container_stack_crash_test);
     tcase_add_test(tc, get_focused_container_crash_test);
     suite_add_tcase(s, tc);
 

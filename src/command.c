@@ -43,7 +43,8 @@ void execute_command(const char *_exec)
         bool handled = false;
         int i;
         for (i = 0; i < server.workspaces.length; i++) {
-            if (strcmp(get_workspace(i)->name, argv[2]) == 0) {
+            struct workspace *ws = get_workspace(i);
+            if (strcmp(ws->name, argv[1]) == 0) {
                 handled = true;
                 break;
             }

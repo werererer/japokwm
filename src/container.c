@@ -619,6 +619,9 @@ inline int absolute_y_to_container_relative(struct container *con, int y)
 
 int get_position_in_container_stack(struct container *con)
 {
+    if (!con)
+        return INVALID_POSITION;
+
     struct monitor *m = con->m;
     struct workspace *ws = monitor_get_active_workspace(m);
     int position = find_in_composed_list(&ws->container_lists, &cmp_ptr, con);
