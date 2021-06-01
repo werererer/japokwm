@@ -553,7 +553,7 @@ void set_container_floating(struct container *con, void (*fix_position)(struct c
 
 void set_container_hidden_status(struct container *con, bool b)
 {
-    con->hidden = true;
+    con->hidden = b;
 }
 
 void set_container_monitor(struct container *con, struct monitor *m)
