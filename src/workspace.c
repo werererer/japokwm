@@ -187,7 +187,17 @@ bool exist_on(struct container *con, struct workspace *ws)
     if (c->sticky)
         return true;
 
-    return c->ws_id == ws->id;
+    return workspace_contains_client(ws, c);
+}
+
+bool workspace_contains_client(struct workspace *ws, struct client *c)
+{
+    if (!ws)
+        return false;
+    if (!c)
+        return false;
+
+    return ws->id == c->id;
 }
 
 bool workspace_has_clients(struct workspace *ws)
@@ -198,7 +208,7 @@ bool workspace_has_clients(struct workspace *ws)
     for (int i = 0; i < length_of_composed_list(&server.client_lists); i++) {
         struct client *c = get_in_composed_list(&server.client_lists, i);
 
-        if (c->ws_id == ws->id)
+        if (workspace_contains_client(ws, c))
             return true;
     }
 

@@ -8,6 +8,11 @@ START_TEST(push_workspace_crash_test)
     push_workspace(NULL, NULL);
 } END_TEST
 
+START_TEST(workspace_contains_client_crash_test)
+{
+    workspace_contains_client(NULL, NULL);
+} END_TEST
+
 START_TEST(workspace_has_clients_test)
 {
     struct layout lt;
@@ -50,6 +55,7 @@ Suite *suite()
 
     tcase_add_test(tc, push_workspace_crash_test);
     tcase_add_test(tc, workspace_has_clients_test);
+    tcase_add_test(tc, workspace_contains_client_crash_test);
     tcase_add_test(tc, reset_loaded_layouts_test);
     suite_add_tcase(s, tc);
 
