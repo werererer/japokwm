@@ -15,7 +15,6 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     union surface_t surface;
     surface.layer = layer_surface;
     c = layer_surface->data = create_client(LAYER_SHELL, surface);
-    c->bw = 0;
 
     if (!c->surface.layer->output) {
         c->surface.layer->output = selected_monitor->wlr_output;

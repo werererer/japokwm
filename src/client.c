@@ -188,15 +188,11 @@ void client_handle_set_title(struct wl_listener *listener, void *data)
 
 void client_handle_set_app_id(struct wl_listener *listener, void *data)
 {
-    struct client *c = wl_container_of(listener, c, set_title);
+    struct client *c = wl_container_of(listener, c, set_app_id);
     const char *app_id;
     /* rule matching */
     switch (c->type) {
         case XDG_SHELL:
-            printf("toplevel: %p\n", c->surface.xdg->toplevel);
-            printf("role: %u\n", c->surface.xdg->role);
-            printf("text*: %p\n", c->surface.xdg->toplevel->app_id);
-            printf("text: %s\n", c->surface.xdg->toplevel->app_id);
             if (c->surface.xdg->toplevel->app_id)
                 app_id = c->surface.xdg->toplevel->app_id;
             break;
@@ -305,18 +301,16 @@ void create_notify(struct wl_listener *listener, void *data)
      * client, either a toplevel (application window) or popup. */
     struct wlr_xdg_surface *xdg_surface = data;
 
-    printf("create xdg app\n");
 
     if (xdg_surface->role != WLR_XDG_SURFACE_ROLE_TOPLEVEL)
         return;
 
-    printf("xdg_surface->role\n");
-    printf("is toplevel\n");
 
     union surface_t surface;
     surface.xdg = xdg_surface;
     /* Allocate a Client for this surface */
     struct client *c = xdg_surface->data = create_client(XDG_SHELL, surface);
+
 
     /* Tell the client not to try anything fancy */
     wlr_xdg_toplevel_set_tiled(c->surface.xdg, WLR_EDGE_TOP |
