@@ -197,7 +197,7 @@ bool workspace_contains_client(struct workspace *ws, struct client *c)
     if (!c)
         return false;
 
-    return ws->id == c->id;
+    return ws->id == c->ws_id;
 }
 
 bool workspace_has_clients(struct workspace *ws)
@@ -205,8 +205,8 @@ bool workspace_has_clients(struct workspace *ws)
     if (!ws)
         return false;
 
-    for (int i = 0; i < length_of_composed_list(&server.client_lists); i++) {
-        struct client *c = get_in_composed_list(&server.client_lists, i);
+    for (int i = 0; i < server.normal_clients.length; i++) {
+        struct client *c = server.normal_clients.items[i];
 
         if (workspace_contains_client(ws, c))
             return true;

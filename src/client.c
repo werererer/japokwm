@@ -328,7 +328,13 @@ void maprequest(struct wl_listener *listener, void *data)
     c->ws_id = ws->id;
     c->bw = lt->options.tile_border_px;
 
-    wlr_list_push(&server.normal_clients, c);
+    switch (c->type) {
+        case LAYER_SHELL:
+            wlr_list_push(&server.non_tiled_clients, c);
+            break;
+        default:
+            wlr_list_push(&server.normal_clients, c);
+    }
     create_container(c, m, true);
 
     arrange();

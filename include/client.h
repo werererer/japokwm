@@ -26,7 +26,6 @@ struct client {
     int bw;
 
     enum shell type;
-    int id;
     const char *title;
     const char *app_id;
     bool sticky;
