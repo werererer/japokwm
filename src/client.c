@@ -309,8 +309,7 @@ void destroy_notify(struct wl_listener *listener, void *data)
             break;
     }
 
-    free(c);
-    c = NULL;
+    destroy_client(c);
 }
 
 void maprequest(struct wl_listener *listener, void *data)

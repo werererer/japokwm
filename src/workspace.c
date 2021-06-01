@@ -172,7 +172,7 @@ bool exist_on(struct container *con, struct workspace *ws)
     if (con->m != ws->m) {
         if (con->floating)
             return container_intersects_with_monitor(con, ws->m)
-                && con->client->ws_id == con->m->ws_id;
+                && workspace_contains_client(get_workspace(con->m->ws_id), con->client);
         else
             return false;
     }
@@ -182,10 +182,12 @@ bool exist_on(struct container *con, struct workspace *ws)
     if (!c)
         return false;
 
-    if (c->type == LAYER_SHELL)
+    if (c->type == LAYER_SHELL) {
         return true;
-    if (c->sticky)
+    }
+    if (c->sticky) {
         return true;
+    }
 
     return workspace_contains_client(ws, c);
 }
@@ -508,9 +510,7 @@ void focus_workspace(struct monitor *m, struct workspace *ws)
         struct workspace *wss = monitor_get_active_workspace(m);
         for (int i = 0; i < wss->floating_containers.length; i++) {
             struct container *con = wss->floating_containers.items[i];
-            /* if (visible_on(con, workspaces, wss->id)) { */
             move_container_to_workspace(con, ws);
-            /* } */
         }
 
         center_mouse_in_monitor(ws->m);
@@ -589,7 +589,7 @@ void set_container_workspace(struct container *con, struct workspace *ws)
 
     if (con->floating)
         con->client->bw = ws->layout->options.float_border_px;
-    else 
+    else
         con->client->bw = ws->layout->options.tile_border_px;
 }
 
