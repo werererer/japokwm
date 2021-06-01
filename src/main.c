@@ -44,7 +44,7 @@ static struct wl_listener cursor_motion_absolute = {.notify = motion_absolute};
 static struct wl_listener new_input = {.notify = handle_new_inputdevice};
 static struct wl_listener new_output = {.notify = create_monitor};
 static struct wl_listener new_xdeco = {.notify = createxdeco};
-static struct wl_listener new_xdg_surface = {.notify = create_notify};
+static struct wl_listener new_xdg_surface = {.notify = create_notify_xdg};
 static struct wl_listener new_layer_shell_surface = {.notify = create_notify_layer_shell};
 
 static struct wl_listener new_xwayland_surface = {.notify = create_notifyx11};
