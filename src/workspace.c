@@ -193,7 +193,7 @@ bool exist_on(struct container *con, struct workspace *ws)
 bool workspace_has_clients(struct workspace *ws)
 {
     if (!ws)
-        return 0;
+        return false;
 
     for (int i = 0; i < length_of_composed_list(&server.client_lists); i++) {
         struct client *c = get_in_composed_list(&server.client_lists, i);
