@@ -394,11 +394,15 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
 
                 for (int i = 0; i < server.mons.length; i++) {
                     struct monitor *m = server.mons.items[i];
-                    for (int i = 0; i < server.workspaces.length; i++) {
-                        struct workspace *ws = get_workspace(i);
+                    for (int ws_id = 0; ws_id < server.workspaces.length; ws_id++) {
+                        printf("ws_id: %i\n", ws_id);
+                        struct workspace *ws = get_workspace(ws_id);
                         bool has_clients = workspace_has_clients(ws);
-                        bool is_workspace_selected = m->ws_id == i;
-                        bool is_workspace_active = selected_monitor->ws_id == i;
+                        bool is_workspace_selected = m->ws_id == ws_id;
+                        bool is_workspace_active = selected_monitor->ws_id == ws_id;
+                        printf("has_clients: %i\n", has_clients);
+                        printf("is_workspace_selected: %i\n", is_workspace_selected);
+                        printf("is_workspace_active: %i\n", is_workspace_active);
                         if (!has_clients && !is_workspace_selected) 
                             continue;
                         if (ws->m != m)

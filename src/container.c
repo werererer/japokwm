@@ -46,6 +46,7 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 
 void destroy_container(struct container *con)
 {
+    printf("destroy_container\n");
     // surfaces cant commit anything anymore if their container is destroyed
     wl_list_remove(&con->commit.link);
 
@@ -333,6 +334,16 @@ void apply_rules(struct container *con)
     }
 }
 
+void commit_notify(struct wl_listener *listener, void *data)
+{
+    struct container *con = wl_container_of(listener, con, commit);
+
+    if (!con)
+        return;
+
+    container_damage_part(con);
+}
+
 void focus_container(struct container *con, enum focus_actions a)
 {
     if (!con)
@@ -543,7 +554,7 @@ void set_container_floating(struct container *con, void (*fix_position)(struct c
 
 void set_container_hidden_status(struct container *con, bool b)
 {
-    con->hidden = true;
+    con->hidden = b;
 }
 
 void set_container_monitor(struct container *con, struct monitor *m)

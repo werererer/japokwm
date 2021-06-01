@@ -27,8 +27,10 @@ void create_notifyx11(struct wl_listener *listener, void *data)
 {
     struct wlr_xwayland_surface *xwayland_surface = data;
     /* Allocate a Client for this surface */
-    struct client *c = xwayland_surface->data = create_client(X11_MANAGED);
-    c->surface.xwayland = xwayland_surface;
+
+    union surface_t surface;
+    surface.xwayland = xwayland_surface;
+    struct client *c = xwayland_surface->data = create_client(X11_MANAGED, surface);
     // set default value will be overriden on maprequest
 
     /* Listen to the various events it can emit */

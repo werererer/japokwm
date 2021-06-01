@@ -8,6 +8,18 @@ START_TEST(push_workspace_crash_test)
     push_workspace(NULL, NULL);
 } END_TEST
 
+START_TEST(workspace_contains_client_crash_test)
+{
+    workspace_contains_client(NULL, NULL);
+} END_TEST
+
+START_TEST(workspace_has_clients_test)
+{
+    struct layout lt;
+    struct workspace *ws = create_workspace("test", 3, &lt);
+    ck_assert_int_eq(workspace_has_clients(ws), false);
+} END_TEST
+
 START_TEST(reset_loaded_layouts_test)
 {
     struct wlr_list tag_names;
@@ -42,6 +54,8 @@ Suite *suite()
     tc = tcase_create("core");
 
     tcase_add_test(tc, push_workspace_crash_test);
+    tcase_add_test(tc, workspace_has_clients_test);
+    tcase_add_test(tc, workspace_contains_client_crash_test);
     tcase_add_test(tc, reset_loaded_layouts_test);
     suite_add_tcase(s, tc);
 

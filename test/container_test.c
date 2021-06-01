@@ -30,24 +30,28 @@ START_TEST(test_visible_on)
 
     struct client c;
     struct container con = {
-        .client = &c,
+        .client = &c
     };
 
     con.m = &m0;
-    con.client->ws_id = 0;
+    con.client->ws_id = ws0->id;
+    con.hidden = false;
     ck_assert_int_eq(visible_on(&con, ws0), true);
 
     con.m = &m1;
-    con.client->ws_id = 0;
+    con.client->ws_id = ws0->id;
+    con.hidden = false;
     ck_assert_int_eq(visible_on(&con, ws0), false);
 
     con.m = &m0;
-    con.client->ws_id = 1;
+    con.client->ws_id = ws1->id;
+    con.hidden = false;
     ck_assert_int_eq(visible_on(&con, ws1), false);
 
     con.m = &m1;
-    con.client->ws_id = 1;
-    ck_assert_int_eq(visible_on(&con, ws1), true);
+    con.client->ws_id = ws1->id;
+    con.hidden = true;
+    ck_assert_int_eq(visible_on(&con, ws1), false);
 } END_TEST
 
 START_TEST(test_exist_on)
@@ -75,25 +79,27 @@ START_TEST(test_exist_on)
 
     struct client c;
     struct container con = {
-        .client = &c,
+        .client = &c
     };
 
     con.m = &m0;
-    con.client->ws_id = 0;
+    con.client->ws_id = ws0->id;
     con.hidden = true;
     ck_assert_int_eq(exist_on(&con, ws0), true);
 
     con.m = &m1;
-    con.client->ws_id = 0;
+    con.client->ws_id = ws0->id;
     con.hidden = false;
     ck_assert_int_eq(exist_on(&con, ws0), false);
 
     con.m = &m0;
-    con.client->ws_id = 1;
+    con.client->ws_id = ws1->id;
+    con.hidden = false;
     ck_assert_int_eq(exist_on(&con, ws1), false);
 
     con.m = &m1;
-    con.client->ws_id = 1;
+    con.client->ws_id = ws1->id;
+    con.hidden = false;
     ck_assert_int_eq(exist_on(&con, ws1), true);
 } END_TEST
 

@@ -47,8 +47,10 @@ void init_server()
     wlr_list_init(&server.client_lists);
 
     wlr_list_init(&server.normal_clients);
+    wlr_list_init(&server.non_tiled_clients);
     wlr_list_init(&server.independent_clients);
 
     wlr_list_push(&server.client_lists, &server.normal_clients);
+    wlr_list_push(&server.client_lists, &server.non_tiled_clients);
     wlr_list_push(&server.client_lists, &server.independent_clients);
 }

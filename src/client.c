@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <wayland-util.h>
 #include <string.h>
+#include <assert.h>
 
 #include "container.h"
 #include "popup.h"
@@ -13,11 +14,12 @@
 #include "utils/parseConfigUtils.h"
 #include "ipc-server.h"
 
-struct client *create_client(enum shell shell_type)
+struct client *create_client(enum shell shell_type, union surface_t surface)
 {
     struct client *c = calloc(1, sizeof(struct client));
 
     c->type = shell_type;
+    c->surface = surface;
 
     return c;
 }
@@ -186,12 +188,13 @@ void client_handle_set_title(struct wl_listener *listener, void *data)
 
 void client_handle_set_app_id(struct wl_listener *listener, void *data)
 {
-    struct client *c = wl_container_of(listener, c, set_title);
+    struct client *c = wl_container_of(listener, c, set_app_id);
     const char *app_id;
     /* rule matching */
     switch (c->type) {
         case XDG_SHELL:
-            app_id = c->surface.xdg->toplevel->app_id;
+            if (c->surface.xdg->toplevel->app_id)
+                app_id = c->surface.xdg->toplevel->app_id;
             break;
         case LAYER_SHELL:
             app_id = "test";
@@ -282,50 +285,6 @@ bool is_popup_menu(struct client *c)
     return false;
 }
 
-void commit_notify(struct wl_listener *listener, void *data)
-{
-    struct container *con = wl_container_of(listener, con, commit);
-
-    if (!con)
-        return;
-
-    container_damage_part(con);
-}
-
-void create_notify(struct wl_listener *listener, void *data)
-{
-    /* This event is raised when wlr_xdg_shell receives a new xdg surface from a
-     * client, either a toplevel (application window) or popup. */
-    struct wlr_xdg_surface *xdg_surface = data;
-
-    if (xdg_surface->role != WLR_XDG_SURFACE_ROLE_TOPLEVEL)
-        return;
-
-    /* Allocate a Client for this surface */
-    struct client *c = xdg_surface->data = create_client(XDG_SHELL);
-
-    c->surface.xdg = xdg_surface;
-
-    /* Tell the client not to try anything fancy */
-    wlr_xdg_toplevel_set_tiled(c->surface.xdg, WLR_EDGE_TOP |
-            WLR_EDGE_BOTTOM | WLR_EDGE_LEFT | WLR_EDGE_RIGHT);
-
-    /* Listen to the various events it can emit */
-    c->map.notify = maprequest;
-    wl_signal_add(&xdg_surface->events.map, &c->map);
-    c->unmap.notify = unmap_notify;
-    wl_signal_add(&xdg_surface->events.unmap, &c->unmap);
-    c->destroy.notify = destroy_notify;
-    wl_signal_add(&xdg_surface->events.destroy, &c->destroy);
-    /* popups */
-    c->new_popup.notify = popup_handle_new_popup;
-    wl_signal_add(&xdg_surface->events.new_popup, &c->new_popup);
-    c->set_title.notify = client_handle_set_title;
-    wl_signal_add(&xdg_surface->toplevel->events.set_title, &c->set_title);
-    c->set_app_id.notify = client_handle_set_app_id;
-    wl_signal_add(&xdg_surface->toplevel->events.set_app_id, &c->set_app_id);
-}
-
 void destroy_notify(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is destroyed and should never be shown again. */
@@ -350,8 +309,7 @@ void destroy_notify(struct wl_listener *listener, void *data)
             break;
     }
 
-    free(c);
-    c = NULL;
+    destroy_client(c);
 }
 
 void maprequest(struct wl_listener *listener, void *data)
@@ -369,7 +327,13 @@ void maprequest(struct wl_listener *listener, void *data)
     c->ws_id = ws->id;
     c->bw = lt->options.tile_border_px;
 
-    wlr_list_push(&server.normal_clients, c);
+    switch (c->type) {
+        case LAYER_SHELL:
+            wlr_list_push(&server.non_tiled_clients, c);
+            break;
+        default:
+            wlr_list_push(&server.normal_clients, c);
+    }
     create_container(c, m, true);
 
     arrange();

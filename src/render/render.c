@@ -344,10 +344,9 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
 
 static void render_independents(struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct container *con;
-
     struct workspace *ws = monitor_get_active_workspace(m);
     for (int i = 0; i < ws->independent_containers.length; i++) {
+        struct container *con = ws->independent_containers.items[i];
         struct wlr_surface *surface = get_wlrsurface(con->client);
 
         con->geom.width = surface->current.width;

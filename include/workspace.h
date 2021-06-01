@@ -60,6 +60,7 @@ bool exist_on(struct container *con, struct workspace *ws);
 bool is_workspace_occupied(struct workspace *ws);
 bool hidden_on(struct container *con, struct workspace *ws);
 bool visible_on(struct container *con, struct workspace *ws);
+bool workspace_contains_client(struct workspace *ws, struct client *c);
 bool workspace_has_clients(struct workspace *ws);
 
 int get_workspace_container_count(struct workspace *ws);

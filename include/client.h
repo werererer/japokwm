@@ -5,16 +5,17 @@
 #include <wlr/xwayland.h>
 
 enum shell { XDG_SHELL, X11_MANAGED, X11_UNMANAGED, LAYER_SHELL }; /* client types */
+union surface_t {
+    struct wlr_xdg_surface *xdg;
+    struct wlr_layer_surface_v1 *layer;
+    struct wlr_xwayland_surface *xwayland;
+};
 
 struct client {
     float ratio;
     /* containers containing this client */
     struct container *con;
-    union {
-        struct wlr_xdg_surface *xdg;
-        struct wlr_layer_surface_v1 *layer;
-        struct wlr_xwayland_surface *xwayland;
-    } surface;
+    union surface_t surface;
 
     struct wl_listener set_title;
     struct wl_listener set_app_id;
@@ -25,7 +26,6 @@ struct client {
     int bw;
 
     enum shell type;
-    int id;
     const char *title;
     const char *app_id;
     bool sticky;
@@ -37,7 +37,7 @@ struct client {
     bool moved_workspace;
 };
 
-struct client *create_client(enum shell shell_type);
+struct client *create_client(enum shell shell_type, union surface_t surface);
 void destroy_client(struct client *c);
 
 void focus_client(struct client *old, struct client *c);
@@ -51,8 +51,6 @@ bool is_popup_menu(struct client *c);
 
 float calc_ratio(float width, float height);
 
-void commit_notify(struct wl_listener *listener, void *data);
-void create_notify(struct wl_listener *listener, void *data);
 void destroy_notify(struct wl_listener *listener, void *data);
 void maprequest(struct wl_listener *listener, void *data);
 void unmap_notify(struct wl_listener *listener, void *data);

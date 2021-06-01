@@ -8,6 +8,7 @@ typedef struct {
     struct wl_listener destroy;
 } Decoration;
 
+void create_notify_xdg(struct wl_listener *listener, void *data);
 void createxdeco(struct wl_listener *listener, void *data);
 
 #endif /* XDG_SHELL_H */

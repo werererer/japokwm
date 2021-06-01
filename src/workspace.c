@@ -172,7 +172,7 @@ bool exist_on(struct container *con, struct workspace *ws)
     if (con->m != ws->m) {
         if (con->floating)
             return container_intersects_with_monitor(con, ws->m)
-                && con->client->ws_id == con->m->ws_id;
+                && workspace_contains_client(get_workspace(con->m->ws_id), con->client);
         else
             return false;
     }
@@ -182,23 +182,35 @@ bool exist_on(struct container *con, struct workspace *ws)
     if (!c)
         return false;
 
-    if (c->type == LAYER_SHELL)
+    if (c->type == LAYER_SHELL) {
         return true;
-    if (c->sticky)
+    }
+    if (c->sticky) {
         return true;
+    }
 
-    return c->ws_id == ws->id;
+    return workspace_contains_client(ws, c);
+}
+
+bool workspace_contains_client(struct workspace *ws, struct client *c)
+{
+    if (!ws)
+        return false;
+    if (!c)
+        return false;
+
+    return ws->id == c->ws_id;
 }
 
 bool workspace_has_clients(struct workspace *ws)
 {
     if (!ws)
-        return 0;
+        return false;
 
-    for (int i = 0; i < length_of_composed_list(&server.client_lists); i++) {
-        struct client *c = get_in_composed_list(&server.client_lists, i);
+    for (int i = 0; i < server.normal_clients.length; i++) {
+        struct client *c = server.normal_clients.items[i];
 
-        if (c->ws_id == ws->id)
+        if (workspace_contains_client(ws, c))
             return true;
     }
 
@@ -498,9 +510,7 @@ void focus_workspace(struct monitor *m, struct workspace *ws)
         struct workspace *wss = monitor_get_active_workspace(m);
         for (int i = 0; i < wss->floating_containers.length; i++) {
             struct container *con = wss->floating_containers.items[i];
-            /* if (visible_on(con, workspaces, wss->id)) { */
             move_container_to_workspace(con, ws);
-            /* } */
         }
 
         center_mouse_in_monitor(ws->m);
@@ -579,7 +589,7 @@ void set_container_workspace(struct container *con, struct workspace *ws)
 
     if (con->floating)
         con->client->bw = ws->layout->options.float_border_px;
-    else 
+    else
         con->client->bw = ws->layout->options.tile_border_px;
 }
 
