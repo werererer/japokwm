@@ -29,9 +29,6 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     wl_signal_add(&layer_surface->events.unmap, &c->unmap);
     c->destroy.notify = destroy_notify;
     wl_signal_add(&layer_surface->events.destroy, &c->destroy);
-    c->destroy.notify = destroy_notify;
-
-    /* wl_signal_add(&layer_surface->surface->role->commit,  .destroy, &c->destroy); */
 
     /* popups */
     c->new_popup.notify = popup_handle_new_popup;
