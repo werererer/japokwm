@@ -52,7 +52,6 @@ bool is_popup_menu(struct client *c);
 
 float calc_ratio(float width, float height);
 
-void commit_notify(struct wl_listener *listener, void *data);
 void create_notify(struct wl_listener *listener, void *data);
 void destroy_notify(struct wl_listener *listener, void *data);
 void maprequest(struct wl_listener *listener, void *data);

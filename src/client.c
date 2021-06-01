@@ -285,16 +285,6 @@ bool is_popup_menu(struct client *c)
     return false;
 }
 
-void commit_notify(struct wl_listener *listener, void *data)
-{
-    struct container *con = wl_container_of(listener, con, commit);
-
-    if (!con)
-        return;
-
-    container_damage_part(con);
-}
-
 void create_notify(struct wl_listener *listener, void *data)
 {
     /* This event is raised when wlr_xdg_shell receives a new xdg surface from a

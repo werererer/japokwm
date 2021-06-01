@@ -333,6 +333,16 @@ void apply_rules(struct container *con)
     }
 }
 
+void commit_notify(struct wl_listener *listener, void *data)
+{
+    struct container *con = wl_container_of(listener, con, commit);
+
+    if (!con)
+        return;
+
+    container_damage_part(con);
+}
+
 void focus_container(struct container *con, enum focus_actions a)
 {
     if (!con)
