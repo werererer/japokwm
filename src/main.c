@@ -162,10 +162,7 @@ static int setup()
      * output hardware. The autocreate option will choose the most suitable
      * backend based on the current environment, such as opening an X11 window
      * if an X11 server is running. The NULL argument here optionally allows you
-     * to pass in a custom renderer if wlr_renderer doesn't meet your needs. The
-     * backend uses the renderer, for example, to fall back to software cursors
-     * if the backend does not support hardware cursors (some older GPUs
-     * don't). */
+     * to pass in a custom renderer if wlr_renderer doesnt). */
     if (!(server.backend = wlr_backend_autocreate(server.wl_display))) {
         wlr_log(WLR_INFO, "couldn't create backend");
         return EXIT_FAILURE;
