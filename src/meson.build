@@ -68,6 +68,8 @@ srcs = files(
     'xdg_shell.c',
     'clipboard.c',
     'scratchpad.c',
+    'bitset/bitset.c',
+    'bitset/vector.c',
   )
 
 libName = 'japokwm_lib'
