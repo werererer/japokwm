@@ -74,6 +74,46 @@ struct focus_inactive_data {
     json_object *object;
 };
 
+json_object *ipc_json_describe_tagset(struct tagset *tagset, bool focused)
+{
+    struct workspace *ws = get_workspace(tagset->selected_ws_id);
+    struct monitor *m = ws->m;
+    struct wlr_box box;
+    box = m->geom;
+
+    char *s = strdup(ws->name);
+
+    json_object *object = ipc_json_create_node(0, s, focused, NULL, &box);
+
+    json_object *children = json_object_new_array();
+    json_object_object_add(object, "nodes", children);
+
+    int num;
+    if (isdigit(ws->name[0])) {
+        errno = 0;
+        char *endptr = NULL;
+        long long parsed_num = strtoll(ws->name, &endptr, 10);
+        if (errno != 0 || parsed_num > INT32_MAX || parsed_num < 0 || endptr == ws->name) {
+            num = -1;
+        } else {
+            num = (int) parsed_num;
+        }
+    } else {
+        num = -1;
+    }
+    json_object_object_add(object, "num", json_object_new_int(num));
+
+    json_object_object_add(object, "fullscreen_mode", json_object_new_int(0));
+    json_object_object_add(object, "output", ws->m ?
+            json_object_new_string(ws->m->wlr_output->name) : NULL);
+    json_object_object_add(object, "type", json_object_new_string("workspace"));
+    json_object_object_add(object, "urgent",
+            json_object_new_boolean(false));
+
+    free(s);
+    return object;
+}
+
 json_object *ipc_json_describe_workspace(struct workspace *ws, bool focused)
 {
     struct monitor *m = ws->m;
@@ -159,4 +199,3 @@ json_object *ipc_json_describe_selected_container(struct monitor *m)
 
     return root_object;
 }
-

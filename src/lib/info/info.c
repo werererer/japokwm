@@ -9,9 +9,9 @@
 int lib_get_this_container_count(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tagset *ts = monitor_get_active_tagset(m);
 
-    int i = get_slave_container_count(ws) + 1;
+    int i = get_slave_container_count(ts) + 1;
     lua_pushinteger(L, i);
     return 1;
 }
@@ -61,7 +61,7 @@ int lib_get_nmaster(lua_State *L)
 int lib_get_workspace(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    lua_pushinteger(L, m->ws_id);
+    lua_pushinteger(L, m->tagset->selected_ws_id);
     return 1;
 }
 

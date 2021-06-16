@@ -31,6 +31,7 @@ int lib_toggle_layout(lua_State *L);
 int lib_toggle_view(lua_State *L);
 int lib_toggle_workspace(lua_State *L);
 int lib_view(lua_State *L);
+int lib_tag_view(lua_State *L);
 int lib_zoom(lua_State *L);
 int lib_set_nmaster(lua_State *L);
 int lib_increase_nmaster(lua_State *L);

@@ -214,8 +214,8 @@ void reset_tiled_client_borders(int border_px)
 {
     for (int i = 0; i < server.normal_clients.length; i++) {
         struct client *c = server.normal_clients.items[i];
-        struct workspace *ws = get_workspace(selected_monitor->ws_id);
-        if (!exist_on(c->con, ws))
+        struct tagset *ts = selected_monitor->tagset;
+        if (!exist_on(c->con, ts))
             continue;
         if (c->con->floating)
             continue;
@@ -227,8 +227,8 @@ void reset_floating_client_borders(int border_px)
 {
     for (int i = 0; i < server.normal_clients.length; i++) {
         struct client *c = server.normal_clients.items[i];
-        struct workspace *ws = get_workspace(selected_monitor->ws_id);
-        if (!exist_on(c->con, ws))
+        struct tagset *ts = selected_monitor->tagset;
+        if (!exist_on(c->con, ts))
             continue;
         if (!c->con->floating)
             continue;
@@ -321,10 +321,10 @@ void maprequest(struct wl_listener *listener, void *data)
     if (c->type == LAYER_SHELL) {
         m = output_to_monitor(c->surface.layer->output);
     }
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct layout *lt = ws->layout;
+    struct tagset *ts = monitor_get_active_tagset(m);
+    struct layout *lt = ts->layout;
 
-    c->ws_id = ws->id;
+    c->ws_id = ts->selected_ws_id;
     c->bw = lt->options.tile_border_px;
 
     switch (c->type) {
@@ -337,7 +337,7 @@ void maprequest(struct wl_listener *listener, void *data)
     create_container(c, m, true);
 
     arrange();
-    focus_most_recent_container(get_workspace(m->ws_id), FOCUS_NOOP);
+    focus_most_recent_container(m->tagset, FOCUS_NOOP);
 }
 
 void unmap_notify(struct wl_listener *listener, void *data)
@@ -353,5 +353,5 @@ void unmap_notify(struct wl_listener *listener, void *data)
 
     arrange();
     struct monitor *m = selected_monitor;
-    focus_most_recent_container(get_workspace(m->ws_id), FOCUS_NOOP);
+    focus_most_recent_container(m->tagset, FOCUS_NOOP);
 }

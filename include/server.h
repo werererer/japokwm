@@ -52,7 +52,7 @@ struct server {
     const char *config_file;
     const char *config_dir;
 
-    int previous_workspace_id;
+    struct tagset *previous_tagset;
 
     struct wlr_list client_lists;
     struct wlr_list normal_clients;
@@ -61,6 +61,8 @@ struct server {
 
     struct wlr_list mons;
     struct wlr_list popups;
+
+    struct wlr_list tagsets;
 };
 
 extern struct server server;

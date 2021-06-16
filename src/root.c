@@ -81,8 +81,8 @@ static struct wlr_box fit_root_area(struct root *root)
         struct container *con =
             get_in_composed_list(&server.layer_visual_stack_lists, i);
 
-        struct workspace *ws = get_workspace(root->m->ws_id);
-        if (!exist_on(con, ws))
+        struct tagset *ts = monitor_get_active_tagset(root->m);
+        if (!exist_on(con, ts))
             continue;
 
         struct client *c = con->client;
@@ -157,8 +157,8 @@ void set_root_geom(struct root *root, struct wlr_box geom)
         struct container *con =
             get_in_composed_list(&server.layer_visual_stack_lists, i);
 
-        struct workspace *ws = get_workspace(root->m->ws_id);
-        if (!exist_on(con, ws))
+        struct tagset *ts = monitor_get_active_tagset(root->m);
+        if (!exist_on(con, ts))
             continue;
 
         struct monitor *m = root->m;

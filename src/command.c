@@ -51,10 +51,10 @@ void execute_command(const char *_exec)
         }
         if (handled) {
             if (key_state_has_modifiers(MOD_SHIFT)) {
-                focus_workspace(selected_monitor, get_workspace(i));
+                focus_tagset(get_tagset_from_workspace_id(&server.workspaces, i));
             } else {
-                struct workspace *ws = get_workspace(i);
-                push_selected_workspace(selected_monitor, ws);
+                struct tagset *tagset = get_tagset_from_workspace_id(&server.workspaces, i);
+                focus_tagset(tagset);
             }
         }
     }

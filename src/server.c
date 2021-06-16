@@ -8,7 +8,7 @@ void init_server()
     server = (struct server) {
         .config_file = "",
         .config_dir = "",
-        .previous_workspace_id = INVALID_POSITION,
+        .previous_tagset = NULL,
     };
 
     wl_list_init(&sticky_stack);
@@ -53,4 +53,6 @@ void init_server()
     wlr_list_push(&server.client_lists, &server.normal_clients);
     wlr_list_push(&server.client_lists, &server.non_tiled_clients);
     wlr_list_push(&server.client_lists, &server.independent_clients);
+
+    wlr_list_init(&server.tagsets);
 }

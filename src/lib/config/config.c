@@ -10,13 +10,11 @@
 
 int lib_reload(lua_State *L)
 {
-    struct workspace *ws = get_workspace(selected_monitor->ws_id);
-
     server.default_layout->options = get_default_options();
 
     remove_loaded_layouts(&server.workspaces);
     load_config(L);
-    load_default_layout(L, ws);
+    load_default_layout(L);
 
     ipc_event_workspace();
 

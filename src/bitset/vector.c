@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "bitset/vector.h"
+#include "utils/coreUtils.h"
 
 int vector_setup(Vector* vector, size_t capacity, size_t element_size) {
     assert(vector != NULL);

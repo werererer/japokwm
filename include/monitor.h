@@ -7,6 +7,7 @@
 #include "container.h"
 #include "workspace.h"
 #include "root.h"
+#include "tagset.h"
 
 struct monitor {
     struct wlr_output *wlr_output;
@@ -20,7 +21,9 @@ struct monitor {
     struct wlr_box geom;
     struct root *root;
     float scale;
-    int ws_id;
+    struct tagset *tagset;
+    // focused workspace
+    struct workspace *ws_id;
 };
 
 struct monrule {
@@ -39,15 +42,10 @@ void focus_monitor(struct monitor *m);
 void transform_monitor(struct monitor *m, enum wl_output_transform transform);
 void update_monitor_geometries();
 
-/* *
- * selTag[1] = selTag[0] then
- * selTag[0] = new value
- * */
-void push_selected_workspace(struct monitor *m, struct workspace *ws);
-
 struct monitor *dirtomon(int dir);
 struct monitor *output_to_monitor(struct wlr_output *output);
 struct monitor *xy_to_monitor(double x, double y);
+struct tagset *monitor_get_active_tagset(struct monitor *m);
 struct workspace *monitor_get_active_workspace(struct monitor *m);
 struct layout *get_layout_in_monitor(struct monitor *m);
 

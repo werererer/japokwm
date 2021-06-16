@@ -15,21 +15,21 @@
 
 #define VECTOR_UNINITIALIZED NULL
 #define VECTOR_INITIALIZER \
-	{ 0, 0, 0, VECTOR_UNINITIALIZED }
+    { 0, 0, 0, VECTOR_UNINITIALIZED }
 
 /***** STRUCTURES *****/
 
 typedef struct Vector {
-	size_t size;
-	size_t capacity;
-	size_t element_size;
+    size_t size;
+    size_t capacity;
+    size_t element_size;
 
-	void* data;
+    void* data;
 } Vector;
 
 typedef struct Iterator {
-	void* pointer;
-	size_t element_size;
+    void* pointer;
+    size_t element_size;
 } Iterator;
 
 /***** METHODS *****/
@@ -72,7 +72,7 @@ const void* vector_const_get(const Vector* vector, size_t index);
 void* vector_front(Vector* vector);
 void* vector_back(Vector* vector);
 #define VECTOR_GET_AS(type, vector_pointer, index) \
-	*((type*)vector_get((vector_pointer), (index)))
+    *((type*)vector_get((vector_pointer), (index)))
 
 /* Information */
 bool vector_is_initialized(const Vector* vector);
@@ -104,14 +104,12 @@ bool iterator_is_before(Iterator* first, Iterator* second);
 bool iterator_is_after(Iterator* first, Iterator* second);
 
 #define VECTOR_FOR_EACH(vector_pointer, iterator_name)           \
-	for (Iterator(iterator_name) = vector_begin((vector_pointer)), \
-			end = vector_end((vector_pointer));                        \
-			 !iterator_equals(&(iterator_name), &end);                 \
-			 iterator_increment(&(iterator_name)))
+    for (Iterator(iterator_name) = vector_begin((vector_pointer)), \
+            end = vector_end((vector_pointer));                        \
+             !iterator_equals(&(iterator_name), &end);                 \
+             iterator_increment(&(iterator_name)))
 
 /***** PRIVATE *****/
-
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 bool _vector_should_grow(Vector* vector);
 bool _vector_should_shrink(Vector* vector);

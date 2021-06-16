@@ -11,7 +11,7 @@ void move_to_scratchpad(struct container *con, int position)
         return;
 
     struct monitor *m = con->m;
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tagset *ts = monitor_get_active_tagset(m);
 
     con->on_scratchpad = true;
     set_container_floating(con, fix_position, true);
@@ -24,12 +24,12 @@ void move_to_scratchpad(struct container *con, int position)
         wlr_list_insert(&server.scratchpad, new_position, con);
     }
 
-    remove_in_composed_list(&ws->container_lists, cmp_ptr, con);
-    wlr_list_remove(&ws->focus_stack_normal, cmp_ptr, con);
+    remove_in_composed_list(&ts->list_set.container_lists, cmp_ptr, con);
+    wlr_list_remove(&ts->list_set.focus_stack_normal, cmp_ptr, con);
     remove_in_composed_list(&server.visual_stack_lists, cmp_ptr, con);
 
     container_damage_whole(con);
-    focus_most_recent_container(get_workspace(m->ws_id), FOCUS_NOOP);
+    focus_most_recent_container(ts, FOCUS_NOOP);
     con->hidden = true;
     arrange();
 }
@@ -46,13 +46,13 @@ void show_scratchpad()
         return;
 
     struct monitor *m = selected_monitor;
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tagset *ts = monitor_get_active_tagset(m);
     struct container *sel = get_focused_container(m);
     struct container *con = server.scratchpad.items[0];
 
     if (con->hidden) {
-        wlr_list_push(&ws->floating_containers, con);
-        wlr_list_insert(&ws->focus_stack_normal, 0, con);
+        wlr_list_push(&ts->list_set.floating_containers, con);
+        wlr_list_insert(&ts->list_set.focus_stack_normal, 0, con);
         wlr_list_insert(&server.floating_visual_stack, 0, con);
 
         resize(con, get_center_box(m->geom));
@@ -65,8 +65,8 @@ void show_scratchpad()
             return;
         }
 
-        wlr_list_remove(&ws->floating_containers, cmp_ptr, con);
-        wlr_list_remove(&ws->focus_stack_normal, cmp_ptr, con);
+        wlr_list_remove(&ts->list_set.floating_containers, cmp_ptr, con);
+        wlr_list_remove(&ts->list_set.focus_stack_normal, cmp_ptr, con);
         wlr_list_remove(&server.floating_visual_stack, cmp_ptr, con);
 
         wlr_list_remove(&server.scratchpad, cmp_ptr, con);

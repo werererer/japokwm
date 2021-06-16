@@ -14,7 +14,7 @@
 #include "options.h"
 #include "utils/parseConfigUtils.h"
 #include "scratchpad.h"
-#include "workspace.h"
+#include "tagset.h"
 #include "ipc-server.h"
 
 static void add_container_to_workspace(struct container *con, struct workspace *ws);
@@ -32,10 +32,13 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     con->alpha = 1.0f;
     con->has_border = has_border;
     con->focusable = true;
-    add_container_to_workspace(con, get_workspace(m->ws_id));
+    struct workspace *ws = get_workspace(m->tagset->selected_ws_id);
+    printf("workspace: monitor: %p\n", ws);
+    printf("workspace: monitor: %p\n", ws->m);
+    add_container_to_workspace(con, ws);
 
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct layout *lt = ws->layout;
+    struct tagset *ts = m->tagset;
+    struct layout *lt = ts->layout;
     struct event_handler *ev = &lt->options.event_handler;
 
     call_create_container_function(ev, get_position_in_container_stack(con));
@@ -46,7 +49,6 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 
 void destroy_container(struct container *con)
 {
-    printf("destroy_container\n");
     // surfaces cant commit anything anymore if their container is destroyed
     wl_list_remove(&con->commit.link);
 
@@ -55,7 +57,7 @@ void destroy_container(struct container *con)
 
     struct workspace *ws = monitor_get_active_workspace(con->m);
 
-    remove_in_composed_list(&ws->focus_stack_lists, cmp_ptr, con);
+    remove_in_composed_list(&ws->list_set.focus_stack_lists, cmp_ptr, con);
 
     switch (con->client->type) {
         case LAYER_SHELL:
@@ -65,12 +67,12 @@ void destroy_container(struct container *con)
         case X11_UNMANAGED:
             remove_in_composed_list(&server.normal_visual_stack_lists,
                     cmp_ptr, con);
-            wlr_list_remove(&ws->independent_containers, cmp_ptr, con);
+            list_set_remove_independent_container(&ws->list_set, con);
             break;
         default:
             remove_in_composed_list(&server.normal_visual_stack_lists,
                     cmp_ptr, con);
-            remove_in_composed_list(&ws->container_lists, cmp_ptr, con);
+            remove_in_composed_list(&ws->list_set.container_lists, cmp_ptr, con);
             break;
     }
 
@@ -146,12 +148,12 @@ struct container *get_focused_container(struct monitor *m)
     if (!m)
         return NULL;
 
-    struct workspace *ws = get_workspace(m->ws_id);
+    struct tagset *ts = m->tagset;
 
-    if (!ws)
+    if (!ts)
         return NULL;
 
-    return get_in_composed_list(&ws->focus_stack_lists, 0);
+    return get_in_composed_list(&ts->list_set.focus_stack_lists, 0);
 }
 
 struct container *xy_to_container(double x, double y)
@@ -165,7 +167,7 @@ struct container *xy_to_container(double x, double y)
             get_in_composed_list(&server.visual_stack_lists, i);
         if (!con->focusable)
             continue;
-        if (!visible_on(con, get_workspace(m->ws_id)))
+        if (!visible_on(con, m->tagset))
             continue;
         if (!wlr_box_contains_point(&con->geom, x, y))
             continue;
@@ -174,28 +176,6 @@ struct container *xy_to_container(double x, double y)
     }
 
     return NULL;
-}
-
-void add_container_to_composed_list(struct wlr_list *lists, struct container *con, int i)
-{
-    if (!con)
-        return;
-    struct workspace *ws = get_workspace(con->m->ws_id);
-    if (!ws)
-        return;
-
-    struct wlr_list *hidden_containers = get_hidden_list(ws);
-    struct wlr_list *tiled_containers = get_tiled_list(ws);
-    struct wlr_list *floating_containers = get_floating_list(ws);
-    if (con->floating) {
-        wlr_list_insert(floating_containers, i, con);
-        return;
-    }
-    if (con->hidden) {
-        wlr_list_insert(hidden_containers, i, con);
-        return;
-    }
-    wlr_list_insert(tiled_containers, i, con);
 }
 
 static void add_container_to_workspace(struct container *con, struct workspace *ws)
@@ -215,16 +195,16 @@ static void add_container_to_workspace(struct container *con, struct workspace *
             }
             break;
         case X11_UNMANAGED:
-            wlr_list_insert(&ws->independent_containers, 0, con);
+            wlr_list_insert(&ws->list_set.independent_containers, 0, con);
             add_container_to_stack(con);
             break;
         case XDG_SHELL:
         case X11_MANAGED:
-            add_container_to_containers(con, ws, 0);
+            add_container_to_containers(&ws->list_set, con, 0);
             add_container_to_stack(con);
             break;
     }
-    add_container_to_focus_stack(con, ws);
+    add_container_to_focus_stack(&ws->list_set, con);
 }
 
 struct wlr_box get_center_box(struct wlr_box ref)
@@ -327,7 +307,7 @@ void apply_rules(struct container *con)
             lua_geti(L, LUA_REGISTRYINDEX, r.lua_func_ref);
             struct monitor *m = con->m;
             struct workspace *ws = monitor_get_active_workspace(m);
-            int position = wlr_list_find(&ws->container_lists, cmp_ptr, con);
+            int position = wlr_list_find(&ws->list_set.container_lists, cmp_ptr, con);
             lua_pushinteger(L, position);
             lua_call_safe(L, 1, 0, 0);
         }
@@ -355,7 +335,7 @@ void focus_container(struct container *con, enum focus_actions a)
 
     struct monitor *m = con->m;
 
-    if (m->ws_id != con->client->ws_id)
+    if (m->tagset->selected_ws_id != con->client->ws_id)
         return;
 
     struct container *sel = get_focused_container(m);
@@ -363,11 +343,11 @@ void focus_container(struct container *con, enum focus_actions a)
     if (a == FOCUS_LIFT)
         lift_container(con);
 
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tagset *ts = monitor_get_active_tagset(m);
 
     /* Put the new client atop the focus stack */
-    remove_in_composed_list(&ws->focus_stack_lists, cmp_ptr, con);
-    add_container_to_focus_stack(con, ws);
+    remove_in_composed_list(&ts->list_set.focus_stack_lists, cmp_ptr, con);
+    add_container_to_focus_stack(&ts->list_set, con);
 
     struct container *new_sel = get_focused_container(m);
 
@@ -376,7 +356,7 @@ void focus_container(struct container *con, enum focus_actions a)
     container_damage_borders(sel, &sel->geom);
     container_damage_borders(new_sel, &new_sel->geom);
 
-    struct layout *lt = ws->layout;
+    struct layout *lt = ts->layout;
     call_on_focus_function(&lt->options.event_handler,
             get_position_in_container_stack(con));
 
@@ -392,11 +372,11 @@ void focus_on_stack(struct monitor *m, int i)
     if (!sel)
         return;
 
-    struct workspace *ws = get_workspace(m->ws_id);
-    struct wlr_list *visible_container_lists = get_visible_lists(ws);
+    struct tagset *ts = m->tagset;
+    struct wlr_list *visible_container_lists = tagset_get_visible_lists(ts);
 
     if (sel->client->type == LAYER_SHELL) {
-        struct container *con = get_container(ws, 0);
+        struct container *con = get_container(ts, 0);
         focus_container(con, FOCUS_NOOP);
         return;
     }
@@ -419,8 +399,8 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     if (sel->client->type == LAYER_SHELL)
         return;
 
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct wlr_list *hidden_containers = get_hidden_list(ws);
+    struct tagset *ts = monitor_get_active_tagset(m);
+    struct wlr_list *hidden_containers = get_hidden_list(&ts->list_set);
     struct container *con = get_relative_item_in_list(hidden_containers, 0, i);
 
     if (!con)
@@ -439,7 +419,7 @@ void focus_on_hidden_stack(struct monitor *m, int i)
      * container to the end of the containers array */
     wlr_list_remove(hidden_containers, cmp_ptr, con);
 
-    struct wlr_list *visible_container_lists = get_visible_lists(ws);
+    struct wlr_list *visible_container_lists = get_visible_lists(&ts->list_set);
     struct wlr_list *focus_list = find_list_in_composed_list(
             visible_container_lists, cmp_ptr, sel);
     int sel_index = wlr_list_find(focus_list, cmp_ptr, sel);
@@ -477,15 +457,15 @@ void repush(int pos1, int pos2)
     struct monitor *m = selected_monitor;
     struct workspace *ws = monitor_get_active_workspace(m);
 
-    struct container *con = ws->tiled_containers.items[pos1];
+    struct container *con = ws->list_set.tiled_containers.items[pos1];
 
     if (!con)
         return;
     if (con->floating)
         return;
 
-    wlr_list_remove(&ws->tiled_containers, cmp_ptr, con);
-    wlr_list_insert(&ws->tiled_containers, pos2, con);
+    wlr_list_remove(&ws->list_set.tiled_containers, cmp_ptr, con);
+    wlr_list_insert(&ws->list_set.tiled_containers, pos2, con);
 
     arrange();
 
@@ -499,14 +479,14 @@ void fix_position(struct container *con)
     if (!con)
         return;
 
-    struct workspace *ws = monitor_get_active_workspace(con->m);
+    struct tagset *ts = monitor_get_active_tagset(con->m);
 
-    struct wlr_list *tiled_containers = get_tiled_list(ws);
-    struct wlr_list *floating_containers = get_floating_list(ws);
+    struct wlr_list *tiled_containers = tagset_get_tiled_list(ts);
+    struct wlr_list *floating_containers = tagset_get_floating_list(ts);
 
     if (!con->floating) {
         wlr_list_remove(floating_containers, cmp_ptr, con);
-        int position = MIN(tiled_containers->length, ws->layout->n_tiled_max-1);
+        int position = MIN(tiled_containers->length, ts->layout->n_tiled_max-1);
         wlr_list_insert(tiled_containers, position, con);
     } else {
         wlr_list_remove(tiled_containers, cmp_ptr, con);
@@ -524,8 +504,9 @@ void set_container_floating(struct container *con, void (*fix_position)(struct c
         return;
 
     struct monitor *m = con->m;
+    struct tagset *ts = m->tagset;
+    struct layout *lt = ts->layout;
     struct workspace *ws = monitor_get_active_workspace(m);
-    struct layout *lt = ws->layout;
 
     con->floating = floating;
 
@@ -574,7 +555,7 @@ void set_container_monitor(struct container *con, struct monitor *m)
     if (con->prev_m == NULL)
         con->prev_m = m;
 
-    struct workspace *ws = get_workspace(m->ws_id);
+    struct workspace *ws = get_workspace(m->tagset->selected_ws_id);
     set_container_workspace(con, ws);
 }
 
@@ -635,7 +616,7 @@ int get_position_in_container_stack(struct container *con)
 
     struct monitor *m = con->m;
     struct workspace *ws = monitor_get_active_workspace(m);
-    int position = find_in_composed_list(&ws->container_lists, &cmp_ptr, con);
+    int position = find_in_composed_list(&ws->list_set.container_lists, &cmp_ptr, con);
     return position;
 }
 
@@ -643,7 +624,7 @@ struct container *get_container_from_container_stack_position(int i)
 {
     struct monitor *m = selected_monitor;
     struct workspace *ws = monitor_get_active_workspace(m);
-    struct container *con = get_in_composed_list(&ws->container_lists, i);
+    struct container *con = get_in_composed_list(&ws->list_set.container_lists, i);
     return con;
 }
 

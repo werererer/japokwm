@@ -6,40 +6,39 @@
 
 START_TEST(get_container_count_test)
 {
-    struct wlr_list tag_names;
-    wlr_list_init(&tag_names);
-    wlr_list_push(&tag_names, "1");
-    wlr_list_push(&tag_names, "2");
-    struct layout lt;
-    create_workspaces(&server.workspaces, &tag_names, &lt);
+    /* struct wlr_list tag_names; */
+    /* wlr_list_init(&tag_names); */
+    /* wlr_list_push(&tag_names, "1"); */
+    /* wlr_list_push(&tag_names, "2"); */
+    /* create_workspaces(&server.workspaces, &tag_names); */
 
-    struct monitor m0, m1;
-    struct workspace *ws0 = get_workspace(0);
-    ws0->m = &m0;
-    struct workspace *ws1 = get_workspace(1);
-    ws1->m = &m1;
+    /* struct monitor m0, m1; */
+    /* struct tagset *tagset0 = get_tagset_from_workspace_id(&server.workspaces, 0); */
+    /* tagset0->m = &m0; */
+    /* struct tagset *tagset1 = get_tagset_from_workspace_id(&server.workspaces, 1); */
+    /* tagset1->m = &m1; */
 
-    const int container_count = 3;
-    struct client clients[container_count];
-    for (int i = 0; i < container_count; i++) {
-        clients[0].type = XDG_SHELL;
-        clients[0].sticky = false;
-    }
+    /* const int container_count = 3; */
+    /* struct client clients[container_count]; */
+    /* for (int i = 0; i < container_count; i++) { */
+    /*     clients[0].type = XDG_SHELL; */
+    /*     clients[0].sticky = false; */
+    /* } */
 
-    struct container cons[container_count];
-    for (int i = 0; i < container_count; i++) {
-        cons[i].client = &clients[i];
-        cons[i].floating = false;
-        cons[i].m = &m0;
-    }
+    /* struct container cons[container_count]; */
+    /* for (int i = 0; i < container_count; i++) { */
+    /*     cons[i].client = &clients[i]; */
+    /*     cons[i].floating = false; */
+    /*     cons[i].m = &m0; */
+    /* } */
 
-    clients[0].ws_id = 0;
-    wlr_list_push(&ws0->tiled_containers, &cons[0]);
-    clients[1].ws_id = 0;
-    wlr_list_push(&ws0->tiled_containers, &cons[1]);
-    clients[2].ws_id = 1;
-    wlr_list_push(&ws1->tiled_containers, &cons[2]);
-    ck_assert_int_eq(get_container_count(ws0), 2);
+    /* clients[0].ws_id = 0; */
+    /* wlr_list_push(&tagset0->list_set.tiled_containers, &cons[0]); */
+    /* clients[1].ws_id = 0; */
+    /* wlr_list_push(&tagset0->list_set.tiled_containers, &cons[1]); */
+    /* clients[2].ws_id = 1; */
+    /* wlr_list_push(&tagset1->list_set.tiled_containers, &cons[2]); */
+    /* ck_assert_int_eq(get_container_count(tagset0), 2); */
 } END_TEST
 
 START_TEST(get_relative_item_test)

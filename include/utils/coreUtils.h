@@ -17,6 +17,7 @@
 /* macros */
 #define MAX(A, B)               ((A) > (B) ? (A) : (B))
 #define MIN(A, B)               ((A) < (B) ? (A) : (B))
+//NOLINTNEXTLINE
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define END(A)                  ((A) + LENGTH(A))
 /* number of chars a string should contain */
@@ -31,6 +32,10 @@
 
 #define MIN_CONTAINER_WIDTH 30
 #define MIN_CONTAINER_HEIGHT 30
+
+#define foreach(item, array)\
+    for(int keep = 1, count = 0, size = LENGTH(array); keep && count < size; keep = 1, count++)\
+        for(item = array[count]; keep; keep = 0)\
 
 /* rules */
 struct rule {

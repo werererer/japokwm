@@ -13,15 +13,15 @@
 #define BITSET_SUCCESS VECTOR_SUCCESS
 
 #define BITSET_INITIALIZER \
-	{ VECTOR_INITIALIZER, 0 }
+    { VECTOR_INITIALIZER, 0 }
 
 typedef void (*bit_operator_t)(bool*, const bool*);
 
 /****************** STRUCTURES ******************/
 
 typedef struct BitSet {
-	Vector bits;
-	size_t size;
+    Vector bits;
+    size_t size;
 } BitSet;
 
 /****************** INTERFACE ******************/
@@ -40,8 +40,8 @@ BitSet bitset_from_value(uint64_t value);
 
 /* Logical Operations */
 int byte_wise_operation(BitSet* destination,
-												const BitSet* source,
-												bit_operator_t byte_operation);
+                                                const BitSet* source,
+                                                bit_operator_t byte_operation);
 
 int bitset_and(BitSet* destination, const BitSet* source);
 int bitset_or(BitSet* destination, const BitSet* source);
@@ -92,9 +92,8 @@ int bitset_none(BitSet* bitset);
 #define LAST_BIT_INDEX(value) ((sizeof(value) * 8) - 1)
 #define LAST_BIT_MASK(value) (1ULL << LAST_BIT_INDEX(value))
 #define LAST_BIT(value) \
-	((value & LAST_BIT_MASK(value)) >> LAST_BIT_INDEX(value))
+    ((value & LAST_BIT_MASK(value)) >> LAST_BIT_INDEX(value))
 
-#define MIN(a, b) ((a < b) ? (a) : (b))
 #define CEIL(x) ((x == ((int)(x))) ? x : ((int)(x)) + 1)
 #define BITS_TO_BYTES(bits) CEIL((bits) / 8.0)
 

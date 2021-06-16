@@ -273,10 +273,10 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
         };
 
         enum wlr_edges hidden_edges = WLR_EDGE_NONE;
-        struct workspace *ws = monitor_get_active_workspace(m);
-        struct layout *lt = ws->layout;
+        struct tagset *ts = monitor_get_active_tagset(m);
+        struct layout *lt = ts->layout;
         if (lt->options.smart_hidden_edges) {
-            if (ws->tiled_containers.length <= 1) {
+            if (ts->list_set.tiled_containers.length <= 1) {
                 hidden_edges = get_hidden_edges(con, borders, lt->options.hidden_edges);
             }
         } else {
@@ -298,9 +298,9 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
 {
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    for (int i = length_of_composed_list(&server.normal_visual_stack_lists); i >= 0; i--) {
+    for (int i = length_of_composed_list(&server.normal_visual_stack_lists)-1; i >= 0; i--) {
         struct container *con = get_in_composed_list(&server.normal_visual_stack_lists, i);
-        if (!visible_on(con, get_workspace(m->ws_id)))
+        if (!visible_on(con, monitor_get_active_tagset(m)))
             continue;
 
         render_borders(con, m, output_damage);
@@ -328,7 +328,7 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
             continue;
         if (con->client->surface.layer->current.layer != layer)
             continue;
-        if (!visible_on(con, get_workspace(m->ws_id)))
+        if (!visible_on(con, monitor_get_active_tagset(m)))
             continue;
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
@@ -344,9 +344,9 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
 
 static void render_independents(struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct workspace *ws = monitor_get_active_workspace(m);
-    for (int i = 0; i < ws->independent_containers.length; i++) {
-        struct container *con = ws->independent_containers.items[i];
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    for (int i = 0; i < tagset->list_set.independent_containers.length; i++) {
+        struct container *con = tagset->list_set.independent_containers.items[i];
         struct wlr_surface *surface = get_wlrsurface(con->client);
 
         con->geom.width = surface->current.width;

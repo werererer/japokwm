@@ -76,7 +76,6 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     m->root = create_root(m, m->geom);
-    m->ws_id = INVALID_WORKSPACE_ID;
 
     if (is_first_monitor) {
         focus_monitor(m);
@@ -88,20 +87,17 @@ void create_monitor(struct wl_listener *listener, void *data)
         }
 
         create_workspaces(&server.workspaces,
-                &server.default_layout->options.tag_names, server.default_layout);
+                &server.default_layout->options.tag_names);
 
         call_on_start_function(&server.default_layout->options.event_handler);
     }
 
     evaluate_monrules(output);
 
-    struct workspace *ws = get_workspace(0);
-    focus_next_unoccupied_workspace(m, &server.workspaces, ws);
-    // TODO is this needed?
-    ws = monitor_get_active_workspace(m);
-    load_default_layout(L, ws);
-    copy_layout_from_selected_workspace(&server.workspaces);
-    set_root_color(m->root, ws->layout->options.root_color);
+    focus_next_unoccupied_workspace(m, &server.workspaces, get_workspace(0));
+    load_default_layout(L);
+    struct tagset *ts = monitor_get_active_tagset(m);
+    set_root_color(m->root, ts->layout->options.root_color);
 
     if (!wlr_output_commit(output))
         return;
@@ -163,7 +159,6 @@ void destroy_monitor(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, destroy);
 
-    focus_workspace(m, NULL);
     destroy_root(m->root);
     wlr_list_remove(&server.mons, cmp_ptr, m);
 }
@@ -208,26 +203,20 @@ void focus_monitor(struct monitor *m)
 
     /* wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, m->wlr_output.) */
 
-    struct workspace *ws = get_workspace(m->ws_id);
+    struct tagset *tagset = monitor_get_active_tagset(m);
     if (selected_monitor) {
-        struct workspace *sel_ws = monitor_get_active_workspace(selected_monitor);
-        for (int i = 0; i < sel_ws->floating_containers.length; i++) {
-            struct container *con = sel_ws->floating_containers.items[i];
-            if (visible_on(con, get_workspace(sel_ws->id))) {
+        struct tagset *sel_ts = monitor_get_active_tagset(selected_monitor);
+        for (int i = 0; i < sel_ts->list_set.floating_containers.length; i++) {
+            struct container *con = sel_ts->list_set.floating_containers.items[i];
+            if (visible_on(con, sel_ts)) {
+                struct workspace *ws = get_workspace(tagset->selected_ws_id);
                 move_container_to_workspace(con, ws);
             }
         }
     }
 
     selected_monitor = m;
-    focus_workspace(m, ws);
-}
-
-void push_selected_workspace(struct monitor *m, struct workspace *ws)
-{
-    if (!m || !ws)
-        return;
-    focus_workspace(m, get_workspace(ws->id));
+    focus_tagset(tagset);
 }
 
 struct monitor *dirtomon(int dir)
@@ -256,15 +245,24 @@ struct monitor *xy_to_monitor(double x, double y)
     return o ? o->data : NULL;
 }
 
+struct tagset *monitor_get_active_tagset(struct monitor *m)
+{
+    if (!m)
+        return NULL;
+
+    return m->tagset;
+}
+
 inline struct workspace *monitor_get_active_workspace(struct monitor *m)
 {
     if (!m)
         return NULL;
 
-    return get_workspace(m->ws_id);
+    struct tagset *ts = monitor_get_active_tagset(m);
+    return get_workspace(ts->selected_ws_id);
 }
 
 inline struct layout *get_layout_in_monitor(struct monitor *m)
 {
-    return get_workspace(m->ws_id)->layout;
+    return monitor_get_active_tagset(m)->layout;
 }
