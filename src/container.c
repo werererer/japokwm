@@ -57,7 +57,7 @@ void destroy_container(struct container *con)
 
     struct workspace *ws = monitor_get_active_workspace(con->m);
 
-    remove_in_composed_list(&ws->list_set.focus_stack_lists, cmp_ptr, con);
+    list_set_remove_focus_stack_container(&ws->list_set, con);
 
     switch (con->client->type) {
         case LAYER_SHELL:
@@ -72,7 +72,7 @@ void destroy_container(struct container *con)
         default:
             remove_in_composed_list(&server.normal_visual_stack_lists,
                     cmp_ptr, con);
-            remove_in_composed_list(&ws->list_set.container_lists, cmp_ptr, con);
+            list_set_remove_container(&ws->list_set, con);
             break;
     }
 

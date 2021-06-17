@@ -53,6 +53,8 @@ struct wlr_list *get_tiled_list(struct list_set *list_set);
 struct wlr_list *get_floating_list(struct list_set *list_set);
 struct wlr_list *get_hidden_list(struct list_set *list_set);
 
+void list_set_remove_container(struct list_set *list_set, struct container *con);
+void list_set_remove_focus_stack_container(struct list_set *list_set, struct container *con);
 void list_set_remove_independent_container(struct list_set *list_set, struct container *con);
 
 #endif /* LIST_SET_H */

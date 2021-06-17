@@ -163,7 +163,7 @@ void add_container_to_stack(struct container *con)
 
 void append_list_set(struct list_set *dest, struct list_set *src)
 {
-    wlr_list_push(&dest->change_affected_list_sets, src);
+    wlr_list_push(&src->change_affected_list_sets, dest);
     for (int i = 0; i < dest->all_lists.length; i++) {
         struct wlr_list *dest_list = dest->all_lists.items[i];
         struct wlr_list *src_list = src->all_lists.items[i];
@@ -199,6 +199,21 @@ struct wlr_list *get_hidden_list(struct list_set *list_set)
     return &list_set->hidden_containers;
 }
 
+void list_set_remove_container(struct list_set *list_set, struct container *con)
+{
+    for (int i = 0; i < list_set->change_affected_list_sets.length; i++) {
+        struct list_set *ls = list_set->change_affected_list_sets.items[i];
+        remove_in_composed_list(&ls->container_lists, cmp_ptr, con);
+    }
+}
+
+void list_set_remove_focus_stack_container(struct list_set *list_set, struct container *con)
+{
+    for (int i = 0; i < list_set->change_affected_list_sets.length; i++) {
+        struct list_set *ls = list_set->change_affected_list_sets.items[i];
+        remove_in_composed_list(&ls->focus_stack_lists, cmp_ptr, con);
+    }
+}
 
 void list_set_remove_independent_container(struct list_set *list_set, struct container *con)
 {

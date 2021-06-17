@@ -109,7 +109,7 @@ void tagset_set_tags(struct tagset *tagset, BitSet bitset)
             continue;
 
         struct workspace *ws = get_workspace(i);
-        append_list_set(&ws->list_set, &tagset->list_set);
+        append_list_set(&tagset->list_set, &ws->list_set);
         ws->m = tagset->m;
     }
     ipc_event_workspace();
