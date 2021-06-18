@@ -1,4 +1,7 @@
 #include "tagset.h"
+
+#include <assert.h>
+
 #include "bitset/bitset.h"
 #include "list_set.h"
 #include "server.h"
@@ -7,6 +10,7 @@
 #include "utils/parseConfigUtils.h"
 #include "tile/tileUtils.h"
 #include "ipc-server.h"
+#include "monitor.h"
 
 struct tagset *create_tagset(struct monitor *m, struct layout *lt, int selected_ws_id, BitSet workspaces)
 {
@@ -27,10 +31,12 @@ struct tagset *create_tagset(struct monitor *m, struct layout *lt, int selected_
     return tagset;
 }
 
-void destroy_tagset(struct tagset *ts)
+void destroy_tagset(struct tagset *tagset)
 {
-    wlr_list_remove(&server.tagsets, cmp_ptr, ts);
-    free(ts);
+    if (!tagset)
+        return;
+    wlr_list_remove(&server.tagsets, cmp_ptr, tagset);
+    free(tagset);
 }
 
 void focus_most_recent_container(struct tagset *tagset, enum focus_actions a)
@@ -55,25 +61,17 @@ void focus_tagset(struct tagset *tagset)
 
     struct monitor *m = selected_monitor;
 
-    for (int i = 0; i < tagset->workspaces.size; i++) {
-        bool bit = bitset_test(&tagset->workspaces, i);
-        if (bit) {
-            struct workspace *ws = get_workspace(i);
-            ws->m = selected_monitor;
-        }
-    }
+    tagset_set_tagset(m->tagset);
 
     ipc_event_workspace();
 
+    // TODO add support for sticky containers again
     /* struct tagset *old_tagset = monitor_get_active_tagset(m); */
     /* struct container *con; */
     /* wl_list_for_each(con, &sticky_stack, stlink) { */
     /*     con->client->ws_id = ws->id; */
     /* } */
 
-    if (m->tagset) {
-        destroy_tagset(m->tagset);
-    }
     m->tagset = tagset;
 
     arrange();
@@ -81,26 +79,47 @@ void focus_tagset(struct tagset *tagset)
     root_damage_whole(m->root);
 }
 
-void tagset_set_tags(struct tagset *tagset, BitSet bitset)
+void tagset_unset_tagset(struct tagset *tagset)
 {
     if (!tagset)
         return;
 
     printf("tagset set tags\n");
-    clear_list_set(&tagset->list_set);
-
     for (int i = 0; i < tagset->workspaces.size; i++) {
         bool bit = bitset_test(&tagset->workspaces, i);
 
-        printf("bit1: %i\n", bit);
         if (!bit)
             continue;
 
         struct workspace *ws = get_workspace(i);
+        /* unsubscribe_list_set(&ws->list_set, &tagset->list_set); */
+        clear_list_set(&ws->list_set);
+
+        // TODO convert to a function
+        for (int i = 0; i < ws->list_set.all_lists.length; i++) {
+            struct wlr_list *dest_list = ws->list_set.all_lists.items[i];
+            struct wlr_list *src_list = tagset->list_set.all_lists.items[i];
+            printf("printf: src length: %zu\n", src_list->length);
+            printf("printf: dest length: %zu\n", dest_list->length);
+            for (int j = 0; j < src_list->length; j++) {
+                struct container *con = src_list->items[j];
+                printf("con->client->ws_id %i ws->id: %zu\n", con->client->ws_id, ws->id);
+                if (con->client->ws_id != ws->id)
+                    continue;
+                wlr_list_push(dest_list, con);
+            }
+        }
+
         wlr_list_remove(&ws->list_set.change_affected_list_sets, cmp_ptr, &tagset->list_set);
     }
+    clear_list_set(&tagset->list_set);
+}
 
-    bitset_move(&tagset->workspaces, &bitset);
+void tagset_set_tagset(struct tagset *tagset)
+{
+    if (!tagset)
+        return;
+
     for(size_t i = 0; i < tagset->workspaces.size; i++) {
         bool bit = bitset_test(&tagset->workspaces, i);
 
@@ -109,18 +128,23 @@ void tagset_set_tags(struct tagset *tagset, BitSet bitset)
             continue;
 
         struct workspace *ws = get_workspace(i);
-        append_list_set(&tagset->list_set, &ws->list_set);
+        subscribe_list_set(&tagset->list_set, &ws->list_set);
         ws->m = tagset->m;
     }
+}
+
+void tagset_set_tags(struct tagset *tagset, BitSet bitset)
+{
+    tagset_unset_tagset(tagset);
+    bitset_move(&tagset->workspaces, &bitset);
+    tagset_set_tagset(tagset);
+
     ipc_event_workspace();
-    printf("tagset set tags end\n");
 }
 
 void push_tagset(struct tagset *tagset)
 {
-    printf("push_tagset\n");
-    if (!tagset)
-        return;
+    assert(tagset != NULL);
 
     struct monitor *m = selected_monitor;
 
@@ -130,14 +154,16 @@ void push_tagset(struct tagset *tagset)
     if (m->tagset != server.previous_tagset)
         server.previous_tagset = m->tagset;
 
+    tagset_unset_tagset(server.previous_tagset);
     focus_tagset(tagset);
 }
 
-void tagset_set_workspace_id(struct tagset *tagset, int ws_id)
+void tagset_set_workspace_id(int ws_id)
 {
     BitSet bitset;
     bitset_setup(&bitset, server.workspaces.length);
-    tagset_set_tags(tagset, bitset);
+    bitset_set(&bitset, ws_id);
+    monitor_focus_tags(selected_monitor, ws_id, bitset);
 }
 
 void tagset_toggle_add(struct tagset *tagset, BitSet bitset)
@@ -147,7 +173,7 @@ void tagset_toggle_add(struct tagset *tagset, BitSet bitset)
 
     bitset_xor(&bitset, &tagset->workspaces);
 
-    tagset_set_tags(tagset, bitset);
+    monitor_focus_tags(selected_monitor, tagset->selected_ws_id, bitset);
 }
 
 void tagset_toggle_add_workspace_id(struct tagset *tagset, int ws_id)
@@ -190,24 +216,24 @@ static bool container_intersects_with_monitor(struct container *con, struct moni
     return wlr_box_intersection(&tmp_geom, &con->geom, &m->geom);
 }
 
-struct wlr_list *tagset_get_visible_lists(struct tagset *ts)
+struct wlr_list *tagset_get_visible_lists(struct tagset *tagset)
 {
-    struct layout *lt = ts->layout;
+    struct layout *lt = tagset->layout;
 
     if (lt->options.arrange_by_focus)
-        return &ts->list_set.focus_stack_visible_lists;
+        return &tagset->list_set.focus_stack_visible_lists;
     else
-        return &ts->list_set.visible_container_lists;
+        return &tagset->list_set.visible_container_lists;
 }
 
-struct wlr_list *tagset_get_tiled_list(struct tagset *ts)
+struct wlr_list *tagset_get_tiled_list(struct tagset *tagset)
 {
-    struct layout *lt = ts->layout;
+    struct layout *lt = tagset->layout;
 
     if (lt->options.arrange_by_focus)
-        return &ts->list_set.focus_stack_normal;
+        return &tagset->list_set.focus_stack_normal;
     else
-        return &ts->list_set.tiled_containers;
+        return &tagset->list_set.tiled_containers;
 }
 
 struct wlr_list *tagset_get_floating_list(struct tagset *ts)

@@ -222,6 +222,7 @@ void set_container_workspace(struct container *con, struct workspace *ws)
     } else {
         ws->m = con->m;
     }
+    printf("set container workspace: %zu\n", ws->id);
     con->client->ws_id = ws->id;
 
     remove_in_composed_list(&sel_ws->list_set.container_lists, cmp_ptr, con);

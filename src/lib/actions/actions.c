@@ -171,7 +171,6 @@ int lib_move_to_scratchpad(lua_State *L)
 
 int lib_view(lua_State *L)
 {
-    printf("lib view\n");
     unsigned int ws_id = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
@@ -179,22 +178,15 @@ int lib_view(lua_State *L)
     if (!m)
         return 0;
 
-    BitSet bitset;
-    bitset_setup(&bitset, server.workspaces.length);
-    bitset_set(&bitset, ws_id);
-    tagset_set_tags(m->tagset, bitset);
-    m->tagset->selected_ws_id = ws_id;
+    tagset_set_workspace_id(ws_id);
     arrange();
-    printf("lib view end\n");
     return 0;
 }
 
 int lib_tag_view(lua_State *L)
 {
-    printf("lib view\n");
     uint64_t tags_dec = luaL_checkinteger(L, -1);
 
-    printf("ws_id: %lu\n", tags_dec);
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
@@ -202,16 +194,13 @@ int lib_tag_view(lua_State *L)
         return 0;
 
     BitSet tmp_bitset = bitset_from_value(tags_dec);
-    bitset_reserve(&tmp_bitset, server.workspaces.length);
     BitSet bitset;
     bitset_setup(&bitset, server.workspaces.length);
     for (int i = 0; i < bitset.size ; i++) {
         bitset_assign(&bitset, i, bitset_test(&tmp_bitset, tmp_bitset.size - 1 - i));
     }
     tagset_toggle_add(m->tagset, bitset);
-    m->tagset->selected_ws_id = tags_dec;
     arrange();
-    printf("lib view end\n");
     return 0;
 }
 
@@ -248,7 +237,6 @@ int lib_move_container_to_workspace(lua_State *L)
 
 int lib_quit(lua_State *L)
 {
-    printf("quit\n");
     wl_display_terminate(server.wl_display);
     close_error_file();
     return 0;
@@ -336,7 +324,6 @@ int lib_load_prev_layout_in_set(lua_State *L)
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
     if (!lua_is_index_defined(L, layout_set_key)) {
-        printf("is nil return\n");
         lua_pop(L, 1);
         return 0;
     }
@@ -423,6 +410,7 @@ int lib_toggle_layout(lua_State *L)
 
 int lib_toggle_workspace(lua_State *L)
 {
+    printf("server.previous_tagset\n");
     push_tagset(server.previous_tagset);
     return 0;
 }

@@ -219,6 +219,13 @@ void focus_monitor(struct monitor *m)
     focus_tagset(tagset);
 }
 
+void monitor_focus_tags(struct monitor *m, int ws_id, struct BitSet bitset)
+{
+    struct tagset *sel_tagset = monitor_get_active_tagset(m);
+    struct tagset *tagset = create_tagset(m, sel_tagset->layout, ws_id, bitset);
+    push_tagset(tagset);
+}
+
 struct monitor *dirtomon(int dir)
 {
     struct monitor *m = selected_monitor;

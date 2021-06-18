@@ -39,6 +39,8 @@ void create_monitor(struct wl_listener *listener, void *data);
 void destroy_monitor(struct wl_listener *listener, void *data);
 void scale_monitor(struct monitor *m, float scale);
 void focus_monitor(struct monitor *m);
+void monitor_focus_tags(struct monitor *m, int ws_id, struct BitSet bitset);
+void focus_tags(struct BitSet bitset);
 void transform_monitor(struct monitor *m, enum wl_output_transform transform);
 void update_monitor_geometries();
 

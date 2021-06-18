@@ -33,8 +33,6 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     con->has_border = has_border;
     con->focusable = true;
     struct workspace *ws = get_workspace(m->tagset->selected_ws_id);
-    printf("workspace: monitor: %p\n", ws);
-    printf("workspace: monitor: %p\n", ws->m);
     add_container_to_workspace(con, ws);
 
     struct tagset *ts = m->tagset;
@@ -148,12 +146,12 @@ struct container *get_focused_container(struct monitor *m)
     if (!m)
         return NULL;
 
-    struct tagset *ts = m->tagset;
+    struct tagset *tagset = monitor_get_active_tagset(m);
 
-    if (!ts)
+    if (!tagset)
         return NULL;
 
-    return get_in_composed_list(&ts->list_set.focus_stack_lists, 0);
+    return get_in_composed_list(&tagset->list_set.focus_stack_lists, 0);
 }
 
 struct container *xy_to_container(double x, double y)
@@ -334,8 +332,9 @@ void focus_container(struct container *con, enum focus_actions a)
         return;
 
     struct monitor *m = con->m;
+    struct tagset *tagset = monitor_get_active_tagset(m);
 
-    if (m->tagset->selected_ws_id != con->client->ws_id)
+    if (!visible_on(con, tagset))
         return;
 
     struct container *sel = get_focused_container(m);
@@ -343,11 +342,9 @@ void focus_container(struct container *con, enum focus_actions a)
     if (a == FOCUS_LIFT)
         lift_container(con);
 
-    struct tagset *ts = monitor_get_active_tagset(m);
-
     /* Put the new client atop the focus stack */
-    remove_in_composed_list(&ts->list_set.focus_stack_lists, cmp_ptr, con);
-    add_container_to_focus_stack(&ts->list_set, con);
+    remove_in_composed_list(&tagset->list_set.focus_stack_lists, cmp_ptr, con);
+    add_container_to_focus_stack(&tagset->list_set, con);
 
     struct container *new_sel = get_focused_container(m);
 
@@ -356,7 +353,7 @@ void focus_container(struct container *con, enum focus_actions a)
     container_damage_borders(sel, &sel->geom);
     container_damage_borders(new_sel, &new_sel->geom);
 
-    struct layout *lt = ts->layout;
+    struct layout *lt = tagset->layout;
     call_on_focus_function(&lt->options.event_handler,
             get_position_in_container_stack(con));
 
@@ -372,11 +369,11 @@ void focus_on_stack(struct monitor *m, int i)
     if (!sel)
         return;
 
-    struct tagset *ts = m->tagset;
-    struct wlr_list *visible_container_lists = tagset_get_visible_lists(ts);
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    struct wlr_list *visible_container_lists = tagset_get_visible_lists(tagset);
 
     if (sel->client->type == LAYER_SHELL) {
-        struct container *con = get_container(ts, 0);
+        struct container *con = get_container(tagset, 0);
         focus_container(con, FOCUS_NOOP);
         return;
     }
@@ -455,17 +452,18 @@ void repush(int pos1, int pos2)
 {
     /* pos1 > pos2 */
     struct monitor *m = selected_monitor;
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tagset *tagset = monitor_get_active_tagset(m);
 
-    struct container *con = ws->list_set.tiled_containers.items[pos1];
+    struct container *con = tagset->list_set.tiled_containers.items[pos1];
 
     if (!con)
         return;
     if (con->floating)
         return;
 
-    wlr_list_remove(&ws->list_set.tiled_containers, cmp_ptr, con);
-    wlr_list_insert(&ws->list_set.tiled_containers, pos2, con);
+    struct wlr_list *tiled_containers = tagset_get_tiled_list(tagset);
+    wlr_list_remove(tiled_containers, cmp_ptr, con);
+    wlr_list_insert(tiled_containers, pos2, con);
 
     arrange();
 
@@ -555,7 +553,7 @@ void set_container_monitor(struct container *con, struct monitor *m)
     if (con->prev_m == NULL)
         con->prev_m = m;
 
-    struct workspace *ws = get_workspace(m->tagset->selected_ws_id);
+    struct workspace *ws = monitor_get_active_workspace(m);
     set_container_workspace(con, ws);
 }
 
@@ -623,8 +621,8 @@ int get_position_in_container_stack(struct container *con)
 struct container *get_container_from_container_stack_position(int i)
 {
     struct monitor *m = selected_monitor;
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct container *con = get_in_composed_list(&ws->list_set.container_lists, i);
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    struct container *con = get_container(tagset, i);
     return con;
 }
 

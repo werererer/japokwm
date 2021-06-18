@@ -30,7 +30,7 @@ void destroy_tagset(struct tagset *tagset);
 void focus_most_recent_container(struct tagset *tagset, enum focus_actions a);
 void focus_tagset(struct tagset *tagset);
 void tagset_set_tags(struct tagset *tagset, BitSet bitset);
-void tagset_set_workspace_id(struct tagset *tagset, int ws_id);
+void tagset_set_workspace_id(int ws_id);
 void tagset_toggle_add(struct tagset *tagset, BitSet bitset);
 void tagset_toggle_add_workspace_id(struct tagset *tagset, int ws_id);
 
@@ -59,6 +59,8 @@ void load_default_layout(lua_State *L);
 void load_layout(lua_State *L, const char *name);
 void reset_loaded_layout(struct tagset *tagset);
 void remove_loaded_layouts(struct wlr_list *workspaces);
+void tagset_set_tagset(struct tagset *tagset);
+void tagset_unset_tagset(struct tagset *tagset);
 
 int tagset_get_container_count(struct tagset *tagset);
 
