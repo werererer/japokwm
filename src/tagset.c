@@ -12,21 +12,17 @@
 #include "ipc-server.h"
 #include "monitor.h"
 
-struct tagset *create_tagset(struct monitor *m, struct layout *lt, int selected_ws_id, BitSet workspaces)
+struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet workspaces)
 {
     struct tagset *tagset = calloc(1, sizeof(struct tagset));
     tagset->m = m;
     tagset->selected_ws_id = selected_ws_id;
 
-    wlr_list_init(&tagset->loaded_layouts);
     setup_list_set(&tagset->list_set);
 
     bitset_setup(&tagset->workspaces, server.workspaces.length);
     tagset_set_tags(tagset, workspaces);
 
-    // fill layout stack with reasonable values
-    push_layout(tagset, lt);
-    push_layout(tagset, lt);
     wlr_list_push(&server.tagsets, tagset);
     return tagset;
 }
@@ -60,8 +56,7 @@ void focus_tagset(struct tagset *tagset)
         return;
 
     struct monitor *m = selected_monitor;
-
-    tagset_set_tagset(m->tagset);
+    m->tagset = tagset;
 
     ipc_event_workspace();
 
@@ -72,19 +67,20 @@ void focus_tagset(struct tagset *tagset)
     /*     con->client->ws_id = ws->id; */
     /* } */
 
-    m->tagset = tagset;
-
     arrange();
     focus_most_recent_container(m->tagset, FOCUS_NOOP);
     root_damage_whole(m->root);
 }
 
-void tagset_unset_tagset(struct tagset *tagset)
+static void tagset_save_to_workspace(struct tagset *tagset)
 {
     if (!tagset)
         return;
+    if (!tagset->loaded) {
+        printf("cant save not loaded: %i\n", tagset->selected_ws_id);
+        return;
+    }
 
-    printf("tagset set tags\n");
     for (int i = 0; i < tagset->workspaces.size; i++) {
         bool bit = bitset_test(&tagset->workspaces, i);
 
@@ -92,18 +88,14 @@ void tagset_unset_tagset(struct tagset *tagset)
             continue;
 
         struct workspace *ws = get_workspace(i);
-        /* unsubscribe_list_set(&ws->list_set, &tagset->list_set); */
         clear_list_set(&ws->list_set);
 
         // TODO convert to a function
         for (int i = 0; i < ws->list_set.all_lists.length; i++) {
             struct wlr_list *dest_list = ws->list_set.all_lists.items[i];
             struct wlr_list *src_list = tagset->list_set.all_lists.items[i];
-            printf("printf: src length: %zu\n", src_list->length);
-            printf("printf: dest length: %zu\n", dest_list->length);
             for (int j = 0; j < src_list->length; j++) {
                 struct container *con = src_list->items[j];
-                printf("con->client->ws_id %i ws->id: %zu\n", con->client->ws_id, ws->id);
                 if (con->client->ws_id != ws->id)
                     continue;
                 wlr_list_push(dest_list, con);
@@ -112,18 +104,40 @@ void tagset_unset_tagset(struct tagset *tagset)
 
         wlr_list_remove(&ws->list_set.change_affected_list_sets, cmp_ptr, &tagset->list_set);
     }
-    clear_list_set(&tagset->list_set);
 }
 
-void tagset_set_tagset(struct tagset *tagset)
+void tagset_unset_tagset(struct tagset *tagset)
 {
     if (!tagset)
         return;
+    if (!tagset->loaded) {
+        printf("cant save not loaded: %i\n", tagset->selected_ws_id);
+        return;
+    }
+
+    clear_list_set(&tagset->list_set);
+    tagset->loaded = false;
+    printf("unloaded: %i\n", tagset->selected_ws_id);
+}
+
+struct layout *tagset_get_layout(struct tagset *tagset)
+{
+    struct workspace *ws = get_workspace(tagset->selected_ws_id);
+    return ws->layout;
+}
+
+void tagset_load_from_workspace(struct tagset *tagset)
+{
+    if (!tagset)
+        return;
+    if (tagset->loaded) {
+        printf("cant load: %i\n", tagset->selected_ws_id);
+        return;
+    }
 
     for(size_t i = 0; i < tagset->workspaces.size; i++) {
         bool bit = bitset_test(&tagset->workspaces, i);
 
-        printf("bit2: %i\n", bit);
         if (!bit)
             continue;
 
@@ -131,13 +145,16 @@ void tagset_set_tagset(struct tagset *tagset)
         subscribe_list_set(&tagset->list_set, &ws->list_set);
         ws->m = tagset->m;
     }
+    printf("load tagset: %i\n", tagset->selected_ws_id);
+    tagset->loaded = true;
 }
 
 void tagset_set_tags(struct tagset *tagset, BitSet bitset)
 {
-    tagset_unset_tagset(tagset);
+    struct monitor *m = selected_monitor;
+    tagset_save_to_workspace(m->tagset);
     bitset_move(&tagset->workspaces, &bitset);
-    tagset_set_tagset(tagset);
+    tagset_load_from_workspace(tagset);
 
     ipc_event_workspace();
 }
@@ -148,13 +165,24 @@ void push_tagset(struct tagset *tagset)
 
     struct monitor *m = selected_monitor;
 
-    if (m->tagset == tagset)
+    if (m->tagset == tagset) {
+        printf("tagset already active\n");
         return;
+    }
+
+    /* printf("previous_tagset: %p current tagset: %p\n", server.previous_tagset, tagset); */
+    tagset_save_to_workspace(m->tagset);
+    if (server.previous_tagset) {
+        if (server.previous_tagset != tagset) {
+            /* printf("unset previous tagset\n"); */
+            tagset_unset_tagset(server.previous_tagset);
+        }
+    } else {
+        tagset_save_to_workspace(m->tagset);
+    }
 
     if (m->tagset != server.previous_tagset)
         server.previous_tagset = m->tagset;
-
-    tagset_unset_tagset(server.previous_tagset);
     focus_tagset(tagset);
 }
 
@@ -218,7 +246,7 @@ static bool container_intersects_with_monitor(struct container *con, struct moni
 
 struct wlr_list *tagset_get_visible_lists(struct tagset *tagset)
 {
-    struct layout *lt = tagset->layout;
+    struct layout *lt = tagset_get_layout(tagset);
 
     if (lt->options.arrange_by_focus)
         return &tagset->list_set.focus_stack_visible_lists;
@@ -228,7 +256,7 @@ struct wlr_list *tagset_get_visible_lists(struct tagset *tagset)
 
 struct wlr_list *tagset_get_tiled_list(struct tagset *tagset)
 {
-    struct layout *lt = tagset->layout;
+    struct layout *lt = tagset_get_layout(tagset);
 
     if (lt->options.arrange_by_focus)
         return &tagset->list_set.focus_stack_normal;
@@ -236,24 +264,24 @@ struct wlr_list *tagset_get_tiled_list(struct tagset *tagset)
         return &tagset->list_set.tiled_containers;
 }
 
-struct wlr_list *tagset_get_floating_list(struct tagset *ts)
+struct wlr_list *tagset_get_floating_list(struct tagset *tagset)
 {
-    struct layout *lt = ts->layout;
+    struct layout *lt = tagset_get_layout(tagset);
 
     if (lt->options.arrange_by_focus)
-        return &ts->list_set.focus_stack_normal;
+        return &tagset->list_set.focus_stack_normal;
     else
-        return &ts->list_set.floating_containers;
+        return &tagset->list_set.floating_containers;
 }
 
-struct wlr_list *tagset_get_hidden_list(struct tagset *ts)
+struct wlr_list *tagset_get_hidden_list(struct tagset *tagset)
 {
-    struct layout *lt = ts->layout;
+    struct layout *lt = tagset_get_layout(tagset);
 
     if (lt->options.arrange_by_focus)
-        return &ts->list_set.focus_stack_hidden;
+        return &tagset->list_set.focus_stack_hidden;
     else
-        return &ts->list_set.hidden_containers;
+        return &tagset->list_set.hidden_containers;
 }
 
 BitSet workspace_id_to_tag(int ws_id)
@@ -321,7 +349,6 @@ bool exist_on(struct container *con, struct tagset *ts)
     if (!con || !ts)
         return false;
     if (con->m != ts->m) {
-        printf("monitor unequal\n");
         if (con->floating)
             return container_intersects_with_monitor(con, ts->m)
                 && tagset_contains_client(con->m->tagset, con->client);
@@ -342,59 +369,6 @@ bool exist_on(struct container *con, struct tagset *ts)
     }
 
     return tagset_contains_client(ts, c);
-}
-
-void push_layout(struct tagset *ts, struct layout *lt)
-{
-    lt->ws_id = ts->selected_ws_id;
-    ts->previous_layout = ts->layout;
-    ts->layout = lt;
-}
-
-void load_default_layout(lua_State *L)
-{
-    load_layout(L, server.default_layout->name);
-}
-
-void load_layout(lua_State *L, const char *name)
-{
-    char *config_path = get_config_file("layouts");
-    char file[NUM_CHARS] = "";
-    strcpy(file, "");
-    join_path(file, config_path);
-    join_path(file, name);
-    join_path(file, "init.lua");
-    if (config_path)
-        free(config_path);
-
-    if (!file_exists(file))
-        return;
-
-    if (luaL_loadfile(L, file)) {
-        lua_pop(L, 1);
-        return;
-    }
-    lua_call_safe(L, 0, 0, 0);
-}
-
-
-
-void reset_loaded_layout(struct tagset *ts)
-{
-    int length = ts->loaded_layouts.length;
-    for (int i = 0; i < length; i++) {
-        struct layout *lt = ts->loaded_layouts.items[0];
-        destroy_layout(lt);
-        wlr_list_del(&ts->loaded_layouts, 0);
-    }
-}
-
-void remove_loaded_layouts(struct wlr_list *workspaces)
-{
-    for (int i = 0; i < workspaces->length; i++) {
-        struct tagset *ts = get_tagset_from_workspace_id(workspaces, i);
-        wlr_list_clear(&ts->loaded_layouts, (void (*)(void *))destroy_layout);
-    }
 }
 
 int tagset_get_container_count(struct tagset *ts)

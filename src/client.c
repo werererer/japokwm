@@ -321,10 +321,10 @@ void maprequest(struct wl_listener *listener, void *data)
     if (c->type == LAYER_SHELL) {
         m = output_to_monitor(c->surface.layer->output);
     }
-    struct tagset *ts = monitor_get_active_tagset(m);
-    struct layout *lt = ts->layout;
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct layout *lt = ws->layout;
 
-    c->ws_id = ts->selected_ws_id;
+    c->ws_id = ws->id;
     c->bw = lt->options.tile_border_px;
 
     switch (c->type) {

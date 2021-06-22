@@ -8,6 +8,7 @@
 // TODO refactor
 int lib_set_layout(lua_State *L)
 {
+    printf("lib set layout\n");
     int ref = 0;
     // 2. argument -- layout_set
     if (lua_islayout_data(L, "layout_data")) {
@@ -28,14 +29,14 @@ int lib_set_layout(lua_State *L)
 
     lt->symbol = symbol;
 
-    struct tagset *ts = monitor_get_active_tagset(selected_monitor);
+    struct workspace *ws = monitor_get_active_workspace(selected_monitor);
 
-    int i = wlr_list_find(&ts->loaded_layouts, (cmp_func_t)cmp_layout, &lt);
+    int i = wlr_list_find(&ws->loaded_layouts, (cmp_func_t)cmp_layout, &lt);
     if (i != -1) {
-        struct layout *old_lt = ts->loaded_layouts.items[i];
+        struct layout *old_lt = ws->loaded_layouts.items[i];
         lt->lua_layout_copy_data_ref = old_lt->lua_layout_copy_data_ref;
     } else {
-        wlr_list_insert(&ts->loaded_layouts, 0, lt);
+        wlr_list_insert(&ws->loaded_layouts, 0, lt);
 
         if (ref > 0) {
             lt->lua_layout_copy_data_ref = ref;
@@ -46,6 +47,6 @@ int lib_set_layout(lua_State *L)
     lua_copy_table_safe(L, &lt->lua_layout_original_copy_data_ref);
     lua_pop(L, 1);
 
-    push_layout(ts, lt);
+    push_layout(ws, lt);
     return 0;
 }

@@ -16,6 +16,10 @@
 struct workspace {
     struct wlr_list tagsets;
 
+    struct wlr_list loaded_layouts;
+    struct layout *previous_layout;
+    struct layout *layout;
+
     size_t id;
     const char *name;
     struct monitor *m;
@@ -23,7 +27,7 @@ struct workspace {
     struct list_set list_set;
 };
 
-struct workspace *create_workspace(const char *name, size_t id);
+struct workspace *create_workspace(const char *name, size_t id, struct layout *lt);
 void destroy_workspace(struct workspace *ws);
 
 void update_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names);
@@ -45,6 +49,11 @@ void destroy_workspaces(struct wlr_list *workspaces);
 void set_container_workspace(struct container *con, struct workspace *ws);
 void layout_set_set_layout(lua_State *L);
 void move_container_to_workspace(struct container *con, struct workspace *ws);
+void push_layout(struct workspace *ws, struct layout *lt);
+void load_default_layout(lua_State *L);
+void load_layout(lua_State *L, const char *name);
+void reset_loaded_layout(struct workspace *ws);
+void remove_loaded_layouts(struct wlr_list *workspaces);
 void workspace_assign_monitor(struct workspace *ws, struct monitor *m);
 void rename_workspace(struct workspace *ws, const char *name);
 

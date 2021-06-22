@@ -96,8 +96,8 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     focus_next_unoccupied_workspace(m, &server.workspaces, get_workspace(0));
     load_default_layout(L);
-    struct tagset *ts = monitor_get_active_tagset(m);
-    set_root_color(m->root, ts->layout->options.root_color);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    set_root_color(m->root, ws->layout->options.root_color);
 
     if (!wlr_output_commit(output))
         return;
@@ -221,8 +221,7 @@ void focus_monitor(struct monitor *m)
 
 void monitor_focus_tags(struct monitor *m, int ws_id, struct BitSet bitset)
 {
-    struct tagset *sel_tagset = monitor_get_active_tagset(m);
-    struct tagset *tagset = create_tagset(m, sel_tagset->layout, ws_id, bitset);
+    struct tagset *tagset = create_tagset(m, ws_id, bitset);
     push_tagset(tagset);
 }
 
@@ -271,5 +270,5 @@ inline struct workspace *monitor_get_active_workspace(struct monitor *m)
 
 inline struct layout *get_layout_in_monitor(struct monitor *m)
 {
-    return monitor_get_active_tagset(m)->layout;
+    return monitor_get_active_workspace(m)->layout;
 }

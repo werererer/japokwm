@@ -33,13 +33,13 @@ void arrange()
     update_cursor(&server.cursor);
 }
 
-static int get_layout_container_area_count(struct tagset *ts)
+static int get_layout_container_area_count(struct tagset *tagset)
 {
-    struct layout *lt = ts->layout;
+    struct layout *lt = tagset_get_layout(tagset);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
 
     int len = luaL_len(L, -1);
-    int container_area_count = get_container_area_count(ts);
+    int container_area_count = get_container_area_count(tagset);
     int n_area = MAX(MIN(len, container_area_count), 1);
 
     lua_rawgeti(L, -1, n_area);
@@ -52,9 +52,9 @@ static int get_layout_container_area_count(struct tagset *ts)
     return n_area;
 }
 
-static int get_layout_container_max_area_count(struct tagset *ts)
+static int get_layout_container_max_area_count(struct tagset *tagset)
 {
-    struct layout *lt = ts->layout;
+    struct layout *lt = tagset_get_layout(tagset);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
 
     int len = luaL_len(L, -1);
@@ -69,19 +69,19 @@ static int get_layout_container_max_area_count(struct tagset *ts)
     return max_n_area;
 }
 
-static void update_layout_counters(struct tagset *ts)
+static void update_layout_counters(struct tagset *tagset)
 {
-    struct layout *lt = ts->layout;
+    struct layout *lt = tagset_get_layout(tagset);
 
-    ts->n_all = get_container_count(ts);
-    lt->n_area = get_layout_container_area_count(ts);
-    lt->n_area_max = get_layout_container_max_area_count(ts);
-    lt->n_master_abs = get_master_container_count(ts);
-    lt->n_floating = get_floating_container_count(ts);
+    tagset->n_all = get_container_count(tagset);
+    lt->n_area = get_layout_container_area_count(tagset);
+    lt->n_area_max = get_layout_container_max_area_count(tagset);
+    lt->n_master_abs = get_master_container_count(tagset);
+    lt->n_floating = get_floating_container_count(tagset);
     lt->n_tiled = lt->n_area + lt->n_master_abs-1;
     lt->n_tiled_max = lt->n_area_max + lt->n_master_abs-1;
     lt->n_visible = lt->n_tiled + lt->n_floating;
-    lt->n_hidden = ts->n_all - lt->n_visible;
+    lt->n_hidden = tagset->n_all - lt->n_visible;
 }
 
 static struct wlr_fbox lua_unbox_layout_geom(lua_State *L, int i) {
@@ -147,16 +147,16 @@ static struct wlr_box get_nth_geom_in_layout(lua_State *L, struct layout *lt,
     return box;
 }
 
-int get_slave_container_count(struct tagset *ts)
+int get_slave_container_count(struct tagset *tagset)
 {
-    struct layout *lt = ts->layout;
-    int abs_count = get_tiled_container_count(ts);
+    struct layout *lt = tagset_get_layout(tagset);
+    int abs_count = get_tiled_container_count(tagset);
     return MAX(abs_count - lt->nmaster, 0);
 }
 
-int get_floating_container_count(struct tagset *ts)
+int get_floating_container_count(struct tagset *tagset)
 {
-    struct layout *lt = ts->layout;
+    struct layout *lt = tagset_get_layout(tagset);
 
     // there are no floating windows when using arrange by focus
     if (lt->options.arrange_by_focus)
@@ -164,8 +164,8 @@ int get_floating_container_count(struct tagset *ts)
 
     int n = 0;
 
-    for (int i = 0; i < ts->list_set.floating_containers.length; i++) {
-        struct container *con = get_container(ts, i);
+    for (int i = 0; i < tagset->list_set.floating_containers.length; i++) {
+        struct container *con = get_container(tagset, i);
         if (con->client->type == LAYER_SHELL)
             continue;
         n++;
@@ -192,7 +192,7 @@ void arrange_monitor(struct monitor *m)
     set_root_geom(m->root, m->geom);
 
     struct tagset *tagset = monitor_get_active_tagset(m);
-    struct layout *lt = tagset->layout;
+    struct layout *lt = tagset_get_layout(tagset);
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);
 
     update_layout_counters(tagset);
@@ -220,10 +220,10 @@ void arrange_monitor(struct monitor *m)
     root_damage_whole(m->root);
 }
 
-void arrange_containers(struct tagset *ts, struct wlr_box root_geom,
+void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,
         struct wlr_list *tiled_containers)
 {
-    struct layout *lt = ts->layout;
+    struct layout *lt = tagset_get_layout(tagset);
 
     /* each container will get an inner_gap. If two containers are adjacent the
      * inner_gap is applied twice. To counter this effect we divide the
@@ -259,8 +259,7 @@ static void arrange_container(struct container *con, int arrange_position,
         return;
 
     struct monitor *m = con->m;
-    struct tagset *ts = monitor_get_active_tagset(m);
-    struct layout *lt = ts->layout;
+    struct layout *lt = get_layout_in_monitor(m);
 
     struct wlr_box geom = get_nth_geom_in_layout(L, lt, root_geom, arrange_position);
     container_surround_gaps(&geom, inner_gap);

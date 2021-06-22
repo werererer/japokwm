@@ -63,6 +63,7 @@ void setup_list_set(struct list_set *list_set)
     wlr_list_push(&list_set->all_lists, &list_set->tiled_containers);
     wlr_list_push(&list_set->all_lists, &list_set->hidden_containers);
     wlr_list_push(&list_set->all_lists, &list_set->independent_containers);
+    wlr_list_push(&list_set->all_lists, &list_set->change_affected_list_sets);
     wlr_list_push(&list_set->all_lists, &list_set->focus_stack_layer_background);
     wlr_list_push(&list_set->all_lists, &list_set->focus_stack_layer_bottom);
     wlr_list_push(&list_set->all_lists, &list_set->focus_stack_layer_top);
@@ -71,7 +72,6 @@ void setup_list_set(struct list_set *list_set)
     wlr_list_push(&list_set->all_lists, &list_set->focus_stack_normal);
     wlr_list_push(&list_set->all_lists, &list_set->focus_stack_hidden);
     wlr_list_push(&list_set->all_lists, &list_set->focus_stack_not_focusable);
-    wlr_list_push(&list_set->all_lists, &list_set->change_affected_list_sets);
 }
 
 void add_change_affected_list_set(struct list_set *dest, struct list_set *src)
@@ -81,9 +81,8 @@ void add_change_affected_list_set(struct list_set *dest, struct list_set *src)
 
 void add_container_to_containers(struct list_set *list_set, struct container *con, int i)
 {
-    assert(con);
+    assert(con != NULL);
 
-    printf("length: %zu\n", list_set->change_affected_list_sets.length);
     for (int j = 0; j < list_set->change_affected_list_sets.length; j++) {
         struct list_set *ls = list_set->change_affected_list_sets.items[j];
         if (con->floating) {

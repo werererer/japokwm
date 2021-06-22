@@ -7,24 +7,22 @@
 #include "bitset/bitset.h"
 #include "client.h"
 #include "list_set.h"
+#include "layout.h"
 
 struct tagset {
     struct monitor *m;
     int selected_ws_id;
     BitSet workspaces;
 
-    struct wlr_list loaded_layouts;
-    struct layout *previous_layout;
-    struct layout *layout;
-
     /* number of all windows in layout even if they are invisible). Note that
      * floating windows don't belong to the layout and are thereby not counted */
     int n_all;
 
     struct list_set list_set;
+    bool loaded;
 };
 
-struct tagset *create_tagset(struct monitor *m, struct layout *lt, int selected_ws_id, BitSet workspaces);
+struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet workspaces);
 void destroy_tagset(struct tagset *tagset);
 
 void focus_most_recent_container(struct tagset *tagset, enum focus_actions a);
@@ -53,14 +51,11 @@ bool tagset_has_clients(struct tagset *tagset);
 bool visible_on(struct container *con, struct tagset *tagset);
 
 void focus_tagset(struct tagset *tagset);
-void push_layout(struct tagset *tagset, struct layout *lt);
 void push_tagset(struct tagset *tagset);
-void load_default_layout(lua_State *L);
-void load_layout(lua_State *L, const char *name);
-void reset_loaded_layout(struct tagset *tagset);
-void remove_loaded_layouts(struct wlr_list *workspaces);
-void tagset_set_tagset(struct tagset *tagset);
+void tagset_load_from_workspace(struct tagset *tagset);
 void tagset_unset_tagset(struct tagset *tagset);
+
+struct layout *tagset_get_layout(struct tagset *tagset);
 
 int tagset_get_container_count(struct tagset *tagset);
 

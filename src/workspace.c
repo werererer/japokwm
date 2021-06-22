@@ -23,11 +23,16 @@ static void update_workspaces_id(struct wlr_list *workspaces)
     }
 }
 
-struct workspace *create_workspace(const char *name, size_t id)
+struct workspace *create_workspace(const char *name, size_t id, struct layout *lt)
 {
     struct workspace *ws = calloc(1, sizeof(struct workspace));
     ws->name = name;
     ws->id = id;
+
+    wlr_list_init(&ws->loaded_layouts);
+    // fill layout stack with reasonable values
+    push_layout(ws, lt);
+    push_layout(ws, lt);
 
     setup_list_set(&ws->list_set);
     return ws;
@@ -39,7 +44,7 @@ void update_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names)
         for (int i = server.workspaces.length-1; i < tag_names->length; i++) {
             const char *name = tag_names->items[0];
 
-            struct workspace *ws = create_workspace(name, i);
+            struct workspace *ws = create_workspace(name, i, server.default_layout);
             wlr_list_push(&server.workspaces, ws);
         }
     } else {
@@ -78,7 +83,7 @@ void create_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names)
 {
     wlr_list_init(workspaces);
     for (int i = 0; i < tag_names->length; i++) {
-        struct workspace *ws = create_workspace(tag_names->items[i], i);
+        struct workspace *ws = create_workspace(tag_names->items[i], i, server.default_layout);
         wlr_list_push(workspaces, ws);
     }
 }
@@ -184,6 +189,59 @@ void move_container_to_workspace(struct container *con, struct workspace *ws)
     ipc_event_workspace();
 }
 
+void push_layout(struct workspace *ws, struct layout *lt)
+{
+    printf("push layout\n");
+    lt->ws_id = ws->id;
+    ws->previous_layout = ws->layout;
+    ws->layout = lt;
+}
+
+void load_default_layout(lua_State *L)
+{
+    load_layout(L, server.default_layout->name);
+}
+
+void load_layout(lua_State *L, const char *name)
+{
+    printf("load layout\n");
+    char *config_path = get_config_file("layouts");
+    char file[NUM_CHARS] = "";
+    strcpy(file, "");
+    join_path(file, config_path);
+    join_path(file, name);
+    join_path(file, "init.lua");
+    if (config_path)
+        free(config_path);
+
+    if (!file_exists(file))
+        return;
+
+    if (luaL_loadfile(L, file)) {
+        lua_pop(L, 1);
+        return;
+    }
+    lua_call_safe(L, 0, 0, 0);
+}
+
+void reset_loaded_layout(struct workspace *ws)
+{
+    int length = ws->loaded_layouts.length;
+    for (int i = 0; i < length; i++) {
+        struct layout *lt = ws->loaded_layouts.items[0];
+        destroy_layout(lt);
+        wlr_list_del(&ws->loaded_layouts, 0);
+    }
+}
+
+void remove_loaded_layouts(struct wlr_list *workspaces)
+{
+    for (int i = 0; i < workspaces->length; i++) {
+        struct workspace *ws = get_workspace(i);
+        wlr_list_clear(&ws->loaded_layouts, (void (*)(void *))destroy_layout);
+    }
+}
+
 void focus_next_unoccupied_workspace(struct monitor *m, struct wlr_list *workspaces, struct workspace *ws)
 {
     struct workspace *w = find_next_unoccupied_workspace(workspaces, ws);
@@ -195,7 +253,7 @@ void focus_next_unoccupied_workspace(struct monitor *m, struct wlr_list *workspa
     bitset_setup(&bitset, server.workspaces.length);
     bitset_set(&bitset, w->id);
 
-    struct tagset *tagset = create_tagset(m, server.default_layout, w->id, bitset);
+    struct tagset *tagset = create_tagset(m, w->id, bitset);
     focus_tagset(tagset);
 }
 
@@ -231,11 +289,10 @@ void set_container_workspace(struct container *con, struct workspace *ws)
     remove_in_composed_list(&sel_ws->list_set.focus_stack_lists, cmp_ptr, con);
     add_container_to_focus_stack(&ws->list_set, con);
 
-    struct tagset *ts = get_tagset_from_workspace_id(&server.workspaces, ws->id);
     if (con->floating)
-        con->client->bw = ts->layout->options.float_border_px;
+        con->client->bw = ws->layout->options.float_border_px;
     else
-        con->client->bw = ts->layout->options.tile_border_px;
+        con->client->bw = ws->layout->options.tile_border_px;
 }
 
 // TODO refactor this function

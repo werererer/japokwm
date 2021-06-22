@@ -57,8 +57,8 @@ int lib_resize_main(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
-    struct tagset *ts = m->tagset;
-    struct layout *lt = ts->layout;
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct layout *lt = ws->layout;
     int dir = lt->options.resize_dir;
 
     lua_getglobal_safe(L, "Resize_main_all");
@@ -402,7 +402,7 @@ int lib_kill(lua_State *L)
 int lib_toggle_layout(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    struct tagset *ws = monitor_get_active_tagset(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
     push_layout(ws, ws->previous_layout);
     arrange();
     return 0;
@@ -410,7 +410,6 @@ int lib_toggle_layout(lua_State *L)
 
 int lib_toggle_workspace(lua_State *L)
 {
-    printf("server.previous_tagset\n");
     push_tagset(server.previous_tagset);
     return 0;
 }

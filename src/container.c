@@ -35,8 +35,7 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     struct workspace *ws = get_workspace(m->tagset->selected_ws_id);
     add_container_to_workspace(con, ws);
 
-    struct tagset *ts = m->tagset;
-    struct layout *lt = ts->layout;
+    struct layout *lt = get_layout_in_monitor(m);
     struct event_handler *ev = &lt->options.event_handler;
 
     call_create_container_function(ev, get_position_in_container_stack(con));
@@ -353,7 +352,7 @@ void focus_container(struct container *con, enum focus_actions a)
     container_damage_borders(sel, &sel->geom);
     container_damage_borders(new_sel, &new_sel->geom);
 
-    struct layout *lt = tagset->layout;
+    struct layout *lt = tagset_get_layout(tagset);
     call_on_focus_function(&lt->options.event_handler,
             get_position_in_container_stack(con));
 
@@ -477,14 +476,15 @@ void fix_position(struct container *con)
     if (!con)
         return;
 
-    struct tagset *ts = monitor_get_active_tagset(con->m);
+    struct tagset *tagset = monitor_get_active_tagset(con->m);
 
-    struct wlr_list *tiled_containers = tagset_get_tiled_list(ts);
-    struct wlr_list *floating_containers = tagset_get_floating_list(ts);
+    struct wlr_list *tiled_containers = tagset_get_tiled_list(tagset);
+    struct wlr_list *floating_containers = tagset_get_floating_list(tagset);
+    struct layout *lt = tagset_get_layout(tagset);
 
     if (!con->floating) {
         wlr_list_remove(floating_containers, cmp_ptr, con);
-        int position = MIN(tiled_containers->length, ts->layout->n_tiled_max-1);
+        int position = MIN(tiled_containers->length, lt->n_tiled_max-1);
         wlr_list_insert(tiled_containers, position, con);
     } else {
         wlr_list_remove(tiled_containers, cmp_ptr, con);
@@ -502,8 +502,7 @@ void set_container_floating(struct container *con, void (*fix_position)(struct c
         return;
 
     struct monitor *m = con->m;
-    struct tagset *ts = m->tagset;
-    struct layout *lt = ts->layout;
+    struct layout *lt = get_layout_in_monitor(m);
     struct workspace *ws = monitor_get_active_workspace(m);
 
     con->floating = floating;

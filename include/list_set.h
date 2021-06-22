@@ -48,7 +48,6 @@ void add_container_to_stack(struct container *con);
 void append_list_set(struct list_set *dest, struct list_set *src);
 void clear_list_set(struct list_set *list_set);
 void subscribe_list_set(struct list_set *dest, struct list_set *src);
-void unsubscribe_list_set(struct list_set *dest, struct list_set *src);
 void write_list_set(struct list_set *dest, struct list_set *src);
 
 struct wlr_list *get_visible_lists(struct list_set *list_set);
