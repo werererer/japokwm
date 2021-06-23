@@ -63,7 +63,6 @@ void setup_list_set(struct list_set *list_set)
     wlr_list_push(&list_set->all_lists, &list_set->tiled_containers);
     wlr_list_push(&list_set->all_lists, &list_set->hidden_containers);
     wlr_list_push(&list_set->all_lists, &list_set->independent_containers);
-    wlr_list_push(&list_set->all_lists, &list_set->change_affected_list_sets);
     wlr_list_push(&list_set->all_lists, &list_set->focus_stack_layer_background);
     wlr_list_push(&list_set->all_lists, &list_set->focus_stack_layer_bottom);
     wlr_list_push(&list_set->all_lists, &list_set->focus_stack_layer_top);
@@ -181,7 +180,6 @@ void clear_list_set(struct list_set *list_set)
 
 void subscribe_list_set(struct list_set *dest, struct list_set *src)
 {
-    printf("subscribe_list_set\n");
     wlr_list_push(&src->change_affected_list_sets, dest);
     append_list_set(dest, src);
 }

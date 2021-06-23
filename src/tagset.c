@@ -14,7 +14,6 @@
 
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet workspaces)
 {
-    printf("create_tagset\n");
     struct tagset *tagset = calloc(1, sizeof(struct tagset));
     tagset->m = m;
     tagset->selected_ws_id = selected_ws_id;
@@ -30,7 +29,6 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet works
 
 void destroy_tagset(struct tagset *tagset)
 {
-    printf("destroy tagset\n");
     if (!tagset)
         return;
     tagset_unset_tagset(server.previous_tagset);
@@ -80,7 +78,6 @@ static void tagset_save_to_workspace(struct tagset *tagset)
     if (!tagset)
         return;
     if (!tagset->loaded) {
-        printf("cant save not loaded: %i\n", tagset->selected_ws_id);
         return;
     }
 
@@ -114,13 +111,11 @@ void tagset_unset_tagset(struct tagset *tagset)
     if (!tagset)
         return;
     if (!tagset->loaded) {
-        printf("cant save not loaded: %i\n", tagset->selected_ws_id);
         return;
     }
 
     clear_list_set(&tagset->list_set);
     tagset->loaded = false;
-    printf("unloaded: %i\n", tagset->selected_ws_id);
 }
 
 struct layout *tagset_get_layout(struct tagset *tagset)
@@ -134,7 +129,6 @@ void tagset_load_from_workspace(struct tagset *tagset)
     if (!tagset)
         return;
     if (tagset->loaded) {
-        printf("cant load: %i\n", tagset->selected_ws_id);
         return;
     }
 
@@ -148,7 +142,6 @@ void tagset_load_from_workspace(struct tagset *tagset)
         subscribe_list_set(&tagset->list_set, &ws->list_set);
         ws->m = tagset->m;
     }
-    printf("load tagset: %i\n", tagset->selected_ws_id);
     tagset->loaded = true;
 }
 
@@ -169,7 +162,6 @@ void push_tagset(struct tagset *tagset)
 
     struct monitor *m = selected_monitor;
 
-    /* printf("previous_tagset: %p current tagset: %p\n", server.previous_tagset, tagset); */
     tagset_save_to_workspace(m->tagset);
 
     if (server.previous_tagset) {

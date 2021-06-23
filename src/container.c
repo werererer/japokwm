@@ -344,7 +344,7 @@ void focus_container(struct container *con, enum focus_actions a)
         lift_container(con);
 
     /* Put the new client atop the focus stack */
-    remove_in_composed_list(&tagset->list_set.focus_stack_lists, cmp_ptr, con);
+    list_set_remove_container_from_focus_stack(&tagset->list_set, con);
     list_set_add_container_to_focus_stack(&tagset->list_set, con);
 
     struct container *new_sel = get_focused_container(m);
