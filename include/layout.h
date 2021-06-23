@@ -43,7 +43,7 @@ struct layout *create_layout(lua_State *L);
 void destroy_layout(struct layout *lt);
 
 bool is_same_layout(struct layout layout, struct layout layout2);
-bool lua_islayout_data(lua_State *L, const char *name);
+bool lua_is_layout_data(lua_State *L, const char *name);
 void lua_copy_table(lua_State *L, int *ref);
 // copy table and override old value
 void lua_copy_table_safe(lua_State *L, int *ref);

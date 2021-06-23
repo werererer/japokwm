@@ -231,7 +231,7 @@ int lib_set_resize_direction(lua_State *L)
 
 int lib_set_master_layout_data(lua_State *L)
 {
-    if (lua_islayout_data(L, "master_layout_data"))
+    if (lua_is_layout_data(L, "master_layout_data"))
         lua_copy_table_safe(L, &server.default_layout->lua_master_layout_data_ref);
     else
         lua_pop(L, 1);

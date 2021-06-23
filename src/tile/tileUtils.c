@@ -25,12 +25,14 @@ static void arrange_container(struct container *con, int arrange_position,
 
 void arrange()
 {
+    printf("arrange\n");
     for (int i = 0; i < server.mons.length; i++) {
         struct monitor *m = server.mons.items[i];
         arrange_monitor(m);
     }
 
     update_cursor(&server.cursor);
+    printf("arrange end\n");
 }
 
 static int get_layout_container_area_count(struct tagset *tagset)

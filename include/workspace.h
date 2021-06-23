@@ -45,6 +45,7 @@ struct workspace *get_prev_empty_workspace(struct wlr_list *workspaces, size_t i
 
 void focus_next_unoccupied_workspace(struct monitor *m, struct wlr_list *workspaces, struct workspace *ws);
 void create_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names);
+void copy_layout_from_selected_workspace(struct wlr_list *workspaces);
 void destroy_workspaces(struct wlr_list *workspaces);
 void set_container_workspace(struct container *con, struct workspace *ws);
 void layout_set_set_layout(lua_State *L);

@@ -46,6 +46,7 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 
 void destroy_container(struct container *con)
 {
+    printf("destroy_container\n");
     // surfaces cant commit anything anymore if their container is destroyed
     wl_list_remove(&con->commit.link);
 
@@ -54,7 +55,7 @@ void destroy_container(struct container *con)
 
     struct workspace *ws = monitor_get_active_workspace(con->m);
 
-    list_set_remove_focus_stack_container(&ws->list_set, con);
+    list_set_remove_container_from_focus_stack(&ws->list_set, con);
 
     switch (con->client->type) {
         case LAYER_SHELL:
@@ -74,6 +75,7 @@ void destroy_container(struct container *con)
     }
 
     free(con);
+    printf("destroy_container end\n");
 }
 
 void container_damage_borders(struct container *con, struct wlr_box *geom)
@@ -201,7 +203,7 @@ static void add_container_to_workspace(struct container *con, struct workspace *
             add_container_to_stack(con);
             break;
     }
-    add_container_to_focus_stack(&ws->list_set, con);
+    list_set_add_container_to_focus_stack(&ws->list_set, con);
 }
 
 struct wlr_box get_center_box(struct wlr_box ref)
@@ -343,7 +345,7 @@ void focus_container(struct container *con, enum focus_actions a)
 
     /* Put the new client atop the focus stack */
     remove_in_composed_list(&tagset->list_set.focus_stack_lists, cmp_ptr, con);
-    add_container_to_focus_stack(&tagset->list_set, con);
+    list_set_add_container_to_focus_stack(&tagset->list_set, con);
 
     struct container *new_sel = get_focused_container(m);
 

@@ -29,6 +29,7 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     ws->name = name;
     ws->id = id;
 
+    printf("ws->lt: %s\n", lt->name);
     wlr_list_init(&ws->loaded_layouts);
     // fill layout stack with reasonable values
     push_layout(ws, lt);
@@ -36,6 +37,23 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
 
     setup_list_set(&ws->list_set);
     return ws;
+}
+
+void copy_layout_from_selected_workspace(struct wlr_list *workspaces)
+{
+    struct layout *src_lt = get_layout_in_monitor(selected_monitor);
+
+    for (int i = 0; i < workspaces->length; i++) {
+        struct workspace *ws = workspaces->items[i];
+        struct layout *dest_lt = ws->layout;
+        struct layout *dest_prev_lt = ws->previous_layout;
+
+        if (dest_lt == src_lt)
+            continue;
+
+        copy_layout(dest_lt, src_lt);
+        copy_layout(dest_prev_lt, src_lt);
+    }
 }
 
 void update_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names)
@@ -171,6 +189,7 @@ void workspace_assign_monitor(struct workspace *ws, struct monitor *m)
 
 void move_container_to_workspace(struct container *con, struct workspace *ws)
 {
+    printf("move container to workspace\n");
     if (!ws)
         return;
     if (!con)
@@ -191,7 +210,6 @@ void move_container_to_workspace(struct container *con, struct workspace *ws)
 
 void push_layout(struct workspace *ws, struct layout *lt)
 {
-    printf("push layout\n");
     lt->ws_id = ws->id;
     ws->previous_layout = ws->layout;
     ws->layout = lt;
@@ -283,11 +301,11 @@ void set_container_workspace(struct container *con, struct workspace *ws)
     printf("set container workspace: %zu\n", ws->id);
     con->client->ws_id = ws->id;
 
-    remove_in_composed_list(&sel_ws->list_set.container_lists, cmp_ptr, con);
+    list_set_remove_container(&sel_ws->list_set, con);
     add_container_to_containers(&ws->list_set, con, 0);
 
-    remove_in_composed_list(&sel_ws->list_set.focus_stack_lists, cmp_ptr, con);
-    add_container_to_focus_stack(&ws->list_set, con);
+    list_set_remove_container_from_focus_stack(&sel_ws->list_set, con);
+    list_set_add_container_to_focus_stack(&ws->list_set, con);
 
     if (con->floating)
         con->client->bw = ws->layout->options.float_border_px;

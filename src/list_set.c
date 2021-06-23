@@ -97,35 +97,38 @@ void add_container_to_containers(struct list_set *list_set, struct container *co
     }
 }
 
-void add_container_to_focus_stack(struct list_set *list_set, struct container *con)
+void list_set_add_container_to_focus_stack(struct list_set *list_set, struct container *con)
 {
-    if (con->client->type == LAYER_SHELL) {
-        switch (con->client->surface.layer->current.layer) {
-            case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
-                wlr_list_insert(&list_set->focus_stack_layer_background, 0, con);
-                break;
-            case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
-                wlr_list_insert(&list_set->focus_stack_layer_bottom, 0, con);
-                break;
-            case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
-                wlr_list_insert(&list_set->focus_stack_layer_top, 0, con);
-                break;
-            case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
-                wlr_list_insert(&list_set->focus_stack_layer_overlay, 0, con);
-                break;
+    for (int j = 0; j < list_set->change_affected_list_sets.length; j++) {
+        struct list_set *ls = list_set->change_affected_list_sets.items[j];
+        if (con->client->type == LAYER_SHELL) {
+            switch (con->client->surface.layer->current.layer) {
+                case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
+                    wlr_list_insert(&ls->focus_stack_layer_background, 0, con);
+                    break;
+                case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
+                    wlr_list_insert(&ls->focus_stack_layer_bottom, 0, con);
+                    break;
+                case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
+                    wlr_list_insert(&ls->focus_stack_layer_top, 0, con);
+                    break;
+                case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
+                    wlr_list_insert(&ls->focus_stack_layer_overlay, 0, con);
+                    break;
+            }
+            return;
         }
-        return;
-    }
-    if (con->on_top) {
-        wlr_list_insert(&list_set->focus_stack_on_top, 0, con);
-        return;
-    }
-    if (!con->focusable) {
-        wlr_list_insert(&list_set->focus_stack_not_focusable, 0, con);
-        return;
-    }
+        if (con->on_top) {
+            wlr_list_insert(&ls->focus_stack_on_top, 0, con);
+            return;
+        }
+        if (!con->focusable) {
+            wlr_list_insert(&ls->focus_stack_not_focusable, 0, con);
+            return;
+        }
 
-    wlr_list_insert(&list_set->focus_stack_normal, 0, con);
+        wlr_list_insert(&ls->focus_stack_normal, 0, con);
+    }
 }
 
 void add_container_to_stack(struct container *con)
@@ -178,6 +181,7 @@ void clear_list_set(struct list_set *list_set)
 
 void subscribe_list_set(struct list_set *dest, struct list_set *src)
 {
+    printf("subscribe_list_set\n");
     wlr_list_push(&src->change_affected_list_sets, dest);
     append_list_set(dest, src);
 }
@@ -218,11 +222,12 @@ void list_set_remove_container(struct list_set *list_set, struct container *con)
 {
     for (int i = 0; i < list_set->change_affected_list_sets.length; i++) {
         struct list_set *ls = list_set->change_affected_list_sets.items[i];
+        printf("listset: %p\n", ls);
         remove_in_composed_list(&ls->container_lists, cmp_ptr, con);
     }
 }
 
-void list_set_remove_focus_stack_container(struct list_set *list_set, struct container *con)
+void list_set_remove_container_from_focus_stack(struct list_set *list_set, struct container *con)
 {
     for (int i = 0; i < list_set->change_affected_list_sets.length; i++) {
         struct list_set *ls = list_set->change_affected_list_sets.items[i];

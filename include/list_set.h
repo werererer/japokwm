@@ -43,7 +43,7 @@ void setup_list_set(struct list_set *ls);
 
 void add_change_affected_list_set(struct list_set *dest, struct list_set *src);
 void add_container_to_containers(struct list_set *list_set, struct container *con, int i);
-void add_container_to_focus_stack(struct list_set *list_set, struct container *con);
+void list_set_add_container_to_focus_stack(struct list_set *list_set, struct container *con);
 void add_container_to_stack(struct container *con);
 void append_list_set(struct list_set *dest, struct list_set *src);
 void clear_list_set(struct list_set *list_set);
@@ -56,7 +56,7 @@ struct wlr_list *get_floating_list(struct list_set *list_set);
 struct wlr_list *get_hidden_list(struct list_set *list_set);
 
 void list_set_remove_container(struct list_set *list_set, struct container *con);
-void list_set_remove_focus_stack_container(struct list_set *list_set, struct container *con);
+void list_set_remove_container_from_focus_stack(struct list_set *list_set, struct container *con);
 void list_set_remove_independent_container(struct list_set *list_set, struct container *con);
 
 #endif /* LIST_SET_H */

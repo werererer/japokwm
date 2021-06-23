@@ -12,7 +12,6 @@
 
 struct layout *create_layout(lua_State *L)
 {
-    printf("create layout\n");
     struct layout *lt = calloc(1, sizeof(struct layout));
     lt->nmaster = 1;
     *lt = (struct layout) {
@@ -145,7 +144,7 @@ void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt)
     return;
 }
 
-bool lua_islayout_data(lua_State *L, const char *name)
+bool lua_is_layout_data(lua_State *L, const char *name)
 {
     if (!lua_istable(L, -1))
         return false;

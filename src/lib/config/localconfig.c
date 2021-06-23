@@ -128,7 +128,7 @@ int local_set_master_layout_data(lua_State *L)
 {
     struct layout *lt = get_layout_in_monitor(selected_monitor);
 
-    if (lua_islayout_data(L, "master_layout_data"))
+    if (lua_is_layout_data(L, "master_layout_data"))
         lua_copy_table_safe(L, &lt->lua_master_layout_data_ref);
     else
         lua_pop(L, 1);

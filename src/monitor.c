@@ -97,6 +97,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     focus_next_unoccupied_workspace(m, &server.workspaces, get_workspace(0));
     load_default_layout(L);
     struct workspace *ws = monitor_get_active_workspace(m);
+    copy_layout_from_selected_workspace(&server.workspaces);
     set_root_color(m->root, ws->layout->options.root_color);
 
     if (!wlr_output_commit(output))

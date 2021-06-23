@@ -14,6 +14,7 @@
 
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet workspaces)
 {
+    printf("create_tagset\n");
     struct tagset *tagset = calloc(1, sizeof(struct tagset));
     tagset->m = m;
     tagset->selected_ws_id = selected_ws_id;
@@ -29,8 +30,10 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet works
 
 void destroy_tagset(struct tagset *tagset)
 {
+    printf("destroy tagset\n");
     if (!tagset)
         return;
+    tagset_unset_tagset(server.previous_tagset);
     wlr_list_remove(&server.tagsets, cmp_ptr, tagset);
     free(tagset);
 }
@@ -161,28 +164,23 @@ void tagset_set_tags(struct tagset *tagset, BitSet bitset)
 
 void push_tagset(struct tagset *tagset)
 {
-    assert(tagset != NULL);
+    if (!tagset)
+        return;
 
     struct monitor *m = selected_monitor;
 
-    if (m->tagset == tagset) {
-        printf("tagset already active\n");
-        return;
-    }
-
     /* printf("previous_tagset: %p current tagset: %p\n", server.previous_tagset, tagset); */
     tagset_save_to_workspace(m->tagset);
+
     if (server.previous_tagset) {
-        if (server.previous_tagset != tagset) {
-            /* printf("unset previous tagset\n"); */
-            tagset_unset_tagset(server.previous_tagset);
+        if (server.previous_tagset != tagset && m->tagset->selected_ws_id != tagset->selected_ws_id) {
+            destroy_tagset(server.previous_tagset);
         }
-    } else {
-        tagset_save_to_workspace(m->tagset);
     }
 
-    if (m->tagset != server.previous_tagset)
+    if (m->tagset->selected_ws_id != tagset->selected_ws_id) {
         server.previous_tagset = m->tagset;
+    }
     focus_tagset(tagset);
 }
 

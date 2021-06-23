@@ -11,7 +11,7 @@ int lib_set_layout(lua_State *L)
     printf("lib set layout\n");
     int ref = 0;
     // 2. argument -- layout_set
-    if (lua_islayout_data(L, "layout_data")) {
+    if (lua_is_layout_data(L, "layout_data")) {
         lua_ref_safe(L, LUA_REGISTRYINDEX, &ref);
     } else {
         lua_pop(L, 1);
