@@ -29,7 +29,6 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     ws->name = name;
     ws->id = id;
 
-    printf("ws->lt: %s\n", lt->name);
     wlr_list_init(&ws->loaded_layouts);
     // fill layout stack with reasonable values
     push_layout(ws, lt);

@@ -9,9 +9,9 @@
 int lib_get_this_container_count(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    struct tagset *ts = monitor_get_active_tagset(m);
+    struct tagset *tagset = monitor_get_active_tagset(m);
 
-    int i = get_slave_container_count(ts) + 1;
+    int i = get_slave_container_count(tagset) + 1;
     lua_pushinteger(L, i);
     return 1;
 }

@@ -614,8 +614,8 @@ int get_position_in_container_stack(struct container *con)
         return INVALID_POSITION;
 
     struct monitor *m = con->m;
-    struct workspace *ws = monitor_get_active_workspace(m);
-    int position = find_in_composed_list(&ws->list_set.container_lists, &cmp_ptr, con);
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    int position = find_in_composed_list(&tagset->list_set.container_lists, &cmp_ptr, con);
     return position;
 }
 

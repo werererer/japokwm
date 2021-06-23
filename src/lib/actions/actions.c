@@ -388,8 +388,10 @@ int lib_kill(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct tagset *tagset = m->tagset;
+    struct tagset *tagset = monitor_get_active_tagset(m);
     struct container *con = get_container(tagset, i);
+    printf("container: %p\n", con);
+    printf("i: %i\n", i);
 
     if (!con)
         return 0;
