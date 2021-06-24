@@ -10,6 +10,7 @@ deps = [\
     dependency('wlroots', version: '>=0.13'),
     dependency('x11'),
     dependency('json-c'),
+    dependency('pangocairo'),
     ]
 
 foreach name : ['lua', 'lua5.3', 'lua-5.3', 'lua53']
@@ -75,6 +76,7 @@ srcs = files(
     'xdg-shell-protocol.c',
     'xdg_shell.c',
     'xwayland.c',
+    'tileTexture.c'
   )
 
 libName = 'japokwm_lib'

@@ -22,8 +22,6 @@ struct monitor {
     struct root *root;
     float scale;
     struct tagset *tagset;
-    // focused workspace
-    struct workspace *ws_id;
 };
 
 struct monrule {

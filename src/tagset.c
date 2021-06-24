@@ -282,10 +282,10 @@ BitSet workspace_id_to_tag(int ws_id)
     return bitset;
 }
 
-bool tagset_contains_client(struct tagset *ts, struct client *c)
+bool tagset_contains_client(struct tagset *tagset, struct client *c)
 {
     BitSet bitset = workspace_id_to_tag(c->ws_id);
-    bitset_and(&bitset, &ts->workspaces);
+    bitset_and(&bitset, &tagset->workspaces);
     return bitset_any(&bitset);
 }
 

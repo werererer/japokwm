@@ -75,6 +75,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     wlr_output_enable(output, true);
 
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
+    printf("m->geom.width: %i\n", m->geom.width);
     m->root = create_root(m, m->geom);
 
     if (is_first_monitor) {
@@ -265,8 +266,8 @@ inline struct workspace *monitor_get_active_workspace(struct monitor *m)
     if (!m)
         return NULL;
 
-    struct tagset *ts = monitor_get_active_tagset(m);
-    return get_workspace(ts->selected_ws_id);
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    return get_workspace(tagset->selected_ws_id);
 }
 
 inline struct layout *get_layout_in_monitor(struct monitor *m)

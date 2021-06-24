@@ -1,7 +1,5 @@
 #include "utils/parseConfigUtils.h"
-#include "options.h"
-#include "server.h"
-#include "utils/writeFile.h"
+
 #include <lauxlib.h>
 #include <wlr/util/log.h>
 #include <lua.h>
@@ -11,8 +9,13 @@
 #include <translationLayer.h>
 #include <execinfo.h>
 #include <sys/stat.h>
+
+#include "options.h"
+#include "server.h"
+#include "utils/writeFile.h"
 #include "stringop.h"
 #include "utils/coreUtils.h"
+#include "tileTexture.h"
 
 static const char *config_paths[] = {
     "$HOME/.config/japokwm/",
@@ -259,6 +262,7 @@ int lua_getglobal_safe(lua_State *L, const char *name)
 
 void handle_error(const char *msg)
 {
+    wlr_list_push(&server.messages, strdup(msg));
     wlr_log(WLR_ERROR, "%s", msg);
 
     // if error file not initialized

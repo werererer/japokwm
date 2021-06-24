@@ -55,4 +55,6 @@ void init_server()
     wlr_list_push(&server.client_lists, &server.independent_clients);
 
     wlr_list_init(&server.tagsets);
+
+    wlr_list_init(&server.messages);
 }

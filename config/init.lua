@@ -14,7 +14,7 @@ local layouts = {"tile", "two_pane", "monocle", "tmp"}
 config.create_layout_set("default", layouts)
 
 config.set_default_layout(layouts[1])
-
+d
 local termcmd = "/usr/bin/termite"
 config.set_keybinds({
     {"mod-p",         function() action.exec("rofi -show run") end},
