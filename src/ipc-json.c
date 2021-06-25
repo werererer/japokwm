@@ -75,6 +75,36 @@ struct focus_inactive_data {
     json_object *object;
 };
 
+// note: full_name must use malloced memory
+static void add_infix(char *full_name, const char *prefix, const char *postfix)
+{
+    const char *delimiter = ":";
+
+    struct wlr_list content = split_string(full_name, delimiter);
+    char *position = strdup("");
+    char *name;
+    if (content.length > 1) {
+        position = realloc(position, strlen(content.items[0])+strlen(delimiter)+1);
+        strcpy(position, content.items[0]);
+        strcat(position, delimiter);
+        int name_byte_len = strlen(full_name)-strlen(position)+1;
+        name = malloc(name_byte_len);
+        memmove(name, full_name + strlen(position), name_byte_len);
+    } else {
+        name = content.items[0];
+    }
+
+    full_name = realloc(full_name, 
+            strlen(position) + strlen(prefix) + strlen(name) + strlen(postfix) + 1);
+    strcpy(full_name, position);
+    strcat(full_name, prefix);
+    strcat(full_name, name);
+    strcat(full_name, postfix);
+
+    free(name);
+    free(position);
+}
+
 json_object *ipc_json_describe_tagset(struct tagset *tagset)
 {
     json_object *array = json_object_new_array();
@@ -93,35 +123,9 @@ json_object *ipc_json_describe_tagset(struct tagset *tagset)
 
             char *full_name = strdup(ws->name);
 
-            const char *delimiter = ":";
-            struct wlr_list content = split_string(full_name, delimiter);
-            char *position = strdup("");
-            char *name;
-            if (content.length > 1) {
-                position = realloc(position, strlen(content.items[0])+strlen(delimiter)+1);
-                strcpy(position, content.items[0]);
-                strcat(position, delimiter);
-                int new_string_bytes = strlen(full_name)-strlen(position)+1;
-                name = malloc(new_string_bytes);
-                memmove(name, full_name + strlen(position), new_string_bytes);
-            } else {
-                name = content.items[0];
-            }
-
-            const char *prefix = "*";
-            const char *postfix = "*";
-
             if (is_selected) {
-                full_name = realloc(full_name, 
-                        strlen(position) + strlen(prefix) + strlen(name) + strlen(postfix) + 1);
-                strcpy(full_name, position);
-                strcat(full_name, prefix);
-                strcat(full_name, name);
-                strcat(full_name, postfix);
+                add_infix(full_name, "*", "*");
             }
-
-            free(name);
-            free(position);
 
             json_object *tagset_object = ipc_json_describe_tag(full_name, is_selected, tagset->m);
             json_object_array_add(array, tagset_object);
