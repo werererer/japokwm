@@ -18,7 +18,7 @@ int lib_set_focus_color(lua_State *L);
 int lib_set_hidden_edges(lua_State *L);
 int lib_set_hide_edge_borders(lua_State *L);
 int lib_set_inner_gaps(lua_State *L);
-int lib_set_keybinds(lua_State *L);
+int lib_bind_key(lua_State *L);
 int lib_set_layout_constraints(lua_State *L);
 int lib_set_master_constraints(lua_State *L);
 int lib_set_master_layout_data(lua_State *L);

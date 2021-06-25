@@ -43,7 +43,6 @@ static void create_messages(struct monitor *m)
 
 void arrange()
 {
-    printf("arrange\n");
     for (int i = 0; i < server.mons.length; i++) {
         struct monitor *m = server.mons.items[i];
         arrange_monitor(m);
@@ -52,7 +51,6 @@ void arrange()
     create_messages(selected_monitor);
 
     update_cursor(&server.cursor);
-    printf("arrange end\n");
 }
 
 static int get_layout_container_area_count(struct tagset *tagset)

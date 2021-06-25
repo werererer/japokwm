@@ -127,7 +127,7 @@ function Resize_all(lt_data, o_layout_data, i, j, n, d)
             layout_data[li][lj][HEIGHT] = resize_containers[k][HEIGHT] * alt_con[HEIGHT]
         end
 
-        Deep_copy(main_con, layout_data[i][j])
+        layout_data[i][j] = Deep_copy(main_con)
         for k = 1,#resize_main_containers do
             local li = resize_main_containers[k][5]
             local lj = resize_main_containers[k][6]

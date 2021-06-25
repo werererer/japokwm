@@ -60,10 +60,11 @@ struct options {
     struct event_handler event_handler;
     int tag_names_ref;
     int default_layout_ref;
-    int keybinds_ref;
 
     enum wlr_edges hidden_edges;
     bool smart_hidden_edges;
+
+    struct wlr_list keybindings;
 };
 
 struct options get_default_options();

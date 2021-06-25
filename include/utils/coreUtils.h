@@ -51,7 +51,7 @@ bool file_exists(const char *path);
 char last_char(const char *str);
 // returns exactly the same values as strcmp
 int path_compare(const char *path1, const char *path2);
-void join_path(char *base, const char *file);
+void join_path(char **base, const char *file);
 
 /*
  * create a lua table that looks like this:
@@ -113,7 +113,6 @@ int cmp_ptr(const void *ptr1, const void *ptr2);
 void lua_tocolor(float dest_color[static 4]);
 // like lua_ref but override the old value if *ref > 0
 void lua_ref_safe(lua_State *L, int t, int *ref);
-void copy_options(struct options *dest_option, struct options *src_option);
 void print_trace();
 
 /* a composed list is just a list consisting of lists so that if an index i is

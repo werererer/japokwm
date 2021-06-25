@@ -13,6 +13,13 @@
 #define MOD_SUPER_L (1 << 6)
 #define MOD_ISO_LEVEL3_Shift (1 << 7)
 
+struct keybinding {
+    char *binding;
+    int lua_func_ref;
+};
+
+struct keybinding *create_keybinding();
+
 bool handle_keybinding(int mod, int sym);
 
 bool key_state_has_modifiers(size_t mods);

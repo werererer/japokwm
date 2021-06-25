@@ -7,6 +7,7 @@
 #include "ipc-server.h"
 #include "monitor.h"
 #include "workspace.h"
+#include "keybinding.h"
 
 int lib_reload(lua_State *L)
 {
@@ -202,9 +203,13 @@ int lib_set_monrules(lua_State *L)
     return 0;
 }
 
-int lib_set_keybinds(lua_State *L)
+int lib_bind_key(lua_State *L)
 {
-    lua_copy_table_safe(L, &server.default_layout->options.keybinds_ref);
+    struct keybinding *keybinding = create_keybinding();
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &keybinding->lua_func_ref);
+    keybinding->binding = strdup(luaL_checkstring(L, -1));
+    lua_pop(L, 1);
+    wlr_list_push(&server.default_layout->options.keybindings, keybinding);
     return 0;
 }
 

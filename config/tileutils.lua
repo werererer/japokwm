@@ -3,47 +3,19 @@ local Y<const> = 2
 local WIDTH<const> = 3
 local HEIGHT<const> = 4
 
-local function _copy(obj, target)
-    local n = 0
-  -- clear target table
-    for k,v in pairs(target) do
-        if type(v) == "table" then
-            v.__del = true
-            n = n + 1
-        else
-            target[k] = nil
+function Deep_copy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[Deep_copy(orig_key)] = Deep_copy(orig_value)
         end
+        setmetatable(copy, Deep_copy(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
     end
-  -- copy obj into target
-    for k,v in pairs(obj) do
-        if type(v) == "table" then
-            local t = target[k]
-            if t then
-                t.__del = nil
-                n = n - 1
-            else
-                t = {}
-                target[k] = t
-            end
-            _copy(v, t)
-        else
-            target[k] = v
-        end
-    end
-  -- clear no use sub table in target
-    if n > 0 then
-        for k,v in pairs(target) do
-            if type(v) == "table" and v.__del then
-                target[k] = nil
-            end
-        end
-    end
-end
-
-function Deep_copy(obj, target)
-    target = target or {}
-    _copy(obj, target)
-    return target
+    return copy
 end
 
 -- set: which window conf set

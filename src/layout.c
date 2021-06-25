@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <lua.h>
+#include <assert.h>
 
 #include "server.h"
 #include "utils/coreUtils.h"
@@ -53,6 +54,7 @@ void lua_copy_table(lua_State *L, int *ref)
 
 void lua_copy_table_safe(lua_State *L, int *ref)
 {
+    assert(lua_istable(L, -1));
     lua_getglobal_safe(L, "Deep_copy");
     lua_insert(L, -2);
     lua_call_safe(L, 1, 1, 0);
@@ -117,11 +119,6 @@ void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt)
     if (src_lt->lua_master_layout_data_ref > 0) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_master_layout_data_ref);
         lua_copy_table_safe(L, &dest_lt->lua_master_layout_data_ref);
-    }
-
-    if (src_lt->lua_layout_original_copy_data_ref > 0) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_original_copy_data_ref);
-        lua_copy_table_safe(L, &dest_lt->lua_layout_original_copy_data_ref);
     }
 
     if (src_lt->lua_layout_original_copy_data_ref > 0) {

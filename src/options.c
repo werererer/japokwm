@@ -5,6 +5,7 @@
 #include "client.h"
 #include "utils/coreUtils.h"
 #include "layout.h"
+#include "keybinding.h"
 
 void init_tagnames(struct wlr_list *tag_names)
 {
@@ -57,6 +58,7 @@ struct options get_default_options()
     };
 
     init_tagnames(&options.tag_names);
+    wlr_list_init(&options.keybindings);
     return options;
 }
 

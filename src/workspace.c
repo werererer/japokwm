@@ -40,6 +40,7 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
 
 void copy_layout_from_selected_workspace(struct wlr_list *workspaces)
 {
+    printf("copy_layout_from_selected_workspace\n");
     struct layout *src_lt = get_layout_in_monitor(selected_monitor);
 
     for (int i = 0; i < workspaces->length; i++) {
@@ -53,6 +54,7 @@ void copy_layout_from_selected_workspace(struct wlr_list *workspaces)
         copy_layout(dest_lt, src_lt);
         copy_layout(dest_prev_lt, src_lt);
     }
+    printf("copy_layout_from_selected_workspace end\n");
 }
 
 void update_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names)
@@ -221,24 +223,25 @@ void load_default_layout(lua_State *L)
 
 void load_layout(lua_State *L, const char *name)
 {
-    printf("load layout\n");
     char *config_path = get_config_file("layouts");
-    char file[NUM_CHARS] = "";
-    strcpy(file, "");
-    join_path(file, config_path);
-    join_path(file, name);
-    join_path(file, "init.lua");
+    char *file = strdup("");
+    join_path(&file, config_path);
+    join_path(&file, name);
+    join_path(&file, "init.lua");
     if (config_path)
         free(config_path);
 
     if (!file_exists(file))
-        return;
+        goto cleanup;
 
     if (luaL_loadfile(L, file)) {
         lua_pop(L, 1);
-        return;
+        goto cleanup;
     }
     lua_call_safe(L, 0, 0, 0);
+
+cleanup:
+    free(file);
 }
 
 void reset_loaded_layout(struct workspace *ws)

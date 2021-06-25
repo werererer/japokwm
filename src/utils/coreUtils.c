@@ -110,6 +110,8 @@ struct wlr_list *find_list_in_composed_list(struct wlr_list *lists,
 
 char last_char(const char *str)
 {
+    if (strlen(str) == 0)
+        return '\0';
     return str[strlen(str)-1];
 }
 
@@ -131,14 +133,16 @@ int path_compare(const char *path1, const char *path2)
     return ret;
 }
 
-void join_path(char *base, const char *file)
+void join_path(char **base, const char *file)
 {
-    if (last_char(base) != '/' && file[0] != '/') {
-        strcat(base, "/");
-    } else if (last_char(base) == '/' && file[0] == ' ') {
-        base[strlen(base)-1] = '\0';
+    *base = realloc(*base, strlen(*base) + 1 + strlen(file) + 1);
+
+    if (last_char(*base) != '/' && file[0] != '/') {
+        strcat(*base, "/");
+    } else if (last_char(*base) == '/' && file[0] == ' ') {
+        *base[strlen(*base)-1] = '\0';
     }
-    strcat(base, file);
+    strcat(*base, file);
 }
 
 void lua_ref_safe(lua_State *L, int t, int *ref)

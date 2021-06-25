@@ -32,10 +32,9 @@ static int load_file(lua_State *L, const char *path, const char *file);
 // returns 0 upon success and 1 upon failure
 static int load_file(lua_State *L, const char *path, const char *file)
 {
-    char config_file[strlen(path)+strlen(file)];
-    strcpy(config_file, "");
-    join_path(config_file, path);
-    join_path(config_file, file);
+    char *config_file = strdup("");
+    join_path(&config_file, path);
+    join_path(&config_file, file);
 
     if (!file_exists(config_file)) {
         return 1;
@@ -47,6 +46,7 @@ static int load_file(lua_State *L, const char *path, const char *file)
         handle_error(errmsg);
         return 1;
     }
+    free(config_file);
 
     int ret = lua_call_safe(L, 0, 0, 0);
 
@@ -58,8 +58,7 @@ char *get_config_file(const char *file)
     for (size_t i = 0; i < LENGTH(config_paths); ++i) {
         char *path = strdup(config_paths[i]);
         expand_path(&path);
-        path = realloc(path, strlen(path) + strlen(file));
-        join_path(path, file);
+        join_path(&path, file);
         if (file_exists(path))
             return path;
         free(path);
@@ -92,15 +91,16 @@ void append_to_lua_path(lua_State *L, const char *path)
     const char * curr_path = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    char path_var[strlen(curr_path) + 1 + strlen(path) + strlen("/?.lua")];
+    char *path_var = malloc(strlen(curr_path) + 1 + strlen(path) + strlen("/?.lua"));
     strcpy(path_var, curr_path);
     strcat(path_var, ";");
     strcat(path_var, path);
-    join_path(path_var, "/?.lua");
+    join_path(&path_var, "/?.lua");
 
     lua_pushstring(L, path_var);
     lua_setfield(L, -2, "path");
     lua_pop(L, 1);
+    free(path_var);
 }
 
 // returns 0 upon success and 1 upon failure
@@ -224,8 +224,7 @@ int init_utils(lua_State *L)
 void init_error_file()
 {
     char *ef = get_config_file("");
-    ef = realloc(ef, strlen(ef)+strlen(error_file));
-    join_path(ef, error_file);
+    join_path(&ef, error_file);
     error_fd = open(ef, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     free(ef);
 }

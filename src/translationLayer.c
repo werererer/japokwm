@@ -98,7 +98,7 @@ static const struct luaL_Reg config[] =
     {"set_focus_color", lib_set_focus_color},
     {"set_hidden_edges", lib_set_hidden_edges},
     {"set_inner_gaps", lib_set_inner_gaps},
-    {"set_keybinds", lib_set_keybinds},
+    {"bind_key", lib_bind_key},
     {"set_layout_constraints", lib_set_layout_constraints},
     {"set_master_constraints", lib_set_master_constraints},
     {"set_master_layout_data", lib_set_master_layout_data},
