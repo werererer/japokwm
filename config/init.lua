@@ -7,9 +7,6 @@ local function on_start()
 end
 
 event.add_listener("on_start", on_start)
-event.add_listener("on_start", on_start)
-event.add_listener("on_start", on_start)
-event.add_listener("on_start", on_start)
 
 config.set_inner_gaps(0)
 

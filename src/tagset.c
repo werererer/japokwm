@@ -208,6 +208,7 @@ struct tagset *get_tagset_from_workspace_id(struct wlr_list *workspaces, int ws_
         bitset_set(&bitset, ws_id);
         bitset_and(&bitset, &tagset->workspaces);
         if (bitset_any(&bitset)) {
+            bitset_destroy(&bitset);
             return tagset;
         }
     }
@@ -274,17 +275,17 @@ struct wlr_list *tagset_get_hidden_list(struct tagset *tagset)
         return &tagset->list_set.hidden_containers;
 }
 
-BitSet workspace_id_to_tag(int ws_id)
+void workspace_id_to_tag(BitSet *dest, int ws_id)
 {
-    BitSet bitset;
-    bitset_setup(&bitset, server.workspaces.length);
-    bitset_set(&bitset, ws_id);
-    return bitset;
+    bitset_set(dest, ws_id);
 }
 
 bool tagset_contains_client(struct tagset *tagset, struct client *c)
 {
-    BitSet bitset = workspace_id_to_tag(c->ws_id);
+
+    BitSet bitset;
+    bitset_setup(&bitset, server.workspaces.length);
+    workspace_id_to_tag(&bitset, c->ws_id);
     bitset_and(&bitset, &tagset->workspaces);
     return bitset_any(&bitset);
 }

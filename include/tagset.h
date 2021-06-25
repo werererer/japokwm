@@ -41,7 +41,7 @@ struct wlr_list *tagset_get_tiled_list(struct tagset *tagset);
 struct wlr_list *tagset_get_floating_list(struct tagset *tagset);
 struct wlr_list *tagset_get_hidden_list(struct tagset *tagset);
 
-BitSet workspace_id_to_tag(int ws_id);
+void workspace_id_to_tag(BitSet *dest, int ws_id);
 
 // TODO change argument order
 bool exist_on(struct container *con, struct tagset *tagset);

@@ -390,29 +390,9 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
             break;
         case IPC_GET_WORKSPACES:
             {
-                json_object *array = json_object_new_array();
+                json_object *array;
 
-                for (int i = 0; i < server.mons.length; i++) {
-                    struct monitor *m = server.mons.items[i];
-                    for (int ws_id = 0; ws_id < server.workspaces.length; ws_id++) {
-                        printf("ws_id: %i\n", ws_id);
-                        struct tagset *tagset = get_tagset_from_workspace_id(&server.workspaces, ws_id);
-                        bool has_clients = tagset_has_clients(tagset);
-                        bool is_workspace_selected = m->tagset->selected_ws_id == ws_id;
-                        bool is_workspace_active = selected_monitor->tagset->selected_ws_id == ws_id;
-                        printf("has_clients: %i\n", has_clients);
-                        printf("is_workspace_selected: %i\n", is_workspace_selected);
-                        printf("is_workspace_active: %i\n", is_workspace_active);
-                        if (!has_clients && !is_workspace_selected) 
-                            continue;
-                        if (tagset->m != m)
-                            continue;
-
-                        json_object *ws_object = ipc_json_describe_tagset(
-                                tagset, is_workspace_active);
-                        json_object_array_add(array, ws_object);
-                    }
-                }
+                array = ipc_json_describe_tagset( NULL);
 
                 const char *json_string = json_object_get_string(array);
                 ipc_send_reply(client, payload_type, json_string,

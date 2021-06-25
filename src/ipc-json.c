@@ -16,6 +16,7 @@
 #include "workspace.h"
 #include "monitor.h"
 #include "utils/coreUtils.h"
+#include "stringop.h"
 
 static json_object *ipc_json_create_rect(struct wlr_box *box) {
     json_object *rect = json_object_new_object();
@@ -74,65 +75,83 @@ struct focus_inactive_data {
     json_object *object;
 };
 
-json_object *ipc_json_describe_tagset(struct tagset *tagset, bool focused)
+json_object *ipc_json_describe_tagset(struct tagset *tagset)
 {
-    struct workspace *ws = get_workspace(tagset->selected_ws_id);
-    struct monitor *m = ws->m;
-    struct wlr_box box;
-    box = m->geom;
+    json_object *array = json_object_new_array();
+    for (int i = 0; i < server.mons.length; i++) {
+        struct monitor *m = server.mons.items[i];
+        struct tagset *tagset = monitor_get_active_tagset(m);
 
-    char *s = strdup(ws->name);
+        for (int i = 0; i < tagset->workspaces.size; i++) {
+            bool bit = bitset_test(&tagset->workspaces, i);
+            bool is_selected = tagset->selected_ws_id == i;
 
-    json_object *object = ipc_json_create_node(0, s, focused, NULL, &box);
+            if (!bit && !is_selected)
+                continue;
 
-    json_object *children = json_object_new_array();
-    json_object_object_add(object, "nodes", children);
+            struct workspace *ws = get_workspace(i);
 
-    int num;
-    if (isdigit(ws->name[0])) {
-        errno = 0;
-        char *endptr = NULL;
-        long long parsed_num = strtoll(ws->name, &endptr, 10);
-        if (errno != 0 || parsed_num > INT32_MAX || parsed_num < 0 || endptr == ws->name) {
-            num = -1;
-        } else {
-            num = (int) parsed_num;
+            char *full_name = strdup(ws->name);
+
+            const char *delimiter = ":";
+            struct wlr_list content = split_string(full_name, delimiter);
+            char *position = strdup("");
+            char *name;
+            if (content.length > 1) {
+                position = realloc(position, strlen(content.items[0])+strlen(delimiter)+1);
+                strcpy(position, content.items[0]);
+                strcat(position, delimiter);
+                int new_string_bytes = strlen(full_name)-strlen(position)+1;
+                name = malloc(new_string_bytes);
+                memmove(name, full_name + strlen(position), new_string_bytes);
+            } else {
+                name = content.items[0];
+            }
+
+            const char *prefix = "*";
+            const char *postfix = "*";
+
+            if (is_selected) {
+                full_name = realloc(full_name, 
+                        strlen(position) + strlen(prefix) + strlen(name) + strlen(postfix) + 1);
+                strcpy(full_name, position);
+                strcat(full_name, prefix);
+                strcat(full_name, name);
+                strcat(full_name, postfix);
+            }
+
+            free(name);
+            free(position);
+
+            json_object *tagset_object = ipc_json_describe_tag(full_name, is_selected, tagset->m);
+            json_object_array_add(array, tagset_object);
+
+            free(full_name);
         }
-    } else {
-        num = -1;
     }
-    json_object_object_add(object, "num", json_object_new_int(num));
-
-    json_object_object_add(object, "fullscreen_mode", json_object_new_int(0));
-    json_object_object_add(object, "output", ws->m ?
-            json_object_new_string(ws->m->wlr_output->name) : NULL);
-    json_object_object_add(object, "type", json_object_new_string("workspace"));
-    json_object_object_add(object, "urgent",
-            json_object_new_boolean(false));
-
-    free(s);
-    return object;
+    return array;
 }
 
-json_object *ipc_json_describe_workspace(struct workspace *ws, bool focused)
+json_object *ipc_json_describe_tag(const char *name, bool is_selected, struct monitor *m)
 {
-    struct monitor *m = ws->m;
     struct wlr_box box;
     box = m->geom;
 
-    char *s = strdup(ws->name);
+    char *s = strdup(name);
 
-    json_object *object = ipc_json_create_node(0, s, focused, NULL, &box);
+    bool is_active_workspace = true;
+
+    json_object *object = ipc_json_create_node(0, s, is_active_workspace, NULL, &box);
 
     json_object *children = json_object_new_array();
     json_object_object_add(object, "nodes", children);
 
     int num;
-    if (isdigit(ws->name[0])) {
+    if (isdigit(name[0])) {
         errno = 0;
         char *endptr = NULL;
-        long long parsed_num = strtoll(ws->name, &endptr, 10);
-        if (errno != 0 || parsed_num > INT32_MAX || parsed_num < 0 || endptr == ws->name) {
+        long long parsed_num = strtoll(name, &endptr, 10);
+        if (errno != 0 || parsed_num > INT32_MAX || parsed_num < 0 || endptr == name) {
             num = -1;
         } else {
             num = (int) parsed_num;
@@ -143,8 +162,8 @@ json_object *ipc_json_describe_workspace(struct workspace *ws, bool focused)
     json_object_object_add(object, "num", json_object_new_int(num));
 
     json_object_object_add(object, "fullscreen_mode", json_object_new_int(0));
-    json_object_object_add(object, "output", ws->m ?
-            json_object_new_string(ws->m->wlr_output->name) : NULL);
+    json_object_object_add(object, "output", m ?
+            json_object_new_string(m->wlr_output->name) : NULL);
     json_object_object_add(object, "type", json_object_new_string("workspace"));
     json_object_object_add(object, "urgent",
             json_object_new_boolean(false));
@@ -188,7 +207,7 @@ json_object *ipc_json_describe_selected_container(struct monitor *m)
     json_object_object_get_ex(monitor_object, "nodes", &monitor_children);
 
     struct workspace *ws = monitor_get_active_workspace(selected_monitor);
-    json_object *workspace_object = ipc_json_describe_workspace(ws, false);
+    json_object *workspace_object = ipc_json_describe_tag(ws->name, true, selected_monitor);
     json_object_array_add(monitor_children, workspace_object);
     json_object *workspace_children;
     json_object_object_get_ex(monitor_object, "nodes", &workspace_children);
