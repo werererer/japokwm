@@ -1,32 +1,19 @@
 #include "lib/event_handler/lib_event_handler.h"
 
+#include <string.h>
+
 #include "utils/coreUtils.h"
 #include "server.h"
 
-int lib_set_update_function(lua_State *L)
+int lib_add_listener(lua_State *L)
 {
-    lua_ref_safe(L, LUA_REGISTRYINDEX,
-            &server.default_layout->options.event_handler.update_func_ref);
-    return 0;
-}
+    int *func_ref = calloc(1, sizeof(int));
+    lua_ref_safe(L, LUA_REGISTRYINDEX, func_ref);
+    const char *event = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
 
-int lib_set_create_container_function(lua_State *L)
-{
-    lua_ref_safe(L, LUA_REGISTRYINDEX,
-            &server.default_layout->options.event_handler.create_container_func_ref);
-    return 0;
-}
-
-int lib_set_on_focus_function(lua_State *L)
-{
-    lua_ref_safe(L, LUA_REGISTRYINDEX,
-            &server.default_layout->options.event_handler.on_focus_func_ref);
-    return 0;
-}
-
-int lib_set_on_start_function(lua_State *L)
-{
-    lua_ref_safe(L, LUA_REGISTRYINDEX,
-            &server.default_layout->options.event_handler.on_start_func_ref);
+    struct event_handler *event_handler = server.default_layout->options.event_handler;
+    struct wlr_list *signal = event_name_to_signal(event_handler, event);
+    wlr_list_push(signal, func_ref);
     return 0;
 }

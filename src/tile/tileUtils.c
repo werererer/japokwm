@@ -216,7 +216,7 @@ void arrange_monitor(struct monitor *m)
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);
 
     update_layout_counters(tagset);
-    call_update_function(&lt->options.event_handler, lt->n_area);
+    call_update_function(lt->options.event_handler, lt->n_area);
 
     struct wlr_list *visible_container_lists = get_visible_lists(&tagset->list_set);
     struct wlr_list *tiled_containers = get_tiled_list(&tagset->list_set);

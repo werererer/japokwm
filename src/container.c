@@ -37,8 +37,8 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     add_container_to_workspace(con, ws);
 
     struct layout *lt = get_layout_in_monitor(m);
-    struct event_handler *ev = &lt->options.event_handler;
 
+    struct event_handler *ev = lt->options.event_handler;
     call_create_container_function(ev, get_position_in_container_stack(con));
 
     apply_rules(con);
@@ -356,7 +356,7 @@ void focus_container(struct container *con, enum focus_actions a)
     container_damage_borders(new_sel, &new_sel->geom);
 
     struct layout *lt = tagset_get_layout(tagset);
-    call_on_focus_function(&lt->options.event_handler,
+    call_on_focus_function(lt->options.event_handler,
             get_position_in_container_stack(con));
 
     struct client *old_c = sel ? sel->client : NULL;

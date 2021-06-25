@@ -59,17 +59,13 @@ static const struct luaL_Reg container[] =
 
 static const struct luaL_Reg event[] =
 {
-    {"set_create_container_function", lib_set_create_container_function},
-    {"set_on_focus_function", lib_set_on_focus_function},
-    {"set_on_start_function", lib_set_on_start_function},
-    {"set_update_function", lib_set_update_function},
+    {"add_listener", lib_add_listener},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg localevent[] =
 {
-    {"set_update_function", local_set_update_function},
-    {"set_create_container_function", local_set_create_container_function},
+    {"add_listener", local_add_listener},
     {NULL, NULL},
 };
 

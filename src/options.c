@@ -46,7 +46,7 @@ struct options get_default_options()
         .float_border_px = 3,
         .inner_gap = 0,
         .outer_gap = 0,
-        .event_handler = get_default_event_handler(),
+        .event_handler = create_event_handler(),
         .monrule_count = 0,
         .monrules = NULL,
         .rule_count = 0,

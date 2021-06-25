@@ -90,7 +90,7 @@ void create_monitor(struct wl_listener *listener, void *data)
         create_workspaces(&server.workspaces,
                 &server.default_layout->options.tag_names);
 
-        call_on_start_function(&server.default_layout->options.event_handler);
+        call_on_start_function(server.default_layout->options.event_handler);
     }
 
     evaluate_monrules(output);
