@@ -1,4 +1,4 @@
-project('japokwm', 'c')
+project('japokwm', 'c', version: '0.3')
 pkg = import('pkgconfig')
 
 wayland_scanner = find_program('wayland-scanner', native: true)
@@ -12,6 +12,7 @@ protocols = files(
     )
 root = meson.source_root()
 
+# add version macro
 version = '"@0@"'.format(meson.project_version())
 git = find_program('git', native: true, required: false)
 if git.found()
