@@ -309,6 +309,11 @@ void print_help()
             "\n");
 }
 
+void print_version()
+{
+    printf("japokwm "JAPOKWM_VERSION"\n");
+}
+
 void print_usage()
 {
     printf("Usage: japokwm [options] [command]\n\n");
@@ -326,12 +331,13 @@ int main(int argc, char *argv[])
         {"config", required_argument, NULL, 'c'},
         {"path", required_argument, NULL, 'p'},
         {"startup", no_argument, NULL, 's'},
+        {"version", no_argument, NULL, 'v'},
         {0, 0, 0, 0}
     };
 
     int c;
     int option_index = 0;
-    while ((c = getopt_long(argc, argv, "h:c:p:s", long_options, &option_index)) != -1) {
+    while ((c = getopt_long(argc, argv, "h:c:p:s:v", long_options, &option_index)) != -1) {
         switch (c) {
             case 's':
                 startup_cmd = optarg;
@@ -346,6 +352,9 @@ int main(int argc, char *argv[])
                 print_help();
                 return EXIT_SUCCESS;
                 break;
+            case 'v':
+                print_version();
+                return EXIT_SUCCESS;
             default:
                 print_usage();
                 return EXIT_SUCCESS;
