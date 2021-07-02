@@ -46,6 +46,8 @@ static struct wl_listener new_output = {.notify = create_monitor};
 static struct wl_listener new_xdeco = {.notify = createxdeco};
 static struct wl_listener new_xdg_surface = {.notify = create_notify_xdg};
 static struct wl_listener new_layer_shell_surface = {.notify = create_notify_layer_shell};
+static struct wl_listener new_virtual_pointer = {.notify = handle_new_virtual_pointer};
+static struct wl_listener new_virtual_keyboard = {.notify = handle_new_virtual_keyboard};
 
 static struct wl_listener new_xwayland_surface = {.notify = create_notifyx11};
 
@@ -216,6 +218,14 @@ static int setup()
     server.layer_shell = wlr_layer_shell_v1_create(server.wl_display);
     wl_signal_add(&server.layer_shell->events.new_surface,
             &new_layer_shell_surface);
+
+    /* setup virtual pointer manager*/
+    server.virtual_pointer_mgr = wlr_virtual_pointer_manager_v1_create(server.wl_display);
+    wl_signal_add(&server.virtual_pointer_mgr->events.new_virtual_pointer, &new_virtual_pointer);
+
+    /* setup virtual keyboard manager */
+    server.virtual_keyboard_mgr = wlr_virtual_keyboard_manager_v1_create(server.wl_display);
+    wl_signal_add(&server.virtual_keyboard_mgr->events.new_virtual_keyboard, &new_virtual_keyboard);
 
     /* Use xdg_decoration protocol to negotiate server-side decorations */
     server.xdeco_mgr = wlr_xdg_decoration_manager_v1_create(server.wl_display);

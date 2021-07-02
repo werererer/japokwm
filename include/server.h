@@ -2,6 +2,8 @@
 #define SERVER_H
 #include <wayland-server.h>
 #include <wlr/types/wlr_cursor.h>
+#include <wlr/types/wlr_virtual_pointer_v1.h>
+#include <wlr/types/wlr_virtual_keyboard_v1.h>
 #include <wlr/xcursor.h>
 #include <wayland-server-core.h>
 #include <wlr/types/wlr_xcursor_manager.h>
@@ -27,6 +29,8 @@ struct server {
 
     struct cursor cursor;
     struct wlr_xcursor_manager *cursor_mgr;
+    struct wlr_virtual_pointer_manager_v1 *virtual_pointer_mgr;
+    struct wlr_virtual_keyboard_manager_v1 *virtual_keyboard_mgr;
 
     struct layout *default_layout;
     struct layout_set layout_set;

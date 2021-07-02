@@ -74,6 +74,11 @@ void create_keyboard(struct wlr_input_device *device)
     wl_list_insert(&server.keyboards, &kb->link);
 }
 
+void handle_new_virtual_keyboard(struct wl_listener *listener, void *data)
+{
+
+}
+
 void keypress(struct wl_listener *listener, void *data)
 {
     /* This event is raised when a key is pressed or released. */

@@ -20,6 +20,7 @@ typedef uint32_t xkb_keysym_t;
 
 void cleanupkeyboard(struct wl_listener *listener, void *data);
 void create_keyboard(struct wlr_input_device *device);
+void handle_new_virtual_keyboard(struct wl_listener *listener, void *data);
 void keypress(struct wl_listener *listener, void *data);
 void keypressmod(struct wl_listener *listener, void *data);
 

@@ -55,7 +55,6 @@ void axisnotify(struct wl_listener *listener, void *data)
             event->delta_discrete, event->source);
 }
 
-
 void create_pointer(struct wlr_input_device *device)
 {
     /* We don't do anything special with pointers. All of our pointer handling
@@ -250,6 +249,15 @@ void handle_set_cursor(struct wl_listener *listener, void *data)
     cursor->hotspot_y = event->hotspot_y;
 
     update_cursor(cursor);
+}
+
+void handle_new_virtual_pointer(struct wl_listener *listener, void *data)
+{
+    struct wlr_virtual_pointer_v1_new_pointer_event *event = data;
+    struct wlr_virtual_pointer_v1 *pointer = event->new_pointer;
+    struct wlr_input_device *device = &pointer->input_device;
+
+    wlr_cursor_attach_input_device(server.cursor.wlr_cursor, device);
 }
 
 void update_cursor(struct cursor *cursor)

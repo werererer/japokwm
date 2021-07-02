@@ -29,6 +29,7 @@ void create_pointer(struct wlr_input_device *device);
 void cursorframe(struct wl_listener *listener, void *data);
 /* This event is raised by the seat when a client provides a cursor image */
 void handle_set_cursor(struct wl_listener *listener, void *data);
+void handle_new_virtual_pointer(struct wl_listener *listener, void *data);
 
 void motion_relative(struct wl_listener *listener, void *data);
 void motion_absolute(struct wl_listener *listener, void *data);
