@@ -16,7 +16,10 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet works
 {
     struct tagset *tagset = calloc(1, sizeof(struct tagset));
     tagset->m = m;
+
     tagset->selected_ws_id = selected_ws_id;
+    struct workspace *new_workspace = get_workspace(tagset->selected_ws_id);
+    new_workspace->tagset = tagset;
 
     setup_list_set(&tagset->list_set);
 
@@ -182,7 +185,12 @@ void push_tagset(struct tagset *tagset)
 
     struct monitor *m = tagset->m;
 
+    focus_monitor(m);
+
     tagset_save_to_workspace(m->tagset);
+
+    struct workspace *old_workspace = get_workspace(m->tagset->selected_ws_id);
+    old_workspace->tagset = NULL;
 
     if (server.previous_tagset) {
         if (server.previous_tagset != tagset && m->tagset->selected_ws_id != tagset->selected_ws_id) {
@@ -201,7 +209,22 @@ void tagset_set_workspace_id(int ws_id)
     BitSet bitset;
     bitset_setup(&bitset, server.workspaces.length);
     bitset_set(&bitset, ws_id);
-    monitor_focus_tags(selected_monitor, ws_id, bitset);
+    monitor_focus_tags(ws_id, bitset);
+}
+
+void tagset_set_selected_workspace_id(struct tagset *tagset, int ws_id)
+{
+    if (tagset->selected_ws_id == ws_id)
+        return;
+
+    struct workspace *old_workspace = get_workspace(tagset->selected_ws_id);
+    if (old_workspace)
+        old_workspace->tagset = NULL;
+
+    tagset->selected_ws_id = ws_id;
+
+    struct workspace *new_workspace = get_workspace(tagset->selected_ws_id);
+    new_workspace->tagset = tagset;
 }
 
 void tagset_toggle_add(struct tagset *tagset, BitSet bitset)
@@ -211,7 +234,7 @@ void tagset_toggle_add(struct tagset *tagset, BitSet bitset)
 
     bitset_xor(&bitset, &tagset->workspaces);
 
-    monitor_focus_tags(selected_monitor, tagset->selected_ws_id, bitset);
+    monitor_focus_tags(tagset->selected_ws_id, bitset);
 }
 
 void tagset_toggle_add_workspace_id(struct tagset *tagset, int ws_id)
@@ -221,18 +244,9 @@ void tagset_toggle_add_workspace_id(struct tagset *tagset, int ws_id)
 
 struct tagset *get_tagset_from_workspace_id(struct wlr_list *workspaces, int ws_id)
 {
-    for (int i = 0; i < server.tagsets.length; i++) {
-        struct tagset *tagset = server.tagsets.items[i];
-        BitSet bitset;
-        bitset_setup(&bitset, server.workspaces.length);
-        bitset_set(&bitset, ws_id);
-        bitset_and(&bitset, &tagset->workspaces);
-        if (bitset_any(&bitset)) {
-            bitset_destroy(&bitset);
-            return tagset;
-        }
-    }
-    return NULL;
+    struct workspace *ws = get_workspace(ws_id);
+    struct tagset *tagset = ws->tagset;
+    return tagset;
 }
 
 struct container *get_container(struct tagset *ts, int i)

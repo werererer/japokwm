@@ -14,8 +14,6 @@
  * using this struct requires to use tagsetCreate and later tagsetDestroy
  * */
 struct workspace {
-    struct wlr_list tagsets;
-
     struct wlr_list loaded_layouts;
     struct layout *previous_layout;
     struct layout *layout;
@@ -23,6 +21,9 @@ struct workspace {
     size_t id;
     const char *name;
     struct monitor *m;
+
+    // the tagset that currently hast this workspace selected
+    struct tagset *tagset;
 
     struct list_set list_set;
 };

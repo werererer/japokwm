@@ -222,9 +222,12 @@ void focus_monitor(struct monitor *m)
     focus_tagset(tagset);
 }
 
-void monitor_focus_tags(struct monitor *m, int ws_id, struct BitSet bitset)
+void monitor_focus_tags(int ws_id, struct BitSet bitset)
 {
-    struct tagset *tagset = create_tagset(m, ws_id, bitset);
+    struct tagset *tagset = get_tagset_from_workspace_id(&server.workspaces, ws_id);
+    if (!tagset) {
+        tagset = create_tagset(selected_monitor, ws_id, bitset);
+    }
     push_tagset(tagset);
 }
 

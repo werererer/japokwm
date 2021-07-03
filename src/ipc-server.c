@@ -124,8 +124,9 @@ void ipc_init(struct wl_event_loop *wl_event_loop) {
         printf("Unable to listen on IPC socket\n");
     }
 
-    // Set i3 IPC socket path so that i3-msg works out of the box
-    /* setenv("I3SOCK", ipc_sockaddr->sun_path, 1); */
+    // Set SWAY IPC socket path so that waybar automatically shows
+    // workspaces(tags)
+    setenv("SWAYSOCK", ipc_sockaddr->sun_path, 1);
     setenv("JAPOKWMSOCK", ipc_sockaddr->sun_path, 1);
 
     wlr_list_init(&ipc_client_list);
