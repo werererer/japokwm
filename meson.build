@@ -31,7 +31,7 @@ add_project_arguments('-DJAPOKWM_VERSION=@0@'.format(version), language: 'c')
 # generate needed protocol files
 srcDir = 'src/'
 includeDir = 'include/'
-inc = include_directories(includeDir, '/usr/include/json-c/')
+includeDirectories = include_directories(includeDir, '/usr/include/json-c/')
 foreach p:protocols
     pName = run_command('basename', p, '.xml').stdout().strip()
     postfix = '-protocol'
@@ -76,8 +76,25 @@ if scdoc.found()
     endforeach
 endif
 
+commonSrcs = files(
+  'common/stringop.c'
+  )
+
+deps = [\
+    dependency('xcb'),
+    dependency('xkbcommon'),
+    dependency('wayland-server'),
+    dependency('wayland-egl'),
+    dependency('pixman-1'),
+    dependency('wlroots', version: '>=0.13'),
+    dependency('x11'),
+    dependency('json-c'),
+    dependency('pangocairo'),
+    ]
+
 # meson.add_install_script('install.sh')
 # config files
 subdir('src')
 subdir('config')
 subdir('test')
+subdir('japokmsg')

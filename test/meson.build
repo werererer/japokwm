@@ -22,7 +22,7 @@ foreach test_file: test_files
     t = executable(test_file_name, [test_file], 
                c_args: c_args,
                dependencies: [deps, extraLibs],
-               include_directories: inc,
+               include_directories: includeDirectories,
                link_with: [wmlib],
               )
 

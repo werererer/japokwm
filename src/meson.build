@@ -1,18 +1,6 @@
 add_project_arguments('-rdynamic', '-DWLR_USE_UNSTABLE', '-Werror',
 '-Wno-unused-function', '-Wno-uninitialized', '-Wno-sizeof-pointer-div', language: 'c')
 
-deps = [\
-    dependency('xcb'),
-    dependency('xkbcommon'),
-    dependency('wayland-server'),
-    dependency('wayland-egl'),
-    dependency('pixman-1'),
-    dependency('wlroots', version: '>=0.13'),
-    dependency('x11'),
-    dependency('json-c'),
-    dependency('pangocairo'),
-    ]
-
 foreach name : ['lua', 'lua5.3', 'lua-5.3', 'lua53']
     luaDep = dependency(name, version: '>=5.3', required: false)
     if luaDep.found()
@@ -60,7 +48,6 @@ srcs = files(
     'root.c',
     'scratchpad.c',
     'server.c',
-    'stringop.c',
     'tagset.c',
     'tile/tile.c',
     'tile/tileUtils.c',
@@ -81,15 +68,15 @@ srcs = files(
 
 libName = 'japokwm_lib'
 wmlib = static_library(libName,
-              [srcs],
+              [srcs, commonSrcs],
               dependencies: deps,
-              include_directories: inc,
+              include_directories: includeDirectories,
               link_args: ['-lm'],
               )
 executable('japokwm',
       [main],
       dependencies: deps,
-      include_directories: inc,
+      include_directories: includeDirectories,
       link_with: [wmlib],
       install: true,
       )
