@@ -29,4 +29,4 @@ japokwm is in it's alpha stage and bug may accour (If you find them please repor
 - unittests
 
 ## Acknowledgements
-japokwm forked dwl and uses wlroots to do the heavy lifting
+japokwm forked dwl and uses wlroots and parts of sway to do the heavy lifting
