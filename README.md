@@ -5,6 +5,9 @@
 - Create any layout you want with a 3 dimensional Array:
 ![](edit_layout.gif)
 - Layout specific configs
+- a client to control the windowmanager from the terminal - japokmsg based on
+  swaymsg
+- a dwm based tagging system instead of normal(boring) workspaces
 
 ## Download
   [AUR](https://aur.archlinux.org/packages/japokwm-git)
