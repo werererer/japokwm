@@ -73,11 +73,32 @@ void focus_tagset(struct tagset *tagset)
     root_damage_whole(m->root);
 }
 
+static void tagset_unload_tagset(struct tagset *tagset)
+{
+    if (!tagset->loaded) {
+        printf("already unloaded\n");
+        return;
+    }
+
+    for (int i = 0; i < tagset->workspaces.size; i++) {
+        bool bit = bitset_test(&tagset->workspaces, i);
+
+        if (!bit)
+            continue;
+
+        struct workspace *ws = get_workspace(i);
+
+        wlr_list_remove(&ws->list_set.change_affected_list_sets, cmp_ptr, &tagset->list_set);
+    }
+    tagset->loaded = false;
+}
+
 static void tagset_save_to_workspace(struct tagset *tagset)
 {
     if (!tagset)
         return;
     if (!tagset->loaded) {
+        printf("already unloaded\n");
         return;
     }
 
@@ -101,8 +122,6 @@ static void tagset_save_to_workspace(struct tagset *tagset)
                 wlr_list_push(dest_list, con);
             }
         }
-
-        wlr_list_remove(&ws->list_set.change_affected_list_sets, cmp_ptr, &tagset->list_set);
     }
 }
 
@@ -129,6 +148,7 @@ void tagset_load_from_workspace(struct tagset *tagset)
     if (!tagset)
         return;
     if (tagset->loaded) {
+        printf("already loaded\n");
         return;
     }
 

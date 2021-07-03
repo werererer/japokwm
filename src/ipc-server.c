@@ -126,7 +126,7 @@ void ipc_init(struct wl_event_loop *wl_event_loop) {
 
     // Set i3 IPC socket path so that i3-msg works out of the box
     /* setenv("I3SOCK", ipc_sockaddr->sun_path, 1); */
-    setenv("SWAYSOCK", ipc_sockaddr->sun_path, 1);
+    setenv("JAPOKWMSOCK", ipc_sockaddr->sun_path, 1);
 
     wlr_list_init(&ipc_client_list);
 
@@ -149,7 +149,7 @@ struct sockaddr_un *ipc_user_sockaddr(void) {
         dir = "/tmp";
     }
     if (path_size <= snprintf(ipc_sockaddr->sun_path, path_size,
-            "%s/sway-ipc.%u.%i.sock", dir, getuid(), getpid())) {
+            "%s/japokwm-ipc.%u.%i.sock", dir, getuid(), getpid())) {
         printf("Socket path won't fit into ipc_sockaddr->sun_path\n");
     }
 

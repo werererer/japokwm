@@ -186,8 +186,8 @@ void subscribe_list_set(struct list_set *dest, struct list_set *src)
 
 void unsubscribe_list_set(struct list_set *dest, struct list_set *src)
 {
-    write_list_set(dest, src);
     wlr_list_remove(&dest->change_affected_list_sets, cmp_ptr, &src);
+    write_list_set(dest, src);
 }
 
 void write_list_set(struct list_set *dest, struct list_set *src)

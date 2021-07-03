@@ -14,7 +14,7 @@ static const char ipc_magic[] = {'i', '3', '-', 'i', 'p', 'c'};
 #define IPC_HEADER_SIZE (sizeof(ipc_magic) + 8)
 
 char *get_socketpath(void) {
-    const char *swaysock = getenv("SWAYSOCK");
+    const char *swaysock = getenv("JAPOKWMSOCK");
     if (swaysock) {
         return strdup(swaysock);
     }
