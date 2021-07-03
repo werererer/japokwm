@@ -26,6 +26,7 @@ static void evaluate_monrules(struct wlr_output *output);
 
 void create_monitor(struct wl_listener *listener, void *data)
 {
+    printf("create monitor\n");
     /* This event is raised by the backend when a new output (aka a display or
      * monitor) becomes available. */
     struct wlr_output *output = data;

@@ -40,7 +40,6 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
 
 void copy_layout_from_selected_workspace(struct wlr_list *workspaces)
 {
-    printf("copy_layout_from_selected_workspace\n");
     struct layout *src_lt = get_layout_in_monitor(selected_monitor);
 
     for (int i = 0; i < workspaces->length; i++) {
@@ -54,7 +53,6 @@ void copy_layout_from_selected_workspace(struct wlr_list *workspaces)
         copy_layout(dest_lt, src_lt);
         copy_layout(dest_prev_lt, src_lt);
     }
-    printf("copy_layout_from_selected_workspace end\n");
 }
 
 void update_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names)

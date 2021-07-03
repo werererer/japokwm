@@ -56,7 +56,7 @@ void focus_tagset(struct tagset *tagset)
     if(!tagset)
         return;
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = tagset->m;
     m->tagset = tagset;
 
     ipc_event_workspace();
@@ -147,7 +147,7 @@ void tagset_load_from_workspace(struct tagset *tagset)
 
 void tagset_set_tags(struct tagset *tagset, BitSet bitset)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = tagset->m;
     tagset_save_to_workspace(m->tagset);
     bitset_move(&tagset->workspaces, &bitset);
     tagset_load_from_workspace(tagset);
@@ -160,7 +160,7 @@ void push_tagset(struct tagset *tagset)
     if (!tagset)
         return;
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = tagset->m;
 
     tagset_save_to_workspace(m->tagset);
 

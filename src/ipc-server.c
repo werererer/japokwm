@@ -384,10 +384,31 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
 
     switch (payload_type) {
         case IPC_COMMAND:
-            execute_command(buf);
-            ipc_send_reply(client, payload_type, "", strlen(""));
+        {
+            char *line = strtok(buf, "\n");
+            while (line) {
+                size_t line_length = strlen(line);
+                if (line + line_length >= buf + payload_length) {
+                    break;
+                }
+                line[line_length] = ';';
+                line = strtok(NULL, "\n");
+            }
+
+            struct wlr_list res_list = execute_command(buf, NULL, NULL);
+            /* transaction_commit_dirty(); */
+            char *json = cmd_results_to_json(res_list);
+            int length = strlen(json);
+            ipc_send_reply(client, payload_type, json, (uint32_t)length);
+            free(json);
+            while (res_list.length) {
+                struct cmd_results *results = res_list.items[0];
+                free_cmd_results(results);
+                wlr_list_del(&res_list, 0);
+            }
+            wlr_list_finish(&res_list);
             goto exit_cleanup;
-            break;
+        }
         case IPC_GET_WORKSPACES:
             {
                 json_object *array;
