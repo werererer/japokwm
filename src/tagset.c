@@ -232,9 +232,26 @@ void tagset_toggle_add(struct tagset *tagset, BitSet bitset)
     if (!tagset)
         return;
 
-    bitset_xor(&bitset, &tagset->workspaces);
+    BitSet new_bitset;
+    bitset_copy(&new_bitset, &bitset);
+    bitset_xor(&new_bitset, &tagset->workspaces);
 
-    monitor_focus_tags(tagset->selected_ws_id, bitset);
+    for (int i = 0; i < bitset.size; i++) {
+        bitset_and(&bitset, &new_bitset);
+        bool bit = bitset_test(&bitset, i);
+
+        if (!bit)
+            continue;
+        printf("unset bit: %i\n", i);
+
+        struct workspace *ws = get_workspace(i);
+        if (is_workspace_occupied(ws)) {
+            struct tagset *tagset = ws->m->tagset;
+            bitset_reset(&tagset->workspaces, i);
+        }
+    }
+
+    monitor_focus_tags(tagset->selected_ws_id, new_bitset);
 }
 
 void tagset_toggle_add_workspace_id(struct tagset *tagset, int ws_id)
