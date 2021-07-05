@@ -228,6 +228,7 @@ void monitor_focus_tags(int ws_id, struct BitSet bitset)
     if (!tagset) {
         tagset = create_tagset(selected_monitor, ws_id, bitset);
     }
+    bitset_move(&tagset->workspaces, &bitset);
 
     push_tagset(tagset);
 }
