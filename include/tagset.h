@@ -53,7 +53,7 @@ bool visible_on(struct container *con, struct tagset *tagset);
 
 void focus_tagset(struct tagset *tagset);
 void push_tagset(struct tagset *tagset);
-void tagset_load_from_workspace(struct tagset *tagset);
+void tagset_load_workspaces(struct tagset *tagset);
 
 struct layout *tagset_get_layout(struct tagset *tagset);
 

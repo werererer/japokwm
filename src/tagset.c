@@ -12,7 +12,7 @@
 #include "ipc-server.h"
 #include "monitor.h"
 
-static void tagset_unload_tagset(struct tagset *tagset);
+static void tagset_unload_workspaces(struct tagset *tagset);
 
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet workspaces)
 {
@@ -20,8 +20,8 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet works
     tagset->m = m;
 
     tagset->selected_ws_id = selected_ws_id;
-    struct workspace *new_workspace = get_workspace(tagset->selected_ws_id);
-    new_workspace->tagset = tagset;
+    struct workspace *selected_workspace = get_workspace(tagset->selected_ws_id);
+    selected_workspace->tagset = tagset;
 
     setup_list_set(&tagset->list_set);
 
@@ -36,7 +36,7 @@ void destroy_tagset(struct tagset *tagset)
 {
     if (!tagset)
         return;
-    tagset_unload_tagset(server.previous_tagset);
+    tagset_unload_workspaces(server.previous_tagset);
     wlr_list_remove(&server.tagsets, cmp_ptr, tagset);
     free(tagset);
 }
@@ -106,12 +106,11 @@ void focus_tagset(struct tagset *tagset)
     root_damage_whole(m->root);
 }
 
-static void tagset_unload_tagset(struct tagset *tagset)
+static void tagset_unload_workspaces(struct tagset *tagset)
 {
     if (!tagset)
         return;
     if (!tagset->loaded) {
-        printf("already unloaded\n");
         return;
     }
 
@@ -130,7 +129,7 @@ static void tagset_unload_tagset(struct tagset *tagset)
     tagset->loaded = false;
 }
 
-static void tagset_save_to_workspace(struct tagset *tagset)
+static void tagset_save_to_workspaces(struct tagset *tagset)
 {
     if (!tagset)
         return;
@@ -168,7 +167,7 @@ struct layout *tagset_get_layout(struct tagset *tagset)
     return ws->layout;
 }
 
-void tagset_load_from_workspace(struct tagset *tagset)
+void tagset_load_workspaces(struct tagset *tagset)
 {
     if (!tagset)
         return;
@@ -193,10 +192,12 @@ void tagset_load_from_workspace(struct tagset *tagset)
 void tagset_set_tags(struct tagset *tagset, BitSet bitset)
 {
     struct monitor *m = tagset->m;
-    tagset_save_to_workspace(m->tagset);
-    tagset_unload_tagset(tagset);
+
+    tagset_save_to_workspaces(m->tagset);
+    tagset_unload_workspaces(tagset);
+
     bitset_move(&tagset->workspaces, &bitset);
-    tagset_load_from_workspace(tagset);
+    tagset_load_workspaces(tagset);
 
     ipc_event_workspace();
 }
@@ -210,7 +211,7 @@ void push_tagset(struct tagset *tagset)
 
     focus_monitor(m);
 
-    tagset_save_to_workspace(m->tagset);
+    tagset_save_to_workspaces(m->tagset);
 
     struct workspace *old_workspace = get_workspace(m->tagset->selected_ws_id);
     printf("unset old: %i\n", m->tagset->selected_ws_id);
