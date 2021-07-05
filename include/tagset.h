@@ -29,11 +29,10 @@ void focus_most_recent_container(struct tagset *tagset, enum focus_actions a);
 void focus_tagset(struct tagset *tagset);
 void tagset_set_tags(struct tagset *tagset, BitSet bitset);
 void tagset_set_workspace_id(int ws_id);
-void tagset_set_selected_workspace_id(struct tagset *tagset, int ws_id);
 void tagset_toggle_add(struct tagset *tagset, BitSet bitset);
 void tagset_toggle_add_workspace_id(struct tagset *tagset, int ws_id);
 
-struct tagset *get_tagset_from_workspace_id(struct wlr_list *workspaces, int ws_id);
+struct tagset *get_tagset_from_workspace_id(int ws_id);
 
 struct container *get_container(struct tagset *tagset, int i);
 
@@ -54,7 +53,6 @@ bool visible_on(struct container *con, struct tagset *tagset);
 void focus_tagset(struct tagset *tagset);
 void push_tagset(struct tagset *tagset);
 void tagset_load_from_workspace(struct tagset *tagset);
-void tagset_unset_tagset(struct tagset *tagset);
 
 struct layout *tagset_get_layout(struct tagset *tagset);
 

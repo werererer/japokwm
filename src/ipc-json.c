@@ -105,45 +105,58 @@ static void add_infix(char *full_name, const char *prefix, const char *postfix)
     free(position);
 }
 
-json_object *ipc_json_describe_tagset(struct tagset *tagset)
+json_object *ipc_json_describe_tagsets()
 {
     json_object *array = json_object_new_array();
-    for (int i = 0; i < server.mons.length; i++) {
-        struct monitor *m = server.mons.items[i];
-        struct tagset *tagset = monitor_get_active_tagset(m);
 
-        for (int i = 0; i < tagset->workspaces.size; i++) {
-            bool bit = bitset_test(&tagset->workspaces, i);
-            bool is_selected = tagset->selected_ws_id == i;
+    for (int i = 0; i < server.workspaces.length; i++) {
+        struct workspace *ws = server.workspaces.items[i];
 
-            if (!bit && !is_selected)
-                continue;
-
-            struct workspace *ws = get_workspace(i);
-
-            char *full_name = strdup(ws->name);
-
-            if (is_selected) {
-                add_infix(full_name, "*", "*");
-            }
-
-            json_object *tagset_object = ipc_json_describe_tag(full_name, is_selected, tagset->m);
-            json_object_array_add(array, tagset_object);
-
-            free(full_name);
+        struct monitor *m = ws->m;
+        if (ws->tagset) {
+            m = ws->tagset->m;
+            printf("tagset: is %p \n", ws->tagset);
+            printf("tagset->m: %p ws->m %p\n", ws->tagset->m, ws->m);
+            printf("selected_monitor: %p\n", selected_monitor);
         }
+
+        if (!m)
+            continue;
+
+        struct tagset *tagset = get_tagset_from_workspace_id(i);
+        bool is_selected = tagset ? tagset->selected_ws_id == i : false;
+        bool is_active = tagset ? bitset_test(&tagset->workspaces, i) : false;
+
+        char *full_name = strdup(ws->name);
+
+        if (is_selected) {
+            add_infix(full_name, "*", "*");
+        }
+
+        json_object *tagset_object = ipc_json_describe_tag(full_name, is_active, m);
+        json_object_array_add(array, tagset_object);
+
+        bool is_extern = m != ws->m;
+        if (is_extern) {
+            printf("is extern \n");
+            char *hidden_name = strdup(ws->name);
+            add_infix(hidden_name, "(", ")");
+            json_object *tagset_object = ipc_json_describe_tag(hidden_name, false, ws->m);
+            json_object_array_add(array, tagset_object);
+            free(hidden_name);
+        }
+
+        free(full_name);
     }
     return array;
 }
 
-json_object *ipc_json_describe_tag(const char *name, bool is_selected, struct monitor *m)
+json_object *ipc_json_describe_tag(const char *name, bool is_active_workspace, struct monitor *m)
 {
     struct wlr_box box;
     box = m->geom;
 
     char *s = strdup(name);
-
-    bool is_active_workspace = true;
 
     json_object *object = ipc_json_create_node(0, s, is_active_workspace, NULL, &box);
 

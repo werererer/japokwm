@@ -414,7 +414,7 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
             {
                 json_object *array;
 
-                array = ipc_json_describe_tagset( NULL);
+                array = ipc_json_describe_tagsets(NULL);
 
                 const char *json_string = json_object_get_string(array);
                 ipc_send_reply(client, payload_type, json_string,
