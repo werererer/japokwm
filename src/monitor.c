@@ -222,22 +222,6 @@ void focus_monitor(struct monitor *m)
     focus_tagset(tagset);
 }
 
-void monitor_focus_tags(int ws_id, struct BitSet bitset)
-{
-    struct workspace *ws = get_workspace(ws_id);
-    struct monitor *m = ws->m;
-    if (!m)
-        m = selected_monitor;
-
-    struct tagset *tagset = get_tagset_from_workspace_id(ws_id);
-    if (!tagset) {
-        tagset = create_tagset(m, ws_id, bitset);
-    }
-    tagset_set_tags(tagset, bitset);
-
-    push_tagset(tagset);
-}
-
 struct monitor *dirtomon(int dir)
 {
     struct monitor *m = selected_monitor;
