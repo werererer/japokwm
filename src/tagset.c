@@ -446,13 +446,13 @@ bool visible_on(struct container *con, struct tagset *ts)
     return exist_on(con, ts);
 }
 
-bool exist_on(struct container *con, struct tagset *ts)
+bool exist_on(struct container *con, struct tagset *tagset)
 {
-    if (!con || !ts)
+    if (!con || !tagset)
         return false;
-    if (con->m != ts->m) {
+    if (con->m != tagset->m) {
         if (con->floating)
-            return container_intersects_with_monitor(con, ts->m)
+            return container_intersects_with_monitor(con, tagset->m)
                 && tagset_contains_client(con->m->tagset, con->client);
         else
             return false;
@@ -470,7 +470,7 @@ bool exist_on(struct container *con, struct tagset *ts)
         return true;
     }
 
-    return tagset_contains_client(ts, c);
+    return tagset_contains_client(tagset, c);
 }
 
 int tagset_get_container_count(struct tagset *ts)
