@@ -546,14 +546,7 @@ void set_container_monitor(struct container *con, struct monitor *m)
     if (con->m == m)
         return;
 
-    if (con->prev_m != m)
-        con->prev_m = con->m;
     con->m = m;
-
-    /* ensure that prev_m is not = NULL after this function finished
-    successfully */
-    if (con->prev_m == NULL)
-        con->prev_m = m;
 
     struct workspace *ws = monitor_get_active_workspace(m);
     set_container_workspace(con, ws);
