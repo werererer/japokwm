@@ -36,6 +36,7 @@ void destroy_tagset(struct tagset *tagset)
 {
     if (!tagset)
         return;
+    printf("destroy tagset: %p\n", tagset);
     tagset_unload_workspaces(server.previous_tagset);
     wlr_list_remove(&server.tagsets, cmp_ptr, tagset);
     free(tagset);
@@ -56,32 +57,31 @@ void focus_most_recent_container(struct tagset *tagset, enum focus_actions a)
     focus_container(con, a);
 }
 
-void focus_tagset(struct tagset *tagset)
+static void unfocus_tagset(struct tagset *old_tagset)
 {
-    if(!tagset)
+    if (!old_tagset)
         return;
 
-    struct monitor *m = tagset->m;
+    printf("\n");
+    for (int i = 0; i < old_tagset->workspaces.size; i++) {
+        bool bit = bitset_test(&old_tagset->workspaces, i);
+        /* bool is_selected_workspace = i == old_tagset->selected_ws_id; */
 
-    struct tagset *old_tagset = m->tagset;
-    if (old_tagset) {
-        for (int i = 0; i < old_tagset->workspaces.size; i++) {
-            bool bit = bitset_test(&old_tagset->workspaces, i);
-            /* bool is_selected_workspace = i == old_tagset->selected_ws_id; */
+        if (!bit)
+            continue;
 
-            if (!bit)
-                continue;
-
-            struct workspace *ws = get_workspace(i);
-            bool is_empty = is_workspace_empty(ws);
-            if (is_empty) {
-                ws->m = NULL;
-            }
+        struct workspace *ws = get_workspace(i);
+        bool is_empty = is_workspace_empty(ws);
+        if (is_empty && ws->m == selected_monitor) {
+            printf("unfocus workspace: %zu\n", ws->id);
+            ws->m = NULL;
         }
     }
+}
 
-    m->tagset = tagset;
-
+static void focus_action(struct tagset *tagset)
+{
+    struct monitor *m = tagset->m;
     for (int i = 0; i < tagset->workspaces.size; i++) {
         bool bit = bitset_test(&tagset->workspaces, i);
 
@@ -89,17 +89,32 @@ void focus_tagset(struct tagset *tagset)
             continue;
 
         struct workspace *ws = get_workspace(i);
-        ws->m = m;
+        ws->tagset = m->tagset;
     }
 
-    ipc_event_workspace();
+    struct workspace *ws = get_workspace(tagset->selected_ws_id);
+    if (!ws->m) {
+        ws->m = tagset->m;
+    }
+}
 
-    // TODO add support for sticky containers again
-    /* struct tagset *old_tagset = monitor_get_active_tagset(m); */
-    /* struct container *con; */
-    /* wl_list_for_each(con, &sticky_stack, stlink) { */
-    /*     con->client->ws_id = ws->id; */
-    /* } */
+void focus_tagset(struct tagset *tagset)
+{
+    if(!tagset)
+        return;
+
+    struct monitor *m = tagset->m;
+    focus_monitor(m);
+
+    struct tagset *old_tagset = m->tagset;
+    unfocus_tagset(old_tagset);
+    printf("old_tagset: %p\n", old_tagset);
+    printf("new_tagset: %p\n", tagset);
+
+    m->tagset = tagset;
+    focus_action(tagset);
+
+    ipc_event_workspace();
 
     arrange();
     focus_most_recent_container(m->tagset, FOCUS_NOOP);
@@ -184,6 +199,7 @@ void tagset_load_workspaces(struct tagset *tagset)
 
         struct workspace *ws = get_workspace(i);
         subscribe_list_set(&tagset->list_set, &ws->list_set);
+        ws->tagset = tagset;
         ws->m = tagset->m;
     }
     tagset->loaded = true;
@@ -202,34 +218,34 @@ void tagset_set_tags(struct tagset *tagset, BitSet bitset)
     ipc_event_workspace();
 }
 
+static void tagset_push_queue(struct tagset *prev_tagset, struct tagset *tagset)
+{
+    if (prev_tagset->selected_ws_id == tagset->selected_ws_id)
+        return;
+
+    if (server.previous_tagset != tagset) {
+        destroy_tagset(server.previous_tagset);
+    }
+
+    server.previous_tagset = prev_tagset;
+}
+
 void push_tagset(struct tagset *tagset)
 {
     if (!tagset)
         return;
 
     struct monitor *m = tagset->m;
-
-    focus_monitor(m);
+    printf("m->tagset: %p vs %p\n", m->tagset, tagset);
 
     tagset_save_to_workspaces(m->tagset);
 
-    struct workspace *old_workspace = get_workspace(m->tagset->selected_ws_id);
-    printf("unset old: %i\n", m->tagset->selected_ws_id);
-    old_workspace->tagset = NULL;
+    tagset_push_queue(m->tagset, tagset);
 
-    if (server.previous_tagset) {
-        if (server.previous_tagset != tagset && m->tagset->selected_ws_id != tagset->selected_ws_id) {
-            destroy_tagset(server.previous_tagset);
-        }
-    }
-
-    if (m->tagset->selected_ws_id != tagset->selected_ws_id) {
-        server.previous_tagset = m->tagset;
-    }
     focus_tagset(tagset);
 }
 
-void tagset_set_workspace_id(int ws_id)
+void tagset_focus_workspace(int ws_id)
 {
     BitSet bitset;
     bitset_setup(&bitset, server.workspaces.length);
@@ -246,40 +262,23 @@ void tagset_toggle_add(struct tagset *tagset, BitSet bitset)
     bitset_copy(&new_bitset, &bitset);
     bitset_xor(&new_bitset, &tagset->workspaces);
 
-    // force new tags to be on curren monitor
-    for (int i = 0; i < bitset.size; i++) {
-        bitset_and(&bitset, &new_bitset);
-        bool bit = bitset_test(&bitset, i);
-
-        if (!bit)
-            continue;
-        printf("unset bit: %i\n", i);
-
-        struct workspace *ws = get_workspace(i);
-        if (is_workspace_occupied(ws)) {
-            struct tagset *old_tagset = ws->m->tagset;
-            bitset_reset(&old_tagset->workspaces, ws->id);
-
-            printf("set tagset: %p\n", tagset);
-            ws->tagset = tagset;
-        }
-    }
-
-    tagset_focus_tags(tagset->selected_ws_id, new_bitset);
+    unfocus_tagset(tagset);
+    tagset_set_tags(tagset, new_bitset);
+    focus_action(tagset);
+    ipc_event_workspace();
 }
 
 void tagset_focus_tags(int ws_id, struct BitSet bitset)
 {
     struct workspace *ws = get_workspace(ws_id);
-    struct monitor *m = ws->m;
-    if (!m)
-        m = selected_monitor;
+    struct monitor *m = ws->m ? ws->m : selected_monitor;
 
-    struct tagset *tagset = get_tagset_from_workspace_id(ws_id);
-    if (!tagset) {
+    struct tagset *tagset = get_tagset_from_active_workspace_id(ws_id);
+    if (tagset) {
+        tagset_set_tags(tagset, bitset);
+    } else {
         tagset = create_tagset(m, ws_id, bitset);
     }
-    tagset_set_tags(tagset, bitset);
 
     push_tagset(tagset);
 }
@@ -288,6 +287,22 @@ void tagset_focus_tags(int ws_id, struct BitSet bitset)
 void tagset_toggle_add_workspace_id(struct tagset *tagset, int ws_id)
 {
     // TODO implement
+}
+
+struct tagset *get_tagset_from_active_workspace_id(int ws_id)
+{
+    for (int i = 0; i < server.mons.length; i++) {
+        struct monitor *m = server.mons.items[i];
+        struct tagset *tagset = m->tagset;
+
+        if (!tagset)
+            continue;
+
+        if (tagset->selected_ws_id == ws_id) {
+            return tagset;
+        }
+    }
+    return NULL;
 }
 
 struct tagset *get_tagset_from_workspace_id(int ws_id)

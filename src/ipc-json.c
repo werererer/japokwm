@@ -112,20 +112,22 @@ json_object *ipc_json_describe_tagsets()
     for (int i = 0; i < server.workspaces.length; i++) {
         struct workspace *ws = server.workspaces.items[i];
 
+        struct tagset *tagset = get_tagset_from_workspace_id(i);
         struct monitor *m = ws->m;
-        if (ws->tagset) {
-            m = ws->tagset->m;
-            printf("tagset: is %p \n", ws->tagset);
-            printf("tagset->m: %p ws->m %p\n", ws->tagset->m, ws->m);
-            printf("selected_monitor: %p\n", selected_monitor);
+        if (tagset) {
+            m = tagset->m;
         }
 
         if (!m)
             continue;
 
-        struct tagset *tagset = get_tagset_from_workspace_id(i);
-        bool is_selected = tagset ? tagset->selected_ws_id == i : false;
-        bool is_active = tagset ? bitset_test(&tagset->workspaces, i) : false;
+        bool is_selected = false;
+        bool is_active = false;
+        if (tagset) {
+            printf("ws->m: %p tagset->m: %p\n", ws->m, tagset->m);
+            is_selected = tagset->selected_ws_id == i;
+            is_active = bitset_test(&tagset->workspaces, i);
+        }
 
         char *full_name = strdup(ws->name);
 
@@ -136,7 +138,7 @@ json_object *ipc_json_describe_tagsets()
         json_object *tagset_object = ipc_json_describe_tag(full_name, is_active, m);
         json_object_array_add(array, tagset_object);
 
-        bool is_extern = m != ws->m;
+        bool is_extern = m != ws->m && ws->m != NULL;
         if (is_extern) {
             printf("is extern \n");
             char *hidden_name = strdup(ws->name);

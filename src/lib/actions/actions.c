@@ -178,7 +178,7 @@ int lib_view(lua_State *L)
     if (!m)
         return 0;
 
-    tagset_set_workspace_id(ws_id);
+    tagset_focus_workspace(ws_id);
     arrange();
     return 0;
 }
