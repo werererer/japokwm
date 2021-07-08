@@ -7,11 +7,7 @@
 
 #include "client.h"
 #include "options.h"
-
-enum focus_actions {
-    FOCUS_NOOP,
-    FOCUS_LIFT,
-};
+#include "monitor.h"
 
 struct container {
     /* sticky containers */
@@ -73,6 +69,17 @@ void set_container_hidden_status(struct container *con, bool b);
 void set_container_monitor(struct container *con, struct monitor *m);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
+
+void add_container_to_containers(struct list_set *list_set, struct container *con, int i);
+void list_set_add_container_to_focus_stack(struct list_set *list_set, struct container *con);
+void add_container_to_stack(struct container *con);
+
+void list_set_remove_container(struct list_set *list_set, struct container *con);
+void list_set_remove_container_from_focus_stack(struct list_set *list_set, struct container *con);
+void list_set_remove_independent_container(struct list_set *list_set, struct container *con);
+
+void set_container_workspace(struct container *con, struct workspace *ws);
+void move_container_to_workspace(struct container *con, struct workspace *ws);
 
 int absolute_x_to_container_relative(struct container *con, int x);
 int absolute_y_to_container_relative(struct container *con, int y);

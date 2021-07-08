@@ -186,27 +186,6 @@ void workspace_assign_monitor(struct workspace *ws, struct monitor *m)
     ws->m = m;
 }
 
-void move_container_to_workspace(struct container *con, struct workspace *ws)
-{
-    printf("move container to workspace\n");
-    if (!ws)
-        return;
-    if (!con)
-        return;
-    if (con->client->type == LAYER_SHELL)
-        return;
-
-    set_container_workspace(con, ws);
-    con->client->moved_workspace = true;
-    container_damage_whole(con);
-
-    arrange();
-    struct tagset *selected_tagset = monitor_get_active_tagset(con->m);
-    focus_most_recent_container(selected_tagset, FOCUS_NOOP);
-
-    ipc_event_workspace();
-}
-
 void push_layout(struct workspace *ws, struct layout *lt)
 {
     lt->ws_id = ws->id;
@@ -280,37 +259,6 @@ void rename_workspace(struct workspace *ws, const char *name)
     if (!ws)
         return;
     ws->name = name;
-}
-
-void set_container_workspace(struct container *con, struct workspace *ws)
-{
-    if (!con)
-        return;
-    if (!ws)
-        return;
-    if (con->m->tagset->selected_ws_id == ws->id)
-        return;
-
-    struct workspace *sel_ws = monitor_get_active_workspace(con->m);
-
-    if (ws->m) {
-        set_container_monitor(con, ws->m);
-    } else {
-        ws->m = con->m;
-    }
-    printf("set container workspace: %zu\n", ws->id);
-    con->client->ws_id = ws->id;
-
-    list_set_remove_container(&sel_ws->list_set, con);
-    add_container_to_containers(&ws->list_set, con, 0);
-
-    list_set_remove_container_from_focus_stack(&sel_ws->list_set, con);
-    list_set_add_container_to_focus_stack(&ws->list_set, con);
-
-    if (con->floating)
-        con->client->bw = ws->layout->options.float_border_px;
-    else
-        con->client->bw = ws->layout->options.tile_border_px;
 }
 
 // TODO refactor this function

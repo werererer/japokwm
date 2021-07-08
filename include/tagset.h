@@ -8,6 +8,7 @@
 #include "client.h"
 #include "list_set.h"
 #include "layout.h"
+#include "utils/coreUtils.h"
 
 struct tagset {
     struct monitor *m;

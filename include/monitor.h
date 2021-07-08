@@ -4,7 +4,6 @@
 #include <wlr/types/wlr_box.h>
 #include <wlr/types/wlr_output_damage.h>
 
-#include "container.h"
 #include "workspace.h"
 #include "root.h"
 #include "tagset.h"

@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <wlr/types/wlr_list.h>
 #include "layout.h"
-#include "container.h"
 #include "list_set.h"
 
 /* A tag is simply a workspace that can be focused (like a normal workspace)
@@ -48,9 +47,7 @@ void focus_next_unoccupied_workspace(struct monitor *m, struct wlr_list *workspa
 void create_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names);
 void copy_layout_from_selected_workspace(struct wlr_list *workspaces);
 void destroy_workspaces(struct wlr_list *workspaces);
-void set_container_workspace(struct container *con, struct workspace *ws);
 void layout_set_set_layout(lua_State *L);
-void move_container_to_workspace(struct container *con, struct workspace *ws);
 void push_layout(struct workspace *ws, struct layout *lt);
 void load_default_layout(lua_State *L);
 void load_layout(lua_State *L, const char *name);
