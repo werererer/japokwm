@@ -21,7 +21,7 @@ struct container {
     struct wlr_box prev_floating_geom;
     struct client *client;
 
-    /* struct monitor *m; */
+    struct monitor *m;
     bool floating;
     bool focusable;
     bool has_border;

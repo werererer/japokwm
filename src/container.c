@@ -545,10 +545,12 @@ void set_container_monitor(struct container *con, struct monitor *m)
     assert(m != NULL);
     if (!con)
         return;
-    /* if (con->m == m) */
-    /*     return; */
+    if (con->m == m)
+        return;
 
-    /* con->m = m; */
+    if (con->client->type == LAYER_SHELL) {
+        con->m = m;
+    }
 
     struct workspace *ws = monitor_get_active_workspace(m);
     set_container_workspace(con, ws);
@@ -729,8 +731,8 @@ struct monitor *container_get_monitor(struct container *con)
 {
     if (!con)
         return NULL;
-/*     if (con->m) */
-/*         return con->m; */
+    if (con->m)
+        return con->m;
 
     struct workspace *ws = get_workspace(con->client->ws_id);
     struct monitor *m  = ws->m;
