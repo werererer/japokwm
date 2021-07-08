@@ -108,9 +108,10 @@ void popup_handle_new_popup(struct wl_listener *listener, void *data)
     struct wlr_xdg_popup *xdg_popup = data;
 
     struct container *con = c->con;
-    if (con->m != selected_monitor)
+    struct monitor *m = container_get_monitor(con);
+    if (m != selected_monitor)
         return;
-    struct xdg_popup *popup = create_popup(con->m, xdg_popup, con->geom, con);
+    struct xdg_popup *popup = create_popup(m, xdg_popup, con->geom, con);
     wlr_list_insert(&server.popups, 0, popup);
 }
 

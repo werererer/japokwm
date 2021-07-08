@@ -475,10 +475,11 @@ bool exist_on(struct container *con, struct tagset *tagset)
 {
     if (!con || !tagset)
         return false;
-    if (con->m != tagset->m) {
+    struct monitor *m = container_get_monitor(con);
+    if (m != tagset->m) {
         if (con->floating)
             return container_intersects_with_monitor(con, tagset->m)
-                && tagset_contains_client(con->m->tagset, con->client);
+                && tagset_contains_client(m->tagset, con->client);
         else
             return false;
     }

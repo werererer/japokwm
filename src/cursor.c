@@ -197,7 +197,7 @@ void move_resize(int ui)
         return;
 
     struct wlr_cursor *cursor = server.cursor.wlr_cursor;
-    struct monitor *m = grabc->m;
+    struct monitor *m = container_get_monitor(grabc);
     struct layout *lt = get_layout_in_monitor(m);
     // all floating windows will be tiled. Thats why you can't make new windows
     // tiled

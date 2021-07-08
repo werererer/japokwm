@@ -293,7 +293,7 @@ static void arrange_container(struct container *con, int arrange_position,
     if (con->hidden)
         return;
 
-    struct monitor *m = con->m;
+    struct monitor *m = container_get_monitor(con);
     struct layout *lt = get_layout_in_monitor(m);
     printf("%p last layout\n", lt);
 
@@ -311,7 +311,7 @@ static void arrange_container(struct container *con, int arrange_position,
 
 static void set_container_geom(struct container *con, struct wlr_box geom)
 {
-    struct monitor *m = con->m;
+    struct monitor *m = container_get_monitor(con);
     struct layout *lt = get_layout_in_monitor(m);
 
     if (con->floating && !lt->options.arrange_by_focus)
@@ -360,9 +360,12 @@ void resize(struct container *con, struct wlr_box geom)
             }
             break;
         case LAYER_SHELL:
-            wlr_layer_surface_v1_configure(con->client->surface.layer,
-                    con->m->geom.width,
-                    con->m->geom.height);
+            {
+                struct monitor *m = container_get_monitor(con);
+                wlr_layer_surface_v1_configure(con->client->surface.layer,
+                        m->geom.width,
+                        m->geom.height);
+            }
             break;
         case X11_UNMANAGED:
         case X11_MANAGED:

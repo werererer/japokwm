@@ -236,7 +236,7 @@ static void scissor_output(struct wlr_output *output, pixman_box32_t *rect)
 // TODO refactor the name it doesn't represent what this does perfectly
 static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *borders, enum wlr_edges hidden_edges)
 {
-    struct monitor *m = con->m;
+    struct monitor *m = container_get_monitor(con);
 
     enum wlr_edges containers_hidden_edges = WLR_EDGE_NONE;
     // hide edges if needed
@@ -268,7 +268,8 @@ static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *bo
 
 static void render_borders(struct container *con, struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct container *sel = get_focused_container(con->m);
+    struct monitor *container_monitor = container_get_monitor(con);
+    struct container *sel = get_focused_container(container_monitor);
 
     if (con->has_border) {
         double ox, oy;

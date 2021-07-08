@@ -125,7 +125,7 @@ static void configure_layer_shell_container_geom(struct container *con, struct w
     if (con->client->type != LAYER_SHELL)
         return;
 
-    struct monitor *m = con->m;
+    struct monitor *m = container_get_monitor(con);
     int desired_width = con->client->surface.layer->current.desired_width;
     int desired_height = con->client->surface.layer->current.desired_height;
 

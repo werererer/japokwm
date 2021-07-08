@@ -54,7 +54,8 @@ void destroy_container(struct container *con)
     if (con->on_scratchpad)
         remove_container_from_scratchpad(con);
 
-    struct workspace *ws = monitor_get_active_workspace(con->m);
+    struct monitor *m = container_get_monitor(con);
+    struct workspace *ws = monitor_get_active_workspace(m);
 
     list_set_remove_container_from_focus_stack(&ws->list_set, con);
 
@@ -86,7 +87,7 @@ void container_damage_borders(struct container *con, struct wlr_box *geom)
     if (!geom)
         return;
 
-    struct monitor *m = con->m;
+    struct monitor *m = container_get_monitor(con);
     int border_width = con->client->bw;
     double ox = geom->x - border_width;
     double oy = geom->y - border_width;
@@ -305,7 +306,7 @@ void apply_rules(struct container *con)
         bool title_empty = strcmp(r.title, "") == 0;
         if ((same_id || id_empty) && (same_title || title_empty)) {
             lua_geti(L, LUA_REGISTRYINDEX, r.lua_func_ref);
-            struct monitor *m = con->m;
+            struct monitor *m = container_get_monitor(con);
             struct workspace *ws = monitor_get_active_workspace(m);
             int position = wlr_list_find(&ws->list_set.container_lists, cmp_ptr, con);
             lua_pushinteger(L, position);
@@ -333,7 +334,7 @@ void focus_container(struct container *con, enum focus_actions a)
     if (con->hidden)
         return;
 
-    struct monitor *m = con->m;
+    struct monitor *m = container_get_monitor(con);
     struct tagset *tagset = monitor_get_active_tagset(m);
 
     if (!visible_on(con, tagset))
@@ -479,7 +480,8 @@ void fix_position(struct container *con)
     if (!con)
         return;
 
-    struct tagset *tagset = monitor_get_active_tagset(con->m);
+    struct monitor *m = container_get_monitor(con);
+    struct tagset *tagset = monitor_get_active_tagset(m);
 
     struct wlr_list *tiled_containers = tagset_get_tiled_list(tagset);
     struct wlr_list *floating_containers = tagset_get_floating_list(tagset);
@@ -504,7 +506,7 @@ void set_container_floating(struct container *con, void (*fix_position)(struct c
     if (con->floating == floating)
         return;
 
-    struct monitor *m = con->m;
+    struct monitor *m = container_get_monitor(con);
     struct layout *lt = get_layout_in_monitor(m);
     struct workspace *ws = monitor_get_active_workspace(m);
 
@@ -543,10 +545,10 @@ void set_container_monitor(struct container *con, struct monitor *m)
     assert(m != NULL);
     if (!con)
         return;
-    if (con->m == m)
-        return;
+    /* if (con->m == m) */
+    /*     return; */
 
-    con->m = m;
+    /* con->m = m; */
 
     struct workspace *ws = monitor_get_active_workspace(m);
     set_container_workspace(con, ws);
@@ -681,17 +683,12 @@ void set_container_workspace(struct container *con, struct workspace *ws)
         return;
     if (!ws)
         return;
-    if (con->m->tagset->selected_ws_id == ws->id)
+    struct monitor *m = container_get_monitor(con);
+    if (m->tagset->selected_ws_id == ws->id)
         return;
 
-    struct workspace *sel_ws = monitor_get_active_workspace(con->m);
+    struct workspace *sel_ws = monitor_get_active_workspace(m);
 
-    if (ws->m) {
-        set_container_monitor(con, ws->m);
-    } else {
-        ws->m = con->m;
-    }
-    printf("set container workspace: %zu\n", ws->id);
     con->client->ws_id = ws->id;
 
     list_set_remove_container(&sel_ws->list_set, con);
@@ -721,10 +718,27 @@ void move_container_to_workspace(struct container *con, struct workspace *ws)
     container_damage_whole(con);
 
     arrange();
-    struct tagset *selected_tagset = monitor_get_active_tagset(con->m);
+    struct monitor *m = container_get_monitor(con);
+    struct tagset *selected_tagset = monitor_get_active_tagset(m);
     focus_most_recent_container(selected_tagset, FOCUS_NOOP);
 
     ipc_event_workspace();
+}
+
+struct monitor *container_get_monitor(struct container *con)
+{
+    if (!con)
+        return NULL;
+/*     if (con->m) */
+/*         return con->m; */
+
+    struct workspace *ws = get_workspace(con->client->ws_id);
+    struct monitor *m  = ws->m;
+
+    if (ws->tagset) {
+        m = ws->tagset->m;
+    }
+    return m;
 }
 
 void list_set_remove_container(struct list_set *list_set, struct container *con)
@@ -767,7 +781,7 @@ int get_position_in_container_stack(struct container *con)
     if (!con)
         return INVALID_POSITION;
 
-    struct monitor *m = con->m;
+    struct monitor *m = container_get_monitor(con);
     struct tagset *tagset = monitor_get_active_tagset(m);
     int position = find_in_composed_list(&tagset->list_set.container_lists, &cmp_ptr, con);
     return position;

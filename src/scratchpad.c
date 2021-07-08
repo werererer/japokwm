@@ -10,7 +10,7 @@ void move_to_scratchpad(struct container *con, int position)
     if (!con)
         return;
 
-    struct monitor *m = con->m;
+    struct monitor *m = container_get_monitor(con);
     struct tagset *ts = monitor_get_active_tagset(m);
 
     con->on_scratchpad = true;

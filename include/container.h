@@ -21,7 +21,7 @@ struct container {
     struct wlr_box prev_floating_geom;
     struct client *client;
 
-    struct monitor *m;
+    /* struct monitor *m; */
     bool floating;
     bool focusable;
     bool has_border;
@@ -80,6 +80,8 @@ void list_set_remove_independent_container(struct list_set *list_set, struct con
 
 void set_container_workspace(struct container *con, struct workspace *ws);
 void move_container_to_workspace(struct container *con, struct workspace *ws);
+
+struct monitor *container_get_monitor(struct container *con);
 
 int absolute_x_to_container_relative(struct container *con, int x);
 int absolute_y_to_container_relative(struct container *con, int y);
