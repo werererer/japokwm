@@ -689,14 +689,14 @@ void set_container_workspace(struct container *con, struct workspace *ws)
     if (m->tagset->selected_ws_id == ws->id)
         return;
 
-    struct workspace *sel_ws = monitor_get_active_workspace(m);
+    struct workspace *old_ws = get_workspace(con->client->ws_id);
+
+    list_set_remove_container(&old_ws->list_set, con);
+    add_container_to_containers(&ws->list_set, con, 0);
 
     con->client->ws_id = ws->id;
 
-    list_set_remove_container(&sel_ws->list_set, con);
-    add_container_to_containers(&ws->list_set, con, 0);
-
-    list_set_remove_container_from_focus_stack(&sel_ws->list_set, con);
+    list_set_remove_container_from_focus_stack(&old_ws->list_set, con);
     list_set_add_container_to_focus_stack(&ws->list_set, con);
 
     if (con->floating)
