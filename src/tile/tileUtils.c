@@ -53,6 +53,20 @@ void arrange()
     update_cursor(&server.cursor);
 }
 
+static void set_layout_ref(struct layout *lt, int n_area)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
+
+    lua_rawgeti(L, -1, n_area);
+    // TODO refactor
+    int len = luaL_len(L, -1);
+    n_area = MAX(MIN(len, n_area), 1);
+    printf("lenght: %lli\n", luaL_len(L, -1));
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_ref);
+
+    lua_pop(L, 1);
+}
+
 static int get_layout_container_area_count(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);
@@ -62,12 +76,6 @@ static int get_layout_container_area_count(struct tagset *tagset)
     int container_area_count = get_container_area_count(tagset);
     int n_area = MAX(MIN(len, container_area_count), 1);
 
-    lua_rawgeti(L, -1, n_area);
-
-    // TODO refactor
-    len = luaL_len(L, -1);
-    n_area = MAX(MIN(len, n_area), 1);
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_ref);
     lua_pop(L, 1);
     return n_area;
 }
@@ -92,9 +100,11 @@ static int get_layout_container_max_area_count(struct tagset *tagset)
 static void update_layout_counters(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);
+    printf("%p first layout\n", lt);
 
     tagset->n_all = get_container_count(tagset);
     lt->n_area = get_layout_container_area_count(tagset);
+    set_layout_ref(lt, lt->n_area);
     lt->n_area_max = get_layout_container_max_area_count(tagset);
     lt->n_master_abs = get_master_container_count(tagset);
     lt->n_floating = get_floating_container_count(tagset);
@@ -221,6 +231,10 @@ void arrange_monitor(struct monitor *m)
     struct wlr_list *visible_container_lists = get_visible_lists(&tagset->list_set);
     struct wlr_list *tiled_containers = get_tiled_list(&tagset->list_set);
     struct wlr_list *hidden_containers = get_hidden_list(&tagset->list_set); 
+    printf("visible_container_lists.length: %i\n",length_of_composed_list(visible_container_lists));
+    printf("tiled_containers.length: %i\n",length_of_composed_list(tiled_containers));
+    printf("hidden_containers.length: %i\n",length_of_composed_list(hidden_containers));
+    printf("tagset: %p %p %p %p %p\n", tagset, tagset->m->tagset, m->tagset, tagset->m, m);
 
     update_hidden_status_of_containers(m, visible_container_lists,
             tiled_containers, hidden_containers);
@@ -244,6 +258,7 @@ void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,
         struct wlr_list *tiled_containers)
 {
     struct layout *lt = tagset_get_layout(tagset);
+    printf("ar layout: %p\n", lt);
 
     /* each container will get an inner_gap. If two containers are adjacent the
      * inner_gap is applied twice. To counter this effect we divide the
@@ -280,6 +295,7 @@ static void arrange_container(struct container *con, int arrange_position,
 
     struct monitor *m = con->m;
     struct layout *lt = get_layout_in_monitor(m);
+    printf("%p last layout\n", lt);
 
     struct wlr_box geom = get_nth_geom_in_layout(L, lt, root_geom, arrange_position);
     container_surround_gaps(&geom, inner_gap);

@@ -182,6 +182,14 @@ struct layout *tagset_get_layout(struct tagset *tagset)
     return ws->layout;
 }
 
+void tagset_reload_workspaces(struct tagset *tagset)
+{
+    if (!tagset)
+        return;
+    tagset_unload_workspaces(tagset);
+    tagset_load_workspaces(tagset);
+}
+
 void tagset_load_workspaces(struct tagset *tagset)
 {
     if (!tagset)
@@ -261,6 +269,23 @@ void tagset_toggle_add(struct tagset *tagset, BitSet bitset)
     BitSet new_bitset;
     bitset_copy(&new_bitset, &bitset);
     bitset_xor(&new_bitset, &tagset->workspaces);
+
+    // force new tags to be on current monitor
+    for (int i = 0; i < bitset.size; i++) {
+        bitset_and(&bitset, &new_bitset);
+        bool bit = bitset_test(&bitset, i);
+
+        if (!bit)
+            continue;
+        printf("unset bit: %i\n", i);
+
+        struct workspace *ws = get_workspace(i);
+        if (is_workspace_occupied(ws)) {
+            struct tagset *old_tagset = ws->m->tagset;
+            bitset_reset(&old_tagset->workspaces, ws->id);
+            tagset_reload_workspaces(old_tagset);
+        }
+    }
 
     unfocus_tagset(tagset);
     tagset_set_tags(tagset, new_bitset);

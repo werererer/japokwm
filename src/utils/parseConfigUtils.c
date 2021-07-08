@@ -400,13 +400,6 @@ void call_arrange_func(lua_State *L, int funcId, int n)
     lua_call_safe(L, 1, 0, 0);
 }
 
-void call_function(lua_State *L, struct layout lt)
-{
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt.lua_layout_ref);
-    lua_pushinteger(L, lt.n_area);
-    lua_call_safe(L, 1, 0, 0);
-}
-
 struct layout get_config_layout(lua_State *L, char *name)
 {
     lua_getglobal_safe(L, name);
