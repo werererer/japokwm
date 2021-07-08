@@ -99,6 +99,7 @@ void subscribe_list_set(struct list_set *dest, struct list_set *src)
 {
     wlr_list_push(&src->change_affected_list_sets, dest);
     append_list_set(dest, src);
+    printf("subcount: %zu\n", src->change_affected_list_sets.length);
 }
 
 void unsubscribe_list_set(struct list_set *dest, struct list_set *src)

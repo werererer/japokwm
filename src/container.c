@@ -54,8 +54,7 @@ void destroy_container(struct container *con)
     if (con->on_scratchpad)
         remove_container_from_scratchpad(con);
 
-    struct monitor *m = container_get_monitor(con);
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct workspace *ws = get_workspace(con->client->ws_id);
 
     list_set_remove_container_from_focus_stack(&ws->list_set, con);
 
@@ -72,6 +71,7 @@ void destroy_container(struct container *con)
         default:
             remove_in_composed_list(&server.normal_visual_stack_lists,
                     cmp_ptr, con);
+            printf("workspace: %zu\n", ws->id);
             list_set_remove_container(&ws->list_set, con);
             break;
     }
@@ -745,9 +745,9 @@ struct monitor *container_get_monitor(struct container *con)
 
 void list_set_remove_container(struct list_set *list_set, struct container *con)
 {
+    printf("listset length: %zu\n", list_set->change_affected_list_sets.length);
     for (int i = 0; i < list_set->change_affected_list_sets.length; i++) {
         struct list_set *ls = list_set->change_affected_list_sets.items[i];
-        printf("listset: %p\n", ls);
         remove_in_composed_list(&ls->container_lists, cmp_ptr, con);
     }
 }

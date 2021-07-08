@@ -124,7 +124,6 @@ json_object *ipc_json_describe_tagsets()
         bool is_selected = false;
         bool is_active = false;
         if (tagset) {
-            printf("ws->m: %p tagset->m: %p\n", ws->m, tagset->m);
             is_selected = tagset->selected_ws_id == i;
             is_active = bitset_test(&tagset->workspaces, i);
         }
@@ -140,7 +139,7 @@ json_object *ipc_json_describe_tagsets()
 
         bool is_extern = m != ws->m && ws->m != NULL;
         if (is_extern) {
-            printf("is extern \n");
+            /* printf("is extern \n"); */
             char *hidden_name = strdup(ws->name);
             add_infix(hidden_name, "(", ")");
             json_object *tagset_object = ipc_json_describe_tag(hidden_name, false, ws->m);

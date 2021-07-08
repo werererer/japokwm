@@ -391,8 +391,6 @@ int lib_kill(lua_State *L)
 
     struct tagset *tagset = monitor_get_active_tagset(m);
     struct container *con = get_container(tagset, i);
-    printf("container: %p\n", con);
-    printf("i: %i\n", i);
 
     if (!con)
         return 0;

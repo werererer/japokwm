@@ -129,6 +129,7 @@ static void tagset_unload_workspaces(struct tagset *tagset)
         return;
     }
 
+    printf("unsubscribe tagset: %p\n", tagset);
     clear_list_set(&tagset->list_set);
 
     for (int i = 0; i < tagset->workspaces.size; i++) {
@@ -140,6 +141,8 @@ static void tagset_unload_workspaces(struct tagset *tagset)
         struct workspace *ws = get_workspace(i);
 
         wlr_list_remove(&ws->list_set.change_affected_list_sets, cmp_ptr, &tagset->list_set);
+        printf("unsubscribe from ws: %i\n", i);
+        printf("subcount: %zu\n", ws->list_set.change_affected_list_sets.length);
     }
     tagset->loaded = false;
 }
@@ -199,6 +202,7 @@ void tagset_load_workspaces(struct tagset *tagset)
         return;
     }
 
+    printf("subscribe tagset: %p\n", tagset);
     for(size_t i = 0; i < tagset->workspaces.size; i++) {
         bool bit = bitset_test(&tagset->workspaces, i);
 
@@ -206,6 +210,7 @@ void tagset_load_workspaces(struct tagset *tagset)
             continue;
 
         struct workspace *ws = get_workspace(i);
+        printf("subscribe to ws: %zu\n", i);
         subscribe_list_set(&tagset->list_set, &ws->list_set);
         ws->tagset = tagset;
         ws->m = tagset->m;
@@ -244,7 +249,6 @@ void push_tagset(struct tagset *tagset)
         return;
 
     struct monitor *m = tagset->m;
-    printf("m->tagset: %p vs %p\n", m->tagset, tagset);
 
     tagset_save_to_workspaces(m->tagset);
 
