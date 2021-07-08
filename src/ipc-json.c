@@ -114,9 +114,12 @@ json_object *ipc_json_describe_tagsets()
 
         struct tagset *tagset = get_tagset_from_workspace_id(i);
         struct monitor *m = ws->m;
+        printf("ws->m: %p\n", ws->m);
         if (tagset) {
+            printf("tagset->m: %p\n", tagset->m);
             m = tagset->m;
         }
+        printf("m: %p\n", m);
 
         if (!m)
             continue;
@@ -137,9 +140,10 @@ json_object *ipc_json_describe_tagsets()
         json_object *tagset_object = ipc_json_describe_tag(full_name, is_active, m);
         json_object_array_add(array, tagset_object);
 
+        printf("works\n");
         bool is_extern = m != ws->m && ws->m != NULL;
         if (is_extern) {
-            /* printf("is extern \n"); */
+            printf("is extern \n");
             char *hidden_name = strdup(ws->name);
             add_infix(hidden_name, "(", ")");
             json_object *tagset_object = ipc_json_describe_tag(hidden_name, false, ws->m);

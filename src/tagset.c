@@ -57,7 +57,7 @@ void focus_most_recent_container(struct tagset *tagset, enum focus_actions a)
     focus_container(con, a);
 }
 
-static void unfocus_tagset(struct tagset *old_tagset)
+static void unfocus_tagset(struct tagset *old_tagset, struct monitor *new_monitor)
 {
     if (!old_tagset)
         return;
@@ -72,7 +72,7 @@ static void unfocus_tagset(struct tagset *old_tagset)
 
         struct workspace *ws = get_workspace(i);
         bool is_empty = is_workspace_empty(ws);
-        if (is_empty && ws->m == selected_monitor) {
+        if (is_empty && ws->m == selected_monitor && ws->m == new_monitor) {
             printf("unfocus workspace: %zu\n", ws->id);
             ws->m = NULL;
         }
@@ -81,14 +81,17 @@ static void unfocus_tagset(struct tagset *old_tagset)
 
 static void focus_action(struct tagset *tagset)
 {
+    printf("focus_action\n");
     struct monitor *m = tagset->m;
     for (int i = 0; i < tagset->workspaces.size; i++) {
         bool bit = bitset_test(&tagset->workspaces, i);
 
+        printf("bit: %i\n", bit);
         if (!bit)
             continue;
 
         struct workspace *ws = get_workspace(i);
+        printf("workspace: %i set tagset: %p\n", i, ws);
         ws->tagset = m->tagset;
     }
 
@@ -96,6 +99,7 @@ static void focus_action(struct tagset *tagset)
     if (!ws->m) {
         ws->m = tagset->m;
     }
+    printf("focus_action end\n");
 }
 
 void focus_tagset(struct tagset *tagset)
@@ -107,7 +111,7 @@ void focus_tagset(struct tagset *tagset)
     focus_monitor(m);
 
     struct tagset *old_tagset = m->tagset;
-    unfocus_tagset(old_tagset);
+    unfocus_tagset(old_tagset, tagset->m);
     printf("old_tagset: %p\n", old_tagset);
     printf("new_tagset: %p\n", tagset);
 
@@ -213,7 +217,6 @@ void tagset_load_workspaces(struct tagset *tagset)
         printf("subscribe to ws: %zu\n", i);
         subscribe_list_set(&tagset->list_set, &ws->list_set);
         ws->tagset = tagset;
-        ws->m = tagset->m;
     }
     tagset->loaded = true;
 }
@@ -267,6 +270,7 @@ void tagset_focus_workspace(int ws_id)
 
 void tagset_toggle_add(struct tagset *tagset, BitSet bitset)
 {
+    printf("tagset_toggle_add\n");
     if (!tagset)
         return;
 
@@ -281,7 +285,6 @@ void tagset_toggle_add(struct tagset *tagset, BitSet bitset)
 
         if (!bit)
             continue;
-        printf("unset bit: %i\n", i);
 
         struct workspace *ws = get_workspace(i);
         if (is_workspace_occupied(ws)) {
@@ -291,10 +294,11 @@ void tagset_toggle_add(struct tagset *tagset, BitSet bitset)
         }
     }
 
-    unfocus_tagset(tagset);
+    unfocus_tagset(tagset, tagset->m);
     tagset_set_tags(tagset, new_bitset);
     focus_action(tagset);
     ipc_event_workspace();
+    printf("tagset_toggle_add end\n");
 }
 
 void tagset_focus_tags(int ws_id, struct BitSet bitset)
