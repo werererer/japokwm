@@ -47,7 +47,6 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 
 void destroy_container(struct container *con)
 {
-    printf("destroy_container\n");
     // surfaces cant commit anything anymore if their container is destroyed
     wl_list_remove(&con->commit.link);
 
@@ -71,13 +70,11 @@ void destroy_container(struct container *con)
         default:
             remove_in_composed_list(&server.normal_visual_stack_lists,
                     cmp_ptr, con);
-            printf("workspace: %zu\n", ws->id);
             list_set_remove_container(&ws->list_set, con);
             break;
     }
 
     free(con);
-    printf("destroy_container end\n");
 }
 
 void container_damage_borders(struct container *con, struct wlr_box *geom)

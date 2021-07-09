@@ -276,6 +276,10 @@ void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,
     for (int i = 0; i < tiled_containers->length; i++) {
         struct container *con = tiled_containers->items[i];
 
+        /* // the monitor must be on the same monitor as it is tiled on else it is */
+        /* // a bug */
+        /* assert(container_get_monitor(con) == tagset->m); */
+
         arrange_container(con, i, root_geom, actual_inner_gap);
     }
 }

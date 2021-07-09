@@ -36,7 +36,6 @@ void destroy_tagset(struct tagset *tagset)
 {
     if (!tagset)
         return;
-    printf("destroy tagset: %p\n", tagset);
     tagset_unload_workspaces(server.previous_tagset);
     wlr_list_remove(&server.tagsets, cmp_ptr, tagset);
     free(tagset);
@@ -62,7 +61,6 @@ static void unfocus_tagset(struct tagset *old_tagset, struct monitor *new_monito
     if (!old_tagset)
         return;
 
-    printf("\n");
     for (int i = 0; i < old_tagset->workspaces.size; i++) {
         bool bit = bitset_test(&old_tagset->workspaces, i);
         /* bool is_selected_workspace = i == old_tagset->selected_ws_id; */
@@ -73,7 +71,6 @@ static void unfocus_tagset(struct tagset *old_tagset, struct monitor *new_monito
         struct workspace *ws = get_workspace(i);
         bool is_empty = is_workspace_empty(ws);
         if (is_empty && ws->m == selected_monitor && ws->m == new_monitor) {
-            printf("unfocus workspace: %zu\n", ws->id);
             ws->m = NULL;
         }
     }
@@ -81,17 +78,14 @@ static void unfocus_tagset(struct tagset *old_tagset, struct monitor *new_monito
 
 static void focus_action(struct tagset *tagset)
 {
-    printf("focus_action\n");
     struct monitor *m = tagset->m;
     for (int i = 0; i < tagset->workspaces.size; i++) {
         bool bit = bitset_test(&tagset->workspaces, i);
 
-        printf("bit: %i\n", bit);
         if (!bit)
             continue;
 
         struct workspace *ws = get_workspace(i);
-        printf("workspace: %i set tagset: %p\n", i, ws);
         ws->tagset = m->tagset;
     }
 
@@ -99,7 +93,6 @@ static void focus_action(struct tagset *tagset)
     if (!ws->m) {
         ws->m = tagset->m;
     }
-    printf("focus_action end\n");
 }
 
 void focus_tagset(struct tagset *tagset)
@@ -112,8 +105,6 @@ void focus_tagset(struct tagset *tagset)
 
     struct tagset *old_tagset = m->tagset;
     unfocus_tagset(old_tagset, tagset->m);
-    printf("old_tagset: %p\n", old_tagset);
-    printf("new_tagset: %p\n", tagset);
 
     m->tagset = tagset;
     focus_action(tagset);
@@ -133,7 +124,6 @@ static void tagset_unload_workspaces(struct tagset *tagset)
         return;
     }
 
-    printf("unsubscribe tagset: %p\n", tagset);
     clear_list_set(&tagset->list_set);
 
     for (int i = 0; i < tagset->workspaces.size; i++) {
@@ -143,10 +133,7 @@ static void tagset_unload_workspaces(struct tagset *tagset)
             continue;
 
         struct workspace *ws = get_workspace(i);
-
         wlr_list_remove(&ws->list_set.change_affected_list_sets, cmp_ptr, &tagset->list_set);
-        printf("unsubscribe from ws: %i\n", i);
-        printf("subcount: %zu\n", ws->list_set.change_affected_list_sets.length);
     }
     tagset->loaded = false;
 }
@@ -156,7 +143,6 @@ static void tagset_save_to_workspaces(struct tagset *tagset)
     if (!tagset)
         return;
     if (!tagset->loaded) {
-        printf("already unloaded\n");
         return;
     }
 
@@ -202,11 +188,9 @@ void tagset_load_workspaces(struct tagset *tagset)
     if (!tagset)
         return;
     if (tagset->loaded) {
-        printf("already loaded\n");
         return;
     }
 
-    printf("subscribe tagset: %p\n", tagset);
     for(size_t i = 0; i < tagset->workspaces.size; i++) {
         bool bit = bitset_test(&tagset->workspaces, i);
 
@@ -214,7 +198,6 @@ void tagset_load_workspaces(struct tagset *tagset)
             continue;
 
         struct workspace *ws = get_workspace(i);
-        printf("subscribe to ws: %zu\n", i);
         subscribe_list_set(&tagset->list_set, &ws->list_set);
         ws->tagset = tagset;
     }
@@ -223,12 +206,53 @@ void tagset_load_workspaces(struct tagset *tagset)
 
 void tagset_set_tags(struct tagset *tagset, BitSet bitset)
 {
-    struct monitor *m = tagset->m;
-
-    tagset_save_to_workspaces(m->tagset);
+    tagset_save_to_workspaces(tagset);
     tagset_unload_workspaces(tagset);
 
+    BitSet changed_bits;
+    bitset_copy(&changed_bits, &tagset->workspaces);
+    bitset_xor(&changed_bits, &bitset);
+
+    /* for (int i = 0; i < server.mons.length; i++) { */
+    /*     struct monitor *m = server.mons.items[i]; */
+    /*     struct tagset *old_tagset = m->tagset; */
+
+    /*     if (old_tagset == tagset) */
+    /*         continue; */
+
+    /*     tagset_unload_workspaces(old_tagset); */
+    /*     tagset_load_workspaces(old_tagset); */
+    /*     for (int i = 0; i < old_tagset->workspaces.size; i++) */
+    /*     { */
+
+    /*     } */
+    /* } */
+
+    // force new tags to be on current monitor
+    for (int i = 0; i < bitset.size; i++) {
+        bool bit_changed = bitset_test(&changed_bits, i);
+
+        if (!bit_changed)
+            continue;
+
+        struct workspace *ws = get_workspace(i);
+
+        if (!ws->m)
+            continue;
+
+        struct tagset *old_tagset = ws->m->tagset;
+
+        if (is_workspace_occupied(ws) && tagset != old_tagset) {
+            printf("change old_workspace tagset: %zu\n", ws->id);
+            tagset_unload_workspaces(old_tagset);
+            bool new_bit = bitset_test(&bitset, i);
+            bitset_assign(&old_tagset->workspaces, i, !new_bit);
+            tagset_load_workspaces(old_tagset);
+        }
+    }
+
     bitset_move(&tagset->workspaces, &bitset);
+
     tagset_load_workspaces(tagset);
 
     ipc_event_workspace();
@@ -268,9 +292,23 @@ void tagset_focus_workspace(int ws_id)
     tagset_focus_tags(ws_id, bitset);
 }
 
+void tagset_add(struct tagset *tagset, BitSet bitset)
+{
+    if (!tagset)
+        return;
+
+    BitSet new_bitset;
+    bitset_copy(&new_bitset, &bitset);
+    bitset_or(&new_bitset, &tagset->workspaces);
+
+    unfocus_tagset(tagset, tagset->m);
+    tagset_set_tags(tagset, new_bitset);
+    focus_action(tagset);
+    ipc_event_workspace();
+}
+
 void tagset_toggle_add(struct tagset *tagset, BitSet bitset)
 {
-    printf("tagset_toggle_add\n");
     if (!tagset)
         return;
 
@@ -278,27 +316,10 @@ void tagset_toggle_add(struct tagset *tagset, BitSet bitset)
     bitset_copy(&new_bitset, &bitset);
     bitset_xor(&new_bitset, &tagset->workspaces);
 
-    // force new tags to be on current monitor
-    for (int i = 0; i < bitset.size; i++) {
-        bitset_and(&bitset, &new_bitset);
-        bool bit = bitset_test(&bitset, i);
-
-        if (!bit)
-            continue;
-
-        struct workspace *ws = get_workspace(i);
-        if (is_workspace_occupied(ws)) {
-            struct tagset *old_tagset = ws->m->tagset;
-            bitset_reset(&old_tagset->workspaces, ws->id);
-            tagset_reload_workspaces(old_tagset);
-        }
-    }
-
     unfocus_tagset(tagset, tagset->m);
     tagset_set_tags(tagset, new_bitset);
     focus_action(tagset);
     ipc_event_workspace();
-    printf("tagset_toggle_add end\n");
 }
 
 void tagset_focus_tags(int ws_id, struct BitSet bitset)
