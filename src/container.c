@@ -683,7 +683,8 @@ void set_container_workspace(struct container *con, struct workspace *ws)
     if (!ws)
         return;
     struct monitor *m = container_get_monitor(con);
-    if (m->tagset->selected_ws_id == ws->id)
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    if (tagset->selected_ws_id == ws->id)
         return;
 
     struct workspace *old_ws = get_workspace(con->client->ws_id);
@@ -691,10 +692,14 @@ void set_container_workspace(struct container *con, struct workspace *ws)
     list_set_remove_container(&old_ws->list_set, con);
     add_container_to_containers(&ws->list_set, con, 0);
 
-    con->client->ws_id = ws->id;
-
     list_set_remove_container_from_focus_stack(&old_ws->list_set, con);
     list_set_add_container_to_focus_stack(&ws->list_set, con);
+
+    con->client->ws_id = ws->id;
+    ws->m = old_ws->m;
+    if (is_workspace_empty(old_ws)) {
+        old_ws->m = NULL;
+    }
 
     if (con->floating)
         con->client->bw = ws->layout->options.float_border_px;
