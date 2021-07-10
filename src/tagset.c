@@ -16,6 +16,7 @@ static void tagset_unload_workspaces(struct tagset *tagset);
 
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet workspaces)
 {
+    printf("create_tagset\n");
     struct tagset *tagset = calloc(1, sizeof(struct tagset));
     tagset->m = m;
 
@@ -80,7 +81,6 @@ static void focus_action(struct tagset *tagset)
 {
     struct workspace *ws = get_workspace(tagset->selected_ws_id);
     if (!ws->m) {
-        printf("set monitor\n");
         ws->m = tagset->m;
     }
 }
@@ -94,6 +94,32 @@ void focus_tagset(struct tagset *tagset)
     focus_monitor(m);
 
     struct tagset *old_tagset = m->tagset;
+
+    if (old_tagset) {
+        // move workspace back to where it belongs TODO make a function
+        BitSet diff;
+        bitset_copy(&diff, &old_tagset->workspaces);
+        bitset_xor(&diff, &tagset->workspaces);
+        for (int i = 0; i < diff.size; i++) {
+            bool is_changed = bitset_test(&diff, i);
+            bool new_bit = bitset_test(&tagset->workspaces, i);
+
+            if (!is_changed)
+                continue;
+            if (new_bit)
+                continue;
+
+            struct workspace *ws = get_workspace(i);
+
+            if (is_workspace_occupied(ws) && ws->m->tagset != ws->tagset) {
+                ws->tagset = ws->m->tagset;
+                tagset_unload_workspaces(ws->tagset);
+                bitset_set(&ws->tagset->workspaces, i);
+                tagset_load_workspaces(ws->tagset);
+            }
+        }
+    }
+
     unfocus_tagset(old_tagset, tagset->m);
 
     m->tagset = tagset;
@@ -189,7 +215,6 @@ void tagset_load_workspaces(struct tagset *tagset)
 
         struct workspace *ws = get_workspace(i);
         subscribe_list_set(&tagset->list_set, &ws->list_set);
-        printf("set tagset: ws->id %zu\n", ws->id);
         ws->tagset = tagset;
     }
     tagset->loaded = true;
@@ -197,26 +222,42 @@ void tagset_load_workspaces(struct tagset *tagset)
 
 void tagset_set_tags(struct tagset *tagset, BitSet bitset)
 {
-    printf("\ntagset_set_tags start\n");
-    tagset_save_to_workspaces(tagset);
-    tagset_unload_workspaces(tagset);
-
     BitSet changed_bits;
     bitset_copy(&changed_bits, &tagset->workspaces);
     bitset_xor(&changed_bits, &bitset);
+
+    // force old tags to return to their monitors
+    for (int i = 0; i < bitset.size; i++) {
+        bool is_changed = bitset_test(&changed_bits, i);
+        bool new_bit = bitset_test(&bitset, i);
+
+        if (!is_changed)
+            continue;
+        if (new_bit)
+            continue;
+
+        struct workspace *ws = get_workspace(i);
+
+        if (is_workspace_occupied(ws) && ws->m->tagset != ws->tagset) {
+            ws->tagset = ws->m->tagset;
+            tagset_unload_workspaces(ws->tagset);
+            bitset_set(&ws->tagset->workspaces, i);
+            tagset_load_workspaces(ws->tagset);
+        }
+    }
+
+    tagset_save_to_workspaces(tagset);
+    tagset_unload_workspaces(tagset);
 
     // force new tags to be on current monitor
     for (int i = 0; i < bitset.size; i++) {
         bool bit_changed = bitset_test(&changed_bits, i);
 
-        printf("changed bits: %i\n", bit_changed);
         if (!bit_changed)
             continue;
 
         struct workspace *ws = get_workspace(i);
 
-        printf("workspaces: %zu\n", ws->id);
-        printf("ws->m: %p\n", ws->m);
         if (!ws->m)
             continue;
 
@@ -226,18 +267,15 @@ void tagset_set_tags(struct tagset *tagset, BitSet bitset)
             tagset_unload_workspaces(old_tagset);
             bool new_bit = !bitset_test(&bitset, i);
             bitset_assign(&old_tagset->workspaces, i, new_bit);
-            printf("actually unset tags\n");
             tagset_load_workspaces(old_tagset);
         }
     }
 
     bitset_move(&tagset->workspaces, &bitset);
 
-    printf("actually set tags\n");
     tagset_load_workspaces(tagset);
 
     ipc_event_workspace();
-    printf("tagset_set_tags start end\n\n");
 }
 
 static void tagset_push_queue(struct tagset *prev_tagset, struct tagset *tagset)
