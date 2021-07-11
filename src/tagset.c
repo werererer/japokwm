@@ -96,6 +96,14 @@ void focus_tagset(struct tagset *tagset)
     struct tagset *old_tagset = m->tagset;
 
     if (old_tagset) {
+        for (int i = 0; i < length_of_composed_list(&old_tagset->list_set.container_lists); i++) {
+            struct container *con = get_in_composed_list(&old_tagset->list_set.container_lists, i);
+            struct workspace *ws = get_workspace(tagset->selected_ws_id);
+            if (con->client->sticky) {
+                move_container_to_workspace(con, ws);
+            }
+        }
+
         // move workspace back to where it belongs TODO make a function
         BitSet diff;
         bitset_copy(&diff, &old_tagset->workspaces);
@@ -118,6 +126,7 @@ void focus_tagset(struct tagset *tagset)
                 tagset_load_workspaces(ws->tagset);
             }
         }
+
     }
 
     unfocus_tagset(old_tagset, tagset->m);

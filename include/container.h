@@ -10,9 +10,6 @@
 #include "monitor.h"
 
 struct container {
-    /* sticky containers */
-    struct wl_list stlink;
-
     struct wl_listener commit;
 
     /* layout-relative, includes border */
