@@ -357,12 +357,6 @@ void tagset_focus_tags(int ws_id, struct BitSet bitset)
     push_tagset(tagset);
 }
 
-
-void tagset_toggle_add_workspace_id(struct tagset *tagset, int ws_id)
-{
-    // TODO implement
-}
-
 struct tagset *get_tagset_from_active_workspace_id(int ws_id)
 {
     for (int i = 0; i < server.mons.length; i++) {

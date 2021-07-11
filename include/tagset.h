@@ -32,7 +32,6 @@ void tagset_set_tags(struct tagset *tagset, BitSet bitset);
 void tagset_focus_workspace(int ws_id);
 void tagset_add(struct tagset *tagset, BitSet bitset);
 void tagset_toggle_add(struct tagset *tagset, BitSet bitset);
-void tagset_toggle_add_workspace_id(struct tagset *tagset, int ws_id);
 void tagset_focus_tags(int ws_id, struct BitSet bitset);
 
 struct tagset *get_tagset_from_active_workspace_id(int ws_id);
