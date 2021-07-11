@@ -469,21 +469,6 @@ bool tagset_contains_client(struct tagset *tagset, struct client *c)
     return bitset_any(&bitset);
 }
 
-bool workspace_has_clients(struct tagset *tagset)
-{
-    if (!tagset)
-        return false;
-
-    for (int i = 0; i < server.normal_clients.length; i++) {
-        struct client *c = server.normal_clients.items[i];
-
-        if (tagset_contains_client(tagset, c))
-            return true;
-    }
-
-    return false;
-}
-
 bool visible_on(struct tagset *tagset, struct container *con)
 {
     if (!con)
