@@ -163,6 +163,20 @@ static void tagset_unload_workspaces(struct tagset *tagset)
     tagset->loaded = false;
 }
 
+static void tagset_write_to_workspace(struct tagset *tagset, struct workspace *ws)
+{
+    for (int i = 0; i < ws->list_set.all_lists.length; i++) {
+        struct wlr_list *dest_list = ws->list_set.all_lists.items[i];
+        struct wlr_list *src_list = tagset->list_set.all_lists.items[i];
+        for (int j = 0; j < src_list->length; j++) {
+            struct container *con = src_list->items[j];
+            if (con->client->ws_id != ws->id)
+                continue;
+            wlr_list_push(dest_list, con);
+        }
+    }
+}
+
 static void tagset_save_to_workspaces(struct tagset *tagset)
 {
     if (!tagset)
@@ -180,17 +194,7 @@ static void tagset_save_to_workspaces(struct tagset *tagset)
         struct workspace *ws = get_workspace(i);
         clear_list_set(&ws->list_set);
 
-        // TODO convert to a function
-        for (int i = 0; i < ws->list_set.all_lists.length; i++) {
-            struct wlr_list *dest_list = ws->list_set.all_lists.items[i];
-            struct wlr_list *src_list = tagset->list_set.all_lists.items[i];
-            for (int j = 0; j < src_list->length; j++) {
-                struct container *con = src_list->items[j];
-                if (con->client->ws_id != ws->id)
-                    continue;
-                wlr_list_push(dest_list, con);
-            }
-        }
+        tagset_write_to_workspace(tagset, ws);
     }
 }
 
