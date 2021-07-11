@@ -484,11 +484,6 @@ bool workspace_has_clients(struct tagset *tagset)
     return false;
 }
 
-bool hidden_on(struct tagset *tagset, struct container *con)
-{
-    return !visible_on(tagset, con) && exist_on(tagset, con);
-}
-
 bool visible_on(struct tagset *tagset, struct container *con)
 {
     if (!con)
@@ -499,6 +494,7 @@ bool visible_on(struct tagset *tagset, struct container *con)
     return exist_on(tagset, con);
 
 }
+
 bool exist_on(struct tagset *tagset, struct container *con)
 {
     if (!con || !tagset)

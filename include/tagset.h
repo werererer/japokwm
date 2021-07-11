@@ -48,7 +48,6 @@ void workspace_id_to_tag(BitSet *dest, int ws_id);
 
 // TODO change argument order
 bool exist_on(struct tagset *tagset, struct container *con);
-bool hidden_on(struct tagset *tagset, struct container *con);
 bool tagset_contains_client(struct tagset *tagset, struct client *c);
 bool visible_on(struct tagset *tagset, struct container *con);
 
