@@ -40,7 +40,6 @@ typedef void (*operation_t)(struct list_set *, void *);
 
 void setup_list_set(struct list_set *ls);
 
-void add_change_affected_list_set(struct list_set *dest, struct list_set *src);
 void clear_list_set(struct list_set *list_set);
 void unsubscribe_list_set(struct list_set *dest, struct list_set *src);
 void subscribe_list_set(struct list_set *dest, struct list_set *src);

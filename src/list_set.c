@@ -73,11 +73,6 @@ void setup_list_set(struct list_set *list_set)
     wlr_list_push(&list_set->all_lists, &list_set->focus_stack_not_focusable);
 }
 
-void add_change_affected_list_set(struct list_set *dest, struct list_set *src)
-{
-    wlr_list_push(&dest->change_affected_list_sets, src);
-}
-
 void append_list_set(struct list_set *dest, struct list_set *src)
 {
     for (int i = 0; i < dest->all_lists.length; i++) {
