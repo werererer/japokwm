@@ -214,8 +214,8 @@ void reset_tiled_client_borders(int border_px)
 {
     for (int i = 0; i < server.normal_clients.length; i++) {
         struct client *c = server.normal_clients.items[i];
-        struct tagset *ts = selected_monitor->tagset;
-        if (!exist_on(c->con, ts))
+        struct tagset *tagset = selected_monitor->tagset;
+        if (!exist_on(tagset, c->con))
             continue;
         if (c->con->floating)
             continue;
@@ -227,8 +227,8 @@ void reset_floating_client_borders(int border_px)
 {
     for (int i = 0; i < server.normal_clients.length; i++) {
         struct client *c = server.normal_clients.items[i];
-        struct tagset *ts = selected_monitor->tagset;
-        if (!exist_on(c->con, ts))
+        struct tagset *tagset = selected_monitor->tagset;
+        if (!exist_on(tagset, c->con))
             continue;
         if (!c->con->floating)
             continue;

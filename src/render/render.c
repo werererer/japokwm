@@ -315,7 +315,7 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     for (int i = length_of_composed_list(&server.normal_visual_stack_lists)-1; i >= 0; i--) {
         struct container *con = get_in_composed_list(&server.normal_visual_stack_lists, i);
-        if (!visible_on(con, monitor_get_active_tagset(m)))
+        if (!visible_on(monitor_get_active_tagset(m), con))
             continue;
 
         render_borders(con, m, output_damage);
@@ -343,7 +343,7 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
             continue;
         if (con->client->surface.layer->current.layer != layer)
             continue;
-        if (!visible_on(con, monitor_get_active_tagset(m)))
+        if (!visible_on(monitor_get_active_tagset(m), con))
             continue;
 
         struct wlr_surface *surface = get_wlrsurface(con->client);

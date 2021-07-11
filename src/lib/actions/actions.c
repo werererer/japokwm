@@ -431,11 +431,11 @@ int lib_swap_workspace(lua_State *L)
 
     for (int i = 0; i < tagset->list_set.tiled_containers.length; i++) {
         struct container *con = get_container(0, i);
-        if (exist_on(con, get_tagset_from_workspace_id(ws_id1))) {
+        if (exist_on(get_tagset_from_workspace_id(ws_id1), con)) {
             con->client->ws_id = ws_id2;
             continue;
         }
-        if (exist_on(con, get_tagset_from_workspace_id(ws_id2))) {
+        if (exist_on(get_tagset_from_workspace_id(ws_id2), con)) {
             con->client->ws_id = ws_id1;
             continue;
         }

@@ -490,22 +490,22 @@ bool workspace_has_clients(struct tagset *tagset)
     return false;
 }
 
-bool hidden_on(struct container *con, struct tagset *ts)
+bool hidden_on(struct tagset *tagset, struct container *con)
 {
-    return !visible_on(con, ts) && exist_on(con, ts);
+    return !visible_on(tagset, con) && exist_on(tagset, con);
 }
 
-bool visible_on(struct container *con, struct tagset *ts)
+bool visible_on(struct tagset *tagset, struct container *con)
 {
     if (!con)
         return false;
     if (con->hidden)
         return false;
 
-    return exist_on(con, ts);
-}
+    return exist_on(tagset, con);
 
-bool exist_on(struct container *con, struct tagset *tagset)
+}
+bool exist_on(struct tagset *tagset, struct container *con)
 {
     if (!con || !tagset)
         return false;
@@ -533,16 +533,16 @@ bool exist_on(struct container *con, struct tagset *tagset)
     return tagset_contains_client(tagset, c);
 }
 
-int tagset_get_container_count(struct tagset *ts)
+int tagset_get_container_count(struct tagset *tagset)
 {
-    if (!ts)
+    if (!tagset)
         return -1;
 
     int i = 0;
-    for (int i = 0; i < ts->list_set.tiled_containers.length; i++) {
-        struct container *con = get_container(ts, i);
+    for (int i = 0; i < tagset->list_set.tiled_containers.length; i++) {
+        struct container *con = get_container(tagset, i);
 
-        if (visible_on(con, ts))
+        if (visible_on(tagset, con))
             i++;
     }
     return i;

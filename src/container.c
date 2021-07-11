@@ -165,7 +165,7 @@ struct container *xy_to_container(double x, double y)
             get_in_composed_list(&server.visual_stack_lists, i);
         if (!con->focusable)
             continue;
-        if (!visible_on(con, m->tagset))
+        if (!visible_on(monitor_get_active_tagset(m), con))
             continue;
         if (!wlr_box_contains_point(&con->geom, x, y))
             continue;
@@ -334,7 +334,7 @@ void focus_container(struct container *con, enum focus_actions a)
     struct monitor *m = container_get_monitor(con);
     struct tagset *tagset = monitor_get_active_tagset(m);
 
-    if (!visible_on(con, tagset))
+    if (!visible_on(tagset, con))
         return;
 
     struct container *sel = get_focused_container(m);
