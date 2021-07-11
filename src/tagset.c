@@ -13,6 +13,7 @@
 #include "monitor.h"
 
 static void tagset_unload_workspaces(struct tagset *tagset);
+static void move_workspace_back(BitSet *old_workspaces, BitSet *workspaces);
 
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet workspaces)
 {
@@ -56,11 +57,12 @@ void focus_most_recent_container(struct tagset *tagset, enum focus_actions a)
     focus_container(con, a);
 }
 
-static void unfocus_action(struct tagset *old_tagset, struct monitor *new_monitor)
+static void unfocus_action(struct tagset *old_tagset, struct monitor *new_monitor, BitSet *new_bits)
 {
     if (!old_tagset)
         return;
 
+    move_workspace_back(&old_tagset->workspaces, new_bits);
     for (int i = 0; i < old_tagset->workspaces.size; i++) {
         bool bit = bitset_test(&old_tagset->workspaces, i);
 
@@ -127,8 +129,7 @@ void focus_tagset(struct tagset *tagset)
             }
         }
 
-        move_workspace_back(&old_tagset->workspaces, &tagset->workspaces);
-        unfocus_action(old_tagset, tagset->m);
+        unfocus_action(old_tagset, tagset->m, &tagset->workspaces);
     }
 
     m->tagset = tagset;
@@ -235,8 +236,7 @@ void tagset_load_workspaces(struct tagset *tagset)
 
 void tagset_set_tags(struct tagset *tagset, BitSet bitset)
 {
-    unfocus_action(tagset, tagset->m);
-    move_workspace_back(&tagset->workspaces, &bitset);
+    unfocus_action(tagset, tagset->m, &bitset);
 
     tagset_save_to_workspaces(tagset);
     tagset_unload_workspaces(tagset);
