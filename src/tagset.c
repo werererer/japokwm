@@ -498,12 +498,10 @@ bool exist_on(struct tagset *tagset, struct container *con)
     if (!c)
         return false;
 
-    if (c->type == LAYER_SHELL) {
+    if (c->type == LAYER_SHELL)
         return true;
-    }
-    if (c->sticky) {
+    if (c->sticky)
         return true;
-    }
 
     return tagset_contains_client(tagset, c);
 }
