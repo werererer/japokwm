@@ -22,6 +22,7 @@ static void add_container_to_workspace(struct container *con, struct workspace *
 
 struct container *create_container(struct client *c, struct monitor *m, bool has_border)
 {
+    printf("create_container\n");
     struct container *con = calloc(1, sizeof(struct container));
     con->client = c;
     c->con = con;

@@ -314,6 +314,7 @@ void destroy_notify(struct wl_listener *listener, void *data)
 
 void maprequest(struct wl_listener *listener, void *data)
 {
+    printf("map\n");
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
 

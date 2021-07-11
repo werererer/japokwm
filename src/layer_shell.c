@@ -6,15 +6,15 @@
 
 void create_notify_layer_shell(struct wl_listener *listener, void *data)
 {
+    printf("create_notify_layer_shell\n");
     /* This event is raised when wlr_xdg_shell receives a new xdg surface from a
      * client, either a toplevel (application window) or popup. */
     struct wlr_layer_surface_v1 *layer_surface = data;
-    struct client *c;
 
     /* Allocate a Client for this surface */
     union surface_t surface;
     surface.layer = layer_surface;
-    c = layer_surface->data = create_client(LAYER_SHELL, surface);
+    struct client *c = layer_surface->data = create_client(LAYER_SHELL, surface);
 
     if (!c->surface.layer->output) {
         c->surface.layer->output = selected_monitor->wlr_output;
