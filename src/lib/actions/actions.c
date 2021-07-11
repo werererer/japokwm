@@ -185,7 +185,6 @@ int lib_view(lua_State *L)
 
 int lib_tag_view(lua_State *L)
 {
-    printf("\n tag_view \n");
     uint64_t tags_dec = luaL_checkinteger(L, -1);
 
     lua_pop(L, 1);
@@ -204,7 +203,6 @@ int lib_tag_view(lua_State *L)
 
     tagset_toggle_add(m->tagset, bitset);
     arrange();
-    printf("tag_view end -------\n");
     return 0;
 }
 
