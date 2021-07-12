@@ -7,6 +7,7 @@
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "tile/tileUtils.h"
+#include "layer_shell.h"
 
 struct anchor {
     uint32_t singular_anchor;
@@ -78,15 +79,13 @@ static struct wlr_box fit_root_area(struct root *root)
     struct wlr_box box = root->geom;
 
     for (int i = 0; i < length_of_composed_list(&server.layer_visual_stack_lists); i++) {
-        struct container *con =
-            get_in_composed_list(&server.layer_visual_stack_lists, i);
+        LayerSurface *layersurface = get_in_composed_list(&server.layer_visual_stack_lists, i);
 
-        struct tagset *tagset = monitor_get_active_tagset(root->m);
-        if (!exist_on(tagset, con))
-            continue;
+        /* struct tagset *tagset = monitor_get_active_tagset(root->m); */
+        /* if (!exist_on(tagset, con)) */
+        /*     continue; */
 
-        struct client *c = con->client;
-        struct wlr_layer_surface_v1_state *current = &c->surface.layer->current;
+        struct wlr_layer_surface_v1_state *current = &layersurface->layer_surface->current;
         int anchor = current->anchor;
 
         // desired_width and desired_height are == 0 if nothing is desired
@@ -118,26 +117,26 @@ static struct wlr_box fit_root_area(struct root *root)
     return box;
 }
 
-static void configure_layer_shell_container_geom(struct container *con, struct wlr_box ref)
-{
-    if (!con->client)
-        return;
-    if (con->client->type != LAYER_SHELL)
-        return;
+/* static void configure_layer_shell_container_geom(struct container *con, struct wlr_box ref) */
+/* { */
+/*     if (!con->client) */
+/*         return; */
+/*     if (con->client->type != LAYER_SHELL) */
+/*         return; */
 
-    struct monitor *m = container_get_monitor(con);
-    int desired_width = con->client->surface.layer->current.desired_width;
-    int desired_height = con->client->surface.layer->current.desired_height;
+/*     struct monitor *m = container_get_monitor(con); */
+/*     int desired_width = con->client->surface.layer->current.desired_width; */
+/*     int desired_height = con->client->surface.layer->current.desired_height; */
 
-    struct wlr_box geom = {
-        .x = ref.x + m->geom.x,
-        .y = ref.y + m->geom.y,
-        .width = desired_width != 0 ? desired_width : m->geom.width,
-        .height = desired_height != 0 ? desired_height : m->geom.height,
-    };
+/*     struct wlr_box geom = { */
+/*         .x = ref.x + m->geom.x, */
+/*         .y = ref.y + m->geom.y, */
+/*         .width = desired_width != 0 ? desired_width : m->geom.width, */
+/*         .height = desired_height != 0 ? desired_height : m->geom.height, */
+/*     }; */
 
-    resize(con, geom);
-}
+/*     resize(con, geom); */
+/* } */
 
 void set_root_color(struct root *root, float color[static 4])
 {
@@ -150,47 +149,6 @@ void set_root_geom(struct root *root, struct wlr_box geom)
 
     if (root->consider_layer_shell) {
         root->geom = fit_root_area(root);
-    }
-
-    // arrange layer stack based programs
-    for (int i = 0; i < length_of_composed_list(&server.layer_visual_stack_lists); i++) {
-        struct container *con =
-            get_in_composed_list(&server.layer_visual_stack_lists, i);
-
-        struct tagset *tagset = monitor_get_active_tagset(root->m);
-        if (!exist_on(tagset, con))
-            continue;
-
-        struct monitor *m = root->m;
-        struct client *c = con->client;
-        struct wlr_layer_surface_v1_state *current = &c->surface.layer->current;
-        int anchor = current->anchor;
-
-        struct wlr_box geom = root->geom;
-        geom.x = 0;
-        geom.y = 0;
-
-        if (equals_anchor(&anchors.top, anchor))
-            geom.y = 0;
-        if (equals_anchor(&anchors.left, anchor))
-            geom.x = 0;
-        if (equals_anchor(&anchors.bottom, anchor))
-            /* geom.y = m->geom.height - con->geom.height; */
-            geom.y = m->geom.height;
-        if (equals_anchor(&anchors.right, anchor))
-            /* geom.x = m->geom.width - con->geom.width; */
-            geom.x = m->geom.width;
-
-        configure_layer_shell_container_geom(con, geom);
-
-        if (con->client->surface.layer->current.layer == ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND) {
-            continue;
-        }
-        if (con->floating) {
-            continue;
-        }
-
-        con->hidden = !root->consider_layer_shell;
     }
 }
 

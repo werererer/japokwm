@@ -160,6 +160,7 @@ void commitlayersurfacenotify(struct wl_listener *listener, void *data)
         wlr_list_insert(get_layer_list(wlr_layer_surface->current.layer), 0, layersurface);
         layersurface->layer = wlr_layer_surface->current.layer;
     }
+    arrange();
 }
 
 struct wlr_list *get_layer_list(enum zwlr_layer_shell_v1_layer layer)

@@ -15,6 +15,8 @@ typedef struct {
     struct wl_listener surface_commit;
 
     struct wlr_box geom;
+    bool hidden;
+
     enum zwlr_layer_shell_v1_layer layer;
 } LayerSurface;
 
