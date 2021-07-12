@@ -358,9 +358,16 @@ void resize(struct container *con, struct wlr_box geom)
         case LAYER_SHELL:
             {
                 struct monitor *m = container_get_monitor(con);
+                int width = m->geom.width;
+                int height = m->geom.height;
+                if (con->client->surface.layer->current.desired_width > 0)
+                    width = con->client->surface.layer->current.desired_width;
+                if (con->client->surface.layer->current.desired_height > 0)
+                    height = con->client->surface.layer->current.desired_width;
+                printf("configure surface: %i %i\n", width, height);
                 wlr_layer_surface_v1_configure(con->client->surface.layer,
-                        m->geom.width,
-                        m->geom.height);
+                        width,
+                        height);
             }
             break;
         case X11_UNMANAGED:

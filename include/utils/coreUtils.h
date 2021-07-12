@@ -32,6 +32,7 @@
 
 #define MIN_CONTAINER_WIDTH 30
 #define MIN_CONTAINER_HEIGHT 30
+#define LISTEN(E, L, H)         wl_signal_add((E), ((L)->notify = (H), (L)))
 
 #define foreach(item, array)\
     for(int keep = 1, count = 0, size = LENGTH(array); keep && count < size; keep = 1, count++)\

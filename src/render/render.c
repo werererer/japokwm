@@ -17,6 +17,7 @@
 #include "tile/tileUtils.h"
 #include "utils/gapUtils.h"
 #include "tileTexture.h"
+#include "layer_shell.h"
 
 struct wlr_renderer *drw;
 struct render_data render_data;
@@ -336,24 +337,27 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
 {
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    for (int i = 0; i < length_of_composed_list(&server.layer_visual_stack_lists); i++) {
-        struct container *con = get_in_composed_list(&server.layer_visual_stack_lists, i);
+    struct wlr_list *new_list = get_layer_list(layer);
+    for (int i = 0; i < new_list->length; i++) {
+        LayerSurface *layer_surface = new_list->items[i];
 
-        if (con->client->type != LAYER_SHELL)
-            continue;
-        if (con->client->surface.layer->current.layer != layer)
-            continue;
-        if (!visible_on(monitor_get_active_tagset(m), con))
-            continue;
+/*         if (!visible_on(monitor_get_active_tagset(m), layer_surface)) */
+/*             continue; */
+        printf("render layershell\n");
 
-        struct wlr_surface *surface = get_wlrsurface(con->client);
-        con->geom.width = surface->current.width;
-        con->geom.height = surface->current.height;
-        render_surface_iterator(m, surface, con->geom, output_damage, con->alpha);
+        struct wlr_surface *surface = layer_surface->layer_surface->surface;
+        layer_surface->geom.width = surface->current.width;
+        layer_surface->geom.height = surface->current.height;
+        printf("surface x: %i\n", layer_surface->geom.x);
+        printf("surface y: %i\n", layer_surface->geom.y);
+        printf("surface width: %i\n", layer_surface->geom.width);
+        printf("surface height: %i\n", layer_surface->geom.height);
+        render_surface_iterator(m, surface, layer_surface->geom, output_damage, 1.0);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
         wlr_surface_send_frame_done(surface, &now);
+        printf("render done: %p\n", layer_surface);
     }
 }
 

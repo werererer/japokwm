@@ -316,6 +316,9 @@ void apply_rules(struct container *con)
 void commit_notify(struct wl_listener *listener, void *data)
 {
     struct container *con = wl_container_of(listener, con, commit);
+    if (con->client->type == LAYER_SHELL) {
+        printf("commit\n");
+    }
 
     if (!con)
         return;
@@ -660,6 +663,7 @@ void add_container_to_stack(struct container *con)
                 wlr_list_insert(&server.layer_visual_stack_bottom, 0, con);
                 break;
             case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
+                printf("add to visual stack top\n");
                 wlr_list_insert(&server.layer_visual_stack_top, 0, con);
                 break;
             case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:

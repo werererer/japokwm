@@ -335,7 +335,9 @@ void maprequest(struct wl_listener *listener, void *data)
         default:
             wlr_list_push(&server.normal_clients, c);
     }
-    create_container(c, m, true);
+    if (c->type != LAYER_SHELL) {
+        create_container(c, m, true);
+    }
 
     arrange();
     focus_most_recent_container(m->tagset, FOCUS_NOOP);
