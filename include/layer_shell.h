@@ -7,6 +7,7 @@
 
 typedef struct {
     struct wlr_layer_surface_v1 *layer_surface;
+    struct monitor *m;
 
     struct wl_listener destroy;
     struct wl_listener map;
@@ -25,6 +26,7 @@ struct edge {
     int margin;
 };
 
+void damage_layer_shell_area(LayerSurface *layer_surface, struct wlr_box *geom, bool whole);
 void maplayersurfacenotify(struct wl_listener *listener, void *data);
 void unmaplayersurfacenotify(struct wl_listener *listener, void *data);
 void destroylayersurfacenotify(struct wl_listener *listener, void *data);

@@ -346,18 +346,11 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
         printf("render layershell\n");
 
         struct wlr_surface *surface = layer_surface->layer_surface->surface;
-        layer_surface->geom.width = surface->current.width;
-        layer_surface->geom.height = surface->current.height;
-        printf("surface x: %i\n", layer_surface->geom.x);
-        printf("surface y: %i\n", layer_surface->geom.y);
-        printf("surface width: %i\n", layer_surface->geom.width);
-        printf("surface height: %i\n", layer_surface->geom.height);
         render_surface_iterator(m, surface, layer_surface->geom, output_damage, 1.0);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
         wlr_surface_send_frame_done(surface, &now);
-        printf("render done: %p\n", layer_surface);
     }
 }
 

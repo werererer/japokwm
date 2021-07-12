@@ -8,6 +8,7 @@
 #include "server.h"
 #include "container.h"
 #include "tile/tileUtils.h"
+#include "render/render.h"
 
 /* void create_notify_layer_shell(struct wl_listener *listener, void *data) */
 /* { */
@@ -78,9 +79,9 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     wlr_layer_surface->data = layersurface;
 
     m = wlr_layer_surface->output->data;
+    layersurface->m = m;
     wlr_list_push(get_layer_list(wlr_layer_surface->client_pending.layer),
             layersurface);
-    printf("\n");
 
     // Temporarily set the layer's current state to client_pending
     // so that we can easily arrange it
@@ -88,6 +89,11 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     wlr_layer_surface->current = wlr_layer_surface->client_pending;
     arrangelayers(m);
     wlr_layer_surface->current = old_state;
+}
+
+void damage_layer_shell_area(LayerSurface *layer_surface, struct wlr_box *geom, bool whole)
+{
+    output_damage_surface(layer_surface->m, layer_surface->layer_surface->surface, geom, whole);
 }
 
 void maplayersurfacenotify(struct wl_listener *listener, void *data)
@@ -117,6 +123,7 @@ void destroylayersurfacenotify(struct wl_listener *listener, void *data)
 {
     printf("destroy layersurface\n");
     LayerSurface *layersurface = wl_container_of(listener, layersurface, destroy);
+    damage_layer_shell_area(layersurface, &layersurface->geom, true);
 
     if (layersurface->layer_surface->mapped)
         unmaplayersurface(layersurface);
@@ -136,23 +143,23 @@ void destroylayersurfacenotify(struct wl_listener *listener, void *data)
 
 void commitlayersurfacenotify(struct wl_listener *listener, void *data)
 {
+    printf("commit\n");
     LayerSurface *layersurface = wl_container_of(listener, layersurface, surface_commit);
     struct wlr_layer_surface_v1 *wlr_layer_surface = layersurface->layer_surface;
     struct wlr_output *wlr_output = wlr_layer_surface->output;
-    struct monitor *m;
 
     if (!wlr_output)
         return;
 
-    m = wlr_output->data;
+    struct monitor *m = wlr_output->data;
     arrangelayers(m);
+    damage_layer_shell_area(layersurface, &layersurface->geom, false);
 
-    /* if (layersurface->layer != wlr_layer_surface->current.layer) { */
-    /*     wl_list_remove(&layersurface->link); */
-    /*     wl_list_insert(&m->layers[wlr_layer_surface->current.layer], */
-    /*         &layersurface->link); */
-    /*     layersurface->layer = wlr_layer_surface->current.layer; */
-    /* } */
+    if (layersurface->layer != wlr_layer_surface->current.layer) {
+        remove_in_composed_list(&server.layer_visual_stack_lists, cmp_ptr, layersurface);
+        wlr_list_insert(get_layer_list(wlr_layer_surface->current.layer), 0, layersurface);
+        layersurface->layer = wlr_layer_surface->current.layer;
+    }
 }
 
 struct wlr_list *get_layer_list(enum zwlr_layer_shell_v1_layer layer)
