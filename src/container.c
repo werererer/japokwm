@@ -16,7 +16,6 @@
 #include "scratchpad.h"
 #include "tagset.h"
 #include "ipc-server.h"
-#include "tileTexture.h"
 
 static void add_container_to_workspace(struct container *con, struct workspace *ws);
 

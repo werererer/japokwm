@@ -19,27 +19,9 @@
 #include "utils/gapUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "event_handler.h"
-#include "tileTexture.h"
 
 static void arrange_container(struct container *con, int arrange_position,
         struct wlr_box root_geom, int inner_gap);
-
-static void create_messages(struct monitor *m)
-{
-    wlr_list_clear(&render_data.textures, free);
-    int y_offset = 0;
-    for (int i = 0; i < server.messages.length; i++) {
-        char *message = server.messages.items[i];
-
-        float color[4] = {1.0, 0.0, 0.0, 1.0};
-        float text_color[4] = {1.0, 1.0, 1.0, 1.0};
-        struct wlr_box geom = {0, y_offset, m->geom.width, 100};
-        struct pos_texture *ptexture =
-            create_textbox(&geom, color, text_color, message);
-        y_offset += geom.height;
-        wlr_list_push(&render_data.textures, ptexture);
-    }
-}
 
 void arrange()
 {
@@ -47,8 +29,6 @@ void arrange()
         struct monitor *m = server.mons.items[i];
         arrange_monitor(m);
     }
-
-    create_messages(selected_monitor);
 
     update_cursor(&server.cursor);
 }

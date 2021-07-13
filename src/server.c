@@ -26,12 +26,8 @@ void init_server()
     wlr_list_init(&server.layer_visual_stack_top);
     wlr_list_init(&server.layer_visual_stack_overlay);
 
-    wlr_list_push(&server.visual_stack_lists, &server.layer_visual_stack_overlay);
-    wlr_list_push(&server.visual_stack_lists, &server.layer_visual_stack_top);
     wlr_list_push(&server.visual_stack_lists, &server.floating_visual_stack);
     wlr_list_push(&server.visual_stack_lists, &server.tiled_visual_stack);
-    wlr_list_push(&server.visual_stack_lists, &server.layer_visual_stack_bottom);
-    wlr_list_push(&server.visual_stack_lists, &server.layer_visual_stack_background);
 
     wlr_list_push(&server.normal_visual_stack_lists, &server.floating_visual_stack);
     wlr_list_push(&server.normal_visual_stack_lists, &server.tiled_visual_stack);
@@ -55,6 +51,4 @@ void init_server()
     wlr_list_push(&server.client_lists, &server.independent_clients);
 
     wlr_list_init(&server.tagsets);
-
-    wlr_list_init(&server.messages);
 }

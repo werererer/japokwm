@@ -89,7 +89,8 @@ deps = [\
     dependency('wlroots', version: '>=0.13'),
     dependency('x11'),
     dependency('json-c'),
-    dependency('pangocairo'),
+    dependency('libnotify'),
+    dependency('threads'),
     ]
 
 # meson.add_install_script('install.sh')

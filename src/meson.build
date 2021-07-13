@@ -63,7 +63,6 @@ srcs = files(
     'xdg-shell-protocol.c',
     'xdg_shell.c',
     'xwayland.c',
-    'tileTexture.c'
   )
 
 libName = 'japokwm_lib'

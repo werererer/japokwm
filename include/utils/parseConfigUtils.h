@@ -33,6 +33,7 @@ struct layout get_config_layout(lua_State *L, char *name);
 struct monrule get_config_monrule(lua_State *L, char *name);
 struct rule get_config_rule(lua_State *L, char *name);
 void call_arrange_func(lua_State *L, int funcId, int n);
+void notify_msg(const char *msg);
 void handle_error(const char *msg);
 
 // get array values

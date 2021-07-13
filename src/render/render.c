@@ -16,7 +16,6 @@
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "utils/gapUtils.h"
-#include "tileTexture.h"
 #include "layer_shell.h"
 
 struct wlr_renderer *drw;
@@ -94,19 +93,6 @@ static void output_for_each_surface_iterator(struct wlr_surface *surface, int sx
         return;
 
     data->user_iterator(data->m, surface, &surface_box, data->user_data);
-}
-
-static void render_postexture(void *data)
-{
-    struct pos_texture *texture = data;
-    if (postexture_visible_on(
-                texture,
-                selected_monitor,
-                selected_monitor->tagset)) {
-        wlr_render_texture(drw, texture->texture,
-                selected_monitor->wlr_output->transform_matrix, texture->x,
-                texture->y, 1);
-    }
 }
 
 static void render_texture(struct wlr_output *wlr_output,
@@ -413,7 +399,6 @@ void render_monitor(struct monitor *m, pixman_region32_t *damage)
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY, damage);
 
-    wlr_list_for_each(&render_data.textures, render_postexture);
     render_popups(m, damage);
 
     /* Hardware cursors are rendered by the GPU on a separate plane, and can be

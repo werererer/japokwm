@@ -100,8 +100,6 @@ static void unfocus_client(struct client *c)
 
 void focus_client(struct client *old, struct client *c)
 {
-    struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
-
     struct wlr_surface *old_surface = get_base_wlrsurface(old);
     struct wlr_surface *new_surface = get_base_wlrsurface(c);
     if (old_surface != new_surface) {
@@ -115,6 +113,7 @@ void focus_client(struct client *old, struct client *c)
         return;
     }
 
+    struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
     /* Have a client, so focus its top-level wlr_surface */
     wlr_seat_keyboard_notify_enter(server.seat, get_wlrsurface(c), kb->keycodes,
             kb->num_keycodes, &kb->modifiers);
