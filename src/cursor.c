@@ -13,13 +13,13 @@ static struct container *grabc = NULL;
 static int offsetx, offsety;
 
 // TODO refactor this function
-static void pointer_focus(struct container *con, struct wlr_surface *surface, double sx, double sy, uint32_t time);
+static void pointer_focus(struct wlr_surface *surface, double sx, double sy, uint32_t time);
 
-static void pointer_focus(struct container *con, struct wlr_surface *surface, double sx, double sy, uint32_t time)
+static void pointer_focus(struct wlr_surface *surface, double sx, double sy, uint32_t time)
 {
     /* Use top level surface if nothing more specific given */
-    if (con && !surface)
-        surface = get_wlrsurface(con->client);
+    if (!surface)
+        return;
 
     /* If surface is NULL, clear pointer focus */
     if (!surface) {
@@ -35,13 +35,6 @@ static void pointer_focus(struct container *con, struct wlr_surface *surface, do
     /* Otherwise, let the client know that the mouse cursor has entered one
      * of its surfaces, and make keyboard focus follow if desired. */
     wlr_seat_pointer_notify_enter(server.seat, surface, sx, sy);
-
-    if (!con)
-        return;
-
-    struct workspace *ws = monitor_get_active_workspace(selected_monitor);
-    if (ws->layout->options.sloppy_focus)
-        focus_container(con, FOCUS_NOOP);
 }
 
 void axisnotify(struct wl_listener *listener, void *data)
@@ -146,7 +139,13 @@ void motion_notify(uint32_t time)
         update_cursor(&server.cursor);
     }
 
-    pointer_focus(focus_con, focus_surface, sx, sy, time);
+    pointer_focus(focus_surface, sx, sy, time);
+
+    if (focus_con) {
+        struct workspace *ws = monitor_get_active_workspace(selected_monitor);
+        if (ws->layout->options.sloppy_focus)
+            focus_container(focus_con, FOCUS_NOOP);
+    }
 }
 
 void buttonpress(struct wl_listener *listener, void *data)
