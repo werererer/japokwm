@@ -1,6 +1,7 @@
 #include "cursor.h"
 
 #include "container.h"
+#include "layer_shell.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "popup.h"
@@ -29,6 +30,7 @@ static void pointer_focus(struct wlr_surface *surface, double sx, double sy, uin
 
     /* If surface is already focused, only notify motion */
     if (surface == server.seat->pointer_state.focused_surface) {
+        printf("motion notify\n");
         wlr_seat_pointer_notify_motion(server.seat, time, sx, sy);
         return;
     }
@@ -112,6 +114,54 @@ void motion_absolute(struct wl_listener *listener, void *data)
     motion_notify(event->time_msec);
 }
 
+LayerSurface *xy_to_layer_surface(double x, double y, enum zwlr_layer_shell_v1_layer layer)
+{
+    struct wlr_list *list = get_layer_list(layer);
+    for (int i = 0; i < list->length; i++) {
+        LayerSurface *layer_surface = list->items[i];
+
+        if (!wlr_box_contains_point(&layer_surface->geom, x, y))
+            continue;
+
+        return layer_surface;
+    }
+    return NULL;
+}
+
+struct wlr_surface *xt_to_surface(double x, double y)
+{
+    struct monitor *m = xy_to_monitor(x, y);
+    if (!m)
+        return NULL;
+
+    struct wlr_surface *ret_surface = NULL;
+    LayerSurface *layer_surface = NULL;
+
+    layer_surface = xy_to_layer_surface(x, y, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY);
+    ret_surface = layer_surface_get_wlr_surface(layer_surface);
+    if (ret_surface)
+        return ret_surface;
+
+    layer_surface = xy_to_layer_surface(x, y, ZWLR_LAYER_SHELL_V1_LAYER_TOP);
+    ret_surface = layer_surface_get_wlr_surface(layer_surface);
+    if (ret_surface)
+        return ret_surface;
+
+    struct container *con = xy_to_container(x, y);
+    if (con) {
+        ret_surface = get_wlrsurface(con->client);
+        if (ret_surface)
+        return ret_surface;
+    }
+
+    layer_surface = xy_to_layer_surface(x, y, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM);
+    ret_surface = layer_surface_get_wlr_surface(layer_surface);
+    if (ret_surface)
+        return ret_surface;
+
+    return NULL;
+}
+
 void motion_notify(uint32_t time)
 {
     int cursorx = server.cursor.wlr_cursor->x;
@@ -127,24 +177,26 @@ void motion_notify(uint32_t time)
     struct wlr_surface *popup_surface = get_popup_surface_under_cursor(&sx, &sy);
     bool is_popup_under_cursor = popup_surface != NULL;
 
-    struct wlr_surface *focus_surface = popup_surface;
+    struct wlr_surface *foc_surface = xt_to_surface(cursorx, cursory);
 
     struct container *focus_con = xy_to_container(cursorx, cursory);
     if (!is_popup_under_cursor && focus_con) {
-        focus_surface = wlr_surface_surface_at(get_wlrsurface(focus_con->client),
-                absolute_x_to_container_relative(focus_con, cursorx),
-                absolute_y_to_container_relative(focus_con, cursory),
+        foc_surface = wlr_surface_surface_at(get_wlrsurface(focus_con->client),
+                /* absolute_x_to_container_relative(focus_con, cursorx), */
+                /* absolute_y_to_container_relative(focus_con, cursory), */
+                cursorx,
+                cursory,
                 &sx, &sy);
 
         update_cursor(&server.cursor);
     }
 
-    pointer_focus(focus_surface, sx, sy, time);
+    pointer_focus(foc_surface, cursorx, cursory, time);
 
-    if (focus_con) {
-        struct workspace *ws = monitor_get_active_workspace(selected_monitor);
-        if (ws->layout->options.sloppy_focus)
-            focus_container(focus_con, FOCUS_NOOP);
+    struct workspace *ws = monitor_get_active_workspace(selected_monitor);
+    if (ws->layout->options.sloppy_focus) {
+        /* focus_surface(new_surface); */
+        /* focus_container(focus_con, FOCUS_NOOP); */
     }
 }
 
@@ -210,8 +262,8 @@ void move_resize(int ui)
         case CURSOR_MOVE:
             wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "fleur", cursor);
             wlr_seat_pointer_notify_clear_focus(server.seat);
-            offsetx = absolute_x_to_container_relative(grabc, cursor->x);
-            offsety = absolute_y_to_container_relative(grabc, cursor->y);
+            offsetx = absolute_x_to_container_relative(grabc->geom, cursor->x);
+            offsety = absolute_y_to_container_relative(grabc->geom, cursor->y);
             break;
         case CURSOR_RESIZE:
             /* Doesn't work for X11 output - the next absolute motion event

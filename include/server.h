@@ -67,6 +67,8 @@ struct server {
     struct wlr_list popups;
 
     struct wlr_list tagsets;
+
+    struct wlr_surface *old_surface;
 };
 
 extern struct server server;

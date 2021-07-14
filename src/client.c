@@ -98,6 +98,22 @@ static void unfocus_client(struct client *c)
     }
 }
 
+void focus_surface(struct wlr_surface *surface)
+{
+    printf("focus surface\n");
+    /* Update wlroots'c keyboard focus */
+    if (!surface) {
+        /* With no client, all we have left is to clear focus */
+        wlr_seat_keyboard_notify_clear_focus(server.seat);
+        return;
+    }
+
+    struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
+    /* Have a client, so focus its top-level wlr_surface */
+    wlr_seat_keyboard_notify_enter(server.seat, surface, kb->keycodes,
+            kb->num_keycodes, &kb->modifiers);
+}
+
 void focus_client(struct client *old, struct client *c)
 {
     struct wlr_surface *old_surface = get_base_wlrsurface(old);
@@ -113,10 +129,7 @@ void focus_client(struct client *old, struct client *c)
         return;
     }
 
-    struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
-    /* Have a client, so focus its top-level wlr_surface */
-    wlr_seat_keyboard_notify_enter(server.seat, get_wlrsurface(c), kb->keycodes,
-            kb->num_keycodes, &kb->modifiers);
+    focus_surface(get_wlrsurface(c));
 
     /* Activate the new client */
     switch (c->type) {

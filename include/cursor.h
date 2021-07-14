@@ -41,6 +41,8 @@ void cursor_set_image_surface(struct cursor *cursor,
         struct wlr_surface *surface, int32_t hotspot_x, int32_t hotspot_y,
         struct wl_client *client);
 
+struct wlr_surface *xt_to_surface(double x, double y);
+
 extern struct wl_listener request_set_cursor;
 
 #endif /* CURSOR_H */

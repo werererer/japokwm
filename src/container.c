@@ -389,6 +389,7 @@ void focus_on_stack(struct monitor *m, int i)
     focus_container(con, FOCUS_LIFT);
 }
 
+
 // TODO refactor
 void focus_on_hidden_stack(struct monitor *m, int i)
 {
@@ -587,8 +588,8 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
 {
     struct wlr_box geom = con->geom;
 
-    geom.width = absolute_x_to_container_relative(con, cursor->x - offsetx);
-    geom.height = absolute_y_to_container_relative(con, cursor->y - offsety);
+    geom.width = absolute_x_to_container_relative(con->geom, cursor->x - offsetx);
+    geom.height = absolute_y_to_container_relative(con->geom, cursor->y - offsety);
 
     if (con->on_scratchpad) {
         remove_container_from_scratchpad(con);
@@ -774,14 +775,14 @@ void list_set_remove_independent_container(struct list_set *list_set, struct con
     }
 }
 
-inline int absolute_x_to_container_relative(struct container *con, int x)
+inline int absolute_x_to_container_relative(struct wlr_box geom, int x)
 {
-    return x - con->geom.x;
+    return x - geom.x;
 }
 
-inline int absolute_y_to_container_relative(struct container *con, int y)
+inline int absolute_y_to_container_relative(struct wlr_box geom, int y)
 {
-    return y - con->geom.y;
+    return y - geom.y;
 }
 
 int get_position_in_container_stack(struct container *con)

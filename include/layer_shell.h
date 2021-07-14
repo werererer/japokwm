@@ -28,6 +28,8 @@ struct edge {
     int margin;
 };
 
+struct wlr_surface *layer_surface_get_wlr_surface(LayerSurface *layer_surface);
+
 void damage_layer_shell_area(LayerSurface *layer_surface, struct wlr_box *geom, bool whole);
 void maplayersurfacenotify(struct wl_listener *listener, void *data);
 void unmaplayersurfacenotify(struct wl_listener *listener, void *data);

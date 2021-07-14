@@ -41,6 +41,7 @@ struct client *create_client(enum shell shell_type, union surface_t surface);
 void destroy_client(struct client *c);
 
 void focus_client(struct client *old, struct client *c);
+void focus_surface(struct wlr_surface *surface);
 void client_setsticky(struct client *c, bool sticky);
 void reset_tiled_client_borders(int border_bx);
 void reset_floating_client_borders(int border_px);

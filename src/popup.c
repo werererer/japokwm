@@ -156,15 +156,15 @@ struct wlr_surface *get_popup_surface_under_cursor(double *sx, double *sy)
                     con->client->surface.xdg,
                     /* absolute mouse position to relative in regards to
                      * the client */
-                    absolute_x_to_container_relative(con, cursorx),
-                    absolute_y_to_container_relative(con, cursory),
+                    absolute_x_to_container_relative(con->geom, cursorx),
+                    absolute_y_to_container_relative(con->geom, cursory),
                     sx, sy);
             break;
         case LAYER_SHELL:
             surface = wlr_layer_surface_v1_surface_at(
                     con->client->surface.layer,
-                    absolute_x_to_container_relative(con, cursorx),
-                    absolute_y_to_container_relative(con, cursory),
+                    absolute_x_to_container_relative(con->geom, cursorx),
+                    absolute_y_to_container_relative(con->geom, cursory),
                     sx, sy);
             break;
         default:

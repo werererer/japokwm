@@ -91,6 +91,14 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     wlr_layer_surface->current = old_state;
 }
 
+struct wlr_surface *layer_surface_get_wlr_surface(LayerSurface *layer_surface)
+{
+    if (!layer_surface)
+        return NULL;
+    printf("return layer surface\n");
+    return layer_surface->layer_surface->surface;
+}
+
 void damage_layer_shell_area(LayerSurface *layer_surface, struct wlr_box *geom, bool whole)
 {
     output_damage_surface(layer_surface->m, layer_surface->layer_surface->surface, geom, whole);
