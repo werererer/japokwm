@@ -20,6 +20,7 @@ struct client *create_client(enum shell shell_type, union surface_t surface)
 
     c->type = shell_type;
     c->surface = surface;
+    get_wlrsurface(c)->data = c;
 
     return c;
 }
@@ -299,8 +300,12 @@ bool is_popup_menu(struct client *c)
 
 void destroy_notify(struct wl_listener *listener, void *data)
 {
+    printf("destroy_notify\n");
     /* Called when the surface is destroyed and should never be shown again. */
     struct client *c = wl_container_of(listener, c, destroy);
+
+    destroy_container(c->con);
+    c->con = NULL;
 
     wl_list_remove(&c->map.link);
     wl_list_remove(&c->unmap.link);
@@ -347,10 +352,8 @@ void maprequest(struct wl_listener *listener, void *data)
         default:
             wlr_list_push(&server.normal_clients, c);
     }
-    if (c->type != LAYER_SHELL) {
-        create_container(c, m, true);
-    }
 
+    add_container_to_tile(c->con);
     arrange();
     focus_most_recent_container(m->tagset, FOCUS_NOOP);
 }
@@ -361,9 +364,9 @@ void unmap_notify(struct wl_listener *listener, void *data)
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
 
+    struct container *con = c->con;
     container_damage_whole(c->con);
-    destroy_container(c->con);
-    c->con = NULL;
+    remove_container_from_tile(con);
 
     remove_in_composed_list(&server.client_lists, cmp_ptr, c);
 

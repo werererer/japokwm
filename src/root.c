@@ -79,13 +79,13 @@ static struct wlr_box fit_root_area(struct root *root)
     struct wlr_box box = root->geom;
 
     for (int i = 0; i < length_of_composed_list(&server.layer_visual_stack_lists); i++) {
-        LayerSurface *layersurface = get_in_composed_list(&server.layer_visual_stack_lists, i);
+        struct container *con = get_in_composed_list(&server.layer_visual_stack_lists, i);
 
         /* struct tagset *tagset = monitor_get_active_tagset(root->m); */
         /* if (!exist_on(tagset, con)) */
         /*     continue; */
 
-        struct wlr_layer_surface_v1_state *current = &layersurface->layer_surface->current;
+        struct wlr_layer_surface_v1_state *current = &con->client->surface.layer->current;
         int anchor = current->anchor;
 
         // desired_width and desired_height are == 0 if nothing is desired

@@ -10,15 +10,13 @@
 #include "monitor.h"
 
 struct container {
-    struct wl_listener commit;
-
     /* layout-relative, includes border */
     struct wlr_box geom;
     struct wlr_box prev_geom;
     struct wlr_box prev_floating_geom;
     struct client *client;
 
-    struct monitor *m;
+    bool is_tiled;
     bool floating;
     bool focusable;
     bool has_border;
@@ -35,6 +33,9 @@ struct container {
 struct container *create_container(struct client *c, struct monitor *m, bool has_border);
 
 void destroy_container(struct container *con);
+
+void add_container_to_tile(struct container *con);
+void remove_container_from_tile(struct container *con);
 
 struct container *get_focused_container(struct monitor *m);
 struct container *xy_to_container(double x, double y);

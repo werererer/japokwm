@@ -385,6 +385,7 @@ int lib_load_layout(lua_State *L)
 
 int lib_kill(lua_State *L)
 {
+    printf("kill\n");
     struct monitor *m = selected_monitor;
 
     int i = luaL_checkinteger(L, -1);

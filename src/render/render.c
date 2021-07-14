@@ -325,14 +325,10 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     struct wlr_list *new_list = get_layer_list(layer);
     for (int i = 0; i < new_list->length; i++) {
-        LayerSurface *layer_surface = new_list->items[i];
+        struct container *con = new_list->items[i];
 
-/*         if (!visible_on(monitor_get_active_tagset(m), layer_surface)) */
-/*             continue; */
-        printf("render layershell\n");
-
-        struct wlr_surface *surface = layer_surface->layer_surface->surface;
-        render_surface_iterator(m, surface, layer_surface->geom, output_damage, 1.0);
+        struct wlr_surface *surface = get_wlrsurface(con->client);
+        render_surface_iterator(m, surface, con->geom, output_damage, 1.0);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);

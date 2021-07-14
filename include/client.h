@@ -12,11 +12,12 @@ union surface_t {
 };
 
 struct client {
-    float ratio;
     /* containers containing this client */
     struct container *con;
     union surface_t surface;
 
+    struct monitor *m;
+    struct wl_listener commit;
     struct wl_listener set_title;
     struct wl_listener set_app_id;
     struct wl_listener map;

@@ -5,21 +5,6 @@
 #include "client.h"
 #include "monitor.h"
 
-typedef struct {
-    struct wlr_layer_surface_v1 *layer_surface;
-    struct monitor *m;
-
-    struct wl_listener destroy;
-    struct wl_listener map;
-    struct wl_listener unmap;
-    struct wl_listener surface_commit;
-
-    struct wlr_box geom;
-    bool hidden;
-
-    enum zwlr_layer_shell_v1_layer layer;
-} LayerSurface;
-
 struct edge {
     uint32_t singular_anchor;
     uint32_t anchor_triplet;
@@ -28,9 +13,6 @@ struct edge {
     int margin;
 };
 
-struct wlr_surface *layer_surface_get_wlr_surface(LayerSurface *layer_surface);
-
-void damage_layer_shell_area(LayerSurface *layer_surface, struct wlr_box *geom, bool whole);
 void maplayersurfacenotify(struct wl_listener *listener, void *data);
 void unmaplayersurfacenotify(struct wl_listener *listener, void *data);
 void destroylayersurfacenotify(struct wl_listener *listener, void *data);

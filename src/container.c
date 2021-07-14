@@ -26,20 +26,10 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     con->client = c;
     c->con = con;
 
-    // must be done for the container damage event
-    con->commit.notify = commit_notify;
-    wl_signal_add(&get_wlrsurface(c)->events.commit, &con->commit);
-
     con->alpha = 1.0f;
     con->has_border = has_border;
     con->focusable = true;
-    struct workspace *ws = get_workspace(m->tagset->selected_ws_id);
-    add_container_to_workspace(con, ws);
-
-    struct layout *lt = get_layout_in_monitor(m);
-
-    struct event_handler *ev = lt->options.event_handler;
-    call_create_container_function(ev, get_position_in_container_stack(con));
+    con->client->ws_id = m->tagset->selected_ws_id;
 
     apply_rules(con);
     return con;
@@ -47,9 +37,25 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 
 void destroy_container(struct container *con)
 {
-    // surfaces cant commit anything anymore if their container is destroyed
-    wl_list_remove(&con->commit.link);
+    free(con);
+}
 
+void add_container_to_tile(struct container *con)
+{
+    assert(!con->is_tiled);
+    add_container_to_workspace(con, get_workspace(con->client->ws_id));
+
+    struct monitor *m = container_get_monitor(con);
+    struct layout *lt = get_layout_in_monitor(m);
+    struct event_handler *ev = lt->options.event_handler;
+    call_create_container_function(ev, get_position_in_container_stack(con));
+
+    con->is_tiled = true;
+}
+
+void remove_container_from_tile(struct container *con)
+{
+    assert(con->is_tiled);
     if (con->on_scratchpad)
         remove_container_from_scratchpad(con);
 
@@ -74,7 +80,7 @@ void destroy_container(struct container *con)
             break;
     }
 
-    free(con);
+    con->is_tiled = false;
 }
 
 void container_damage_borders(struct container *con, struct wlr_box *geom)
@@ -314,15 +320,19 @@ void apply_rules(struct container *con)
 
 void commit_notify(struct wl_listener *listener, void *data)
 {
-    struct container *con = wl_container_of(listener, con, commit);
-    if (con->client->type == LAYER_SHELL) {
+    printf("commit\n");
+    struct client *c = wl_container_of(listener, c, commit);
+    if (c->type == LAYER_SHELL) {
         printf("commit\n");
     }
 
-    if (!con)
+    if (!c)
         return;
 
-    container_damage_part(con);
+    struct container *con = c->con;
+    if (con->is_tiled) {
+        container_damage_part(c->con);
+    }
 }
 
 void focus_container(struct container *con, enum focus_actions a)
@@ -546,11 +556,11 @@ void set_container_monitor(struct container *con, struct monitor *m)
     assert(m != NULL);
     if (!con)
         return;
-    if (con->m == m)
+    if (con->client->m == m)
         return;
 
     if (con->client->type == LAYER_SHELL) {
-        con->m = m;
+        con->client->m = m;
     }
 
     struct workspace *ws = monitor_get_active_workspace(m);
@@ -738,8 +748,8 @@ struct monitor *container_get_monitor(struct container *con)
 {
     if (!con)
         return NULL;
-    if (con->m)
-        return con->m;
+    if (con->client->m)
+        return con->client->m;
 
     struct workspace *ws = get_workspace(con->client->ws_id);
     struct monitor *m  = ws->m;

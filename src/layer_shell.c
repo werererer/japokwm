@@ -57,103 +57,85 @@
 void create_notify_layer_shell(struct wl_listener *listener, void *data)
 {
     struct wlr_layer_surface_v1 *wlr_layer_surface = data;
-    LayerSurface *layersurface;
-    struct monitor *m;
-    struct wlr_layer_surface_v1_state old_state;
 
     if (!wlr_layer_surface->output) {
         wlr_layer_surface->output = selected_monitor->wlr_output;
     }
 
-    layersurface = calloc(1, sizeof(LayerSurface));
-    LISTEN(&wlr_layer_surface->surface->events.commit,
-        &layersurface->surface_commit, commitlayersurfacenotify);
-    LISTEN(&wlr_layer_surface->events.destroy, &layersurface->destroy,
+    union surface_t surface;
+    surface.layer = wlr_layer_surface;
+    struct client *client = create_client(LAYER_SHELL, surface);
+
+    LISTEN(&wlr_layer_surface->events.destroy, &client->destroy,
             destroylayersurfacenotify);
-    LISTEN(&wlr_layer_surface->events.map, &layersurface->map,
+    LISTEN(&wlr_layer_surface->events.map, &client->map,
             maplayersurfacenotify);
-    LISTEN(&wlr_layer_surface->events.unmap, &layersurface->unmap,
+    LISTEN(&wlr_layer_surface->events.unmap, &client->unmap,
             unmaplayersurfacenotify);
 
-    layersurface->layer_surface = wlr_layer_surface;
-    wlr_layer_surface->data = layersurface;
-
-    m = wlr_layer_surface->output->data;
-    layersurface->m = m;
-    wlr_list_push(get_layer_list(wlr_layer_surface->client_pending.layer),
-            layersurface);
+    struct monitor *m = wlr_layer_surface->output->data;
+    client->m = m;
+    wlr_list_push(get_layer_list(wlr_layer_surface->client_pending.layer), client);
 
     // Temporarily set the layer's current state to client_pending
     // so that we can easily arrange it
-    old_state = wlr_layer_surface->current;
+    struct wlr_layer_surface_v1_state old_state = wlr_layer_surface->current;
     wlr_layer_surface->current = wlr_layer_surface->client_pending;
     arrangelayers(m);
     wlr_layer_surface->current = old_state;
-}
 
-struct wlr_surface *layer_surface_get_wlr_surface(LayerSurface *layer_surface)
-{
-    if (!layer_surface)
-        return NULL;
-    printf("return layer surface\n");
-    return layer_surface->layer_surface->surface;
-}
-
-void damage_layer_shell_area(LayerSurface *layer_surface, struct wlr_box *geom, bool whole)
-{
-    output_damage_surface(layer_surface->m, layer_surface->layer_surface->surface, geom, whole);
+    create_container(client, m, false);
 }
 
 void maplayersurfacenotify(struct wl_listener *listener, void *data)
 {
-    LayerSurface *layersurface = wl_container_of(listener, layersurface, map);
-    wlr_surface_send_enter(layersurface->layer_surface->surface, layersurface->layer_surface->output);
+    struct client *c = wl_container_of(listener, c, map);
+    wlr_surface_send_enter(get_wlrsurface(c), c->surface.layer->output);
     motion_notify(0);
 }
 
-void unmaplayersurface(LayerSurface *layersurface)
+void unmaplayersurface(struct client *c)
 {
     struct container *sel_container = get_focused_container(selected_monitor);
-    layersurface->layer_surface->mapped = 0;
-    if (layersurface->layer_surface->surface ==
-            server.seat->keyboard_state.focused_surface)
+    c->surface.layer->mapped = 0;
+    if (get_wlrsurface(c) == server.seat->keyboard_state.focused_surface)
         focus_container(sel_container, FOCUS_NOOP);
     motion_notify(0);
 }
 
 void unmaplayersurfacenotify(struct wl_listener *listener, void *data)
 {
-    LayerSurface *layersurface = wl_container_of(listener, layersurface, unmap);
-    unmaplayersurface(layersurface);
+    struct client *c = wl_container_of(listener, c, unmap);
+    unmaplayersurface(c);
+    container_damage_whole(c->con);
 }
 
 void destroylayersurfacenotify(struct wl_listener *listener, void *data)
 {
     printf("destroy layersurface\n");
-    LayerSurface *layersurface = wl_container_of(listener, layersurface, destroy);
-    damage_layer_shell_area(layersurface, &layersurface->geom, true);
+    struct client *c = wl_container_of(listener, c, destroy);
 
-    if (layersurface->layer_surface->mapped)
-        unmaplayersurface(layersurface);
-    remove_in_composed_list(&server.layer_visual_stack_lists, cmp_ptr, layersurface);
-    wl_list_remove(&layersurface->destroy.link);
-    wl_list_remove(&layersurface->map.link);
-    wl_list_remove(&layersurface->unmap.link);
-    wl_list_remove(&layersurface->surface_commit.link);
-    if (layersurface->layer_surface->output) {
-        struct monitor *m = layersurface->layer_surface->output->data;
+    if (c->surface.layer->mapped)
+        unmaplayersurface(c);
+    remove_in_composed_list(&server.layer_visual_stack_lists, cmp_ptr, c->con);
+    destroy_container(c->con);
+    wl_list_remove(&c->destroy.link);
+    wl_list_remove(&c->map.link);
+    wl_list_remove(&c->unmap.link);
+    if (c->surface.layer->output) {
+        struct monitor *m = c->surface.layer->output->data;
         if (m)
             arrangelayers(m);
-        layersurface->layer_surface->output = NULL;
+        c->surface.layer->output = NULL;
     }
-    free(layersurface);
+    free(c);
 }
 
 void commitlayersurfacenotify(struct wl_listener *listener, void *data)
 {
     printf("commit\n");
-    LayerSurface *layersurface = wl_container_of(listener, layersurface, surface_commit);
-    struct wlr_layer_surface_v1 *wlr_layer_surface = layersurface->layer_surface;
+    struct client *c = wl_container_of(listener, c, commit);
+    struct wlr_layer_surface_v1 *wlr_layer_surface = c->surface.layer;
     struct wlr_output *wlr_output = wlr_layer_surface->output;
 
     if (!wlr_output)
@@ -161,12 +143,12 @@ void commitlayersurfacenotify(struct wl_listener *listener, void *data)
 
     struct monitor *m = wlr_output->data;
     arrangelayers(m);
-    damage_layer_shell_area(layersurface, &layersurface->geom, false);
+    struct container *con = c->con;
+    container_damage_part(con);
 
-    if (layersurface->layer != wlr_layer_surface->current.layer) {
-        remove_in_composed_list(&server.layer_visual_stack_lists, cmp_ptr, layersurface);
-        wlr_list_insert(get_layer_list(wlr_layer_surface->current.layer), 0, layersurface);
-        layersurface->layer = wlr_layer_surface->current.layer;
+    if (c->surface.layer->current.layer != wlr_layer_surface->current.layer) {
+        remove_in_composed_list(&server.layer_visual_stack_lists, cmp_ptr, con);
+        wlr_list_insert(get_layer_list(wlr_layer_surface->current.layer), 0, con);
     }
     arrange();
 }
@@ -198,11 +180,10 @@ void arrangelayers(struct monitor *m)
         ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
         ZWLR_LAYER_SHELL_V1_LAYER_TOP,
     };
-    LayerSurface *layersurface;
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
 
     // Arrange exclusive surfaces from top->bottom
-    
+
     arrangelayer(m, &server.layer_visual_stack_overlay,
             &usable_area, 1);
     arrangelayer(m, &server.layer_visual_stack_top,
@@ -232,13 +213,16 @@ void arrangelayers(struct monitor *m)
         struct wlr_list *new_list = get_layer_list(layers_above_shell[i]);
         int len = new_list->length;
         for (int j = len-1; j >= 0; j--) {
-            layersurface = new_list->items[j];
-            if (layersurface->layer_surface->current.keyboard_interactive &&
-                    layersurface->layer_surface->mapped) {
+            struct client *layersurface = new_list->items[j];
+            if (layersurface->surface.layer->current.keyboard_interactive &&
+                    layersurface->surface.layer->mapped) {
                 // Deactivate the focused client.
                 // TODO fix this
                 focus_container(NULL, FOCUS_NOOP);
-                wlr_seat_keyboard_notify_enter(server.seat, layersurface->layer_surface->surface, kb->keycodes, kb->num_keycodes, &kb->modifiers);
+                wlr_seat_keyboard_notify_enter(server.seat,
+                        get_wlrsurface(layersurface),
+                        kb->keycodes, kb->num_keycodes,
+                        &kb->modifiers);
                 return;
             }
         }
@@ -251,8 +235,8 @@ void arrangelayer(struct monitor *m, struct wlr_list *list, struct wlr_box *usab
     struct wlr_box full_area = m->geom;
 
     for (int i = 0; i < list->length; i++) {
-        LayerSurface *layersurface = list->items[i];
-        struct wlr_layer_surface_v1 *wlr_layer_surface = layersurface->layer_surface;
+        struct container *con = list->items[i];
+        struct wlr_layer_surface_v1 *wlr_layer_surface = con->client->surface.layer;
         struct wlr_layer_surface_v1_state *state = &wlr_layer_surface->current;
         struct wlr_box bounds;
         struct wlr_box box = {
@@ -312,7 +296,7 @@ void arrangelayer(struct monitor *m, struct wlr_list *list, struct wlr_box *usab
             wlr_layer_surface_v1_close(wlr_layer_surface);
             continue;
         }
-        layersurface->geom = box;
+        con->geom = box;
 
         if (state->exclusive_zone > 0)
             apply_exclusive(usable_area, state->anchor, state->exclusive_zone,
