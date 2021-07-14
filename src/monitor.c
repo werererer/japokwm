@@ -14,6 +14,7 @@
 #include "tile/tileUtils.h"
 #include "workspace.h"
 #include "utils/parseConfigUtils.h"
+#include "layer_shell.h"
 
 struct wl_list sticky_stack;
 
@@ -209,8 +210,8 @@ void focus_monitor(struct monitor *m)
     struct tagset *tagset = monitor_get_active_tagset(m);
     if (selected_monitor) {
         struct tagset *sel_ts = monitor_get_active_tagset(selected_monitor);
-        for (int i = 0; i < sel_ts->list_set.floating_containers.length; i++) {
-            struct container *con = sel_ts->list_set.floating_containers.items[i];
+        for (int i = 0; i < sel_ts->list_set->floating_containers.length; i++) {
+            struct container *con = sel_ts->list_set->floating_containers.items[i];
             if (visible_on(sel_ts, con)) {
                 struct workspace *ws = get_workspace(tagset->selected_ws_id);
                 move_container_to_workspace(con, ws);

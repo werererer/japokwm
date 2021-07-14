@@ -14,7 +14,7 @@
 static void destroyxdeco(struct wl_listener *listener, void *data);
 static void getxdecomode(struct wl_listener *listener, void *data);
 
-void destroyxdeco(struct wl_listener *listener, void *data)
+static void destroyxdeco(struct wl_listener *listener, void *data)
 {
     struct wlr_xdg_toplevel_decoration_v1 *wlr_deco = data;
     Decoration *d = wlr_deco->data;

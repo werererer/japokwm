@@ -188,8 +188,8 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
                 struct workspace *ws = monitor_get_active_workspace(m);
                 if (is_popup_menu(c) || xwayland_surface->parent) {
-                    remove_in_composed_list(&ws->list_set.focus_stack_lists, cmp_ptr, con);
-                    wlr_list_insert(&ws->list_set.focus_stack_normal, 1, con);
+                    remove_in_composed_list(&ws->list_set->focus_stack_lists, cmp_ptr, con);
+                    wlr_list_insert(&ws->list_set->focus_stack_normal, 1, con);
                 } else {
                     con->on_top = true;
                     focus_container(con, FOCUS_NOOP);

@@ -24,7 +24,7 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet works
     struct workspace *selected_workspace = get_workspace(tagset->selected_ws_id);
     selected_workspace->tagset = tagset;
 
-    setup_list_set(&tagset->list_set);
+    tagset->list_set = create_list_set();
 
     bitset_setup(&tagset->workspaces, server.workspaces.length);
     tagset_set_tags(tagset, workspaces);
@@ -35,16 +35,19 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet works
 
 void destroy_tagset(struct tagset *tagset)
 {
+    printf("destroy_tagset\n");
     if (!tagset)
         return;
     tagset_unload_workspaces(server.previous_tagset);
     wlr_list_remove(&server.tagsets, cmp_ptr, tagset);
+    destroy_list_set(tagset->list_set);
     free(tagset);
+    printf("destroy_tagset end\n");
 }
 
 void focus_most_recent_container(struct tagset *tagset, enum focus_actions a)
 {
-    struct container *con = get_in_composed_list(&tagset->list_set.focus_stack_lists, 0);
+    struct container *con = get_in_composed_list(&tagset->list_set->focus_stack_lists, 0);
 
     if (!con) {
         con = get_container(tagset, 0);
@@ -121,8 +124,8 @@ void focus_tagset(struct tagset *tagset)
     struct tagset *old_tagset = m->tagset;
 
     if (old_tagset) {
-        for (int i = 0; i < length_of_composed_list(&old_tagset->list_set.container_lists); i++) {
-            struct container *con = get_in_composed_list(&old_tagset->list_set.container_lists, i);
+        for (int i = 0; i < length_of_composed_list(&old_tagset->list_set->container_lists); i++) {
+            struct container *con = get_in_composed_list(&old_tagset->list_set->container_lists, i);
             struct workspace *ws = get_workspace(tagset->selected_ws_id);
             if (con->client->sticky) {
                 move_container_to_workspace(con, ws);
@@ -150,7 +153,7 @@ static void tagset_unload_workspaces(struct tagset *tagset)
         return;
     }
 
-    clear_list_set(&tagset->list_set);
+    clear_list_set(tagset->list_set);
 
     for (int i = 0; i < tagset->workspaces.size; i++) {
         bool bit = bitset_test(&tagset->workspaces, i);
@@ -159,16 +162,16 @@ static void tagset_unload_workspaces(struct tagset *tagset)
             continue;
 
         struct workspace *ws = get_workspace(i);
-        wlr_list_remove(&ws->list_set.change_affected_list_sets, cmp_ptr, &tagset->list_set);
+        wlr_list_remove(&ws->list_set->change_affected_list_sets, cmp_ptr, &tagset->list_set);
     }
     tagset->loaded = false;
 }
 
 static void tagset_write_to_workspace(struct tagset *tagset, struct workspace *ws)
 {
-    for (int i = 0; i < ws->list_set.all_lists.length; i++) {
-        struct wlr_list *dest_list = ws->list_set.all_lists.items[i];
-        struct wlr_list *src_list = tagset->list_set.all_lists.items[i];
+    for (int i = 0; i < ws->list_set->all_lists.length; i++) {
+        struct wlr_list *dest_list = ws->list_set->all_lists.items[i];
+        struct wlr_list *src_list = tagset->list_set->all_lists.items[i];
         for (int j = 0; j < src_list->length; j++) {
             struct container *con = src_list->items[j];
             if (con->client->ws_id != ws->id)
@@ -193,7 +196,7 @@ static void tagset_save_to_workspaces(struct tagset *tagset)
             continue;
 
         struct workspace *ws = get_workspace(i);
-        clear_list_set(&ws->list_set);
+        clear_list_set(ws->list_set);
 
         tagset_write_to_workspace(tagset, ws);
     }
@@ -228,7 +231,7 @@ void tagset_load_workspaces(struct tagset *tagset)
             continue;
 
         struct workspace *ws = get_workspace(i);
-        subscribe_list_set(&tagset->list_set, &ws->list_set);
+        subscribe_list_set(tagset->list_set, ws->list_set);
         ws->tagset = tagset;
     }
     tagset->loaded = true;
@@ -389,7 +392,7 @@ struct tagset *get_tagset_from_workspace_id(int ws_id)
 
 struct container *get_container(struct tagset *ts, int i)
 {
-    struct list_set *list_set = &ts->list_set;
+    struct list_set *list_set = ts->list_set;
     if (!list_set)
         return NULL;
 
@@ -412,9 +415,9 @@ struct wlr_list *tagset_get_visible_lists(struct tagset *tagset)
     struct layout *lt = tagset_get_layout(tagset);
 
     if (lt->options.arrange_by_focus)
-        return &tagset->list_set.focus_stack_visible_lists;
+        return &tagset->list_set->focus_stack_visible_lists;
     else
-        return &tagset->list_set.visible_container_lists;
+        return &tagset->list_set->visible_container_lists;
 }
 
 struct wlr_list *tagset_get_tiled_list(struct tagset *tagset)
@@ -422,9 +425,9 @@ struct wlr_list *tagset_get_tiled_list(struct tagset *tagset)
     struct layout *lt = tagset_get_layout(tagset);
 
     if (lt->options.arrange_by_focus)
-        return &tagset->list_set.focus_stack_normal;
+        return &tagset->list_set->focus_stack_normal;
     else
-        return &tagset->list_set.tiled_containers;
+        return &tagset->list_set->tiled_containers;
 }
 
 struct wlr_list *tagset_get_floating_list(struct tagset *tagset)
@@ -432,9 +435,9 @@ struct wlr_list *tagset_get_floating_list(struct tagset *tagset)
     struct layout *lt = tagset_get_layout(tagset);
 
     if (lt->options.arrange_by_focus)
-        return &tagset->list_set.focus_stack_normal;
+        return &tagset->list_set->focus_stack_normal;
     else
-        return &tagset->list_set.floating_containers;
+        return &tagset->list_set->floating_containers;
 }
 
 struct wlr_list *tagset_get_hidden_list(struct tagset *tagset)
@@ -442,9 +445,9 @@ struct wlr_list *tagset_get_hidden_list(struct tagset *tagset)
     struct layout *lt = tagset_get_layout(tagset);
 
     if (lt->options.arrange_by_focus)
-        return &tagset->list_set.focus_stack_hidden;
+        return &tagset->list_set->focus_stack_hidden;
     else
-        return &tagset->list_set.hidden_containers;
+        return &tagset->list_set->hidden_containers;
 }
 
 void workspace_id_to_tag(BitSet *dest, int ws_id)
@@ -505,7 +508,7 @@ int tagset_get_container_count(struct tagset *tagset)
         return -1;
 
     int i = 0;
-    for (int i = 0; i < tagset->list_set.tiled_containers.length; i++) {
+    for (int i = 0; i < tagset->list_set->tiled_containers.length; i++) {
         struct container *con = get_container(tagset, i);
 
         if (visible_on(tagset, con))

@@ -10,50 +10,6 @@
 #include "tile/tileUtils.h"
 #include "render/render.h"
 
-/* void create_notify_layer_shell(struct wl_listener *listener, void *data) */
-/* { */
-/*     printf("create_notify_layer_shell\n"); */
-/*     /1* This event is raised when wlr_xdg_shell receives a new xdg surface from a */
-/*      * client, either a toplevel (application window) or popup. *1/ */
-/*     struct wlr_layer_surface_v1 *layer_surface = data; */
-
-/*     /1* Allocate a Client for this surface *1/ */
-/*     union surface_t surface; */
-/*     surface.layer = layer_surface; */
-/*     struct client *c = layer_surface->data = create_client(LAYER_SHELL, surface); */
-
-/*     if (!c->surface.layer->output) { */
-/*         c->surface.layer->output = selected_monitor->wlr_output; */
-/*     } */
-/*     struct monitor *m = output_to_monitor(c->surface.layer->output); */
-/*     wlr_layer_surface_v1_configure(c->surface.layer, m->geom.width, m->geom.height); */
-
-/*     /1* Listen to the various events it can emit *1/ */
-/*     c->map.notify = maprequest; */
-/*     wl_signal_add(&layer_surface->events.map, &c->map); */
-/*     c->unmap.notify = unmap_notify; */
-/*     wl_signal_add(&layer_surface->events.unmap, &c->unmap); */
-/*     c->destroy.notify = destroy_notify; */
-/*     wl_signal_add(&layer_surface->events.destroy, &c->destroy); */
-
-/*     /1* popups *1/ */
-/*     c->new_popup.notify = popup_handle_new_popup; */
-/*     wl_signal_add(&layer_surface->events.new_popup, &c->new_popup); */
-/*     struct container *con = create_container(c, m, true); */
-/*     printf("con: %p\n", con); */
-/*     struct wlr_box geom = { */
-/*         .x = 10, */
-/*         .y = 10, */
-/*         .width = 100, */
-/*         .height = 100, */
-/*     }; */
-/*     resize(con, geom); */
-/*     printf("x: %d\n", con->geom.x); */
-/*     printf("y: %d\n", con->geom.y); */
-/*     printf("width: %d\n", con->geom.width); */
-/*     printf("height: %d\n", con->geom.height); */
-/* } */
-
 void create_notify_layer_shell(struct wl_listener *listener, void *data)
 {
     struct wlr_layer_surface_v1 *wlr_layer_surface = data;
@@ -66,10 +22,10 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     surface.layer = wlr_layer_surface;
     struct client *client = create_client(LAYER_SHELL, surface);
 
-    LISTEN(&wlr_layer_surface->events.destroy, &client->destroy, destroy_layer_surface_notify);
     LISTEN(&wlr_layer_surface->surface->events.commit, &client->commit, commitlayersurfacenotify);
     LISTEN(&wlr_layer_surface->events.map, &client->map, map_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.unmap, &client->unmap, unmap_layer_surface_notify);
+    LISTEN(&wlr_layer_surface->events.destroy, &client->destroy, destroy_layer_surface_notify);
 
     struct monitor *m = wlr_layer_surface->output->data;
     client->m = m;
@@ -86,20 +42,21 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
 
 void map_layer_surface_notify(struct wl_listener *listener, void *data)
 {
-    printf("map\n");
+    /* printf("map\n"); */
     struct client *c = wl_container_of(listener, c, map);
-    wlr_surface_send_enter(get_wlrsurface(c), c->surface.layer->output);
-    motion_notify(0);
+    /* wlr_surface_send_enter(get_wlrsurface(c), c->surface.layer->output); */
+    /* motion_notify(0); */
+    add_container_to_tile(c->con);
 }
 
 void unmap_layer_surface(struct client *c)
 {
-    printf("unmap\n");
-    struct container *sel_container = get_focused_container(selected_monitor);
-    c->surface.layer->mapped = 0;
-    if (get_wlrsurface(c) == server.seat->keyboard_state.focused_surface)
-        focus_container(sel_container, FOCUS_NOOP);
-    motion_notify(0);
+    /* printf("unmap\n"); */
+    /* struct container *sel_container = get_focused_container(selected_monitor); */
+    /* c->surface.layer->mapped = 0; */
+    /* if (get_wlrsurface(c) == server.seat->keyboard_state.focused_surface) */
+    /*     focus_container(sel_container, FOCUS_NOOP); */
+    /* motion_notify(0); */
 }
 
 void unmap_layer_surface_notify(struct wl_listener *listener, void *data)
@@ -118,18 +75,21 @@ void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
     if (c->surface.layer->mapped)
         unmap_layer_surface(c);
     remove_in_composed_list(&server.layer_visual_stack_lists, cmp_ptr, c->con);
-    destroy_container(c->con);
-    wl_list_remove(&c->destroy.link);
+
     wl_list_remove(&c->commit.link);
     wl_list_remove(&c->map.link);
     wl_list_remove(&c->unmap.link);
+    wl_list_remove(&c->destroy.link);
+
     if (c->surface.layer->output) {
         struct monitor *m = c->surface.layer->output->data;
         if (m)
             arrange_layers(m);
         c->surface.layer->output = NULL;
     }
-    free(c);
+
+    destroy_container(c->con);
+    destroy_client(c);
 }
 
 void commitlayersurfacenotify(struct wl_listener *listener, void *data)
@@ -151,7 +111,6 @@ void commitlayersurfacenotify(struct wl_listener *listener, void *data)
         remove_in_composed_list(&server.layer_visual_stack_lists, cmp_ptr, con);
         wlr_list_insert(get_layer_list(wlr_layer_surface->current.layer), 0, con);
     }
-    arrange();
 }
 
 struct wlr_list *get_layer_list(enum zwlr_layer_shell_v1_layer layer)
@@ -176,6 +135,7 @@ struct wlr_list *get_layer_list(enum zwlr_layer_shell_v1_layer layer)
 
 void arrange_layers(struct monitor *m)
 {
+    printf("arrange layers start\n");
     struct wlr_box usable_area = m->geom;
     uint32_t layers_above_shell[] = {
         ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
@@ -184,7 +144,6 @@ void arrange_layers(struct monitor *m)
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
 
     // Arrange exclusive surfaces from top->bottom
-
     arrangelayer(m, &server.layer_visual_stack_overlay,
             &usable_area, 1);
     arrangelayer(m, &server.layer_visual_stack_top,
@@ -211,23 +170,25 @@ void arrange_layers(struct monitor *m)
 
     // Find topmost keyboard interactive layer, if such a layer exists
     for (size_t i = 0; i < LENGTH(layers_above_shell); i++) {
-        struct wlr_list *new_list = get_layer_list(layers_above_shell[i]);
-        int len = new_list->length;
+        struct wlr_list *layer_list = get_layer_list(layers_above_shell[i]);
+        int len = layer_list->length;
         for (int j = len-1; j >= 0; j--) {
-            struct client *layersurface = new_list->items[j];
-            if (layersurface->surface.layer->current.keyboard_interactive &&
-                    layersurface->surface.layer->mapped) {
+            struct container *con = layer_list->items[j];
+            struct client *c = con->client;
+            struct wlr_layer_surface_v1 *layer_surface = c->surface.layer;
+            if (layer_surface->current.keyboard_interactive && layer_surface->mapped) {
                 // Deactivate the focused client.
                 // TODO fix this
                 focus_container(NULL, FOCUS_NOOP);
                 wlr_seat_keyboard_notify_enter(server.seat,
-                        get_wlrsurface(layersurface),
+                        get_wlrsurface(c),
                         kb->keycodes, kb->num_keycodes,
                         &kb->modifiers);
                 return;
             }
         }
     }
+    printf("arrange layers end\n");
 }
 
 
@@ -249,6 +210,7 @@ void arrangelayer(struct monitor *m, struct wlr_list *list, struct wlr_box *usab
         const uint32_t both_vert = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP
             | ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
 
+        printf("state->exclusive_zone: %i\n", state->exclusive_zone);
         if (exclusive != (state->exclusive_zone > 0))
             continue;
 
@@ -276,6 +238,7 @@ void arrangelayer(struct monitor *m, struct wlr_list *list, struct wlr_box *usab
         } else {
             box.y = bounds.y + ((bounds.height / 2) - (box.height / 2));
         }
+        printf("box.y: %i\n", box.y);
         // Margin
         if ((state->anchor & both_horiz) == both_horiz) {
             box.x += state->margin.left;

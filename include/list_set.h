@@ -38,7 +38,8 @@ struct list_set {
 
 typedef void (*operation_t)(struct list_set *, void *);
 
-void setup_list_set(struct list_set *ls);
+struct list_set *create_list_set();
+void destroy_list_set(struct list_set *list_set);
 
 void clear_list_set(struct list_set *list_set);
 void unsubscribe_list_set(struct list_set *dest, struct list_set *src);

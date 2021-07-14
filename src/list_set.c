@@ -6,8 +6,9 @@
 #include "server.h"
 #include "utils/coreUtils.h"
 
-void setup_list_set(struct list_set *list_set)
+struct list_set *create_list_set()
 {
+    struct list_set *list_set = calloc(1, sizeof(struct list_set));
     wlr_list_init(&list_set->change_affected_list_sets);
     wlr_list_push(&list_set->change_affected_list_sets, list_set);
 
@@ -71,6 +72,12 @@ void setup_list_set(struct list_set *list_set)
     wlr_list_push(&list_set->all_lists, &list_set->focus_stack_normal);
     wlr_list_push(&list_set->all_lists, &list_set->focus_stack_hidden);
     wlr_list_push(&list_set->all_lists, &list_set->focus_stack_not_focusable);
+    return list_set;
+}
+
+void destroy_list_set(struct list_set *list_set)
+{
+    free(list_set);
 }
 
 void append_list_set(struct list_set *dest, struct list_set *src)

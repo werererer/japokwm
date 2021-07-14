@@ -254,11 +254,11 @@ int lib_zoom(lua_State *L)
     if (!sel)
         return 0;
 
-    int position = wlr_list_find(&ts->list_set.tiled_containers, cmp_ptr, sel);
+    int position = wlr_list_find(&ts->list_set->tiled_containers, cmp_ptr, sel);
     if (position == INVALID_POSITION)
         return 0;
 
-    if (sel == ts->list_set.tiled_containers.items[0]) {
+    if (sel == ts->list_set->tiled_containers.items[0]) {
         repush(1, 0);
     } else {
         repush(position, 0);
@@ -428,7 +428,7 @@ int lib_swap_workspace(lua_State *L)
     struct monitor *m = selected_monitor;
     struct tagset *tagset = monitor_get_active_tagset(m);
 
-    for (int i = 0; i < tagset->list_set.tiled_containers.length; i++) {
+    for (int i = 0; i < tagset->list_set->tiled_containers.length; i++) {
         struct container *con = get_container(0, i);
         if (exist_on(get_tagset_from_workspace_id(ws_id1), con)) {
             con->client->ws_id = ws_id2;

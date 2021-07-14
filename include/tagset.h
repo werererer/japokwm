@@ -19,7 +19,7 @@ struct tagset {
      * floating windows don't belong to the layout and are thereby not counted */
     int n_all;
 
-    struct list_set list_set;
+    struct list_set *list_set;
     bool loaded;
 };
 

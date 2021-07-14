@@ -34,7 +34,7 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     push_layout(ws, lt);
     push_layout(ws, lt);
 
-    setup_list_set(&ws->list_set);
+    ws->list_set = create_list_set();
     return ws;
 }
 
@@ -80,11 +80,12 @@ void update_workspaces(struct wlr_list *workspaces, struct wlr_list *tag_names)
 
 void destroy_workspace(struct workspace *ws)
 {
-    for (int i = 0; i < length_of_composed_list(&ws->list_set.container_lists); i++) {
-        struct container *con = get_in_composed_list(&ws->list_set.container_lists, i);
+    for (int i = 0; i < length_of_composed_list(&ws->list_set->container_lists); i++) {
+        struct container *con = get_in_composed_list(&ws->list_set->container_lists, i);
         struct client *c = con->client;
         kill_client(c);
     }
+    destroy_list_set(ws->list_set);
     free(ws);
 }
 
@@ -124,7 +125,7 @@ int get_workspace_container_count(struct workspace *ws)
     if (!ws)
         return -1;
 
-    return ws->list_set.tiled_containers.length;
+    return ws->list_set->tiled_containers.length;
 }
 
 bool is_workspace_empty(struct workspace *ws)

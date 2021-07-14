@@ -24,7 +24,7 @@ struct workspace {
     // the tagset that currently hast this workspace selected
     struct tagset *tagset;
 
-    struct list_set list_set;
+    struct list_set *list_set;
 };
 
 struct workspace *create_workspace(const char *name, size_t id, struct layout *lt);

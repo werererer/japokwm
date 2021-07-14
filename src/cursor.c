@@ -101,6 +101,7 @@ void motion_relative(struct wl_listener *listener, void *data)
 
 void motion_absolute(struct wl_listener *listener, void *data)
 {
+    printf("motion absolue start\n");
     /* This event is forwarded by the cursor when a pointer emits an _absolute_
      * motion event, from 0..1 on Each axis. This happens, for example, when
      * wlroots is running under a Wayland window rather than KMS+DRM, and you
@@ -110,6 +111,7 @@ void motion_absolute(struct wl_listener *listener, void *data)
     struct wlr_event_pointer_motion_absolute *event = data;
     wlr_cursor_warp_absolute(server.cursor.wlr_cursor, event->device, event->x, event->y);
     motion_notify(event->time_msec);
+    printf("motion absolue end\n");
 }
 
 void motion_notify(uint32_t time)

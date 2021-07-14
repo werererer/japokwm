@@ -19,6 +19,7 @@
 #include "utils/gapUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "event_handler.h"
+#include "layer_shell.h"
 
 static void arrange_container(struct container *con, int arrange_position,
         struct wlr_box root_geom, int inner_gap);
@@ -172,7 +173,7 @@ int get_floating_container_count(struct tagset *tagset)
 
     int n = 0;
 
-    for (int i = 0; i < tagset->list_set.floating_containers.length; i++) {
+    for (int i = 0; i < tagset->list_set->floating_containers.length; i++) {
         struct container *con = get_container(tagset, i);
         if (con->client->type == LAYER_SHELL)
             continue;
@@ -206,16 +207,16 @@ void arrange_monitor(struct monitor *m)
     update_layout_counters(tagset);
     call_update_function(lt->options.event_handler, lt->n_area);
 
-    struct wlr_list *visible_container_lists = get_visible_lists(&tagset->list_set);
-    struct wlr_list *tiled_containers = get_tiled_list(&tagset->list_set);
-    struct wlr_list *hidden_containers = get_hidden_list(&tagset->list_set); 
+    struct wlr_list *visible_container_lists = get_visible_lists(tagset->list_set);
+    struct wlr_list *tiled_containers = get_tiled_list(tagset->list_set);
+    struct wlr_list *hidden_containers = get_hidden_list(tagset->list_set); 
 
     update_hidden_status_of_containers(m, visible_container_lists,
             tiled_containers, hidden_containers);
 
     if (!lt->options.arrange_by_focus) {
-        for (int i = 0; i < tagset->list_set.floating_containers.length; i++) {
-            struct container *con = tagset->list_set.floating_containers.items[i];
+        for (int i = 0; i < tagset->list_set->floating_containers.length; i++) {
+            struct container *con = tagset->list_set->floating_containers.items[i];
             if (con->geom_was_changed) {
                 resize(con, con->prev_floating_geom);
                 con->geom_was_changed = false;
@@ -394,16 +395,16 @@ void update_hidden_status_of_containers(struct monitor *m,
     }
 }
 
-int get_container_count(struct tagset *ts)
+int get_container_count(struct tagset *tagset)
 {
-    return length_of_composed_list(&ts->list_set.container_lists);
+    return length_of_composed_list(&tagset->list_set->container_lists);
 }
 
-int get_tiled_container_count(struct tagset *ts)
+int get_tiled_container_count(struct tagset *tagset)
 {
     int n = 0;
-    struct wlr_list *tiled_containers = get_tiled_list(&ts->list_set);
-    struct wlr_list *hidden_containers = get_hidden_list(&ts->list_set);
+    struct wlr_list *tiled_containers = get_tiled_list(tagset->list_set);
+    struct wlr_list *hidden_containers = get_hidden_list(tagset->list_set);
 
     n = tiled_containers->length + hidden_containers->length;
     return n;
