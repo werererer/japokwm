@@ -20,7 +20,6 @@ struct client *create_client(enum shell shell_type, union surface_t surface)
 
     c->type = shell_type;
     c->surface = surface;
-    get_wlrsurface(c)->data = c;
 
     return c;
 }
@@ -296,82 +295,4 @@ bool is_popup_menu(struct client *c)
         }
     }
     return false;
-}
-
-void destroy_notify(struct wl_listener *listener, void *data)
-{
-    printf("destroy_notify\n");
-    /* Called when the surface is destroyed and should never be shown again. */
-    struct client *c = wl_container_of(listener, c, destroy);
-
-    destroy_container(c->con);
-    c->con = NULL;
-
-    wl_list_remove(&c->map.link);
-    wl_list_remove(&c->unmap.link);
-    wl_list_remove(&c->destroy.link);
-
-    switch (c->type) {
-        case LAYER_SHELL:
-            wl_list_remove(&c->new_popup.link);
-            break;
-        case XDG_SHELL:
-            wl_list_remove(&c->new_popup.link);
-            wl_list_remove(&c->set_title.link);
-            wl_list_remove(&c->set_app_id.link);
-            break;
-        case X11_MANAGED:
-            wl_list_remove(&c->set_title.link);
-        default:
-            break;
-    }
-
-    destroy_client(c);
-}
-
-void maprequest(struct wl_listener *listener, void *data)
-{
-    printf("map\n");
-    /* Called when the surface is mapped, or ready to display on-screen. */
-    struct client *c = wl_container_of(listener, c, map);
-
-    struct monitor *m = selected_monitor;
-    if (c->type == LAYER_SHELL) {
-        m = output_to_monitor(c->surface.layer->output);
-    }
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct layout *lt = ws->layout;
-
-    c->ws_id = ws->id;
-    c->bw = lt->options.tile_border_px;
-
-    switch (c->type) {
-        case LAYER_SHELL:
-            wlr_list_push(&server.non_tiled_clients, c);
-            break;
-        default:
-            wlr_list_push(&server.normal_clients, c);
-    }
-
-    add_container_to_tile(c->con);
-    arrange();
-    focus_most_recent_container(m->tagset, FOCUS_NOOP);
-}
-
-void unmap_notify(struct wl_listener *listener, void *data)
-{
-    printf("unmap_notify\n");
-    /* Called when the surface is unmapped, and should no longer be shown. */
-    struct client *c = wl_container_of(listener, c, unmap);
-
-    struct container *con = c->con;
-    container_damage_whole(c->con);
-    remove_container_from_tile(con);
-
-    remove_in_composed_list(&server.client_lists, cmp_ptr, c);
-
-    arrange();
-    struct monitor *m = selected_monitor;
-    focus_most_recent_container(m->tagset, FOCUS_NOOP);
-    printf("unmap_notify end\n");
 }

@@ -17,6 +17,7 @@ struct client {
     union surface_t surface;
 
     struct monitor *m;
+    struct wl_listener activate;
     struct wl_listener commit;
     struct wl_listener set_title;
     struct wl_listener set_app_id;
@@ -53,9 +54,6 @@ bool is_popup_menu(struct client *c);
 
 float calc_ratio(float width, float height);
 
-void destroy_notify(struct wl_listener *listener, void *data);
-void maprequest(struct wl_listener *listener, void *data);
-void unmap_notify(struct wl_listener *listener, void *data);
 void client_handle_set_title(struct wl_listener *listener, void *data);
 void client_handle_set_app_id(struct wl_listener *listener, void *data);
 

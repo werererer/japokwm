@@ -30,5 +30,7 @@ struct xwayland {
 void create_notifyx11(struct wl_listener *listener, void *data);
 void handle_xwayland_ready(struct wl_listener *listener, void *data);
 void maprequestx11(struct wl_listener *listener, void *data);
+void unmap_notifyx11(struct wl_listener *listener, void *data);
+void destroy_notifyx11(struct wl_listener *listener, void *data);
 
 #endif /* XWAYLAND_H */

@@ -23,6 +23,15 @@ static const char *atom_map[ATOM_LAST] = {
     "_NET_WM_STATE_MODAL",
 };
 
+static void activatex11(struct wl_listener *listener, void *data)
+{
+    struct client *c = wl_container_of(listener, c, activate);
+
+    /* Only "managed" windows can be activated */
+    if (c->type == X11_MANAGED)
+        wlr_xwayland_surface_activate(c->surface.xwayland, true);
+}
+
 void create_notifyx11(struct wl_listener *listener, void *data)
 {
     struct wlr_xwayland_surface *xwayland_surface = data;
@@ -34,14 +43,28 @@ void create_notifyx11(struct wl_listener *listener, void *data)
     // set default value will be overriden on maprequest
 
     /* Listen to the various events it can emit */
-    c->map.notify = maprequestx11;
-    wl_signal_add(&xwayland_surface->events.map, &c->map);
-    c->unmap.notify = unmap_notify;
-    wl_signal_add(&xwayland_surface->events.unmap, &c->unmap);
-    c->destroy.notify = destroy_notify;
-    wl_signal_add(&xwayland_surface->events.destroy, &c->destroy);
-    c->set_title.notify = client_handle_set_title;
-    wl_signal_add(&xwayland_surface->events.set_title, &c->set_title);
+    LISTEN(&xwayland_surface->events.map, &c->map, maprequestx11);
+    LISTEN(&xwayland_surface->events.unmap, &c->unmap, unmap_notifyx11);
+    LISTEN(&xwayland_surface->events.destroy, &c->destroy, destroy_notifyx11);
+    LISTEN(&xwayland_surface->events.set_title, &c->set_title, client_handle_set_title);
+    LISTEN(&xwayland_surface->events.request_activate, &c->activate, activatex11);
+
+    create_container(c, selected_monitor, true);
+}
+
+void destroy_notifyx11(struct wl_listener *listener, void *data)
+{
+    struct client *c = wl_container_of(listener, c, destroy);
+
+    destroy_container(c->con);
+    c->con = NULL;
+
+    wl_list_remove(&c->map.link);
+    wl_list_remove(&c->unmap.link);
+    wl_list_remove(&c->destroy.link);
+    wl_list_remove(&c->set_title.link);
+
+    destroy_client(c);
 }
 
 void handle_xwayland_ready(struct wl_listener *listener, void *data)
@@ -82,6 +105,26 @@ void handle_xwayland_ready(struct wl_listener *listener, void *data)
     xcb_disconnect(xcb_conn);
 }
 
+void unmap_notifyx11(struct wl_listener *listener, void *data)
+{
+    printf("unmap_notify\n");
+    /* Called when the surface is unmapped, and should no longer be shown. */
+    struct client *c = wl_container_of(listener, c, unmap);
+
+    wl_list_remove(&c->commit.link);
+
+    struct container *con = c->con;
+    container_damage_whole(c->con);
+    remove_container_from_tile(con);
+
+    remove_in_composed_list(&server.client_lists, cmp_ptr, c);
+
+    arrange();
+    struct monitor *m = selected_monitor;
+    focus_most_recent_container(m->tagset, FOCUS_NOOP);
+    printf("unmap_notify end\n");
+}
+
 void maprequestx11(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is mapped, or ready to display on-screen. */
@@ -94,7 +137,9 @@ void maprequestx11(struct wl_listener *listener, void *data)
     c->ws_id = m->tagset->selected_ws_id;
     c->bw = lt->options.tile_border_px;
 
-    struct container *con = create_container(c, m, true);
+    struct container *con = c->con;
+    add_container_to_tile(con);
+    LISTEN(&xwayland_surface->surface->events.commit, &c->commit, commit_notify);
 
     struct wlr_box prefered_geom = (struct wlr_box) {
         .x = c->surface.xwayland->x, 

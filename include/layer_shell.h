@@ -13,12 +13,12 @@ struct edge {
     int margin;
 };
 
-void maplayersurfacenotify(struct wl_listener *listener, void *data);
-void unmaplayersurfacenotify(struct wl_listener *listener, void *data);
-void destroylayersurfacenotify(struct wl_listener *listener, void *data);
+void map_layer_surface_notify(struct wl_listener *listener, void *data);
+void unmap_layer_surface_notify(struct wl_listener *listener, void *data);
+void destroy_layer_surface_notify(struct wl_listener *listener, void *data);
 void commitlayersurfacenotify(struct wl_listener *listener, void *data);
 void create_notify_layer_shell(struct wl_listener *listener, void *data);
-void arrangelayers(struct monitor *m);
+void arrange_layers(struct monitor *m);
 void arrangelayer(struct monitor *m, struct wlr_list *list, struct wlr_box *usable_area, int exclusive);
 void apply_exclusive(struct wlr_box *usable_area,
         uint32_t anchor, int32_t exclusive,

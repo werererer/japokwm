@@ -66,36 +66,35 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     surface.layer = wlr_layer_surface;
     struct client *client = create_client(LAYER_SHELL, surface);
 
-    LISTEN(&wlr_layer_surface->events.destroy, &client->destroy,
-            destroylayersurfacenotify);
-    LISTEN(&wlr_layer_surface->events.map, &client->map,
-            maplayersurfacenotify);
-    LISTEN(&wlr_layer_surface->events.unmap, &client->unmap,
-            unmaplayersurfacenotify);
+    LISTEN(&wlr_layer_surface->events.destroy, &client->destroy, destroy_layer_surface_notify);
+    LISTEN(&wlr_layer_surface->surface->events.commit, &client->commit, commitlayersurfacenotify);
+    LISTEN(&wlr_layer_surface->events.map, &client->map, map_layer_surface_notify);
+    LISTEN(&wlr_layer_surface->events.unmap, &client->unmap, unmap_layer_surface_notify);
 
     struct monitor *m = wlr_layer_surface->output->data;
     client->m = m;
-    wlr_list_push(get_layer_list(wlr_layer_surface->client_pending.layer), client);
+    struct container *con = create_container(client, m, false);
+    wlr_list_push(get_layer_list(wlr_layer_surface->client_pending.layer), con);
 
     // Temporarily set the layer's current state to client_pending
     // so that we can easily arrange it
     struct wlr_layer_surface_v1_state old_state = wlr_layer_surface->current;
     wlr_layer_surface->current = wlr_layer_surface->client_pending;
-    arrangelayers(m);
+    arrange_layers(m);
     wlr_layer_surface->current = old_state;
-
-    create_container(client, m, false);
 }
 
-void maplayersurfacenotify(struct wl_listener *listener, void *data)
+void map_layer_surface_notify(struct wl_listener *listener, void *data)
 {
+    printf("map\n");
     struct client *c = wl_container_of(listener, c, map);
     wlr_surface_send_enter(get_wlrsurface(c), c->surface.layer->output);
     motion_notify(0);
 }
 
-void unmaplayersurface(struct client *c)
+void unmap_layer_surface(struct client *c)
 {
+    printf("unmap\n");
     struct container *sel_container = get_focused_container(selected_monitor);
     c->surface.layer->mapped = 0;
     if (get_wlrsurface(c) == server.seat->keyboard_state.focused_surface)
@@ -103,29 +102,31 @@ void unmaplayersurface(struct client *c)
     motion_notify(0);
 }
 
-void unmaplayersurfacenotify(struct wl_listener *listener, void *data)
+void unmap_layer_surface_notify(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, unmap);
-    unmaplayersurface(c);
+    unmap_layer_surface(c);
+    remove_container_from_tile(c->con);
     container_damage_whole(c->con);
 }
 
-void destroylayersurfacenotify(struct wl_listener *listener, void *data)
+void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
 {
     printf("destroy layersurface\n");
     struct client *c = wl_container_of(listener, c, destroy);
 
     if (c->surface.layer->mapped)
-        unmaplayersurface(c);
+        unmap_layer_surface(c);
     remove_in_composed_list(&server.layer_visual_stack_lists, cmp_ptr, c->con);
     destroy_container(c->con);
     wl_list_remove(&c->destroy.link);
+    wl_list_remove(&c->commit.link);
     wl_list_remove(&c->map.link);
     wl_list_remove(&c->unmap.link);
     if (c->surface.layer->output) {
         struct monitor *m = c->surface.layer->output->data;
         if (m)
-            arrangelayers(m);
+            arrange_layers(m);
         c->surface.layer->output = NULL;
     }
     free(c);
@@ -142,7 +143,7 @@ void commitlayersurfacenotify(struct wl_listener *listener, void *data)
         return;
 
     struct monitor *m = wlr_output->data;
-    arrangelayers(m);
+    arrange_layers(m);
     struct container *con = c->con;
     container_damage_part(con);
 
@@ -173,7 +174,7 @@ struct wlr_list *get_layer_list(enum zwlr_layer_shell_v1_layer layer)
     return new_list;
 }
 
-void arrangelayers(struct monitor *m)
+void arrange_layers(struct monitor *m)
 {
     struct wlr_box usable_area = m->geom;
     uint32_t layers_above_shell[] = {

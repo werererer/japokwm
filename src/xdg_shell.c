@@ -6,6 +6,7 @@
 
 #include "client.h"
 #include "popup.h"
+#include "server.h"
 #include "utils/coreUtils.h"
 #include "container.h"
 #include "tile/tileUtils.h"
@@ -50,7 +51,7 @@ void create_notify_xdg(struct wl_listener *listener, void *data)
             WLR_EDGE_BOTTOM | WLR_EDGE_LEFT | WLR_EDGE_RIGHT);
 
     /* Listen to the various events it can emit */
-    LISTEN(&xdg_surface->events.map, &c->map, maprequest);
+    LISTEN(&xdg_surface->events.map, &c->map, map_request);
     LISTEN(&xdg_surface->surface->events.commit, &c->commit, commit_notify);
     LISTEN(&xdg_surface->events.unmap, &c->unmap, unmap_notify);
     LISTEN(&xdg_surface->events.destroy, &c->destroy, destroy_notify);
@@ -61,6 +62,55 @@ void create_notify_xdg(struct wl_listener *listener, void *data)
     LISTEN(&xdg_surface->events.new_popup, &c->new_popup, popup_handle_new_popup);
 
     create_container(c, selected_monitor, true);
+}
+
+void destroy_notify(struct wl_listener *listener, void *data)
+{
+    struct client *c = wl_container_of(listener, c, destroy);
+
+    wl_list_remove(&c->map.link);
+    wl_list_remove(&c->commit.link);
+    wl_list_remove(&c->unmap.link);
+    wl_list_remove(&c->destroy.link);
+
+    wl_list_remove(&c->new_popup.link);
+    wl_list_remove(&c->set_title.link);
+    wl_list_remove(&c->set_app_id.link);
+
+    destroy_container(c->con);
+    destroy_client(c);
+}
+
+void map_request(struct wl_listener *listener, void *data)
+{
+    /* Called when the surface is mapped, or ready to display on-screen. */
+    struct client *c = wl_container_of(listener, c, map);
+    struct workspace *ws = get_workspace(c->ws_id);
+    c->bw = ws->layout->options.tile_border_px;
+
+    wlr_list_push(&server.normal_clients, c);
+
+    struct container *con = c->con;
+    add_container_to_tile(con);
+    arrange();
+    struct monitor *m = container_get_monitor(con);
+    focus_most_recent_container(m->tagset, FOCUS_NOOP);
+}
+
+void unmap_notify(struct wl_listener *listener, void *data)
+{
+    /* Called when the surface is unmapped, and should no longer be shown. */
+    struct client *c = wl_container_of(listener, c, unmap);
+
+    struct container *con = c->con;
+    container_damage_whole(c->con);
+    remove_container_from_tile(con);
+
+    remove_in_composed_list(&server.client_lists, cmp_ptr, c);
+
+    arrange();
+    struct monitor *m = selected_monitor;
+    focus_most_recent_container(m->tagset, FOCUS_NOOP);
 }
 
 void createxdeco(struct wl_listener *listener, void *data)
