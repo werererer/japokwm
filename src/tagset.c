@@ -397,29 +397,25 @@ struct tagset *get_tagset_from_active_workspace_id(int ws_id)
 
 struct tagset *get_tagset_from_workspace_id(int ws_id)
 {
-    BitSet bitset;
-    bitset_setup(&bitset, server.workspaces.length);
-
-    struct tagset *tagset = NULL;
-
+    // TODO fix memory leak in this function
     for (int i = 0; i < server.mons.length; i++) {
         struct monitor *m = server.mons.items[i];
-        tagset = m->tagset;
+        struct tagset *tagset = m->tagset;
 
         if (!tagset)
             continue;
 
-        bitset_reset_all(&bitset);
+        BitSet bitset;
+        bitset_setup(&bitset, server.workspaces.length);
         bitset_set(&bitset, ws_id);
         bitset_and(&bitset, &tagset->workspaces);
         if (bitset_any(&bitset)) {
-            goto cleanup;
+            bitset_destroy(&bitset);
+            return tagset;
         }
     }
 
-cleanup:
-    bitset_destroy(&bitset);
-    return tagset;
+    return NULL;
 }
 
 struct container *get_container(struct tagset *tagset, int i)
