@@ -278,7 +278,7 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
         struct tagset *tagset = monitor_get_active_tagset(m);
         struct layout *lt = tagset_get_layout(tagset);
         if (lt->options.smart_hidden_edges) {
-            if (tagset->list_set->tiled_containers.length <= 1) {
+            if (tagset->list_set->tiled_containers->len <= 1) {
                 hidden_edges = get_hidden_edges(con, borders, lt->options.hidden_edges);
             }
         } else {
@@ -300,8 +300,8 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
 {
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    for (int i = length_of_composed_list(&server.normal_visual_stack_lists)-1; i >= 0; i--) {
-        struct container *con = get_in_composed_list(&server.normal_visual_stack_lists, i);
+    for (int i = length_of_composed_list(server.normal_visual_stack_lists)-1; i >= 0; i--) {
+        struct container *con = get_in_composed_list(server.normal_visual_stack_lists, i);
         if (!visible_on(monitor_get_active_tagset(m), con))
             continue;
 
@@ -323,9 +323,9 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
 {
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    struct wlr_list *new_list = get_layer_list(layer);
-    for (int i = 0; i < new_list->length; i++) {
-        struct container *con = new_list->items[i];
+    GPtrArray *new_list = get_layer_list(layer);
+    for (int i = 0; i < new_list->len; i++) {
+        struct container *con = g_ptr_array_index(new_list, i);
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
         render_surface_iterator(m, surface, con->geom, output_damage, 1.0);
@@ -339,8 +339,8 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
 static void render_independents(struct monitor *m, pixman_region32_t *output_damage)
 {
     struct tagset *tagset = monitor_get_active_tagset(m);
-    for (int i = 0; i < tagset->list_set->independent_containers.length; i++) {
-        struct container *con = tagset->list_set->independent_containers.items[i];
+    for (int i = 0; i < tagset->list_set->independent_containers->len; i++) {
+        struct container *con = g_ptr_array_index(tagset->list_set->independent_containers, i);
         struct wlr_surface *surface = get_wlrsurface(con->client);
 
         con->geom.width = surface->current.width;
@@ -355,8 +355,8 @@ static void render_independents(struct monitor *m, pixman_region32_t *output_dam
 
 static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
 {
-    for (int i = 0; i < server.popups.length; i++) {
-        struct xdg_popup *popup = server.popups.items[i];
+    for (int i = 0; i < server.popups->len; i++) {
+        struct xdg_popup *popup = g_ptr_array_index(server.popups, i);
         struct wlr_surface *surface = popup->xdg->base->surface;
         render_surface_iterator(m, surface, popup->geom, output_damage, 1.0f);
 

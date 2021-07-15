@@ -9,141 +9,121 @@
 struct list_set *create_list_set()
 {
     struct list_set *list_set = calloc(1, sizeof(struct list_set));
-    wlr_list_init(&list_set->change_affected_list_sets);
-    wlr_list_push(&list_set->change_affected_list_sets, list_set);
+    list_set->change_affected_list_sets = g_ptr_array_new();
+    g_ptr_array_add(list_set->change_affected_list_sets, list_set);
 
-    wlr_list_init(&list_set->container_lists);
-    wlr_list_init(&list_set->visible_container_lists);
+    list_set->container_lists = g_ptr_array_new();
+    list_set->visible_container_lists = g_ptr_array_new();
 
-    wlr_list_init(&list_set->independent_containers);
-    wlr_list_init(&list_set->tiled_containers);
-    wlr_list_init(&list_set->hidden_containers);
-    wlr_list_init(&list_set->floating_containers);
+    list_set->independent_containers = g_ptr_array_new();
+    list_set->tiled_containers = g_ptr_array_new();
+    list_set->hidden_containers = g_ptr_array_new();
+    list_set->floating_containers = g_ptr_array_new();
 
-    wlr_list_push(&list_set->container_lists, &list_set->tiled_containers);
-    wlr_list_push(&list_set->container_lists, &list_set->floating_containers);
-    wlr_list_push(&list_set->container_lists, &list_set->hidden_containers);
+    g_ptr_array_add(list_set->container_lists, &list_set->tiled_containers);
+    g_ptr_array_add(list_set->container_lists, &list_set->floating_containers);
+    g_ptr_array_add(list_set->container_lists, &list_set->hidden_containers);
 
-    wlr_list_push(&list_set->visible_container_lists, &list_set->tiled_containers);
-    wlr_list_push(&list_set->visible_container_lists, &list_set->floating_containers);
+    g_ptr_array_add(list_set->visible_container_lists, &list_set->tiled_containers);
+    g_ptr_array_add(list_set->visible_container_lists, &list_set->floating_containers);
 
-    wlr_list_init(&list_set->focus_stack_lists);
-    wlr_list_init(&list_set->focus_stack_visible_lists);
-    wlr_list_init(&list_set->focus_stack_lists_with_layer_shell);
+    list_set->focus_stack_lists = g_ptr_array_new();
+    list_set->focus_stack_visible_lists = g_ptr_array_new();
+    list_set->focus_stack_lists_with_layer_shell = g_ptr_array_new();
 
-    wlr_list_init(&list_set->focus_stack_layer_background);
-    wlr_list_init(&list_set->focus_stack_layer_bottom);
-    wlr_list_init(&list_set->focus_stack_layer_top);
-    wlr_list_init(&list_set->focus_stack_layer_overlay);
-    wlr_list_init(&list_set->focus_stack_layer_bottom);
-    wlr_list_init(&list_set->focus_stack_on_top);
-    wlr_list_init(&list_set->focus_stack_normal);
-    wlr_list_init(&list_set->focus_stack_hidden);
-    wlr_list_init(&list_set->focus_stack_not_focusable);
+    list_set->focus_stack_layer_background = g_ptr_array_new();
+    list_set->focus_stack_layer_bottom = g_ptr_array_new();
+    list_set->focus_stack_layer_top = g_ptr_array_new();
+    list_set->focus_stack_layer_overlay = g_ptr_array_new();
+    list_set->focus_stack_layer_bottom = g_ptr_array_new();
+    list_set->focus_stack_on_top = g_ptr_array_new();
+    list_set->focus_stack_normal = g_ptr_array_new();
+    list_set->focus_stack_hidden = g_ptr_array_new();
+    list_set->focus_stack_not_focusable = g_ptr_array_new();
 
-    wlr_list_push(&list_set->focus_stack_lists, &list_set->focus_stack_layer_top);
-    wlr_list_push(&list_set->focus_stack_lists, &list_set->focus_stack_on_top);
-    wlr_list_push(&list_set->focus_stack_lists, &list_set->focus_stack_normal);
-    wlr_list_push(&list_set->focus_stack_lists, &list_set->focus_stack_not_focusable);
-    wlr_list_push(&list_set->focus_stack_lists, &list_set->focus_stack_hidden);
+    g_ptr_array_add(list_set->focus_stack_lists, &list_set->focus_stack_layer_top);
+    g_ptr_array_add(list_set->focus_stack_lists, &list_set->focus_stack_on_top);
+    g_ptr_array_add(list_set->focus_stack_lists, &list_set->focus_stack_normal);
+    g_ptr_array_add(list_set->focus_stack_lists, &list_set->focus_stack_not_focusable);
+    g_ptr_array_add(list_set->focus_stack_lists, &list_set->focus_stack_hidden);
 
-    wlr_list_push(&list_set->focus_stack_lists_with_layer_shell, &list_set->focus_stack_layer_overlay);
-    wlr_list_push(&list_set->focus_stack_lists_with_layer_shell, &list_set->focus_stack_layer_top);
-    wlr_list_push(&list_set->focus_stack_lists_with_layer_shell, &list_set->focus_stack_on_top);
-    wlr_list_push(&list_set->focus_stack_lists_with_layer_shell, &list_set->focus_stack_normal);
-    wlr_list_push(&list_set->focus_stack_lists_with_layer_shell, &list_set->focus_stack_not_focusable);
-    wlr_list_push(&list_set->focus_stack_lists_with_layer_shell, &list_set->focus_stack_layer_bottom);
-    wlr_list_push(&list_set->focus_stack_lists_with_layer_shell, &list_set->focus_stack_layer_background);
+    g_ptr_array_add(list_set->focus_stack_lists_with_layer_shell, &list_set->focus_stack_layer_overlay);
+    g_ptr_array_add(list_set->focus_stack_lists_with_layer_shell, &list_set->focus_stack_layer_top);
+    g_ptr_array_add(list_set->focus_stack_lists_with_layer_shell, &list_set->focus_stack_on_top);
+    g_ptr_array_add(list_set->focus_stack_lists_with_layer_shell, &list_set->focus_stack_normal);
+    g_ptr_array_add(list_set->focus_stack_lists_with_layer_shell, &list_set->focus_stack_not_focusable);
+    g_ptr_array_add(list_set->focus_stack_lists_with_layer_shell, &list_set->focus_stack_layer_bottom);
+    g_ptr_array_add(list_set->focus_stack_lists_with_layer_shell, &list_set->focus_stack_layer_background);
 
-    wlr_list_push(&list_set->focus_stack_visible_lists, &list_set->focus_stack_on_top);
-    wlr_list_push(&list_set->focus_stack_visible_lists, &list_set->focus_stack_normal);
-    wlr_list_push(&list_set->focus_stack_visible_lists, &list_set->focus_stack_not_focusable);
+    g_ptr_array_add(list_set->focus_stack_visible_lists, &list_set->focus_stack_on_top);
+    g_ptr_array_add(list_set->focus_stack_visible_lists, &list_set->focus_stack_normal);
+    g_ptr_array_add(list_set->focus_stack_visible_lists, &list_set->focus_stack_not_focusable);
 
-    wlr_list_init(&list_set->all_lists);
-    wlr_list_push(&list_set->all_lists, &list_set->floating_containers);
-    wlr_list_push(&list_set->all_lists, &list_set->tiled_containers);
-    wlr_list_push(&list_set->all_lists, &list_set->hidden_containers);
-    wlr_list_push(&list_set->all_lists, &list_set->independent_containers);
-    wlr_list_push(&list_set->all_lists, &list_set->focus_stack_layer_background);
-    wlr_list_push(&list_set->all_lists, &list_set->focus_stack_layer_bottom);
-    wlr_list_push(&list_set->all_lists, &list_set->focus_stack_layer_top);
-    wlr_list_push(&list_set->all_lists, &list_set->focus_stack_layer_overlay);
-    wlr_list_push(&list_set->all_lists, &list_set->focus_stack_on_top);
-    wlr_list_push(&list_set->all_lists, &list_set->focus_stack_normal);
-    wlr_list_push(&list_set->all_lists, &list_set->focus_stack_hidden);
-    wlr_list_push(&list_set->all_lists, &list_set->focus_stack_not_focusable);
+    list_set->all_lists = g_ptr_array_new();
+    g_ptr_array_add(list_set->all_lists, &list_set->floating_containers);
+    g_ptr_array_add(list_set->all_lists, &list_set->tiled_containers);
+    g_ptr_array_add(list_set->all_lists, &list_set->hidden_containers);
+    g_ptr_array_add(list_set->all_lists, &list_set->independent_containers);
+    g_ptr_array_add(list_set->all_lists, &list_set->focus_stack_layer_background);
+    g_ptr_array_add(list_set->all_lists, &list_set->focus_stack_layer_bottom);
+    g_ptr_array_add(list_set->all_lists, &list_set->focus_stack_layer_top);
+    g_ptr_array_add(list_set->all_lists, &list_set->focus_stack_layer_overlay);
+    g_ptr_array_add(list_set->all_lists, &list_set->focus_stack_on_top);
+    g_ptr_array_add(list_set->all_lists, &list_set->focus_stack_normal);
+    g_ptr_array_add(list_set->all_lists, &list_set->focus_stack_hidden);
+    g_ptr_array_add(list_set->all_lists, &list_set->focus_stack_not_focusable);
     return list_set;
 }
 
 void destroy_list_set(struct list_set *list_set)
 {
-    wlr_list_clear(&list_set->change_affected_list_sets, NULL);
-    wlr_list_finish(&list_set->change_affected_list_sets);
-    wlr_list_clear(&list_set->container_lists, NULL);
-    wlr_list_finish(&list_set->container_lists);
-    wlr_list_clear(&list_set->visible_container_lists, NULL);
-    wlr_list_finish(&list_set->visible_container_lists);
-    wlr_list_clear(&list_set->independent_containers, NULL);
-    wlr_list_finish(&list_set->independent_containers);
-    wlr_list_clear(&list_set->tiled_containers, NULL);
-    wlr_list_finish(&list_set->tiled_containers);
-    wlr_list_clear(&list_set->hidden_containers, NULL);
-    wlr_list_finish(&list_set->hidden_containers);
-    wlr_list_clear(&list_set->floating_containers, NULL);
-    wlr_list_finish(&list_set->floating_containers);
-    wlr_list_clear(&list_set->focus_stack_lists, NULL);
-    wlr_list_finish(&list_set->focus_stack_lists);
-    wlr_list_clear(&list_set->focus_stack_visible_lists, NULL);
-    wlr_list_finish(&list_set->focus_stack_visible_lists);
-    wlr_list_clear(&list_set->focus_stack_lists_with_layer_shell, NULL);
-    wlr_list_finish(&list_set->focus_stack_lists_with_layer_shell);
-    wlr_list_clear(&list_set->focus_stack_layer_background, NULL);
-    wlr_list_finish(&list_set->focus_stack_layer_background);
-    wlr_list_clear(&list_set->focus_stack_layer_bottom, NULL);
-    wlr_list_finish(&list_set->focus_stack_layer_bottom);
-    wlr_list_clear(&list_set->focus_stack_layer_top, NULL);
-    wlr_list_finish(&list_set->focus_stack_layer_top);
-    wlr_list_clear(&list_set->focus_stack_layer_overlay, NULL);
-    wlr_list_finish(&list_set->focus_stack_layer_overlay);
-    wlr_list_clear(&list_set->focus_stack_layer_bottom, NULL);
-    wlr_list_finish(&list_set->focus_stack_layer_bottom);
-    wlr_list_clear(&list_set->focus_stack_on_top, NULL);
-    wlr_list_finish(&list_set->focus_stack_on_top);
-    wlr_list_clear(&list_set->focus_stack_normal, NULL);
-    wlr_list_finish(&list_set->focus_stack_normal);
-    wlr_list_clear(&list_set->focus_stack_hidden, NULL);
-    wlr_list_finish(&list_set->focus_stack_hidden);
-    wlr_list_clear(&list_set->focus_stack_not_focusable, NULL);
-    wlr_list_finish(&list_set->focus_stack_not_focusable);
-    wlr_list_clear(&list_set->all_lists, NULL);
-    wlr_list_finish(&list_set->all_lists);
+    g_ptr_array_free(list_set->change_affected_list_sets, TRUE);
+    g_ptr_array_free(list_set->container_lists, TRUE);
+    g_ptr_array_free(list_set->visible_container_lists, TRUE);
+    g_ptr_array_free(list_set->independent_containers, TRUE);
+    g_ptr_array_free(list_set->tiled_containers, TRUE);
+    g_ptr_array_free(list_set->hidden_containers, TRUE);
+    g_ptr_array_free(list_set->floating_containers, TRUE);
+    g_ptr_array_free(list_set->focus_stack_lists, TRUE);
+    g_ptr_array_free(list_set->focus_stack_visible_lists, TRUE);
+    g_ptr_array_free(list_set->focus_stack_lists_with_layer_shell, TRUE);
+    g_ptr_array_free(list_set->focus_stack_layer_background, TRUE);
+    g_ptr_array_free(list_set->focus_stack_layer_bottom, TRUE);
+    g_ptr_array_free(list_set->focus_stack_layer_top, TRUE);
+    g_ptr_array_free(list_set->focus_stack_layer_overlay, TRUE);
+    g_ptr_array_free(list_set->focus_stack_layer_bottom, TRUE);
+    g_ptr_array_free(list_set->focus_stack_on_top, TRUE);
+    g_ptr_array_free(list_set->focus_stack_normal, TRUE);
+    g_ptr_array_free(list_set->focus_stack_hidden, TRUE);
+    g_ptr_array_free(list_set->focus_stack_not_focusable, TRUE);
+    g_ptr_array_free(list_set->all_lists, TRUE);
     free(list_set);
 }
 
 void append_list_set(struct list_set *dest, struct list_set *src)
 {
-    for (int i = 0; i < dest->all_lists.length; i++) {
-        struct wlr_list *dest_list = dest->all_lists.items[i];
-        struct wlr_list *src_list = src->all_lists.items[i];
+    for (int i = 0; i < dest->all_lists->len; i++) {
+        struct wlr_list *dest_list = g_ptr_array_index(dest->all_lists, i);
+        struct wlr_list *src_list = g_ptr_array_index(src->all_lists, i);
         wlr_list_cat(dest_list, src_list);
     }
 }
 
 void clear_list_set(struct list_set *list_set)
 {
-    for (int i = 0; i < list_set->all_lists.length; i++) {
-        struct wlr_list *dest_list = list_set->all_lists.items[i];
+    for (int i = 0; i < list_set->all_lists->len; i++) {
+        GPtrArray *dest_list = g_ptr_array_index(list_set->all_lists, i);
         wlr_list_clear(dest_list, NULL);
     }
 }
 
 void subscribe_list_set(struct list_set *dest, struct list_set *src)
 {
-    wlr_list_push(&src->change_affected_list_sets, dest);
+    g_ptr_array_add(src->change_affected_list_sets, dest);
     append_list_set(dest, src);
 }
 
 void unsubscribe_list_set(struct list_set *dest, struct list_set *src)
 {
-    wlr_list_remove(&src->change_affected_list_sets, cmp_ptr, dest);
+    g_ptr_array_remove(src->change_affected_list_sets, dest);
 }

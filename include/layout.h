@@ -53,5 +53,5 @@ void copy_layout(struct layout *dest_lt, struct layout *src_lt);
 // copy layout and override all references with the given ones
 void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt);
 
-int cmp_layout(const struct layout *lt1, const struct layout *lt2);
+int cmp_layout(const void *ptr1, const void *ptr2);
 #endif /* LAYOUT_H */

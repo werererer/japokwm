@@ -195,7 +195,7 @@ int lib_tag_view(lua_State *L)
 
     BitSet tmp_bitset = bitset_from_value(tags_dec);
     BitSet bitset;
-    bitset_setup(&bitset, server.workspaces.length);
+    bitset_setup(&bitset, server.workspaces->len);
     for (int i = 0; i < bitset.size; i++) {
         int last_bit_id = tmp_bitset.size - 1;
         bitset_assign(&bitset, i, bitset_test(&tmp_bitset, last_bit_id - i));
@@ -247,18 +247,19 @@ int lib_quit(lua_State *L)
 int lib_zoom(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    struct tagset *ts = monitor_get_active_tagset(m);
+    struct tagset *tagset = monitor_get_active_tagset(m);
 
     struct container *sel = get_focused_container(m);
 
     if (!sel)
         return 0;
 
-    int position = wlr_list_find(&ts->list_set->tiled_containers, cmp_ptr, sel);
+    guint position;
+    g_ptr_array_find(tagset->list_set->tiled_containers, sel, &position);
     if (position == INVALID_POSITION)
         return 0;
 
-    if (sel == ts->list_set->tiled_containers.items[0]) {
+    if (sel == g_ptr_array_index(tagset->list_set->tiled_containers, 0)) {
         repush(1, 0);
     } else {
         repush(position, 0);
@@ -267,12 +268,12 @@ int lib_zoom(lua_State *L)
     arrange();
 
     // focus new master window
-    struct container *con0 = get_container(ts, 0);
+    struct container *con0 = get_container(tagset, 0);
     focus_container(con0, FOCUS_NOOP);
 
     struct layout *lt = get_layout_in_monitor(m);
     if (lt->options.arrange_by_focus) {
-        focus_most_recent_container(ts, FOCUS_NOOP);
+        focus_most_recent_container(tagset, FOCUS_NOOP);
         arrange();
     }
     return 0;
@@ -428,7 +429,7 @@ int lib_swap_workspace(lua_State *L)
     struct monitor *m = selected_monitor;
     struct tagset *tagset = monitor_get_active_tagset(m);
 
-    for (int i = 0; i < tagset->list_set->tiled_containers.length; i++) {
+    for (int i = 0; i < tagset->list_set->tiled_containers->len; i++) {
         struct container *con = get_container(0, i);
         if (exist_on(get_tagset_from_workspace_id(ws_id1), con)) {
             con->client->ws_id = ws_id2;

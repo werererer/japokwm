@@ -117,7 +117,7 @@ void unmap_notifyx11(struct wl_listener *listener, void *data)
     container_damage_whole(c->con);
     remove_container_from_tile(con);
 
-    remove_in_composed_list(&server.client_lists, cmp_ptr, c);
+    remove_in_composed_list(server.client_lists, cmp_ptr, c);
 
     arrange();
     struct monitor *m = selected_monitor;
@@ -173,7 +173,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     switch (c->type) {
         case X11_MANAGED:
             {
-                wlr_list_push(&server.normal_clients, c);
+                g_ptr_array_add(server.normal_clients, c);
 
                 con->on_top = false;
                 if (wants_floating(con->client)) {
@@ -184,12 +184,12 @@ void maprequestx11(struct wl_listener *listener, void *data)
             }
         case X11_UNMANAGED:
             {
-                wlr_list_push(&server.independent_clients, c);
+                g_ptr_array_add(server.independent_clients, c);
 
                 struct workspace *ws = monitor_get_active_workspace(m);
                 if (is_popup_menu(c) || xwayland_surface->parent) {
-                    remove_in_composed_list(&ws->list_set->focus_stack_lists, cmp_ptr, con);
-                    wlr_list_insert(&ws->list_set->focus_stack_normal, 1, con);
+                    remove_in_composed_list(ws->list_set->focus_stack_lists, cmp_ptr, con);
+                    g_ptr_array_insert(ws->list_set->focus_stack_normal, 1, con);
                 } else {
                     con->on_top = true;
                     focus_container(con, FOCUS_NOOP);

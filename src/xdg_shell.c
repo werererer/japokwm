@@ -88,7 +88,7 @@ void map_request(struct wl_listener *listener, void *data)
     struct workspace *ws = get_workspace(c->ws_id);
     c->bw = ws->layout->options.tile_border_px;
 
-    wlr_list_push(&server.normal_clients, c);
+    g_ptr_array_add(server.normal_clients, c);
 
     struct container *con = c->con;
     add_container_to_tile(con);
@@ -106,7 +106,7 @@ void unmap_notify(struct wl_listener *listener, void *data)
     container_damage_whole(c->con);
     remove_container_from_tile(con);
 
-    remove_in_composed_list(&server.client_lists, cmp_ptr, c);
+    remove_in_composed_list(server.client_lists, cmp_ptr, c);
 
     arrange();
     struct monitor *m = selected_monitor;

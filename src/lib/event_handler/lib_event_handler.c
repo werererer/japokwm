@@ -13,7 +13,7 @@ int lib_add_listener(lua_State *L)
     lua_pop(L, 1);
 
     struct event_handler *event_handler = server.default_layout->options.event_handler;
-    struct wlr_list *signal = event_name_to_signal(event_handler, event);
-    wlr_list_push(signal, func_ref);
+    GPtrArray *signal = event_name_to_signal(event_handler, event);
+    g_ptr_array_add(signal, func_ref);
     return 0;
 }

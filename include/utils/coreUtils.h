@@ -6,7 +6,6 @@
 #include <wayland-util.h>
 #include <wlr/backend.h>
 #include <wlr/render/wlr_texture.h>
-#include <wlr/types/wlr_list.h>
 #include <wlr/types/wlr_output_layout.h>
 #include <wlr/types/wlr_seat.h>
 #include <wlr/types/wlr_xdg_shell.h>
@@ -15,8 +14,6 @@
 #include "options.h"
 
 /* macros */
-#define MAX(A, B)               ((A) > (B) ? (A) : (B))
-#define MIN(A, B)               ((A) < (B) ? (A) : (B))
 //NOLINTNEXTLINE
 #define LENGTH(X)               (sizeof X / sizeof X[0])
 #define END(A)                  ((A) + LENGTH(A))
@@ -95,23 +92,19 @@ void lua_get_default_master_layout_data(lua_State *L);
  */
 void lua_get_default_resize_data(lua_State *L);
 
-void wlr_list_clear(struct wlr_list *list, void (*destroy_func)(void *));
-bool wlr_list_empty(struct wlr_list *list);
+void wlr_list_clear(GPtrArray *array, void (*destroy_func)(void *));
 
 typedef int (*cmp_func_t)(const void*, const void*);
-/* return 0 on success and 1 on failure */
-int wlr_list_remove(struct wlr_list *list,
+
+/* return true on success and false on failure */
+bool list_remove(GPtrArray *array, int (*compare)(const void *, const void *), const void *cmp_to);
+bool remove_in_composed_list(GPtrArray *array, int (*compare)(const void *, const void *), void *cmp_to);
+int find_in_composed_list(GPtrArray *lists,
         int (*compare)(const void *, const void *), const void *cmp_to);
-/* return 0 on success and 1 on failure */
-int remove_in_composed_list(struct wlr_list *lists,
-        int (*compare)(const void *, const void *), const void *cmp_to);
-int find_in_composed_list(struct wlr_list *lists,
-        int (*compare)(const void *, const void *), const void *cmp_to);
-struct wlr_list *find_list_in_composed_list(struct wlr_list *lists,
+GPtrArray *find_list_in_composed_list(GPtrArray *arrays,
         int (*compare)(const void *, const void *), const void *cmp_to);
 
-struct wlr_list *list_insert_into_relative_position(struct wlr_list *lists,
-        int index, void *item);
+GPtrArray *list_insert_into_relative_position(GPtrArray *lists, int index, void *item);
 
 // compare pointers and return 0 if they are equal and 1 otherwise
 int cmp_ptr(const void *ptr1, const void *ptr2);
@@ -123,16 +116,16 @@ void print_trace();
 
 /* a composed list is just a list consisting of lists so that if an index i is
  * given it returns the same value as if all the lists where concatenated */
-void *get_in_composed_list(struct wlr_list *lists, int i);
-struct wlr_list *get_list_at_i_in_composed_list(struct wlr_list *lists, int i);
-void delete_from_composed_list(struct wlr_list *lists, int i);
+void *get_in_composed_list(GPtrArray *arrays, int i);
+GPtrArray *get_list_at_i_in_composed_list(GPtrArray *arrays, int i);
+void delete_from_composed_list(GPtrArray *arrays, int i);
 
-int length_of_list(struct wlr_list *list);
-int length_of_composed_list(struct wlr_list *lists);
+int length_of_list(GPtrArray *array);
+int length_of_composed_list(GPtrArray *array);
 int relative_index_to_absolute_index(int i, int j, int length);
 
-void *get_relative_item_in_list(struct wlr_list *list, int i, int j);
-void *get_relative_item_in_composed_list(struct wlr_list *lists, int i, int j);
+void *get_relative_item_in_list(GPtrArray *array, int i, int j);
+void *get_relative_item_in_composed_list(GPtrArray *arrays, int i, int j);
 
 int exec(const char *cmd);
 bool is_approx_equal(double a, double b, double error_range);

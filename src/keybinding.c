@@ -108,11 +108,11 @@ static bool is_same_keybind(const char *bind, const char *bind2)
     return same;
 }
 
-static bool process_binding(lua_State *L, char *bind, struct wlr_list *keybindings)
+static bool process_binding(lua_State *L, char *bind, GPtrArray *keybindings)
 {
     bool handled = false;
-    for (int i = 0; i < keybindings->length; i++) {
-        struct keybinding *keybinding = keybindings->items[i];
+    for (int i = 0; i < keybindings->len; i++) {
+        struct keybinding *keybinding = g_ptr_array_index(keybindings, i);
         if (is_same_keybind(bind, keybinding->binding)) {
             lua_rawgeti(L, LUA_REGISTRYINDEX, keybinding->lua_func_ref);
             lua_call_safe(L, 0, 0, 0);
@@ -132,7 +132,7 @@ bool handle_keybinding(int mods, int sym)
 {
     char bind[128] = "";
     sym_to_binding(bind, mods, sym);
-    bool handled = process_binding(L, bind, &server.default_layout->options.keybindings);
+    bool handled = process_binding(L, bind, server.default_layout->options.keybindings);
     return handled;
 }
 

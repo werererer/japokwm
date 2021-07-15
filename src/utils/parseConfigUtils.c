@@ -492,16 +492,6 @@ struct layout get_config_key(lua_State *L, char *name)
     return key;
 }
 
-void get_config_str_arr(lua_State *L, struct wlr_list *resArr, char *name)
-{
-    lua_getglobal_safe(L, name);
-    size_t len = lua_rawlen(L, -1);
-
-    for (int i = 0; i < len; i++)
-        wlr_list_push(resArr, get_config_array_str(L, name, i+1));
-    lua_pop(L, 1);
-}
-
 void get_config_int_arr(lua_State *L, int resArr[], char *name)
 {
     lua_getglobal_safe(L, name);

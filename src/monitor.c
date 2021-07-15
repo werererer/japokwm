@@ -60,8 +60,8 @@ void create_monitor(struct wl_listener *listener, void *data)
     m->mode.notify = handle_output_mode;
     wl_signal_add(&output->events.mode, &m->mode);
 
-    bool is_first_monitor = server.mons.length == 0;
-    wlr_list_push(&server.mons, m);
+    bool is_first_monitor = server.mons->len == 0;
+    g_ptr_array_add(server.mons, m);
 
     /* Adds this to the output layout. The add_auto function arranges outputs
      * from left-to-right in the order they appear. A more sophisticated
@@ -84,23 +84,22 @@ void create_monitor(struct wl_listener *listener, void *data)
         focus_monitor(m);
         load_config(L);
 
-        if (server.default_layout->options.tag_names.length <= 0) {
+        if (server.default_layout->options.tag_names->len <= 0) {
             handle_error("tag_names is empty, loading default tag_names");
-            init_tagnames(&server.default_layout->options.tag_names);
+            create_tagnames(&server.default_layout->options.tag_names);
         }
 
-        create_workspaces(&server.workspaces,
-                &server.default_layout->options.tag_names);
+        server.workspaces = create_workspaces(server.default_layout->options.tag_names);
 
         call_on_start_function(server.default_layout->options.event_handler);
     }
 
     evaluate_monrules(output);
 
-    focus_next_unoccupied_workspace(m, &server.workspaces, get_workspace(0));
+    focus_next_unoccupied_workspace(m, server.workspaces, get_workspace(0));
     load_default_layout(L);
     struct workspace *ws = monitor_get_active_workspace(m);
-    copy_layout_from_selected_workspace(&server.workspaces);
+    copy_layout_from_selected_workspace(server.workspaces);
     set_root_color(m->root, ws->layout->options.root_color);
 
     if (!wlr_output_commit(output))
@@ -164,7 +163,7 @@ void destroy_monitor(struct wl_listener *listener, void *data)
     struct monitor *m = wl_container_of(listener, m, destroy);
 
     destroy_root(m->root);
-    wlr_list_remove(&server.mons, cmp_ptr, m);
+    list_remove(server.mons, cmp_ptr, m);
 }
 
 void center_mouse_in_monitor(struct monitor *m)
@@ -192,8 +191,8 @@ void transform_monitor(struct monitor *m, enum wl_output_transform transform)
 
 void update_monitor_geometries()
 {
-    for (int i = 0; i < server.mons.length; i++) {
-        struct monitor *m = server.mons.items[i];
+    for (int i = 0; i < server.mons->len; i++) {
+        struct monitor *m = g_ptr_array_index(server.mons, i);
         m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     }
 }
@@ -210,8 +209,8 @@ void focus_monitor(struct monitor *m)
     struct tagset *tagset = monitor_get_active_tagset(m);
     if (selected_monitor) {
         struct tagset *sel_ts = monitor_get_active_tagset(selected_monitor);
-        for (int i = 0; i < sel_ts->list_set->floating_containers.length; i++) {
-            struct container *con = sel_ts->list_set->floating_containers.items[i];
+        for (int i = 0; i < sel_ts->list_set->floating_containers->len; i++) {
+            struct container *con = g_ptr_array_index(sel_ts->list_set->floating_containers, i);
             if (visible_on(sel_ts, con)) {
                 struct workspace *ws = get_workspace(tagset->selected_ws_id);
                 move_container_to_workspace(con, ws);
@@ -226,15 +225,16 @@ void focus_monitor(struct monitor *m)
 struct monitor *dirtomon(int dir)
 {
     struct monitor *m = selected_monitor;
-    int m_index = wlr_list_find(&server.mons, cmp_ptr, m);
+    guint m_index;
+    g_ptr_array_find(server.mons, m, &m_index);
 
-    return get_relative_item_in_list(&server.mons, m_index, dir);
+    return get_relative_item_in_list(server.mons, m_index, dir);
 }
 
 struct monitor *output_to_monitor(struct wlr_output *output)
 {
-    for (int i = 0; i < server.mons.length; i++) {
-        struct monitor *m = server.mons.items[i];
+    for (int i = 0; i < server.mons->len; i++) {
+        struct monitor *m = g_ptr_array_index(server.mons, i);
         if (m->wlr_output == output) {
             return m;
         }

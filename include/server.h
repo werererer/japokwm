@@ -38,35 +38,35 @@ struct server {
     struct wlr_output_layout *output_layout;
     struct wl_list keyboards;
 
-    struct wlr_list workspaces;
+    GPtrArray *workspaces;
 
-    struct wlr_list visual_stack_lists;
-    struct wlr_list normal_visual_stack_lists;
-    struct wlr_list layer_visual_stack_lists;
+    GPtrArray *visual_stack_lists;
+    GPtrArray *normal_visual_stack_lists;
+    GPtrArray *layer_visual_stack_lists;
 
-    struct wlr_list tiled_visual_stack;
-    struct wlr_list floating_visual_stack;
-    struct wlr_list layer_visual_stack_background;
-    struct wlr_list layer_visual_stack_bottom;
-    struct wlr_list layer_visual_stack_top;
-    struct wlr_list layer_visual_stack_overlay;
+    GPtrArray *tiled_visual_stack;
+    GPtrArray *floating_visual_stack;
+    GPtrArray *layer_visual_stack_background;
+    GPtrArray *layer_visual_stack_bottom;
+    GPtrArray *layer_visual_stack_top;
+    GPtrArray *layer_visual_stack_overlay;
 
-    struct wlr_list scratchpad;
+    GPtrArray *scratchpad;
 
     const char *config_file;
     const char *config_dir;
 
     struct tagset *previous_tagset;
 
-    struct wlr_list client_lists;
-    struct wlr_list normal_clients;
-    struct wlr_list non_tiled_clients;
-    struct wlr_list independent_clients;
+    GPtrArray *client_lists;
+    GPtrArray *normal_clients;
+    GPtrArray *non_tiled_clients;
+    GPtrArray *independent_clients;
 
-    struct wlr_list mons;
-    struct wlr_list popups;
+    GPtrArray *mons;
+    GPtrArray *popups;
 
-    struct wlr_list tagsets;
+    GPtrArray *tagsets;
 
     struct wlr_surface *old_surface;
 };

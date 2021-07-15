@@ -2,7 +2,6 @@
 #define TAGSET_H
 
 #include <stdlib.h>
-#include <wlr/types/wlr_list.h>
 
 #include "bitset/bitset.h"
 #include "client.h"
@@ -38,10 +37,10 @@ struct tagset *get_tagset_from_workspace_id(int ws_id);
 
 struct container *get_container(struct tagset *tagset, int i);
 
-struct wlr_list *tagset_get_visible_lists(struct tagset *tagset);
-struct wlr_list *tagset_get_tiled_list(struct tagset *tagset);
-struct wlr_list *tagset_get_floating_list(struct tagset *tagset);
-struct wlr_list *tagset_get_hidden_list(struct tagset *tagset);
+GPtrArray *tagset_get_visible_lists(struct tagset *tagset);
+GPtrArray *tagset_get_tiled_list(struct tagset *tagset);
+GPtrArray *tagset_get_floating_list(struct tagset *tagset);
+GPtrArray *tagset_get_hidden_list(struct tagset *tagset);
 
 void workspace_id_to_tag(BitSet *dest, int ws_id);
 

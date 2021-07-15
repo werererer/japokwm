@@ -26,8 +26,8 @@ static void arrange_container(struct container *con, int arrange_position,
 
 void arrange()
 {
-    for (int i = 0; i < server.mons.length; i++) {
-        struct monitor *m = server.mons.items[i];
+    for (int i = 0; i < server.mons->len; i++) {
+        struct monitor *m = g_ptr_array_index(server.mons, i);
         arrange_monitor(m);
     }
 
@@ -173,7 +173,7 @@ int get_floating_container_count(struct tagset *tagset)
 
     int n = 0;
 
-    for (int i = 0; i < tagset->list_set->floating_containers.length; i++) {
+    for (int i = 0; i < tagset->list_set->floating_containers->len; i++) {
         struct container *con = get_container(tagset, i);
         if (con->client->type == LAYER_SHELL)
             continue;
@@ -207,16 +207,16 @@ void arrange_monitor(struct monitor *m)
     update_layout_counters(tagset);
     call_update_function(lt->options.event_handler, lt->n_area);
 
-    struct wlr_list *visible_container_lists = tagset_get_visible_lists(tagset);
-    struct wlr_list *tiled_containers = tagset_get_tiled_list(tagset);
-    struct wlr_list *hidden_containers = tagset_get_hidden_list(tagset); 
+    GPtrArray *visible_container_lists = tagset_get_visible_lists(tagset);
+    GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
+    GPtrArray *hidden_containers = tagset_get_hidden_list(tagset); 
 
     update_hidden_status_of_containers(m, visible_container_lists,
             tiled_containers, hidden_containers);
 
     if (!lt->options.arrange_by_focus) {
-        for (int i = 0; i < tagset->list_set->floating_containers.length; i++) {
-            struct container *con = tagset->list_set->floating_containers.items[i];
+        for (int i = 0; i < tagset->list_set->floating_containers->len; i++) {
+            struct container *con = g_ptr_array_index(tagset->list_set->floating_containers, i);
             if (con->geom_was_changed) {
                 resize(con, con->prev_floating_geom);
                 con->geom_was_changed = false;
@@ -230,7 +230,7 @@ void arrange_monitor(struct monitor *m)
 }
 
 void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,
-        struct wlr_list *tiled_containers)
+        GPtrArray *tiled_containers)
 {
     struct layout *lt = tagset_get_layout(tagset);
 
@@ -245,7 +245,7 @@ void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,
     container_surround_gaps(&root_geom, -actual_inner_gap);
 
     if (lt->options.smart_hidden_edges) {
-        if (tiled_containers->length <= 1) {
+        if (tiled_containers->len <= 1) {
             container_add_gaps(&root_geom, -lt->options.tile_border_px,
                     lt->options.hidden_edges);
         }
@@ -254,8 +254,8 @@ void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,
                 lt->options.hidden_edges);
     }
 
-    for (int i = 0; i < tiled_containers->length; i++) {
-        struct container *con = tiled_containers->items[i];
+    for (int i = 0; i < tiled_containers->len; i++) {
+        struct container *con = g_ptr_array_index(tiled_containers, i);
 
         /* // the monitor must be on the same monitor as it is tiled on else it is */
         /* // a bug */
@@ -360,28 +360,28 @@ void resize(struct container *con, struct wlr_box geom)
 }
 
 void update_hidden_status_of_containers(struct monitor *m, 
-        struct wlr_list *visible_container_lists, struct wlr_list *tiled_containers,
-        struct wlr_list *hidden_containers)
+        GPtrArray *visible_container_lists, GPtrArray *tiled_containers,
+        GPtrArray *hidden_containers)
 {
     // because the master are is included in n aswell as nmaster we have to
     // subtract the solution by one to count
     struct layout *lt = get_layout_in_monitor(m);
 
-    if (lt->n_tiled > tiled_containers->length) {
-        int n_missing = MIN(lt->n_tiled - tiled_containers->length, hidden_containers->length);
+    if (lt->n_tiled > tiled_containers->len) {
+        int n_missing = MIN(lt->n_tiled - tiled_containers->len, hidden_containers->len);
         for (int i = 0; i < n_missing; i++) {
-            struct container *con = hidden_containers->items[0];
+            struct container *con = g_ptr_array_index(hidden_containers, 0);
 
             con->hidden = false;
-            wlr_list_del(hidden_containers, 0);
-            wlr_list_push(tiled_containers, con);
+            g_ptr_array_remove_index(hidden_containers, 0);
+            g_ptr_array_add(tiled_containers, con);
         }
     } else {
-        int tile_containers_length = tiled_containers->length;
-        for (int i = lt->n_tiled; i < tile_containers_length; i++) {
-            struct container *con = wlr_list_pop(tiled_containers);
+        for (int i = lt->n_tiled; i < tiled_containers->len; i++) {
+            struct container *con = g_ptr_array_steal_index(tiled_containers,
+                    tiled_containers->len-1);
             con->hidden = true;
-            wlr_list_insert(hidden_containers, 0, con);
+            g_ptr_array_insert(hidden_containers, 0, con);
         }
     }
 
@@ -389,23 +389,23 @@ void update_hidden_status_of_containers(struct monitor *m,
         struct container *con = get_in_composed_list(visible_container_lists, i);
         con->hidden = false;
     }
-    for (int i = 0; i < hidden_containers->length; i++) {
-        struct container *con = hidden_containers->items[i];
+    for (int i = 0; i < hidden_containers->len; i++) {
+        struct container *con = g_ptr_array_index(hidden_containers, i);
         con->hidden = true;
     }
 }
 
 int get_container_count(struct tagset *tagset)
 {
-    return length_of_composed_list(&tagset->list_set->container_lists);
+    return length_of_composed_list(tagset->list_set->container_lists);
 }
 
 int get_tiled_container_count(struct tagset *tagset)
 {
     int n = 0;
-    struct wlr_list *tiled_containers = tagset_get_tiled_list(tagset);
-    struct wlr_list *hidden_containers = tagset_get_hidden_list(tagset);
+    GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
+    GPtrArray *hidden_containers = tagset_get_hidden_list(tagset);
 
-    n = tiled_containers->length + hidden_containers->length;
+    n = tiled_containers->len + hidden_containers->len;
     return n;
 }

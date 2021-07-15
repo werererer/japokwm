@@ -13,7 +13,7 @@ int lib_reload(lua_State *L)
 {
     server.default_layout->options = get_default_options();
 
-    remove_loaded_layouts(&server.workspaces);
+    remove_loaded_layouts(server.workspaces);
     load_config(L);
     load_default_layout(L);
 
@@ -135,17 +135,17 @@ int lib_set_default_layout(lua_State *L)
 // TODO refactor this function hard to read
 int lib_create_workspaces(lua_State *L)
 {
-    struct wlr_list *tag_names = &server.default_layout->options.tag_names;
+    GPtrArray *tag_names = server.default_layout->options.tag_names;
     wlr_list_clear(tag_names, NULL);
 
     size_t len = lua_rawlen(L, -1);
     for (int i = 0; i < len; i++) {
         char *ws_name = get_config_array_str(L, "workspaces", i+1);
-        wlr_list_push(tag_names, ws_name);
+        g_ptr_array_add(tag_names, ws_name);
     }
     lua_pop(L, 1);
 
-    update_workspaces(&server.workspaces, tag_names);
+    update_workspaces(server.workspaces, tag_names);
 
     ipc_event_workspace();
 
@@ -209,7 +209,7 @@ int lib_bind_key(lua_State *L)
     lua_ref_safe(L, LUA_REGISTRYINDEX, &keybinding->lua_func_ref);
     keybinding->binding = strdup(luaL_checkstring(L, -1));
     lua_pop(L, 1);
-    wlr_list_push(&server.default_layout->options.keybindings, keybinding);
+    g_ptr_array_add(server.default_layout->options.keybindings, keybinding);
     return 0;
 }
 

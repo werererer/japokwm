@@ -30,7 +30,7 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     struct monitor *m = wlr_layer_surface->output->data;
     client->m = m;
     struct container *con = create_container(client, m, false);
-    wlr_list_push(get_layer_list(wlr_layer_surface->client_pending.layer), con);
+    g_ptr_array_add(get_layer_list(wlr_layer_surface->client_pending.layer), con);
 
     // Temporarily set the layer's current state to client_pending
     // so that we can easily arrange it
@@ -74,7 +74,7 @@ void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
 
     if (c->surface.layer->mapped)
         unmap_layer_surface(c);
-    remove_in_composed_list(&server.layer_visual_stack_lists, cmp_ptr, c->con);
+    remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, c->con);
 
     wl_list_remove(&c->commit.link);
     wl_list_remove(&c->map.link);
@@ -108,26 +108,26 @@ void commitlayersurfacenotify(struct wl_listener *listener, void *data)
     container_damage_part(con);
 
     if (c->surface.layer->current.layer != wlr_layer_surface->current.layer) {
-        remove_in_composed_list(&server.layer_visual_stack_lists, cmp_ptr, con);
-        wlr_list_insert(get_layer_list(wlr_layer_surface->current.layer), 0, con);
+        remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
+        g_ptr_array_insert(get_layer_list(wlr_layer_surface->current.layer), 0, con);
     }
 }
 
-struct wlr_list *get_layer_list(enum zwlr_layer_shell_v1_layer layer)
+GPtrArray *get_layer_list(enum zwlr_layer_shell_v1_layer layer)
 {
-    struct wlr_list *new_list = NULL;
+    GPtrArray *new_list = NULL;
     switch (layer) {
         case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
-            new_list = server.layer_visual_stack_lists.items[3];
+            new_list = g_ptr_array_index(server.layer_visual_stack_lists, 3);
             break;
         case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
-            new_list = server.layer_visual_stack_lists.items[2];
+            new_list = g_ptr_array_index(server.layer_visual_stack_lists, 2);
             break;
         case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
-            new_list = server.layer_visual_stack_lists.items[1];
+            new_list = g_ptr_array_index(server.layer_visual_stack_lists, 1);
             break;
         case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
-            new_list = server.layer_visual_stack_lists.items[0];
+            new_list = g_ptr_array_index(server.layer_visual_stack_lists, 0);
             break;
     }
     return new_list;
@@ -144,14 +144,10 @@ void arrange_layers(struct monitor *m)
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
 
     // Arrange exclusive surfaces from top->bottom
-    arrangelayer(m, &server.layer_visual_stack_overlay,
-            &usable_area, 1);
-    arrangelayer(m, &server.layer_visual_stack_top,
-            &usable_area, 1);
-    arrangelayer(m, &server.layer_visual_stack_bottom,
-            &usable_area, 1);
-    arrangelayer(m, &server.layer_visual_stack_background,
-            &usable_area, 1);
+    arrangelayer(m, server.layer_visual_stack_overlay, &usable_area, 1);
+    arrangelayer(m, server.layer_visual_stack_top, &usable_area, 1);
+    arrangelayer(m, server.layer_visual_stack_bottom, &usable_area, 1);
+    arrangelayer(m, server.layer_visual_stack_background, &usable_area, 1);
 
     if (memcmp(&usable_area, &m->root->geom, sizeof(struct wlr_box))) {
         m->root->geom = usable_area;
@@ -159,21 +155,16 @@ void arrange_layers(struct monitor *m)
     }
 
     // Arrange non-exlusive surfaces from top->bottom
-    arrangelayer(m, &server.layer_visual_stack_overlay,
-            &usable_area, 0);
-    arrangelayer(m, &server.layer_visual_stack_top,
-            &usable_area, 0);
-    arrangelayer(m, &server.layer_visual_stack_bottom,
-            &usable_area, 0);
-    arrangelayer(m, &server.layer_visual_stack_background,
-            &usable_area, 0);
+    arrangelayer(m, server.layer_visual_stack_overlay, &usable_area, 0);
+    arrangelayer(m, server.layer_visual_stack_top, &usable_area, 0);
+    arrangelayer(m, server.layer_visual_stack_bottom, &usable_area, 0);
+    arrangelayer(m, server.layer_visual_stack_background, &usable_area, 0);
 
     // Find topmost keyboard interactive layer, if such a layer exists
     for (size_t i = 0; i < LENGTH(layers_above_shell); i++) {
-        struct wlr_list *layer_list = get_layer_list(layers_above_shell[i]);
-        int len = layer_list->length;
-        for (int j = len-1; j >= 0; j--) {
-            struct container *con = layer_list->items[j];
+        GPtrArray *layer_list = get_layer_list(layers_above_shell[i]);
+        for (int j = layer_list->len-1; j >= 0; j--) {
+            struct container *con = g_ptr_array_index(layer_list, j);
             struct client *c = con->client;
             struct wlr_layer_surface_v1 *layer_surface = c->surface.layer;
             if (layer_surface->current.keyboard_interactive && layer_surface->mapped) {
@@ -192,12 +183,12 @@ void arrange_layers(struct monitor *m)
 }
 
 
-void arrangelayer(struct monitor *m, struct wlr_list *list, struct wlr_box *usable_area, int exclusive)
+void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_area, int exclusive)
 {
     struct wlr_box full_area = m->geom;
 
-    for (int i = 0; i < list->length; i++) {
-        struct container *con = list->items[i];
+    for (int i = 0; i < array->len; i++) {
+        struct container *con = g_ptr_array_index(array, i);
         struct wlr_layer_surface_v1 *wlr_layer_surface = con->client->surface.layer;
         struct wlr_layer_surface_v1_state *state = &wlr_layer_surface->current;
         struct wlr_box bounds;

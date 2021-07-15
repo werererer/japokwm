@@ -15,7 +15,7 @@ deps += [luaDep]
 main = files('main.c')
 srcs = files(
     'bitset/bitset.c',
-    'bitset/vector.c',
+    'utils/vector.c',
     'client.c',
     'clipboard.c',
     'command.c',

@@ -3,37 +3,38 @@
 
 #include <stdlib.h>
 #include <wlr/types/wlr_list.h>
+#include <glib.h>
 
 struct list_set {
     /* list of all one dimensonal lists in list_set */
-    struct wlr_list all_lists;
+    GPtrArray *all_lists;
     /* consists out of the lists of tiled_containers, hidden_containers and
      * floating_containers */
-    struct wlr_list container_lists;
-    struct wlr_list visible_container_lists;
+    GPtrArray *container_lists;
+    GPtrArray *visible_container_lists;
 
-    struct wlr_list floating_containers;
-    struct wlr_list tiled_containers;
-    struct wlr_list hidden_containers;
+    GPtrArray *floating_containers;
+    GPtrArray *tiled_containers;
+    GPtrArray *hidden_containers;
 
-    struct wlr_list independent_containers;
+    GPtrArray *independent_containers;
 
     /* 2D lists */
-    struct wlr_list focus_stack_lists_with_layer_shell;
-    struct wlr_list focus_stack_visible_lists;
-    struct wlr_list focus_stack_lists;
+    GPtrArray *focus_stack_lists_with_layer_shell;
+    GPtrArray *focus_stack_visible_lists;
+    GPtrArray *focus_stack_lists;
 
-    struct wlr_list focus_stack_layer_background;
-    struct wlr_list focus_stack_layer_bottom;
-    struct wlr_list focus_stack_layer_top;
-    struct wlr_list focus_stack_layer_overlay;
-    struct wlr_list focus_stack_on_top;
-    struct wlr_list focus_stack_normal;
-    struct wlr_list focus_stack_hidden;
-    struct wlr_list focus_stack_not_focusable;
+    GPtrArray *focus_stack_layer_background;
+    GPtrArray *focus_stack_layer_bottom;
+    GPtrArray *focus_stack_layer_top;
+    GPtrArray *focus_stack_layer_overlay;
+    GPtrArray *focus_stack_on_top;
+    GPtrArray *focus_stack_normal;
+    GPtrArray *focus_stack_hidden;
+    GPtrArray *focus_stack_not_focusable;
 
     /* this list must include a pointer to its parent */
-    struct wlr_list change_affected_list_sets;
+    GPtrArray *change_affected_list_sets;
 };
 
 struct list_set *create_list_set();

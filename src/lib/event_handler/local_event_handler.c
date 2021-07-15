@@ -13,7 +13,7 @@ int local_add_listener(lua_State *L)
     const char *event = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    struct wlr_list *signal = event_name_to_signal(event_handler, event);
-    wlr_list_push(signal, func_ref);
+    GPtrArray *signal = event_name_to_signal(event_handler, event);
+    g_ptr_array_add(signal, func_ref);
     return 0;
 }

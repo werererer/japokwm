@@ -109,8 +109,8 @@ json_object *ipc_json_describe_tagsets()
 {
     json_object *array = json_object_new_array();
 
-    for (int i = 0; i < server.workspaces.length; i++) {
-        struct workspace *ws = server.workspaces.items[i];
+    for (int i = 0; i < server.workspaces->len; i++) {
+        struct workspace *ws = get_workspace(i);
 
         struct tagset *tagset = get_tagset_from_workspace_id(i);
         struct monitor *m = ws->m;

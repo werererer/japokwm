@@ -37,10 +37,10 @@ int lib_get_next_empty_workspace(lua_State *L)
     struct workspace *ws;
     switch (dir) {
         case WLR_DIRECTION_LEFT:
-            ws = get_prev_empty_workspace(&server.workspaces, id);
+            ws = get_prev_empty_workspace(server.workspaces, id);
             break;
         case WLR_DIRECTION_RIGHT:
-            ws = get_next_empty_workspace(&server.workspaces, id);
+            ws = get_next_empty_workspace(server.workspaces, id);
             break;
         default:
             ws = get_workspace(id);

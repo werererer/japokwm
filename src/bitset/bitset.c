@@ -1,5 +1,5 @@
 #include "bitset/bitset.h"
-#include "bitset/vector.h"
+#include "utils/vector.h"
 #include "utils/coreUtils.h"
 #include <assert.h>
 

@@ -43,35 +43,35 @@ START_TEST(get_container_count_test)
 
 START_TEST(get_relative_item_test)
 {
-    struct wlr_list lists;
+    GPtrArray *lists;
 
-    struct wlr_list list1;
-    struct wlr_list list2;
-    struct wlr_list list3;
+    GPtrArray *list1;
+    GPtrArray *list2;
+    GPtrArray *list3;
 
-    wlr_list_init(&lists);
+    lists = g_ptr_array_new();
 
-    wlr_list_init(&list1);
-    wlr_list_init(&list2);
-    wlr_list_init(&list3);
+    list1 = g_ptr_array_new();
+    list2 = g_ptr_array_new();
+    list3 = g_ptr_array_new();
 
-    wlr_list_push(&lists, &list1);
-    wlr_list_push(&lists, &list2);
-    wlr_list_push(&lists, &list3);
+    g_ptr_array_add(lists, list1);
+    g_ptr_array_add(lists, list2);
+    g_ptr_array_add(lists, list3);
 
-    wlr_list_push(&list1, "0");
-    wlr_list_push(&list1, "1");
+    g_ptr_array_add(list1, "0");
+    g_ptr_array_add(list1, "1");
 
-    wlr_list_push(&list1, "2");
-    wlr_list_push(&list2, "3");
-    wlr_list_push(&list2, "4");
-    wlr_list_push(&list2, "5");
+    g_ptr_array_add(list1, "2");
+    g_ptr_array_add(list2, "3");
+    g_ptr_array_add(list2, "4");
+    g_ptr_array_add(list2, "5");
 
-    wlr_list_push(&list3, "6");
-    wlr_list_push(&list3, "7");
-    wlr_list_push(&list3, "8");
+    g_ptr_array_add(list3, "6");
+    g_ptr_array_add(list3, "7");
+    g_ptr_array_add(list3, "8");
 
-    ck_assert_str_eq(get_relative_item_in_composed_list(&lists, 4, 1), "5");
+    ck_assert_str_eq(get_relative_item_in_composed_list(lists, 4, 1), "5");
 } END_TEST
 
 

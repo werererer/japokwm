@@ -224,8 +224,8 @@ void client_handle_set_app_id(struct wl_listener *listener, void *data)
 
 void reset_tiled_client_borders(int border_px)
 {
-    for (int i = 0; i < server.normal_clients.length; i++) {
-        struct client *c = server.normal_clients.items[i];
+    for (int i = 0; i < server.normal_clients->len; i++) {
+        struct client *c = g_ptr_array_index(server.normal_clients, i);
         struct tagset *tagset = selected_monitor->tagset;
         if (!exist_on(tagset, c->con))
             continue;
@@ -237,8 +237,8 @@ void reset_tiled_client_borders(int border_px)
 
 void reset_floating_client_borders(int border_px)
 {
-    for (int i = 0; i < server.normal_clients.length; i++) {
-        struct client *c = server.normal_clients.items[i];
+    for (int i = 0; i < server.normal_clients->len; i++) {
+        struct client *c = g_ptr_array_index(server.normal_clients, i);
         struct tagset *tagset = selected_monitor->tagset;
         if (!exist_on(tagset, c->con))
             continue;

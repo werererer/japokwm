@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "bitset/vector.h"
+#include "utils/vector.h"
 
 /****************** DEFINTIIONS ******************/
 

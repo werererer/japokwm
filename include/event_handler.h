@@ -3,18 +3,19 @@
 
 #include <lua.h>
 #include <stdlib.h>
-#include <wlr/types/wlr_list.h>
+#include <glib.h>
 
 struct event_handler {
-    struct wlr_list on_start_func_refs;
-    struct wlr_list on_focus_func_refs;
-    struct wlr_list on_update_func_refs;
-    struct wlr_list on_create_container_func_refs;
+    GPtrArray *on_start_func_refs;
+    GPtrArray *on_focus_func_refs;
+    GPtrArray *on_update_func_refs;
+    GPtrArray *on_create_container_func_refs;
 };
 
 struct event_handler *create_event_handler();
 
-struct wlr_list *event_name_to_signal(struct event_handler *event_handler,
+
+GPtrArray *event_name_to_signal(struct event_handler *event_handler,
         const char *event);
 
 /*

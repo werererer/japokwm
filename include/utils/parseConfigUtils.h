@@ -37,7 +37,6 @@ void notify_msg(const char *msg);
 void handle_error(const char *msg);
 
 // get array values
-void get_config_str_arr(lua_State *L, struct wlr_list *resArr, char *name);
 void get_config_float_arr(lua_State *L, float *resArr, char *name);
 void get_config_int_arr(lua_State *L, int *resArr, char *name);
 void get_config_rule_arr(lua_State *L, struct rule **rules, size_t *rule_count, char *name);

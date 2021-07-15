@@ -112,7 +112,7 @@ void popup_handle_new_popup(struct wl_listener *listener, void *data)
     if (m != selected_monitor)
         return;
     struct xdg_popup *popup = create_popup(m, xdg_popup, con->geom, con);
-    wlr_list_insert(&server.popups, 0, popup);
+    g_ptr_array_insert(server.popups, 0, popup);
 }
 
 static void popup_handle_new_subpopup(struct wl_listener *listener, void *data)
@@ -123,13 +123,13 @@ static void popup_handle_new_subpopup(struct wl_listener *listener, void *data)
 
     struct xdg_popup *popup = create_popup(parent_popup->m, xdg_popup,
             parent_popup->geom, parent_popup->toplevel);
-    wlr_list_insert(&server.popups, 0, popup);
+    g_ptr_array_insert(server.popups, 0, popup);
 }
 
 void popup_handle_destroy(struct wl_listener *listener, void *data)
 {
     struct xdg_popup *popup = wl_container_of(listener, popup, destroy);
-    wlr_list_remove(&server.popups, cmp_ptr, popup);
+    list_remove(server.popups, cmp_ptr, popup);
 
     destroy_popup(popup);
 }
@@ -188,12 +188,12 @@ inline struct xdg_popup *get_latest_popup()
     if (!popups_exist())
         return NULL;
 
-    struct xdg_popup *popup = server.popups.items[0];
+    struct xdg_popup *popup = g_ptr_array_index(server.popups, 0);
     return popup;
 }
 
 
 inline bool popups_exist()
 {
-    return server.popups.length > 0;
+    return server.popups->len > 0;
 }
