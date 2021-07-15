@@ -36,14 +36,12 @@ struct list_set {
     struct wlr_list change_affected_list_sets;
 };
 
-typedef void (*operation_t)(struct list_set *, void *);
-
 struct list_set *create_list_set();
 void destroy_list_set(struct list_set *list_set);
 
+void append_list_set(struct list_set *dest, struct list_set *src);
 void clear_list_set(struct list_set *list_set);
 void subscribe_list_set(struct list_set *dest, struct list_set *src);
 void unsubscribe_list_set(struct list_set *dest, struct list_set *src);
-void write_list_set(struct list_set *dest, struct list_set *src);
 
 #endif /* LIST_SET_H */
