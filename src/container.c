@@ -407,7 +407,7 @@ void focus_on_hidden_stack(struct monitor *m, int i)
         return;
 
     struct tagset *tagset = monitor_get_active_tagset(m);
-    struct wlr_list *hidden_containers = get_hidden_list(tagset->list_set);
+    struct wlr_list *hidden_containers = tagset_get_hidden_list(tagset);
     struct container *con = get_relative_item_in_list(hidden_containers, 0, i);
 
     if (!con)
@@ -426,7 +426,7 @@ void focus_on_hidden_stack(struct monitor *m, int i)
      * container to the end of the containers array */
     wlr_list_remove(hidden_containers, cmp_ptr, con);
 
-    struct wlr_list *visible_container_lists = get_visible_lists(tagset->list_set);
+    struct wlr_list *visible_container_lists = tagset_get_visible_lists(tagset);
     struct wlr_list *focus_list = find_list_in_composed_list(
             visible_container_lists, cmp_ptr, sel);
     int sel_index = wlr_list_find(focus_list, cmp_ptr, sel);

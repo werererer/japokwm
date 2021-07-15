@@ -30,7 +30,6 @@ void focus_most_recent_container(struct tagset *tagset, enum focus_actions a);
 void focus_tagset(struct tagset *tagset);
 void tagset_set_tags(struct tagset *tagset, BitSet bitset);
 void tagset_focus_workspace(int ws_id);
-void tagset_add(struct tagset *tagset, BitSet bitset);
 void tagset_toggle_add(struct tagset *tagset, BitSet bitset);
 void tagset_focus_tags(int ws_id, struct BitSet bitset);
 

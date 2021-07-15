@@ -46,9 +46,4 @@ void unsubscribe_list_set(struct list_set *dest, struct list_set *src);
 void subscribe_list_set(struct list_set *dest, struct list_set *src);
 void write_list_set(struct list_set *dest, struct list_set *src);
 
-struct wlr_list *get_visible_lists(struct list_set *list_set);
-struct wlr_list *get_tiled_list(struct list_set *list_set);
-struct wlr_list *get_floating_list(struct list_set *list_set);
-struct wlr_list *get_hidden_list(struct list_set *list_set);
-
 #endif /* LIST_SET_H */

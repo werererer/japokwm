@@ -154,23 +154,3 @@ void write_list_set(struct list_set *dest, struct list_set *src)
     clear_list_set(dest);
     append_list_set(dest, src);
 }
-
-struct wlr_list *get_visible_lists(struct list_set *list_set)
-{
-    return &list_set->visible_container_lists;
-}
-
-struct wlr_list *get_tiled_list(struct list_set *list_set)
-{
-    return &list_set->tiled_containers;
-}
-
-struct wlr_list *get_floating_list(struct list_set *list_set)
-{
-    return &list_set->floating_containers;
-}
-
-struct wlr_list *get_hidden_list(struct list_set *list_set)
-{
-    return &list_set->hidden_containers;
-}

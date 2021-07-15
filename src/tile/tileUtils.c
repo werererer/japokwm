@@ -207,9 +207,9 @@ void arrange_monitor(struct monitor *m)
     update_layout_counters(tagset);
     call_update_function(lt->options.event_handler, lt->n_area);
 
-    struct wlr_list *visible_container_lists = get_visible_lists(tagset->list_set);
-    struct wlr_list *tiled_containers = get_tiled_list(tagset->list_set);
-    struct wlr_list *hidden_containers = get_hidden_list(tagset->list_set); 
+    struct wlr_list *visible_container_lists = tagset_get_visible_lists(tagset);
+    struct wlr_list *tiled_containers = tagset_get_tiled_list(tagset);
+    struct wlr_list *hidden_containers = tagset_get_hidden_list(tagset); 
 
     update_hidden_status_of_containers(m, visible_container_lists,
             tiled_containers, hidden_containers);
@@ -403,8 +403,8 @@ int get_container_count(struct tagset *tagset)
 int get_tiled_container_count(struct tagset *tagset)
 {
     int n = 0;
-    struct wlr_list *tiled_containers = get_tiled_list(tagset->list_set);
-    struct wlr_list *hidden_containers = get_hidden_list(tagset->list_set);
+    struct wlr_list *tiled_containers = tagset_get_tiled_list(tagset);
+    struct wlr_list *hidden_containers = tagset_get_hidden_list(tagset);
 
     n = tiled_containers->length + hidden_containers->length;
     return n;
