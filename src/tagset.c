@@ -16,6 +16,8 @@ static void tagset_load_workspaces(struct tagset *tagset);
 static void tagset_unload_workspaces(struct tagset *tagset);
 static void move_workspace_back(BitSet *old_workspaces, BitSet *workspaces);
 static void force_on_current_monitor(struct tagset *tagset, BitSet bitset);
+static void focus_action(struct tagset *tagset);
+static void unfocus_action(struct tagset *old_tagset, struct monitor *new_monitor, BitSet *new_bits);
 
 static void tagset_load_workspaces(struct tagset *tagset)
 {
@@ -37,8 +39,6 @@ static void tagset_load_workspaces(struct tagset *tagset)
     }
     tagset->loaded = true;
 }
-
-
 
 static void tagset_unload_workspaces(struct tagset *tagset)
 {
@@ -126,6 +126,34 @@ static void force_on_current_monitor(struct tagset *tagset, BitSet bitset)
     }
 }
 
+static void focus_action(struct tagset *tagset)
+{
+    struct workspace *ws = get_workspace(tagset->selected_ws_id);
+    if (!ws->m) {
+        ws->m = tagset->m;
+    }
+}
+
+static void unfocus_action(struct tagset *old_tagset, struct monitor *new_monitor, BitSet *new_bits)
+{
+    if (!old_tagset)
+        return;
+
+    move_workspace_back(&old_tagset->workspaces, new_bits);
+    for (int i = 0; i < old_tagset->workspaces.size; i++) {
+        bool bit = bitset_test(&old_tagset->workspaces, i);
+
+        if (!bit)
+            continue;
+
+        struct workspace *ws = get_workspace(i);
+        bool is_empty = is_workspace_empty(ws);
+        if (is_empty && ws->m == selected_monitor && ws->m == new_monitor) {
+            ws->m = NULL;
+        }
+    }
+}
+
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet workspaces)
 {
     struct tagset *tagset = calloc(1, sizeof(struct tagset));
@@ -169,34 +197,6 @@ void focus_most_recent_container(struct tagset *tagset, enum focus_actions a)
     }
 
     focus_container(con, a);
-}
-
-static void unfocus_action(struct tagset *old_tagset, struct monitor *new_monitor, BitSet *new_bits)
-{
-    if (!old_tagset)
-        return;
-
-    move_workspace_back(&old_tagset->workspaces, new_bits);
-    for (int i = 0; i < old_tagset->workspaces.size; i++) {
-        bool bit = bitset_test(&old_tagset->workspaces, i);
-
-        if (!bit)
-            continue;
-
-        struct workspace *ws = get_workspace(i);
-        bool is_empty = is_workspace_empty(ws);
-        if (is_empty && ws->m == selected_monitor && ws->m == new_monitor) {
-            ws->m = NULL;
-        }
-    }
-}
-
-static void focus_action(struct tagset *tagset)
-{
-    struct workspace *ws = get_workspace(tagset->selected_ws_id);
-    if (!ws->m) {
-        ws->m = tagset->m;
-    }
 }
 
 void focus_tagset(struct tagset *tagset)
