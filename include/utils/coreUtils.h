@@ -93,6 +93,7 @@ void lua_get_default_master_layout_data(lua_State *L);
 void lua_get_default_resize_data(lua_State *L);
 
 void wlr_list_clear(GPtrArray *array, void (*destroy_func)(void *));
+void wlr_list_cat(GPtrArray *dest, GPtrArray *src);
 
 typedef int (*cmp_func_t)(const void*, const void*);
 

@@ -5,7 +5,7 @@
 
 START_TEST(show_scratchpad_crash_test)
 {
-    show_scratchpad();
+    /* show_scratchpad(); */
 } END_TEST
 
 Suite *suite()

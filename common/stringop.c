@@ -6,7 +6,6 @@
 #include <string.h>
 #include <strings.h>
 #include <wordexp.h>
-#include <wlr/types/wlr_list.h>
 #include "stringop.h"
 
 static const char whitespace[] = " \f\n\r\t\v";
@@ -75,14 +74,13 @@ int lenient_strcmp(char *a, char *b) {
     }
 }
 
-struct wlr_list split_string(const char *str, const char *delims) {
-    struct wlr_list res;
-    wlr_list_init(&res);
+GPtrArray *split_string(const char *str, const char *delims) {
+    GPtrArray *res = g_ptr_array_new();
     char *copy = strdup(str);
 
     char *token = strtok(copy, delims);
     while (token) {
-        wlr_list_push(&res, strdup(token));
+        g_ptr_array_add(res, strdup(token));
         token = strtok(NULL, delims);
     }
     free(copy);

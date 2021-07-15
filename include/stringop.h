@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
-#include <wlr/types/wlr_list.h>
+#include <glib.h>
 
 void strip_whitespace(char *str);
 void strip_quotes(char *str);
@@ -16,7 +16,7 @@ char *lenient_strncat(char *dest, const char *src, size_t len);
 int lenient_strcmp(char *a, char *b);
 
 // Simply split a string with delims, free with `list_free_items_and_destroy`
-struct wlr_list split_string(const char *str, const char *delims);
+GPtrArray *split_string(const char *str, const char *delims);
 
 // Splits an argument string, keeping quotes intact
 char **split_args(const char *str, int *argc);

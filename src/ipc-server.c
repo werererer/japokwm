@@ -16,7 +16,6 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <wayland-server-core.h>
-#include <wlr/types/wlr_list.h>
 #include <wlr/util/log.h>
 
 #include "ipc-json.h"
@@ -30,7 +29,7 @@
 
 static int ipc_socket = -1;
 static struct sockaddr_un *ipc_sockaddr = NULL;
-static struct wlr_list ipc_client_list;
+static GPtrArray *ipc_client_list;
 
 static const char ipc_magic[] = {'i', '3', '-', 'i', 'p', 'c'};
 
@@ -129,7 +128,7 @@ void ipc_init(struct wl_event_loop *wl_event_loop) {
     setenv("SWAYSOCK", ipc_sockaddr->sun_path, 1);
     setenv("JAPOKWMSOCK", ipc_sockaddr->sun_path, 1);
 
-    wlr_list_init(&ipc_client_list);
+    ipc_client_list = g_ptr_array_new();
 
     wl_event_loop_add_fd(wl_event_loop, ipc_socket,
             WL_EVENT_READABLE, ipc_handle_connection, wl_event_loop);
@@ -199,7 +198,7 @@ int ipc_handle_connection(int fd, uint32_t mask, void *data) {
         return 0;
     }
 
-    wlr_list_push(&ipc_client_list, client);
+    g_ptr_array_add(ipc_client_list, client);
     return 0;
 }
 
@@ -272,8 +271,8 @@ int ipc_client_handle_readable(int client_fd, uint32_t mask, void *data) {
 
 static void ipc_send_event(const char *json_string, enum ipc_command_type event) {
     struct ipc_client *client;
-    for (size_t i = 0; i < ipc_client_list.length; i++) {
-        client = ipc_client_list.items[i];
+    for (size_t i = 0; i < ipc_client_list->len; i++) {
+        client = g_ptr_array_index(ipc_client_list, i);
         if ((client->subscribed_events & event_mask(event)) == 0) {
             continue;
         }
@@ -345,10 +344,10 @@ void ipc_client_disconnect(struct ipc_client *client) {
         wl_event_source_remove(client->writable_event_source);
     }
     size_t i = 0;
-    while (i < ipc_client_list.length && ipc_client_list.items[i] != client) {
+    while (i < ipc_client_list->len && g_ptr_array_index(ipc_client_list, i) != client) {
         i++;
     }
-    wlr_list_del(&ipc_client_list, i);
+    g_ptr_array_remove_index(ipc_client_list, i);
     free(client->write_buffer);
     close(client->fd);
     free(client);
@@ -396,18 +395,18 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
                 line = strtok(NULL, "\n");
             }
 
-            struct wlr_list res_list = execute_command(buf, NULL, NULL);
+            GPtrArray *res_list = execute_command(buf, NULL, NULL);
             /* transaction_commit_dirty(); */
             char *json = cmd_results_to_json(res_list);
             int length = strlen(json);
             ipc_send_reply(client, payload_type, json, (uint32_t)length);
             free(json);
-            while (res_list.length) {
-                struct cmd_results *results = res_list.items[0];
+            while (res_list->len) {
+                struct cmd_results *results = g_ptr_array_index(res_list, 0);
                 free_cmd_results(results);
-                wlr_list_del(&res_list, 0);
+                g_ptr_array_remove_index(res_list, 0);
             }
-            wlr_list_finish(&res_list);
+            g_ptr_array_free(res_list, TRUE);
             goto exit_cleanup;
         }
         case IPC_GET_WORKSPACES:

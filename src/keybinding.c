@@ -70,34 +70,34 @@ static void resolve_keybind_element(char *sym_dest, const char *bind)
 
 static bool is_same_keybind_element(const char *bind, const char *bind2)
 {
-    struct wlr_list bindarr = split_string(bind, "-");
-    struct wlr_list bind2arr = split_string(bind2, "-");
+    GPtrArray *bindarr = split_string(bind, "-");
+    GPtrArray *bind2arr = split_string(bind2, "-");
 
-    if (bind2arr.length == 0)
+    if (bind2arr->len == 0)
         return true;
-    if (bindarr.length != bind2arr.length)
+    if (bindarr->len != bind2arr->len)
         return false;
 
     // remove all resolved items out of bind2arr found in bindarr
-    for (int i = 0; i < bindarr.length; i++) {
-        int str1len = strlen(bind2arr.items[i]);
+    for (int i = 0; i < bindarr->len; i++) {
+        int str1len = strlen(g_ptr_array_index(bind2arr, i));
         char bindelem[str1len];
-        resolve_keybind_element(bindelem, bindarr.items[i]);
+        resolve_keybind_element(bindelem, g_ptr_array_index(bindarr, i));
 
-        for (int j = 0; j < bind2arr.length; j++) {
-            int str2len = strlen(bind2arr.items[j]);
+        for (int j = 0; j < bind2arr->len; j++) {
+            int str2len = strlen(g_ptr_array_index(bind2arr, j));
             char bind2elem[str2len];
-            resolve_keybind_element(bind2elem, bind2arr.items[j]);
+            resolve_keybind_element(bind2elem, g_ptr_array_index(bind2arr, j));
 
-            if (strcmp(bindarr.items[i], bind2elem) == 0) {
-                wlr_list_del(&bind2arr, j);
+            if (strcmp(g_ptr_array_index(bindarr, i), bind2elem) == 0) {
+                g_ptr_array_remove_index(bind2arr, j);
                 break;
             }
         }
     }
 
     // if no items remain in bind2arr the bind must be correct
-    bool ret = bind2arr.length == 0;
+    bool ret = bind2arr->len == 0;
 
     return ret;
 }

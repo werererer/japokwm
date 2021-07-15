@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <wordexp.h>
-#include <wlr/types/wlr_list.h>
 #include <wlr/backend/multi.h>
 #include <json-c/json.h>
 #include <wlr/backend/wayland.h>
@@ -213,17 +212,15 @@ void free_cmd_results(struct cmd_results *results) {
     free(results);
 }
 
-struct wlr_list execute_command(char *_exec, struct wlr_seat *seat,
+GPtrArray *execute_command(char *_exec, struct wlr_seat *seat,
         struct container *con) {
     char *cmd;
     char matched_delim = ';';
-    struct wlr_list containers;
-    wlr_list_init(&containers);
+    GPtrArray *containers = g_ptr_array_new();
 
     char *exec = strdup(_exec);
     char *head = exec;
-    struct wlr_list res_list;
-    wlr_list_init(&res_list);
+    GPtrArray *res_list = g_ptr_array_new();
 
     if (!exec) {
         return res_list;
@@ -275,7 +272,7 @@ struct wlr_list execute_command(char *_exec, struct wlr_seat *seat,
         }
         struct cmd_handler *handler = find_core_handler(argv[0]);
         if (!handler) {
-            wlr_list_push(&res_list, cmd_results_new(CMD_INVALID,
+            g_ptr_array_add(res_list, cmd_results_new(CMD_INVALID,
                     "Unknown/invalid command '%s'", argv[0]));
             free_argv(argc, argv);
             goto cleanup;
@@ -292,7 +289,7 @@ struct wlr_list execute_command(char *_exec, struct wlr_seat *seat,
         /*             seat_get_focus_inactive(seat, &root->node); */
         /*     set_config_node(node); */
             struct cmd_results *res = handler->handle(argc-1, argv+1);
-            wlr_list_push(&res_list, res);
+            g_ptr_array_add(res_list, res);
             if (res->status == CMD_INVALID) {
                 free_argv(argc, argv);
                 goto cleanup;
@@ -328,14 +325,14 @@ struct wlr_list execute_command(char *_exec, struct wlr_seat *seat,
     } while(head);
 cleanup:
     free(exec);
-    wlr_list_finish(&containers);
+    g_ptr_array_free(containers, true);
     return res_list;
 }
 
-char *cmd_results_to_json(struct wlr_list res_list) {
+char *cmd_results_to_json(GPtrArray *res_list) {
     json_object *result_array = json_object_new_array();
-    for (int i = 0; i < res_list.length; ++i) {
-        struct cmd_results *results = res_list.items[i];
+    for (int i = 0; i < res_list->len; ++i) {
+        struct cmd_results *results = g_ptr_array_index(res_list, i);
         json_object *root = json_object_new_object();
         json_object_object_add(root, "success",
                 json_object_new_boolean(results->status == CMD_SUCCESS));

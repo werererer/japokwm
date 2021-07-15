@@ -80,18 +80,19 @@ static void add_infix(char *full_name, const char *prefix, const char *postfix)
 {
     const char *delimiter = ":";
 
-    struct wlr_list content = split_string(full_name, delimiter);
+    GPtrArray *content = split_string(full_name, delimiter);
     char *position = strdup("");
     char *name;
-    if (content.length > 1) {
-        position = realloc(position, strlen(content.items[0])+strlen(delimiter)+1);
-        strcpy(position, content.items[0]);
+    char *content0 = g_ptr_array_index(content, 0);
+    if (content->len > 1) {
+        position = realloc(position, strlen(content0)+strlen(delimiter)+1);
+        strcpy(position, content0);
         strcat(position, delimiter);
         int name_byte_len = strlen(full_name)-strlen(position)+1;
         name = malloc(name_byte_len);
         memmove(name, full_name + strlen(position), name_byte_len);
     } else {
-        name = content.items[0];
+        name = content0;
     }
 
     full_name = realloc(full_name, 

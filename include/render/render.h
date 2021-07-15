@@ -13,13 +13,7 @@ struct render_data {
     struct wlr_output *output;
     struct timespec *when;
     int x, y; /* layout-relative */
-    /* textures that will be rendered with a new frame
-     * list should be filled with posTexture
-     * */
-    struct wlr_list textures;
-    /* The textures before doing any kind of transformations
-     * */
-    struct wlr_list base_textures;
+
     pixman_region32_t *damage;
 };
 

@@ -1,7 +1,6 @@
 #include "monitor.h"
 #include <assert.h>
 #include <stdlib.h>
-#include <wlr/types/wlr_list.h>
 #include <wlr/types/wlr_output.h>
 #include <wlr/types/wlr_output_damage.h>
 #include <wlr/types/wlr_xcursor_manager.h>

@@ -195,8 +195,6 @@ static int setup()
     server.output_layout = wlr_output_layout_create();
     wlr_xdg_output_manager_v1_create(server.wl_display, server.output_layout);
 
-    /* Configure textures */
-    wlr_list_init(&render_data.textures);
     /* Configure a listener to be notified when new outputs are available on the
      * backend. */
     wl_signal_add(&server.backend->events.new_output, &new_output);

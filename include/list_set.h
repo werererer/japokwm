@@ -2,7 +2,6 @@
 #define LIST_SET_H
 
 #include <stdlib.h>
-#include <wlr/types/wlr_list.h>
 #include <glib.h>
 
 struct list_set {

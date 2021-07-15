@@ -27,6 +27,14 @@ bool file_exists(const char *path)
     return access(path, R_OK) != -1;
 }
 
+void wlr_list_cat(GPtrArray *dest, GPtrArray *src)
+{
+    for (int i = 0; i < src->len; i++) {
+        void *item = g_ptr_array_index(src, i);
+        g_ptr_array_add(dest, item);
+    }
+}
+
 void wlr_list_clear(GPtrArray *array, void (*destroy_func)(void *))
 {
     for (int i = 0; i < array->len; i++) {
