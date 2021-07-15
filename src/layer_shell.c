@@ -115,22 +115,22 @@ void commitlayersurfacenotify(struct wl_listener *listener, void *data)
 
 GPtrArray *get_layer_list(enum zwlr_layer_shell_v1_layer layer)
 {
-    GPtrArray *new_list = NULL;
+    GPtrArray *layer_list = NULL;
     switch (layer) {
         case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
-            new_list = g_ptr_array_index(server.layer_visual_stack_lists, 3);
+            layer_list = g_ptr_array_index(server.layer_visual_stack_lists, 3);
             break;
         case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
-            new_list = g_ptr_array_index(server.layer_visual_stack_lists, 2);
+            layer_list = g_ptr_array_index(server.layer_visual_stack_lists, 2);
             break;
         case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
-            new_list = g_ptr_array_index(server.layer_visual_stack_lists, 1);
+            layer_list = g_ptr_array_index(server.layer_visual_stack_lists, 1);
             break;
         case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
-            new_list = g_ptr_array_index(server.layer_visual_stack_lists, 0);
+            layer_list = g_ptr_array_index(server.layer_visual_stack_lists, 0);
             break;
     }
-    return new_list;
+    return layer_list;
 }
 
 void arrange_layers(struct monitor *m)

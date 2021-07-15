@@ -626,8 +626,20 @@ void list_set_add_container_to_focus_stack(struct list_set *list_set, struct con
     for (int j = 0; j < list_set->change_affected_list_sets->len; j++) {
         struct list_set *ls = g_ptr_array_index(list_set->change_affected_list_sets, j);
         if (con->client->type == LAYER_SHELL) {
-            GPtrArray *list = get_layer_list(con->client->surface.layer->current.layer);
-            g_ptr_array_insert(list, 0, con);
+            switch (con->client->surface.layer->current.layer) {
+                case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
+                    g_ptr_array_insert(ls->focus_stack_layer_background, 0, con);
+                    break;
+                case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
+                    g_ptr_array_insert(ls->focus_stack_layer_bottom, 0, con);
+                    break;
+                case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
+                    g_ptr_array_insert(ls->focus_stack_layer_top, 0, con);
+                    break;
+                case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
+                    g_ptr_array_insert(ls->focus_stack_layer_overlay, 0, con);
+                    break;
+            }
             return;
         }
         if (con->on_top) {
