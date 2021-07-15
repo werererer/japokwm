@@ -255,8 +255,8 @@ int lib_zoom(lua_State *L)
         return 0;
 
     guint position;
-    g_ptr_array_find(tagset->list_set->tiled_containers, sel, &position);
-    if (position == INVALID_POSITION)
+    bool found = g_ptr_array_find(tagset->list_set->tiled_containers, sel, &position);
+    if (!found)
         return 0;
 
     if (sel == g_ptr_array_index(tagset->list_set->tiled_containers, 0)) {

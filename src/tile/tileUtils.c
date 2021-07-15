@@ -69,7 +69,6 @@ static int get_layout_container_max_area_count(struct tagset *tagset)
 
     lua_rawgeti(L, -1, len);
 
-
     // TODO refactor
     int max_n_area = luaL_len(L, -1);
 
@@ -259,7 +258,7 @@ void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,
 
         /* // the monitor must be on the same monitor as it is tiled on else it is */
         /* // a bug */
-        /* assert(container_get_monitor(con) == tagset->m); */
+        assert(container_get_monitor(con) == tagset->m);
 
         arrange_container(con, i, root_geom, actual_inner_gap);
     }
@@ -363,8 +362,6 @@ void update_hidden_status_of_containers(struct monitor *m,
         GPtrArray *visible_container_lists, GPtrArray *tiled_containers,
         GPtrArray *hidden_containers)
 {
-    // because the master are is included in n aswell as nmaster we have to
-    // subtract the solution by one to count
     struct layout *lt = get_layout_in_monitor(m);
 
     if (lt->n_tiled > tiled_containers->len) {
@@ -377,9 +374,8 @@ void update_hidden_status_of_containers(struct monitor *m,
             g_ptr_array_add(tiled_containers, con);
         }
     } else {
-        for (int i = lt->n_tiled; i < tiled_containers->len; i++) {
-            struct container *con = g_ptr_array_steal_index(tiled_containers,
-                    tiled_containers->len-1);
+        for (int i = tiled_containers->len-1; i >= lt->n_tiled; i--) {
+            struct container *con = g_ptr_array_steal_index(tiled_containers, i);
             con->hidden = true;
             g_ptr_array_insert(hidden_containers, 0, con);
         }

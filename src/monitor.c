@@ -221,15 +221,6 @@ void focus_monitor(struct monitor *m)
     focus_tagset(tagset);
 }
 
-struct monitor *dirtomon(int dir)
-{
-    struct monitor *m = selected_monitor;
-    guint m_index;
-    g_ptr_array_find(server.mons, m, &m_index);
-
-    return get_relative_item_in_list(server.mons, m_index, dir);
-}
-
 struct monitor *output_to_monitor(struct wlr_output *output)
 {
     for (int i = 0; i < server.mons->len; i++) {

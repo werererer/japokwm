@@ -40,7 +40,6 @@ void focus_tags(struct BitSet bitset);
 void transform_monitor(struct monitor *m, enum wl_output_transform transform);
 void update_monitor_geometries();
 
-struct monitor *dirtomon(int dir);
 struct monitor *output_to_monitor(struct wlr_output *output);
 struct monitor *xy_to_monitor(double x, double y);
 struct tagset *monitor_get_active_tagset(struct monitor *m);
