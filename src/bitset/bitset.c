@@ -44,7 +44,6 @@ int bitset_copy(BitSet* destination, BitSet* source) {
     return BITSET_SUCCESS;
 }
 
-
 int bitset_move(BitSet* destination, BitSet* source) {
     assert(destination != NULL);
     assert(source != NULL);
