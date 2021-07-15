@@ -45,17 +45,13 @@ struct wlr_list *tagset_get_hidden_list(struct tagset *tagset);
 
 void workspace_id_to_tag(BitSet *dest, int ws_id);
 
-// TODO change argument order
 bool exist_on(struct tagset *tagset, struct container *con);
 bool tagset_contains_client(struct tagset *tagset, struct client *c);
 bool visible_on(struct tagset *tagset, struct container *con);
 
 void focus_tagset(struct tagset *tagset);
 void push_tagset(struct tagset *tagset);
-void tagset_load_workspaces(struct tagset *tagset);
 
 struct layout *tagset_get_layout(struct tagset *tagset);
-
-int tagset_get_container_count(struct tagset *tagset);
 
 #endif /* TAGSET_H */

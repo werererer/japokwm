@@ -12,9 +12,33 @@
 #include "ipc-server.h"
 #include "monitor.h"
 
+static void tagset_load_workspaces(struct tagset *tagset);
 static void tagset_unload_workspaces(struct tagset *tagset);
 static void move_workspace_back(BitSet *old_workspaces, BitSet *workspaces);
 static void force_on_current_monitor(struct tagset *tagset, BitSet bitset);
+
+static void tagset_load_workspaces(struct tagset *tagset)
+{
+    if (!tagset)
+        return;
+    if (tagset->loaded) {
+        return;
+    }
+
+    for(size_t i = 0; i < tagset->workspaces.size; i++) {
+        bool bit = bitset_test(&tagset->workspaces, i);
+
+        if (!bit)
+            continue;
+
+        struct workspace *ws = get_workspace(i);
+        subscribe_list_set(tagset->list_set, ws->list_set);
+        ws->tagset = tagset;
+    }
+    tagset->loaded = true;
+}
+
+
 
 static void tagset_unload_workspaces(struct tagset *tagset)
 {
@@ -71,9 +95,6 @@ static void move_workspace_back(BitSet *old_workspaces, BitSet *workspaces)
     }
 }
 
-
-
-
 static void force_on_current_monitor(struct tagset *tagset, BitSet bitset)
 {
     BitSet changed_bits;
@@ -103,7 +124,6 @@ static void force_on_current_monitor(struct tagset *tagset, BitSet bitset)
             tagset_load_workspaces(old_tagset);
         }
     }
-
 }
 
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet workspaces)
@@ -258,27 +278,6 @@ void tagset_reload_workspaces(struct tagset *tagset)
         return;
     tagset_unload_workspaces(tagset);
     tagset_load_workspaces(tagset);
-}
-
-void tagset_load_workspaces(struct tagset *tagset)
-{
-    if (!tagset)
-        return;
-    if (tagset->loaded) {
-        return;
-    }
-
-    for(size_t i = 0; i < tagset->workspaces.size; i++) {
-        bool bit = bitset_test(&tagset->workspaces, i);
-
-        if (!bit)
-            continue;
-
-        struct workspace *ws = get_workspace(i);
-        subscribe_list_set(tagset->list_set, ws->list_set);
-        ws->tagset = tagset;
-    }
-    tagset->loaded = true;
 }
 
 void tagset_set_tags(struct tagset *tagset, BitSet bitset)
@@ -507,19 +506,4 @@ bool exist_on(struct tagset *tagset, struct container *con)
         return true;
 
     return tagset_contains_client(tagset, c);
-}
-
-int tagset_get_container_count(struct tagset *tagset)
-{
-    if (!tagset)
-        return -1;
-
-    int i = 0;
-    for (int i = 0; i < tagset->list_set->tiled_containers.length; i++) {
-        struct container *con = get_container(tagset, i);
-
-        if (visible_on(tagset, con))
-            i++;
-    }
-    return i;
 }

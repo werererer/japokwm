@@ -759,7 +759,6 @@ struct monitor *container_get_monitor(struct container *con)
 
 void list_set_remove_container(struct list_set *list_set, struct container *con)
 {
-    printf("listset length: %zu\n", list_set->change_affected_list_sets.length);
     for (int i = 0; i < list_set->change_affected_list_sets.length; i++) {
         struct list_set *ls = list_set->change_affected_list_sets.items[i];
         remove_in_composed_list(&ls->container_lists, cmp_ptr, con);
