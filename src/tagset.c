@@ -42,11 +42,9 @@ static void tagset_load_workspaces(struct tagset *tagset)
 
 static void tagset_unload_workspaces(struct tagset *tagset)
 {
-    printf("unload workspaces\n");
     if (!tagset)
         return;
     if (!tagset->loaded) {
-        printf("not loaded\n");
         return;
     }
 

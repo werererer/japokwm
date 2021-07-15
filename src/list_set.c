@@ -109,10 +109,12 @@ void append_list_set(struct list_set *dest, struct list_set *src)
 
 void clear_list_set(struct list_set *list_set)
 {
+    printf("before: %i\n", length_of_composed_list(list_set->all_lists));
     for (int i = 0; i < list_set->all_lists->len; i++) {
         GPtrArray *dest_list = g_ptr_array_index(list_set->all_lists, i);
         wlr_list_clear(dest_list, NULL);
     }
+    printf("after: %i\n", length_of_composed_list(list_set->all_lists));
 }
 
 void subscribe_list_set(struct list_set *dest, struct list_set *src)
