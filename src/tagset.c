@@ -59,7 +59,7 @@ static void tagset_unload_workspaces(struct tagset *tagset)
             continue;
 
         struct workspace *ws = get_workspace(i);
-        wlr_list_remove(&ws->list_set->change_affected_list_sets, cmp_ptr, tagset->list_set);
+        unsubscribe_list_set(tagset->list_set, ws->list_set);
         if (ws->tagset == tagset) {
             ws->tagset = NULL;
         }
