@@ -33,6 +33,7 @@ int lib_set_layout(lua_State *L)
     guint i;
     bool found = g_ptr_array_find_with_equal_func(ws->loaded_layouts, lt, cmp_layout, &i);
     if (found) {
+        printf("found\n");
         struct layout *old_lt = g_ptr_array_index(ws->loaded_layouts, i);
         lt->lua_layout_copy_data_ref = old_lt->lua_layout_copy_data_ref;
     } else {

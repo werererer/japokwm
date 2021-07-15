@@ -180,5 +180,5 @@ int cmp_layout(const void *ptr1, const void *ptr2)
 {
     const struct layout *lt1 = ptr1;
     const struct layout *lt2 = ptr2;
-    return strcmp(lt1->symbol, lt2->symbol);
+    return strcmp(lt1->symbol, lt2->symbol) == 0;
 }

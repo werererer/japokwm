@@ -62,7 +62,7 @@ bool remove_in_composed_list(GPtrArray *array, int (*compare)(const void *, cons
 {
     for (int i = 0; i < array->len; i++) {
         GPtrArray *list = g_ptr_array_index(array, i);
-        if (list_remove(list, compare, cmp_to) == 0) {
+        if (list_remove(list, compare, cmp_to)) {
             return true;
         }
     }
