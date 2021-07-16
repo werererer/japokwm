@@ -31,6 +31,7 @@ struct server {
     struct wlr_xcursor_manager *cursor_mgr;
     struct wlr_virtual_pointer_manager_v1 *virtual_pointer_mgr;
     struct wlr_virtual_keyboard_manager_v1 *virtual_keyboard_mgr;
+    struct wlr_input_inhibit_manager *input_inhibitor_mgr;
 
     struct layout *default_layout;
     struct layout_set layout_set;

@@ -16,6 +16,7 @@
 #include <wlr/types/wlr_xdg_output_v1.h>
 #include <wlr/types/wlr_idle.h>
 #include <wlr/types/wlr_idle_inhibit_v1.h>
+#include <wlr/types/wlr_input_inhibitor.h>
 #include <wlr/util/log.h>
 
 #include "clipboard.h"
@@ -220,6 +221,8 @@ static int setup()
     server.layer_shell = wlr_layer_shell_v1_create(server.wl_display);
     wl_signal_add(&server.layer_shell->events.new_surface,
             &new_layer_shell_surface);
+
+    server.input_inhibitor_mgr = wlr_input_inhibit_manager_create(server.wl_display);
 
     /* setup virtual pointer manager*/
     server.virtual_pointer_mgr = wlr_virtual_pointer_manager_v1_create(server.wl_display);
