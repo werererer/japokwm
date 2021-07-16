@@ -74,6 +74,11 @@ int cmp_ptr(const void *ptr1, const void *ptr2)
     return ptr1 == ptr2 ? 0 : 1;
 }
 
+int cmp_str(const void *s1, const void *s2)
+{
+    return strcmp(s1, s2);
+}
+
 int find_in_composed_list(GPtrArray *lists,
         int (*compare)(const void *, const void *), const void *cmp_to)
 {

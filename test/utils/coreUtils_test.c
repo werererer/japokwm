@@ -176,7 +176,7 @@ START_TEST(wlr_list_find_in_composed_list_test)
     g_ptr_array_add(list3, "7");
     g_ptr_array_add(list3, "8");
 
-    int position = find_in_composed_list(lists, (int (*)(const void *, const void *))strcmp, "1");
+    int position = find_in_composed_list(lists, cmp_str, "1");
     ck_assert_int_eq(position, 1);
 } END_TEST
 

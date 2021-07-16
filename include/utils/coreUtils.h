@@ -95,8 +95,6 @@ void lua_get_default_resize_data(lua_State *L);
 void wlr_list_clear(GPtrArray *array, void (*destroy_func)(void *));
 void wlr_list_cat(GPtrArray *dest, GPtrArray *src);
 
-typedef int (*cmp_func_t)(const void*, const void*);
-
 /* return true on success and false on failure */
 bool list_remove(GPtrArray *array, int (*compare)(const void *, const void *), const void *cmp_to);
 bool remove_in_composed_list(GPtrArray *array, int (*compare)(const void *, const void *), void *cmp_to);
@@ -109,6 +107,7 @@ GPtrArray *list_insert_into_relative_position(GPtrArray *lists, int index, void 
 
 // compare pointers and return 0 if they are equal and 1 otherwise
 int cmp_ptr(const void *ptr1, const void *ptr2);
+int cmp_str(const void *s1, const void *s2);
 
 void lua_tocolor(float dest_color[static 4]);
 // like lua_ref but override the old value if *ref > 0
