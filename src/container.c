@@ -743,8 +743,10 @@ struct monitor *container_get_monitor(struct container *con)
 {
     if (!con)
         return NULL;
-    if (con->client->m)
+    if (con->client->m) {
+        printf("con->client->m: %p\n", con->client->m);
         return con->client->m;
+    }
 
     struct workspace *ws = get_workspace(con->client->ws_id);
     struct monitor *m  = ws->m;

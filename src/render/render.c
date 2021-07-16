@@ -327,6 +327,9 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
     for (int i = 0; i < new_list->len; i++) {
         struct container *con = g_ptr_array_index(new_list, i);
 
+        if (!visible_on(monitor_get_active_tagset(m), con))
+            continue;
+
         struct wlr_surface *surface = get_wlrsurface(con->client);
         render_surface_iterator(m, surface, con->geom, output_damage, 1.0);
 

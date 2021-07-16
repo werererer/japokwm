@@ -14,6 +14,8 @@
 #include <wlr/types/wlr_viewporter.h>
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_output_v1.h>
+#include <wlr/types/wlr_idle.h>
+#include <wlr/types/wlr_idle_inhibit_v1.h>
 #include <wlr/util/log.h>
 
 #include "clipboard.h"
@@ -189,6 +191,8 @@ static int setup()
     wlr_gamma_control_manager_v1_create(server.wl_display);
     wlr_primary_selection_v1_device_manager_create(server.wl_display);
     wlr_viewporter_create(server.wl_display);
+    wlr_idle_create(server.wl_display);
+    wlr_idle_inhibit_v1_create(server.wl_display);
 
     /* Creates an output layout, which a wlroots utility for working with an
      * arrangement of screens in a physical layout. */
