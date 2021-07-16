@@ -162,6 +162,11 @@ void destroy_monitor(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, destroy);
 
+    wl_list_remove(&m->mode.link);
+    wl_list_remove(&m->frame.link);
+    wl_list_remove(&m->damage_frame.link);
+    wl_list_remove(&m->destroy.link);
+
     destroy_root(m->root);
     list_remove(server.mons, cmp_ptr, m);
 }
