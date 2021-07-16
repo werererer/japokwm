@@ -1,6 +1,7 @@
 #include "root.h"
 
 #include <string.h>
+#include <glib.h>
 
 #include "client.h"
 #include "container.h"
@@ -164,6 +165,10 @@ void root_damage_whole(struct root *root)
 void set_bars_visible(struct monitor *m, bool visible)
 {
     m->root->consider_layer_shell = visible;
+    for (int i = 0; i < length_of_composed_list(server.layer_visual_stack_lists); i++) {
+        struct container *con = get_in_composed_list(server.layer_visual_stack_lists, i);
+        con->hidden = !visible;
+    }
     wlr_output_damage_add_whole(m->damage);
 }
 
