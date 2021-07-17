@@ -823,3 +823,15 @@ bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *re
 
     return is_width_not_in_limit || is_height_not_in_limit;
 }
+
+bool container_is_bar(struct container *con)
+{
+    switch (con->client->type) {
+        case LAYER_SHELL:
+            return layer_shell_is_bar(con);
+            break;
+        default:
+            return false;
+            break;
+    }
+}

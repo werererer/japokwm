@@ -324,11 +324,9 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     GPtrArray *layer_list = get_layer_list(m, layer);
-    printf("layer_list len: %i\n", layer_list->len);
     for (int i = 0; i < layer_list->len; i++) {
         struct container *con = g_ptr_array_index(layer_list, i);
 
-        printf("con->m: %p\n", container_get_monitor(con));
         if (!visible_on(monitor_get_active_tagset(m), con))
             continue;
         if (m != container_get_monitor(con))

@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "monitor.h"
 #include "popup.h"
@@ -27,11 +28,13 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     LISTEN(&wlr_layer_surface->events.unmap, &client->unmap, unmap_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.destroy, &client->destroy, destroy_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.new_popup, &client->new_popup, popup_handle_new_popup);
+    LISTEN(&wlr_layer_surface->events.destroy, &client->new_popup, popup_handle_new_popup);
 
     struct monitor *m = wlr_layer_surface->output->data;
     client->m = m;
     struct container *con = create_container(client, m, false);
-    g_ptr_array_add(get_layer_list(m, wlr_layer_surface->client_pending.layer), con);
+    enum zwlr_layer_shell_v1_layer layer = wlr_layer_surface->client_pending.layer;
+    g_ptr_array_add(get_layer_list(m, layer), con);
 
     // Temporarily set the layer's current state to client_pending
     // so that we can easily arrange it
@@ -70,7 +73,6 @@ void unmap_layer_surface_notify(struct wl_listener *listener, void *data)
 
 void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
 {
-    printf("destroy layersurface\n");
     struct client *c = wl_container_of(listener, c, destroy);
 
     if (c->surface.layer->mapped)
@@ -117,6 +119,21 @@ void commitlayersurfacenotify(struct wl_listener *listener, void *data)
     }
 }
 
+bool layer_shell_is_bar(struct container *con)
+{
+    assert(con->client->type == LAYER_SHELL);
+
+
+    struct wlr_layer_surface_v1 *wlr_layer_surface = con->client->surface.layer;
+    struct wlr_layer_surface_v1_state *state = &wlr_layer_surface->current;
+
+    bool is_exclusive = state->exclusive_zone >= 0;
+    bool is_anchord_on_three_edges = cross_sum(state->anchor, 2) == 3;
+    bool is_anchord_on_one_edge = cross_sum(state->anchor, 2) == 1;
+
+    return is_exclusive && (is_anchord_on_one_edge || is_anchord_on_three_edges);
+}
+
 GPtrArray *get_layer_list(struct monitor *m, enum zwlr_layer_shell_v1_layer layer)
 {
     GPtrArray *layer_list = NULL;
@@ -148,10 +165,10 @@ void arrange_layers(struct monitor *m)
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
 
     // Arrange exclusive surfaces from top->bottom
-    arrangelayer(m, m->layer_visual_stack_overlay, &usable_area, 1);
-    arrangelayer(m, m->layer_visual_stack_top, &usable_area, 1);
-    arrangelayer(m, m->layer_visual_stack_bottom, &usable_area, 1);
-    arrangelayer(m, m->layer_visual_stack_background, &usable_area, 1);
+    arrangelayer(m, m->layer_visual_stack_overlay, &usable_area, true);
+    arrangelayer(m, m->layer_visual_stack_top, &usable_area, true);
+    arrangelayer(m, m->layer_visual_stack_bottom, &usable_area, true);
+    arrangelayer(m, m->layer_visual_stack_background, &usable_area, true);
 
     if (memcmp(&usable_area, &m->root->geom, sizeof(struct wlr_box))) {
         m->root->geom = usable_area;
@@ -159,10 +176,10 @@ void arrange_layers(struct monitor *m)
     }
 
     // Arrange non-exlusive surfaces from top->bottom
-    arrangelayer(m, m->layer_visual_stack_overlay, &usable_area, 0);
-    arrangelayer(m, m->layer_visual_stack_top, &usable_area, 0);
-    arrangelayer(m, m->layer_visual_stack_bottom, &usable_area, 0);
-    arrangelayer(m, m->layer_visual_stack_background, &usable_area, 0);
+    arrangelayer(m, m->layer_visual_stack_overlay, &usable_area, false);
+    arrangelayer(m, m->layer_visual_stack_top, &usable_area, false);
+    arrangelayer(m, m->layer_visual_stack_bottom, &usable_area, false);
+    arrangelayer(m, m->layer_visual_stack_background, &usable_area, false);
 
     // Find topmost keyboard interactive layer, if such a layer exists
     for (size_t i = 0; i < LENGTH(layers_above_shell); i++) {
@@ -186,8 +203,7 @@ void arrange_layers(struct monitor *m)
     printf("arrange layers end\n");
 }
 
-
-void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_area, int exclusive)
+void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_area, bool exclusive)
 {
     struct wlr_box full_area = m->geom;
 
@@ -206,13 +222,14 @@ void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_ar
             | ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
 
         printf("state->exclusive_zone: %i\n", state->exclusive_zone);
-        if (exclusive != (state->exclusive_zone > 0))
+        bool is_exclusive = (state->exclusive_zone > 0);
+        if (exclusive != is_exclusive)
             continue;
 
         bounds = state->exclusive_zone == -1 ? full_area : *usable_area;
 
         // Horizontal axis
-        if ((state->anchor & both_horiz) && box.width == 0) {
+        if ((state->anchor & both_horiz) == both_horiz && box.width == 0) {
             box.x = bounds.x;
             box.width = bounds.width;
         } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT)) {
@@ -223,7 +240,7 @@ void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_ar
             box.x = bounds.x + ((bounds.width / 2) - (box.width / 2));
         }
         // Vertical axis
-        if ((state->anchor & both_vert) && box.height == 0) {
+        if ((state->anchor & both_vert) == both_horiz && box.height == 0) {
             box.y = bounds.y;
             box.height = bounds.height;
         } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP)) {

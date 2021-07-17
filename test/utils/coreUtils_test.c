@@ -180,6 +180,12 @@ START_TEST(wlr_list_find_in_composed_list_test)
     ck_assert_int_eq(position, 1);
 } END_TEST
 
+START_TEST(cross_sum_test)
+{
+    ck_assert_int_eq(cross_sum(0b111, 2), 3);
+    ck_assert_int_eq(cross_sum(100, 10), 1);
+} END_TEST
+
 START_TEST(get_relative_item_in_list_test)
 {
     GPtrArray *lists;
@@ -232,6 +238,7 @@ Suite *suite()
     tcase_add_test(tc, remove_from_composed_list_test);
     tcase_add_test(tc, wlr_list_remove_in_composed_list_test);
     tcase_add_test(tc, wlr_list_find_in_composed_list_test);
+    tcase_add_test(tc, cross_sum_test);
     tcase_add_test(tc, get_relative_item_in_list_test);
     suite_add_tcase(s, tc);
 

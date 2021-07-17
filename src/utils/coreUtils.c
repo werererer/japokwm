@@ -46,6 +46,16 @@ void wlr_list_clear(GPtrArray *array, void (*destroy_func)(void *))
     }
 }
 
+int cross_sum(int n, int base)
+{
+    int sum = 0;
+    while (n > 0) {
+        sum += n % base;
+        n /= base;
+    }
+    return sum;
+}
+
 bool list_remove(GPtrArray *array, int (*compare)(const void *, const void *), const void *cmp_to)
 {
     for (int i = 0; i < array->len; i++) {

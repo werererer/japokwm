@@ -168,6 +168,10 @@ void set_bars_visible(struct monitor *m, bool visible)
     m->root->consider_layer_shell = visible;
     for (int i = 0; i < length_of_composed_list(m->layer_visual_stack_lists); i++) {
         struct container *con = get_in_composed_list(m->layer_visual_stack_lists, i);
+
+        if (!container_is_bar(con))
+            continue;
+
         con->hidden = !visible;
     }
     wlr_output_damage_add_whole(m->damage);

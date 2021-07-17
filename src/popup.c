@@ -104,10 +104,10 @@ static void popup_damage(struct xdg_popup *xdg_popup, bool whole)
 
 void popup_handle_new_popup(struct wl_listener *listener, void *data)
 {
-    struct client *c = wl_container_of(listener, c, new_popup);
+    struct client *client = wl_container_of(listener, client, new_popup);
     struct wlr_xdg_popup *xdg_popup = data;
 
-    struct container *con = c->con;
+    struct container *con = client->con;
     struct monitor *m = container_get_monitor(con);
     if (m != selected_monitor)
         return;
