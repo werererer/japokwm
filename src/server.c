@@ -15,31 +15,6 @@ void init_server()
 
     server.mons = g_ptr_array_new();
     server.popups = g_ptr_array_new();
-    server.visual_stack_lists = g_ptr_array_new();
-    server.normal_visual_stack_lists = g_ptr_array_new();
-    server.layer_visual_stack_lists = g_ptr_array_new();
-
-    server.tiled_visual_stack = g_ptr_array_new();
-    server.floating_visual_stack = g_ptr_array_new();
-    server.layer_visual_stack_background = g_ptr_array_new();
-    server.layer_visual_stack_bottom = g_ptr_array_new();
-    server.layer_visual_stack_top = g_ptr_array_new();
-    server.layer_visual_stack_overlay = g_ptr_array_new();
-
-    g_ptr_array_add(server.visual_stack_lists, server.layer_visual_stack_overlay);
-    g_ptr_array_add(server.visual_stack_lists, server.layer_visual_stack_top);
-    g_ptr_array_add(server.visual_stack_lists, server.floating_visual_stack);
-    g_ptr_array_add(server.visual_stack_lists, server.tiled_visual_stack);
-    g_ptr_array_add(server.visual_stack_lists, server.layer_visual_stack_bottom);
-    g_ptr_array_add(server.visual_stack_lists, server.layer_visual_stack_background);
-
-    g_ptr_array_add(server.normal_visual_stack_lists, server.floating_visual_stack);
-    g_ptr_array_add(server.normal_visual_stack_lists, server.tiled_visual_stack);
-
-    g_ptr_array_add(server.layer_visual_stack_lists, server.layer_visual_stack_overlay);
-    g_ptr_array_add(server.layer_visual_stack_lists, server.layer_visual_stack_top);
-    g_ptr_array_add(server.layer_visual_stack_lists, server.layer_visual_stack_bottom);
-    g_ptr_array_add(server.layer_visual_stack_lists, server.layer_visual_stack_background);
 
     server.scratchpad = g_ptr_array_new();
     server.workspaces = g_ptr_array_new();

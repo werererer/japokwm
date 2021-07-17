@@ -300,8 +300,8 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
 {
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    for (int i = length_of_composed_list(server.normal_visual_stack_lists)-1; i >= 0; i--) {
-        struct container *con = get_in_composed_list(server.normal_visual_stack_lists, i);
+    for (int i = length_of_composed_list(m->normal_visual_stack_lists)-1; i >= 0; i--) {
+        struct container *con = get_in_composed_list(m->normal_visual_stack_lists, i);
         if (!visible_on(monitor_get_active_tagset(m), con))
             continue;
 
@@ -323,7 +323,7 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
 {
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    GPtrArray *layer_list = get_layer_list(layer);
+    GPtrArray *layer_list = get_layer_list(m, layer);
     printf("layer_list len: %i\n", layer_list->len);
     for (int i = 0; i < layer_list->len; i++) {
         struct container *con = g_ptr_array_index(layer_list, i);

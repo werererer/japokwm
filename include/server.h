@@ -41,17 +41,6 @@ struct server {
 
     GPtrArray *workspaces;
 
-    GPtrArray *visual_stack_lists;
-    GPtrArray *normal_visual_stack_lists;
-    GPtrArray *layer_visual_stack_lists;
-
-    GPtrArray *tiled_visual_stack;
-    GPtrArray *floating_visual_stack;
-    GPtrArray *layer_visual_stack_background;
-    GPtrArray *layer_visual_stack_bottom;
-    GPtrArray *layer_visual_stack_top;
-    GPtrArray *layer_visual_stack_overlay;
-
     GPtrArray *scratchpad;
 
     const char *config_file;

@@ -26,7 +26,7 @@ void move_to_scratchpad(struct container *con, int position)
 
     remove_in_composed_list(tagset->list_set->container_lists, cmp_ptr, con);
     list_remove(tagset->list_set->focus_stack_normal, cmp_ptr, con);
-    remove_in_composed_list(server.visual_stack_lists, cmp_ptr, con);
+    remove_in_composed_list(m->visual_stack_lists, cmp_ptr, con);
 
     container_damage_whole(con);
     focus_most_recent_container(tagset, FOCUS_NOOP);
@@ -53,7 +53,7 @@ void show_scratchpad()
     if (con->hidden) {
         g_ptr_array_add(tagset->list_set->floating_containers, con);
         g_ptr_array_insert(tagset->list_set->focus_stack_normal, 0, con);
-        g_ptr_array_insert(server.floating_visual_stack, 0, con);
+        g_ptr_array_insert(m->floating_visual_stack, 0, con);
 
         resize(con, get_center_box(m->geom));
 
@@ -67,7 +67,7 @@ void show_scratchpad()
 
         list_remove(tagset->list_set->floating_containers, cmp_ptr, con);
         list_remove(tagset->list_set->focus_stack_normal, cmp_ptr, con);
-        list_remove(server.floating_visual_stack, cmp_ptr, con);
+        list_remove(m->floating_visual_stack, cmp_ptr, con);
 
         list_remove(server.scratchpad, cmp_ptr, con);
         move_to_scratchpad(con, -1);
