@@ -137,15 +137,34 @@ function Resize_all(lt_data, o_layout_data, i, j, n, d)
     return layout_data
 end
 
+function Set(list)
+    local set = {}
+    for _,l in ipairs(list) do
+        set[l] = true
+    end
+    return set
+end
+
+local function get_layout_data_element_id(o_layout_data)
+    return math.max(math.min(info.get_this_container_count(), #o_layout_data), 1)
+end
+
 function Resize_main_all(layout_data, o_layout_data, resize_data, n, d)
-    local i = math.max(math.min(info.get_this_container_count(), #o_layout_data), 1)
-    for g=1,#resize_data do
-        for h=1,#resize_data[g] do
-            if i == resize_data[g][h] then
-                for j=1,#resize_data[g] do
-                    layout_data = Resize_all(layout_data, o_layout_data, resize_data[g][j], 1, n, d)
-                end
-                return layout_data
+    local layout_data_element_id = get_layout_data_element_id(o_layout_data)
+
+    local exists = false
+    for j=1,#resize_data do
+        for h=1, #resize_data[j] do
+            if not exists then
+                exists = layout_data_element_id == resize_data[j][h]
+            end
+        end
+    end
+
+    if exists then
+        for g=1,#resize_data do
+            for h=1,#resize_data[g] do
+                layout_data = Resize_all(layout_data, o_layout_data, resize_data[g][h], 1, n, d)
             end
         end
     end

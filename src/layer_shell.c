@@ -229,7 +229,7 @@ void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_ar
         bounds = state->exclusive_zone == -1 ? full_area : *usable_area;
 
         // Horizontal axis
-        if ((state->anchor & both_horiz) == both_horiz && box.width == 0) {
+        if ((state->anchor & both_horiz) && box.width == 0) {
             box.x = bounds.x;
             box.width = bounds.width;
         } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT)) {
@@ -240,7 +240,7 @@ void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_ar
             box.x = bounds.x + ((bounds.width / 2) - (box.width / 2));
         }
         // Vertical axis
-        if ((state->anchor & both_vert) == both_horiz && box.height == 0) {
+        if ((state->anchor & both_vert) && box.height == 0) {
             box.y = bounds.y;
             box.height = bounds.height;
         } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP)) {
