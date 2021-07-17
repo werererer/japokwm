@@ -149,24 +149,28 @@ local function get_layout_data_element_id(o_layout_data)
     return math.max(math.min(info.get_this_container_count(), #o_layout_data), 1)
 end
 
-function Resize_main_all(layout_data, o_layout_data, resize_data, n, d)
-    local layout_data_element_id = get_layout_data_element_id(o_layout_data)
-
-    local exists = false
+-- returns 0 if not found
+local function get_layout_element(layout_data_element_id, resize_data)
     for j=1,#resize_data do
         for h=1, #resize_data[j] do
-            if not exists then
-                exists = layout_data_element_id == resize_data[j][h]
+            if layout_data_element_id == resize_data[j][h] then
+                return j
             end
         end
     end
+    return 0
+end
 
-    if exists then
-        for g=1,#resize_data do
-            for h=1,#resize_data[g] do
-                layout_data = Resize_all(layout_data, o_layout_data, resize_data[g][h], 1, n, d)
-            end
-        end
+function Resize_main_all(layout_data, o_layout_data, resize_data, n, direction)
+    local layout_data_element_id = get_layout_data_element_id(o_layout_data)
+    local layout_id = get_layout_element(layout_data_element_id, resize_data)
+    if layout_id == 0 then
+        return layout_data
+    end
+
+    local resize_element = resize_data[layout_id]
+    for i=1,#resize_element do
+        layout_data = Resize_all(layout_data, o_layout_data, resize_element[i], 1, n, direction)
     end
     return layout_data
 end
