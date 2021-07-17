@@ -35,13 +35,13 @@ function Move_container(container, n, d)
 end
 
 -- TODO this is a mess fix it!!
-function Is_resize_locked(layout_data, o_layout_data, i, j, n, directions)
-    local lt_data = Deep_copy(layout_data)
-    local main_con = lt_data[i][j]
+function Is_resize_locked(layout_data_el, o_layout_data_el, i, n, directions)
+    local lt_data_el = Deep_copy(layout_data_el)
+    local main_con = lt_data_el[i]
 
     for x = 1,#directions do
         local dir = directions[x]
-        local resize_containers = Get_resize_affected_containers(lt_data, o_layout_data, i, j, dir, Get_alternative_container, Is_affected_by_resize_of)
+        local resize_containers = Get_resize_affected_containers(lt_data_el, o_layout_data_el, i, dir, Get_alternative_container, Is_affected_by_resize_of)
         main_con = Deep_copy(Move_resize(main_con, 0, n, dir))
         local alt_con = Get_alternative_container(main_con, dir)
 
@@ -50,9 +50,8 @@ function Is_resize_locked(layout_data, o_layout_data, i, j, n, directions)
         end
 
         for k = 1,#resize_containers do
-            local li = resize_containers[k][5]
-            local lj = resize_containers[k][6]
-            local c = lt_data[li][lj]
+            local lj = resize_containers[k][5]
+            local c = lt_data_el[lj]
 
             c[X] = alt_con[X] + (resize_containers[k][X] * alt_con[WIDTH])
             c[Y] = alt_con[Y] + (resize_containers[k][Y] * alt_con[HEIGHT])

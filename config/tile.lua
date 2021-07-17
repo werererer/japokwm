@@ -20,18 +20,18 @@ function Is_equally_affected_by_resize_of(container, container2, d)
 end
 
 -- finds containers that are affected by the container at i,j
-function Get_resize_affected_containers(layout_data, o_layout_data, i, j, d, get_container_func, is_effected_by_func)
-    local container = layout_data[i][j]
+function Get_resize_affected_containers(lt_data_el, o_lt_data_el, i, d, get_container_func, is_effected_by_func)
+    local container = lt_data_el[i]
     local list = {}
 
-    for j2 = 1, #layout_data[i] do
-        local con = layout_data[i][j2]
+    for j = 1, #lt_data_el do
+        local con = lt_data_el[j]
         local alt_con = get_container_func(container, d)
 
-        if j ~= j2 then
-            if is_effected_by_func(o_layout_data[i][j], o_layout_data[i][j2], d) then
+        if i ~= j then
+            if is_effected_by_func(o_lt_data_el[i], o_lt_data_el[j], d) then
                 -- convert relative to absolute box
-                local ret_con = {con[X], con[Y], con[WIDTH], con[HEIGHT], i, j2}
+                local ret_con = {con[X], con[Y], con[WIDTH], con[HEIGHT], j}
                 ret_con[X] = (ret_con[X]-alt_con[X])/alt_con[WIDTH]
                 ret_con[Y] = (ret_con[Y]-alt_con[Y])/alt_con[HEIGHT]
                 ret_con[WIDTH] = ret_con[WIDTH]/alt_con[WIDTH]
@@ -92,49 +92,48 @@ function Is_affected_by_resize_of(container, container2, d)
     return resize
 end
 
--- TODO refactor and simplify
-function Resize_all(lt_data, o_layout_data, i, j, n, d)
-    if i > #lt_data then
-        return lt_data
-    end
-    if j > #lt_data[i] then
-        return lt_data
-    end
-
-    local directions = Get_directions(d)
-    local layout_data = Deep_copy(lt_data)
-    local main_con = layout_data[i][j]
-
-    if Is_resize_locked(layout_data, o_layout_data, i, j, n, directions) then
-        return layout_data
-    end
-
-    -- apply
+local function apply_resize_function(lt_data_el, o_lt_data_el, i, n, directions)
+    local main_con = lt_data_el[i]
     for x = 1,#directions do
         local dir = directions[x]
-        local resize_main_containers = Get_resize_affected_containers(layout_data, o_layout_data, i, j, dir, Get_main_container, Is_equally_affected_by_resize_of)
-        local resize_containers = Get_resize_affected_containers(layout_data, o_layout_data, i, j, dir, Get_alternative_container, Is_affected_by_resize_of)
+        local resize_main_containers = Get_resize_affected_containers(lt_data_el, o_lt_data_el, i, dir, Get_main_container, Is_equally_affected_by_resize_of)
+        local resize_containers = Get_resize_affected_containers(lt_data_el, o_lt_data_el, i, dir, Get_alternative_container, Is_affected_by_resize_of)
         main_con = Deep_copy(Move_resize(main_con, 0, n, dir))
         local alt_con = Get_alternative_container(main_con, dir)
 
         for k = 1,#resize_containers do
-            local li = resize_containers[k][5]
-            local lj = resize_containers[k][6]
+            local lj = resize_containers[k][5]
 
-            layout_data[li][lj][X] = alt_con[X] + (resize_containers[k][X] * alt_con[WIDTH])
-            layout_data[li][lj][Y] = alt_con[Y] + (resize_containers[k][Y] * alt_con[HEIGHT])
-            layout_data[li][lj][WIDTH] = resize_containers[k][WIDTH] * alt_con[WIDTH]
-            layout_data[li][lj][HEIGHT] = resize_containers[k][HEIGHT] * alt_con[HEIGHT]
+            lt_data_el[lj][X] = alt_con[X] + (resize_containers[k][X] * alt_con[WIDTH])
+            lt_data_el[lj][Y] = alt_con[Y] + (resize_containers[k][Y] * alt_con[HEIGHT])
+            lt_data_el[lj][WIDTH] = resize_containers[k][WIDTH] * alt_con[WIDTH]
+            lt_data_el[lj][HEIGHT] = resize_containers[k][HEIGHT] * alt_con[HEIGHT]
         end
 
-        layout_data[i][j] = Deep_copy(main_con)
+        lt_data_el[i] = Deep_copy(main_con)
         for k = 1,#resize_main_containers do
-            local li = resize_main_containers[k][5]
-            local lj = resize_main_containers[k][6]
-            layout_data[li][lj] = Move_resize(layout_data[li][lj], 0, n, dir)
+            local lj = resize_main_containers[k][5]
+            lt_data_el[lj] = Move_resize(lt_data_el[lj], 0, n, dir)
         end
     end
-    return layout_data
+end
+
+-- TODO refactor and simplify
+function Resize_all(lt_data_el, o_layout_data_el, i, n, d)
+    if i > #lt_data_el then
+        return lt_data_el
+    end
+
+    local directions = Get_directions(d)
+    local layout_data_element = Deep_copy(lt_data_el)
+
+    if Is_resize_locked(layout_data_element, o_layout_data_el, i, n, directions) then
+        return layout_data_element
+    end
+
+    apply_resize_function(layout_data_element, o_layout_data_el, i, n, directions)
+
+    return layout_data_element
 end
 
 function Set(list)
@@ -170,7 +169,10 @@ function Resize_main_all(layout_data, o_layout_data, resize_data, n, direction)
 
     local resize_element = resize_data[layout_id]
     for i=1,#resize_element do
-        layout_data = Resize_all(layout_data, o_layout_data, resize_element[i], 1, n, direction)
+        local id = resize_element[i]
+        if id < #o_layout_data then
+            layout_data[id] = Resize_all(layout_data[id], o_layout_data[id], 1, n, direction)
+        end
     end
     return layout_data
 end
