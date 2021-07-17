@@ -26,6 +26,7 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     LISTEN(&wlr_layer_surface->events.map, &client->map, map_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.unmap, &client->unmap, unmap_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.destroy, &client->destroy, destroy_layer_surface_notify);
+    LISTEN(&wlr_layer_surface->events.new_popup, &client->new_popup, popup_handle_new_popup);
 
     struct monitor *m = wlr_layer_surface->output->data;
     client->m = m;
@@ -82,6 +83,7 @@ void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
     wl_list_remove(&c->map.link);
     wl_list_remove(&c->unmap.link);
     wl_list_remove(&c->destroy.link);
+    wl_list_remove(&c->new_popup.link);
 
     if (c->surface.layer->output) {
         struct monitor *m = c->surface.layer->output->data;

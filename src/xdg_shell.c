@@ -37,7 +37,6 @@ void create_notify_xdg(struct wl_listener *listener, void *data)
      * client, either a toplevel (application window) or popup. */
     struct wlr_xdg_surface *xdg_surface = data;
 
-
     if (xdg_surface->role != WLR_XDG_SURFACE_ROLE_TOPLEVEL)
         return;
 
