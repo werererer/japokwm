@@ -238,7 +238,7 @@ local function get_alpha_area_from_container(con, dir)
     return area
 end
 
-local function apply_resize_function_V2(lt_data_el, o_lt_data_el, i, n, directions)
+local function apply_resize_function(lt_data_el, o_lt_data_el, i, n, directions)
     for x = 1,#directions do
         local dir = directions[x]
 
@@ -267,7 +267,7 @@ local function resize_all(lt_data_el, o_layout_data_el, i, n, d)
     --     return layout_data_element
     -- end
 
-    apply_resize_function_V2(layout_data_element, o_layout_data_el, i, n, directions)
+    apply_resize_function(layout_data_element, o_layout_data_el, i, n, directions)
 
     return layout_data_element
 end
