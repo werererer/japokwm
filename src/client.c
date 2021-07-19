@@ -100,7 +100,6 @@ static void unfocus_client(struct client *c)
 
 void focus_surface(struct wlr_surface *surface)
 {
-    printf("focus surface\n");
     /* Update wlroots'c keyboard focus */
     if (!surface) {
         /* With no client, all we have left is to clear focus */

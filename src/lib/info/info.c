@@ -3,6 +3,7 @@
 #include <lauxlib.h>
 
 #include "container.h"
+#include "monitor.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 
@@ -72,6 +73,22 @@ int lib_get_container_under_cursor(lua_State *L)
     struct container *con = xy_to_container(cursor->x, cursor->y);
     int pos = get_position_in_container_stack(con);
     lua_pushinteger(L, pos);
+    return 1;
+}
+
+int lib_get_root_area(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct root *root = m->root;
+    lua_createtable(L, 1, 0);
+    lua_pushinteger(L, root->geom.x);
+    lua_rawseti(L, -2, 1);
+    lua_pushinteger(L, root->geom.y);
+    lua_rawseti(L, -2, 2);
+    lua_pushinteger(L, root->geom.width);
+    lua_rawseti(L, -2, 3);
+    lua_pushinteger(L, root->geom.height);
+    lua_rawseti(L, -2, 4);
     return 1;
 }
 

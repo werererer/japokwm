@@ -286,7 +286,6 @@ void notify_msg(const char *msg)
 void handle_error(const char *msg)
 {
     notify_msg(msg);
-    printf("notify done\n");
     wlr_log(WLR_ERROR, "%s", msg);
 
     // if error file not initialized

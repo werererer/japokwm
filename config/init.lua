@@ -4,7 +4,9 @@ config.set_sloppy_focus(true)
 
 local function on_start()
     -- execute programs or do what ever you want e.g.:
-    -- action.exec("...")
+    for i = 1,5 do
+        action.exec("st")
+    end
     print("works")
 end
 
@@ -12,7 +14,7 @@ event.add_listener("on_start", on_start)
 
 config.set_inner_gaps(0)
 
-local layouts = {"tile", "two_pane", "monocle", "tmp"}
+local layouts = {"tmp", "two_pane", "monocle", "tile"}
 
 config.create_layout_set("default", layouts)
 

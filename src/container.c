@@ -43,7 +43,6 @@ void destroy_container(struct container *con)
 
 void add_container_to_tile(struct container *con)
 {
-    printf("add_container_to_tile\n");
     assert(!con->is_tiled);
     add_container_to_workspace(con, get_workspace(con->client->ws_id));
 
