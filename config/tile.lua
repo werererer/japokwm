@@ -5,103 +5,6 @@ local Y<const> = 2
 local WIDTH<const> = 3
 local HEIGHT<const> = 4
 
-local HORIZONTAL<const> = 0
-local VERTICAL<const> = 1
-
-local FULL_CON = {
-    X = 0,
-    Y = 0,
-    WIDTH = 1,
-    HEIGHT = 1,
-}
-
-function Is_equally_affected_by_resize_of(container, container2, d)
-    local resize = false
-    if d == info.direction.top then
-        resize = Is_approx_equal(container2[Y], container[Y])
-    elseif d == info.direction.bottom then
-        resize = Is_approx_equal(container2[Y] + container2[HEIGHT], container[Y] + container[HEIGHT])
-    elseif d == info.direction.left then
-        resize = Is_approx_equal(container2[X], container[X])
-    elseif d == info.direction.right then
-        resize = Is_approx_equal(container2[X] + container2[WIDTH], container[X] + container[WIDTH])
-    end
-    return resize
-end
-
--- finds containers that are affected by the container at i,j
-function Get_resize_affected_containers(lt_data_el, o_lt_data_el, i, d, get_container_func, is_effected_by_func)
-    local container = lt_data_el[i]
-    local list = {}
-
-    for j = 1, #lt_data_el do
-        local con = lt_data_el[j]
-        local alt_con = get_container_func(container, d)
-
-        if i ~= j then
-            if is_effected_by_func(o_lt_data_el[i], o_lt_data_el[j], d) then
-                -- convert relative to absolute box
-                local ret_con = {con[X], con[Y], con[WIDTH], con[HEIGHT], j}
-                ret_con[X] = (ret_con[X]-alt_con[X])/alt_con[WIDTH]
-                ret_con[Y] = (ret_con[Y]-alt_con[Y])/alt_con[HEIGHT]
-                ret_con[WIDTH] = ret_con[WIDTH]/alt_con[WIDTH]
-                ret_con[HEIGHT] = ret_con[HEIGHT]/alt_con[HEIGHT]
-                table.insert(list, ret_con)
-            end
-        end
-    end
-    return list
-end
-
-function Move_this_container(n, d)
-    -- local i = math.max(math.min(action.get_this_container_count(), #Layout_data), 1)
-    -- local j = math.min(info.this_container_position(), #Layout_data[i])
-    -- local container = Layout_data[i][j]
-    -- Layout_data[i][j] = Move_container(container, n, d)
-    -- action.arrange()
-end
-
-function Resize_this_container(n, d)
-    -- local i = math.max(math.min(action.get_this_container_count(), #Layout_data), 1)
-    -- local j = math.min(action.client_pos(), #Layout_data[i])
-    -- Layout_data[i][j] = Resize_container(Layout_data[i][j], n, d)
-    -- action.arrange()
-end
-
---
--- returns whether container2 is affected
-function Is_affected_by_resize_of(container, container2, d)
-    local resize = false
-
-    if d == info.direction.top then
-        local right = Is_container_right_to(container, container2)
-        local left = Is_container_left_to(container, container2)
-        local container_is_higher = Is_container_over(container, container2)
-
-        resize = container_is_higher and not (left or right)
-    elseif d == info.direction.bottom then
-        local right = Is_container_right_to(container, container2)
-        local left = Is_container_left_to(container, container2)
-        local container_is_lower = Is_container_under(container, container2)
-
-        resize = container_is_lower and not (left or right)
-    elseif d == info.direction.left then
-        local over = Is_container_over(container, container2)
-        local under = Is_container_under(container, container2)
-        local container_is_left = Is_container_left_to(container, container2)
-
-        resize = container_is_left and not (over or under)
-    elseif d == info.direction.right then
-        local over = Is_container_over(container, container2)
-        local under = Is_container_under(container, container2)
-        local container_is_right = Is_container_right_to(container, container2)
-
-        resize = container_is_right and not (over or under)
-    end
-
-    return resize
-end
-
 -- val is between 0 and 1 and represents how far
 local function abs_container_to_relative(con, ref_area)
     con[X] = con[X] / ref_area[WIDTH] - ref_area[X]
@@ -352,7 +255,7 @@ local function apply_resize_function_V2(lt_data_el, o_lt_data_el, i, n, directio
 end
 
 -- TODO refactor and simplify
-function Resize_all(lt_data_el, o_layout_data_el, i, n, d)
+local function resize_all(lt_data_el, o_layout_data_el, i, n, d)
     if i > #lt_data_el then
         return lt_data_el
     end
@@ -367,14 +270,6 @@ function Resize_all(lt_data_el, o_layout_data_el, i, n, d)
     apply_resize_function_V2(layout_data_element, o_layout_data_el, i, n, directions)
 
     return layout_data_element
-end
-
-function Set(list)
-    local set = {}
-    for _,l in ipairs(list) do
-        set[l] = true
-    end
-    return set
 end
 
 local function get_layout_data_element_id(o_layout_data)
@@ -411,7 +306,7 @@ function Resize_main_all(layout_data, o_layout_data, resize_data, n, direction)
         if id <= #o_layout_data then
             print("id: %i", id)
             -- local id = 5
-            layout_data[id] = Resize_all(layout_data[id], o_layout_data[id], 1, n, direction)
+            layout_data[id] = resize_all(layout_data[id], o_layout_data[id], 1, n, direction)
         end
     end
     return layout_data
