@@ -102,95 +102,7 @@ function Is_affected_by_resize_of(container, container2, d)
     return resize
 end
 
-local function apply_resize_function(lt_data_el, o_lt_data_el, i, n, directions)
-    local main_con = lt_data_el[i]
-    for x = 1,#directions do
-        local dir = directions[x]
-        local resize_main_containers = Get_resize_affected_containers(lt_data_el, o_lt_data_el, i, dir, Get_main_container, Is_equally_affected_by_resize_of)
-        local resize_containers = Get_resize_affected_containers(lt_data_el, o_lt_data_el, i, dir, Get_alternative_container, Is_affected_by_resize_of)
-        main_con = Deep_copy(Move_resize(main_con, 0, n, dir))
-        local alt_con = Get_alternative_container(main_con, dir)
-
-        for k = 1,#resize_containers do
-            local lj = resize_containers[k][5]
-
-            lt_data_el[lj][X] = alt_con[X] + (resize_containers[k][X] * alt_con[WIDTH])
-            lt_data_el[lj][Y] = alt_con[Y] + (resize_containers[k][Y] * alt_con[HEIGHT])
-            lt_data_el[lj][WIDTH] = resize_containers[k][WIDTH] * alt_con[WIDTH]
-            lt_data_el[lj][HEIGHT] = resize_containers[k][HEIGHT] * alt_con[HEIGHT]
-        end
-
-        lt_data_el[i] = Deep_copy(main_con)
-        for k = 1,#resize_main_containers do
-            local lj = resize_main_containers[k][5]
-            lt_data_el[lj] = Move_resize(lt_data_el[lj], 0, n, dir)
-        end
-    end
-end
-
-local function create_line(dir, offset)
-    return {direction = dir, offset = offset}
-end
-
 -- val is between 0 and 1 and represents how far
--- point must have been created with create_line
-local function split_in_two_at(con, line)
-    print(con)
-    local d = line.direction;
-    local offset = line.offset;
-
-    local alpha_con = nil
-    local beta_con = nil
-
-    if d == info.direction.left then
-        if con[X] + con[WIDTH] < offset  then
-            beta_con = Deep_copy(con)
-        elseif con[X] < offset and offset < con[X] + con[WIDTH] then-- intersects con
-            alpha_con = Deep_copy(con)
-            beta_con = Deep_copy(con)
-
-            beta_con[WIDTH] = offset - alpha_con[X]
-            alpha_con[X] = offset
-            alpha_con[WIDTH] = beta_con[X] + beta_con[WIDTH] - offset
-        end
-    elseif d == info.direction.right then
-        if offset < con[X] then
-            beta_con = Deep_copy(con)
-        elseif con[X] < offset and offset < con[X] + con[WIDTH] then-- intersects con
-            beta_con = Deep_copy(con)
-            alpha_con = Deep_copy(con)
-
-            alpha_con[WIDTH] = offset - beta_con[X]
-            beta_con[X] = offset
-            beta_con[WIDTH] = alpha_con[X] + alpha_con[WIDTH] - offset
-        end
-    elseif d == info.direction.top then
-        if con[Y] + con[HEIGHT] < offset  then
-            beta_con = Deep_copy(con)
-        elseif con[Y] < offset and offset < con[Y] + con[HEIGHT] then-- intersects con
-            alpha_con = Deep_copy(con)
-            beta_con = Deep_copy(con)
-
-            beta_con[HEIGHT] = offset - alpha_con[Y]
-            alpha_con[Y] = offset
-            alpha_con[HEIGHT] = beta_con[Y] + beta_con[HEIGHT] - offset
-        end
-    elseif d == info.direction.bottom then
-        if offset < con[Y] then
-            beta_con = Deep_copy(con)
-        elseif con[Y] < offset and offset < con[Y] + con[HEIGHT] then-- intersects con
-            beta_con = Deep_copy(con)
-            alpha_con = Deep_copy(con)
-
-            alpha_con[HEIGHT] = offset - beta_con[Y]
-            beta_con[Y] = offset
-            beta_con[HEIGHT] = alpha_con[Y] + alpha_con[HEIGHT] - offset
-        end
-    end
-
-    return alpha_con, beta_con
-end
-
 local function abs_container_to_relative(con, ref_area)
     con[X] = con[X] / ref_area[WIDTH] - ref_area[X]
     con[Y] = con[Y] / ref_area[HEIGHT] - ref_area[Y]
@@ -252,19 +164,7 @@ local function change_base(con, old_area, new_area)
     local local_old_con = get_area_local_con(con, old_area);
     local zero_old_area = get_area_at_zero(old_area)
     local zero_new_area = get_area_at_zero(new_area)
-    print("zero_old_area[X]", zero_old_area[X])
-    print("zero_old_area[Y]", zero_old_area[Y])
-    print("zero_old_area[WIDTH]", zero_old_area[WIDTH])
-    print("zero_old_area[HEIGHT]", zero_old_area[HEIGHT])
-    print("local old con[X]", local_old_con[X])
-    print("local old con[Y]", local_old_con[Y])
-    print("local old con[WIDTH]", local_old_con[WIDTH])
-    print("local old con[HEIGHT]", local_old_con[HEIGHT])
     abs_container_to_relative(local_old_con, zero_old_area)
-    print("new con[X]", local_old_con[X])
-    print("new con[Y]", local_old_con[Y])
-    print("new con[WIDTH]", local_old_con[WIDTH])
-    print("new con[HEIGHT]", local_old_con[HEIGHT])
     relative_container_to_abs(local_old_con, zero_new_area)
 
     local new_con = get_global_con(local_old_con, new_area)
@@ -273,10 +173,10 @@ end
 
 local function merge_boxes(box1, box2)
     if (box1 == nil) then
-        return Deep_copy(box1)
+        return Deep_copy(box2)
     end
     if (box2 == nil) then
-        return Deep_copy(box2)
+        return Deep_copy(box1)
     end
     local x1 = math.min(box1[X], box2[X])
     local y1 = math.min(box1[Y], box2[Y])
@@ -317,8 +217,8 @@ local function split_container(con, unaffected_area, old_alpha_area, old_beta_ar
 end
 
 local function apply_resize(lt_data_el, old_unaffected_area, old_alpha_area, new_alpha_area, old_beta_area, new_beta_area)
-    local i = 4
-    -- for i = 1,#lt_data_el do
+    -- local i = 5
+    for i = 1,#lt_data_el do
         local con = lt_data_el[i];
 
         local unaffected_con, alpha_con, beta_con = split_container(con, old_unaffected_area, old_alpha_area, old_beta_area);
@@ -331,8 +231,7 @@ local function apply_resize(lt_data_el, old_unaffected_area, old_alpha_area, new
         end
 
         lt_data_el[i] = join_containers(unaffected_con, alpha_con, beta_con)
-        print("new: %i")
-    -- end
+    end
 end
 
 local function get_cissor_container_left(alpha_area)
@@ -437,8 +336,6 @@ local function get_alpha_area_from_container(con, dir)
 end
 
 local function apply_resize_function_V2(lt_data_el, o_lt_data_el, i, n, directions)
-    print("apply_resize_function_V2")
-    print("directions: ")
     for x = 1,#directions do
         local dir = directions[x]
 
@@ -487,8 +384,10 @@ end
 -- returns 0 if not found
 local function get_layout_element(layout_data_element_id, resize_data)
     for j=1,#resize_data do
+        local resize_data_element = resize_data[j]
         for h=1, #resize_data[j] do
-            if layout_data_element_id == resize_data[j][h] then
+            if layout_data_element_id == resize_data_element[h] then
+                print("j", j)
                 return j
             end
         end
@@ -498,18 +397,22 @@ end
 
 function Resize_main_all(layout_data, o_layout_data, resize_data, n, direction)
     local layout_data_element_id = get_layout_data_element_id(o_layout_data)
+    print("layout_data_element_id", layout_data_element_id)
     local layout_id = get_layout_element(layout_data_element_id, resize_data)
+    print("layout_id", layout_id)
     if layout_id == 0 then
+        print("is zero")
         return layout_data
     end
 
-    -- local resize_element = resize_data[layout_id]
-    -- for i=1,#resize_element do
-    --     local id = resize_element[i]
-    --     if id < #o_layout_data then
-    local id = 5
-    layout_data[id] = Resize_all(layout_data[id], o_layout_data[id], 1, n, direction)
-        -- end
-    -- end
+    local resize_element = resize_data[layout_id]
+    for i=1,#resize_element do
+        local id = resize_element[i]
+        if id <= #o_layout_data then
+            print("id: %i", id)
+            -- local id = 5
+            layout_data[id] = Resize_all(layout_data[id], o_layout_data[id], 1, n, direction)
+        end
+    end
     return layout_data
 end

@@ -119,4 +119,5 @@ local layout_data = {
 }
 
 layout.set("tmp", layout_data)
-l.config.set_resize_direction(info.direction.right)
+l.config.set_resize_data({{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}})
+l.config.set_resize_direction(info.direction.all)
