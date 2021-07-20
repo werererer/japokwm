@@ -164,8 +164,10 @@ void join_path(char **base, const char *file)
 
 void lua_ref_safe(lua_State *L, int t, int *ref)
 {
-    if (lua_isnil(L, -1))
+    if (lua_isnil(L, -1)) {
+        lua_pop(L, 1);
         return;
+    }
     if (*ref > 0) {
         luaL_unref(L, t, *ref);
     }
