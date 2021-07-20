@@ -46,6 +46,7 @@ int lib_set_layout(lua_State *L)
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
     lua_copy_table_safe(L, &lt->lua_layout_original_copy_data_ref);
+    printf("lt-> %i\n", lt->lua_resize_function_ref);
     lua_pop(L, 1);
 
     push_layout(ws, lt);

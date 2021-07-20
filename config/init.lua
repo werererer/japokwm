@@ -1,3 +1,4 @@
+print("works")
 config.create_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
 
 config.set_sloppy_focus(true)
@@ -5,7 +6,7 @@ config.set_sloppy_focus(true)
 local function on_start()
     -- execute programs or do what ever you want e.g.:
     for i = 1,13 do
-        action.exec("st")
+        action.exec("alacritty")
     end
     print("works")
 end
@@ -80,4 +81,4 @@ config.bind_key("mod-t",         function() action.set_floating(false)    end)
 config.bind_key("mod-M1",  function() action.move_resize(info.cursor.mode.move) end)
 config.bind_key("mod-M2",  function() action.move_resize(info.cursor.mode.resize) end)
 config.bind_key("M1", function() action.focus_container(info.get_container_under_cursor()) end)
--- print("execute finished")
+print("execute finished")

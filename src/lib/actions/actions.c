@@ -61,7 +61,8 @@ int lib_resize_main(lua_State *L)
     struct layout *lt = ws->layout;
     int dir = lt->options.resize_dir;
 
-    lua_getglobal_safe(L, "Resize_main_all");
+    printf("lua_resize_function_ref: %i\n", lt->lua_resize_function_ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_resize_function_ref);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_original_copy_data_ref);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_resize_data_ref);

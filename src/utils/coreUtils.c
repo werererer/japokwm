@@ -1,4 +1,6 @@
 #include "utils/coreUtils.h"
+
+#include <assert.h>
 #include <string.h>
 #include <unistd.h>
 #include <wlr/util/log.h>
@@ -9,6 +11,8 @@
 #include <dirent.h>
 #include <errno.h>
 #include <sys/stat.h>
+
+#include "utils/parseConfigUtils.h"
 
 struct lua_State *L;
 
@@ -160,6 +164,8 @@ void join_path(char **base, const char *file)
 
 void lua_ref_safe(lua_State *L, int t, int *ref)
 {
+    if (lua_isnil(L, -1))
+        return;
     if (*ref > 0) {
         luaL_unref(L, t, *ref);
     }
@@ -198,6 +204,11 @@ void lua_get_default_layout_data(lua_State *L)
         }
         lua_rawseti(L, -2, 1);
     }
+}
+
+void lua_get_default_resize_function(lua_State *L)
+{
+    lua_getglobal_safe(L, "Resize_main_all");
 }
 
 void lua_get_default_master_layout_data(lua_State *L)

@@ -68,6 +68,8 @@ int cross_sum(int n, int base);
  */
 void lua_get_default_layout_data(lua_State *L);
 
+void lua_get_default_resize_function(lua_State *L);
+
 /*
  * create a lua table that looks like this:
  * {

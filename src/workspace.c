@@ -41,6 +41,7 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     ws->id = id;
 
     ws->loaded_layouts = g_ptr_array_new();
+    printf("lt->lua_resize_data_ref: %i\n", lt->lua_resize_data_ref);
     // fill layout stack with reasonable values
     push_layout(ws, lt);
     push_layout(ws, lt);
@@ -196,6 +197,7 @@ void workspace_assign_monitor(struct workspace *ws, struct monitor *m)
 
 void push_layout(struct workspace *ws, struct layout *lt)
 {
+    printf("push_layout: lt->lua_resize_function_ref: %i\n", lt->lua_resize_function_ref);
     lt->ws_id = ws->id;
     ws->previous_layout = ws->layout;
     ws->layout = lt;

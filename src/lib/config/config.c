@@ -145,9 +145,9 @@ int lib_create_workspaces(lua_State *L)
     }
     lua_pop(L, 1);
 
-    update_workspaces(server.workspaces, tag_names);
+    /* update_workspaces(server.workspaces, tag_names); */
 
-    ipc_event_workspace();
+/*     ipc_event_workspace(); */
 
     return 0;
 }
@@ -231,6 +231,12 @@ int lib_set_resize_direction(lua_State *L)
 {
     server.default_layout->options.resize_dir = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
+    return 0;
+}
+
+int lib_set_resize_function(lua_State *L)
+{
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &server.default_layout->lua_resize_function_ref);
     return 0;
 }
 

@@ -152,7 +152,6 @@ static int setup()
     load_libs(L);
     init_error_file();
 
-    server.default_layout = create_layout(L);
     server.layout_set = get_default_layout_set();
 
     init_utils(L);
@@ -162,6 +161,8 @@ static int setup()
     server.wl_display = wl_display_create();
     server.wl_event_loop = wl_display_get_event_loop(server.wl_display);
     ipc_init(server.wl_event_loop);
+    server.default_layout = create_layout(L);
+    load_config(L);
 
     /* The backend is a wlroots feature which abstracts the underlying input and
      * output hardware. The autocreate option will choose the most suitable

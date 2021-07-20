@@ -238,17 +238,31 @@ local function get_alpha_area_from_container(con, dir)
     return area
 end
 
+local function is_invalid(con)
+    if con[WIDTH] < 0 then
+        return true
+    end
+    if con[HEIGHT] < 0 then
+        return true
+    end
+    return false
+end
+
 local function apply_resize_function(lt_data_el, o_lt_data_el, i, n, directions)
+    print("apply resize function")
     for x = 1,#directions do
         local dir = directions[x]
 
         local old_alpha_area = get_alpha_area_from_container(lt_data_el[i], dir)
         local new_alpha_area = Move_resize(old_alpha_area, 0, n, dir)
-        print("n: ", n)
 
         local old_beta_area = get_beta_area(old_alpha_area, dir)
         local new_beta_area = get_beta_area(new_alpha_area, dir)
         local old_unaffected_area = get_unaffected_area(old_alpha_area, dir)
+
+        if is_invalid(new_alpha_area) or is_invalid(new_beta_area) then
+            return
+        end
 
         apply_resize(lt_data_el, old_unaffected_area, old_alpha_area, new_alpha_area, old_beta_area, new_beta_area)
     end

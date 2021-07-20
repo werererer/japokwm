@@ -111,8 +111,8 @@ void create_monitor(struct wl_listener *listener, void *data)
     m->root = create_root(m, m->geom);
 
     if (is_first_monitor) {
+
         focus_monitor(m);
-        load_config(L);
 
         if (server.default_layout->options.tag_names->len <= 0) {
             handle_error("tag_names is empty, loading default tag_names");

@@ -31,8 +31,13 @@ struct layout *create_layout(lua_State *L)
 
     lua_get_default_layout_data(L);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_copy_data_ref);
+
     lua_createtable(L, 0, 0);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_ref);
+
+    lua_get_default_resize_function(L);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_resize_function_ref);
+    printf("lua_resize_function_ref: %i\n", lt->lua_resize_function_ref);
 
     return lt;
 }
@@ -98,6 +103,7 @@ void copy_layout(struct layout *dest_lt, struct layout *src_lt)
     dest_lt->lua_layout_original_copy_data_ref = 0;
     dest_lt->lua_layout_ref = 0;
     dest_lt->lua_master_layout_data_ref = 0;
+    dest_lt->lua_resize_function_ref = 0;
     copy_layout_safe(dest_lt, src_lt);
 }
 
@@ -134,6 +140,12 @@ void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt)
     if (src_lt->lua_resize_data_ref > 0) {
         lua_get_default_resize_data(L);
         lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->lua_resize_data_ref);
+    }
+
+    if (src_lt->lua_resize_function_ref > 0) {
+        lua_get_default_resize_function(L);
+        lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->lua_resize_function_ref);
+        printf("copy_layout: %i\n", dest_lt->lua_resize_function_ref);
     }
 
     copy_options(&dest_lt->options, &src_lt->options);

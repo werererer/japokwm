@@ -27,6 +27,7 @@ struct layout {
     int n_master_abs;
     // the amount master windows
     int nmaster;
+    int lua_resize_function_ref;
     int lua_layout_ref;
     int lua_layout_copy_data_ref;
     int lua_layout_original_copy_data_ref;
