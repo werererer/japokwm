@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <libnotify/notify.h>
 #include <pthread.h>
+#include <fts.h>
 
 #include "options.h"
 #include "server.h"
@@ -22,6 +23,10 @@ static const char *config_paths[] = {
     "$HOME/.config/japokwm/",
     "$XDG_CONFIG_HOME/japokwm/",
     "/etc/japokwm/",
+};
+
+static const char *plugin_relative_paths[] = {
+    "plugins",
 };
 
 static const char *config_file = "init.lua";
@@ -104,9 +109,71 @@ void append_to_lua_path(lua_State *L, const char *path)
     free(path_var);
 }
 
+static int load_default_plugins(lua_State *L)
+{
+    return 1;
+}
+
+static int compare(const FTSENT **one, const FTSENT **two)
+{
+    return strcmp((*one)->fts_name, (*two)->fts_name);
+}
+
+static int load_plugins(lua_State *L)
+{
+    const char *path = plugin_relative_paths[0];
+    char *base_path = get_config_dir("init.lua");
+    join_path(&base_path, path);
+
+    FTS* file_system = fts_open(&base_path, FTS_NOCHDIR | FTS_NOSTAT, compare);
+    FTSENT *parent = NULL;
+    while ((parent = fts_read(file_system)) != NULL) {
+        FTSENT *child = fts_children(file_system, 0);
+        if (!child)
+            continue;
+        if (child->fts_info != FTS_F)
+            continue;
+        if (child->fts_level > 2)
+            break;
+
+
+        char *path = strdup(child->fts_path);
+        join_path(&path, child->fts_name);
+        append_to_lua_path(L, path);
+        free(path);
+
+        if (strcmp(child->fts_name, "init.lua") != 0)
+            continue;
+
+        load_file(L, child->fts_path, child->fts_name);
+    }
+    fts_close(file_system);
+    return 1;
+}
+
+static int get_base_dir_id()
+{
+    char *config_path = get_config_dir(config_file);
+
+    // get the index of the config file in config_paths array
+    int default_id = -1;
+    for (int i = 0; i < LENGTH(config_paths); i++) {
+        char *path = strdup(config_paths[i]);
+        expand_path(&path);
+        if (path_compare(path, config_path) == 0) {
+            default_id = i;
+            free(path);
+            return default_id;
+        }
+        free(path);
+    }
+    return default_id;
+}
+
 // returns 0 upon success and 1 upon failure
 static int load_default_config(lua_State *L)
 {
+    load_plugins(L);
     char *config_path = get_config_dir(config_file);
     printf("config_dir: %s\n", config_path);
 
