@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=Japokwm
+Comment=A Wayland compositor based on wlroots and dwl
+Exec=japokwm
+Type=Application

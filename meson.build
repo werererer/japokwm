@@ -28,6 +28,12 @@ if git.found()
 endif
 add_project_arguments('-DJAPOKWM_VERSION=@0@'.format(version), language: 'c')
 
+datadir = get_option('datadir')
+install_data(
+    'japokwm.desktop',
+    install_dir: join_paths(datadir, 'wayland-sessions')
+)
+
 # generate needed protocol files
 srcDir = 'src/'
 includeDir = 'include/'
