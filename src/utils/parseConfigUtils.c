@@ -173,7 +173,6 @@ static int get_base_dir_id()
 // returns 0 upon success and 1 upon failure
 static int load_default_config(lua_State *L)
 {
-    load_plugins(L);
     char *config_path = get_config_dir(config_file);
     printf("config_dir: %s\n", config_path);
 
@@ -242,6 +241,7 @@ int load_config(lua_State *L)
         success = load_file(L, "", server.config_file);
     } else {
         success = load_default_config(L);
+        load_plugins(L);
     }
     return success;
 }
