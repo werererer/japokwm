@@ -1,18 +1,20 @@
 #include "translationLayer.h"
-#include "cursor.h"
-#include "lib/actions/actions.h"
-#include "lib/actions/libcontainer.h"
-#include "lib/config/config.h"
-#include "lib/config/localconfig.h"
-#include "lib/event_handler/lib_event_handler.h"
-#include "lib/layout/lib_layout.h"
-#include "lib/info/info.h"
-#include "lib/event_handler/local_event_handler.h"
-#include "lib/monitor/lib_monitor.h"
-#include "tile/tile.h"
+
 #include <lauxlib.h>
 #include <lua.h>
 #include <wayland-server-protocol.h>
+
+#include "cursor.h"
+#include "lib/actions/lib_actions.h"
+#include "lib/actions/lib_container.h"
+#include "lib/config/lib_config.h"
+#include "lib/config/local_config.h"
+#include "lib/event_handler/lib_event_handler.h"
+#include "lib/layout/lib_layout.h"
+#include "lib/info/lib_info.h"
+#include "lib/event_handler/local_event_handler.h"
+#include "lib/monitor/lib_monitor.h"
+#include "tile/tile.h"
 
 static const struct luaL_Reg action[] =
 {

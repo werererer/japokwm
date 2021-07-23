@@ -1,4 +1,4 @@
-#include "lib/config/config.h"
+#include "lib/config/lib_config.h"
 #include "utils/gapUtils.h"
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"

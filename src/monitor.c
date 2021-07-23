@@ -7,7 +7,6 @@
 #include <wlr/util/log.h>
 
 #include "ipc-server.h"
-#include "lib/actions/actions.h"
 #include "render/render.h"
 #include "server.h"
 #include "tile/tileUtils.h"

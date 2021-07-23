@@ -1,5 +1,6 @@
 #include "lib/event_handler/local_event_handler.h"
 
+#include "monitor.h"
 #include "utils/coreUtils.h"
 #include "server.h"
 

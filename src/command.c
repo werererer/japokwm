@@ -126,7 +126,7 @@ static struct cmd_handler command_handlers[] = {
     /* { "floating", cmd_floating }, */
     /* { "fullscreen", cmd_fullscreen }, */
     /* { "inhibit_idle", cmd_inhibit_idle }, */
-    /* { "kill", cmd_kill }, */
+    /* { "action.kill", cmd_kill }, */
     /* { "layout", cmd_layout }, */
     /* { "mark", cmd_mark }, */
     /* { "max_render_time", cmd_max_render_time }, */

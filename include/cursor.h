@@ -1,7 +1,6 @@
 #ifndef CURSOR_H
 #define CURSOR_H
 
-#include "lib/actions/actions.h"
 #include <wayland-server-core.h>
 #include <wlr/types/wlr_surface.h>
 #include <wlr/types/wlr_seat.h>

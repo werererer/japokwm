@@ -1,4 +1,4 @@
-#include "lib/info/info.h"
+#include "lib/info/lib_info.h"
 
 #include <lauxlib.h>
 

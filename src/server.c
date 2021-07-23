@@ -1,4 +1,5 @@
 #include "server.h"
+#include "monitor.h"
 #include "utils/coreUtils.h"
 
 struct server server;
