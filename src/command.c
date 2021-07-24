@@ -38,7 +38,7 @@ char *cmd_results_to_json(GPtrArray *res_list) {
         struct cmd_results *results = g_ptr_array_index(res_list, i);
         json_object *root = json_object_new_object();
         json_object_object_add(root, "success",
-                json_object_new_boolean(results->status == CMD_SUCCESS));
+                json_object_new_boolean(false));
         if (results->error) {
             json_object_object_add(root, "parse_error",
                     json_object_new_boolean(results->status == CMD_INVALID));

@@ -55,10 +55,13 @@ static bool success(json_object *r, bool fallback) {
 }
 
 static void pretty_print_cmd(json_object *r) {
-    if (!success_object(r)) {
-        json_object *error;
-        if (!json_object_object_get_ex(r, "error", &error)) {
-            printf("An unknkown error occurred");
+    json_object *error;
+    bool is_error_defined = json_object_object_get_ex(r, "error", &error);
+    if (success_object(r)) {
+        printf("%s\n", json_object_get_string(error));
+    } else {
+        if (!is_error_defined) {
+            printf("An unknown error occurred");
         } else {
             printf("Error: %s\n", json_object_get_string(error));
         }

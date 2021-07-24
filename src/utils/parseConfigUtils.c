@@ -125,7 +125,8 @@ static int load_plugins(lua_State *L)
     char *base_path = get_config_dir("init.lua");
     join_path(&base_path, path);
 
-    FTS* file_system = fts_open(&base_path, FTS_NOCHDIR | FTS_NOSTAT, compare);
+    char const *argv[] = { base_path, NULL };
+    FTS* file_system = fts_open((char *const *)argv, FTS_NOCHDIR | FTS_NOSTAT, compare);
     FTSENT *parent = NULL;
     while ((parent = fts_read(file_system)) != NULL) {
         FTSENT *child = fts_children(file_system, 0);
