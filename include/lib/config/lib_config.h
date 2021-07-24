@@ -1,5 +1,5 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef LIB_CONFIG_H
+#define LIB_CONFIG_H
 
 #include "options.h"
 #include <lauxlib.h>
@@ -36,4 +36,4 @@ int lib_set_sloppy_focus(lua_State *L);
 int lib_set_smart_hidden_edges(lua_State *L);
 int lib_set_tile_borderpx(lua_State *L);
 
-#endif /* CONFIG_H */
+#endif /* LIB_CONFIG_H */
