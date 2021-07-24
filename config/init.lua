@@ -5,9 +5,6 @@ config.set_sloppy_focus(true)
 
 local function on_start()
     -- execute programs or do what ever you want e.g.:
-    for i = 1,13 do
-        action.exec("alacritty")
-    end
     print("works")
 end
 

@@ -1,5 +1,5 @@
-#ifndef ACTIONS_H
-#define ACTIONS_H
+#ifndef LIB_ACTIONS_H
+#define LIB_ACTIONS_H
 #include <lua.h>
 #include <lauxlib.h>
 #include <stdint.h>
@@ -39,4 +39,4 @@ int lib_decrease_nmaster(lua_State *L);
 int lib_move_workspace_to(lua_State *L);
 int lib_swap_workspace(lua_State *L);
 
-#endif /* ACTIONS_H */
+#endif /* LIB_ACTIONS_H */

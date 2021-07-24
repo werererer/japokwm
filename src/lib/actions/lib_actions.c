@@ -23,6 +23,7 @@
 #include "workspace.h"
 #include "xdg-shell-protocol.h"
 #include "scratchpad.h"
+#include "lib/actions/actions.h"
 
 int lib_arrange(lua_State *L)
 {
@@ -393,14 +394,7 @@ int lib_kill(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    struct container *con = get_container(tagset, i);
-
-    if (!con)
-        return 0;
-
-    struct client *c = con->client;
-    kill_client(c);
+    action_kill(m, i);
     return 0;
 }
 
@@ -415,7 +409,7 @@ int lib_toggle_layout(lua_State *L)
 
 int lib_toggle_workspace(lua_State *L)
 {
-    push_tagset(server.previous_tagset);
+    action_toggle_workspace();
     return 0;
 }
 
