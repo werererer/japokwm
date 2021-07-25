@@ -31,4 +31,6 @@ char *argsep(char **stringp, const char *delim, char *matched_delim);
 // Expand a path using shell replacements such as $HOME and ~
 bool expand_path(char **path);
 
+void append_string(char **string, const char *next_string);
+
 #endif

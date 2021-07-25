@@ -326,3 +326,10 @@ bool expand_path(char **path) {
     wordfree(&p);
     return true;
 }
+
+void append_string(char **dest, const char *src)
+{
+    int len = strlen(*dest) + strlen(src) + 1;
+    *dest = realloc(*dest, len);
+    strcat(*dest, src);
+}
