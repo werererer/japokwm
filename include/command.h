@@ -49,8 +49,10 @@ struct cmd_results *cmd_results_new(enum cmd_status status, const char *error, .
  */
 void free_cmd_results(struct cmd_results *results);
 
-GPtrArray *execute_command(char *_exec, struct wlr_seat *seat,
+struct cmd_results *execute_command(char *cmd, struct wlr_seat *seat,
         struct container *con);
-char *cmd_results_to_json(GPtrArray *res_list);
+char *cmd_results_to_json(struct cmd_results *results);
+
+struct cmd_results *cmd_eval(const char *cmd);
 
 #endif /* COMMAND_H */

@@ -30,8 +30,6 @@ srcs = files(
     'layout.c',
     'layout_set.c',
     'command/commands.c',
-    'command_list.c',
-    'command/command_config.c',
     'lib/actions/actions.c',
     'lib/actions/lib_actions.c',
     'lib/config/config.c',

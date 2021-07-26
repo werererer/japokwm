@@ -395,18 +395,14 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
                 line = strtok(NULL, "\n");
             }
 
-            GPtrArray *res_list = execute_command(buf, NULL, NULL);
+            
+            struct cmd_results *results = execute_command(buf, NULL, NULL);
             /* transaction_commit_dirty(); */
-            char *json = cmd_results_to_json(res_list);
+            char *json = cmd_results_to_json(results);
             int length = strlen(json);
             ipc_send_reply(client, payload_type, json, (uint32_t)length);
             free(json);
-            while (res_list->len) {
-                struct cmd_results *results = g_ptr_array_index(res_list, 0);
-                free_cmd_results(results);
-                g_ptr_array_remove_index(res_list, 0);
-            }
-            g_ptr_array_free(res_list, TRUE);
+            free(results);
             goto exit_cleanup;
         }
         case IPC_GET_WORKSPACES:
