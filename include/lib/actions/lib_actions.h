@@ -8,6 +8,7 @@
 #include "client.h"
 
 int lib_arrange(lua_State *L);
+int lib_create_output(lua_State *L);
 int lib_focus_container(lua_State *L);
 int lib_focus_on_hidden_stack(lua_State *L);
 int lib_focus_on_stack(lua_State *L);

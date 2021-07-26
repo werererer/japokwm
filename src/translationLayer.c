@@ -19,6 +19,7 @@
 static const struct luaL_Reg action[] =
 {
     {"arrange", lib_arrange},
+    {"create_output", lib_create_output},
     {"decrease_nmaster", lib_decrease_nmaster},
     {"exec", lib_exec},
     {"focus_container", lib_focus_container},

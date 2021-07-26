@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <wayland-util.h>
 #include <wlr/types/wlr_xdg_shell.h>
+#include <wlr/backend/multi.h>
 
 #include "container.h"
 #include "ipc-server.h"
@@ -27,6 +28,25 @@
 int lib_arrange(lua_State *L)
 {
     arrange();
+    return 0;
+}
+
+int lib_create_output(lua_State *L)
+{
+    printf("create output\n");
+    if (!wlr_backend_is_multi(server.backend)) {
+        lua_pushstring(L, "Expected a multi backend");
+        return 1;
+    }
+
+    bool done = false;
+    wlr_multi_for_each_backend(server.backend, create_output, &done);
+
+    if (!done) {
+        lua_pushstring(L, "Can only create outputs for Wayland, X11 or headless backends");
+        return 1;
+    }
+
     return 0;
 }
 

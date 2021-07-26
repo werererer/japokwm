@@ -5,6 +5,9 @@
 #include <wlr/types/wlr_output_damage.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/util/log.h>
+#include <wlr/backend/wayland.h>
+#include <wlr/backend/headless.h>
+#include <wlr/backend/x11.h>
 
 #include "ipc-server.h"
 #include "render/render.h"
@@ -134,6 +137,30 @@ void create_monitor(struct wl_listener *listener, void *data)
     if (!wlr_output_commit(output))
         return;
 }
+
+void create_output(struct wlr_backend *backend, void *data)
+{
+    bool *done = data;
+    if (*done) {
+        return;
+    }
+
+    if (wlr_backend_is_wl(backend)) {
+        wlr_wl_output_create(backend);
+        *done = true;
+    } else if (wlr_backend_is_headless(backend)) {
+        wlr_headless_add_output(backend, 1920, 1080);
+        *done = true;
+    }
+/* #if WLR_HAS_X11_BACKEND */
+    else if (wlr_backend_is_x11(backend)) {
+        wlr_x11_output_create(backend);
+        *done = true;
+    }
+/* #endif */
+}
+
+
 
 static void evaluate_monrules(struct wlr_output *output)
 {

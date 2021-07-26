@@ -45,6 +45,7 @@ extern struct wl_list sticky_stack;
 
 void center_mouse_in_monitor(struct monitor *m);
 void create_monitor(struct wl_listener *listener, void *data);
+void create_output(struct wlr_backend *backend, void *data);
 void destroy_monitor(struct wl_listener *listener, void *data);
 void scale_monitor(struct monitor *m, float scale);
 void focus_monitor(struct monitor *m);
