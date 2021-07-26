@@ -260,10 +260,8 @@ void destroy_monitor(struct wl_listener *listener, void *data)
 
     free(m);
 
-    if (server.mons->len <= 0) {
-        wl_display_terminate(server.wl_display);
-        close_error_file();
-    }
+    if (server.mons->len <= 0)
+        return;
 
     struct monitor *new_focused_monitor = g_ptr_array_index(server.mons, 0);
     focus_monitor(new_focused_monitor);
