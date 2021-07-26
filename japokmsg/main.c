@@ -78,8 +78,6 @@ static void pretty_print(int type, json_object *resp) {
 
 int main(int argc, char **argv) {
     static bool quiet = false;
-    static bool config = false;
-    char *file = NULL;
     char *socket_path = NULL;
     char *cmdtype = NULL;
 
@@ -101,32 +99,21 @@ int main(int argc, char **argv) {
         "\n"
         "  -h, --help             Show help message and quit.\n"
         "  -m, --monitor          Monitor until killed (-t SUBSCRIBE only)\n"
-        "  -p, --pretty           Use pretty output even when not using a tty\n"
         "  -q, --quiet            Be quiet.\n"
-        "  -c, --config           use this file to execute lua commands\n"
         "  -s, --socket <socket>  Use the specified socket.\n"
         "  -t, --type <type>      Specify the message type.\n"
         "  -v, --version          Show the version number and quit.\n";
 
-    config = !isatty(STDOUT_FILENO);
-
     int c;
     while (1) {
         int option_index = 0;
-        c = getopt_long(argc, argv, "hmpqc:s:t:v", long_options, &option_index);
+        c = getopt_long(argc, argv, "hmqs:t:v", long_options, &option_index);
         if (c == -1) {
             break;
         }
         switch (c) {
-            case 'p': // Pretty
-                config = false;
-                break;
             case 'q': // Quiet
                 quiet = true;
-                break;
-            case 'c': // Config
-                config = true;
-                file = strdup(optarg);
                 break;
             case 's': // Socket
                 socket_path = strdup(optarg);
@@ -173,12 +160,6 @@ int main(int argc, char **argv) {
     }
 
     int ret = 0;
-    if (config) {
-        expand_path(&file);
-        printf("file: %s\n", file);
-        goto cleanup_and_return;
-    }
-
     int socketfd = ipc_open_socket(socket_path);
     struct timeval timeout = {.tv_sec = 3, .tv_usec = 0};
     ipc_set_recv_timeout(socketfd, timeout);
@@ -210,7 +191,6 @@ int main(int argc, char **argv) {
     free(resp);
     close(socketfd);
 
-cleanup_and_return:
     free(socket_path);
     return ret;
 }
