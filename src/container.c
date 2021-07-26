@@ -90,6 +90,10 @@ void container_damage_borders(struct container *con, struct wlr_box *geom)
         return;
 
     struct monitor *m = container_get_monitor(con);
+
+    if (!m)
+        return;
+
     int border_width = con->client->bw;
     double ox = geom->x - border_width;
     double oy = geom->y - border_width;
@@ -749,12 +753,15 @@ struct monitor *container_get_monitor(struct container *con)
         return con->client->m;
     }
 
+    printf("con->ws_id: %i\n", con->client->ws_id);
     struct workspace *ws = get_workspace(con->client->ws_id);
     struct monitor *m  = ws->m;
+    printf("monitor: %p\n", m);
 
     if (ws->tagset) {
         m = ws->tagset->m;
     }
+    printf("monitor end: %p\n", m);
     return m;
 }
 
