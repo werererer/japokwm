@@ -3,13 +3,6 @@ pkg = import('pkgconfig')
 
 wayland_scanner = find_program('wayland-scanner', native: true)
 
-# this variable will be initialized in protocols dir
-protocolsDir = 'protocols'
-protocols = files(
-    protocolsDir + '/wlr-layer-shell-unstable-v1.xml',
-    protocolsDir + '/xdg-shell.xml',
-    # protocolsDir + '/wlr-foreign-toplevel-management-unstable-v1.xml',
-    )
 root = meson.source_root()
 
 # add version macro
@@ -35,25 +28,9 @@ install_data(
 )
 
 # generate needed protocol files
-srcDir = 'src/'
-includeDir = 'include/'
-includeDirectories = include_directories(includeDir, '/usr/include/json-c/')
-foreach p:protocols
-    pName = run_command('basename', p, '.xml').stdout().strip()
-    postfix = '-protocol'
-    cFile = srcDir / pName + postfix +'.c'
-    cHeader = includeDir / pName + postfix + '.h'
-    # if cFile doesn't exist create Source
-    if run_command('[', '-f', cFile, ']').returncode() != 0
-        run_command(wayland_scanner, 'private-code', p, cFile)
-        message('generate: ' + cFile)
-    endif
-    # if cHeader doesn't exist create Header
-    if run_command('[', '-f', cHeader, ']').returncode() != 0
-        run_command(wayland_scanner, 'server-header', p, cHeader)
-        message('generate: ' + cHeader)
-    endif
-endforeach
+src_dir = 'src/'
+include_dir = 'include/'
+include_dirs = include_directories(include_dir, '/usr/include/json-c/')
 
 scdoc = dependency('scdoc', version: '>=1.9.2', native: true)
 if scdoc.found()
@@ -86,11 +63,16 @@ commonSrcs = files(
   'common/stringop.c'
   )
 
+wayland_server = dependency('wayland-server')
+wayland_protos = dependency('wayland-protocols', version: '>=1.14')
+wayland_client = dependency('wayland-client')
 deps = [\
     dependency('xcb'),
     dependency('xkbcommon'),
-    dependency('wayland-server'),
     dependency('wayland-egl'),
+    wayland_server,
+    wayland_client,
+    wayland_protos,
     dependency('pixman-1'),
     dependency('wlroots', version: '>=0.13'),
     dependency('x11'),
@@ -102,6 +84,7 @@ deps = [\
 # meson.add_install_script('install.sh')
 # config files
 subdir('src')
+subdir('protocols')
 subdir('config')
 subdir('test')
 subdir('japokmsg')

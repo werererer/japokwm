@@ -4,6 +4,7 @@
 #include <wayland-server-core.h>
 #include <wlr/types/wlr_surface.h>
 #include <wlr/types/wlr_seat.h>
+#include <wlr/types/wlr_pointer_constraints_v1.h>
 
 enum cursor_mode {
     CURSOR_NORMAL,
@@ -12,6 +13,8 @@ enum cursor_mode {
 };
 
 struct cursor {
+    struct wlr_seat *wlr_seat;
+    struct wlr_pointer_constraint_v1 *active_constraint;
     struct wl_listener request_set_cursor;
     struct wl_listener image_surface_destroy;
 
@@ -32,7 +35,9 @@ void handle_new_virtual_pointer(struct wl_listener *listener, void *data);
 
 void motion_relative(struct wl_listener *listener, void *data);
 void motion_absolute(struct wl_listener *listener, void *data);
-void motion_notify(uint32_t time);
+void motion_notify(struct cursor *cursor, uint32_t time_msec,
+        struct wlr_input_device *device, double dx, double dy,
+        double dx_unaccel, double dy_unaccel);
 /* reload the surface stored in cursor */
 void update_cursor(struct cursor *cursor);
 void move_resize(int ui);

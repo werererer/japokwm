@@ -7,6 +7,7 @@
 #include <wlr/xcursor.h>
 #include <wayland-server-core.h>
 #include <wlr/types/wlr_xcursor_manager.h>
+#include <wlr/types/wlr_relative_pointer_v1.h>
 
 #include "cursor.h"
 #include "layout.h"
@@ -31,6 +32,7 @@ struct server {
     struct wlr_xcursor_manager *cursor_mgr;
     struct wlr_virtual_pointer_manager_v1 *virtual_pointer_mgr;
     struct wlr_virtual_keyboard_manager_v1 *virtual_keyboard_mgr;
+    struct wlr_relative_pointer_manager_v1 *relative_pointer_mgr;
     struct wlr_input_inhibit_manager *input_inhibitor_mgr;
 
     struct layout *default_layout;

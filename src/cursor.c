@@ -6,6 +6,8 @@
 #include "popup.h"
 #include "keybinding.h"
 #include <wlr/xcursor.h>
+#include <wlr/types/wlr_relative_pointer_v1.h>
+#include <wlr/util/region.h>
 
 struct wl_listener request_set_cursor = {.notify = handle_set_cursor};
 
@@ -87,34 +89,32 @@ static bool handle_move_resize(enum cursor_mode cursor_mode)
 
 void motion_relative(struct wl_listener *listener, void *data)
 {
-    /* This event is forwarded by the cursor when a pointer emits a _relative_
-     * pointer motion event (i.e. a delta) */
+    struct cursor *cursor = &server.cursor;
     struct wlr_event_pointer_motion *event = data;
-    /* The cursor doesn't move unless we tell it to. The cursor automatically
-     * handles constraining the motion to the output layout, as well as any
-     * special configuration applied for the specific input device which
-     * generated the event. You can pass NULL for the device if you want to move
-     * the cursor around without any input. */
-    wlr_cursor_move(server.cursor.wlr_cursor, event->device, event->delta_x, event->delta_y);
-    motion_notify(event->time_msec);
+    /* cursor_handle_activity_from_device(cursor, event->device); */
+
+    motion_notify(cursor, event->time_msec, event->device, event->delta_x,
+            event->delta_y, event->unaccel_dx, event->unaccel_dy);
 }
 
 void motion_absolute(struct wl_listener *listener, void *data)
 {
-    printf("motion absolue start\n");
-    /* This event is forwarded by the cursor when a pointer emits an _absolute_
-     * motion event, from 0..1 on Each axis. This happens, for example, when
-     * wlroots is running under a Wayland window rather than KMS+DRM, and you
-     * move the mouse over the Windows. You could enter the window from any edge,
-     * so we have to warp the mouse there. There is also some hardware which
-     * emits these events. */
+    struct cursor *cursor = &server.cursor;
     struct wlr_event_pointer_motion_absolute *event = data;
-    wlr_cursor_warp_absolute(server.cursor.wlr_cursor, event->device, event->x, event->y);
-    motion_notify(event->time_msec);
-    printf("motion absolue end\n");
+    // TODO what does this in sway?
+    /* cursor_handle_activity_from_device(cursor, event->device); */
+
+    double lx, ly;
+    wlr_cursor_absolute_to_layout_coords(cursor->wlr_cursor, event->device,
+            event->x, event->y, &lx, &ly);
+
+    double dx = lx - cursor->wlr_cursor->x;
+    double dy = ly - cursor->wlr_cursor->y;
+
+    motion_notify(cursor, event->time_msec, event->device, dx, dy, dx, dy);
 }
 
-void motion_notify(uint32_t time)
+static void focus_under_cursor(uint32_t time)
 {
     int cursorx = server.cursor.wlr_cursor->x;
     int cursory = server.cursor.wlr_cursor->y;
@@ -148,6 +148,42 @@ void motion_notify(uint32_t time)
         if (ws->layout->options.sloppy_focus)
             focus_container(focus_con, FOCUS_NOOP);
     }
+}
+
+
+void motion_notify(struct cursor *cursor, uint32_t time_msec,
+        struct wlr_input_device *device, double dx, double dy,
+        double dx_unaccel, double dy_unaccel)
+{
+    wlr_relative_pointer_manager_v1_send_relative_motion(
+            server.relative_pointer_mgr,
+            server.seat, (uint64_t)time_msec * 1000,
+            dx, dy, dx_unaccel, dy_unaccel);
+
+    // Only apply pointer constraints to real pointer input.
+    if (cursor->active_constraint && device->type == WLR_INPUT_DEVICE_POINTER) {
+        struct wlr_surface *surface = NULL;
+        double sx, sy;
+        /* node_at_coords(cursor->seat, */
+        /*         cursor->cursor->x, cursor->cursor->y, &surface, &sx, &sy); */
+
+        if (cursor->active_constraint->surface != surface) {
+            return;
+        }
+
+        double sx_confined, sy_confined;
+        /* if (!wlr_region_confine(&cursor->confine, sx, sy, sx + dx, sy + dy, */
+        /*             &sx_confined, &sy_confined)) { */
+        /*     return; */
+        /* } */
+
+        dx = sx_confined - sx;
+        dy = sy_confined - sy;
+    }
+
+    wlr_cursor_move(cursor->wlr_cursor, device, dx, dy);
+
+/*     seatop_pointer_motion(cursor->seat, time_msec); */
 }
 
 void buttonpress(struct wl_listener *listener, void *data)

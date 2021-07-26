@@ -233,6 +233,10 @@ static int setup()
     server.virtual_keyboard_mgr = wlr_virtual_keyboard_manager_v1_create(server.wl_display);
     wl_signal_add(&server.virtual_keyboard_mgr->events.new_virtual_keyboard, &new_virtual_keyboard);
 
+    /* setup relative pointer manager */
+    server.relative_pointer_mgr = wlr_relative_pointer_manager_v1_create(server.wl_display);
+    /* wl_signal_add(&server.virtual_keyboard_mgr->events.new_virtual_keyboard, &new_virtual_keyboard); */
+
     /* Use xdg_decoration protocol to negotiate server-side decorations */
     server.xdeco_mgr = wlr_xdg_decoration_manager_v1_create(server.wl_display);
     wl_signal_add(&server.xdeco_mgr->events.new_toplevel_decoration, &new_xdeco);

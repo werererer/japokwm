@@ -70,13 +70,13 @@ libName = 'japokwm_lib'
 wmlib = static_library(libName,
               [srcs, commonSrcs],
               dependencies: deps,
-              include_directories: includeDirectories,
+              include_directories: include_dirs,
               link_args: ['-lm'],
               )
 executable('japokwm',
       [main],
       dependencies: deps,
-      include_directories: includeDirectories,
+      include_directories: include_dirs,
       link_with: [wmlib],
       install: true,
       )

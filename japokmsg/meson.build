@@ -7,7 +7,7 @@ japokmsgFiles = files(
 executable(
     'japokmsg',
     [commonSrcs, japokmsgFiles],
-    include_directories: includeDirectories,
+    include_directories: include_dirs,
     dependencies: [deps],
     install: true
 )
