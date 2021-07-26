@@ -29,7 +29,7 @@ srcs = files(
     'layer_shell.c',
     'layout.c',
     'layout_set.c',
-    'command/kill.c',
+    'command/commands.c',
     'command_list.c',
     'command/command_config.c',
     'lib/actions/actions.c',
