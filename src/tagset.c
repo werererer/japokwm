@@ -148,6 +148,9 @@ static void unfocus_action(struct tagset *old_tagset, struct monitor *new_monito
     if (!old_tagset)
         return;
 
+    struct seat *seat = input_manager_get_default_seat();
+    wlr_seat_pointer_notify_clear_focus(seat->wlr_seat);
+
     move_old_workspaces_back(&old_tagset->workspaces, new_bits);
     reset_old_workspaces(old_tagset, new_monitor);
 }
@@ -375,6 +378,10 @@ void tagset_focus_tags(int ws_id, struct BitSet bitset)
     }
 
     push_tagset(tagset);
+
+    struct seat *seat = input_manager_get_default_seat();
+    wlr_seat_pointer_notify_clear_focus(seat->wlr_seat);
+    update_cursor(seat->cursor);
 }
 
 struct tagset *get_tagset_from_active_workspace_id(int ws_id)

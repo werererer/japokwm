@@ -33,6 +33,8 @@ struct cursor {
 
     struct wl_listener constraint_commit;
 
+	struct wl_event_source *hide_source;
+
     struct wlr_xcursor_manager *xcursor_mgr;
 
     enum cursor_mode cursor_mode;
@@ -43,6 +45,8 @@ struct cursor {
     struct wl_client *image_client;
     bool active_confine_requires_warp;
     bool hidden;
+
+	pixman_region32_t confine; // invalid if active_constraint == NULL
 };
 
 struct cursor *create_cursor(struct seat *seat);
