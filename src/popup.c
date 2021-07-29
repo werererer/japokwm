@@ -134,10 +134,10 @@ void popup_handle_destroy(struct wl_listener *listener, void *data)
     destroy_popup(popup);
 }
 
-struct wlr_surface *get_popup_surface_under_cursor(double *sx, double *sy)
+struct wlr_surface *get_popup_surface_under_cursor(struct cursor *cursor, double *sx, double *sy)
 {
-    int cursorx = server.cursor.wlr_cursor->x;
-    int cursory = server.cursor.wlr_cursor->y;
+    int cursorx = cursor->wlr_cursor->x;
+    int cursory = cursor->wlr_cursor->y;
 
     if (!popups_exist())
         return NULL;

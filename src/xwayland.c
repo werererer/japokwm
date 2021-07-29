@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <wlr/util/log.h>
 
-#include "clipboard.h"
 #include "container.h"
 #include "server.h"
 #include "tile/tileUtils.h"
@@ -207,6 +206,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     arrange();
     struct container *sel = get_focused_container(m); 
     focus_container(sel, FOCUS_NOOP);
-    wlr_xcursor_manager_set_cursor_image(server.cursor_mgr,
-            "left_ptr", server.cursor.wlr_cursor);
+    struct seat *seat = input_manager_get_default_seat();
+    wlr_xcursor_manager_set_cursor_image(seat->cursor->xcursor_mgr,
+            "left_ptr", seat->cursor->wlr_cursor);
 }

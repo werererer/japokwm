@@ -79,6 +79,7 @@ deps = [\
     dependency('json-c'),
     dependency('libnotify'),
     dependency('threads'),
+    dependency('libinput'),
     ]
 
 # meson.add_install_script('install.sh')

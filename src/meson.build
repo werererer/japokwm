@@ -14,10 +14,11 @@ deps += [luaDep]
 
 main = files('main.c')
 srcs = files(
+    'input_manager.c',
+    'seat.c',
     'bitset/bitset.c',
     'utils/vector.c',
     'client.c',
-    'clipboard.c',
     'command.c',
     'container.c',
     'cursor.c',

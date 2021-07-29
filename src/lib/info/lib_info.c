@@ -68,9 +68,10 @@ int lib_get_workspace(lua_State *L)
 
 int lib_get_container_under_cursor(lua_State *L)
 {
-    struct wlr_cursor *cursor = server.cursor.wlr_cursor;
+    struct seat *seat = input_manager_get_default_seat();
+    struct wlr_cursor *wlr_cursor = seat->cursor->wlr_cursor;
 
-    struct container *con = xy_to_container(cursor->x, cursor->y);
+    struct container *con = xy_to_container(wlr_cursor->x, wlr_cursor->y);
     int pos = get_position_in_container_stack(con);
     lua_pushinteger(L, pos);
     return 1;

@@ -10,6 +10,7 @@
 #include "container.h"
 #include "tile/tileUtils.h"
 #include "render/render.h"
+#include "input_manager.h"
 
 void create_notify_layer_shell(struct wl_listener *listener, void *data)
 {
@@ -162,7 +163,6 @@ void arrange_layers(struct monitor *m)
         ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
         ZWLR_LAYER_SHELL_V1_LAYER_TOP,
     };
-    struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
 
     // Arrange exclusive surfaces from top->bottom
     arrangelayer(m, m->layer_visual_stack_overlay, &usable_area, true);
@@ -181,6 +181,8 @@ void arrange_layers(struct monitor *m)
     arrangelayer(m, m->layer_visual_stack_bottom, &usable_area, false);
     arrangelayer(m, m->layer_visual_stack_background, &usable_area, false);
 
+    struct seat *seat = input_manager_get_default_seat();
+    struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat->wlr_seat);
     // Find topmost keyboard interactive layer, if such a layer exists
     for (size_t i = 0; i < LENGTH(layers_above_shell); i++) {
         GPtrArray *layer_list = get_layer_list(m, layers_above_shell[i]);
@@ -192,7 +194,7 @@ void arrange_layers(struct monitor *m)
                 // Deactivate the focused client.
                 // TODO fix this
                 focus_container(NULL, FOCUS_NOOP);
-                wlr_seat_keyboard_notify_enter(server.seat,
+                wlr_seat_keyboard_notify_enter(seat->wlr_seat,
                         get_wlrsurface(c),
                         kb->keycodes, kb->num_keycodes,
                         &kb->modifiers);

@@ -84,8 +84,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     m->frame.notify = handle_output_frame;
     wl_signal_add(&m->wlr_output->events.frame, &m->frame);
 
-    wlr_xcursor_manager_load(server.cursor_mgr, 1);
-
     /* Set up event listeners */
     m->destroy.notify = destroy_monitor;
     wl_signal_add(&output->events.destroy, &m->destroy);
@@ -267,14 +265,14 @@ void destroy_monitor(struct wl_listener *listener, void *data)
     focus_monitor(new_focused_monitor);
 }
 
-void center_mouse_in_monitor(struct monitor *m)
+void center_cursor_in_monitor(struct cursor *cursor, struct monitor *m)
 {
     if (!m)
         return;
 
     int xcenter = m->geom.x + m->geom.width/2;
     int ycenter = m->geom.y + m->geom.height/2;
-    wlr_cursor_warp(server.cursor.wlr_cursor, NULL, xcenter, ycenter);
+    wlr_cursor_warp(cursor->wlr_cursor, NULL, xcenter, ycenter);
 }
 
 void scale_monitor(struct monitor *m, float scale)

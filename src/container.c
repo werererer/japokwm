@@ -370,7 +370,8 @@ void focus_container(struct container *con, enum focus_actions a)
 
     struct client *old_c = sel ? sel->client : NULL;
     struct client *new_c = new_sel ? new_sel->client : NULL;
-    focus_client(old_c, new_c);
+    struct seat *seat = input_manager_get_default_seat();
+    focus_client(seat, old_c, new_c);
 }
 
 void focus_on_stack(struct monitor *m, int i)
@@ -753,15 +754,12 @@ struct monitor *container_get_monitor(struct container *con)
         return con->client->m;
     }
 
-    printf("con->ws_id: %i\n", con->client->ws_id);
     struct workspace *ws = get_workspace(con->client->ws_id);
     struct monitor *m  = ws->m;
-    printf("monitor: %p\n", m);
 
     if (ws->tagset) {
         m = ws->tagset->m;
     }
-    printf("monitor end: %p\n", m);
     return m;
 }
 

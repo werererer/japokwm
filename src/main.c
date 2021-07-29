@@ -19,7 +19,6 @@
 #include <wlr/types/wlr_input_inhibitor.h>
 #include <wlr/util/log.h>
 
-#include "clipboard.h"
 #include "ipc-server.h"
 #include "keyboard.h"
 #include "layer_shell.h"
@@ -39,18 +38,11 @@ static void run(char *startup_cmd);
 static int setup();
 
 /* global event handlers */
-static struct wl_listener cursor_axis = {.notify = axisnotify};
-static struct wl_listener cursor_button = {.notify = buttonpress};
-static struct wl_listener cursor_frame = {.notify = cursorframe};
-static struct wl_listener cursor_motion = {.notify = motion_relative};
-static struct wl_listener cursor_motion_absolute = {.notify = motion_absolute};
-static struct wl_listener new_input = {.notify = handle_new_inputdevice};
 static struct wl_listener new_output = {.notify = create_monitor};
 static struct wl_listener new_xdeco = {.notify = createxdeco};
 static struct wl_listener new_xdg_surface = {.notify = create_notify_xdg};
 static struct wl_listener new_layer_shell_surface = {.notify = create_notify_layer_shell};
-static struct wl_listener new_virtual_pointer = {.notify = handle_new_virtual_pointer};
-static struct wl_listener new_virtual_keyboard = {.notify = handle_new_virtual_keyboard};
+static struct wl_listener new_pointer_constraint = {.notify = handle_new_pointer_constraint};
 
 static struct wl_listener new_xwayland_surface = {.notify = create_notifyx11};
 
@@ -60,36 +52,7 @@ static void cleanup()
     wlr_xwayland_destroy(server.xwayland.wlr_xwayland);
     wl_display_destroy_clients(server.wl_display);
 
-    wlr_xcursor_manager_destroy(server.cursor_mgr);
-    wlr_cursor_destroy(server.cursor.wlr_cursor);
     wlr_output_layout_destroy(server.output_layout);
-}
-
-static void handle_new_inputdevice(struct wl_listener *listener, void *data)
-{
-    /* This event is raised by the backend when a new input device becomes
-     * available. */
-    struct wlr_input_device *device = data;
-    uint32_t caps;
-    switch (device->type) {
-    case WLR_INPUT_DEVICE_KEYBOARD:
-        create_keyboard(device);
-        break;
-    case WLR_INPUT_DEVICE_POINTER:
-        create_pointer(device);
-        break;
-    default:
-        /* XXX handle other input device types */
-        break;
-    }
-    /* We need to let the wlr_seat know what our capabilities are, which is
-     * communiciated to the client. In dwl we always have a server.cursor, even 
-     * if there are no pointer devices, so we always include that capability. */
-    /* XXX do we actually require a cursor? */
-    caps = WL_SEAT_CAPABILITY_POINTER;
-    if (!wl_list_empty(&server.keyboards))
-        caps |= WL_SEAT_CAPABILITY_KEYBOARD;
-    wlr_seat_set_capabilities(server.seat, caps);
 }
 
 static void run(char *startup_cmd)
@@ -114,15 +77,17 @@ static void run(char *startup_cmd)
     /* Now that outputs are initialized, choose initial selMon based on
      * cursor position, and set default cursor image */
     update_monitor_geometries();
-    struct monitor *m = xy_to_monitor(server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
+    struct seat *seat = input_manager_get_default_seat();
+    struct cursor *cursor = seat->cursor;
+    struct monitor *m = xy_to_monitor(cursor->wlr_cursor->x, cursor->wlr_cursor->y);
     focus_monitor(m);
 
     /* XXX hack to get cursor to display in its initial location (100, 100)
      * instead of (0, 0) and then jumping.  still may not be fully
      * initialized, as the image/coordinates are not transformed for the
      * monitor when displayed here */
-    wlr_cursor_warp_closest(server.cursor.wlr_cursor, NULL, server.cursor.wlr_cursor->x, server.cursor.wlr_cursor->y);
-    wlr_xcursor_manager_set_cursor_image(server.cursor_mgr, "left_ptr", server.cursor.wlr_cursor);
+    wlr_cursor_warp_closest(seat->cursor->wlr_cursor, NULL, cursor->wlr_cursor->x, cursor->wlr_cursor->y);
+    wlr_xcursor_manager_set_cursor_image(seat->cursor->xcursor_mgr, "left_ptr", cursor->wlr_cursor);
 
     if (startup_cmd) {
         startup_pid = fork();
@@ -227,11 +192,9 @@ static int setup()
 
     /* setup virtual pointer manager*/
     server.virtual_pointer_mgr = wlr_virtual_pointer_manager_v1_create(server.wl_display);
-    wl_signal_add(&server.virtual_pointer_mgr->events.new_virtual_pointer, &new_virtual_pointer);
 
     /* setup virtual keyboard manager */
     server.virtual_keyboard_mgr = wlr_virtual_keyboard_manager_v1_create(server.wl_display);
-    wl_signal_add(&server.virtual_keyboard_mgr->events.new_virtual_keyboard, &new_virtual_keyboard);
 
     /* setup relative pointer manager */
     server.relative_pointer_mgr = wlr_relative_pointer_manager_v1_create(server.wl_display);
@@ -241,37 +204,8 @@ static int setup()
     server.xdeco_mgr = wlr_xdg_decoration_manager_v1_create(server.wl_display);
     wl_signal_add(&server.xdeco_mgr->events.new_toplevel_decoration, &new_xdeco);
 
-    /*
-     * Creates a server.cursor, which is a wlroots utility for tracking the cursor
-     * image shown on screen.
-     */
-    server.cursor.wlr_cursor = wlr_cursor_create();
-    wlr_cursor_attach_output_layout(server.cursor.wlr_cursor, server.output_layout);
-
-    /* Creates an xcursor manager, another wlroots utility which loads up
-     * Xcursor themes to source cursor images from and makes sure that cursor
-     * images are available at all scale factors on the screen (necessary for
-     * HiDPI support). Scaled cursors will be loaded with each output. */
-    server.cursor_mgr = wlr_xcursor_manager_create(NULL, 24);
-
-    /*
-     * wlr_cursor *only* displays an image on screen. It does not move around
-     * when the pointer moves. However, we can attach input devices to it, and
-     * it will generate aggregate events for all of them. In these events, we
-     * can choose how we want to process them, forwarding them to clients and
-     * moving the cursor around. More detail on this process is described in my
-     * input handling blog post:
-     *
-     * https://drewdevault.com/2018/07/17/Input-handling-in-wlroots.html
-     *
-     * And more comments are sprinkled throughout the notify functions above.
-     */
-    wl_signal_add(&server.cursor.wlr_cursor->events.motion, &cursor_motion);
-    wl_signal_add(&server.cursor.wlr_cursor->events.motion_absolute,
-            &cursor_motion_absolute);
-    wl_signal_add(&server.cursor.wlr_cursor->events.button, &cursor_button);
-    wl_signal_add(&server.cursor.wlr_cursor->events.axis, &cursor_axis);
-    wl_signal_add(&server.cursor.wlr_cursor->events.frame, &cursor_frame);
+    server.pointer_constraints = wlr_pointer_constraints_v1_create(server.wl_display);
+    wl_signal_add(&server.pointer_constraints->events.new_constraint, &new_pointer_constraint);
 
     /*
      * Configures a seat, which is a single "seat" at which a user sits and
@@ -279,12 +213,9 @@ static int setup()
      * pointer, touch, and drawing tablet device. We also rig up a listener to
      * let us know when new input devices are available on the backend.
      */
-    wl_list_init(&server.keyboards);
-    wl_signal_add(&server.backend->events.new_input, &new_input);
-    server.seat = wlr_seat_create(server.wl_display, "seat0");
-    wl_signal_add(&server.seat->events.request_set_cursor, &request_set_cursor);
-    wl_signal_add(&server.seat->events.request_set_primary_selection, &request_set_psel);
-    wl_signal_add(&server.seat->events.request_set_selection, &request_set_sel);
+    server.keyboards = g_ptr_array_new();
+    server.input_manager = create_input_manager();
+    struct seat *seat = create_seat("seat0");
 
     /*
      * Initialise the XWayland X server.
@@ -296,7 +227,7 @@ static int setup()
         server.xwayland_ready.notify = handle_xwayland_ready;
         wl_signal_add(&server.xwayland.wlr_xwayland->events.ready, &server.xwayland_ready);
         wl_signal_add(&server.xwayland.wlr_xwayland->events.new_surface, &new_xwayland_surface);
-        wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, server.seat);
+        wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, seat->wlr_seat);
 
         setenv("DISPLAY", server.xwayland.wlr_xwayland->display_name, true);
     } else {

@@ -174,9 +174,10 @@ int lib_focus_on_hidden_stack(lua_State *L)
 
 int lib_move_resize(lua_State *L)
 {
+    struct seat *seat = input_manager_get_default_seat();
     int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    move_resize(ui);
+    move_resize(seat->cursor, ui);
     return 0;
 }
 

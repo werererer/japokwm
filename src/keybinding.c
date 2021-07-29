@@ -1,4 +1,5 @@
 #include "keybinding.h"
+#include "input_manager.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "utils/parseConfigUtils.h"
@@ -132,7 +133,12 @@ bool handle_keybinding(int mods, int sym)
 {
     char bind[128] = "";
     sym_to_binding(bind, mods, sym);
+    struct seat *seat = input_manager_get_default_seat();
+    struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat->wlr_seat);
+    printf("kb: %p\n", kb);
     bool handled = process_binding(L, bind, server.default_layout->options.keybindings);
+    kb = wlr_seat_get_keyboard(seat->wlr_seat);
+    printf("kb end: %p\n", kb);
     return handled;
 }
 

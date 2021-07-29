@@ -35,7 +35,6 @@ wl_protos_headers = []
 foreach p : protocols
     pName = run_command('basename', p, '.xml').stdout().strip()
     postfix = '-protocol'
-    message('p' + wl_protocol_dir + ' real p ' + p)
     cFile = abs_src_dir / pName + postfix +'.c'
     cHeader = abs_include_dir / pName + postfix + '.h'
     # if cFile doesn't exist create Source

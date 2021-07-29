@@ -13,13 +13,13 @@
 #include "layout.h"
 #include "options.h"
 #include "xwayland.h"
+#include "input_manager.h"
 
 struct server {
     struct wl_display *wl_display;
     struct wl_event_loop *wl_event_loop;
     struct wlr_backend *backend;
     struct wlr_compositor *compositor;
-    struct wlr_seat *seat;
 
     struct xwayland xwayland;
     struct wl_listener xwayland_ready;
@@ -28,18 +28,19 @@ struct server {
     struct wlr_layer_shell_v1 *layer_shell;
     struct wlr_xdg_decoration_manager_v1 *xdeco_mgr;
 
-    struct cursor cursor;
-    struct wlr_xcursor_manager *cursor_mgr;
+    struct input_manager *input_manager;
+
     struct wlr_virtual_pointer_manager_v1 *virtual_pointer_mgr;
     struct wlr_virtual_keyboard_manager_v1 *virtual_keyboard_mgr;
     struct wlr_relative_pointer_manager_v1 *relative_pointer_mgr;
     struct wlr_input_inhibit_manager *input_inhibitor_mgr;
+    struct wlr_pointer_constraints_v1 *pointer_constraints;
 
     struct layout *default_layout;
     struct layout_set layout_set;
 
     struct wlr_output_layout *output_layout;
-    struct wl_list keyboards;
+    GPtrArray *keyboards;
 
     GPtrArray *workspaces;
 
