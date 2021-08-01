@@ -265,7 +265,6 @@ struct seat *input_manager_get_seat(const char *seat_name)
 {
     for (int i = 0; i < server.input_manager->seats->len; i++) {
         struct seat *seat = g_ptr_array_index(server.input_manager->seats, i);
-        printf("seat->name: %s vs %s\n", seat->wlr_seat->name, seat_name);
         if (strcmp(seat->wlr_seat->name, seat_name) == 0) {
             return seat;
         }

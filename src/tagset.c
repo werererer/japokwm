@@ -11,6 +11,7 @@
 #include "tile/tileUtils.h"
 #include "ipc-server.h"
 #include "monitor.h"
+#include "cursor.h"
 
 static void tagset_load_workspaces(struct tagset *tagset);
 static void tagset_unload_workspaces(struct tagset *tagset);
@@ -149,10 +150,29 @@ static void unfocus_action(struct tagset *old_tagset, struct monitor *new_monito
         return;
 
     struct seat *seat = input_manager_get_default_seat();
-    wlr_seat_pointer_notify_clear_focus(seat->wlr_seat);
+    cursor_constrain(seat->cursor, NULL);
+    /* wlr_seat_pointer_notify_clear_focus(seat->wlr_seat); */
+    /* wlr_seat_keyboard_notify_clear_focus(seat->wlr_seat); */
 
     move_old_workspaces_back(&old_tagset->workspaces, new_bits);
     reset_old_workspaces(old_tagset, new_monitor);
+}
+
+static void focus_action(struct tagset *tagset)
+{
+    struct seat *seat = input_manager_get_default_seat();
+
+    struct container *con = get_focused_container(tagset->m);
+
+    if (!con)
+        return;
+
+    struct wlr_pointer_constraint_v1 *constraint =
+        wlr_pointer_constraints_v1_constraint_for_surface(
+                server.pointer_constraints,
+                get_wlrsurface(con->client), 
+                seat->wlr_seat);
+    cursor_constrain(seat->cursor, constraint);
 }
 
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet workspaces)
@@ -231,6 +251,7 @@ void focus_tagset(struct tagset *tagset)
     ipc_event_workspace();
 
     arrange();
+    focus_action(tagset);
     focus_most_recent_container(m->tagset, FOCUS_NOOP);
     root_damage_whole(m->root);
 }
@@ -380,7 +401,6 @@ void tagset_focus_tags(int ws_id, struct BitSet bitset)
     push_tagset(tagset);
 
     struct seat *seat = input_manager_get_default_seat();
-    wlr_seat_pointer_notify_clear_focus(seat->wlr_seat);
     update_cursor(seat->cursor);
 }
 

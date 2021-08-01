@@ -47,7 +47,6 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
 
 void map_layer_surface_notify(struct wl_listener *listener, void *data)
 {
-    /* printf("map\n"); */
     struct client *c = wl_container_of(listener, c, map);
     /* wlr_surface_send_enter(get_wlrsurface(c), c->surface.layer->output); */
     /* motion_notify(0); */
@@ -56,7 +55,6 @@ void map_layer_surface_notify(struct wl_listener *listener, void *data)
 
 void unmap_layer_surface(struct client *c)
 {
-    /* printf("unmap\n"); */
     /* struct container *sel_container = get_focused_container(selected_monitor); */
     /* c->surface.layer->mapped = 0; */
     /* if (get_wlrsurface(c) == server.seat->keyboard_state.focused_surface) */
@@ -101,7 +99,6 @@ void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
 
 void commitlayersurfacenotify(struct wl_listener *listener, void *data)
 {
-    printf("commit\n");
     struct client *c = wl_container_of(listener, c, commit);
     struct wlr_layer_surface_v1 *wlr_layer_surface = c->surface.layer;
     struct wlr_output *wlr_output = wlr_layer_surface->output;
@@ -157,7 +154,6 @@ GPtrArray *get_layer_list(struct monitor *m, enum zwlr_layer_shell_v1_layer laye
 
 void arrange_layers(struct monitor *m)
 {
-    printf("arrange layers start\n");
     struct wlr_box usable_area = m->geom;
     uint32_t layers_above_shell[] = {
         ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
@@ -202,7 +198,6 @@ void arrange_layers(struct monitor *m)
             }
         }
     }
-    printf("arrange layers end\n");
 }
 
 void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_area, bool exclusive)
@@ -223,7 +218,6 @@ void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_ar
         const uint32_t both_vert = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP
             | ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
 
-        printf("state->exclusive_zone: %i\n", state->exclusive_zone);
         bool is_exclusive = (state->exclusive_zone > 0);
         if (exclusive != is_exclusive)
             continue;
@@ -252,7 +246,6 @@ void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_ar
         } else {
             box.y = bounds.y + ((bounds.height / 2) - (box.height / 2));
         }
-        printf("box.y: %i\n", box.y);
         // Margin
         if ((state->anchor & both_horiz) == both_horiz) {
             box.x += state->margin.left;

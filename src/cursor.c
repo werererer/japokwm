@@ -25,7 +25,7 @@ static void pointer_focus(struct seat *seat, struct wlr_surface *surface, double
 
     /* If surface is NULL, clear pointer focus */
     if (!surface) {
-        wlr_seat_pointer_notify_clear_focus(wlr_seat);
+        /* wlr_seat_pointer_notify_clear_focus(wlr_seat); */
         return;
     }
 
@@ -51,47 +51,48 @@ static void handle_axis_notify(struct wl_listener *listener, void *data)
             event->delta_discrete, event->source);
 }
 
-/* static void handle_rebase(struct sway_seat *seat, uint32_t time_msec) { */
-/*  struct seatop_default_event *e = seat->seatop_data; */
-/*  struct sway_cursor *cursor = seat->cursor; */
-/*  struct wlr_surface *surface = NULL; */
-/*  double sx = 0.0, sy = 0.0; */
-/*  e->previous_node = node_at_coords(seat, */
-/*          cursor->cursor->x, cursor->cursor->y, &surface, &sx, &sy); */
+void cursor_update_image(struct cursor *cursor) {
+    cursor_set_image(cursor, "left_ptr", NULL);
+}
 
-/*  if (surface) { */
-/*      if (seat_is_input_allowed(seat, surface)) { */
-/*          wlr_seat_pointer_notify_enter(seat->wlr_seat, surface, sx, sy); */
-/*          wlr_seat_pointer_notify_motion(seat->wlr_seat, time_msec, sx, sy); */
-/*      } */
-/*  } else { */
-/*      cursor_update_image(cursor, e->previous_node); */
-/*      wlr_seat_pointer_notify_clear_focus(seat->wlr_seat); */
-/*  } */
-/* } */
+static void handle_rebase(struct seat *seat, uint32_t time_msec)
+{
+    struct cursor *cursor = seat->cursor;
+    struct wlr_surface *surface = NULL;
+    double sx = 0.0, sy = 0.0;
 
-/* static uint32_t get_current_time_msec(void) { */
-/*     struct timespec now; */
-/*     clock_gettime(CLOCK_MONOTONIC, &now); */
-/*     return now.tv_sec * 1000 + now.tv_nsec / 1000000; */
-/* } */
+    if (surface) {
+        wlr_seat_pointer_notify_enter(seat->wlr_seat, surface, sx, sy);
+        wlr_seat_pointer_notify_motion(seat->wlr_seat, time_msec, sx, sy);
+    } else {
+        cursor_update_image(cursor);
+        wlr_seat_pointer_notify_clear_focus(seat->wlr_seat);
+    }
+}
 
-/* void cursor_rebase(struct cursor *cursor) { */
-/*     uint32_t time_msec = get_current_time_msec(); */
-/*     seatop_rebase(cursor->seat, time_msec); */
-/* } */
+static uint32_t get_current_time_msec(void) {
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    return now.tv_sec * 1000 + now.tv_nsec / 1000000;
+}
+
+void cursor_rebase(struct cursor *cursor)
+{
+    uint32_t time_msec = get_current_time_msec();
+    handle_rebase(cursor->seat, time_msec);
+}
 
 static void handle_image_surface_destroy(struct wl_listener *listener,
         void *data) {
     struct cursor *cursor = wl_container_of(listener, cursor, image_surface_destroy);
     cursor_set_image(cursor, NULL, cursor->image_client);
-    /* cursor_rebase(cursor); */
+    cursor_rebase(cursor);
 }
 
 static void cursor_hide(struct cursor *cursor) {
-    wlr_cursor_set_image(cursor->wlr_cursor, NULL, 0, 0, 0, 0, 0, 0);
-    cursor->hidden = true;
-    wlr_seat_pointer_notify_clear_focus(cursor->seat->wlr_seat);
+    /* wlr_cursor_set_image(cursor->wlr_cursor, NULL, 0, 0, 0, 0, 0, 0); */
+    /* cursor->hidden = true; */
+    /* wlr_seat_pointer_notify_clear_focus(cursor->seat->wlr_seat); */
 }
 
 void cursor_unhide(struct cursor *cursor) {
@@ -111,7 +112,7 @@ void cursor_unhide(struct cursor *cursor) {
         cursor->image = NULL;
         cursor_set_image(cursor, image, cursor->image_client);
     }
-    /* cursor_rebase(cursor); */
+    cursor_rebase(cursor);
     wl_event_source_timer_update(cursor->hide_source, 0);
 }
 
@@ -436,7 +437,7 @@ void move_resize(struct cursor *cursor, int ui)
     switch (cursor->cursor_mode = ui) {
         case CURSOR_MOVE:
             wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr, "fleur", wlr_cursor);
-            wlr_seat_pointer_notify_clear_focus(cursor->seat->wlr_seat);
+            /* wlr_seat_pointer_notify_clear_focus(cursor->seat->wlr_seat); */
             offsetx = absolute_x_to_container_relative(grabc->geom, wlr_cursor->x);
             offsety = absolute_y_to_container_relative(grabc->geom, wlr_cursor->y);
             break;
@@ -448,7 +449,7 @@ void move_resize(struct cursor *cursor, int ui)
                     grabc->geom.y + grabc->geom.height);
             wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
                     "bottom_right_corner", wlr_cursor);
-            wlr_seat_pointer_notify_clear_focus(cursor->seat->wlr_seat);
+            /* wlr_seat_pointer_notify_clear_focus(cursor->seat->wlr_seat); */
             break;
         default:
             break;
@@ -532,15 +533,15 @@ static void warp_to_constraint_cursor_hint(struct cursor *cursor) {
 }
 
 void handle_constraint_destroy(struct wl_listener *listener, void *data) {
-    struct pointer_constraint *sway_constraint =
-        wl_container_of(listener, sway_constraint, destroy);
-    struct wlr_pointer_constraint_v1 *constraint = data;
-    struct cursor *cursor = sway_constraint->cursor;
+    struct pointer_constraint *pointer_constraint =
+        wl_container_of(listener, pointer_constraint, destroy);
+    struct wlr_pointer_constraint_v1 *wlr_constraint = data;
+    struct cursor *cursor = pointer_constraint->cursor;
 
-    wl_list_remove(&sway_constraint->set_region.link);
-    wl_list_remove(&sway_constraint->destroy.link);
+    wl_list_remove(&pointer_constraint->set_region.link);
+    wl_list_remove(&pointer_constraint->destroy.link);
 
-    if (cursor->active_constraint == constraint) {
+    if (cursor->active_constraint == wlr_constraint) {
         warp_to_constraint_cursor_hint(cursor);
 
         if (cursor->constraint_commit.link.next != NULL) {
@@ -550,7 +551,7 @@ void handle_constraint_destroy(struct wl_listener *listener, void *data) {
         cursor->active_constraint = NULL;
     }
 
-    free(sway_constraint);
+    free(pointer_constraint);
 }
 
 static void check_constraint_region(struct cursor *cursor) {
@@ -575,7 +576,7 @@ static void check_constraint_region(struct cursor *cursor) {
                     sx + con->geom.x,
                     sy + con->geom.x);
 
-                /* cursor_rebase(cursor); */
+                cursor_rebase(cursor);
             }
         }
     }
@@ -598,8 +599,7 @@ static void handle_constraint_commit(struct wl_listener *listener,
     check_constraint_region(cursor);
 }
 
-void cursor_constrain(struct cursor *cursor,
-        struct wlr_pointer_constraint_v1 *constraint) {
+void cursor_constrain(struct cursor *cursor, struct wlr_pointer_constraint_v1 *constraint) {
 /*     struct seat_config *config = seat_get_config(cursor->seat); */
 /*     if (!config) { */
 /*         config = seat_get_config_by_name("*"); */
@@ -615,11 +615,11 @@ void cursor_constrain(struct cursor *cursor,
 
     wl_list_remove(&cursor->constraint_commit.link);
     if (cursor->active_constraint) {
-        if (constraint == NULL) {
+        if (!constraint) {
             warp_to_constraint_cursor_hint(cursor);
         }
-        wlr_pointer_constraint_v1_send_deactivated(
-            cursor->active_constraint);
+        wlr_pointer_constraint_v1_send_deactivated(cursor->active_constraint);
+        printf("set deactivate\n");
     }
 
     cursor->active_constraint = constraint;
@@ -631,18 +631,18 @@ void cursor_constrain(struct cursor *cursor,
 
     cursor->active_confine_requires_warp = true;
 
-/*     // FIXME: Big hack, stolen from wlr_pointer_constraints_v1.c:121. */
-/*     // This is necessary because the focus may be set before the surface */
-/*     // has finished committing, which means that warping won't work properly, */
-/*     // since this code will be run *after* the focus has been set. */
-/*     // That is why we duplicate the code here. */
-/*     if (pixman_region32_not_empty(&constraint->current.region)) { */
-/*         pixman_region32_intersect(&constraint->region, */
-/*             &constraint->surface->input_region, &constraint->current.region); */
-/*     } else { */
-/*         pixman_region32_copy(&constraint->region, */
-/*             &constraint->surface->input_region); */
-/*     } */
+    // FIXME: Big hack, stolen from wlr_pointer_constraints_v1.c:121.
+    // This is necessary because the focus may be set before the surface
+    // has finished committing, which means that warping won't work properly,
+    // since this code will be run *after* the focus has been set.
+    // That is why we duplicate the code here.
+    if (pixman_region32_not_empty(&constraint->current.region)) {
+        pixman_region32_intersect(&constraint->region,
+            &constraint->surface->input_region, &constraint->current.region);
+    } else {
+        pixman_region32_copy(&constraint->region,
+            &constraint->surface->input_region);
+    }
 
     check_constraint_region(cursor);
 

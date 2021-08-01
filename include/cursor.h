@@ -33,7 +33,7 @@ struct cursor {
 
     struct wl_listener constraint_commit;
 
-	struct wl_event_source *hide_source;
+    struct wl_event_source *hide_source;
 
     struct wlr_xcursor_manager *xcursor_mgr;
 
@@ -46,19 +46,22 @@ struct cursor {
     bool active_confine_requires_warp;
     bool hidden;
 
-	pixman_region32_t confine; // invalid if active_constraint == NULL
+    pixman_region32_t confine; // invalid if active_constraint == NULL
 };
 
 struct cursor *create_cursor(struct seat *seat);
 void destroy_cursor(struct cursor *cursor);
 
+void cursor_rebase(struct cursor *cursor);
 void cursor_set_image(struct cursor *cursor, const char *image, struct wl_client *client);
 void handle_cursor_button(struct wl_listener *listener, void *data);
 void create_pointer(struct seat *seat, struct seat_device *seat_device);
 void handle_cursor_frame(struct wl_listener *listener, void *data);
 /* This event is raised by the seat when a client provides a cursor image */
 void handle_set_cursor(struct wl_listener *listener, void *data);
+void cursor_constrain(struct cursor *cursor, struct wlr_pointer_constraint_v1 *constraint);
 void handle_new_pointer_constraint(struct wl_listener *listener, void *data);
+void cursor_update_image(struct cursor *cursor);
 
 void handle_motion_relative(struct wl_listener *listener, void *data);
 void handle_motion_absolute(struct wl_listener *listener, void *data);

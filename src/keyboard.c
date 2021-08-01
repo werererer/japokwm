@@ -67,8 +67,6 @@ void create_keyboard(struct seat *seat, struct seat_device *seat_device)
     LISTEN(&wlr_device->events.destroy, &kb->destroy, cleanupkeyboard);
 
     wlr_seat_set_keyboard(seat->wlr_seat, wlr_device);
-    printf("seat: %p\n", seat);
-    printf("set_keyboard %p\n", wlr_device);
 
     /* And add the keyboard to our list of server.keyboards */
     g_ptr_array_add(server.keyboards, kb);
@@ -119,7 +117,6 @@ void keypress(struct wl_listener *listener, void *data)
         struct wlr_seat *wlr_seat = kb->seat_device->seat->wlr_seat;
         /* Pass unhandled keycodes along to the client. */
         wlr_seat_set_keyboard(wlr_seat, wlr_device);
-    printf("set_keyboard %p\n", wlr_device);
         wlr_seat_keyboard_notify_key(wlr_seat, event->time_msec,
             event->keycode, event->state);
     }
@@ -138,7 +135,6 @@ void keypressmod(struct wl_listener *listener, void *data)
      */
     struct wlr_seat *wlr_seat = kb->seat->wlr_seat;
     wlr_seat_set_keyboard(wlr_seat, kb->seat_device->input_device->wlr_device);
-    printf("set_keyboard %p\n", kb->seat_device->input_device->wlr_device);
     /* Send modifiers to the client. */
     wlr_seat_keyboard_notify_modifiers(wlr_seat,
         &kb->seat_device->input_device->wlr_device->keyboard->modifiers);

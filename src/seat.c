@@ -1,11 +1,14 @@
 #include "seat.h"
 
+#include <stdint.h>
 #include <stdlib.h>
-
-#include <wlr/types/wlr_primary_selection.h>
+#include <time.h>
 #include <wlr/types/wlr_data_device.h>
+#include <wlr/types/wlr_primary_selection.h>
 #include <wlr/util/log.h>
 
+#include "monitor.h"
+#include "container.h"
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "keyboard.h"
@@ -30,10 +33,8 @@ struct seat *create_seat(const char *seat_name)
 
     seat->wlr_seat = wlr_seat_create(server.wl_display, seat_name);
     seat->wlr_seat->data = seat;
-    printf("create_seat seat->name %s\n", seat->wlr_seat->name);
 
     g_ptr_array_add(server.input_manager->seats, seat);
-    printf("new len of %p: %i\n", server.input_manager, server.input_manager->seats->len);
 
     seat->cursor = create_cursor(seat);
 
@@ -238,7 +239,6 @@ static void seat_configure_keyboard(struct seat *seat,
     }
     /* sway_keyboard_configure(seat_device->keyboard); */
     wlr_seat_set_keyboard(seat->wlr_seat, seat_device->input_device->wlr_device);
-    printf("set_keyboard %p\n", seat_device->input_device->wlr_device);
     /* struct sway_node *focus = seat_get_focus(seat); */
     /* if (focus && node_is_view(focus)) { */
     /*     // force notify reenter to pick up the new configuration */
