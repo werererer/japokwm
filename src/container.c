@@ -468,13 +468,10 @@ void repush(int pos1, int pos2)
     struct monitor *m = selected_monitor;
     struct tagset *tagset = monitor_get_active_tagset(m);
 
-    if (pos1 >= tagset->list_set->tiled_containers->len || pos1 <= 0)
-        return;
-    if (pos2 >= tagset->list_set->tiled_containers->len || pos2 <= 0)
-        return;
-
     struct container *con = g_ptr_array_index(tagset->list_set->tiled_containers, pos1);
 
+    if (!con)
+        return;
     if (con->floating)
         return;
 
