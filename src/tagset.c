@@ -256,7 +256,6 @@ void focus_tagset(struct tagset *tagset)
     root_damage_whole(m->root);
 
     struct seat *seat = input_manager_get_default_seat();
-    wlr_seat_pointer_notify_clear_focus(seat->wlr_seat);
     cursor_rebase(seat->cursor);
     focus_under_cursor(seat->cursor, 0);
 }
@@ -370,8 +369,25 @@ void push_tagset(struct tagset *tagset)
     focus_tagset(tagset);
 }
 
+static void handle_too_few_workspaces(uint32_t ws_id)
+{
+    // no number has more than 11 digits when int is 32 bit long
+    char name[12];
+    sprintf(name, "%d:%d", server.workspaces->len, server.workspaces->len+1);
+    struct workspace *ws = create_workspace(name, server.workspaces->len, server.default_layout);
+    g_ptr_array_add(server.workspaces, ws);
+    for (int i = 0; i < server.tagsets->len; i++) {
+        struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
+        bitset_push(&tagset->workspaces, 0);
+    }
+}
+
 void tagset_focus_workspace(int ws_id)
 {
+    if (ws_id >= server.workspaces->len) {
+        handle_too_few_workspaces(ws_id);
+    }
+
     BitSet bitset;
     bitset_setup(&bitset, server.workspaces->len);
     bitset_set(&bitset, ws_id);

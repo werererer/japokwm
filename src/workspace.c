@@ -37,7 +37,7 @@ GPtrArray *create_workspaces(GPtrArray *tag_names)
 struct workspace *create_workspace(const char *name, size_t id, struct layout *lt)
 {
     struct workspace *ws = calloc(1, sizeof(struct workspace));
-    ws->name = name;
+    ws->name = strdup(name);
     ws->id = id;
 
     ws->loaded_layouts = g_ptr_array_new();
@@ -101,6 +101,7 @@ void destroy_workspace(struct workspace *ws)
         kill_client(c);
     }
     destroy_list_set(ws->list_set);
+    free(ws->name);
     free(ws);
 }
 
@@ -268,7 +269,8 @@ void rename_workspace(struct workspace *ws, const char *name)
 {
     if (!ws)
         return;
-    ws->name = name;
+    free(ws->name);
+    ws->name = strdup(name);
 }
 
 // TODO refactor this function

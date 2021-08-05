@@ -371,6 +371,8 @@ void motion_notify(struct cursor *cursor, uint32_t time_msec,
     wlr_cursor_move(cursor->wlr_cursor, device, dx, dy);
 
 /*     seatop_pointer_motion(cursor->seat, time_msec); */
+    /* struct seat *seat = input_manager_get_default_seat(); */
+    /* wlr_seat_pointer_notify_clear_focus(seat->wlr_seat); */
     focus_under_cursor(cursor, 0);
 }
 

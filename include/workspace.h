@@ -17,7 +17,7 @@ struct workspace {
     struct layout *layout;
 
     size_t id;
-    const char *name;
+    char *name;
     struct monitor *m;
 
     // the tagset that currently hast this workspace selected
