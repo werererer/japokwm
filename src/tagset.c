@@ -373,6 +373,7 @@ static void handle_too_few_workspaces(uint32_t ws_id)
 {
     // no number has more than 11 digits when int is 32 bit long
     char name[12];
+    // TODO explain why +1
     sprintf(name, "%d:%d", server.workspaces->len, server.workspaces->len+1);
     struct workspace *ws = create_workspace(name, server.workspaces->len, server.default_layout);
     g_ptr_array_add(server.workspaces, ws);

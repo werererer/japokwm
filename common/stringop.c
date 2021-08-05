@@ -148,7 +148,6 @@ void free_argv(int argc, char **argv) {
 }
 
 int unescape_string(char *string) {
-    /* TODO: More C string escapes */
     int len = strlen(string);
     int i;
     for (i = 0; string[i]; ++i) {
