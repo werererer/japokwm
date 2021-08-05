@@ -100,15 +100,11 @@ static void unfocus_client(struct client *c)
 
 void focus_surface(struct seat *seat, struct wlr_surface *surface)
 {
-    struct wlr_seat *wlr_seat = seat->wlr_seat;
-    /* Update wlroots'c keyboard focus */
-    if (!surface) {
-        /* With no client, all we have left is to clear focus */
-        wlr_seat_keyboard_notify_clear_focus(wlr_seat);
-        return;
-    }
+    assert(surface != NULL);
 
+    struct wlr_seat *wlr_seat = seat->wlr_seat;
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(wlr_seat);
+
     /* Have a client, so focus its top-level wlr_surface */
     wlr_seat_keyboard_notify_enter(wlr_seat, surface, kb->keycodes,
             kb->num_keycodes, &kb->modifiers);
@@ -129,7 +125,7 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
         wlr_seat_keyboard_notify_clear_focus(wlr_seat);
         return;
     }
-
+    /* Update wlroots'c keyboard focus */
     focus_surface(seat, get_wlrsurface(c));
 
     /* Activate the new client */

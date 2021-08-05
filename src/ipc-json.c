@@ -76,11 +76,12 @@ struct focus_inactive_data {
 };
 
 // note: full_name must use malloced memory
-static void add_infix(char *full_name, const char *prefix, const char *postfix)
+static void add_infix(char **full_name, const char *prefix, const char *postfix)
 {
     const char *delimiter = ":";
 
-    GPtrArray *content = split_string(full_name, delimiter);
+    GPtrArray *content = split_string(*full_name, delimiter);
+    printf("content.len: %i\n", content->len);
     char *position = strdup("");
     char *name;
     char *content0 = g_ptr_array_index(content, 0);
@@ -88,19 +89,20 @@ static void add_infix(char *full_name, const char *prefix, const char *postfix)
         position = realloc(position, strlen(content0)+strlen(delimiter)+1);
         strcpy(position, content0);
         strcat(position, delimiter);
-        int name_byte_len = strlen(full_name)-strlen(position)+1;
+        int name_byte_len = strlen(*full_name)-strlen(position)+1;
         name = malloc(name_byte_len);
-        memmove(name, full_name + strlen(position), name_byte_len);
+        memmove(name, *full_name + strlen(position), name_byte_len);
     } else {
         name = content0;
     }
 
-    full_name = realloc(full_name, 
-            strlen(position) + strlen(prefix) + strlen(name) + strlen(postfix) + 1);
-    strcpy(full_name, position);
-    strcat(full_name, prefix);
-    strcat(full_name, name);
-    strcat(full_name, postfix);
+    int full_name_string_length = strlen(position) + strlen(prefix)
+        + strlen(name) + strlen(postfix) + 1;
+    *full_name = realloc(*full_name, full_name_string_length);
+    strcpy(*full_name, position);
+    strcat(*full_name, prefix);
+    strcat(*full_name, name);
+    strcat(*full_name, postfix);
 
     free(name);
     free(position);
@@ -135,7 +137,7 @@ json_object *ipc_json_describe_tagsets()
         char *full_name = strdup(ws->name);
 
         if (is_selected) {
-            add_infix(full_name, "*", "*");
+            add_infix(&full_name, "*", "*");
         }
 
         json_object *tagset_object = ipc_json_describe_tag(full_name, is_active, m);
@@ -144,7 +146,7 @@ json_object *ipc_json_describe_tagsets()
         bool is_extern = m != ws->m && ws->m != NULL;
         if (is_extern) {
             char *hidden_name = strdup(ws->name);
-            add_infix(hidden_name, "(", ")");
+            add_infix(&hidden_name, "(", ")");
             json_object *tagset_object = ipc_json_describe_tag(hidden_name, false, ws->m);
             json_object_array_add(array, tagset_object);
             free(hidden_name);

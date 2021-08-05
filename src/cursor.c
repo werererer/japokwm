@@ -90,9 +90,9 @@ static void handle_image_surface_destroy(struct wl_listener *listener,
 }
 
 static void cursor_hide(struct cursor *cursor) {
-    /* wlr_cursor_set_image(cursor->wlr_cursor, NULL, 0, 0, 0, 0, 0, 0); */
-    /* cursor->hidden = true; */
-    /* wlr_seat_pointer_notify_clear_focus(cursor->seat->wlr_seat); */
+    wlr_cursor_set_image(cursor->wlr_cursor, NULL, 0, 0, 0, 0, 0, 0);
+    cursor->hidden = true;
+    wlr_seat_pointer_notify_clear_focus(cursor->seat->wlr_seat);
 }
 
 void cursor_unhide(struct cursor *cursor) {
@@ -262,11 +262,16 @@ static bool handle_move_resize(struct cursor *cursor)
     return false;
 }
 
+void cursor_handle_activity_from_device(struct cursor *cursor, struct wlr_input_device *device)
+{
+    cursor_unhide(cursor);
+}
+
 void handle_motion_relative(struct wl_listener *listener, void *data)
 {
     struct cursor *cursor = wl_container_of(listener, cursor, motion);
     struct wlr_event_pointer_motion *event = data;
-    /* cursor_handle_activity_from_device(cursor, event->device); */
+    cursor_handle_activity_from_device(cursor, event->device);
 
     motion_notify(cursor, event->time_msec, event->device, event->delta_x,
             event->delta_y, event->unaccel_dx, event->unaccel_dy);
@@ -276,8 +281,7 @@ void handle_motion_absolute(struct wl_listener *listener, void *data)
 {
     struct cursor *cursor = wl_container_of(listener, cursor, motion_absolute);
     struct wlr_event_pointer_motion_absolute *event = data;
-    // TODO what does this in sway?
-    /* cursor_handle_activity_from_device(cursor, event->device); */
+    cursor_handle_activity_from_device(cursor, event->device);
 
     double lx, ly;
     wlr_cursor_absolute_to_layout_coords(cursor->wlr_cursor, event->device,
@@ -289,7 +293,7 @@ void handle_motion_absolute(struct wl_listener *listener, void *data)
     motion_notify(cursor, event->time_msec, event->device, dx, dy, dx, dy);
 }
 
-static void focus_under_cursor(struct cursor *cursor, uint32_t time)
+void focus_under_cursor(struct cursor *cursor, uint32_t time)
 {
     int cursorx = cursor->wlr_cursor->x;
     int cursory = cursor->wlr_cursor->y;
