@@ -115,14 +115,14 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
     struct wlr_surface *old_surface = get_base_wlrsurface(old);
     struct wlr_surface *new_surface = get_base_wlrsurface(c);
     if (old_surface != new_surface) {
+        cursor_constrain(seat->cursor, NULL);
         unfocus_client(old);
     }
 
-    struct wlr_seat *wlr_seat = seat->wlr_seat;
     /* Update wlroots'c keyboard focus */
     if (!c) {
-        /* With no client, all we have left is to clear focus */
-        wlr_seat_keyboard_notify_clear_focus(wlr_seat);
+        /* struct wlr_seat *wlr_seat = seat->wlr_seat; */
+        wlr_seat_keyboard_notify_clear_focus(seat->wlr_seat);
         return;
     }
     /* Update wlroots'c keyboard focus */

@@ -15,17 +15,18 @@ static int offsetx, offsety;
 
 // TODO refactor this function
 static void pointer_focus(struct seat *seat, struct wlr_surface *surface, double sx, double sy, uint32_t time);
+static void warp_to_constraint_cursor_hint(struct cursor *cursor);
 
 static void pointer_focus(struct seat *seat, struct wlr_surface *surface, double sx, double sy, uint32_t time)
 {
     struct wlr_seat *wlr_seat = seat->wlr_seat;
     /* Use top level surface if nothing more specific given */
-    if (!surface)
-        return;
 
     /* If surface is NULL, clear pointer focus */
     if (!surface) {
-        /* wlr_seat_pointer_notify_clear_focus(wlr_seat); */
+        /* cursor_rebase(seat->cursor); */
+        /* warp_to_constraint_cursor_hint(seat->cursor); */
+        wlr_seat_pointer_notify_clear_focus(wlr_seat);
         return;
     }
 
@@ -34,6 +35,8 @@ static void pointer_focus(struct seat *seat, struct wlr_surface *surface, double
         wlr_seat_pointer_notify_motion(wlr_seat, time, sx, sy);
         return;
     }
+
+    cursor_constrain(seat->cursor, NULL);
     /* Otherwise, let the client know that the mouse cursor has entered one
      * of its surfaces, and make keyboard focus follow if desired. */
     wlr_seat_pointer_notify_enter(wlr_seat, surface, sx, sy);
@@ -347,26 +350,32 @@ void motion_notify(struct cursor *cursor, uint32_t time_msec,
         }
     }
 
-    // Only apply pointer constraints to real pointer input.
-    if (cursor->active_constraint && device->type == WLR_INPUT_DEVICE_POINTER) {
-        struct wlr_surface *surface = NULL;
-        double sx, sy;
-        /* node_at_coords(cursor->seat, */
-        /*         cursor->cursor->x, cursor->cursor->y, &surface, &sx, &sy); */
+/*     // Only apply pointer constraints to real pointer input. */
+/*     if (cursor->active_constraint && device->type == WLR_INPUT_DEVICE_POINTER) { */
+/*         /1* node_at_coords(cursor->seat, *1/ */
+/*         /1*         cursor->cursor->x, cursor->cursor->y, &surface, &sx, &sy); *1/ */
+/*         struct container *con = xy_to_container(cursor->wlr_cursor->x, cursor->wlr_cursor->y); */
 
-        if (cursor->active_constraint->surface != surface) {
-            return;
-        }
+/*         double sx = cursor->wlr_cursor->x - con->geom.x; */
+/*         double sy = cursor->wlr_cursor->y - con->geom.y; */
+/*         /1* struct contaixy_to_container(); *1/ */
 
-        double sx_confined, sy_confined;
-        /* if (!wlr_region_confine(&cursor->confine, sx, sy, sx + dx, sy + dy, */
-        /*             &sx_confined, &sy_confined)) { */
-        /*     return; */
-        /* } */
+/*         /1* if (con) { *1/ */
+/*         /1*     struct wlr_surface *surface = get_wlrsurface(con->client); *1/ */
+/*         /1*     if (cursor->active_constraint->surface != surface) { *1/ */
+/*         /1*         return; *1/ */
+/*         /1*     } *1/ */
+/*         /1* } *1/ */
 
-        dx = sx_confined - sx;
-        dy = sy_confined - sy;
-    }
+/*         double sx_confined, sy_confined; */
+/*         if (!wlr_region_confine(&cursor->confine, sx, sy, sx + dx, sy + dy, */
+/*                     &sx_confined, &sy_confined)) { */
+/*             return; */
+/*         } */
+
+/*         dx = sx_confined - sx; */
+/*         dy = sy_confined - sy; */
+/*     } */
 
     wlr_cursor_move(cursor->wlr_cursor, device, dx, dy);
 
@@ -514,7 +523,8 @@ static void handle_pointer_constraint_set_region(struct wl_listener *listener,
     cursor->active_confine_requires_warp = true;
 }
 
-static void warp_to_constraint_cursor_hint(struct cursor *cursor) {
+static void warp_to_constraint_cursor_hint(struct cursor *cursor)
+{
     struct wlr_pointer_constraint_v1 *constraint = cursor->active_constraint;
 
     if (constraint->current.committed &
@@ -606,15 +616,6 @@ static void handle_constraint_commit(struct wl_listener *listener,
 }
 
 void cursor_constrain(struct cursor *cursor, struct wlr_pointer_constraint_v1 *constraint) {
-/*     struct seat_config *config = seat_get_config(cursor->seat); */
-/*     if (!config) { */
-/*         config = seat_get_config_by_name("*"); */
-/*     } */
-
-/*     if (!config || config->allow_constrain == CONSTRAIN_DISABLE) { */
-/*         return; */
-/*     } */
-
     if (cursor->active_constraint == constraint) {
         return;
     }
