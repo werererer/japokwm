@@ -444,7 +444,6 @@ void move_resize(struct cursor *cursor, int ui)
     switch (cursor->cursor_mode = ui) {
         case CURSOR_MOVE:
             wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr, "fleur", wlr_cursor);
-            /* wlr_seat_pointer_notify_clear_focus(cursor->seat->wlr_seat); */
             offsetx = absolute_x_to_container_relative(grabc->geom, wlr_cursor->x);
             offsety = absolute_y_to_container_relative(grabc->geom, wlr_cursor->y);
             break;
@@ -456,7 +455,6 @@ void move_resize(struct cursor *cursor, int ui)
                     grabc->geom.y + grabc->geom.height);
             wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
                     "bottom_right_corner", wlr_cursor);
-            /* wlr_seat_pointer_notify_clear_focus(cursor->seat->wlr_seat); */
             break;
         default:
             break;

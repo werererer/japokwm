@@ -606,6 +606,7 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
         remove_container_from_scratchpad(con);
     }
     resize(con, geom);
+    container_damage(con, true);
 }
 
 void add_container_to_containers(struct list_set *list_set, struct container *con, int i)
