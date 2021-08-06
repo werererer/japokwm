@@ -350,38 +350,8 @@ void motion_notify(struct cursor *cursor, uint32_t time_msec,
         }
     }
 
-/*     // Only apply pointer constraints to real pointer input. */
-/*     if (cursor->active_constraint && device->type == WLR_INPUT_DEVICE_POINTER) { */
-/*         /1* node_at_coords(cursor->seat, *1/ */
-/*         /1*         cursor->cursor->x, cursor->cursor->y, &surface, &sx, &sy); *1/ */
-/*         struct container *con = xy_to_container(cursor->wlr_cursor->x, cursor->wlr_cursor->y); */
-
-/*         double sx = cursor->wlr_cursor->x - con->geom.x; */
-/*         double sy = cursor->wlr_cursor->y - con->geom.y; */
-/*         /1* struct contaixy_to_container(); *1/ */
-
-/*         /1* if (con) { *1/ */
-/*         /1*     struct wlr_surface *surface = get_wlrsurface(con->client); *1/ */
-/*         /1*     if (cursor->active_constraint->surface != surface) { *1/ */
-/*         /1*         return; *1/ */
-/*         /1*     } *1/ */
-/*         /1* } *1/ */
-
-/*         double sx_confined, sy_confined; */
-/*         if (!wlr_region_confine(&cursor->confine, sx, sy, sx + dx, sy + dy, */
-/*                     &sx_confined, &sy_confined)) { */
-/*             return; */
-/*         } */
-
-/*         dx = sx_confined - sx; */
-/*         dy = sy_confined - sy; */
-/*     } */
-
     wlr_cursor_move(cursor->wlr_cursor, device, dx, dy);
 
-/*     seatop_pointer_motion(cursor->seat, time_msec); */
-    /* struct seat *seat = input_manager_get_default_seat(); */
-    /* wlr_seat_pointer_notify_clear_focus(seat->wlr_seat); */
     focus_under_cursor(cursor, 0);
 }
 
