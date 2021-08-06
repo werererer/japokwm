@@ -688,9 +688,6 @@ void update_cursor(struct cursor *cursor)
         return;
     }
 
-    if (!cursor->cursor_surface)
-        return;
-
     if (!cursor->seat->wlr_seat->pointer_state.focused_client)
         return;
 
