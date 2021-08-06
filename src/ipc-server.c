@@ -421,6 +421,8 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
         case IPC_SUBSCRIBE:
             {
                 // TODO: Check if they're permitted to use these events
+                // NOTE: this will probably be fixed by sway, if so copy its
+                // implementation and call it a day
                 struct json_object *request = json_tokener_parse(buf);
 
                 bool is_tick = false;
