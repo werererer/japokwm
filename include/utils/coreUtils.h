@@ -35,11 +35,6 @@
     for(int keep = 1, count = 0, size = LENGTH(array); keep && count < size; keep = 1, count++)\
         for(item = array[count]; keep; keep = 0)\
 
-enum focus_actions {
-    FOCUS_NOOP,
-    FOCUS_LIFT,
-};
-
 /* rules */
 struct rule {
     char *id;

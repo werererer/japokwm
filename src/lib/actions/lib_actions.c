@@ -59,7 +59,7 @@ int lib_focus_container(lua_State *L)
     if (!con)
         return 0;
 
-    focus_container(con, FOCUS_NOOP);
+    focus_container(con);
     return 0;
 }
 
@@ -231,7 +231,9 @@ int lib_tag_view(lua_State *L)
 int lib_toggle_view(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    focus_most_recent_container(m->tagset, FOCUS_LIFT);
+    focus_most_recent_container(m->tagset);
+    struct container *sel = get_focused_container(m);
+    lift_container(sel);
     arrange(false);
     return 0;
 }
@@ -290,12 +292,12 @@ int lib_zoom(lua_State *L)
     arrange();
 
     // focus new master window
-    struct container *con0 = get_container(tagset, 0);
-    focus_container(con0, FOCUS_NOOP);
+    struct container *con = get_container(tagset, 0);
+    focus_container(con);
 
     struct layout *lt = get_layout_in_monitor(m);
     if (lt->options.arrange_by_focus) {
-        focus_most_recent_container(tagset, FOCUS_NOOP);
+        focus_most_recent_container(tagset);
         arrange();
     }
     return 0;
@@ -463,7 +465,7 @@ int lib_swap_workspace(lua_State *L)
     }
 
     arrange();
-    focus_most_recent_container(tagset, FOCUS_NOOP);
+    focus_most_recent_container(tagset);
     root_damage_whole(m->root);
     return 0;
 }

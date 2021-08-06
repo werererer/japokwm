@@ -29,7 +29,7 @@ void move_to_scratchpad(struct container *con, int position)
     remove_in_composed_list(m->visual_stack_lists, cmp_ptr, con);
 
     container_damage_whole(con);
-    focus_most_recent_container(tagset, FOCUS_NOOP);
+    focus_most_recent_container(tagset);
     con->hidden = true;
     arrange();
 }
@@ -58,10 +58,12 @@ void show_scratchpad()
         resize(con, get_center_box(m->geom));
 
         con->hidden = false;
-        focus_container(con, FOCUS_LIFT);
+        focus_container(con);
+        lift_container(con);
     } else {
         if (!sel->on_scratchpad) {
-            focus_container(con, FOCUS_LIFT);
+            focus_container(con);
+            lift_container(con);
             return;
         }
 

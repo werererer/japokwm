@@ -328,7 +328,7 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
     if (focus_con) {
         struct workspace *ws = monitor_get_active_workspace(selected_monitor);
         if (ws->layout->options.sloppy_focus)
-            focus_container(focus_con, FOCUS_NOOP);
+            focus_container(focus_con);
     }
 }
 

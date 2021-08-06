@@ -55,7 +55,7 @@ void container_damage_borders(struct container *con, struct wlr_box *geom);
 void container_damage_part(struct container *con);
 void container_damage_whole(struct container *con);
 void fix_position(struct container *con);
-void focus_container(struct container *con, enum focus_actions a);
+void focus_container(struct container *con);
 void focus_on_hidden_stack(struct monitor *m, int i);
 void focus_on_stack(struct monitor *m, int i);
 /* Find the topmost visible client (if any) at point (x, y), including

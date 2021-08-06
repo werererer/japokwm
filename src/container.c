@@ -332,7 +332,7 @@ void commit_notify(struct wl_listener *listener, void *data)
     }
 }
 
-void focus_container(struct container *con, enum focus_actions a)
+void focus_container(struct container *con)
 {
     if (!con)
         return;
@@ -348,9 +348,6 @@ void focus_container(struct container *con, enum focus_actions a)
         return;
 
     struct container *sel = get_focused_container(m);
-
-    if (a == FOCUS_LIFT)
-        lift_container(con);
 
     /* Put the new client atop the focus stack */
     list_set_remove_container_from_focus_stack(tagset->list_set, con);
@@ -385,7 +382,7 @@ void focus_on_stack(struct monitor *m, int i)
 
     if (sel->client->type == LAYER_SHELL) {
         struct container *con = get_container(tagset, 0);
-        focus_container(con, FOCUS_NOOP);
+        focus_container(con);
         return;
     }
 
@@ -394,7 +391,8 @@ void focus_on_stack(struct monitor *m, int i)
         get_relative_item_in_composed_list(visible_container_lists, sel_index, i);
 
     /* If only one client is visible on selMon, then c == sel */
-    focus_container(con, FOCUS_LIFT);
+    focus_container(con);
+    lift_container(con);
 }
 
 
@@ -446,7 +444,7 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     if (!con)
         return;
 
-    focus_container(con, FOCUS_NOOP);
+    focus_container(con);
     arrange();
 }
 
@@ -741,7 +739,7 @@ void move_container_to_workspace(struct container *con, struct workspace *ws)
     arrange();
     struct monitor *m = container_get_monitor(con);
     struct tagset *selected_tagset = monitor_get_active_tagset(m);
-    focus_most_recent_container(selected_tagset, FOCUS_NOOP);
+    focus_most_recent_container(selected_tagset);
 
     ipc_event_workspace();
 }

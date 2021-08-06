@@ -204,7 +204,7 @@ void destroy_tagset(struct tagset *tagset)
     printf("destroy_tagset end\n");
 }
 
-void focus_most_recent_container(struct tagset *tagset, enum focus_actions a)
+void focus_most_recent_container(struct tagset *tagset)
 {
     struct container *con = get_in_composed_list(tagset->list_set->focus_stack_lists, 0);
 
@@ -216,7 +216,7 @@ void focus_most_recent_container(struct tagset *tagset, enum focus_actions a)
         }
     }
 
-    focus_container(con, a);
+    focus_container(con);
 }
 
 void focus_tagset(struct tagset *tagset)
@@ -252,7 +252,7 @@ void focus_tagset(struct tagset *tagset)
 
     arrange();
     focus_action(tagset);
-    focus_most_recent_container(m->tagset, FOCUS_NOOP);
+    focus_most_recent_container(m->tagset);
     root_damage_whole(m->root);
 
     struct seat *seat = input_manager_get_default_seat();

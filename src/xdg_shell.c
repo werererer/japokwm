@@ -93,7 +93,7 @@ void map_request(struct wl_listener *listener, void *data)
     add_container_to_tile(con);
     arrange();
     struct monitor *m = container_get_monitor(con);
-    focus_most_recent_container(m->tagset, FOCUS_NOOP);
+    focus_most_recent_container(m->tagset);
 }
 
 void unmap_notify(struct wl_listener *listener, void *data)
@@ -109,7 +109,7 @@ void unmap_notify(struct wl_listener *listener, void *data)
 
     arrange();
     struct monitor *m = selected_monitor;
-    focus_most_recent_container(m->tagset, FOCUS_NOOP);
+    focus_most_recent_container(m->tagset);
 }
 
 void createxdeco(struct wl_listener *listener, void *data)

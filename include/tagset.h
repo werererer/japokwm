@@ -25,7 +25,7 @@ struct tagset {
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet workspaces);
 void destroy_tagset(struct tagset *tagset);
 
-void focus_most_recent_container(struct tagset *tagset, enum focus_actions a);
+void focus_most_recent_container(struct tagset *tagset);
 void focus_tagset(struct tagset *tagset);
 void tagset_set_tags(struct tagset *tagset, BitSet bitset);
 void tagset_focus_workspace(int ws_id);

@@ -120,7 +120,7 @@ void unmap_notifyx11(struct wl_listener *listener, void *data)
 
     arrange();
     struct monitor *m = selected_monitor;
-    focus_most_recent_container(m->tagset, FOCUS_NOOP);
+    focus_most_recent_container(m->tagset);
     printf("unmap_notify end\n");
 }
 
@@ -191,7 +191,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
                     g_ptr_array_insert(ws->list_set->focus_stack_normal, 1, con);
                 } else {
                     con->on_top = true;
-                    focus_container(con, FOCUS_NOOP);
+                    focus_container(con);
                 }
 
                 con->has_border = false;
@@ -205,7 +205,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     }
     arrange();
     struct container *sel = get_focused_container(m); 
-    focus_container(sel, FOCUS_NOOP);
+    focus_container(sel);
     struct seat *seat = input_manager_get_default_seat();
     wlr_xcursor_manager_set_cursor_image(seat->cursor->xcursor_mgr,
             "left_ptr", seat->cursor->wlr_cursor);
