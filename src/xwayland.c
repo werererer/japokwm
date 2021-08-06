@@ -55,8 +55,12 @@ void destroy_notifyx11(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, destroy);
 
+
+    struct container *con = c->con;
+    if (con->is_xwayland_popup) {
+        g_ptr_array_remove(server.xwayland_popups, con);
+    }
     destroy_container(c->con);
-    c->con = NULL;
 
     wl_list_remove(&c->map.link);
     wl_list_remove(&c->unmap.link);
@@ -189,6 +193,9 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 if (is_popup_menu(c) || xwayland_surface->parent) {
                     remove_in_composed_list(ws->list_set->focus_stack_lists, cmp_ptr, con);
                     g_ptr_array_insert(ws->list_set->focus_stack_normal, 1, con);
+
+                    con->is_xwayland_popup = true;
+                    g_ptr_array_add(server.xwayland_popups, con);
                 } else {
                     con->on_top = true;
                     focus_container(con);
@@ -209,4 +216,9 @@ void maprequestx11(struct wl_listener *listener, void *data)
     struct seat *seat = input_manager_get_default_seat();
     wlr_xcursor_manager_set_cursor_image(seat->cursor->xcursor_mgr,
             "left_ptr", seat->cursor->wlr_cursor);
+}
+
+bool xwayland_popups_exist()
+{
+    return server.xwayland_popups->len > 0;
 }

@@ -58,6 +58,8 @@ struct server {
 
     GPtrArray *mons;
     GPtrArray *popups;
+    // X11 popups are handled as containers
+    GPtrArray *xwayland_popups;
 
     GPtrArray *tagsets;
 

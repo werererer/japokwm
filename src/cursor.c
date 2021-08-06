@@ -127,9 +127,6 @@ static int hide_notify(void *data) {
 
 struct cursor *create_cursor(struct seat *seat)
 {
-    printf("create_cursor\n");
-    printf("seat: %p\n", seat);
-    printf("default_seat: %p\n", input_manager_get_default_seat());
     struct cursor *cursor = calloc(1, sizeof(struct cursor));
 
     struct wlr_cursor *wlr_cursor = wlr_cursor_create();
@@ -311,11 +308,11 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
     struct wlr_surface *popup_surface = get_popup_surface_under_cursor(cursor, &sx, &sy);
     bool is_popup_under_cursor = popup_surface != NULL;
 
-    struct wlr_surface *focus_surface = popup_surface;
+    struct wlr_surface *final_focus_surface = popup_surface;
 
     struct container *focus_con = xy_to_container(cursorx, cursory);
     if (!is_popup_under_cursor && focus_con) {
-        focus_surface = wlr_surface_surface_at(get_wlrsurface(focus_con->client),
+        final_focus_surface = wlr_surface_surface_at(get_wlrsurface(focus_con->client),
                 absolute_x_to_container_relative(focus_con->geom, cursorx),
                 absolute_y_to_container_relative(focus_con->geom, cursory),
                 &sx, &sy);
@@ -323,12 +320,16 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
         update_cursor(cursor);
     }
 
-    pointer_focus(cursor->seat, focus_surface, sx, sy, time);
+    printf("is_popup_under_cursor: %i\n", is_popup_under_cursor);
+
+    pointer_focus(cursor->seat, final_focus_surface, sx, sy, time);
 
     if (focus_con) {
         struct workspace *ws = monitor_get_active_workspace(selected_monitor);
-        if (ws->layout->options.sloppy_focus)
+        if (ws->layout->options.sloppy_focus &&
+                !popups_exist() && !xwayland_popups_exist()) {
             focus_container(focus_con);
+        }
     }
 }
 

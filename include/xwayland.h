@@ -33,4 +33,6 @@ void maprequestx11(struct wl_listener *listener, void *data);
 void unmap_notifyx11(struct wl_listener *listener, void *data);
 void destroy_notifyx11(struct wl_listener *listener, void *data);
 
+bool xwayland_popups_exist();
+
 #endif /* XWAYLAND_H */

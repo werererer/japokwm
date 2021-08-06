@@ -16,6 +16,7 @@ struct container {
     struct wlr_box prev_floating_geom;
     struct client *client;
 
+    bool is_xwayland_popup;
     bool is_tiled;
     bool floating;
     bool focusable;

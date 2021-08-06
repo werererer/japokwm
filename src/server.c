@@ -16,6 +16,7 @@ void init_server()
 
     server.mons = g_ptr_array_new();
     server.popups = g_ptr_array_new();
+    server.xwayland_popups = g_ptr_array_new();
 
     server.scratchpad = g_ptr_array_new();
     server.workspaces = g_ptr_array_new();
