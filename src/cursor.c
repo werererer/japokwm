@@ -350,8 +350,33 @@ void motion_notify(struct cursor *cursor, uint32_t time_msec,
         }
     }
 
+    // Only apply pointer constraints to real pointer input.
+    if (cursor->active_constraint && device->type == WLR_INPUT_DEVICE_POINTER) {
+        struct container *con = xy_to_container(cursor->wlr_cursor->x, cursor->wlr_cursor->y);
+
+        double sx;
+        double sy;
+        if (con) {
+            sx = cursor->wlr_cursor->x - con->geom.x;
+            sy = cursor->wlr_cursor->y - con->geom.y;
+        } else {
+            sx = cursor->wlr_cursor->x;
+            sy = cursor->wlr_cursor->y;
+        }
+
+        double sx_confined, sy_confined;
+        if (wlr_region_confine(&cursor->confine, sx, sy, sx + dx, sy + dy,
+                    &sx_confined, &sy_confined)) {
+            dx = sx_confined - sx;
+            dy = sy_confined - sy;
+        }
+    }
+
     wlr_cursor_move(cursor->wlr_cursor, device, dx, dy);
 
+/*     seatop_pointer_motion(cursor->seat, time_msec); */
+    /* struct seat *seat = input_manager_get_default_seat(); */
+    /* wlr_seat_pointer_notify_clear_focus(seat->wlr_seat); */
     focus_under_cursor(cursor, 0);
 }
 
