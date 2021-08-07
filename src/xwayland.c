@@ -6,6 +6,7 @@
 #include "container.h"
 #include "server.h"
 #include "tile/tileUtils.h"
+#include "seat.h"
 
 static const char *atom_map[ATOM_LAST] = {
     "_NET_WM_WINDOW_TYPE_NORMAL",
@@ -126,6 +127,10 @@ void unmap_notifyx11(struct wl_listener *listener, void *data)
     struct monitor *m = selected_monitor;
     focus_most_recent_container(m->tagset);
     printf("unmap_notify end\n");
+
+    struct seat *seat = input_manager_get_default_seat();
+    wlr_seat_pointer_clear_focus(seat->wlr_seat);
+    wlr_seat_keyboard_clear_focus(seat->wlr_seat);
 }
 
 void maprequestx11(struct wl_listener *listener, void *data)
@@ -192,7 +197,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 struct workspace *ws = monitor_get_active_workspace(m);
                 if (is_popup_menu(c) || xwayland_surface->parent) {
                     remove_in_composed_list(ws->list_set->focus_stack_lists, cmp_ptr, con);
-                    g_ptr_array_insert(ws->list_set->focus_stack_normal, 1, con);
+                    g_ptr_array_insert(ws->list_set->focus_stack_normal, 0, con);
 
                     con->is_xwayland_popup = true;
                     g_ptr_array_add(server.xwayland_popups, con);

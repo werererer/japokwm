@@ -16,6 +16,7 @@ static int offsetx, offsety;
 // TODO refactor this function
 static void pointer_focus(struct seat *seat, struct wlr_surface *surface, double sx, double sy, uint32_t time);
 static void warp_to_constraint_cursor_hint(struct cursor *cursor);
+static void update_cursor(struct cursor *cursor);
 
 static void pointer_focus(struct seat *seat, struct wlr_surface *surface, double sx, double sy, uint32_t time)
 {
@@ -316,11 +317,7 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
                 absolute_x_to_container_relative(focus_con->geom, cursorx),
                 absolute_y_to_container_relative(focus_con->geom, cursory),
                 &sx, &sy);
-
-        update_cursor(cursor);
     }
-
-    printf("is_popup_under_cursor: %i\n", is_popup_under_cursor);
 
     pointer_focus(cursor->seat, final_focus_surface, sx, sy, time);
 
@@ -674,7 +671,7 @@ void handle_new_pointer_constraint(struct wl_listener *listener, void *data)
     }
 }
 
-void update_cursor(struct cursor *cursor)
+static void update_cursor(struct cursor *cursor)
 {
     /* If we're "grabbing" the server.cursor, don't use the client's image */
     /* XXX still need to save the provided surface to restore later */

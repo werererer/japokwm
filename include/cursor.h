@@ -70,8 +70,6 @@ void handle_motion_absolute(struct wl_listener *listener, void *data);
 void motion_notify(struct cursor *cursor, uint32_t time_msec,
         struct wlr_input_device *device, double dx, double dy,
         double dx_unaccel, double dy_unaccel);
-/* reload the surface stored in cursor */
-void update_cursor(struct cursor *cursor);
 void move_resize(struct cursor *cursor, int ui);
 void cursor_set_image_surface(struct cursor *cursor,
         struct wlr_surface *surface, int32_t hotspot_x, int32_t hotspot_y,

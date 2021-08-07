@@ -30,9 +30,6 @@ void arrange()
         struct monitor *m = g_ptr_array_index(server.mons, i);
         arrange_monitor(m);
     }
-
-    struct seat *seat = input_manager_get_default_seat();
-    update_cursor(seat->cursor);
 }
 
 static void set_layout_ref(struct layout *lt, int n_area)

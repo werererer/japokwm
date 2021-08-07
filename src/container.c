@@ -338,6 +338,8 @@ void focus_container(struct container *con)
         return;
     if (!con->focusable)
         return;
+    if (con->is_xwayland_popup)
+        return;
     if (con->hidden)
         return;
 
@@ -465,15 +467,15 @@ void repush(int pos1, int pos2)
     /* pos1 > pos2 */
     struct monitor *m = selected_monitor;
     struct tagset *tagset = monitor_get_active_tagset(m);
+    GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
+
+    if (pos1 >= tiled_containers->len)
+        return;
+    if (pos2 >= tiled_containers->len)
+        return;
 
     struct container *con = g_ptr_array_index(tagset->list_set->tiled_containers, pos1);
 
-    if (!con)
-        return;
-    if (con->floating)
-        return;
-
-    GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
     g_ptr_array_remove(tiled_containers, con);
     g_ptr_array_insert(tiled_containers, pos2, con);
 
