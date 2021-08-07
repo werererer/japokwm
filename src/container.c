@@ -464,7 +464,6 @@ void lift_container(struct container *con)
 
 void repush(int pos1, int pos2)
 {
-    /* pos1 > pos2 */
     struct monitor *m = selected_monitor;
     struct tagset *tagset = monitor_get_active_tagset(m);
     GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
