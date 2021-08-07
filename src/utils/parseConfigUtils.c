@@ -26,6 +26,7 @@ static const char *config_paths[] = {
 };
 
 static const char *plugin_relative_paths[] = {
+    "autoload",
     "plugins",
 };
 
@@ -33,26 +34,22 @@ static const char *config_file = "init.lua";
 static const char *error_file = "init.err";
 static int error_fd = -1;
 
-static int load_file(lua_State *L, const char *path, const char *file);
+static int load_file(lua_State *L, const char *file);
 
 // returns 0 upon success and 1 upon failure
-static int load_file(lua_State *L, const char *path, const char *file)
+static int load_file(lua_State *L, const char *file)
 {
-    char *config_file = strdup("");
-    join_path(&config_file, path);
-    join_path(&config_file, file);
-
-    if (!file_exists(config_file)) {
+    printf("load file: %s\n", file);
+    if (!file_exists(file)) {
         return 1;
     }
 
-    if (luaL_loadfile(L, config_file)) {
+    if (luaL_loadfile(L, file)) {
         const char *errmsg = luaL_checkstring(L, -1);
         lua_pop(L, 1);
         handle_error(errmsg);
         return 1;
     }
-    free(config_file);
 
     int ret = lua_call_safe(L, 0, 0, 0);
 
@@ -94,14 +91,13 @@ void append_to_lua_path(lua_State *L, const char *path)
 {
     lua_getglobal(L, "package");
     lua_getfield(L, -1, "path");
-    const char * curr_path = luaL_checkstring(L, -1);
+    const char *curr_path = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    char *path_var = malloc(strlen(curr_path) + 1 + strlen(path) + strlen("/?.lua"));
+    char *path_var = malloc(strlen(curr_path) + strlen(path) + 2);
     strcpy(path_var, curr_path);
     strcat(path_var, ";");
     strcat(path_var, path);
-    join_path(&path_var, "/?.lua");
 
     lua_pushstring(L, path_var);
     lua_setfield(L, -2, "path");
@@ -121,34 +117,15 @@ static int compare(const FTSENT **one, const FTSENT **two)
 
 static int load_plugins(lua_State *L)
 {
-    const char *path = plugin_relative_paths[0];
-    char *base_path = get_config_dir("init.lua");
-    join_path(&base_path, path);
-
-    char const *argv[] = { base_path, NULL };
-    FTS* file_system = fts_open((char *const *)argv, FTS_NOCHDIR | FTS_NOSTAT, compare);
-    FTSENT *parent = NULL;
-    while ((parent = fts_read(file_system)) != NULL) {
-        FTSENT *child = fts_children(file_system, 0);
-        if (!child)
-            continue;
-        if (child->fts_info != FTS_F)
-            continue;
-        if (child->fts_level > 2)
-            break;
-
-
-        char *path = strdup(child->fts_path);
-        join_path(&path, child->fts_name);
-        append_to_lua_path(L, path);
-        free(path);
-
-        if (strcmp(child->fts_name, "init.lua") != 0)
-            continue;
-
-        load_file(L, child->fts_path, child->fts_name);
+    for (int i = 0; i < LENGTH(plugin_relative_paths); i++) {
+        const char *path = plugin_relative_paths[i];
+        char *base_path = get_config_dir("init.lua");
+        join_path(&base_path, path);
+        join_path(&base_path, "?");
+        join_path(&base_path, "init.lua");
+        printf("base_path: %s\n", base_path);
+        append_to_lua_path(L, base_path);
     }
-    fts_close(file_system);
     return 1;
 }
 
@@ -193,14 +170,15 @@ static int load_default_config(lua_State *L)
     bool loaded_custom_path = false;
     if (default_id == -1) {
         default_id = 0;
-        // try to load the file given by config_path
-        char *path = strdup(config_path);
-        expand_path(&path);
 
         append_to_lua_path(L, config_path);
 
-        loaded_custom_path = (load_file(L, path, config_file) == EXIT_SUCCESS);
-        free(path);
+        // try to load the file given by config_path
+        char *file_path = strdup(config_path);
+        join_path(&file_path, config_file);
+        expand_path(&file_path);
+        loaded_custom_path = (load_file(L, file_path) == EXIT_SUCCESS);
+        free(file_path);
     }
 
     if (config_path)
@@ -215,12 +193,13 @@ static int load_default_config(lua_State *L)
         if (i < default_id)
             continue;
 
-        char *path = strdup(config_paths[i]);
-        expand_path(&path);
-
         append_to_lua_path(L, config_paths[i]);
 
-        if (load_file(L, path, config_file) == EXIT_FAILURE) {
+        char *path = strdup(config_paths[i]);
+        join_path(&path, config_file);
+        expand_path(&path);
+
+        if (load_file(L, path) == EXIT_FAILURE) {
             success = EXIT_FAILURE;
             free(path);
             continue;
@@ -236,13 +215,13 @@ static int load_default_config(lua_State *L)
 // returns 0 upon success and 1 upon failure
 int load_config(lua_State *L)
 {
+    load_plugins(L);
     int success = 0;
     if (strcmp(server.config_file, "") != 0) {
         printf("load custom config file: %s\n", server.config_file);
-        success = load_file(L, "", server.config_file);
+        success = load_file(L, server.config_file);
     } else {
         success = load_default_config(L);
-        load_plugins(L);
     }
     return success;
 }
@@ -275,13 +254,19 @@ int init_utils(lua_State *L)
         if (i < default_id)
             continue;
 
-        char *path = strdup(config_paths[i]);
-        expand_path(&path);
+        char *dir = strdup(config_paths[i]);
+        join_path(&dir, "?.lua");
+        append_to_lua_path(L, dir);
+        free(dir);
 
-        append_to_lua_path(L, config_paths[i]);
-
-        if (load_file(L, path, tile_file))
+        char *file_path = strdup(config_paths[i]);
+        join_path(&file_path, tile_file);
+        expand_path(&file_path);
+        if (load_file(L, file_path) != 0) {
+            free(file_path);
             continue;
+        }
+        free(file_path);
 
         // when config loaded successfully break;
         success = false;

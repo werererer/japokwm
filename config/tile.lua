@@ -1,3 +1,5 @@
+print("works")
+print("path: ", package.path)
 require "tileutils"
 
 local X<const> = 1
