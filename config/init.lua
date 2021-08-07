@@ -5,7 +5,6 @@ config.set_sloppy_focus(true)
 
 local function on_start()
     -- execute programs or do what ever you want e.g.:
-    print("works")
 end
 
 event.add_listener("on_start", on_start)

@@ -258,6 +258,7 @@ void focus_tagset(struct tagset *tagset)
     struct seat *seat = input_manager_get_default_seat();
     cursor_rebase(seat->cursor);
     focus_under_cursor(seat->cursor, 0);
+    cursor_update_image(seat->cursor);
 }
 
 static void tagset_save_to_workspace(struct tagset *tagset, struct workspace *ws)

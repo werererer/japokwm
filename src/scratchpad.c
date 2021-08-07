@@ -9,6 +9,9 @@ void move_to_scratchpad(struct container *con, int position)
 {
     if (!con)
         return;
+    if (con->on_scratchpad) {
+        remove_container_from_scratchpad(con);
+    }
 
     struct monitor *m = container_get_monitor(con);
     struct tagset *tagset = monitor_get_active_tagset(m);
@@ -40,40 +43,52 @@ void remove_container_from_scratchpad(struct container *con)
     con->on_scratchpad = false;
 }
 
+static void hide_container(struct container *con)
+{
+    struct monitor *m = container_get_monitor(con);
+    struct container *sel = get_focused_container(m);
+
+    if (!sel->on_scratchpad) {
+        focus_container(con);
+        lift_container(con);
+        return;
+    }
+
+    struct workspace *ws = get_workspace(con->client->ws_id);
+    list_set_remove_container(ws->list_set, con);;
+    list_set_remove_container_from_focus_stack(ws->list_set, con);
+
+    list_remove(server.scratchpad, cmp_ptr, con);
+    move_to_scratchpad(con, -1);
+    con->hidden = true;
+    arrange();
+}
+
+static void show_container(struct container *con)
+{
+    struct monitor *m = container_get_monitor(con);
+
+    struct workspace *ws = monitor_get_active_workspace(m);
+    add_container_to_containers(ws->list_set, con, 0);
+    list_set_add_container_to_focus_stack(ws->list_set, con);
+
+    resize(con, get_center_box(m->geom));
+
+    con->hidden = false;
+    focus_container(con);
+    lift_container(con);
+    arrange();
+}
+
 void show_scratchpad()
 {
     if (server.scratchpad->len <= 0)
         return;
 
-    struct monitor *m = selected_monitor;
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    struct container *sel = get_focused_container(m);
     struct container *con = g_ptr_array_index(server.scratchpad, 0);
-
     if (con->hidden) {
-        g_ptr_array_add(tagset->list_set->floating_containers, con);
-        g_ptr_array_insert(tagset->list_set->focus_stack_normal, 0, con);
-        g_ptr_array_insert(m->floating_visual_stack, 0, con);
-
-        resize(con, get_center_box(m->geom));
-
-        con->hidden = false;
-        focus_container(con);
-        lift_container(con);
+        show_container(con);
     } else {
-        if (!sel->on_scratchpad) {
-            focus_container(con);
-            lift_container(con);
-            return;
-        }
-
-        list_remove(tagset->list_set->floating_containers, cmp_ptr, con);
-        list_remove(tagset->list_set->focus_stack_normal, cmp_ptr, con);
-        list_remove(m->floating_visual_stack, cmp_ptr, con);
-
-        list_remove(server.scratchpad, cmp_ptr, con);
-        move_to_scratchpad(con, -1);
-        con->hidden = true;
+        hide_container(con);
     }
-    arrange();
 }

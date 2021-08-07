@@ -111,7 +111,6 @@ void handle_xwayland_ready(struct wl_listener *listener, void *data)
 
 void unmap_notifyx11(struct wl_listener *listener, void *data)
 {
-    printf("unmap_notify\n");
     /* Called when the surface is unmapped, and should no longer be shown. */
     struct client *c = wl_container_of(listener, c, unmap);
 
@@ -126,7 +125,6 @@ void unmap_notifyx11(struct wl_listener *listener, void *data)
     arrange();
     struct monitor *m = selected_monitor;
     focus_most_recent_container(m->tagset);
-    printf("unmap_notify end\n");
 
     struct seat *seat = input_manager_get_default_seat();
     wlr_seat_pointer_clear_focus(seat->wlr_seat);

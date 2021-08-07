@@ -72,6 +72,7 @@ static void handle_rebase(struct seat *seat, uint32_t time_msec)
         cursor_update_image(cursor);
         wlr_seat_pointer_notify_clear_focus(seat->wlr_seat);
     }
+    cursor_update_image(cursor);
 }
 
 static uint32_t get_current_time_msec(void) {
