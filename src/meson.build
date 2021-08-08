@@ -51,7 +51,6 @@ srcs = files(
     'scratchpad.c',
     'server.c',
     'tagset.c',
-    'tile/tile.c',
     'tile/tileUtils.c',
     'translationLayer.c',
     'utils/coreUtils.c',

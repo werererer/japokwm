@@ -14,7 +14,6 @@
 #include "lib/info/lib_info.h"
 #include "lib/event_handler/local_event_handler.h"
 #include "lib/monitor/lib_monitor.h"
-#include "tile/tile.h"
 
 static const struct luaL_Reg action[] =
 {

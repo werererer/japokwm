@@ -4,13 +4,18 @@
 #include <stdlib.h>
 #include <glib.h>
 
+/* a 2d array type that means that the lists have to be filled with other
+ * GPtrArray variables
+ * */
+typedef GPtrArray GPtrArray2D;
+
 struct list_set {
     /* list of all one dimensonal lists in list_set */
-    GPtrArray *all_lists;
+    GPtrArray2D *all_lists;
     /* consists out of the lists of tiled_containers, hidden_containers and
      * floating_containers */
-    GPtrArray *container_lists;
-    GPtrArray *visible_container_lists;
+    GPtrArray2D *container_lists;
+    GPtrArray2D *visible_container_lists;
 
     GPtrArray *floating_containers;
     GPtrArray *tiled_containers;
@@ -18,10 +23,9 @@ struct list_set {
 
     GPtrArray *independent_containers;
 
-    /* 2D lists */
-    GPtrArray *focus_stack_lists_with_layer_shell;
-    GPtrArray *focus_stack_visible_lists;
-    GPtrArray *focus_stack_lists;
+    GPtrArray2D *focus_stack_lists_with_layer_shell;
+    GPtrArray2D *focus_stack_visible_lists;
+    GPtrArray2D *focus_stack_lists;
 
     GPtrArray *focus_stack_layer_background;
     GPtrArray *focus_stack_layer_bottom;

@@ -8,7 +8,6 @@
 #include "container.h"
 #include "popup.h"
 #include "server.h"
-#include "tile/tile.h"
 #include "tile/tileUtils.h"
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"

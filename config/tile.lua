@@ -251,7 +251,6 @@ local function is_invalid(con)
 end
 
 local function apply_resize_function(lt_data_el, o_lt_data_el, i, n, directions)
-    print("apply resize function")
     for x = 1,#directions do
         local dir = directions[x]
 
@@ -298,7 +297,6 @@ local function get_layout_element(layout_data_element_id, resize_data)
         local resize_data_element = resize_data[j]
         for h=1, #resize_data[j] do
             if layout_data_element_id == resize_data_element[h] then
-                print("j", j)
                 return j
             end
         end
@@ -308,11 +306,8 @@ end
 
 function Resize_main_all(layout_data, o_layout_data, resize_data, n, direction)
     local layout_data_element_id = get_layout_data_element_id(o_layout_data)
-    print("layout_data_element_id", layout_data_element_id)
     local layout_id = get_layout_element(layout_data_element_id, resize_data)
-    print("layout_id", layout_id)
     if layout_id == 0 then
-        print("is zero")
         return layout_data
     end
 
@@ -320,7 +315,6 @@ function Resize_main_all(layout_data, o_layout_data, resize_data, n, direction)
     for i=1,#resize_element do
         local id = resize_element[i]
         if id <= #o_layout_data then
-            print("id: %i", id)
             -- local id = 5
             layout_data[id] = resize_all(layout_data[id], o_layout_data[id], 1, n, direction)
         end

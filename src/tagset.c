@@ -60,7 +60,7 @@ static void tagset_unload_workspaces(struct tagset *tagset)
         struct workspace *ws = get_workspace(i);
         unsubscribe_list_set(tagset->list_set, ws->list_set);
         if (ws->tagset == tagset) {
-            ws->tagset = NULL;
+            /* ws->tagset = NULL; */
         }
     }
     tagset->loaded = false;
@@ -151,8 +151,6 @@ static void unfocus_action(struct tagset *old_tagset, struct monitor *new_monito
 
     struct seat *seat = input_manager_get_default_seat();
     cursor_constrain(seat->cursor, NULL);
-    /* wlr_seat_pointer_notify_clear_focus(seat->wlr_seat); */
-    /* wlr_seat_keyboard_notify_clear_focus(seat->wlr_seat); */
 
     move_old_workspaces_back(&old_tagset->workspaces, new_bits);
     reset_old_workspaces(old_tagset, new_monitor);
@@ -160,18 +158,7 @@ static void unfocus_action(struct tagset *old_tagset, struct monitor *new_monito
 
 static void focus_action(struct tagset *tagset)
 {
-    struct container *con = get_focused_container(tagset->m);
-
-    if (!con)
-        return;
-
-    /* struct seat *seat = input_manager_get_default_seat(); */
-/*     struct wlr_pointer_constraint_v1 *constraint = */
-/*         wlr_pointer_constraints_v1_constraint_for_surface( */
-/*                 server.pointer_constraints, */
-/*                 get_wlrsurface(con->client), */ 
-/*                 seat->wlr_seat); */
-/*     cursor_constrain(seat->cursor, constraint); */
+    /* NOOP */
 }
 
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet workspaces)
