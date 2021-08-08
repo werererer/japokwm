@@ -9,6 +9,9 @@
  * */
 typedef GPtrArray GPtrArray2D;
 
+/*
+ * list_set is used by tagsets and workspaces to hold all containers on them
+ * */
 struct list_set {
     /* list of all one dimensonal lists in list_set */
     GPtrArray2D *all_lists;

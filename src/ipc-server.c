@@ -395,7 +395,6 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
                 line = strtok(NULL, "\n");
             }
 
-            
             struct cmd_results *results = execute_command(buf, NULL, NULL);
             /* transaction_commit_dirty(); */
             char *json = cmd_results_to_json(results);

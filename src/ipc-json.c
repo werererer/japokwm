@@ -117,12 +117,9 @@ json_object *ipc_json_describe_tagsets()
 
         struct tagset *tagset = get_tagset_from_workspace_id(i);
         struct monitor *m = ws->m;
-        /* printf("ws->m: %p\n", ws->m); */
         if (tagset) {
-            /* printf("tagset->m: %p\n", tagset->m); */
             m = tagset->m;
         }
-        /* printf("m: %p\n", m); */
 
         if (!m)
             continue;
