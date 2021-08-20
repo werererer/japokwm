@@ -9,6 +9,25 @@
 #include "layout.h"
 #include "utils/coreUtils.h"
 
+/* A tagset consists of a list_set, a struct to hold all relevant containers,
+ * information on which monitor it belongs to and the list of workspaces it
+ * currently shows.
+ * If a tagset is created it will be added to the server's tagsets array.
+ * If a tagset is destroyed it will be be removed from the server's tagsets
+ * array.
+ * If a tagset is loaded list_set represents the containers loaded and events
+ * such as destroy container can alter this list.
+ * If a tagset is not loaded the tagset wont change it's state without doing it
+ * explicitly.
+ * A tagset will be unloaded when destroyed.
+ * loading is the action of populating the list_set.
+ * unloading is the action of cleaning the list_set.
+ * OVERLAPPING TAGSETS:
+ * When a tagset is loaded it will be checked if another loaded workspace has
+ * the same selected_ws_id. If so then it will be checked if they have the same
+ * monitor. If that is not the case the new tagset
+ * unload the old tagset and load the new.
+ * */
 struct tagset {
     struct monitor *m;
     int selected_ws_id;

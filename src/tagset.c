@@ -181,14 +181,12 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet works
 
 void destroy_tagset(struct tagset *tagset)
 {
-    printf("destroy_tagset\n");
     if (!tagset)
         return;
     tagset_unload_workspaces(tagset);
     g_ptr_array_remove(server.tagsets, tagset);
     destroy_list_set(tagset->list_set);
     free(tagset);
-    printf("destroy_tagset end\n");
 }
 
 void focus_most_recent_container(struct tagset *tagset)
