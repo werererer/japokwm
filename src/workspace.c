@@ -15,11 +15,9 @@
 
 static void update_workspaces_id(GPtrArray *workspaces)
 {
-    int id = 0;
-    for (int i = 0; i < workspaces->len; i++) {
-        struct workspace *ws = g_ptr_array_index(workspaces, i);
+    for (int id = 0; id < workspaces->len; id++) {
+        struct workspace *ws = g_ptr_array_index(workspaces, id);
         ws->id = id;
-        id++;
     }
 }
 
