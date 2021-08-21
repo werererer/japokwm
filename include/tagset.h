@@ -22,11 +22,19 @@
  * A tagset will be unloaded when destroyed.
  * loading is the action of populating the list_set.
  * unloading is the action of cleaning the list_set.
- * OVERLAPPING TAGSETS:
- * When a tagset is loaded it will be checked if another loaded workspace has
- * the same selected_ws_id. If so then it will be checked if they have the same
- * monitor. If that is not the case the new tagset
- * unload the old tagset and load the new.
+ * OVERLAPPING WORKSPACES:
+ * If another workspace is added to the current tagset it is checked if
+ * other loaded tagsets, which are on other monitors, contain the same workspace.
+ * If the workspace is not attached to the other monitor then it is removed from
+ * this tagset. Otherwise the workspace will be temporarily pulled over to the
+ * current tagset. As soon as the workspace is unselected it moves back to its
+ * prior monitor.
+ * LOADING TAGSETS:
+ * select the monitor of the tagset and load it.
+ * SELECTING WORKSPACE:
+ * create a new tagset with the given workspace and load it.
+ * CREATING TAGSET:
+ * All 
  * */
 struct tagset {
     struct monitor *m;
