@@ -45,8 +45,7 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     push_layout(ws, lt);
 
     ws->list_set = create_list_set();
-    ws->change_affected_list_sets = g_ptr_array_new();
-    g_ptr_array_add(ws->change_affected_list_sets, ws->list_set);
+    ws->subscribed_tagsets = g_ptr_array_new();
     return ws;
 }
 
@@ -95,7 +94,7 @@ void update_workspaces(GPtrArray *workspaces, GPtrArray *tag_names)
 
 void destroy_workspace(struct workspace *ws)
 {
-    g_ptr_array_free(ws->change_affected_list_sets, TRUE);
+    g_ptr_array_free(ws->subscribed_tagsets, TRUE);
     for (int i = 0; i < length_of_composed_list(ws->list_set->container_lists); i++) {
         struct container *con = get_in_composed_list(ws->list_set->container_lists, i);
         struct client *c = con->client;

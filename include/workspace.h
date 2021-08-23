@@ -25,8 +25,7 @@ struct workspace {
 
     struct list_set *list_set;
 
-    /* this list must include a pointer to its parent */
-    GPtrArray *change_affected_list_sets;
+    GPtrArray *subscribed_tagsets;
 };
 
 GPtrArray *create_workspaces(GPtrArray *tag_names);

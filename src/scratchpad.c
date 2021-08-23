@@ -55,8 +55,8 @@ static void hide_container(struct container *con)
     }
 
     struct workspace *ws = get_workspace(con->client->ws_id);
-    list_set_remove_container(ws, con);
-    list_set_remove_container_from_focus_stack(ws, con);
+    workspace_remove_container(ws, con);
+    workspace_remove_container_from_focus_stack(ws, con);
 
     list_remove(server.scratchpad, cmp_ptr, con);
     move_to_scratchpad(con, -1);
@@ -70,7 +70,7 @@ static void show_container(struct container *con)
 
     struct workspace *ws = monitor_get_active_workspace(m);
     add_container_to_containers(ws, con, 0);
-    list_set_add_container_to_focus_stack(ws, con);
+    workspace_add_container_to_focus_stack(ws, con);
 
     resize(con, get_center_box(m->geom));
 

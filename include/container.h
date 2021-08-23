@@ -9,6 +9,19 @@
 #include "options.h"
 #include "monitor.h"
 
+// the variable list_set will describe the listset the action will be done on
+#define DO_ACTION(action) \
+    do {\
+        struct list_set *list_set = ws->list_set;\
+        action\
+        \
+        for (int i = 0; i < ws->subscribed_tagsets->len; i++) {\
+            struct tagset *tagset = g_ptr_array_index(ws->subscribed_tagsets, i);\
+            list_set = tagset->list_set;\
+            action\
+        }\
+    } while (0)
+
 struct container {
     /* layout-relative, includes border */
     struct wlr_box geom;
@@ -70,12 +83,12 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, 
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
 
 void add_container_to_containers(struct workspace *ws, struct container *con, int i);
-void list_set_add_container_to_focus_stack(struct workspace *ws, struct container *con);
+void workspace_add_container_to_focus_stack(struct workspace *ws, struct container *con);
 void add_container_to_stack(struct container *con);
 
-void list_set_remove_container(struct workspace *ws, struct container *con);
-void list_set_remove_container_from_focus_stack(struct workspace *ws, struct container *con);
-void list_set_remove_independent_container(struct workspace *ws, struct container *con);
+void workspace_remove_container(struct workspace *ws, struct container *con);
+void workspace_remove_container_from_focus_stack(struct workspace *ws, struct container *con);
+void workspace_remove_independent_container(struct workspace *ws, struct container *con);
 
 void set_container_workspace(struct container *con, struct workspace *ws);
 void move_container_to_workspace(struct container *con, struct workspace *ws);
