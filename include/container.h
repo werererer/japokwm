@@ -69,14 +69,6 @@ void set_container_monitor(struct container *con, struct monitor *m);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
 
-void workspace_add_container_to_containers(struct workspace *ws, struct container *con, int i);
-void workspace_add_container_to_focus_stack(struct workspace *ws, struct container *con);
-void add_container_to_stack(struct container *con);
-
-void workspace_remove_container(struct workspace *ws, struct container *con);
-void workspace_remove_container_from_focus_stack(struct workspace *ws, struct container *con);
-void workspace_remove_independent_container(struct workspace *ws, struct container *con);
-
 void set_container_workspace(struct container *con, struct workspace *ws);
 void move_container_to_workspace(struct container *con, struct workspace *ws);
 

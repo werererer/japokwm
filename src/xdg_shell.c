@@ -10,6 +10,7 @@
 #include "utils/coreUtils.h"
 #include "container.h"
 #include "tile/tileUtils.h"
+#include "workspace.h"
 
 static void destroyxdeco(struct wl_listener *listener, void *data);
 static void getxdecomode(struct wl_listener *listener, void *data);

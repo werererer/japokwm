@@ -6,6 +6,7 @@
 #include "monitor.h"
 #include "server.h"
 #include "tile/tileUtils.h"
+#include "workspace.h"
 
 int lib_get_this_container_count(lua_State *L)
 {

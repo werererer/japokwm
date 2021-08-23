@@ -5,16 +5,17 @@
 #include <stdlib.h>
 #include "layout.h"
 #include "list_set.h"
+#include "container.h"
 
 /* when an action should change the workspace and the tagsets associated with it
  * you should use this macro. */
-#define DO_ACTION(action) \
+#define DO_ACTION(workspace, action) \
     do {\
-        struct list_set *list_set = ws->list_set;\
+        struct list_set *list_set = workspace->list_set;\
         action\
         \
-        for (int i = 0; i < ws->subscribed_tagsets->len; i++) {\
-            struct tagset *tagset = g_ptr_array_index(ws->subscribed_tagsets, i);\
+        for (int i = 0; i < workspace->subscribed_tagsets->len; i++) {\
+            struct tagset *tagset = g_ptr_array_index(workspace->subscribed_tagsets, i);\
             list_set = tagset->list_set;\
             action\
         }\
@@ -70,5 +71,15 @@ void reset_loaded_layout(struct workspace *ws);
 void remove_loaded_layouts(GPtrArray *workspaces);
 void workspace_assign_monitor(struct workspace *ws, struct monitor *m);
 void rename_workspace(struct workspace *ws, const char *name);
+
+void list_set_add_container_to_focus_stack(struct list_set *list_set, struct container *con);
+void workspace_add_container_to_containers(struct workspace *ws, struct container *con, int i);
+void workspace_add_container_to_focus_stack(struct workspace *ws, struct container *con);
+void add_container_to_stack(struct container *con);
+
+void workspace_remove_container(struct workspace *ws, struct container *con);
+void workspace_remove_container_from_focus_stack(struct workspace *ws, struct container *con);
+void workspace_remove_independent_container(struct workspace *ws, struct container *con);
+
 
 #endif /* WORKSPACE_H */

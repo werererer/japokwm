@@ -4,6 +4,7 @@
 #include "monitor.h"
 #include "server.h"
 #include "utils/coreUtils.h"
+#include "workspace.h"
 
 // TODO refactor
 int lib_set_layout(lua_State *L)

@@ -1,14 +1,16 @@
 #include "cursor.h"
 
+#include <wlr/xcursor.h>
+#include <wlr/types/wlr_relative_pointer_v1.h>
+#include <wlr/util/region.h>
+
 #include "container.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "popup.h"
 #include "keybinding.h"
 #include "seat.h"
-#include <wlr/xcursor.h>
-#include <wlr/types/wlr_relative_pointer_v1.h>
-#include <wlr/util/region.h>
+#include "workspace.h"
 
 static struct container *grabc = NULL;
 static int offsetx, offsety;

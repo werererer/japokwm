@@ -3,6 +3,7 @@
 #include "monitor.h"
 #include "utils/gapUtils.h"
 #include "utils/coreUtils.h"
+#include "workspace.h"
 
 int local_set_arrange_by_focus(lua_State *L)
 {

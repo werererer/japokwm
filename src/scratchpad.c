@@ -3,6 +3,7 @@
 #include "monitor.h"
 #include "server.h"
 #include "tile/tileUtils.h"
+#include "workspace.h"
 
 // TODO rewrite this function so it is easier to read
 void move_to_scratchpad(struct container *con, int position)

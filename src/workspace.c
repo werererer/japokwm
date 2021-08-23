@@ -272,6 +272,114 @@ void rename_workspace(struct workspace *ws, const char *name)
     ws->name = strdup(name);
 }
 
+void workspace_add_container_to_containers(struct workspace *ws, struct container *con, int i)
+{
+    assert(con != NULL);
+
+    DO_ACTION(ws,
+        if (con->floating) {
+            g_ptr_array_insert(list_set->floating_containers, i, con);
+            continue;
+        }
+        if (con->hidden) {
+            g_ptr_array_insert(list_set->hidden_containers, i, con);
+            continue;
+        }
+        g_ptr_array_insert(list_set->tiled_containers, i, con);
+    );
+}
+
+void list_set_add_container_to_focus_stack(struct list_set *list_set, struct container *con)
+{
+    if (con->client->type == LAYER_SHELL) {
+        switch (con->client->surface.layer->current.layer) {
+            case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
+                g_ptr_array_insert(list_set->focus_stack_layer_background, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
+                g_ptr_array_insert(list_set->focus_stack_layer_bottom, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
+                g_ptr_array_insert(list_set->focus_stack_layer_top, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
+                g_ptr_array_insert(list_set->focus_stack_layer_overlay, 0, con);
+                break;
+        }
+        return;
+    }
+    if (con->on_top) {
+        g_ptr_array_insert(list_set->focus_stack_on_top, 0, con);
+        return;
+    }
+    if (!con->focusable) {
+        g_ptr_array_insert(list_set->focus_stack_not_focusable, 0, con);
+        return;
+    }
+
+    g_ptr_array_insert(list_set->focus_stack_normal, 0, con);
+}
+
+void workspace_add_container_to_focus_stack(struct workspace *ws, struct container *con)
+{
+    DO_ACTION(ws, 
+            list_set_add_container_to_focus_stack(list_set, con);
+            );
+}
+
+void add_container_to_stack(struct container *con)
+{
+    if (!con)
+        return;
+
+    struct monitor *m = selected_monitor;
+    if (con->client->type == LAYER_SHELL) {
+        switch (con->client->surface.layer->current.layer) {
+            case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
+                g_ptr_array_insert(m->layer_visual_stack_background, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
+                g_ptr_array_insert(m->layer_visual_stack_bottom, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
+                g_ptr_array_insert(m->layer_visual_stack_top, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
+                g_ptr_array_insert(m->layer_visual_stack_overlay, 0, con);
+                break;
+        }
+        return;
+    }
+
+    if (con->floating) {
+        g_ptr_array_insert(m->floating_visual_stack, 0, con);
+        return;
+    }
+
+    g_ptr_array_insert(m->tiled_visual_stack, 0, con);
+}
+
+void workspace_remove_container(struct workspace *ws, struct container *con)
+{
+    DO_ACTION(ws,
+            remove_in_composed_list(list_set->container_lists, cmp_ptr, con);
+            );
+}
+
+void workspace_remove_container_from_focus_stack(struct workspace *ws, struct container *con)
+{
+    DO_ACTION(ws,
+            remove_in_composed_list(list_set->focus_stack_lists, cmp_ptr, con);
+            );
+}
+
+void workspace_remove_independent_container(struct workspace *ws, struct container *con)
+{
+    DO_ACTION(ws,
+            g_ptr_array_remove(list_set->independent_containers, con);
+            );
+}
+
 // TODO refactor this function
 void layout_set_set_layout(lua_State *L)
 {

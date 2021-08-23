@@ -7,6 +7,7 @@
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "seat.h"
+#include "workspace.h"
 
 static const char *atom_map[ATOM_LAST] = {
     "_NET_WM_WINDOW_TYPE_NORMAL",
