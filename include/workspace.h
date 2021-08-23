@@ -6,6 +6,20 @@
 #include "layout.h"
 #include "list_set.h"
 
+/* when an action should change the workspace and the tagsets associated with it
+ * you should use this macro. */
+#define DO_ACTION(action) \
+    do {\
+        struct list_set *list_set = ws->list_set;\
+        action\
+        \
+        for (int i = 0; i < ws->subscribed_tagsets->len; i++) {\
+            struct tagset *tagset = g_ptr_array_index(ws->subscribed_tagsets, i);\
+            list_set = tagset->list_set;\
+            action\
+        }\
+    } while (0)
+
 /* A tag is simply a workspace that can be focused (like a normal workspace)
  * and can selected: which just means that all clients on the selected tags
  * will be combined to be shown on the focused tag

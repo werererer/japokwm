@@ -9,19 +9,6 @@
 #include "options.h"
 #include "monitor.h"
 
-// the variable list_set will describe the listset the action will be done on
-#define DO_ACTION(action) \
-    do {\
-        struct list_set *list_set = ws->list_set;\
-        action\
-        \
-        for (int i = 0; i < ws->subscribed_tagsets->len; i++) {\
-            struct tagset *tagset = g_ptr_array_index(ws->subscribed_tagsets, i);\
-            list_set = tagset->list_set;\
-            action\
-        }\
-    } while (0)
-
 struct container {
     /* layout-relative, includes border */
     struct wlr_box geom;
@@ -82,7 +69,7 @@ void set_container_monitor(struct container *con, struct monitor *m);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
 
-void add_container_to_containers(struct workspace *ws, struct container *con, int i);
+void workspace_add_container_to_containers(struct workspace *ws, struct container *con, int i);
 void workspace_add_container_to_focus_stack(struct workspace *ws, struct container *con);
 void add_container_to_stack(struct container *con);
 

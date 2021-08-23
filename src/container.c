@@ -20,6 +20,8 @@
 
 static void add_container_to_workspace(struct container *con, struct workspace *ws);
 
+static void list_set_add_container_to_focus_stack(struct list_set *list_set, struct container *con);
+
 struct container *create_container(struct client *c, struct monitor *m, bool has_border)
 {
     struct container *con = calloc(1, sizeof(struct container));
@@ -204,7 +206,7 @@ static void add_container_to_workspace(struct container *con, struct workspace *
             break;
         case XDG_SHELL:
         case X11_MANAGED:
-            add_container_to_containers(ws, con, 0);
+            workspace_add_container_to_containers(ws, con, 0);
             add_container_to_stack(con);
             break;
     }
@@ -351,10 +353,9 @@ void focus_container(struct container *con)
 
     struct container *sel = get_focused_container(m);
 
-    struct workspace *ws = monitor_get_active_workspace(m);
     /* Put the new client atop the focus stack */
-    workspace_remove_container_from_focus_stack(ws, con);
-    workspace_add_container_to_focus_stack(ws, con);
+    remove_in_composed_list(tagset->list_set->focus_stack_lists, cmp_ptr, con);
+    list_set_add_container_to_focus_stack(tagset->list_set, con);
 
     struct container *new_sel = get_focused_container(m);
 
@@ -609,7 +610,7 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
     container_damage(con, true);
 }
 
-void add_container_to_containers(struct workspace *ws, struct container *con, int i)
+void workspace_add_container_to_containers(struct workspace *ws, struct container *con, int i)
 {
     assert(con != NULL);
 
@@ -626,36 +627,41 @@ void add_container_to_containers(struct workspace *ws, struct container *con, in
     );
 }
 
+static void list_set_add_container_to_focus_stack(struct list_set *list_set, struct container *con)
+{
+    if (con->client->type == LAYER_SHELL) {
+        switch (con->client->surface.layer->current.layer) {
+            case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
+                g_ptr_array_insert(list_set->focus_stack_layer_background, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
+                g_ptr_array_insert(list_set->focus_stack_layer_bottom, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
+                g_ptr_array_insert(list_set->focus_stack_layer_top, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
+                g_ptr_array_insert(list_set->focus_stack_layer_overlay, 0, con);
+                break;
+        }
+        return;
+    }
+    if (con->on_top) {
+        g_ptr_array_insert(list_set->focus_stack_on_top, 0, con);
+        return;
+    }
+    if (!con->focusable) {
+        g_ptr_array_insert(list_set->focus_stack_not_focusable, 0, con);
+        return;
+    }
+
+    g_ptr_array_insert(list_set->focus_stack_normal, 0, con);
+}
+
 void workspace_add_container_to_focus_stack(struct workspace *ws, struct container *con)
 {
     DO_ACTION(
-        if (con->client->type == LAYER_SHELL) {
-            switch (con->client->surface.layer->current.layer) {
-                case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
-                    g_ptr_array_insert(list_set->focus_stack_layer_background, 0, con);
-                    break;
-                case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
-                    g_ptr_array_insert(list_set->focus_stack_layer_bottom, 0, con);
-                    break;
-                case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
-                    g_ptr_array_insert(list_set->focus_stack_layer_top, 0, con);
-                    break;
-                case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
-                    g_ptr_array_insert(list_set->focus_stack_layer_overlay, 0, con);
-                    break;
-            }
-            return;
-        }
-        if (con->on_top) {
-            g_ptr_array_insert(list_set->focus_stack_on_top, 0, con);
-            return;
-        }
-        if (!con->focusable) {
-            g_ptr_array_insert(list_set->focus_stack_not_focusable, 0, con);
-            return;
-        }
-
-        g_ptr_array_insert(list_set->focus_stack_normal, 0, con);
+        list_set_add_container_to_focus_stack(list_set, con);
     );
 }
 
@@ -705,7 +711,7 @@ void set_container_workspace(struct container *con, struct workspace *ws)
     struct workspace *old_ws = get_workspace(con->client->ws_id);
 
     workspace_remove_container(old_ws, con);
-    add_container_to_containers(ws, con, 0);
+    workspace_add_container_to_containers(ws, con, 0);
 
     workspace_remove_container_from_focus_stack(old_ws, con);
     workspace_add_container_to_focus_stack(ws, con);

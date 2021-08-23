@@ -69,7 +69,7 @@ static void show_container(struct container *con)
     struct monitor *m = container_get_monitor(con);
 
     struct workspace *ws = monitor_get_active_workspace(m);
-    add_container_to_containers(ws, con, 0);
+    workspace_add_container_to_containers(ws, con, 0);
     workspace_add_container_to_focus_stack(ws, con);
 
     resize(con, get_center_box(m->geom));
