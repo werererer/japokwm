@@ -9,8 +9,6 @@
 struct list_set *create_list_set()
 {
     struct list_set *list_set = calloc(1, sizeof(struct list_set));
-    list_set->change_affected_list_sets = g_ptr_array_new();
-    g_ptr_array_add(list_set->change_affected_list_sets, list_set);
 
     list_set->container_lists = g_ptr_array_new();
     list_set->visible_container_lists = g_ptr_array_new();
@@ -76,7 +74,6 @@ struct list_set *create_list_set()
 
 void destroy_list_set(struct list_set *list_set)
 {
-    g_ptr_array_free(list_set->change_affected_list_sets, TRUE);
     g_ptr_array_free(list_set->container_lists, TRUE);
     g_ptr_array_free(list_set->visible_container_lists, TRUE);
     g_ptr_array_free(list_set->independent_containers, TRUE);
@@ -113,15 +110,4 @@ void clear_list_set(struct list_set *list_set)
         GPtrArray *dest_list = g_ptr_array_index(list_set->all_lists, i);
         wlr_list_clear(dest_list, NULL);
     }
-}
-
-void subscribe_list_set(struct list_set *dest, struct list_set *src)
-{
-    g_ptr_array_add(src->change_affected_list_sets, dest);
-    append_list_set(dest, src);
-}
-
-void unsubscribe_list_set(struct list_set *dest, struct list_set *src)
-{
-    g_ptr_array_remove(src->change_affected_list_sets, dest);
 }

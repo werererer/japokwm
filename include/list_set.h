@@ -38,9 +38,6 @@ struct list_set {
     GPtrArray *focus_stack_normal;
     GPtrArray *focus_stack_hidden;
     GPtrArray *focus_stack_not_focusable;
-
-    /* this list must include a pointer to its parent */
-    GPtrArray *change_affected_list_sets;
 };
 
 struct list_set *create_list_set();
@@ -48,7 +45,5 @@ void destroy_list_set(struct list_set *list_set);
 
 void append_list_set(struct list_set *dest, struct list_set *src);
 void clear_list_set(struct list_set *list_set);
-void subscribe_list_set(struct list_set *dest, struct list_set *src);
-void unsubscribe_list_set(struct list_set *dest, struct list_set *src);
 
 #endif /* LIST_SET_H */
