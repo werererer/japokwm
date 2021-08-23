@@ -39,7 +39,7 @@
 struct tagset {
     struct monitor *m;
     int selected_ws_id;
-    BitSet workspaces;
+    BitSet *workspaces;
 
     /* number of all windows in layout even if they are invisible). Note that
      * floating windows don't belong to the layout and are thereby not counted */
@@ -49,15 +49,15 @@ struct tagset {
     bool loaded;
 };
 
-struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet workspaces);
+struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *workspaces);
 void destroy_tagset(struct tagset *tagset);
 
 void focus_most_recent_container(struct tagset *tagset);
 void focus_tagset(struct tagset *tagset);
-void tagset_set_tags(struct tagset *tagset, BitSet bitset);
+void tagset_set_tags(struct tagset *tagset, BitSet *bitset);
 void tagset_focus_workspace(int ws_id);
-void tagset_toggle_add(struct tagset *tagset, BitSet bitset);
-void tagset_focus_tags(int ws_id, struct BitSet bitset);
+void tagset_toggle_add(struct tagset *tagset, BitSet *bitset);
+void tagset_focus_tags(int ws_id, struct BitSet *bitset);
 
 struct tagset *get_tagset_from_active_workspace_id(int ws_id);
 struct tagset *get_tagset_from_workspace_id(int ws_id);

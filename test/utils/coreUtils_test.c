@@ -1,15 +1,15 @@
-#include <check.h>
+#include <glib.h>
 #include <stdlib.h>
 
 #include "utils/coreUtils.h"
 
-START_TEST(dir_exists_test)
+void dir_exists_test()
 {
-    ck_assert_int_eq(dir_exists("/"), true);
-    ck_assert_int_eq(dir_exists(""), false);
-} END_TEST
+    g_assert_cmpint(dir_exists("/"), ==, true);
+    g_assert_cmpint(dir_exists(""), ==, false);
+}
 
-START_TEST(get_on_composed_list_test)
+void get_on_composed_list_test()
 {
     GPtrArray *lists;
 
@@ -39,18 +39,18 @@ START_TEST(get_on_composed_list_test)
     g_ptr_array_add(list3, "7");
     g_ptr_array_add(list3, "8");
 
-    ck_assert_str_eq(get_in_composed_list(lists, 0), "0");
-    ck_assert_str_eq(get_in_composed_list(lists, 1), "1");
-    ck_assert_str_eq(get_in_composed_list(lists, 2), "2");
-    ck_assert_str_eq(get_in_composed_list(lists, 3), "3");
-    ck_assert_str_eq(get_in_composed_list(lists, 4), "4");
-    ck_assert_str_eq(get_in_composed_list(lists, 5), "5");
-    ck_assert_str_eq(get_in_composed_list(lists, 6), "6");
-    ck_assert_str_eq(get_in_composed_list(lists, 7), "7");
-    ck_assert_str_eq(get_in_composed_list(lists, 8), "8");
-} END_TEST
+    g_assert_cmpstr(get_in_composed_list(lists, 0), ==, "0");
+    g_assert_cmpstr(get_in_composed_list(lists, 1), ==, "1");
+    g_assert_cmpstr(get_in_composed_list(lists, 2), ==, "2");
+    g_assert_cmpstr(get_in_composed_list(lists, 3), ==, "3");
+    g_assert_cmpstr(get_in_composed_list(lists, 4), ==, "4");
+    g_assert_cmpstr(get_in_composed_list(lists, 5), ==, "5");
+    g_assert_cmpstr(get_in_composed_list(lists, 6), ==, "6");
+    g_assert_cmpstr(get_in_composed_list(lists, 7), ==, "7");
+    g_assert_cmpstr(get_in_composed_list(lists, 8), ==, "8");
+}
 
-START_TEST(remove_from_composed_list_test)
+void remove_from_composed_list_test()
 {
     GPtrArray *lists;
 
@@ -82,37 +82,37 @@ START_TEST(remove_from_composed_list_test)
     g_ptr_array_add(list3, "9");
 
     delete_from_composed_list(lists, 0);
-    ck_assert_str_eq(get_in_composed_list(lists, 0), "1");
-    ck_assert_str_eq(get_in_composed_list(lists, 1), "2");
+    g_assert_cmpstr(get_in_composed_list(lists, 0), ==, "1");
+    g_assert_cmpstr(get_in_composed_list(lists, 1), ==, "2");
     g_ptr_array_insert(list1, 0, "0");
 
     delete_from_composed_list(lists, 1);
-    ck_assert_str_eq(get_in_composed_list(lists, 0), "0");
-    ck_assert_str_eq(get_in_composed_list(lists, 1), "2");
+    g_assert_cmpstr(get_in_composed_list(lists, 0), ==, "0");
+    g_assert_cmpstr(get_in_composed_list(lists, 1), ==, "2");
     g_ptr_array_insert(list1, 1, "1");
 
     delete_from_composed_list(lists, 2);
-    ck_assert_str_eq(get_in_composed_list(lists, 1), "1");
-    ck_assert_str_eq(get_in_composed_list(lists, 2), "3");
+    g_assert_cmpstr(get_in_composed_list(lists, 1), ==, "1");
+    g_assert_cmpstr(get_in_composed_list(lists, 2), ==, "3");
     g_ptr_array_insert(list2, 0, "2");
 
     delete_from_composed_list(lists, 3);
-    ck_assert_str_eq(get_in_composed_list(lists, 2), "2");
-    ck_assert_str_eq(get_in_composed_list(lists, 3), "4");
+    g_assert_cmpstr(get_in_composed_list(lists, 2), ==, "2");
+    g_assert_cmpstr(get_in_composed_list(lists, 3), ==, "4");
     g_ptr_array_insert(list2, 1, "3");
 
     delete_from_composed_list(lists, 7);
-    ck_assert_str_eq(get_in_composed_list(lists, 6), "6");
-    ck_assert_str_eq(get_in_composed_list(lists, 7), "8");
+    g_assert_cmpstr(get_in_composed_list(lists, 6), ==, "6");
+    g_assert_cmpstr(get_in_composed_list(lists, 7), ==, "8");
     g_ptr_array_insert(list3, 1, "7");
 
     delete_from_composed_list(lists, 8);
-    ck_assert_str_eq(get_in_composed_list(lists, 7), "7");
-    ck_assert_str_eq(get_in_composed_list(lists, 8), "9");
+    g_assert_cmpstr(get_in_composed_list(lists, 7), ==, "7");
+    g_assert_cmpstr(get_in_composed_list(lists, 8), ==, "9");
     g_ptr_array_insert(list3, 2, "8");
-} END_TEST
+}
 
-START_TEST(wlr_list_remove_in_composed_list_test)
+void wlr_list_remove_in_composed_list_test()
 {
     GPtrArray *lists;
 
@@ -143,10 +143,10 @@ START_TEST(wlr_list_remove_in_composed_list_test)
     g_ptr_array_add(list3, "8");
 
     remove_in_composed_list(lists, (int (*)(const void *, const void *))strcmp, "1");
-    ck_assert_str_eq(get_in_composed_list(lists, 1), "2");
-} END_TEST
+    g_assert_cmpstr(get_in_composed_list(lists, 1), ==, "2");
+}
 
-START_TEST(wlr_list_find_in_composed_list_test)
+void wlr_list_find_in_composed_list_test()
 {
     GPtrArray *lists;
 
@@ -177,16 +177,16 @@ START_TEST(wlr_list_find_in_composed_list_test)
     g_ptr_array_add(list3, "8");
 
     int position = find_in_composed_list(lists, cmp_str, "1");
-    ck_assert_int_eq(position, 1);
-} END_TEST
+    g_assert_cmpint(position, ==, 1);
+}
 
-START_TEST(cross_sum_test)
+void cross_sum_test()
 {
-    ck_assert_int_eq(cross_sum(0b111, 2), 3);
-    ck_assert_int_eq(cross_sum(100, 10), 1);
-} END_TEST
+    g_assert_cmpint(cross_sum(0b111, 2), ==, 3);
+    g_assert_cmpint(cross_sum(100, 10), ==, 1);
+}
 
-START_TEST(get_relative_item_in_list_test)
+void get_relative_item_in_list_test()
 {
     GPtrArray *lists;
 
@@ -216,51 +216,29 @@ START_TEST(get_relative_item_in_list_test)
     g_ptr_array_add(list3, "7");
     g_ptr_array_add(list3, "8");
 
-    ck_assert_str_eq(get_relative_item_in_list(list1, 0, -1), "1");
-    ck_assert_str_eq(get_relative_item_in_list(list2, 0, -1), "5");
-    ck_assert_str_eq(get_relative_item_in_list(list3, 0, -1), "8");
+    g_assert_cmpstr(get_relative_item_in_list(list1, 0, -1), ==, "1");
+    g_assert_cmpstr(get_relative_item_in_list(list2, 0, -1), ==, "5");
+    g_assert_cmpstr(get_relative_item_in_list(list3, 0, -1), ==, "8");
 
-    ck_assert_str_eq(get_relative_item_in_composed_list(lists, 0, 1), "1");
-    ck_assert_str_eq(get_relative_item_in_composed_list(lists, 3, 4), "7");
-    ck_assert_str_eq(get_relative_item_in_composed_list(lists, 3, -2), "1");
-} END_TEST
-
-Suite *suite()
-{
-    Suite *s;
-    TCase *tc;
-
-    s = suite_create("coreUtils");
-    tc = tcase_create("core");
-
-    tcase_add_test(tc, dir_exists_test);
-    tcase_add_test(tc, get_on_composed_list_test);
-    tcase_add_test(tc, remove_from_composed_list_test);
-    tcase_add_test(tc, wlr_list_remove_in_composed_list_test);
-    tcase_add_test(tc, wlr_list_find_in_composed_list_test);
-    tcase_add_test(tc, cross_sum_test);
-    tcase_add_test(tc, get_relative_item_in_list_test);
-    suite_add_tcase(s, tc);
-
-    return s;
+    g_assert_cmpstr(get_relative_item_in_composed_list(lists, 0, 1), ==, "1");
+    g_assert_cmpstr(get_relative_item_in_composed_list(lists, 3, 4), ==, "7");
+    g_assert_cmpstr(get_relative_item_in_composed_list(lists, 3, -2), ==, "1");
 }
 
-int main()
+#define PREFIX "coreUtils"
+#define add_test(func) g_test_add_func("/"PREFIX"/"#func, func)
+int main(int argc, char **argv)
 {
     setbuf(stdout, NULL);
+    g_test_init(&argc, &argv, NULL);
 
-    int number_failed;
-    Suite *s;
-    SRunner *sr;
+    add_test(dir_exists_test);
+    add_test(get_on_composed_list_test);
+    add_test(remove_from_composed_list_test);
+    add_test(wlr_list_remove_in_composed_list_test);
+    add_test(wlr_list_find_in_composed_list_test);
+    add_test(cross_sum_test);
+    add_test(get_relative_item_in_list_test);
 
-    s = suite();
-    sr = srunner_create(s);
-
-    srunner_run_all(sr, CK_NORMAL);
-
-    srunner_ntests_run(sr);
-    number_failed = srunner_ntests_failed(sr);
-    srunner_free(sr);
-
-    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return g_test_run();
 }

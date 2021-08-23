@@ -5,43 +5,28 @@
 
 /****************** INTERFACE ******************/
 
-int bitset_setup(BitSet* bitset, size_t minimum_number_of_bits) {
-    size_t number_of_bytes;
+BitSet *bitset_create(size_t minimum_number_of_bits) {
+    BitSet *bitset = calloc(1, sizeof(BitSet));
+    size_t number_of_bytes = BITS_TO_BYTES(minimum_number_of_bits);
 
-    assert(bitset != NULL);
-    if (bitset == NULL) return BITSET_ERROR;
-
-    number_of_bytes = BITS_TO_BYTES(minimum_number_of_bits);
-
-    // clang-format off
-    if (vector_setup(&bitset->bits,
-                                     number_of_bytes,
-                                     sizeof(uint8_t)) == BITSET_ERROR) {
-        return BITSET_ERROR;
-    }
-    // clang-format on
+    bitset->bits = vector_create(number_of_bytes, sizeof(uint8_t));
 
     bitset->size = minimum_number_of_bits;
     for (size_t byte = 0; byte < number_of_bytes; ++byte) {
         bitset_grow(bitset);
     }
 
-    return BITSET_SUCCESS;
+    return bitset;
 }
 
-int bitset_copy(BitSet* destination, BitSet* source) {
-    assert(destination != NULL);
+BitSet* bitset_copy(BitSet* source) {
     assert(source != NULL);
 
-    if (destination == NULL) return BITSET_ERROR;
-    if (source == NULL) return BITSET_ERROR;
-
-    if (vector_copy(&destination->bits, &source->bits) == VECTOR_ERROR) {
-        return BITSET_ERROR;
-    }
+    BitSet *destination = malloc(sizeof(BitSet));
+    destination->bits = vector_copy(source->bits);
     destination->size = source->size;
 
-    return BITSET_SUCCESS;
+    return destination;
 }
 
 int bitset_move(BitSet* destination, BitSet* source) {
@@ -51,7 +36,7 @@ int bitset_move(BitSet* destination, BitSet* source) {
     if (destination == NULL) return BITSET_ERROR;
     if (source == NULL) return BITSET_ERROR;
 
-    if (vector_move(&destination->bits, &source->bits) == VECTOR_ERROR) {
+    if (vector_move(destination->bits, source->bits) == VECTOR_ERROR) {
         return BITSET_ERROR;
     }
     destination->size = source->size;
@@ -66,7 +51,7 @@ int bitset_swap(BitSet* destination, BitSet* source) {
     if (destination == NULL) return BITSET_ERROR;
     if (source == NULL) return BITSET_ERROR;
 
-    if (vector_swap(&destination->bits, &source->bits) == VECTOR_ERROR) {
+    if (vector_swap(destination->bits, source->bits) == VECTOR_ERROR) {
         return BITSET_ERROR;
     }
     _vector_swap(&destination->size, &source->size);
@@ -74,18 +59,15 @@ int bitset_swap(BitSet* destination, BitSet* source) {
     return BITSET_SUCCESS;
 }
 
-int bitset_destroy(BitSet* bitset) {
-    if (vector_destroy(&bitset->bits) == VECTOR_ERROR) {
-        return BITSET_ERROR;
-    }
-    return BITSET_SUCCESS;
+void bitset_destroy(BitSet* bitset) {
+    vector_destroy(bitset->bits);
+    free(bitset);
 }
 
-BitSet bitset_from_value(uint64_t value) {
-    BitSet bitset;
-    bitset_setup(&bitset, 64);
+BitSet *bitset_from_value(uint64_t value) {
+    BitSet *bitset = bitset_create(64);
     for (size_t bit = 0; bit < 64; ++bit) {
-        bitset_assign(&bitset, bit, LAST_BIT(value));
+        bitset_assign(bitset, bit, LAST_BIT(value));
         value <<= 1;
     }
 
@@ -94,15 +76,16 @@ BitSet bitset_from_value(uint64_t value) {
 
 int bitset_equals(BitSet* bitset1, BitSet* bitset2)
 {
-    BitSet bitset;
-    bitset_copy(&bitset, bitset1);
+    BitSet *bitset = bitset_copy(bitset1);
 
-    for (int i = 0; i < bitset.size; i++) {
-        bitset_toggle(&bitset, i);
+    for (int i = 0; i < bitset->size; i++) {
+        bitset_toggle(bitset, i);
     }
 
-    bitset_and(&bitset, bitset2);
-    return bitset_none(&bitset);
+    bitset_and(bitset, bitset2);
+    bool equals = bitset_none(bitset);
+    bitset_destroy(bitset);
+    return equals;
 }
 
 int bit_wise_operation(BitSet* destination,
@@ -145,7 +128,7 @@ int bitset_flip(BitSet* bitset) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    VECTOR_FOR_EACH(&bitset->bits, iterator) {
+    VECTOR_FOR_EACH(bitset->bits, iterator) {
         uint8_t* byte = iterator_get(&iterator);
         *byte = ~(*byte);
     }
@@ -211,14 +194,14 @@ uint8_t* byte_get(BitSet* bitset, size_t index) {
     assert(bitset != NULL);
     if (bitset == NULL) return NULL;
 
-    return (uint8_t*)vector_get(&bitset->bits, _byte_index(index));
+    return (uint8_t*)vector_get(bitset->bits, _byte_index(index));
 }
 
 const uint8_t* byte_const_get(const BitSet* bitset, size_t index) {
     assert(bitset != NULL);
     if (bitset == NULL) return NULL;
 
-    return (const uint8_t*)vector_const_get(&bitset->bits, _byte_index(index));
+    return (const uint8_t*)vector_const_get(bitset->bits, _byte_index(index));
 }
 
 int bitset_msb(BitSet* bitset) {
@@ -244,7 +227,7 @@ int bitset_set_all_to_mask(BitSet* bitset, uint8_t mask) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    VECTOR_FOR_EACH(&bitset->bits, byte) {
+    VECTOR_FOR_EACH(bitset->bits, byte) {
         ITERATOR_GET_AS(uint8_t, &byte) = mask;
     }
 
@@ -256,7 +239,7 @@ int bitset_clear(BitSet* bitset) {
     if (bitset == NULL) return BITSET_ERROR;
     bitset->size = 0;
 
-    return vector_clear(&bitset->bits);
+    return vector_clear(bitset->bits);
 }
 
 /* Size Management */
@@ -305,7 +288,7 @@ int bitset_reserve(BitSet* bitset, size_t minimum_number_of_bits) {
     if (bitset == NULL) return BITSET_ERROR;
 
     /* ERROR/SUCCESS flags are the same */
-    return vector_reserve(&bitset->bits, BITS_TO_BYTES(minimum_number_of_bits));
+    return vector_reserve(bitset->bits, BITS_TO_BYTES(minimum_number_of_bits));
 }
 
 int bitset_grow(BitSet* bitset) {
@@ -315,7 +298,7 @@ int bitset_grow(BitSet* bitset) {
     if (bitset == NULL) return BITSET_ERROR;
 
     /* ERROR/SUCCESS flags are the same */
-    return vector_push_back(&bitset->bits, &empty);
+    return vector_push_back(bitset->bits, &empty);
 }
 
 int bitset_shrink(BitSet* bitset) {
@@ -323,20 +306,20 @@ int bitset_shrink(BitSet* bitset) {
     if (bitset == NULL) return BITSET_ERROR;
 
     /* ERROR/SUCCESS flags are the same */
-    return vector_pop_back(&bitset->bits);
+    return vector_pop_back(bitset->bits);
 }
 
 /* Information */
 bool bitset_is_initialized(const BitSet* bitset) {
     assert(bitset != NULL);
     if (bitset == NULL) return false;
-    return vector_is_initialized(&bitset->bits);
+    return vector_is_initialized(bitset->bits);
 }
 
 size_t bitset_capacity(const BitSet* bitset) {
     assert(bitset != NULL);
     if (bitset == NULL) return false;
-    return bitset->bits.size * 8;
+    return bitset->bits->size * 8;
 }
 
 size_t bitset_size_in_bytes(const BitSet* bitset) {
@@ -352,7 +335,7 @@ int bitset_count(BitSet* bitset) {
     if (bitset == NULL) return BITSET_ERROR;
 
     count = 0;
-    VECTOR_FOR_EACH(&bitset->bits, byte) {
+    VECTOR_FOR_EACH(bitset->bits, byte) {
         count += _byte_popcount(ITERATOR_GET_AS(uint8_t, &byte));
     }
 
@@ -363,7 +346,7 @@ int bitset_all(BitSet* bitset) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    VECTOR_FOR_EACH(&bitset->bits, byte) {
+    VECTOR_FOR_EACH(bitset->bits, byte) {
         if (ITERATOR_GET_AS(uint8_t, &byte) != 0xff) {
             return false;
         }
@@ -376,7 +359,7 @@ int bitset_any(BitSet* bitset) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    VECTOR_FOR_EACH(&bitset->bits, byte) {
+    VECTOR_FOR_EACH(bitset->bits, byte) {
         if (ITERATOR_GET_AS(uint8_t, &byte) != 0) {
             return true;
         }
@@ -389,7 +372,7 @@ int bitset_none(BitSet* bitset) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    VECTOR_FOR_EACH(&bitset->bits, byte) {
+    VECTOR_FOR_EACH(bitset->bits, byte) {
         if (ITERATOR_GET_AS(uint8_t, &byte) != 0) {
             return false;
         }
@@ -414,7 +397,7 @@ int _bitset_increment_size(BitSet* bitset) {
 
     if (bitset->size++ % 8 == 0) {
         uint8_t empty = 0;
-        if (vector_push_back(&bitset->bits, &empty) == VECTOR_ERROR) {
+        if (vector_push_back(bitset->bits, &empty) == VECTOR_ERROR) {
             return BITSET_ERROR;
         }
     }

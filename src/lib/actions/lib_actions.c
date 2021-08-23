@@ -214,13 +214,13 @@ int lib_tag_view(lua_State *L)
     if (!m)
         return 0;
 
-    BitSet tmp_bitset = bitset_from_value(tags_dec);
-    BitSet bitset;
-    bitset_setup(&bitset, server.workspaces->len);
-    for (int i = 0; i < bitset.size; i++) {
-        int last_bit_id = tmp_bitset.size - 1;
-        bitset_assign(&bitset, i, bitset_test(&tmp_bitset, last_bit_id - i));
+    BitSet *tmp_bitset = bitset_from_value(tags_dec);
+    BitSet *bitset = bitset_create(server.workspaces->len);
+    for (int i = 0; i < bitset->size; i++) {
+        int last_bit_id = tmp_bitset->size - 1;
+        bitset_assign(bitset, i, bitset_test(tmp_bitset, last_bit_id - i));
     }
+    bitset_destroy(tmp_bitset);
 
     tagset_toggle_add(m->tagset, bitset);
     arrange();

@@ -20,23 +20,23 @@ typedef void (*bit_operator_t)(bool*, const bool*);
 /****************** STRUCTURES ******************/
 
 typedef struct BitSet {
-    Vector bits;
+    Vector *bits;
     size_t size;
 } BitSet;
 
 /****************** INTERFACE ******************/
 
 /* Setup */
-int bitset_setup(BitSet* bitset, size_t minimum_number_of_bits);
+BitSet *bitset_create(size_t minimum_number_of_bits);
 
-int bitset_copy(BitSet* destination, BitSet* source);
+BitSet* bitset_copy(BitSet* source);
 int bitset_move(BitSet* destination, BitSet* source);
 int bitset_swap(BitSet* destination, BitSet* source);
 
-int bitset_destroy(BitSet* bitset);
+void bitset_destroy(BitSet* bitset);
 
 /* Factory */
-BitSet bitset_from_value(uint64_t value);
+BitSet *bitset_from_value(uint64_t value);
 
 /* Logical Operations */
 int byte_wise_operation(BitSet* destination,

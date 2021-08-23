@@ -7,27 +7,22 @@
 #include "utils/vector.h"
 #include "utils/coreUtils.h"
 
-int vector_setup(Vector* vector, size_t capacity, size_t element_size) {
-    assert(vector != NULL);
-
-    if (vector == NULL) return VECTOR_ERROR;
+Vector* vector_create(size_t capacity, size_t element_size) {
+    Vector *vector = malloc(sizeof(Vector));
 
     vector->size = 0;
     vector->capacity = MAX(VECTOR_MINIMUM_CAPACITY, capacity);
     vector->element_size = element_size;
     vector->data = malloc(vector->capacity * element_size);
 
-    return vector->data == NULL ? VECTOR_ERROR : VECTOR_SUCCESS;
+    return vector;
 }
 
-int vector_copy(Vector* destination, Vector* source) {
-    assert(destination != NULL);
+Vector *vector_copy(Vector* source) {
     assert(source != NULL);
     assert(vector_is_initialized(source));
 
-    if (destination == NULL) return VECTOR_ERROR;
-    if (source == NULL) return VECTOR_ERROR;
-    if (!vector_is_initialized(source)) return VECTOR_ERROR;
+    Vector *destination = malloc(sizeof(Vector));
 
     /* Copy ALL the data */
     destination->size = source->size;
@@ -36,27 +31,10 @@ int vector_copy(Vector* destination, Vector* source) {
 
     /* Note that we are not necessarily allocating the same capacity */
     destination->data = malloc(destination->capacity * source->element_size);
-    if (destination->data == NULL) return VECTOR_ERROR;
 
     memcpy(destination->data, source->data, vector_byte_size(source));
 
-    return VECTOR_SUCCESS;
-}
-
-int vector_copy_assign(Vector* destination, Vector* source) {
-    assert(destination != NULL);
-    assert(source != NULL);
-    assert(vector_is_initialized(source));
-    assert(vector_is_initialized(destination));
-
-    if (destination == NULL) return VECTOR_ERROR;
-    if (source == NULL) return VECTOR_ERROR;
-    if (!vector_is_initialized(destination)) return VECTOR_ERROR;
-    if (!vector_is_initialized(source)) return VECTOR_ERROR;
-
-    vector_destroy(destination);
-
-    return vector_copy(destination, source);
+    return destination;
 }
 
 int vector_move(Vector* destination, Vector* source) {
@@ -72,9 +50,9 @@ int vector_move(Vector* destination, Vector* source) {
     return VECTOR_SUCCESS;
 }
 
-int vector_move_assign(Vector* destination, Vector* source) {
+void vector_move_assign(Vector* destination, Vector* source) {
     vector_swap(destination, source);
-    return vector_destroy(source);
+    vector_destroy(source);
 }
 
 int vector_swap(Vector* destination, Vector* source) {
@@ -101,15 +79,13 @@ int vector_swap(Vector* destination, Vector* source) {
     return VECTOR_SUCCESS;
 }
 
-int vector_destroy(Vector* vector) {
+void vector_destroy(Vector* vector) {
     assert(vector != NULL);
-
-    if (vector == NULL) return VECTOR_ERROR;
 
     free(vector->data);
     vector->data = NULL;
 
-    return VECTOR_SUCCESS;
+    free(vector);
 }
 
 /* Insertion */

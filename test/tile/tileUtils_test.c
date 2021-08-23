@@ -1,10 +1,10 @@
 #include <stdlib.h>
-#include <check.h>
+#include <glib.h>
 
 #include "server.h"
 #include "tile/tileUtils.h"
 
-START_TEST(get_container_count_test)
+void get_container_count_test()
 {
     /* struct wlr_list tag_names; */
     /* wlr_list_init(&tag_names); */
@@ -39,9 +39,9 @@ START_TEST(get_container_count_test)
     /* clients[2].ws_id = 1; */
     /* wlr_list_push(&tagset1->list_set.tiled_containers, &cons[2]); */
     /* ck_assert_int_eq(get_container_count(tagset0), 2); */
-} END_TEST
+}
 
-START_TEST(get_relative_item_test)
+void get_relative_item_test()
 {
     GPtrArray *lists;
 
@@ -71,39 +71,19 @@ START_TEST(get_relative_item_test)
     g_ptr_array_add(list3, "7");
     g_ptr_array_add(list3, "8");
 
-    ck_assert_str_eq(get_relative_item_in_composed_list(lists, 4, 1), "5");
-} END_TEST
-
-
-Suite *suite()
-{
-    Suite *s;
-    TCase *tc;
-
-    s = suite_create("tileUtils");
-    tc = tcase_create("core");
-
-    tcase_add_test(tc, get_container_count_test);
-    tcase_add_test(tc, get_relative_item_test);
-    suite_add_tcase(s, tc);
-
-    return s;
+    g_assert_cmpstr(get_relative_item_in_composed_list(lists, 4, 1), ==, "5");
 }
 
-int main()
+#define PREFIX "tileUtils"
+#define add_test(func) g_test_add_func("/"PREFIX"/"#func, func)
+int main(int argc, char **argv)
 {
     setbuf(stdout, NULL);
-    int numberFailed;
-    Suite *s;
-    SRunner *sr;
+    g_test_init(&argc, &argv, NULL);
 
-    s = suite();
-    sr = srunner_create(s);
 
-    srunner_run_all(sr, CK_NORMAL);
-    srunner_ntests_run(sr);
-    numberFailed = srunner_ntests_failed(sr);
-    srunner_free(sr);
+    add_test(get_container_count_test);
+    add_test(get_relative_item_test);
 
-    return (numberFailed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return g_test_run();
 }

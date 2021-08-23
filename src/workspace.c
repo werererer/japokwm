@@ -255,9 +255,8 @@ void focus_next_unoccupied_workspace(struct monitor *m, GPtrArray *workspaces, s
     if (!w)
         return;
 
-    BitSet bitset;
-    bitset_setup(&bitset, server.workspaces->len);
-    bitset_set(&bitset, w->id);
+    BitSet *bitset = bitset_create(server.workspaces->len);
+    bitset_set(bitset, w->id);
 
     struct tagset *tagset = create_tagset(m, w->id, bitset);
     focus_tagset(tagset);

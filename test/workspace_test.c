@@ -3,47 +3,26 @@
 
 #include "workspace.h"
 
-START_TEST(workspace_contains_client_crash_test)
+void workspace_contains_client_crash_test()
 {
     /* workspace_contains_client(NULL, NULL); */
-} END_TEST
+}
 
-START_TEST(workspace_has_clients_test)
+void workspace_has_clients_test()
 {
     /* struct workspace *ws = create_workspace("test", 3); */
     /* ck_assert_int_eq(workspace_has_clients(ws), false); */
-} END_TEST
-
-Suite *suite()
-{
-    Suite *s;
-    TCase *tc;
-
-    s = suite_create("workspace");
-    tc = tcase_create("core");
-
-    tcase_add_test(tc, workspace_has_clients_test);
-    tcase_add_test(tc, workspace_contains_client_crash_test);
-    suite_add_tcase(s, tc);
-
-    return s;
 }
 
-int main()
+#define PREFIX "workspace"
+#define add_test(func) g_test_add_func("/"PREFIX"/"#func, func)
+int main(int argc, char **argv)
 {
     setbuf(stdout, NULL);
+    g_test_init(&argc, &argv, NULL);
 
-    int number_failed;
-    Suite *s;
-    SRunner *sr;
+    add_test(workspace_has_clients_test);
+    add_test(workspace_contains_client_crash_test);
 
-    s = suite();
-    sr = srunner_create(s);
-
-    srunner_run_all(sr, CK_NORMAL);
-    srunner_ntests_run(sr);
-    number_failed = srunner_ntests_failed(sr);
-    srunner_free(sr);
-
-    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return g_test_run();
 }

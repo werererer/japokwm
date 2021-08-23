@@ -128,7 +128,7 @@ json_object *ipc_json_describe_tagsets()
         bool is_active = false;
         if (tagset) {
             is_selected = tagset->selected_ws_id == i;
-            is_active = bitset_test(&tagset->workspaces, i);
+            is_active = bitset_test(tagset->workspaces, i);
         }
 
         char *full_name = strdup(ws->name);

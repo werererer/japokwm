@@ -1,4 +1,4 @@
-#include <check.h>
+#include <glib.h>
 
 #include "monitor.h"
 #include "container.h"
@@ -6,7 +6,7 @@
 #include "utils/coreUtils.h"
 #include "server.h"
 
-START_TEST(test_visible_on)
+void test_visible_on()
 {
     /* struct wlr_list tag_names; */
     /* wlr_list_init(&tag_names); */
@@ -52,9 +52,9 @@ START_TEST(test_visible_on)
     /* con.client->ws_id = ws1->id; */
     /* con.hidden = true; */
     /* ck_assert_int_eq(visible_on(&con, ws1), false); */
-} END_TEST
+}
 
-START_TEST(test_exist_on)
+void test_exist_on()
 {
     /* struct wlr_list tag_names; */
     /* wlr_list_init(&tag_names); */
@@ -101,23 +101,23 @@ START_TEST(test_exist_on)
     /* con.client->ws_id = ws1->id; */
     /* con.hidden = false; */
     /* ck_assert_int_eq(exist_on(&con, ws1), true); */
-} END_TEST
+}
 
-START_TEST(focus_on_hidden_stack_test)
+void focus_on_hidden_stack_test()
 {
     // TODO fix this unittest
-} END_TEST
+}
 
-START_TEST(focus_container_test)
+void focus_container_test()
 {
-} END_TEST
+}
 
-START_TEST(get_position_in_container_stack_crash_test)
+void get_position_in_container_stack_crash_test()
 {
     get_position_in_container_stack(NULL);
-} END_TEST
+}
 
-START_TEST(get_focused_container_crash_test)
+void get_focused_container_crash_test()
 {
     /* get_focused_container(NULL); */
 
@@ -127,42 +127,16 @@ START_TEST(get_focused_container_crash_test)
 
     /* m.tagset = 700; */
     /* get_focused_container(&m); */
-} END_TEST
-
-Suite *suite()
-{
-    Suite *s;
-    TCase *tc;
-
-    s = suite_create("container");
-    tc = tcase_create("core");
-
-    tcase_add_test(tc, test_visible_on);
-    tcase_add_test(tc, test_exist_on);
-    tcase_add_test(tc, focus_on_hidden_stack_test);
-    tcase_add_test(tc, focus_container_test);
-    tcase_add_test(tc, get_position_in_container_stack_crash_test);
-    tcase_add_test(tc, get_focused_container_crash_test);
-    suite_add_tcase(s, tc);
-
-    return s;
 }
 
-int main()
+#define PREFIX "container"
+#define add_test(func) g_test_add_func("/"PREFIX"/"#func, func)
+int main(int argc, char **argv)
 {
     setbuf(stdout, NULL);
+    g_test_init(&argc, &argv, NULL);
 
-    int number_failed;
-    Suite *s;
-    SRunner *sr;
+    add_test(test_visible_on);
 
-    s = suite();
-    sr = srunner_create(s);
-
-    srunner_run_all(sr, CK_NORMAL);
-    srunner_ntests_run(sr);
-    number_failed = srunner_ntests_failed(sr);
-    srunner_free(sr);
-
-    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return g_test_run();
 }

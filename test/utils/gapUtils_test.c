@@ -1,12 +1,12 @@
 #include <stdlib.h>
-#include <check.h>
+#include <glib.h>
 #include <wlr/types/wlr_box.h>
 #include <wlr/util/edges.h>
 
 #include "utils/coreUtils.h"
 #include "utils/gapUtils.h"
 
-START_TEST(containerAddGapsTest)
+void containerAddGapsTest()
 {
     struct wlr_box con;
     con.x = 50;
@@ -18,29 +18,29 @@ START_TEST(containerAddGapsTest)
     int gap = 5;
 
     container_add_gaps(&con2, gap, WLR_EDGE_LEFT | WLR_EDGE_RIGHT);
-    ck_assert_double_eq(con2.x, 55);
-    ck_assert_double_eq(con2.y, 50);
-    ck_assert_double_eq(con2.width, 90);
-    ck_assert_double_eq(con2.height, 100);
+    g_assert_cmpint(con2.x, ==, 55);
+    g_assert_cmpint(con2.y, ==,50);
+    g_assert_cmpint(con2.width, ==, 90);
+    g_assert_cmpint(con2.height, ==, 100);
 
     con2 = con;
 
     container_add_gaps(&con2, gap, WLR_EDGE_TOP);
-    ck_assert_double_eq(con2.x, 50);
-    ck_assert_double_eq(con2.y, 55);
-    ck_assert_double_eq(con2.width, 100);
-    ck_assert_double_eq(con2.height, 95);
+    g_assert_cmpint(con2.x, ==, 50);
+    g_assert_cmpint(con2.y, ==, 55);
+    g_assert_cmpint(con2.width, ==, 100);
+    g_assert_cmpint(con2.height, ==, 95);
 
     con2 = con;
 
     container_add_gaps(&con2, gap, WLR_EDGE_BOTTOM);
-    ck_assert_double_eq(con2.x, 50);
-    ck_assert_double_eq(con2.y, 50);
-    ck_assert_double_eq(con2.width, 100);
-    ck_assert_double_eq(con2.height, 95);
-} END_TEST
+    g_assert_cmpint(con2.x, ==, 50);
+    g_assert_cmpint(con2.y, ==, 50);
+    g_assert_cmpint(con2.width, ==, 100);
+    g_assert_cmpint(con2.height, ==, 95);
+}
 
-START_TEST(containerSurroundGapsTest)
+void containerSurroundGapsTest()
 {
     struct wlr_box con;
     con.x = 50;
@@ -48,40 +48,21 @@ START_TEST(containerSurroundGapsTest)
     con.width = 100;
     con.height = 100;
     container_surround_gaps(&con, 4.0);
-    ck_assert_double_eq(con.x, 52);
-    ck_assert_double_eq(con.y, 52);
-    ck_assert_double_eq(con.width, 96);
-    ck_assert_double_eq(con.height, 96);
-} END_TEST
-
-Suite *suite()
-{
-    Suite *s;
-    TCase *tc;
-
-    s = suite_create("gapUtils");
-    tc = tcase_create("Core");
-    tcase_add_test(tc, containerAddGapsTest);
-    tcase_add_test(tc, containerSurroundGapsTest);
-
-    suite_add_tcase(s, tc);
-
-    return s;
+    g_assert_cmpint(con.x, ==, 52);
+    g_assert_cmpint(con.y, ==, 52);
+    g_assert_cmpint(con.width, ==, 96);
+    g_assert_cmpint(con.height, ==, 96);
 }
 
-int main()
+#define PREFIX "gapUtils"
+#define add_test(func) g_test_add_func("/"PREFIX"/"#func, func)
+int main(int argc, char **argv)
 {
-    int numberFailed;
-    Suite *s;
-    SRunner *sr;
+    setbuf(stdout, NULL);
+    g_test_init(&argc, &argv, NULL);
 
-    s = suite();
-    sr = srunner_create(s);
+    add_test(containerAddGapsTest);
+    add_test(containerSurroundGapsTest);
 
-    srunner_run_all(sr, CK_NORMAL);
-    srunner_ntests_run(sr);
-    numberFailed = srunner_ntests_failed(sr);
-    srunner_free(sr);
-
-    return (numberFailed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return g_test_run();
 }
