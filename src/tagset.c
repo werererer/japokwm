@@ -25,7 +25,7 @@ static void tagset_reload_workspaces(struct tagset *tagset);
 
 static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspace *ws)
 {
-    g_ptr_array_add(ws->list_set->change_affected_list_sets, tagset->list_set);
+    g_ptr_array_add(ws->change_affected_list_sets, tagset->list_set);
     append_list_set(tagset->list_set, ws->list_set);
 }
 
@@ -72,7 +72,7 @@ static void tagset_load_workspaces(struct tagset *tagset)
 
 static void tagset_unsubscribe_from_workspace(struct tagset *tagset, struct workspace *ws)
 {
-    g_ptr_array_remove(ws->list_set->change_affected_list_sets, tagset->list_set);
+    g_ptr_array_remove(ws->change_affected_list_sets, tagset->list_set);
 }
 
 static void tagset_unload_workspaces(struct tagset *tagset)
