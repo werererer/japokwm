@@ -33,10 +33,11 @@ struct workspace {
 
     size_t id;
     char *name;
-    struct monitor *m;
 
-    // the tagset that currently hast this workspace selected
+    // the latest tagset
     struct tagset *tagset;
+    // the tagset that currently has this workspace selected
+    struct tagset *selected_tagset;
 
     struct list_set *list_set;
 
@@ -60,6 +61,9 @@ struct workspace *get_workspace(int id);
 struct workspace *get_next_empty_workspace(GPtrArray *workspaces, size_t i);
 struct workspace *get_prev_empty_workspace(GPtrArray *workspaces, size_t i);
 
+struct monitor *workspace_get_selected_monitor(struct workspace *ws);
+struct monitor *workspace_get_monitor(struct workspace *ws); 
+
 void focus_next_unoccupied_workspace(struct monitor *m, GPtrArray *workspaces, struct workspace *ws);
 void copy_layout_from_selected_workspace(GPtrArray *workspaces);
 void destroy_workspaces(GPtrArray *workspaces);
@@ -69,7 +73,6 @@ void load_default_layout(lua_State *L);
 void load_layout(lua_State *L, const char *name);
 void reset_loaded_layout(struct workspace *ws);
 void remove_loaded_layouts(GPtrArray *workspaces);
-void workspace_assign_monitor(struct workspace *ws, struct monitor *m);
 void rename_workspace(struct workspace *ws, const char *name);
 
 void list_set_add_container_to_focus_stack(struct list_set *list_set, struct container *con);

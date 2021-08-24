@@ -249,13 +249,6 @@ void destroy_monitor(struct wl_listener *listener, void *data)
         }
     }
 
-    for (int i = 0; i < server.workspaces->len; i++) {
-        struct workspace *ws = g_ptr_array_index(server.workspaces, i);
-        if (ws->m == m) {
-            ws->m = NULL;
-        }
-    }
-
     free(m);
 
     if (server.mons->len <= 0)

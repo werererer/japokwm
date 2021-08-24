@@ -189,7 +189,8 @@ static void add_container_to_workspace(struct container *con, struct workspace *
     if (!ws || !con)
         return;
 
-    set_container_monitor(con, ws->m);
+    struct monitor *m = workspace_get_monitor(ws);
+    set_container_monitor(con, m);
     switch (con->client->type) {
         case LAYER_SHELL:
             // layer shell programs aren't pushed to the stack because they use the
@@ -618,11 +619,7 @@ struct monitor *container_get_monitor(struct container *con)
     }
 
     struct workspace *ws = get_workspace(con->client->ws_id);
-    struct monitor *m  = ws->m;
-
-    if (ws->tagset) {
-        m = ws->tagset->m;
-    }
+    struct monitor *m  = workspace_get_monitor(ws);
     return m;
 }
 
@@ -687,10 +684,6 @@ void set_container_workspace(struct container *con, struct workspace *ws)
     workspace_add_container_to_focus_stack(ws, con);
 
     con->client->ws_id = ws->id;
-    ws->m = old_ws->m;
-    if (is_workspace_empty(old_ws)) {
-        old_ws->m = NULL;
-    }
 
     if (con->floating)
         con->client->bw = ws->layout->options.float_border_px;

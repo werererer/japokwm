@@ -126,7 +126,8 @@ bool is_workspace_occupied(struct workspace *ws)
 {
     assert(ws);
 
-    return ws->m ? true : false;
+    struct monitor *m = workspace_get_monitor(ws);
+    return m ? true : false;
 }
 
 int get_workspace_container_count(struct workspace *ws)
@@ -191,9 +192,20 @@ struct workspace *get_prev_empty_workspace(GPtrArray *workspaces, size_t i)
     return ws;
 }
 
-void workspace_assign_monitor(struct workspace *ws, struct monitor *m)
+struct monitor *workspace_get_selected_monitor(struct workspace *ws)
 {
-    ws->m = m;
+    assert(ws != NULL);
+    if (!ws->selected_tagset)
+        return NULL;
+    return ws->selected_tagset->m;
+}
+
+struct monitor *workspace_get_monitor(struct workspace *ws)
+{
+    assert(ws != NULL);
+    if (!ws->tagset)
+        return NULL;
+    return ws->tagset->m;
 }
 
 void push_layout(struct workspace *ws, struct layout *lt)
