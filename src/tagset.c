@@ -343,7 +343,7 @@ static void tagset_append_to_workspaces(struct tagset *tagset)
     }
 }
 
-static void tagset_save_to_workspaces(struct tagset *tagset)
+static void tagset_write_to_workspaces(struct tagset *tagset)
 {
     if (!tagset)
         return;
@@ -366,7 +366,7 @@ void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
     force_on_current_monitor(tagset, bitset);
     unfocus_action(tagset, tagset->m, bitset);
 
-    tagset_save_to_workspaces(tagset);
+    tagset_write_to_workspaces(tagset);
     tagset_unload_workspaces(tagset);
     tagset_load_workspaces(tagset, bitset);
 
@@ -392,7 +392,7 @@ void push_tagset(struct tagset *tagset)
 
     struct monitor *m = tagset->m;
 
-    tagset_save_to_workspaces(m->tagset);
+    tagset_write_to_workspaces(m->tagset);
 
     tagset_push_queue(m->tagset, tagset);
 
