@@ -136,7 +136,7 @@ int lib_set_default_layout(lua_State *L)
 int lib_create_workspaces(lua_State *L)
 {
     GPtrArray *tag_names = server.default_layout->options.tag_names;
-    wlr_list_clear(tag_names, NULL);
+    list_clear(tag_names, NULL);
 
     size_t len = lua_rawlen(L, -1);
     for (int i = 0; i < len; i++) {

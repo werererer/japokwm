@@ -108,6 +108,31 @@ void clear_list_set(struct list_set *list_set)
 {
     for (int i = 0; i < list_set->all_lists->len; i++) {
         GPtrArray *dest_list = g_ptr_array_index(list_set->all_lists, i);
-        wlr_list_clear(dest_list, NULL);
+        list_clear(dest_list, NULL);
+    }
+}
+
+void list_set_remove_list_set(struct list_set *dest, struct list_set *src)
+{
+    for (int i = 0; i < src->all_lists->len; i++) {
+        GPtrArray *src_containers = g_ptr_array_index(src->all_lists, i);
+        list_set_remove_containers(dest, src_containers);
+    }
+}
+
+void list_set_remove_containers(struct list_set *dest, GPtrArray *containers)
+{
+    for (int i = 0; i < dest->all_lists->len; i++) {
+        GPtrArray *dest_list = g_ptr_array_index(dest->all_lists, i);
+        for (int j = 0; j < dest_list->len; j++) {
+            struct container *con = g_ptr_array_index(dest_list, j);
+
+            guint position;
+            bool found = g_ptr_array_find(containers, con, &position);
+            if (found) {
+                g_ptr_array_remove_index(dest_list, j);
+                g_ptr_array_remove_index_fast(containers, position);
+            }
+        }
     }
 }

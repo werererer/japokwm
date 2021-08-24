@@ -14,41 +14,20 @@
 #include "cursor.h"
 
 static void tagset_load_workspaces(struct tagset *tagset);
+static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_unload_workspaces(struct tagset *tagset);
+static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_clear_workspaces(struct tagset *tagset);
 static void move_old_workspaces_back(BitSet *old_workspaces, BitSet *workspaces);
 static void force_on_current_monitor(struct tagset *tagset, BitSet *bitset);
 static void unfocus_action(struct tagset *old_tagset, struct monitor *new_monitor, BitSet *new_bits);
 
 static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspace *ws);
-static void tagset_reload_workspaces(struct tagset *tagset);
 
 static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspace *ws)
 {
     g_ptr_array_add(ws->subscribed_tagsets, tagset);
     append_list_set(tagset->list_set, ws->list_set);
-}
-
-static void tagset_reload_workspaces(struct tagset *tagset)
-{
-    if (!tagset)
-        return;
-    if (!tagset->loaded)
-        return;
-
-    clear_list_set(tagset->list_set);
-    for (size_t i = 0; i < tagset->workspaces->size; i++) {
-        bool bit = bitset_test(tagset->workspaces, i);
-
-        if (!bit)
-            continue;
-
-        struct workspace *ws = get_workspace(i);
-        append_list_set(tagset->list_set, ws->list_set);
-        tagset_subscribe_to_workspace(tagset, ws);
-        ws->tagset = tagset;
-    }
-    tagset->loaded = true;
 }
 
 static void tagset_load_workspaces(struct tagset *tagset)
@@ -70,9 +49,48 @@ static void tagset_load_workspaces(struct tagset *tagset)
     tagset->loaded = true;
 }
 
+static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
+{
+    assert(tagset != NULL);
+    assert(ws != NULL);
+
+    bool bit = bitset_test(tagset->workspaces, ws->id);
+
+    // if is already loaded in tagset
+    if (bit)
+        return;
+
+    bitset_set(tagset->workspaces, ws->id);
+    tagset_subscribe_to_workspace(tagset, ws);
+
+    append_list_set(tagset->list_set, ws->list_set);
+    list_set_remove_list_set(tagset->list_set, ws->list_set);
+    tagset->loaded = true;
+}
+
 static void tagset_unsubscribe_from_workspace(struct tagset *tagset, struct workspace *ws)
 {
     g_ptr_array_remove(ws->subscribed_tagsets, tagset);
+}
+
+static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws)
+{
+    assert(tagset != NULL);
+    assert(ws != NULL);
+
+    bool bit = bitset_test(tagset->workspaces, ws->id);
+
+    if (!bit)
+        return;
+
+    bitset_reset(tagset->workspaces, ws->id);
+
+    list_set_remove_list_set(tagset->list_set, ws->list_set);
+
+    tagset_unsubscribe_from_workspace(tagset, ws);
+
+    if (!bitset_any(tagset->workspaces))
+        tagset->loaded = false;
 }
 
 static void tagset_unload_workspaces(struct tagset *tagset)

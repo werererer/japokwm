@@ -246,7 +246,7 @@ void remove_loaded_layouts(GPtrArray *workspaces)
 {
     for (int i = 0; i < workspaces->len; i++) {
         struct workspace *ws = get_workspace(i);
-        wlr_list_clear(ws->loaded_layouts, (void (*)(void *))destroy_layout);
+        list_clear(ws->loaded_layouts, (void (*)(void *))destroy_layout);
     }
 }
 

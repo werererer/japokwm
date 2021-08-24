@@ -39,7 +39,7 @@ void wlr_list_cat(GPtrArray *dest, GPtrArray *src)
     }
 }
 
-void wlr_list_clear(GPtrArray *array, void (*destroy_func)(void *))
+void list_clear(GPtrArray *array, void (*destroy_func)(void *))
 {
     for (int i = array->len-1; i >= 0; i--) {
         void *item = g_ptr_array_index(array, i);
