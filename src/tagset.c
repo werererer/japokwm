@@ -13,6 +13,7 @@
 #include "monitor.h"
 #include "cursor.h"
 
+static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load);
 static void tagset_load_workspaces(struct tagset *tagset);
 static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_unload_workspaces(struct tagset *tagset);
@@ -30,11 +31,19 @@ static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspac
     append_list_set(tagset->list_set, ws->list_set);
 }
 
+static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load)
+{
+    if (load) {
+        tagset_load_workspace(tagset, ws);
+    } else {
+        tagset_load_workspace(tagset, ws);
+    }
+}
+
 static void tagset_load_workspaces(struct tagset *tagset)
 {
     assert(tagset != NULL);
-    if (tagset->loaded)
-        return;
+    assert(tagset->loaded == false);
 
     for (size_t i = 0; i < tagset->workspaces->size; i++) {
         bool bit = bitset_test(tagset->workspaces, i);
@@ -96,8 +105,7 @@ static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws)
 static void tagset_unload_workspaces(struct tagset *tagset)
 {
     assert(tagset != NULL);
-    if (!tagset->loaded)
-        return;
+    assert(tagset->loaded == true);
 
     clear_list_set(tagset->list_set);
 
@@ -136,9 +144,7 @@ static void move_old_workspaces_back(BitSet *old_workspaces, BitSet *workspaces)
 
         if (is_workspace_occupied(ws) && ws->m->tagset != ws->tagset) {
             ws->tagset = ws->m->tagset;
-            tagset_unload_workspaces(ws->tagset);
-            bitset_set(ws->tagset->workspaces, i);
-            tagset_load_workspaces(ws->tagset);
+            tagset_load_workspace(ws->tagset, ws);
         }
     }
 }
@@ -165,10 +171,9 @@ static void force_on_current_monitor(struct tagset *tagset, BitSet *bitset)
             continue;
 
         if (is_workspace_occupied(ws) && tagset != old_tagset) {
-            tagset_unload_workspaces(old_tagset);
             bool new_bit = !bitset_test(bitset, i);
-            bitset_assign(old_tagset->workspaces, i, new_bit);
-            tagset_load_workspaces(old_tagset);
+            struct workspace *ws = get_workspace(i);
+            tagset_assign_workspace(old_tagset, ws, new_bit);
         }
     }
 }
@@ -221,7 +226,8 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *work
     tagset->list_set = create_list_set();
 
     tagset->workspaces = bitset_create(server.workspaces->len);
-    tagset_set_tags(tagset, workspaces);
+    bitset_move(tagset->workspaces, workspaces);
+    tagset_load_workspaces(tagset);
 
     g_ptr_array_add(server.tagsets, tagset);
     return tagset;
