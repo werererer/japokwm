@@ -13,6 +13,7 @@
 #include "monitor.h"
 #include "cursor.h"
 
+static void tagset_write_to_workspaces(struct tagset *tagset);
 static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load);
 static void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces);
 static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws);
@@ -40,6 +41,7 @@ static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws,
     }
 }
 
+// you should use tagset_write_to_workspace to unload workspaces first else
 static void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces)
 {
     assert(tagset != NULL);
@@ -64,18 +66,11 @@ static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
 {
     assert(tagset != NULL);
     assert(ws != NULL);
-
     bool bit = bitset_test(tagset->workspaces, ws->id);
-
-    // if is already loaded in tagset
-    if (bit)
-        return;
+    assert(bit == false);
 
     bitset_set(tagset->workspaces, ws->id);
     tagset_subscribe_to_workspace(tagset, ws);
-
-    append_list_set(tagset->list_set, ws->list_set);
-    list_set_remove_list_set(tagset->list_set, ws->list_set);
     tagset->loaded = true;
 }
 
@@ -88,16 +83,11 @@ static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws)
 {
     assert(tagset != NULL);
     assert(ws != NULL);
-
     bool bit = bitset_test(tagset->workspaces, ws->id);
-
-    if (!bit)
-        return;
+    assert(bit == true);
 
     bitset_reset(tagset->workspaces, ws->id);
-
     list_set_remove_list_set(tagset->list_set, ws->list_set);
-
     tagset_unsubscribe_from_workspace(tagset, ws);
 
     if (!bitset_any(tagset->workspaces))
