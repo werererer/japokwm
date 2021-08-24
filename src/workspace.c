@@ -203,8 +203,13 @@ struct monitor *workspace_get_selected_monitor(struct workspace *ws)
 struct monitor *workspace_get_monitor(struct workspace *ws)
 {
     assert(ws != NULL);
-    if (!ws->tagset)
-        return NULL;
+
+    if (!ws->tagset) {
+        if (!ws->selected_tagset) {
+            return NULL;
+        }
+        return ws->selected_tagset->m;
+    }
     return ws->tagset->m;
 }
 

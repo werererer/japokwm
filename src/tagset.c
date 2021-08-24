@@ -218,7 +218,7 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *work
 
     tagset->selected_ws_id = selected_ws_id;
     struct workspace *selected_workspace = get_workspace(tagset->selected_ws_id);
-    selected_workspace->tagset = tagset;
+    selected_workspace->selected_tagset = tagset;
 
     tagset->list_set = create_list_set();
 
@@ -233,6 +233,9 @@ void destroy_tagset(struct tagset *tagset)
 {
     if (!tagset)
         return;
+
+    struct workspace *selected_workspace = get_workspace(tagset->selected_ws_id);
+    selected_workspace->selected_tagset = NULL;
     tagset_unload_workspaces(tagset);
     g_ptr_array_remove(server.tagsets, tagset);
     bitset_destroy(tagset->workspaces);
@@ -547,6 +550,13 @@ bool visible_on(struct tagset *tagset, struct container *con)
 
     return exist_on(tagset, con);
 
+}
+
+bool tagset_is_active(struct tagset *tagset)
+{
+    assert(tagset->m != NULL);
+
+    return tagset->m->tagset == tagset;
 }
 
 bool exist_on(struct tagset *tagset, struct container *con)

@@ -74,6 +74,7 @@ void workspace_id_to_tag(BitSet *dest, int ws_id);
 bool exist_on(struct tagset *tagset, struct container *con);
 bool tagset_contains_client(struct tagset *tagset, struct client *c);
 bool visible_on(struct tagset *tagset, struct container *con);
+bool tagset_is_active(struct tagset *tagset);
 
 void focus_tagset(struct tagset *tagset);
 void push_tagset(struct tagset *tagset);

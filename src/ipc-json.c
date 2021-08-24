@@ -108,6 +108,24 @@ static void add_infix(char **full_name, const char *prefix, const char *postfix)
     free(position);
 }
 
+static bool is_workspace_the_selected_one(struct workspace *ws)
+{
+    if (!ws->selected_tagset)
+        return false;
+    return ws->selected_tagset->selected_ws_id == ws->id;
+}
+
+static bool is_workspace_active(struct workspace *ws)
+{
+    struct monitor *m = workspace_get_monitor(ws);
+
+    if (!m)
+        return false;
+
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    return bitset_test(tagset->workspaces, ws->id);
+}
+
 json_object *ipc_json_describe_tagsets()
 {
     json_object *array = json_object_new_array();
@@ -115,36 +133,29 @@ json_object *ipc_json_describe_tagsets()
     for (int i = 0; i < server.workspaces->len; i++) {
         struct workspace *ws = get_workspace(i);
 
-        struct tagset *tagset = ws->tagset;
         struct monitor *m = workspace_get_monitor(ws);
 
         if (!m)
             continue;
 
-        bool is_selected = false;
-        bool is_active = false;
-        if (tagset) {
-            is_selected = tagset->selected_ws_id == i;
-            is_active = bitset_test(tagset->workspaces, i);
-        }
-
+        bool is_workspace_on_selected_tagset = is_workspace_the_selected_one(ws);
         char *full_name = strdup(ws->name);
-
-        if (is_selected) {
+        if (is_workspace_on_selected_tagset) {
             add_infix(&full_name, "*", "*");
         }
 
+        bool is_active = is_workspace_active(ws);
         json_object *tagset_object = ipc_json_describe_tag(full_name, is_active, m);
         json_object_array_add(array, tagset_object);
 
-        bool is_extern = m != workspace_get_selected_monitor(ws);
-        if (is_extern) {
-            char *hidden_name = strdup(ws->name);
-            add_infix(&hidden_name, "(", ")");
-            json_object *tagset_object = ipc_json_describe_tag(hidden_name, false, m);
-            json_object_array_add(array, tagset_object);
-            free(hidden_name);
-        }
+/*         bool is_extern = m != workspace_get_selected_monitor(ws); */
+/*         if (is_extern) { */
+/*             char *hidden_name = strdup(ws->name); */
+/*             add_infix(&hidden_name, "(", ")"); */
+/*             json_object *tagset_object = ipc_json_describe_tag(hidden_name, false, m); */
+/*             json_object_array_add(array, tagset_object); */
+/*             free(hidden_name); */
+/*         } */
 
         free(full_name);
     }
