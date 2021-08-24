@@ -111,7 +111,8 @@ static bool is_workspace_the_selected_one(struct workspace *ws)
 {
     if (!ws->selected_tagset)
         return false;
-    return ws->selected_tagset->selected_ws_id == ws->id;
+    return ws->selected_tagset->selected_ws_id == ws->id
+        && tagset_is_active(ws->selected_tagset);
 }
 
 static bool is_workspace_active(struct workspace *ws)
@@ -136,10 +137,11 @@ json_object *ipc_json_describe_tagsets()
 
         if (!m)
             continue;
+        if (!workspace_is_visible(ws))
+            continue;
 
-        bool is_workspace_on_selected_tagset = is_workspace_the_selected_one(ws);
         char *full_name = strdup(ws->name);
-        if (is_workspace_on_selected_tagset) {
+        if (is_workspace_the_selected_one(ws)) {
             add_infix(&full_name, "*", "*");
         }
 

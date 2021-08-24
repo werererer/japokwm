@@ -130,6 +130,17 @@ bool is_workspace_occupied(struct workspace *ws)
     return m ? true : false;
 }
 
+bool workspace_is_visible(struct workspace *ws)
+{
+    if (ws->tagset) {
+        return tagset_is_active(ws->tagset);
+    }
+    if (ws->selected_tagset) {
+        return tagset_is_active(ws->selected_tagset);
+    }
+    return false;
+}
+
 int get_workspace_container_count(struct workspace *ws)
 {
     if (!ws)

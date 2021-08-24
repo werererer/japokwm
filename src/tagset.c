@@ -558,6 +558,7 @@ bool visible_on(struct tagset *tagset, struct container *con)
 
 bool tagset_is_active(struct tagset *tagset)
 {
+    assert(tagset != NULL);
     assert(tagset->m != NULL);
 
     return tagset->m->tagset == tagset;
