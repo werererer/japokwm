@@ -71,6 +71,7 @@ static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
 
     bitset_set(tagset->workspaces, ws->id);
     tagset_subscribe_to_workspace(tagset, ws);
+    ws->tagset = tagset;
     tagset->loaded = true;
 }
 
@@ -146,32 +147,32 @@ static void move_old_workspaces_back(BitSet *old_workspaces, BitSet *workspaces)
 
 static void force_on_current_monitor(struct tagset *tagset, BitSet *bitset)
 {
-    BitSet *changed_bits = bitset_copy(tagset->workspaces);
-    bitset_xor(changed_bits, bitset);
-    // force new tags to be on current monitor
-    for (int i = 0; i < bitset->size; i++) {
-        bool bit_changed = bitset_test(changed_bits, i);
+    /* BitSet *changed_bits = bitset_copy(tagset->workspaces); */
+    /* bitset_xor(changed_bits, bitset); */
+    /* // force new tags to be on current monitor */
+    /* for (int i = 0; i < bitset->size; i++) { */
+    /*     bool bit_changed = bitset_test(changed_bits, i); */
 
-        if (!bit_changed)
-            continue;
+    /*     if (!bit_changed) */
+    /*         continue; */
 
-        struct workspace *ws = get_workspace(i);
+    /*     struct workspace *ws = get_workspace(i); */
 
-        struct monitor *m = workspace_get_monitor(ws);
-        if (!m)
-            continue;
+    /*     struct monitor *m = workspace_get_monitor(ws); */
+    /*     if (!m) */
+    /*         continue; */
 
-        struct tagset *old_tagset = ws->tagset;
+    /*     struct tagset *old_tagset = ws->tagset; */
 
-        if (!ws->tagset)
-            continue;
+    /*     if (!ws->tagset) */
+    /*         continue; */
 
-        if (is_workspace_occupied(ws) && tagset != old_tagset) {
-            bool new_bit = !bitset_test(bitset, i);
-            struct workspace *ws = get_workspace(i);
-            tagset_assign_workspace(old_tagset, ws, new_bit);
-        }
-    }
+    /*     if (is_workspace_occupied(ws) && tagset != old_tagset) { */
+    /*         bool new_bit = !bitset_test(bitset, i); */
+    /*         struct workspace *ws = get_workspace(i); */
+    /*         tagset_assign_workspace(old_tagset, ws, new_bit); */
+    /*     } */
+    /* } */
 }
 
 static void reset_old_workspaces(struct tagset *old_tagset, struct monitor *new_monitor)
@@ -235,7 +236,10 @@ void destroy_tagset(struct tagset *tagset)
         return;
 
     struct workspace *selected_workspace = get_workspace(tagset->selected_ws_id);
-    selected_workspace->selected_tagset = NULL;
+    if (selected_workspace->selected_tagset == tagset) {
+        selected_workspace->selected_tagset = NULL;
+    }
+
     tagset_unload_workspaces(tagset);
     g_ptr_array_remove(server.tagsets, tagset);
     bitset_destroy(tagset->workspaces);

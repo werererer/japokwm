@@ -14,9 +14,9 @@
         struct list_set *list_set = workspace->list_set;\
         action\
         \
-        for (int i = 0; i < workspace->subscribed_tagsets->len; i++) {\
-            struct tagset *tagset = g_ptr_array_index(workspace->subscribed_tagsets, i);\
-            list_set = tagset->list_set;\
+        for (int _i = 0; _i < workspace->subscribed_tagsets->len; _i++) {\
+            struct tagset *_tagset = g_ptr_array_index(workspace->subscribed_tagsets, _i);\
+            list_set = _tagset->list_set;\
             action\
         }\
     } while (0)

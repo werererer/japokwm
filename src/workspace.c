@@ -302,7 +302,12 @@ void workspace_add_container_to_containers(struct workspace *ws, struct containe
             g_ptr_array_insert(list_set->hidden_containers, i, con);
             continue;
         }
-        g_ptr_array_insert(list_set->tiled_containers, i, con);
+        assert(list_set->tiled_containers->len >= i);
+        if (list_set->tiled_containers->len <= 0) {
+            g_ptr_array_add(list_set->tiled_containers, con);
+        } else {
+            g_ptr_array_insert(list_set->tiled_containers, i, con);
+        }
     );
 }
 

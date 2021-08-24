@@ -81,7 +81,6 @@ static void add_infix(char **full_name, const char *prefix, const char *postfix)
     const char *delimiter = ":";
 
     GPtrArray *content = split_string(*full_name, delimiter);
-    printf("content.len: %i\n", content->len);
     char *position = strdup("");
     char *name;
     char *content0 = g_ptr_array_index(content, 0);
