@@ -14,7 +14,7 @@
 #include "cursor.h"
 
 static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load);
-static void tagset_load_workspaces(struct tagset *tagset);
+static void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces);
 static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_unload_workspaces(struct tagset *tagset);
 static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws);
@@ -40,10 +40,12 @@ static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws,
     }
 }
 
-static void tagset_load_workspaces(struct tagset *tagset)
+static void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces)
 {
     assert(tagset != NULL);
     assert(tagset->loaded == false);
+
+    bitset_move(tagset->workspaces, workspaces);
 
     for (size_t i = 0; i < tagset->workspaces->size; i++) {
         bool bit = bitset_test(tagset->workspaces, i);
@@ -226,8 +228,7 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *work
     tagset->list_set = create_list_set();
 
     tagset->workspaces = bitset_create(server.workspaces->len);
-    bitset_move(tagset->workspaces, workspaces);
-    tagset_load_workspaces(tagset);
+    tagset_load_workspaces(tagset, workspaces);
 
     g_ptr_array_add(server.tagsets, tagset);
     return tagset;
@@ -367,10 +368,7 @@ void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
 
     tagset_save_to_workspaces(tagset);
     tagset_unload_workspaces(tagset);
-
-    bitset_move(tagset->workspaces, bitset);
-
-    tagset_load_workspaces(tagset);
+    tagset_load_workspaces(tagset, bitset);
 
     ipc_event_workspace();
 }
