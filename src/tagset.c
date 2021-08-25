@@ -424,14 +424,21 @@ void push_tagset(struct tagset *tagset)
 {
     if (!tagset)
         return;
+    bool need_extra = tagset == server.previous_tagset;
+    if (need_extra) {
+        tagset_acquire(tagset);
+    }
     struct monitor *m = selected_monitor;
 
     tagset_write_to_workspaces(m->tagset);
     printf("push_tagset\n");
     tagset_acquire(m->tagset);
-    focus_tagset(tagset);
     tagset_release(server.previous_tagset);
     server.previous_tagset = m->tagset;
+    focus_tagset(tagset);
+    if (need_extra) {
+        tagset_release(tagset);
+    }
 }
 
 static void handle_too_few_workspaces(uint32_t ws_id)
