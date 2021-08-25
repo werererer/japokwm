@@ -64,6 +64,9 @@ struct workspace *get_workspace(int id);
 struct workspace *get_next_empty_workspace(GPtrArray *workspaces, size_t i);
 struct workspace *get_prev_empty_workspace(GPtrArray *workspaces, size_t i);
 
+struct tagset *workspace_get_selected_tagset(struct workspace *ws);
+struct tagset *workspace_get_tagset(struct workspace *ws);
+
 struct monitor *workspace_get_selected_monitor(struct workspace *ws);
 struct monitor *workspace_get_monitor(struct workspace *ws); 
 

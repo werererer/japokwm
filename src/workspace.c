@@ -132,6 +132,8 @@ bool is_workspace_occupied(struct workspace *ws)
 
 bool workspace_is_visible(struct workspace *ws)
 {
+    assert(ws != NULL);
+
     if (ws->prev_m && !is_workspace_empty(ws)) {
         return true;
     }
@@ -206,6 +208,17 @@ struct workspace *get_prev_empty_workspace(GPtrArray *workspaces, size_t i)
     return ws;
 }
 
+struct tagset *workspace_get_selected_tagset(struct workspace *ws)
+{
+    struct tagset *tagset = ws->selected_tagset;
+    return tagset;
+}
+
+struct tagset *workspace_get_tagset(struct workspace *ws)
+{
+    return ws->tagset;
+}
+
 struct monitor *workspace_get_selected_monitor(struct workspace *ws)
 {
     assert(ws != NULL);
@@ -221,7 +234,6 @@ struct monitor *workspace_get_monitor(struct workspace *ws)
     if (ws->prev_m && !is_workspace_empty(ws)) {
         return ws->prev_m;
     }
-
     if (ws->tagset) {
         return ws->tagset->m;
     }

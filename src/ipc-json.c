@@ -132,7 +132,6 @@ json_object *ipc_json_describe_tagsets()
 
     for (int i = 0; i < server.workspaces->len; i++) {
         struct workspace *ws = get_workspace(i);
-
         struct monitor *m = workspace_get_monitor(ws);
 
         if (!m)

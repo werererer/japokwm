@@ -59,9 +59,6 @@ void tagset_focus_workspace(int ws_id);
 void tagset_toggle_add(struct tagset *tagset, BitSet *bitset);
 void tagset_focus_tags(int ws_id, struct BitSet *bitset);
 
-struct tagset *get_tagset_from_active_workspace_id(int ws_id);
-struct tagset *get_tagset_from_workspace_id(int ws_id);
-
 struct container *get_container(struct tagset *tagset, int i);
 
 GPtrArray *tagset_get_visible_lists(struct tagset *tagset);
