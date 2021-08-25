@@ -55,6 +55,7 @@ void update_workspace_ids(GPtrArray *workspaces);
 
 bool is_workspace_occupied(struct workspace *ws);
 bool workspace_is_visible(struct workspace *ws);
+bool workspace_is_active(struct workspace *ws);
 
 int get_workspace_container_count(struct workspace *ws);
 bool is_workspace_empty(struct workspace *ws);

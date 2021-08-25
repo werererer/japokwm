@@ -115,17 +115,6 @@ static bool is_workspace_the_selected_one(struct workspace *ws)
         && tagset_is_visible(ws->selected_tagset);
 }
 
-static bool is_workspace_active(struct workspace *ws)
-{
-    struct monitor *m = workspace_get_monitor(ws);
-
-    if (!m)
-        return false;
-
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    return bitset_test(tagset->workspaces, ws->id);
-}
-
 json_object *ipc_json_describe_tagsets()
 {
     json_object *array = json_object_new_array();
@@ -136,15 +125,19 @@ json_object *ipc_json_describe_tagsets()
 
         if (!m)
             continue;
+        printf("ws: %zu is_visible: %i\n", ws->id, workspace_is_visible(ws));
+        printf("ws: %i is_active\n", workspace_is_active(ws));
         if (!workspace_is_visible(ws))
             continue;
+        printf("ws->name: %s\n", ws->name);
 
         char *full_name = strdup(ws->name);
         if (is_workspace_the_selected_one(ws)) {
             add_infix(&full_name, "*", "*");
         }
 
-        bool is_active = is_workspace_active(ws);
+        bool is_active = workspace_is_active(ws);
+        printf("describe tag: %s\n", full_name);
         json_object *tagset_object = ipc_json_describe_tag(full_name, is_active, m);
         json_object_array_add(array, tagset_object);
 

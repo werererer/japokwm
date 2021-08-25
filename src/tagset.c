@@ -57,10 +57,38 @@ static void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces)
 
         struct workspace *ws = get_workspace(i);
         tagset_subscribe_to_workspace(tagset, ws);
+    }
+    tagset->loaded = true;
+}
+
+static void tagset_update_unvisible_tagset(struct tagset *tagset)
+{
+    if (!tagset)
+        return;
+
+    for (size_t i = 0; i < tagset->workspaces->size; i++) {
+        bool bit = bitset_test(tagset->workspaces, i);
+
+        if (!bit)
+            continue;
+
+        struct workspace *ws = get_workspace(i);
+        ws->tagset = NULL;
+    }
+}
+
+static void tagset_update_visible_tagset(struct tagset *tagset)
+{
+    for (size_t i = 0; i < tagset->workspaces->size; i++) {
+        bool bit = bitset_test(tagset->workspaces, i);
+
+        if (!bit)
+            continue;
+
+        struct workspace *ws = get_workspace(i);
         ws->tagset = tagset;
         ws->prev_m = tagset->m;
     }
-    tagset->loaded = true;
 }
 
 static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
@@ -72,7 +100,6 @@ static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
 
     bitset_set(tagset->workspaces, ws->id);
     tagset_subscribe_to_workspace(tagset, ws);
-    ws->tagset = tagset;
     tagset->loaded = true;
 }
 
@@ -92,9 +119,6 @@ static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws)
     list_set_remove_list_set(tagset->list_set, ws->list_set);
     tagset_unsubscribe_from_workspace(tagset, ws);
 
-    if (ws->tagset == tagset) {
-        ws->tagset = NULL;
-    }
     tagset->loaded = bitset_any(tagset->workspaces);
 }
 
@@ -113,37 +137,34 @@ static void tagset_unload_workspaces(struct tagset *tagset)
 
         struct workspace *ws = get_workspace(i);
         tagset_unsubscribe_from_workspace(tagset, ws);
-        if (ws->tagset == tagset) {
-            ws->tagset = NULL;
-        }
     }
     tagset->loaded = false;
 }
 
 static void move_old_workspaces_back(BitSet *old_workspaces, BitSet *workspaces)
 {
-    BitSet *diff = bitset_copy(old_workspaces);
-    bitset_xor(diff, workspaces);
-    for (int i = 0; i < diff->size; i++) {
-        bool is_changed = bitset_test(diff, i);
-        bool new_bit = bitset_test(workspaces, i);
+    /* BitSet *diff = bitset_copy(old_workspaces); */
+    /* bitset_xor(diff, workspaces); */
+    /* for (int i = 0; i < diff->size; i++) { */
+    /*     bool is_changed = bitset_test(diff, i); */
+    /*     bool new_bit = bitset_test(workspaces, i); */
 
-        if (!is_changed)
-            continue;
-        if (new_bit)
-            continue;
+    /*     if (!is_changed) */
+    /*         continue; */
+    /*     if (new_bit) */
+    /*         continue; */
 
-        struct workspace *ws = get_workspace(i);
+    /*     struct workspace *ws = get_workspace(i); */
 
-        if (!ws->tagset)
-            continue;
+    /*     if (!ws->tagset) */
+    /*         continue; */
 
-        struct monitor *m = workspace_get_monitor(ws);
-        if (is_workspace_occupied(ws) && m->tagset != ws->tagset) {
-            ws->tagset = m->tagset;
-            tagset_load_workspace(ws->tagset, ws);
-        }
-    }
+    /*     struct monitor *m = workspace_get_monitor(ws); */
+    /*     if (is_workspace_occupied(ws) && m->tagset != ws->tagset) { */
+    /*         ws->tagset = m->tagset; */
+    /*         tagset_load_workspace(ws->tagset, ws); */
+    /*     } */
+    /* } */
 }
 
 static void force_on_current_monitor(struct tagset *tagset, BitSet *bitset)
@@ -178,22 +199,22 @@ static void force_on_current_monitor(struct tagset *tagset, BitSet *bitset)
 
 static void reset_old_workspaces(struct tagset *old_tagset, struct monitor *new_monitor)
 {
-    if (!old_tagset)
-        return;
+    /* if (!old_tagset) */
+    /*     return; */
 
-    for (int i = 0; i < old_tagset->workspaces->size; i++) {
-        bool bit = bitset_test(old_tagset->workspaces, i);
+    /* for (int i = 0; i < old_tagset->workspaces->size; i++) { */
+    /*     bool bit = bitset_test(old_tagset->workspaces, i); */
 
-        if (!bit)
-            continue;
+    /*     if (!bit) */
+    /*         continue; */
 
-        struct workspace *ws = get_workspace(i);
-        bool is_empty = is_workspace_empty(ws);
-        struct monitor *m = workspace_get_monitor(ws);
-        if (is_empty && m == selected_monitor && m == new_monitor) {
-            m = NULL;
-        }
-    }
+    /*     struct workspace *ws = get_workspace(i); */
+    /*     bool is_empty = is_workspace_empty(ws); */
+    /*     struct monitor *m = workspace_get_monitor(ws); */
+    /*     if (is_empty && m == selected_monitor && m == new_monitor) { */
+    /*         m = NULL; */
+    /*     } */
+    /* } */
 }
 
 static void unfocus_action(struct tagset *old_tagset, struct monitor *new_monitor, BitSet *new_bits)
@@ -215,7 +236,6 @@ static void focus_action(struct tagset *tagset)
 
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *workspaces)
 {
-    printf("create_tagset\n");
     struct tagset *tagset = calloc(1, sizeof(struct tagset));
     tagset->m = m;
 
@@ -226,12 +246,9 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *work
     tagset->list_set = create_list_set();
 
     tagset->workspaces = bitset_create(server.workspaces->len);
-    printf("workspaces: \n");
-    print_bitset(workspaces);
     tagset_load_workspaces(tagset, workspaces);
 
     g_ptr_array_add(server.tagsets, tagset);
-    printf("create_tagset end\n");
     return tagset;
 }
 
@@ -289,12 +306,14 @@ void focus_tagset(struct tagset *tagset)
         unfocus_action(old_tagset, tagset->m, tagset->workspaces);
     }
 
+    tagset_update_unvisible_tagset(old_tagset);
+    tagset_update_visible_tagset(tagset);
     m->tagset = tagset;
     ipc_event_workspace();
 
     arrange();
     focus_action(tagset);
-    focus_most_recent_container(m->tagset);
+    focus_most_recent_container(tagset);
     root_damage_whole(m->root);
 
     struct seat *seat = input_manager_get_default_seat();
@@ -365,9 +384,13 @@ void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
     /* force_on_current_monitor(tagset, bitset); */
     /* unfocus_action(tagset, tagset->m, bitset); */
 
+    tagset_update_unvisible_tagset(tagset);
+
     tagset_write_to_workspaces(tagset);
     tagset_unload_workspaces(tagset);
     tagset_load_workspaces(tagset, bitset);
+
+    tagset_update_visible_tagset(tagset);
 }
 
 static void tagset_push_queue(struct tagset *prev_tagset, struct tagset *tagset)

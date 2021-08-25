@@ -138,12 +138,25 @@ bool workspace_is_visible(struct workspace *ws)
         return true;
     }
     if (ws->tagset) {
+        printf("ws->tagset: %p vs %p\n", ws->tagset, ws->tagset->m->tagset);
         return tagset_is_visible(ws->tagset);
     }
     if (ws->selected_tagset) {
+        printf("ws->tagset: %p vs %p\n", ws->selected_tagset, ws->selected_tagset->m->tagset);
         return tagset_is_visible(ws->selected_tagset);
     }
     return false;
+}
+
+bool workspace_is_active(struct workspace *ws)
+{
+    struct monitor *m = workspace_get_monitor(ws);
+
+    if (!m)
+        return false;
+
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    return bitset_test(tagset->workspaces, ws->id);
 }
 
 int get_workspace_container_count(struct workspace *ws)
