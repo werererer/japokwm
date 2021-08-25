@@ -222,7 +222,7 @@ void destroy_monitor(struct wl_listener *listener, void *data)
     wl_list_remove(&m->damage_frame.link);
     wl_list_remove(&m->destroy.link);
 
-    destroy_tagset(m->tagset);
+    tagset_release(m->tagset);
 
     destroy_root(m->root);
     g_ptr_array_remove(server.mons, m);
@@ -230,7 +230,7 @@ void destroy_monitor(struct wl_listener *listener, void *data)
 
     if (server.previous_tagset) {
         if (server.previous_tagset->m == m) {
-            destroy_tagset(server.previous_tagset);
+            tagset_release(server.previous_tagset);
             server.previous_tagset = NULL;
         }
     }

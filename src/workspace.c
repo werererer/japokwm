@@ -39,7 +39,6 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     ws->id = id;
 
     ws->loaded_layouts = g_ptr_array_new();
-    printf("lt->lua_resize_data_ref: %i\n", lt->lua_resize_data_ref);
     // fill layout stack with reasonable values
     push_layout(ws, lt);
     push_layout(ws, lt);
@@ -138,11 +137,9 @@ bool workspace_is_visible(struct workspace *ws)
         return true;
     }
     if (ws->tagset) {
-        printf("ws->tagset: %p vs %p\n", ws->tagset, ws->tagset->m->tagset);
         return tagset_is_visible(ws->tagset);
     }
     if (ws->selected_tagset) {
-        printf("ws->tagset: %p vs %p\n", ws->selected_tagset, ws->selected_tagset->m->tagset);
         return tagset_is_visible(ws->selected_tagset);
     }
     return false;
@@ -258,7 +255,6 @@ struct monitor *workspace_get_monitor(struct workspace *ws)
 
 void push_layout(struct workspace *ws, struct layout *lt)
 {
-    printf("push_layout: lt->lua_resize_function_ref: %i\n", lt->lua_resize_function_ref);
     lt->ws_id = ws->id;
     ws->previous_layout = ws->layout;
     ws->layout = lt;
@@ -322,6 +318,7 @@ void focus_next_unoccupied_workspace(struct monitor *m, GPtrArray *workspaces, s
 
     struct tagset *tagset = create_tagset(m, w->id, bitset);
     focus_tagset(tagset);
+    tagset_release(tagset);
 }
 
 void rename_workspace(struct workspace *ws, const char *name)

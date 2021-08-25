@@ -1,6 +1,7 @@
 #ifndef TAGSET_H
 #define TAGSET_H
 
+#include <glib.h>
 #include <stdlib.h>
 
 #include "bitset/bitset.h"
@@ -47,10 +48,12 @@ struct tagset {
 
     struct list_set *list_set;
     bool loaded;
+
+    int ref_count;
 };
 
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *workspaces);
-void destroy_tagset(struct tagset *tagset);
+void tagset_release(struct tagset *tagset);
 
 void focus_most_recent_container(struct tagset *tagset);
 void focus_tagset(struct tagset *tagset);

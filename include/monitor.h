@@ -31,7 +31,6 @@ struct monitor {
     GPtrArray *layer_visual_stack_bottom;
     GPtrArray *layer_visual_stack_top;
     GPtrArray *layer_visual_stack_overlay;
-
 };
 
 struct monrule {

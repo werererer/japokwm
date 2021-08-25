@@ -4,6 +4,7 @@ config.set_sloppy_focus(true)
 
 local function on_start()
     -- execute programs or do what ever you want e.g.:
+    -- action.exec("japokmsg 'action.create_output()'")
 end
 
 event.add_listener("on_start", on_start)
