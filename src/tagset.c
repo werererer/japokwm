@@ -215,6 +215,7 @@ static void focus_action(struct tagset *tagset)
 
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *workspaces)
 {
+    printf("create_tagset\n");
     struct tagset *tagset = calloc(1, sizeof(struct tagset));
     tagset->m = m;
 
@@ -225,9 +226,12 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *work
     tagset->list_set = create_list_set();
 
     tagset->workspaces = bitset_create(server.workspaces->len);
+    printf("workspaces: \n");
+    print_bitset(workspaces);
     tagset_load_workspaces(tagset, workspaces);
 
     g_ptr_array_add(server.tagsets, tagset);
+    printf("create_tagset end\n");
     return tagset;
 }
 
@@ -295,8 +299,6 @@ void focus_tagset(struct tagset *tagset)
 
     struct seat *seat = input_manager_get_default_seat();
     cursor_rebase(seat->cursor);
-    focus_under_cursor(seat->cursor, 0);
-    cursor_update_image(seat->cursor);
 }
 
 static void tagset_save_to_workspace(struct tagset *tagset, struct workspace *ws)

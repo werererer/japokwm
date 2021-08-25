@@ -87,6 +87,9 @@ int bitset_all(BitSet* bitset);
 int bitset_any(BitSet* bitset);
 int bitset_none(BitSet* bitset);
 
+/* Debugging */
+void print_bitset(BitSet *bitset);
+
 /****************** PRIVATE ******************/
 
 #define LAST_BIT_INDEX(value) ((sizeof(value) * 8) - 1)

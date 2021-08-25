@@ -381,6 +381,13 @@ int bitset_none(BitSet* bitset) {
     return true;
 }
 
+void print_bitset(BitSet *bitset)
+{
+    for (int i = 0; i < bitset->size; i++) {
+        printf("%i\n", bitset_test(bitset, i));
+    }
+}
+
 /****************** PRIVATE ******************/
 
 uint8_t _byte_popcount(uint8_t value) {
