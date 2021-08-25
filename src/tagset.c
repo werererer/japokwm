@@ -58,6 +58,8 @@ static void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces)
         struct workspace *ws = get_workspace(i);
         tagset_subscribe_to_workspace(tagset, ws);
         ws->tagset = tagset;
+
+        ws->prev_m = tagset->m;
     }
     tagset->loaded = true;
 }
@@ -556,7 +558,7 @@ bool visible_on(struct tagset *tagset, struct container *con)
 
 }
 
-bool tagset_is_active(struct tagset *tagset)
+bool tagset_is_visible(struct tagset *tagset)
 {
     assert(tagset != NULL);
     assert(tagset->m != NULL);

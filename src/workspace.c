@@ -132,11 +132,14 @@ bool is_workspace_occupied(struct workspace *ws)
 
 bool workspace_is_visible(struct workspace *ws)
 {
+    if (ws->prev_m && !is_workspace_empty(ws)) {
+        return true;
+    }
     if (ws->tagset) {
-        return tagset_is_active(ws->tagset);
+        return tagset_is_visible(ws->tagset);
     }
     if (ws->selected_tagset) {
-        return tagset_is_active(ws->selected_tagset);
+        return tagset_is_visible(ws->selected_tagset);
     }
     return false;
 }
@@ -146,7 +149,7 @@ int get_workspace_container_count(struct workspace *ws)
     if (!ws)
         return -1;
 
-    return ws->list_set->tiled_containers->len;
+    return length_of_composed_list(ws->list_set->visible_container_lists);
 }
 
 bool is_workspace_empty(struct workspace *ws)
@@ -215,13 +218,17 @@ struct monitor *workspace_get_monitor(struct workspace *ws)
 {
     assert(ws != NULL);
 
-    if (!ws->tagset) {
-        if (!ws->selected_tagset) {
-            return NULL;
-        }
+    if (ws->prev_m && !is_workspace_empty(ws)) {
+        return ws->prev_m;
+    }
+
+    if (ws->tagset) {
+        return ws->tagset->m;
+    }
+    if (ws->selected_tagset) {
         return ws->selected_tagset->m;
     }
-    return ws->tagset->m;
+    return NULL;
 }
 
 void push_layout(struct workspace *ws, struct layout *lt)

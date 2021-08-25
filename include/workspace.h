@@ -34,6 +34,8 @@ struct workspace {
     size_t id;
     char *name;
 
+    // the last monitor the workspace was on
+    struct monitor *prev_m;
     // the latest tagset
     struct tagset *tagset;
     // the tagset that currently has this workspace selected

@@ -112,7 +112,7 @@ static bool is_workspace_the_selected_one(struct workspace *ws)
     if (!ws->selected_tagset)
         return false;
     return ws->selected_tagset->selected_ws_id == ws->id
-        && tagset_is_active(ws->selected_tagset);
+        && tagset_is_visible(ws->selected_tagset);
 }
 
 static bool is_workspace_active(struct workspace *ws)
