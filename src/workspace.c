@@ -126,7 +126,8 @@ bool is_workspace_occupied(struct workspace *ws)
     assert(ws);
 
     struct monitor *m = workspace_get_monitor(ws);
-    return m ? true : false;
+    bool is_occupied = (m != NULL) && workspace_is_visible(ws);
+    return is_occupied;
 }
 
 bool workspace_is_visible(struct workspace *ws)
