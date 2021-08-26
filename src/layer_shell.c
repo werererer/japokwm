@@ -204,6 +204,10 @@ void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_ar
 
     for (int i = 0; i < array->len; i++) {
         struct container *con = g_ptr_array_index(array, i);
+
+        if (!visible_on(monitor_get_active_tagset(m), con))
+            continue;
+
         struct wlr_layer_surface_v1 *wlr_layer_surface = con->client->surface.layer;
         struct wlr_layer_surface_v1_state *state = &wlr_layer_surface->current;
         struct wlr_box bounds;

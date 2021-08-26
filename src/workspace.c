@@ -242,14 +242,14 @@ struct monitor *workspace_get_monitor(struct workspace *ws)
 {
     assert(ws != NULL);
 
-    if (ws->prev_m && !is_workspace_empty(ws)) {
-        return ws->prev_m;
-    }
     if (ws->tagset) {
         return ws->tagset->m;
     }
     if (ws->selected_tagset) {
         return ws->selected_tagset->m;
+    }
+    if (ws->prev_m && !is_workspace_empty(ws)) {
+        return ws->prev_m;
     }
     return NULL;
 }
