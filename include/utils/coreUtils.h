@@ -13,6 +13,11 @@
 #include <lauxlib.h>
 #include "options.h"
 
+/* a 2d array type that means that the lists have to be filled with other
+ * GPtrArray variables
+ * */
+typedef GPtrArray GPtrArray2D;
+
 /* macros */
 //NOLINTNEXTLINE
 #define LENGTH(X)               (sizeof X / sizeof X[0])

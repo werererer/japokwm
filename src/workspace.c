@@ -394,31 +394,30 @@ void add_container_to_stack(struct container *con)
     if (!con)
         return;
 
-    struct monitor *m = selected_monitor;
     if (con->client->type == LAYER_SHELL) {
         switch (con->client->surface.layer->current.layer) {
             case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
-                g_ptr_array_insert(m->layer_visual_stack_background, 0, con);
+                g_ptr_array_insert(server.layer_visual_stack_background, 0, con);
                 break;
             case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
-                g_ptr_array_insert(m->layer_visual_stack_bottom, 0, con);
+                g_ptr_array_insert(server.layer_visual_stack_bottom, 0, con);
                 break;
             case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
-                g_ptr_array_insert(m->layer_visual_stack_top, 0, con);
+                g_ptr_array_insert(server.layer_visual_stack_top, 0, con);
                 break;
             case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
-                g_ptr_array_insert(m->layer_visual_stack_overlay, 0, con);
+                g_ptr_array_insert(server.layer_visual_stack_overlay, 0, con);
                 break;
         }
         return;
     }
 
     if (con->floating) {
-        g_ptr_array_insert(m->floating_visual_stack, 0, con);
+        g_ptr_array_insert(server.floating_visual_stack, 0, con);
         return;
     }
 
-    g_ptr_array_insert(m->tiled_visual_stack, 0, con);
+    g_ptr_array_insert(server.tiled_visual_stack, 0, con);
 }
 
 void workspace_remove_container(struct workspace *ws, struct container *con)

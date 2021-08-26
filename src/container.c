@@ -64,17 +64,16 @@ void remove_container_from_tile(struct container *con)
 
     workspace_remove_container_from_focus_stack(ws, con);
 
-    struct monitor *m = container_get_monitor(con);
     switch (con->client->type) {
         case LAYER_SHELL:
-            remove_in_composed_list(m->layer_visual_stack_lists, cmp_ptr, con);
+            remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
             break;
         case X11_UNMANAGED:
-            remove_in_composed_list(m->normal_visual_stack_lists, cmp_ptr, con);
+            remove_in_composed_list(server.normal_visual_stack_lists, cmp_ptr, con);
             workspace_remove_independent_container(ws, con);
             break;
         default:
-            remove_in_composed_list(m->normal_visual_stack_lists, cmp_ptr, con);
+            remove_in_composed_list(server.normal_visual_stack_lists, cmp_ptr, con);
             workspace_remove_container(ws, con);
             break;
     }
@@ -169,8 +168,8 @@ struct container *xy_to_container(double x, double y)
     if (!m)
         return NULL;
 
-    for (int i = 0; i < length_of_composed_list(m->visual_stack_lists); i++) {
-        struct container *con = get_in_composed_list(m->visual_stack_lists, i);
+    for (int i = 0; i < length_of_composed_list(server.visual_stack_lists); i++) {
+        struct container *con = get_in_composed_list(server.visual_stack_lists, i);
         if (!con->focusable)
             continue;
         if (!visible_on(monitor_get_active_tagset(m), con))
@@ -459,8 +458,7 @@ void lift_container(struct container *con)
     if (con->client->type == LAYER_SHELL)
         return;
 
-    struct monitor *m = container_get_monitor(con);
-    remove_in_composed_list(m->normal_visual_stack_lists, cmp_ptr, con);
+    remove_in_composed_list(server.normal_visual_stack_lists, cmp_ptr, con);
     add_container_to_stack(con);
 }
 
@@ -534,12 +532,11 @@ void set_container_floating(struct container *con, void (*fix_position)(struct c
             remove_container_from_scratchpad(con);
         }
 
-        struct monitor *m = container_get_monitor(con);
-        g_ptr_array_remove(m->floating_visual_stack, con);
-        g_ptr_array_insert(m->tiled_visual_stack, 0, con);
+        g_ptr_array_remove(server.floating_visual_stack, con);
+        g_ptr_array_insert(server.tiled_visual_stack, 0, con);
     } else {
-        g_ptr_array_remove(m->tiled_visual_stack, con);
-        g_ptr_array_insert(m->floating_visual_stack, 0, con);
+        g_ptr_array_remove(server.tiled_visual_stack, con);
+        g_ptr_array_insert(server.floating_visual_stack, 0, con);
     }
 
     lift_container(con);

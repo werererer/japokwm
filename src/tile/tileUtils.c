@@ -208,6 +208,7 @@ void arrange_monitor(struct monitor *m)
     GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
     GPtrArray *hidden_containers = tagset_get_hidden_list(tagset); 
 
+    printf("length_of_composed_list: %i\n", length_of_composed_list(visible_container_lists));
     update_hidden_status_of_containers(m, visible_container_lists,
             tiled_containers, hidden_containers);
 
@@ -357,7 +358,7 @@ void resize(struct container *con, struct wlr_box geom)
 }
 
 void update_hidden_status_of_containers(struct monitor *m, 
-        GPtrArray *visible_container_lists, GPtrArray *tiled_containers,
+        GPtrArray2D *visible_container_lists, GPtrArray *tiled_containers,
         GPtrArray *hidden_containers)
 {
     struct layout *lt = get_layout_in_monitor(m);

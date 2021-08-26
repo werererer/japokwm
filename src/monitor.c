@@ -21,41 +21,10 @@ struct wl_list sticky_stack;
 
 struct monitor *selected_monitor;
 
-static void init_lists(struct monitor *m);
 static void handle_output_damage_frame(struct wl_listener *listener, void *data);
 static void handle_output_frame(struct wl_listener *listener, void *data);
 static void handle_output_mode(struct wl_listener *listener, void *data);
 static void evaluate_monrules(struct wlr_output *output);
-
-static void init_lists(struct monitor *m)
-{
-    m->visual_stack_lists = g_ptr_array_new();
-    m->normal_visual_stack_lists = g_ptr_array_new();
-    m->layer_visual_stack_lists = g_ptr_array_new();
-
-    m->tiled_visual_stack = g_ptr_array_new();
-    m->floating_visual_stack = g_ptr_array_new();
-    m->layer_visual_stack_background = g_ptr_array_new();
-    m->layer_visual_stack_bottom = g_ptr_array_new();
-    m->layer_visual_stack_top = g_ptr_array_new();
-    m->layer_visual_stack_overlay = g_ptr_array_new();
-
-    g_ptr_array_add(m->visual_stack_lists, m->layer_visual_stack_overlay);
-    g_ptr_array_add(m->visual_stack_lists, m->layer_visual_stack_top);
-    g_ptr_array_add(m->visual_stack_lists, m->floating_visual_stack);
-    g_ptr_array_add(m->visual_stack_lists, m->tiled_visual_stack);
-    g_ptr_array_add(m->visual_stack_lists, m->layer_visual_stack_bottom);
-    g_ptr_array_add(m->visual_stack_lists, m->layer_visual_stack_background);
-
-    g_ptr_array_add(m->normal_visual_stack_lists, m->floating_visual_stack);
-    g_ptr_array_add(m->normal_visual_stack_lists, m->tiled_visual_stack);
-
-    g_ptr_array_add(m->layer_visual_stack_lists, m->layer_visual_stack_overlay);
-    g_ptr_array_add(m->layer_visual_stack_lists, m->layer_visual_stack_top);
-    g_ptr_array_add(m->layer_visual_stack_lists, m->layer_visual_stack_bottom);
-    g_ptr_array_add(m->layer_visual_stack_lists, m->layer_visual_stack_background);
-
-}
 
 void create_monitor(struct wl_listener *listener, void *data)
 {
@@ -71,7 +40,6 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     /* Allocates and configures monitor state using configured rules */
     struct monitor *m = output->data = calloc(1, sizeof(struct monitor));
-    init_lists(m);
 
     m->wlr_output = output;
 

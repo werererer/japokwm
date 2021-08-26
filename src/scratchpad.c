@@ -30,7 +30,7 @@ void move_to_scratchpad(struct container *con, int position)
 
     remove_in_composed_list(tagset->list_set->container_lists, cmp_ptr, con);
     list_remove(tagset->list_set->focus_stack_normal, cmp_ptr, con);
-    remove_in_composed_list(m->visual_stack_lists, cmp_ptr, con);
+    remove_in_composed_list(server.visual_stack_lists, cmp_ptr, con);
 
     container_damage_whole(con);
     focus_most_recent_container(tagset);

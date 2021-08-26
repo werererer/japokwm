@@ -4,6 +4,37 @@
 
 struct server server;
 
+static void init_lists(struct server *m);
+
+static void init_lists(struct server *server)
+{
+    server->visual_stack_lists = g_ptr_array_new();
+    server->normal_visual_stack_lists = g_ptr_array_new();
+    server->layer_visual_stack_lists = g_ptr_array_new();
+
+    server->tiled_visual_stack = g_ptr_array_new();
+    server->floating_visual_stack = g_ptr_array_new();
+    server->layer_visual_stack_background = g_ptr_array_new();
+    server->layer_visual_stack_bottom = g_ptr_array_new();
+    server->layer_visual_stack_top = g_ptr_array_new();
+    server->layer_visual_stack_overlay = g_ptr_array_new();
+
+    g_ptr_array_add(server->visual_stack_lists, server->layer_visual_stack_overlay);
+    g_ptr_array_add(server->visual_stack_lists, server->layer_visual_stack_top);
+    g_ptr_array_add(server->visual_stack_lists, server->floating_visual_stack);
+    g_ptr_array_add(server->visual_stack_lists, server->tiled_visual_stack);
+    g_ptr_array_add(server->visual_stack_lists, server->layer_visual_stack_bottom);
+    g_ptr_array_add(server->visual_stack_lists, server->layer_visual_stack_background);
+
+    g_ptr_array_add(server->normal_visual_stack_lists, server->floating_visual_stack);
+    g_ptr_array_add(server->normal_visual_stack_lists, server->tiled_visual_stack);
+
+    g_ptr_array_add(server->layer_visual_stack_lists, server->layer_visual_stack_overlay);
+    g_ptr_array_add(server->layer_visual_stack_lists, server->layer_visual_stack_top);
+    g_ptr_array_add(server->layer_visual_stack_lists, server->layer_visual_stack_bottom);
+    g_ptr_array_add(server->layer_visual_stack_lists, server->layer_visual_stack_background);
+}
+
 void init_server()
 {
     server = (struct server) {
@@ -11,6 +42,8 @@ void init_server()
         .config_dir = "",
         .previous_tagset = NULL,
     };
+
+    init_lists(&server);
 
     wl_list_init(&sticky_stack);
 

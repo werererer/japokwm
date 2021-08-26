@@ -4,10 +4,7 @@
 #include <stdlib.h>
 #include <glib.h>
 
-/* a 2d array type that means that the lists have to be filled with other
- * GPtrArray variables
- * */
-typedef GPtrArray GPtrArray2D;
+#include "utils/coreUtils.h"
 
 /*
  * list_set is used by tagsets and workspaces to hold all containers on them

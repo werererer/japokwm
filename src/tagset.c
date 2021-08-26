@@ -622,7 +622,6 @@ bool visible_on(struct tagset *tagset, struct container *con)
         return false;
 
     return exist_on(tagset, con);
-
 }
 
 bool tagset_is_visible(struct tagset *tagset)

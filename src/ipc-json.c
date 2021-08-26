@@ -121,7 +121,7 @@ static bool is_workspace_extern(struct workspace *ws)
         return false;
     if (!ws->tagset)
         return false;
-    bool is_extern = ws->tagset != ws->selected_tagset;
+    bool is_extern = ws->tagset->m != ws->selected_tagset->m;
     return is_extern;
 }
 
