@@ -48,8 +48,6 @@ struct tagset {
 
     struct list_set *list_set;
     bool loaded;
-
-    int ref_count;
 };
 
 /* this creates a tagset with reference count of 1. Calling focus_tagset

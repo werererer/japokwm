@@ -237,7 +237,6 @@ static void focus_action(struct tagset *tagset)
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *workspaces)
 {
     struct tagset *tagset = g_rc_box_new0(struct tagset);
-    tagset->ref_count = 1;
     tagset->m = m;
 
     tagset->selected_ws_id = selected_ws_id;
@@ -259,8 +258,6 @@ static void _destroy_tagset(void *tagset_ptr)
         return;
 
     struct tagset *tagset = (struct tagset *)tagset_ptr;
-    printf("destroy\n");
-    printf("destroy tagset: ws: %i\n", tagset->selected_ws_id);
 
     struct workspace *selected_workspace = get_workspace(tagset->selected_ws_id);
     if (selected_workspace->selected_tagset == tagset) {
@@ -271,7 +268,6 @@ static void _destroy_tagset(void *tagset_ptr)
     g_ptr_array_remove(server.tagsets, tagset);
     bitset_destroy(tagset->workspaces);
     destroy_list_set(tagset->list_set);
-
 }
 
 void tagset_acquire(struct tagset *tagset)
@@ -279,8 +275,6 @@ void tagset_acquire(struct tagset *tagset)
     if (!tagset)
         return;
     g_rc_box_acquire(tagset);
-    tagset->ref_count++;
-    printf("tagset: %i refcount acq: %i\n", tagset->selected_ws_id, tagset->ref_count);
 }
 
 void tagset_release(struct tagset *tagset)
@@ -288,8 +282,6 @@ void tagset_release(struct tagset *tagset)
     if (!tagset)
         return;
     g_rc_box_release_full(tagset, _destroy_tagset);
-    tagset->ref_count--;
-    printf("tagset: %i refcount rel: %i\n", tagset->selected_ws_id, tagset->ref_count);
 }
 
 void focus_most_recent_container(struct tagset *tagset)
@@ -369,7 +361,6 @@ void focus_tagset_no_ref(struct tagset *tagset)
 
     tagset_update_unvisible_tagset(old_tagset);
     tagset_update_visible_tagset(tagset);
-    printf("focus_tagset\n");
     tagset_release(m->tagset);
     m->tagset = tagset;
     ipc_event_workspace();
