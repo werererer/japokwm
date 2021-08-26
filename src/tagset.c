@@ -307,7 +307,44 @@ void focus_most_recent_container(struct tagset *tagset)
     focus_container(con);
 }
 
-void focus_tagset(struct tagset *tagset)
+static void _focus_tagset(struct tagset *tagset)
+{
+    if(!tagset)
+        return;
+
+    struct monitor *m = tagset->m;
+
+    focus_monitor(m);
+
+    struct tagset *old_tagset = m->tagset;
+
+    if (old_tagset) {
+        for (int i = 0; i < length_of_composed_list(old_tagset->list_set->container_lists); i++) {
+            struct container *con = get_in_composed_list(old_tagset->list_set->container_lists, i);
+            struct workspace *ws = get_workspace(tagset->selected_ws_id);
+            if (con->client->sticky) {
+                move_container_to_workspace(con, ws);
+            }
+        }
+
+        unfocus_action(old_tagset, tagset->m, tagset->workspaces);
+    }
+
+    tagset_update_unvisible_tagset(old_tagset);
+    tagset_update_visible_tagset(tagset);
+    m->tagset = tagset;
+    ipc_event_workspace();
+
+    arrange();
+    focus_action(tagset);
+    focus_most_recent_container(tagset);
+    root_damage_whole(m->root);
+
+    struct seat *seat = input_manager_get_default_seat();
+    cursor_rebase(seat->cursor);
+}
+
+void focus_tagset_no_ref(struct tagset *tagset)
 {
     if(!tagset)
         return;
@@ -333,7 +370,6 @@ void focus_tagset(struct tagset *tagset)
     tagset_update_unvisible_tagset(old_tagset);
     tagset_update_visible_tagset(tagset);
     printf("focus_tagset\n");
-    tagset_acquire(tagset);
     tagset_release(m->tagset);
     m->tagset = tagset;
     ipc_event_workspace();
@@ -345,6 +381,15 @@ void focus_tagset(struct tagset *tagset)
 
     struct seat *seat = input_manager_get_default_seat();
     cursor_rebase(seat->cursor);
+}
+
+void focus_tagset(struct tagset *tagset)
+{
+    if(!tagset)
+        return;
+
+    tagset_acquire(tagset);
+    focus_tagset_no_ref(tagset);
 }
 
 static void tagset_save_to_workspace(struct tagset *tagset, struct workspace *ws)
@@ -420,25 +465,25 @@ void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
     tagset_update_visible_tagset(tagset);
 }
 
+void push_tagset_no_ref(struct tagset *tagset)
+{
+    struct monitor *m = selected_monitor;
+    tagset_write_to_workspaces(m->tagset);
+
+    tagset_acquire(m->tagset);
+    tagset_release(server.previous_tagset);
+    server.previous_tagset = m->tagset;
+
+    focus_tagset_no_ref(tagset);
+}
+
 void push_tagset(struct tagset *tagset)
 {
     if (!tagset)
         return;
-    bool need_extra = tagset == server.previous_tagset;
-    if (need_extra) {
-        tagset_acquire(tagset);
-    }
-    struct monitor *m = selected_monitor;
+    tagset_acquire(tagset);
 
-    tagset_write_to_workspaces(m->tagset);
-    printf("push_tagset\n");
-    tagset_acquire(m->tagset);
-    tagset_release(server.previous_tagset);
-    server.previous_tagset = m->tagset;
-    focus_tagset(tagset);
-    if (need_extra) {
-        tagset_release(tagset);
-    }
+    push_tagset_no_ref(tagset);
 }
 
 static void handle_too_few_workspaces(uint32_t ws_id)
@@ -490,8 +535,7 @@ void tagset_focus_tags(int ws_id, struct BitSet *bitset)
         push_tagset(tagset);
     } else {
         tagset = create_tagset(m, ws_id, bitset);
-        push_tagset(tagset);
-        tagset_release(tagset);
+        push_tagset_no_ref(tagset);
     }
 }
 

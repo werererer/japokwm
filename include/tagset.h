@@ -52,7 +52,11 @@ struct tagset {
     int ref_count;
 };
 
+/* this creates a tagset with reference count of 1. Calling focus_tagset
+ * afterwards also adds a ref counter of 1 therefore use focus_tagset_no_ref
+ * instead.  */
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *workspaces);
+void tagset_acquire(struct tagset *tagset);
 void tagset_release(struct tagset *tagset);
 
 void focus_most_recent_container(struct tagset *tagset);
@@ -76,8 +80,12 @@ bool tagset_contains_client(struct tagset *tagset, struct client *c);
 bool visible_on(struct tagset *tagset, struct container *con);
 bool tagset_is_visible(struct tagset *tagset);
 
+// adds a refcount of 1 to tagset
 void focus_tagset(struct tagset *tagset);
+void focus_tagset_no_ref(struct tagset *tagset);
+// adds a refcount of 1 to tagset
 void push_tagset(struct tagset *tagset);
+void push_tagset_no_ref(struct tagset *tagset);
 
 struct layout *tagset_get_layout(struct tagset *tagset);
 
