@@ -115,6 +115,16 @@ static bool is_workspace_the_selected_one(struct workspace *ws)
         && tagset_is_visible(ws->selected_tagset);
 }
 
+static bool is_workspace_extern(struct workspace *ws)
+{
+    if (!ws->selected_tagset)
+        return false;
+    if (!ws->tagset)
+        return false;
+    bool is_extern = ws->tagset != ws->selected_tagset;
+    return is_extern;
+}
+
 json_object *ipc_json_describe_tagsets()
 {
     json_object *array = json_object_new_array();
@@ -137,15 +147,15 @@ json_object *ipc_json_describe_tagsets()
         json_object *tagset_object = ipc_json_describe_tag(full_name, is_active, m);
         json_object_array_add(array, tagset_object);
 
-/*         bool is_extern = m != workspace_get_selected_monitor(ws); */
-/*         if (is_extern) { */
-/*             char *hidden_name = strdup(ws->name); */
-/*             add_infix(&hidden_name, "(", ")"); */
-/*             json_object *tagset_object = ipc_json_describe_tag(hidden_name, false, m); */
-/*             json_object_array_add(array, tagset_object); */
-/*             free(hidden_name); */
-/*         } */
-
+        // for the second monitor
+        if (is_workspace_extern(ws)) {
+            struct monitor *selected_monitor = workspace_get_selected_monitor(ws);
+            char *hidden_name = strdup(ws->name);
+            add_infix(&hidden_name, "(", ")");
+            json_object *tagset_object = ipc_json_describe_tag(hidden_name, false, selected_monitor);
+            json_object_array_add(array, tagset_object);
+            free(hidden_name);
+        }
         free(full_name);
     }
     return array;
