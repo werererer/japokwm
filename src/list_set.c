@@ -118,7 +118,6 @@ void list_set_remove_list_set(struct list_set *dest, struct list_set *src)
     for (int i = 0; i < src->all_lists->len; i++) {
         GPtrArray *src_containers = g_ptr_array_index(src->all_lists, i);
         GPtrArray *dest_list = g_ptr_array_index(dest->all_lists, i);
-        printf("src list length: %i\n", src_containers->len);
         for (int j = 0; j < src_containers->len; j++) {
             struct container *con = g_ptr_array_index(src_containers, j);
 

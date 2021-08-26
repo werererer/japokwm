@@ -154,7 +154,7 @@ bool workspace_is_active(struct workspace *ws)
         return false;
 
     struct tagset *tagset = monitor_get_active_tagset(m);
-    return bitset_test(tagset->workspaces, ws->id);
+    return bitset_test(tagset->loaded_workspaces, ws->id);
 }
 
 int get_workspace_container_count(struct workspace *ws)
