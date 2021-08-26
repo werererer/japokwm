@@ -74,10 +74,6 @@ static void tagset_update_unvisible_tagset(struct tagset *tagset)
 
         struct workspace *ws = get_workspace(i);
         ws->tagset = NULL;
-        bool is_selected = tagset->selected_ws_id == i;
-        if (is_selected) {
-            ws->selected_tagset = NULL;
-        }
     }
 }
 
@@ -271,6 +267,11 @@ static void _destroy_tagset(void *tagset_ptr)
 
     struct tagset *tagset = (struct tagset *)tagset_ptr;
     printf("tagset destroy: ws: %i\n", tagset->selected_ws_id);
+
+    struct workspace *selected_workspace = get_workspace(tagset->selected_ws_id);
+    if (selected_workspace->selected_tagset == tagset) {
+        selected_workspace->selected_tagset = NULL;
+    }
 
     tagset_unload_workspaces(tagset);
     g_ptr_array_remove(server.tagsets, tagset);
