@@ -681,6 +681,7 @@ void set_container_workspace(struct container *con, struct workspace *ws)
     workspace_add_container_to_focus_stack(ws, con);
 
     con->client->ws_id = ws->id;
+    ws->prev_m = m;
 
     if (con->floating)
         con->client->bw = ws->layout->options.float_border_px;
