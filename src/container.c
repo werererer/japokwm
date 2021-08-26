@@ -616,7 +616,7 @@ struct monitor *container_get_monitor(struct container *con)
     }
 
     struct workspace *ws = get_workspace(con->client->ws_id);
-    struct monitor *m  = workspace_get_monitor(ws);
+    struct monitor *m = workspace_get_monitor(ws);
     return m;
 }
 

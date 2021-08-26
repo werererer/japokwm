@@ -107,14 +107,6 @@ static void add_infix(char **full_name, const char *prefix, const char *postfix)
     free(position);
 }
 
-static bool is_workspace_the_selected_one(struct workspace *ws)
-{
-    if (!ws->selected_tagset)
-        return false;
-    return ws->selected_tagset->selected_ws_id == ws->id
-        && tagset_is_visible(ws->selected_tagset);
-}
-
 static bool is_workspace_extern(struct workspace *ws)
 {
     if (!ws->selected_tagset)
@@ -123,6 +115,15 @@ static bool is_workspace_extern(struct workspace *ws)
         return false;
     bool is_extern = ws->tagset->m != ws->selected_tagset->m;
     return is_extern;
+}
+
+static bool is_workspace_the_selected_one(struct workspace *ws)
+{
+    if (!ws->selected_tagset)
+        return false;
+    return ws->selected_tagset->selected_ws_id == ws->id
+        && tagset_is_visible(ws->selected_tagset)
+        && !is_workspace_extern(ws);
 }
 
 json_object *ipc_json_describe_tagsets()

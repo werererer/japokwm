@@ -208,7 +208,6 @@ void arrange_monitor(struct monitor *m)
     GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
     GPtrArray *hidden_containers = tagset_get_hidden_list(tagset); 
 
-    printf("length_of_composed_list: %i\n", length_of_composed_list(visible_container_lists));
     update_hidden_status_of_containers(m, visible_container_lists,
             tiled_containers, hidden_containers);
 
@@ -255,9 +254,11 @@ void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,
     for (int i = 0; i < tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(tiled_containers, i);
 
-/*         /1* // the monitor must be on the same monitor as it is tiled on else it is *1/ */
-/*         /1* // a bug *1/ */
-/*         assert(container_get_monitor(con) == tagset->m); */
+        /* // the monitor must be on the same monitor as it is tiled on else it is */
+        /* // a bug */
+        printf("con: %i ws: %i monitor: %p\n", i, con->client->ws_id, container_get_monitor(con));
+        printf("tagset: %p ->ws: %i ->m: %p\n", tagset, tagset->selected_ws_id, tagset->m);
+        assert(container_get_monitor(con) == tagset->m);
 
         arrange_container(con, i, root_geom, actual_inner_gap);
     }
@@ -343,7 +344,6 @@ void resize(struct container *con, struct wlr_box geom)
                     width = con->client->surface.layer->current.desired_width;
                 if (con->client->surface.layer->current.desired_height > 0)
                     height = con->client->surface.layer->current.desired_width;
-                printf("configure surface: %i %i\n", width, height);
                 wlr_layer_surface_v1_configure(con->client->surface.layer,
                         width,
                         height);

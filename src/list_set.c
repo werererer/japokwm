@@ -5,6 +5,7 @@
 #include "ipc-server.h"
 #include "server.h"
 #include "utils/coreUtils.h"
+#include "container.h"
 
 struct list_set *create_list_set()
 {
@@ -116,22 +117,15 @@ void list_set_remove_list_set(struct list_set *dest, struct list_set *src)
 {
     for (int i = 0; i < src->all_lists->len; i++) {
         GPtrArray *src_containers = g_ptr_array_index(src->all_lists, i);
-        list_set_remove_containers(dest, src_containers);
-    }
-}
-
-void list_set_remove_containers(struct list_set *dest, GPtrArray *containers)
-{
-    for (int i = 0; i < dest->all_lists->len; i++) {
         GPtrArray *dest_list = g_ptr_array_index(dest->all_lists, i);
-        for (int j = 0; j < dest_list->len; j++) {
-            struct container *con = g_ptr_array_index(dest_list, j);
+        printf("src list length: %i\n", src_containers->len);
+        for (int j = 0; j < src_containers->len; j++) {
+            struct container *con = g_ptr_array_index(src_containers, j);
 
             guint position;
-            bool found = g_ptr_array_find(containers, con, &position);
+            bool found = g_ptr_array_find(dest_list, con, &position);
             if (found) {
-                g_ptr_array_remove_index(dest_list, j);
-                g_ptr_array_remove_index_fast(containers, position);
+                g_ptr_array_remove_index(dest_list, position);
             }
         }
     }
