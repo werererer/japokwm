@@ -41,14 +41,14 @@ static int load_file(lua_State *L, const char *file)
 {
     printf("load file: %s\n", file);
     if (!file_exists(file)) {
-        return 1;
+        return EXIT_FAILURE;
     }
 
     if (luaL_loadfile(L, file)) {
         const char *errmsg = luaL_checkstring(L, -1);
         lua_pop(L, 1);
         handle_error(errmsg);
-        return 1;
+        return EXIT_FAILURE;
     }
 
     int ret = lua_call_safe(L, 0, 0, 0);
@@ -151,64 +151,13 @@ static int get_base_dir_id()
 // returns 0 upon success and 1 upon failure
 static int load_default_config(lua_State *L)
 {
-    char *config_path = get_config_dir(config_file);
-    printf("config_dir: %s\n", config_path);
+    char *file_path = get_config_file(config_file);
+    if (!file_path)
+        return EXIT_FAILURE;
 
-    // get the index of the config file in config_paths array
-    int default_id = -1;
-    for (int i = 0; i < LENGTH(config_paths); i++) {
-        char *path = strdup(config_paths[i]);
-        expand_path(&path);
-        if (path_compare(path, config_path) == 0) {
-            default_id = i;
-            free(path);
-            break;
-        }
-        free(path);
-    }
+    int success = load_file(L, file_path);
+    free(file_path);
 
-    bool loaded_custom_path = false;
-    if (default_id == -1) {
-        default_id = 0;
-
-        append_to_lua_path(L, config_path);
-
-        // try to load the file given by config_path
-        char *file_path = strdup(config_path);
-        join_path(&file_path, config_file);
-        expand_path(&file_path);
-        loaded_custom_path = (load_file(L, file_path) == EXIT_SUCCESS);
-        free(file_path);
-    }
-
-    if (config_path)
-        free(config_path);
-
-    if (loaded_custom_path)
-        return EXIT_SUCCESS;
-
-    int success = EXIT_SUCCESS;
-    // repeat loop until the first config file was loaded successfully
-    for (int i = 0; i < LENGTH(config_paths); i++) {
-        if (i < default_id)
-            continue;
-
-        append_to_lua_path(L, config_paths[i]);
-
-        char *path = strdup(config_paths[i]);
-        join_path(&path, config_file);
-        expand_path(&path);
-
-        if (load_file(L, path) == EXIT_FAILURE) {
-            success = EXIT_FAILURE;
-            free(path);
-            continue;
-        }
-
-        // when config loaded successfully break;
-        free(path);
-        break;
-    }
     return success;
 }
 
@@ -233,35 +182,19 @@ int init_utils(lua_State *L)
     char *config_dir = get_config_dir(tile_file);
 
     if (!config_dir)
-        return 1;
+        return EXIT_FAILURE;
 
-    bool success = true;
-    // repeat loop until the first config file was loaded successfully
-    for (int i = 0; i < LENGTH(config_paths); i++) {
-        if (path_compare(config_paths[i], config_dir) != 0) {
-            continue;
-        }
+    char *dir = strdup(config_dir);
+    join_path(&dir, "?.lua");
+    append_to_lua_path(L, dir);
+    free(dir);
 
-        char *dir = strdup(config_paths[i]);
-        join_path(&dir, "?.lua");
-        append_to_lua_path(L, dir);
-        free(dir);
-
-        char *file_path = strdup(config_paths[i]);
-        join_path(&file_path, tile_file);
-        expand_path(&file_path);
-        if (load_file(L, file_path) != 0) {
-            free(file_path);
-            continue;
-        }
-        free(file_path);
-
-        // when config loaded successfully break;
-        success = false;
-        break;
-    }
+    char *file_path = strdup(config_dir);
+    join_path(&file_path, tile_file);
+    int success = load_file(L, file_path);
 
     free(config_dir);
+    free(file_path);
 
     return success;
 }
