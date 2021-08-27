@@ -135,9 +135,11 @@ bool workspace_is_visible(struct workspace *ws)
     assert(ws != NULL);
 
     if (ws->prev_m && !is_workspace_empty(ws)) {
+        printf("prev_m\n");
         return true;
     }
     if (ws->tagset) {
+        printf("tagset is visible\n");
         return tagset_is_visible(ws->tagset);
     }
     if (ws->selected_tagset) {

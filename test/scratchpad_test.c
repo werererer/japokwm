@@ -3,7 +3,7 @@
 
 #include "scratchpad.h"
 
-void show_scratchpad_crash_test()
+void tagset_connect_workspace_testestace()
 {
     /* show_scratchpad(); */
 }
@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     setbuf(stdout, NULL);
     g_test_init(&argc, &argv, NULL);
 
-    add_test(show_scratchpad_crash_test);
+    add_test(tagset_connect_workspace_testestace);
 
     return g_test_run();
 }

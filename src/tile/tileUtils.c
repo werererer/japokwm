@@ -28,6 +28,7 @@ void arrange()
 {
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
+        printf("arrange_m: %p\n", m);
         arrange_monitor(m);
     }
 }
