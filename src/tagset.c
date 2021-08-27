@@ -96,11 +96,8 @@ static void tagset_workspaces_disconnect(struct tagset *tagset)
         return;
 
     struct workspace *sel_ws = get_workspace(tagset->selected_ws_id);
-
     tagset_workspace_disconnect(sel_ws->tagset, sel_ws);
-    tagset_assign_workspace(sel_ws->tagset, sel_ws, false);
 
-    tagset_unload_workspaces(tagset);
     for (size_t i = 0; i < tagset->workspaces->size; i++) {
         bool bit = bitset_test(tagset->workspaces, i);
 
@@ -153,11 +150,6 @@ static void tagset_update_visible_tagset(struct tagset *tagset)
         struct workspace *ws = get_workspace(i);
         ws->prev_m = tagset->m;
     }
-}
-
-static void reload_visible_tagsets(struct tagset *old_tagset, struct tagset *new_tagset)
-{
-
 }
 
 static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
@@ -242,7 +234,6 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *work
     tagset->workspaces = bitset_create(server.workspaces->len);
     tagset->loaded_workspaces = bitset_create(server.workspaces->len);
     tagset_assign_workspaces(tagset, workspaces);
-    tagset_load_workspaces(tagset, workspaces);
 
     g_ptr_array_add(server.tagsets, tagset);
     return tagset;
@@ -262,7 +253,6 @@ static void _destroy_tagset(void *tagset_ptr)
 
     tagset_clean_destroyed_tagset(tagset);
 
-    tagset_unload_workspaces(tagset);
     g_ptr_array_remove(server.tagsets, tagset);
     bitset_destroy(tagset->workspaces);
     bitset_destroy(tagset->loaded_workspaces);
@@ -306,6 +296,7 @@ void focus_tagset_no_ref(struct tagset *tagset)
     struct monitor *m = tagset->m;
 
     focus_monitor(m);
+    selected_monitor = m;
 
     struct tagset *old_tagset = m->tagset;
 
@@ -317,9 +308,7 @@ void focus_tagset_no_ref(struct tagset *tagset)
                 move_container_to_workspace(con, ws);
             }
         }
-        if (old_tagset->m == tagset->m) {
-            tagset_workspaces_disconnect(m->tagset);
-        }
+        tagset_workspaces_disconnect(m->tagset);
     }
     tagset_workspaces_connect(tagset);
     tagset_release(m->tagset);
@@ -422,9 +411,6 @@ void push_tagset_no_ref(struct tagset *tagset)
     if (m->tagset != tagset) {
         _set_previous_tagset(m->tagset);
     }
-
-    printf("current: %i\n", tagset->selected_ws_id);
-    printf("previous_tagset: %i\n", server.previous_tagset->selected_ws_id);
 
     focus_tagset_no_ref(tagset);
 }
