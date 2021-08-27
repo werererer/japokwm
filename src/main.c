@@ -271,6 +271,10 @@ void print_usage()
 
 int main(int argc, char *argv[])
 {
+#if DEBUG
+    setbuf(stdout, NULL);
+#endif
+
     init_server();
 
     char *startup_cmd = "";
@@ -313,9 +317,6 @@ int main(int argc, char *argv[])
         print_usage();
         return EXIT_SUCCESS;
     }
-
-    // TODO delete to increase performance
-    setbuf(stdout, NULL);
 
     // Wayland requires XDG_RUNTIME_DIR for creating its communications
     // socket

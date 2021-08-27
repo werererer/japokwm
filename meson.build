@@ -5,6 +5,8 @@ wayland_scanner = find_program('wayland-scanner', native: true)
 
 root = meson.source_root()
 
+cc = meson.get_compiler('c')
+
 # add version macro
 version = '"@0@"'.format(meson.project_version())
 git = find_program('git', native: true, required: false)
@@ -20,6 +22,18 @@ if git.found()
     endif
 endif
 add_project_arguments('-DJAPOKWM_VERSION=@0@'.format(version), language: 'c')
+
+if get_option('xwayland')
+  add_project_arguments('-DJAPOKWM_HAS_XWAYLAND=1'.format(version), language: 'c')
+else
+  add_project_arguments('-DJAPOKWM_HAS_XWAYLAND=0'.format(version), language: 'c')
+endif
+
+if get_option('debug')
+  add_project_arguments('-DDEBUG=1'.format(version), language: 'c')
+else
+  add_project_arguments('-DDEBUG=0'.format(version), language: 'c')
+endif
 
 datadir = get_option('datadir')
 install_data(
