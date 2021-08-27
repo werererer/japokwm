@@ -18,7 +18,6 @@ static void tagset_set_tag(struct tagset *tagset, struct workspace *ws, bool loa
 static void tagset_set_tags(struct tagset *tagset, BitSet *workspaces);
 static void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces);
 static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws);
-static void tagset_load_missing_workspaces(struct tagset *tagset);
 static void tagset_unload_workspaces(struct tagset *tagset);
 static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_clear_workspaces(struct tagset *tagset);
@@ -162,26 +161,6 @@ static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
 
     bitset_set(tagset->loaded_workspaces, ws->id);
     tagset_subscribe_to_workspace(tagset, ws);
-}
-
-static void tagset_load_missing_workspaces(struct tagset *tagset)
-{
-    BitSet *missing_tagsets = bitset_copy(tagset->workspaces);
-    bitset_xor(missing_tagsets, tagset->loaded_workspaces);
-    bitset_and(missing_tagsets, tagset->workspaces);
-
-    for (int i = 0; i < missing_tagsets->size; i++) {
-        bool bit = bitset_test(missing_tagsets, i);
-
-        if (!bit)
-            continue;
-
-        struct workspace *ws = get_workspace(i);
-        tagset_load_workspace(tagset, ws);
-    }
-
-    if (bitset_any(tagset->loaded_workspaces))
-    bitset_destroy(missing_tagsets);
 }
 
 static void tagset_unsubscribe_from_workspace(struct tagset *tagset, struct workspace *ws)
@@ -429,6 +408,7 @@ static void handle_too_few_workspaces(uint32_t ws_id)
     for (int i = 0; i < server.tagsets->len; i++) {
         struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
         bitset_push(tagset->workspaces, 0);
+        bitset_push(tagset->loaded_workspaces, 0);
     }
 }
 
