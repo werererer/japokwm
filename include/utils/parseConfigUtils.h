@@ -36,12 +36,6 @@ void call_arrange_func(lua_State *L, int funcId, int n);
 void notify_msg(const char *msg);
 void handle_error(const char *msg);
 
-// get array values
-void get_config_float_arr(lua_State *L, float *resArr, char *name);
-void get_config_int_arr(lua_State *L, int *resArr, char *name);
-void get_config_rule_arr(lua_State *L, struct rule **rules, size_t *rule_count, char *name);
-void get_config_mon_rule_arr(lua_State *L, struct monrule **monrules, size_t *monrule_count, char *name);
-
 struct rule get_config_array_rule(lua_State *L, const char* name, size_t i);
 char *get_config_array_str(lua_State *L, const char *name, size_t i);
 struct monrule get_config_array_monrule(lua_State *L, const char* name, size_t i);
