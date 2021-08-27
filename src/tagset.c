@@ -14,6 +14,8 @@
 #include "cursor.h"
 
 static void tagset_write_to_workspaces(struct tagset *tagset);
+static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load);
+static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces);
 static void tagset_set_tag(struct tagset *tagset, struct workspace *ws, bool load);
 static void tagset_set_tags(struct tagset *tagset, BitSet *workspaces);
 static void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces);
@@ -21,6 +23,8 @@ static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_unload_workspaces(struct tagset *tagset);
 static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_clear_workspaces(struct tagset *tagset);
+static void tagset_workspaces_disconnect(struct tagset *tagset);
+static void tagset_workspaces_connect(struct tagset *tagset);
 
 static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws);
 
@@ -32,6 +36,19 @@ static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspac
     append_list_set(tagset->list_set, ws->list_set);
 }
 
+static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load)
+{
+    if (!tagset)
+        return;
+
+    bitset_assign(tagset->workspaces, ws->id, load);
+}
+
+static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces)
+{
+    tagset->workspaces = bitset_copy(workspaces);
+}
+
 static void tagset_set_tag(struct tagset *tagset, struct workspace *ws, bool load)
 {
     if (!tagset)
@@ -40,10 +57,14 @@ static void tagset_set_tag(struct tagset *tagset, struct workspace *ws, bool loa
     bitset_assign(tagset->workspaces, ws->id, load);
 }
 
-static void tagset_set_tags(struct tagset *tagset, BitSet *workspaces)
+void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
 {
-    tagset->workspaces = bitset_copy(workspaces);
+    tagset_write_to_workspaces(tagset);
+    tagset_workspaces_disconnect(tagset);
+    tagset_assign_workspaces(tagset, bitset);
+    tagset_workspaces_connect(tagset);
 }
+
 
 // you should use tagset_write_to_workspace to unload workspaces first else
 static void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces)
@@ -432,7 +453,6 @@ void tagset_toggle_add(struct tagset *tagset, BitSet *bitset)
     bitset_xor(new_bitset, tagset->workspaces);
 
     tagset_set_tags(tagset, new_bitset);
-    focus_tagset(tagset);
     ipc_event_workspace();
 }
 
