@@ -8,11 +8,14 @@
 #include "container.h"
 
 /* when an action should change the workspace and the tagsets associated with it
- * you should use this macro. */
+ * you should use this macro.
+ * NOTE: use to jump to the end of the current action*/
 #define DO_ACTION(workspace, action) \
     do {\
         struct list_set *list_set = workspace->list_set;\
-        action\
+        do {\
+            action\
+        } while (0);\
         \
         for (int _i = 0; _i < workspace->subscribed_tagsets->len; _i++) {\
             struct tagset *_tagset = g_ptr_array_index(workspace->subscribed_tagsets, _i);\
