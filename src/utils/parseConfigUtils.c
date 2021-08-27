@@ -20,12 +20,6 @@
 #include "stringop.h"
 #include "utils/coreUtils.h"
 
-static const char *config_paths[] = {
-    "$HOME/.config/japokwm/",
-    "$XDG_CONFIG_HOME/japokwm/",
-    "/etc/japokwm/",
-};
-
 static const char *plugin_relative_paths[] = {
     "autoload",
     "plugins",
@@ -68,9 +62,12 @@ GPtrArray *create_default_config_paths()
 
 char *get_config_file(const char *file)
 {
-    for (size_t i = 0; i < LENGTH(config_paths); ++i) {
-        char *path = strdup(config_paths[i]);
+    printf("get config file: %s\n", file);
+    for (size_t i = 0; i < server.config_paths->len; ++i) {
+        char *path = strdup(g_ptr_array_index(server.config_paths, i));
+        printf("path: %s\n", path);
         join_path(&path, file);
+        expand_path(&path);
         if (file_exists(path))
             return path;
         free(path);
@@ -112,15 +109,17 @@ void append_to_lua_path(lua_State *L, const char *path)
 
 static int load_plugin_paths(lua_State *L)
 {
+    char *base_path = get_config_dir(config_file);
     for (int i = 0; i < LENGTH(plugin_relative_paths); i++) {
+        char *base = strdup(base_path);
         const char *path = plugin_relative_paths[i];
-        char *base_path = get_config_dir(config_file);
-        join_path(&base_path, path);
-        join_path(&base_path, "?");
-        join_path(&base_path, "init.lua");
-        printf("base_path: %s\n", base_path);
-        append_to_lua_path(L, base_path);
+        join_path(&base, path);
+        join_path(&base, "?");
+        join_path(&base, "init.lua");
+        append_to_lua_path(L, base);
+        free(base);
     }
+    free(base_path);
     return 1;
 }
 
@@ -141,7 +140,7 @@ static int load_default_config(lua_State *L)
 int load_config(lua_State *L)
 {
     int success = 0;
-    if (strcmp(server.config_file, "") != 0) {
+    if (server.config_file != NULL && strcmp(server.config_file, "") != 0) {
         success = load_file(L, server.config_file);
     } else {
         success = load_default_config(L);

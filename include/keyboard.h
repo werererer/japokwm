@@ -17,7 +17,6 @@ struct keyboard {
     int32_t repeat_rate;
     int32_t repeat_delay;
 
-
     struct wl_listener modifiers;
     struct wl_listener key;
     struct wl_listener destroy;

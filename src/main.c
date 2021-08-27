@@ -113,7 +113,6 @@ static void run(char *startup_cmd)
 static int setup()
 {
     L = luaL_newstate();
-    luaL_openlibs(L);
     load_lua_api(L);
     init_error_file();
 

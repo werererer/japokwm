@@ -230,6 +230,8 @@ static void load_info()
 
 void load_lua_api(lua_State *L)
 {
+    luaL_openlibs(L);
+
     luaL_newlib(L, action);
     lua_setglobal(L, "action");
 

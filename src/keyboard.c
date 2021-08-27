@@ -76,6 +76,8 @@ void destroy_keyboard(struct keyboard *kb)
 {
     if (!kb)
         return;
+    wl_list_remove(&kb->modifiers.link);
+    wl_list_remove(&kb->key.link);
     wl_list_remove(&kb->destroy.link);
     g_ptr_array_remove(server.keyboards, kb);
     free(kb);
