@@ -318,7 +318,7 @@ void focus_next_unoccupied_workspace(struct monitor *m, GPtrArray *workspaces, s
     bitset_set(bitset, w->id);
 
     struct tagset *tagset = create_tagset(m, w->id, bitset);
-    focus_tagset_no_ref(tagset);
+    push_tagset_no_ref(tagset);
 }
 
 void rename_workspace(struct workspace *ws, const char *name)
