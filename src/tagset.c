@@ -84,9 +84,7 @@ static void tagset_workspace_disconnect(struct tagset *tagset, struct workspace 
     printf("tagset: %i disconnect from: %zu\n", tagset->selected_ws_id, ws->id);
     tagset_unload_workspace(tagset, ws);
     ws->tagset = NULL;
-    if (ws->selected_tagset == tagset) {
-        ws->selected_tagset = NULL;
-    } else if (ws->selected_tagset) {
+    if (ws->selected_tagset != tagset && ws->selected_tagset) {
         // move the workspace back
         ws->tagset = ws->selected_tagset;
         tagset_load_workspace(ws->tagset, ws);
