@@ -235,24 +235,12 @@ int init_utils(lua_State *L)
     if (!config_dir)
         return 1;
 
-    // get the value of the
-    int default_id = 0;
-    for (int i = 0; i < LENGTH(config_paths); i++) {
-        char *path = strdup(config_paths[default_id]);
-        expand_path(&path);
-        if (path_compare(path, config_dir) == 0) {
-            default_id = i;
-            break;
-        }
-        free(path);
-    }
-    free(config_dir);
-
     bool success = true;
     // repeat loop until the first config file was loaded successfully
     for (int i = 0; i < LENGTH(config_paths); i++) {
-        if (i < default_id)
+        if (path_compare(config_paths[i], config_dir) != 0) {
             continue;
+        }
 
         char *dir = strdup(config_paths[i]);
         join_path(&dir, "?.lua");
@@ -272,6 +260,9 @@ int init_utils(lua_State *L)
         success = false;
         break;
     }
+
+    free(config_dir);
+
     return success;
 }
 
