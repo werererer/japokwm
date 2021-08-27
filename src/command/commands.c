@@ -8,6 +8,7 @@
 #include <wlr/backend/wayland.h>
 #include <wlr/backend/headless.h>
 #include <wlr/backend/x11.h>
+#include <wlr/util/log.h>
 
 #include "monitor.h"
 #include "command.h"
@@ -17,9 +18,9 @@
 
 struct cmd_results *cmd_create_output(int argc, char **argv)
 {
-    printf("create output\n");
-    if (!wlr_backend_is_multi(server.backend))
+    if (!wlr_backend_is_multi(server.backend)) {
         printf("Expected a multi backend\n");
+    }
 
     bool done = false;
     wlr_multi_for_each_backend(server.backend, create_output, &done);

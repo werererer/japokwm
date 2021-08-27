@@ -34,7 +34,6 @@ int lib_get_next_empty_workspace(lua_State *L)
     lua_pop(L, 1);
     int id = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    printf("lib_get_next_empty_workspace: %i\n", id);
 
     struct workspace *ws;
     switch (dir) {

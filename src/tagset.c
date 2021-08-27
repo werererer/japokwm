@@ -458,7 +458,6 @@ void tagset_toggle_add(struct tagset *tagset, BitSet *bitset)
 
 void tagset_focus_tags(int ws_id, struct BitSet *bitset)
 {
-    printf("\ntagset set tags\n");
     struct workspace *ws = get_workspace(ws_id);
     struct monitor *ws_m = workspace_get_monitor(ws);
     struct monitor *m = ws_m ? ws_m : selected_monitor;
@@ -471,7 +470,6 @@ void tagset_focus_tags(int ws_id, struct BitSet *bitset)
         tagset = create_tagset(m, ws_id, bitset);
         push_tagset_no_ref(tagset);
     }
-    printf("\ntagset set tags end\n");
 }
 
 struct container *get_container(struct tagset *tagset, int i)

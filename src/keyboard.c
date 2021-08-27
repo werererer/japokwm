@@ -42,8 +42,6 @@ void cleanupkeyboard(struct wl_listener *listener, void *data)
 
 void create_keyboard(struct seat *seat, struct seat_device *seat_device)
 {
-    printf("create_keyboard: %p", seat);
-
     struct wlr_input_device *wlr_device = seat_device->input_device->wlr_device;
     struct keyboard *kb = wlr_device->data = calloc(1, sizeof(struct keyboard));
     kb->seat_device = seat_device;

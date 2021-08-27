@@ -56,6 +56,8 @@ char last_char(const char *str);
 int path_compare(const char *path1, const char *path2);
 void join_path(char **base, const char *file);
 
+void debug_print(const char *fmt, ...);
+
 int cross_sum(int n, int base);
 
 /*

@@ -162,6 +162,16 @@ void join_path(char **base, const char *file)
     strcat(*base, file);
 }
 
+void debug_print(const char *fmt, ...)
+{
+#if DEBUG
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(stderr, fmt, args);
+    va_end(args);
+#endif
+}
+
 void lua_ref_safe(lua_State *L, int t, int *ref)
 {
     if (lua_isnil(L, -1)) {

@@ -217,7 +217,6 @@ struct input_manager *create_input_manager()
 
     input_manager->devices = g_ptr_array_new();
     input_manager->seats = g_ptr_array_new();
-    printf("new input_manager %p\n", input_manager);
 
     LISTEN(&server.backend->events.new_input, &input_manager->new_input,
             handle_new_input);
@@ -292,7 +291,7 @@ char *input_device_get_identifier(struct wlr_input_device *device)
     int len = snprintf(NULL, 0, fmt, vendor, product, name) + 1;
     char *identifier = malloc(len);
     if (!identifier) {
-        wlr_log(WLR_ERROR, "Unable to allocate unique input device name");
+        printf("Unable to allocate unique input device name\n");
         return NULL;
     }
 

@@ -63,7 +63,7 @@ static void run(char *startup_cmd)
     const char *socket = wl_display_add_socket_auto(server.wl_display);
 
     if (!socket)
-        wlr_log(WLR_INFO, "startup: display_add_socket_auto");
+        printf("startup: display_add_socket_auto\n");
 
     /* Set the WAYLAND_DISPLAY environment variable to our socket and run the
      * startup command if requested. */
@@ -72,7 +72,7 @@ static void run(char *startup_cmd)
     /* Start the backend. This will enumerate outputs and inputs, become the DRM
      * master, etc */
     if (!wlr_backend_start(server.backend))
-        wlr_log(WLR_INFO, "startup: backend_start");
+        printf("startup: backend_start");
 
     /* Now that outputs are initialized, choose initial selMon based on
      * cursor position, and set default cursor image */
@@ -91,11 +91,8 @@ static void run(char *startup_cmd)
 
     if (startup_cmd) {
         startup_pid = fork();
-        if (startup_pid < 0)
-            wlr_log(WLR_ERROR, "startup: fork");
         if (startup_pid == 0) {
             execl("/bin/sh", "/bin/sh", "-c", startup_cmd, (void *)NULL);
-            wlr_log(WLR_ERROR, "startup: execl");
         }
     }
     /* Run the Wayland event loop. This does not return until you exit the
@@ -134,7 +131,7 @@ static int setup()
      * if an X11 server is running. The NULL argument here optionally allows you
      * to pass in a custom renderer if wlr_renderer doesnt). */
     if (!(server.backend = wlr_backend_autocreate(server.wl_display))) {
-        wlr_log(WLR_INFO, "couldn't create backend");
+        printf("couldn't create backend");
         return EXIT_FAILURE;
     }
 
@@ -229,7 +226,7 @@ static int setup()
 
         setenv("DISPLAY", server.xwayland.wlr_xwayland->display_name, true);
     } else {
-        wlr_log(WLR_ERROR, "failed to setup XWayland X server, continuing without it");
+        printf("failed to setup XWayland X server, continuing without it");
         unsetenv("DISPLAY");
     }
 
@@ -326,7 +323,7 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     if (setup()) {
-        wlr_log(WLR_ERROR, "failed to setup japokwm");
+        printf("failed to setup japokwm");
         return EXIT_FAILURE;
     }
 

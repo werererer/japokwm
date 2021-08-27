@@ -691,7 +691,6 @@ void set_container_workspace(struct container *con, struct workspace *ws)
 
 void move_container_to_workspace(struct container *con, struct workspace *ws)
 {
-    printf("move container to workspace\n");
     if (!ws)
         return;
     if (!con)

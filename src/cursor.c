@@ -393,9 +393,6 @@ void handle_cursor_button(struct wl_listener *listener, void *data)
                 /* get modifiers */
                 struct seat *seat = input_manager_get_default_seat();
                 struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat->wlr_seat);
-                printf("wlr_seat: %p\n", cursor->seat);
-                printf("wlr_seat2: %p\n", seat);
-                printf("keyboard: %p\n", kb);
                 int mods = wlr_keyboard_get_modifiers(kb);
 
                 handle_keybinding(mods, sym);
@@ -617,7 +614,6 @@ void cursor_constrain(struct cursor *cursor, struct wlr_pointer_constraint_v1 *c
             warp_to_constraint_cursor_hint(cursor);
         }
         wlr_pointer_constraint_v1_send_deactivated(cursor->active_constraint);
-        printf("set deactivate\n");
     }
 
     cursor->active_constraint = constraint;

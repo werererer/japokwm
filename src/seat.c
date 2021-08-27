@@ -193,8 +193,7 @@ void seat_configure_xcursor(struct seat *seat) {
         seat->cursor->xcursor_mgr =
             wlr_xcursor_manager_create(cursor_theme, cursor_size);
         if (!seat->cursor->xcursor_mgr) {
-            wlr_log(WLR_ERROR,
-                "Cannot create XCursor manager for theme '%s'", cursor_theme);
+            printf("Cannot create XCursor manager for theme '%s'\n", cursor_theme);
         }
     }
 
@@ -275,12 +274,9 @@ void seat_add_device(struct seat *seat, struct input_device *input_device) {
     struct seat_device *seat_device =
         calloc(1, sizeof(struct seat_device));
     if (!seat_device) {
-        wlr_log(WLR_DEBUG, "could not allocate seat device");
+        printf("could not allocate seat device");
         return;
     }
-
-    wlr_log(WLR_DEBUG, "adding device %s to seat %s",
-        input_device->identifier, seat->wlr_seat->name);
 
     seat_device->seat = seat;
     seat_device->input_device = input_device;

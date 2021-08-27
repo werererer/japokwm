@@ -9,7 +9,6 @@
 #include <wlr/types/wlr_box.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <stdlib.h>
-#include <wlr/util/log.h>
 
 #include "container.h"
 #include "monitor.h"
@@ -93,8 +92,9 @@ static void update_layout_counters(struct tagset *tagset)
 static struct wlr_fbox lua_unbox_layout_geom(lua_State *L, int i) {
     struct wlr_fbox geom;
 
-    if (luaL_len(L, -1) < i)
-        wlr_log(WLR_ERROR, "index to high: index %i len %lli", i, luaL_len(L, -1));
+    if (luaL_len(L, -1) < i) {
+        debug_print("index to high: index %i len %lli", i, luaL_len(L, -1));
+    }
 
     lua_rawgeti(L, -1, i);
 

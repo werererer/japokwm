@@ -75,7 +75,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     wlr_output_enable(output, true);
 
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
-    printf("m->geom.width: %i\n", m->geom.width);
     m->root = create_root(m, m->geom);
 
     if (is_first_monitor) {
@@ -208,7 +207,6 @@ void destroy_monitor(struct wl_listener *listener, void *data)
     while (j < len) {
         struct client *c = get_in_composed_list(server.client_lists, j);
         if (c->m == m) {
-            printf("remove client\n");
             kill_client(c);
             g_ptr_array_remove_index(server.client_lists, j);
             len--;

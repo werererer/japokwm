@@ -33,7 +33,6 @@ int lib_arrange(lua_State *L)
 
 int lib_create_output(lua_State *L)
 {
-    printf("create output\n");
     if (!wlr_backend_is_multi(server.backend)) {
         lua_pushstring(L, "Expected a multi backend");
         return 1;

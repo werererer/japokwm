@@ -144,7 +144,6 @@ void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt)
     if (src_lt->lua_resize_function_ref > 0) {
         lua_get_default_resize_function(L);
         lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->lua_resize_function_ref);
-        /* printf("copy_layout: %i\n", dest_lt->lua_resize_function_ref); */
     }
 
     copy_options(&dest_lt->options, &src_lt->options);

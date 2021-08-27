@@ -436,7 +436,7 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
                         const char msg[] = "{\"success\": false}";
                         ipc_send_reply(client, payload_type, msg, strlen(msg));
                         json_object_put(request);
-                        wlr_log(WLR_INFO, "Unsupported event type in subscribe request");
+                        printf("Unsupported event type in subscribe request\n");
                         goto exit_cleanup;
                     }
                 }

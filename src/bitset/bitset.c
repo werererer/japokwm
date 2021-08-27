@@ -2,6 +2,7 @@
 #include "utils/vector.h"
 #include "utils/coreUtils.h"
 #include <assert.h>
+#include <wlr/util/log.h>
 
 /****************** INTERFACE ******************/
 
@@ -384,7 +385,7 @@ int bitset_none(BitSet* bitset) {
 void print_bitset(BitSet *bitset)
 {
     for (int i = 0; i < bitset->size; i++) {
-        printf("%i\n", bitset_test(bitset, i));
+        debug_print("%i\n", bitset_test(bitset, i));
     }
 }
 

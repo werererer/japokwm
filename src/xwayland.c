@@ -81,7 +81,7 @@ void handle_xwayland_ready(struct wl_listener *listener, void *data)
     xcb_connection_t *xcb_conn = xcb_connect(NULL, NULL);
     int err = xcb_connection_has_error(xcb_conn);
     if (err) {
-        wlr_log(WLR_ERROR, "XCB connect failed: %d", err);
+        debug_print("XCB connect failed: %d\n", err);
         return;
     }
 
@@ -100,7 +100,7 @@ void handle_xwayland_ready(struct wl_listener *listener, void *data)
         free(reply);
 
         if (error != NULL) {
-            wlr_log(WLR_ERROR, "could not resolve atom %s, X11 error code %d",
+            debug_print("could not resolve atom %s, X11 error code %d\n",
                 atom_map[i], error->error_code);
             free(error);
             break;
