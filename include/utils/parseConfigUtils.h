@@ -1,11 +1,15 @@
 #ifndef PARSE_CONFIG_UTILS_H
 #define PARSE_CONFIG_UTILS_H
+#include <glib.h>
 #include <string.h>
-#include "utils/coreUtils.h"
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
+
+#include "utils/coreUtils.h"
 #include "layout.h"
+
+GPtrArray *create_default_config_paths();
 
 /* returns 0 if loading file was successful else return 1
  * the error_file argument gets malloced so it has to be freed */

@@ -114,7 +114,7 @@ static int setup()
 {
     L = luaL_newstate();
     luaL_openlibs(L);
-    load_libs(L);
+    load_lua_api(L);
     init_error_file();
 
     server.layout_set = get_default_layout_set();
@@ -213,7 +213,6 @@ static int setup()
      * pointer, touch, and drawing tablet device. We also rig up a listener to
      * let us know when new input devices are available on the backend.
      */
-    server.keyboards = g_ptr_array_new();
     server.input_manager = create_input_manager();
     struct seat *seat = create_seat("seat0");
 
@@ -297,7 +296,7 @@ int main(int argc, char *argv[])
                 server.config_file = optarg;
                 break;
             case 'p':
-                server.config_dir = optarg;
+                g_ptr_array_insert(server.config_paths, 0, optarg);
                 break;
             case 'h':
                 print_help();

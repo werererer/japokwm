@@ -1,6 +1,7 @@
 #include "server.h"
 #include "monitor.h"
 #include "utils/coreUtils.h"
+#include "utils/parseConfigUtils.h"
 
 struct server server;
 
@@ -38,8 +39,6 @@ static void init_lists(struct server *server)
 void init_server()
 {
     server = (struct server) {
-        .config_file = "",
-        .config_dir = "",
         .previous_tagset = NULL,
     };
 
@@ -47,11 +46,14 @@ void init_server()
 
     wl_list_init(&sticky_stack);
 
+
     server.mons = g_ptr_array_new();
     server.popups = g_ptr_array_new();
     server.xwayland_popups = g_ptr_array_new();
 
     server.scratchpad = g_ptr_array_new();
+    server.keyboards = g_ptr_array_new();
+    server.config_paths = create_default_config_paths();
     server.workspaces = g_ptr_array_new();
 
     server.client_lists = g_ptr_array_new();

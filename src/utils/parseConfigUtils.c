@@ -1,5 +1,6 @@
 #include "utils/parseConfigUtils.h"
 
+#include <assert.h>
 #include <lauxlib.h>
 #include <wlr/util/log.h>
 #include <lua.h>
@@ -56,11 +57,19 @@ static int load_file(lua_State *L, const char *file)
     return ret;
 }
 
+GPtrArray *create_default_config_paths()
+{
+    GPtrArray *config_paths = g_ptr_array_new();
+    g_ptr_array_add(config_paths, "$HOME/.config/japokwm/");
+    g_ptr_array_add(config_paths, "$XDG_CONFIG_HOME/japokwm/");
+    g_ptr_array_add(config_paths, "/etc/japokwm/");
+    return config_paths;
+}
+
 char *get_config_file(const char *file)
 {
     for (size_t i = 0; i < LENGTH(config_paths); ++i) {
         char *path = strdup(config_paths[i]);
-        expand_path(&path);
         join_path(&path, file);
         if (file_exists(path))
             return path;
@@ -76,10 +85,6 @@ char *get_config_layout_path()
 
 char *get_config_dir(const char *file)
 {
-    if (strcmp(server.config_dir, "") != 0 && dir_exists(server.config_dir)) {
-        return strdup(server.config_dir);
-    }
-
     char *abs_file = get_config_file(file);
     if (!abs_file)
         return NULL;

@@ -8,6 +8,7 @@
 #include <wayland-server-core.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/types/wlr_relative_pointer_v1.h>
+#include <glib.h>
 
 #include "cursor.h"
 #include "layout.h"
@@ -43,12 +44,14 @@ struct server {
     struct wlr_output_layout *output_layout;
     GPtrArray *keyboards;
 
+
     GPtrArray *workspaces;
 
     GPtrArray *scratchpad;
 
-    const char *config_file;
-    const char *config_dir;
+    GPtrArray *config_paths;
+    char *config_file;
+    char *config_dir;
 
     struct tagset *previous_tagset;
 
