@@ -14,8 +14,8 @@
 #include "cursor.h"
 
 static void tagset_write_to_workspaces(struct tagset *tagset);
-static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load);
-static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces);
+static void tagset_set_tag(struct tagset *tagset, struct workspace *ws, bool load);
+static void tagset_set_tags(struct tagset *tagset, BitSet *workspaces);
 static void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces);
 static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_load_missing_workspaces(struct tagset *tagset);
@@ -33,7 +33,7 @@ static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspac
     append_list_set(tagset->list_set, ws->list_set);
 }
 
-static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load)
+static void tagset_set_tag(struct tagset *tagset, struct workspace *ws, bool load)
 {
     if (!tagset)
         return;
@@ -41,7 +41,7 @@ static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws,
     bitset_assign(tagset->workspaces, ws->id, load);
 }
 
-static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces)
+static void tagset_set_tags(struct tagset *tagset, BitSet *workspaces)
 {
     tagset->workspaces = bitset_copy(workspaces);
 }
@@ -233,7 +233,7 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *work
 
     tagset->workspaces = bitset_create(server.workspaces->len);
     tagset->loaded_workspaces = bitset_create(server.workspaces->len);
-    tagset_assign_workspaces(tagset, workspaces);
+    tagset_set_tags(tagset, workspaces);
 
     g_ptr_array_add(server.tagsets, tagset);
     return tagset;
@@ -301,6 +301,7 @@ void focus_tagset_no_ref(struct tagset *tagset)
     struct tagset *old_tagset = m->tagset;
 
     if (old_tagset) {
+        //
         for (int i = 0; i < length_of_composed_list(old_tagset->list_set->container_lists); i++) {
             struct container *con = get_in_composed_list(old_tagset->list_set->container_lists, i);
             struct workspace *ws = get_workspace(tagset->selected_ws_id);
@@ -308,8 +309,10 @@ void focus_tagset_no_ref(struct tagset *tagset)
                 move_container_to_workspace(con, ws);
             }
         }
-        tagset_workspaces_disconnect(m->tagset);
     }
+
+    tagset_write_to_workspaces(m->tagset);
+    tagset_workspaces_disconnect(old_tagset);
     tagset_workspaces_connect(tagset);
     tagset_release(m->tagset);
     m->tagset = tagset;
@@ -388,14 +391,6 @@ struct layout *tagset_get_layout(struct tagset *tagset)
     return ws->layout;
 }
 
-void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
-{
-    tagset_write_to_workspaces(tagset);
-    tagset_workspaces_disconnect(tagset);
-    tagset_assign_workspaces(tagset, bitset);
-    tagset_workspaces_connect(tagset);
-}
-
 static void _set_previous_tagset(struct tagset *tagset)
 {
     tagset_acquire(tagset);
@@ -406,7 +401,6 @@ static void _set_previous_tagset(struct tagset *tagset)
 void push_tagset_no_ref(struct tagset *tagset)
 {
     struct monitor *m = selected_monitor;
-    tagset_write_to_workspaces(m->tagset);
 
     if (m->tagset != tagset) {
         _set_previous_tagset(m->tagset);
@@ -458,6 +452,7 @@ void tagset_toggle_add(struct tagset *tagset, BitSet *bitset)
     bitset_xor(new_bitset, tagset->workspaces);
 
     tagset_set_tags(tagset, new_bitset);
+    focus_tagset(tagset);
     ipc_event_workspace();
 }
 
