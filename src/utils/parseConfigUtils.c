@@ -364,39 +364,10 @@ char *get_config_array_str(lua_State *L, const char *name, size_t i)
     return termcmd;
 }
 
-char *get_config_str(lua_State *L, char *name)
-{
-    lua_getglobal_safe(L, name);
-    if (!lua_isstring(L, -1)) {
-        char c[NUM_CHARS] = "";
-        handle_error(c);
-        return "";
-    }
-    const char *str = luaL_checkstring(L, -1);
-    char *termcmd = calloc(strlen(str), sizeof(char));
-    strcpy(termcmd, str);
-    lua_pop(L, 1);
-    return termcmd;
-}
-
 static float get_config_array_float(lua_State *L, const char *name, size_t i)
 {
     lua_rawgeti(L, -1, i);
     if (!lua_isnumber(L, -1)) {
-        char c[NUM_CHARS] = "";
-        handle_error(c);
-        return 0;
-    }
-    float f = luaL_checknumber(L, -1);
-    lua_pop(L, 1);
-    return f;
-}
-
-float get_config_float(lua_State *L, char *name)
-{
-    lua_getglobal_safe(L, name);
-    if (!lua_isnumber(L, -1)) {
-        /* write_to_file(fd, "ERROR: %s is not a number\n"); */
         char c[NUM_CHARS] = "";
         handle_error(c);
         return 0;
@@ -419,43 +390,6 @@ static int get_config_array_int(lua_State *L, const char *name, size_t i)
     return f;
 }
 
-int get_config_int(lua_State *L, char *name)
-{
-    lua_getglobal_safe(L, name);
-    if (!lua_isinteger(L, -1)) {
-        char c[NUM_CHARS] = "";
-        handle_error(c);
-        return 0;
-    }
-    int i = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-    return i;
-}
-
-/* static bool get_config_array_bool(lua_State *L, const char *name, size_t i) */
-/* { */
-/*     lua_rawgeti(L, -1, i); */
-/*     if (!lua_isboolean(L, -1)) { */
-/*         return false; */
-/*     } */
-/*     bool f = lua_toboolean(L, -1); */
-/*     lua_pop(L, 1); */
-/*     return f; */
-/* } */
-
-bool get_config_bool(lua_State *L, char *name)
-{
-    lua_getglobal_safe(L, name);
-    if (!lua_isboolean(L, -1)) {
-        char c[NUM_CHARS] = "";
-        handle_error(c);
-        return false;
-    }
-    bool b = lua_toboolean(L, -1);
-    lua_pop(L, 1);
-    return b;
-}
-
 static int get_config_array_func_id(lua_State *L, const char *name, int i)
 {
     lua_rawgeti(L, -1, i);
@@ -468,30 +402,6 @@ static int get_config_array_func_id(lua_State *L, const char *name, int i)
     lua_pop(L, 1);
 
     return f;
-}
-
-void call_arrange_func(lua_State *L, int funcId, int n)
-{
-    lua_rawgeti(L, LUA_REGISTRYINDEX, funcId);
-    lua_pushinteger(L, n);
-    lua_call_safe(L, 1, 0, 0);
-}
-
-struct layout get_config_layout(lua_State *L, char *name)
-{
-    lua_getglobal_safe(L, name);
-    struct layout layout = {
-        .symbol = get_config_array_str(L, name, 1),
-        .name = get_config_array_str(L, name, 2),
-        .n_area = 1,
-        .nmaster = 1,
-        .lua_layout_ref = 0,
-        .lua_layout_copy_data_ref = 0,
-        .lua_layout_original_copy_data_ref = 0,
-        .options = get_default_options(),
-    };
-    lua_pop(L, 1);
-    return layout;
 }
 
 struct rule get_config_array_rule(lua_State *L, const char* name, size_t i)
@@ -507,15 +417,6 @@ struct rule get_config_array_rule(lua_State *L, const char* name, size_t i)
     return rule;
 }
 
-struct rule get_config_rule(lua_State *L, char *name)
-{
-    struct rule rule;
-    rule.id  = get_config_array_str(L, name, 1);
-    rule.title  = get_config_array_str(L, name, 2);
-    rule.lua_func_ref = get_config_array_func_id(L, name, 3);
-    return rule;
-}
-
 struct monrule get_config_array_monrule(lua_State *L, const char* name, size_t i)
 {
     struct monrule monrule;
@@ -524,22 +425,4 @@ struct monrule get_config_array_monrule(lua_State *L, const char* name, size_t i
     monrule.name = get_config_array_str(L, name, 1);
     monrule.lua_func_ref = get_config_array_func_id(L, name, 2);
     return monrule;
-}
-
-struct monrule get_config_monrule(lua_State *L, char *name)
-{
-    struct monrule monrule;
-    lua_getglobal_safe(L, name);
-
-    monrule.name = get_config_array_str(L, name, 1);
-    monrule.lua_func_ref = get_config_array_func_id(L, name, 2);
-
-    lua_pop(L, 1);
-    return monrule;
-}
-
-struct layout get_config_key(lua_State *L, char *name)
-{
-    struct layout key = (struct layout)get_config_layout(L, name);
-    return key;
 }

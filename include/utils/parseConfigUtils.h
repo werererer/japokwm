@@ -23,16 +23,8 @@ char *get_config_dir(const char *file);
 void append_to_lua_path(lua_State *L, const char *path);
 
 // get values
-bool get_config_bool(lua_State *L, char *name);
-char* get_config_str(lua_State *L, char *name);
-float get_config_float(lua_State *L, char *name);
-int get_config_int(lua_State *L, char *name);
 int lua_call_safe(lua_State *L, int nargs, int nresults, int msgh);
 int lua_getglobal_safe(lua_State *L, const char *name);
-struct layout get_config_layout(lua_State *L, char *name);
-struct monrule get_config_monrule(lua_State *L, char *name);
-struct rule get_config_rule(lua_State *L, char *name);
-void call_arrange_func(lua_State *L, int funcId, int n);
 void notify_msg(const char *msg);
 void handle_error(const char *msg);
 
