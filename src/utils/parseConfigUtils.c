@@ -105,21 +105,11 @@ void append_to_lua_path(lua_State *L, const char *path)
     free(path_var);
 }
 
-static int load_default_plugins(lua_State *L)
-{
-    return 1;
-}
-
-static int compare(const FTSENT **one, const FTSENT **two)
-{
-    return strcmp((*one)->fts_name, (*two)->fts_name);
-}
-
-static int load_plugins(lua_State *L)
+static int load_plugin_paths(lua_State *L)
 {
     for (int i = 0; i < LENGTH(plugin_relative_paths); i++) {
         const char *path = plugin_relative_paths[i];
-        char *base_path = get_config_dir("init.lua");
+        char *base_path = get_config_dir(config_file);
         join_path(&base_path, path);
         join_path(&base_path, "?");
         join_path(&base_path, "init.lua");
@@ -127,25 +117,6 @@ static int load_plugins(lua_State *L)
         append_to_lua_path(L, base_path);
     }
     return 1;
-}
-
-static int get_base_dir_id()
-{
-    char *config_path = get_config_dir(config_file);
-
-    // get the index of the config file in config_paths array
-    int default_id = -1;
-    for (int i = 0; i < LENGTH(config_paths); i++) {
-        char *path = strdup(config_paths[i]);
-        expand_path(&path);
-        if (path_compare(path, config_path) == 0) {
-            default_id = i;
-            free(path);
-            return default_id;
-        }
-        free(path);
-    }
-    return default_id;
 }
 
 // returns 0 upon success and 1 upon failure
@@ -164,10 +135,8 @@ static int load_default_config(lua_State *L)
 // returns 0 upon success and 1 upon failure
 int load_config(lua_State *L)
 {
-    load_plugins(L);
     int success = 0;
     if (strcmp(server.config_file, "") != 0) {
-        printf("load custom config file: %s\n", server.config_file);
         success = load_file(L, server.config_file);
     } else {
         success = load_default_config(L);
@@ -178,6 +147,7 @@ int load_config(lua_State *L)
 // returns 0 upon success and 1 upon failure
 int init_utils(lua_State *L)
 {
+    load_plugin_paths(L);
     const char *tile_file = "tile.lua";
     char *config_dir = get_config_dir(tile_file);
 
@@ -201,8 +171,7 @@ int init_utils(lua_State *L)
 
 void init_error_file()
 {
-    char *ef = get_config_file("");
-    join_path(&ef, error_file);
+    char *ef = get_config_file(error_file);
     error_fd = open(ef, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     free(ef);
 }
