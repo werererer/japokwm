@@ -326,7 +326,7 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     if (setup()) {
-        wlr_log(WLR_ERROR, "didn't find file");
+        wlr_log(WLR_ERROR, "failed to setup japokwm");
         return EXIT_FAILURE;
     }
 
