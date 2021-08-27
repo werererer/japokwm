@@ -81,7 +81,6 @@ static void tagset_workspace_disconnect(struct tagset *tagset, struct workspace 
 {
     if (!tagset)
         return;
-    printf("tagset: %i disconnect from: %zu\n", tagset->selected_ws_id, ws->id);
     tagset_unload_workspace(tagset, ws);
     ws->tagset = NULL;
     if (ws->selected_tagset != tagset && ws->selected_tagset) {
@@ -117,8 +116,6 @@ static void tagset_workspaces_disconnect(struct tagset *tagset)
 
 static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws)
 {
-    printf("tagset: %i connect to: %zu\n", tagset->selected_ws_id, ws->id);
-
     ws->prev_m = tagset->m;
 
     tagset_unload_workspace(ws->tagset, ws);
@@ -165,7 +162,6 @@ static void reload_visible_tagsets(struct tagset *old_tagset, struct tagset *new
 
 static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
 {
-    printf("load tagset: %i workspace %zu\n", tagset->selected_ws_id,  ws->id);
     assert(tagset != NULL);
     assert(ws != NULL);
     bool bit = bitset_test(tagset->loaded_workspaces, ws->id);
@@ -188,7 +184,6 @@ static void tagset_load_missing_workspaces(struct tagset *tagset)
         if (!bit)
             continue;
 
-        printf("load missing workspace: %i\n", i);
         struct workspace *ws = get_workspace(i);
         tagset_load_workspace(tagset, ws);
     }
@@ -206,7 +201,6 @@ static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws)
 {
     if (!tagset)
         return;
-    printf("unload tagset: %i workspace %zu\n", tagset->selected_ws_id,  ws->id);
     assert(ws != NULL);
 
     bool bit = bitset_test(tagset->loaded_workspaces, ws->id);
@@ -231,7 +225,6 @@ static void tagset_unload_workspaces(struct tagset *tagset)
             continue;
 
         struct workspace *ws = get_workspace(i);
-        printf("unload tagset: %i workspace %zu\n", tagset->selected_ws_id,  ws->id);
         tagset_unsubscribe_from_workspace(tagset, ws);
         bitset_reset(tagset->loaded_workspaces, i);
     }
@@ -261,7 +254,6 @@ static void _destroy_tagset(void *tagset_ptr)
         return;
 
     struct tagset *tagset = (struct tagset *)tagset_ptr;
-    /* printf("tagset destroy: ws: %i\n", tagset->selected_ws_id); */
 
     struct workspace *selected_workspace = get_workspace(tagset->selected_ws_id);
     if (selected_workspace->selected_tagset == tagset) {
@@ -415,14 +407,24 @@ void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
     tagset_workspaces_connect(tagset);
 }
 
+static void _set_previous_tagset(struct tagset *tagset)
+{
+    tagset_acquire(tagset);
+    tagset_release(server.previous_tagset);
+    server.previous_tagset = tagset;
+}
+
 void push_tagset_no_ref(struct tagset *tagset)
 {
     struct monitor *m = selected_monitor;
     tagset_write_to_workspaces(m->tagset);
 
-    tagset_acquire(m->tagset);
-    tagset_release(server.previous_tagset);
-    server.previous_tagset = m->tagset;
+    if (m->tagset != tagset) {
+        _set_previous_tagset(m->tagset);
+    }
+
+    printf("current: %i\n", tagset->selected_ws_id);
+    printf("previous_tagset: %i\n", server.previous_tagset->selected_ws_id);
 
     focus_tagset_no_ref(tagset);
 }

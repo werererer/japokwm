@@ -28,7 +28,6 @@ void arrange()
 {
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
-        printf("arrange_m: %p\n", m);
         arrange_monitor(m);
     }
 }
@@ -257,9 +256,9 @@ void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,
 
         /* // the monitor must be on the same monitor as it is tiled on else it is */
         /* // a bug */
-        printf("con: %i ws: %i monitor: %p\n", i, con->client->ws_id, container_get_monitor(con));
-        printf("tagset: %p ->ws: %i ->m: %p\n", tagset, tagset->selected_ws_id, tagset->m);
-        assert(container_get_monitor(con) == tagset->m);
+        /* printf("con: %i ws: %i monitor: %p\n", i, con->client->ws_id, container_get_monitor(con)); */
+        /* printf("tagset: %p ->ws: %i ->m: %p\n", tagset, tagset->selected_ws_id, tagset->m); */
+        /* assert(container_get_monitor(con) == tagset->m); */
 
         arrange_container(con, i, root_geom, actual_inner_gap);
     }
