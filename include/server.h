@@ -79,6 +79,15 @@ struct server {
     GPtrArray *layer_visual_stack_bottom;
     GPtrArray *layer_visual_stack_top;
     GPtrArray *layer_visual_stack_overlay;
+
+    /* global event handlers */
+    struct wl_listener new_output;
+    struct wl_listener new_xdeco;
+    struct wl_listener new_xdg_surface;
+    struct wl_listener new_layer_shell_surface;
+    struct wl_listener new_pointer_constraint;
+
+    struct wl_listener new_xwayland_surface;
 };
 
 extern struct server server;

@@ -1,7 +1,10 @@
 #include "server.h"
+
+#include "layer_shell.h"
 #include "monitor.h"
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"
+#include "xdg_shell.h"
 
 struct server server;
 
@@ -36,6 +39,17 @@ static void init_lists(struct server *server)
     g_ptr_array_add(server->layer_visual_stack_lists, server->layer_visual_stack_background);
 }
 
+static void init_event_handlers(struct server *server)
+{
+    server->new_output = (struct wl_listener){.notify = create_monitor};
+    server->new_xdeco = (struct wl_listener){.notify = createxdeco};
+    server->new_xdg_surface = (struct wl_listener){.notify = create_notify_xdg};
+    server->new_layer_shell_surface = (struct wl_listener){.notify = create_notify_layer_shell};
+    server->new_pointer_constraint = (struct wl_listener){.notify = handle_new_pointer_constraint};
+
+    server->new_xwayland_surface = (struct wl_listener){.notify = create_notifyx11};
+}
+
 void init_server()
 {
     server = (struct server) {
@@ -43,6 +57,7 @@ void init_server()
     };
 
     init_lists(&server);
+    init_event_handlers(&server);
 
     wl_list_init(&sticky_stack);
 

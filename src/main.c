@@ -37,15 +37,6 @@ static void handle_new_inputdevice(struct wl_listener *listener, void *data);
 static void run(char *startup_cmd);
 static int setup();
 
-/* global event handlers */
-static struct wl_listener new_output = {.notify = create_monitor};
-static struct wl_listener new_xdeco = {.notify = createxdeco};
-static struct wl_listener new_xdg_surface = {.notify = create_notify_xdg};
-static struct wl_listener new_layer_shell_surface = {.notify = create_notify_layer_shell};
-static struct wl_listener new_pointer_constraint = {.notify = handle_new_pointer_constraint};
-
-static struct wl_listener new_xwayland_surface = {.notify = create_notifyx11};
-
 static void cleanup()
 {
     close_error_file();
@@ -164,7 +155,7 @@ static int setup()
 
     /* Configure a listener to be notified when new outputs are available on the
      * backend. */
-    wl_signal_add(&server.backend->events.new_output, &new_output);
+    wl_signal_add(&server.backend->events.new_output, &server.new_output);
 
     /* Set up our client lists and the xdg-shell. The xdg-shell is a
      * Wayland protocol which is used for application windows. For more
@@ -174,7 +165,7 @@ static int setup()
      */
 
     server.xdg_shell = wlr_xdg_shell_create(server.wl_display);
-    wl_signal_add(&server.xdg_shell->events.new_surface, &new_xdg_surface);
+    wl_signal_add(&server.xdg_shell->events.new_surface, &server.new_xdg_surface);
     // remove csd(client side decorations) completely from xdg based windows
     wlr_server_decoration_manager_set_default_mode(
             wlr_server_decoration_manager_create(server.wl_display),
@@ -182,7 +173,7 @@ static int setup()
 
     server.layer_shell = wlr_layer_shell_v1_create(server.wl_display);
     wl_signal_add(&server.layer_shell->events.new_surface,
-            &new_layer_shell_surface);
+            &server.new_layer_shell_surface);
 
     server.input_inhibitor_mgr = wlr_input_inhibit_manager_create(server.wl_display);
 
@@ -198,10 +189,10 @@ static int setup()
 
     /* Use xdg_decoration protocol to negotiate server-side decorations */
     server.xdeco_mgr = wlr_xdg_decoration_manager_v1_create(server.wl_display);
-    wl_signal_add(&server.xdeco_mgr->events.new_toplevel_decoration, &new_xdeco);
+    wl_signal_add(&server.xdeco_mgr->events.new_toplevel_decoration, &server.new_xdeco);
 
     server.pointer_constraints = wlr_pointer_constraints_v1_create(server.wl_display);
-    wl_signal_add(&server.pointer_constraints->events.new_constraint, &new_pointer_constraint);
+    wl_signal_add(&server.pointer_constraints->events.new_constraint, &server.new_pointer_constraint);
 
     /*
      * Configures a seat, which is a single "seat" at which a user sits and
@@ -220,8 +211,10 @@ static int setup()
             server.compositor, true);
     if (server.xwayland.wlr_xwayland) {
         server.xwayland_ready.notify = handle_xwayland_ready;
-        wl_signal_add(&server.xwayland.wlr_xwayland->events.ready, &server.xwayland_ready);
-        wl_signal_add(&server.xwayland.wlr_xwayland->events.new_surface, &new_xwayland_surface);
+        wl_signal_add(&server.xwayland.wlr_xwayland->events.ready,
+                &server.xwayland_ready);
+        wl_signal_add(&server.xwayland.wlr_xwayland->events.new_surface,
+                &server.new_xwayland_surface);
         wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, seat->wlr_seat);
 
         setenv("DISPLAY", server.xwayland.wlr_xwayland->display_name, true);
