@@ -51,9 +51,6 @@ void reset_tiled_client_borders(int border_bx);
 void reset_floating_client_borders(int border_px);
 void kill_client(struct client *c);
 
-bool wants_floating(struct client *c);
-bool is_popup_menu(struct client *c);
-
 float calc_ratio(float width, float height);
 
 void client_handle_set_title(struct wl_listener *listener, void *data);

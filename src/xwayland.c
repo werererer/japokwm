@@ -9,6 +9,7 @@
 #include "seat.h"
 #include "workspace.h"
 
+#if JAPOKWM_HAS_XWAYLAND
 static const char *atom_map[ATOM_LAST] = {
     "_NET_WM_WINDOW_TYPE_NORMAL",
     "_NET_WM_WINDOW_TYPE_DIALOG",
@@ -23,6 +24,7 @@ static const char *atom_map[ATOM_LAST] = {
     "_NET_WM_WINDOW_TYPE_NOTIFICATION",
     "_NET_WM_STATE_MODAL",
 };
+#endif
 
 static void activatex11(struct wl_listener *listener, void *data)
 {
@@ -74,6 +76,7 @@ void destroy_notifyx11(struct wl_listener *listener, void *data)
 
 void handle_xwayland_ready(struct wl_listener *listener, void *data)
 {
+#if JAPOKWM_HAS_XWAYLAND
     struct server *server =
         wl_container_of(listener, server, xwayland_ready);
     struct xwayland *xwayland = &server->xwayland;
@@ -108,6 +111,7 @@ void handle_xwayland_ready(struct wl_listener *listener, void *data)
     }
 
     xcb_disconnect(xcb_conn);
+#endif
 }
 
 void unmap_notifyx11(struct wl_listener *listener, void *data)
@@ -183,7 +187,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 g_ptr_array_add(server.normal_clients, c);
 
                 con->on_top = false;
-                if (wants_floating(con->client)) {
+                if (x11_wants_floating(con->client)) {
                     set_container_floating(con, fix_position, true);
                     resize(con, prefered_geom);
                 }
@@ -194,7 +198,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 g_ptr_array_add(server.independent_clients, c);
 
                 struct workspace *ws = monitor_get_active_workspace(m);
-                if (is_popup_menu(c) || xwayland_surface->parent) {
+                if (x11_is_popup_menu(c) || xwayland_surface->parent) {
                     remove_in_composed_list(ws->list_set->focus_stack_lists, cmp_ptr, con);
                     g_ptr_array_insert(ws->list_set->focus_stack_normal, 0, con);
 
@@ -225,4 +229,82 @@ void maprequestx11(struct wl_listener *listener, void *data)
 bool xwayland_popups_exist()
 {
     return server.xwayland_popups->len > 0;
+}
+
+bool x11_wants_floating(struct client *c)
+{
+    if (c->type != X11_MANAGED && c->type != X11_UNMANAGED)
+        return false;
+
+    struct wlr_xwayland_surface *surface = c->surface.xwayland;
+    if (surface->modal)
+        return true;
+
+#if JAPOKWM_HAS_XWAYLAND
+    struct xwayland xwayland = server.xwayland;
+    for (size_t i = 0; i < surface->window_type_len; ++i) {
+        xcb_atom_t type = surface->window_type[i];
+        if (type == xwayland.atoms[NET_WM_WINDOW_TYPE_DIALOG] ||
+                type == xwayland.atoms[NET_WM_WINDOW_TYPE_UTILITY] ||
+                type == xwayland.atoms[NET_WM_WINDOW_TYPE_TOOLBAR] ||
+                type == xwayland.atoms[NET_WM_WINDOW_TYPE_POPUP_MENU] ||
+                type == xwayland.atoms[NET_WM_WINDOW_TYPE_SPLASH]) {
+            return true;
+        }
+    }
+#endif
+
+    struct wlr_xwayland_surface_size_hints *size_hints = surface->size_hints;
+    if (size_hints != NULL &&
+            size_hints->min_width > 0 && size_hints->min_height > 0 &&
+            (size_hints->max_width == size_hints->min_width ||
+            size_hints->max_height == size_hints->min_height)) {
+        return true;
+    }
+
+    return false;
+}
+
+bool x11_is_popup_menu(struct client *c)
+{
+#if JAPOKWM_HAS_XWAYLAND
+    struct wlr_xwayland_surface *surface = c->surface.xwayland;
+    struct xwayland xwayland = server.xwayland;
+    for (size_t i = 0; i < surface->window_type_len; ++i) {
+        xcb_atom_t type = surface->window_type[i];
+        if (type == xwayland.atoms[NET_WM_WINDOW_TYPE_POPUP_MENU] ||
+                type == xwayland.atoms[NET_WM_WINDOW_TYPE_POPUP] ||
+                type == xwayland.atoms[NET_WM_WINDOW_TYPE_MENU] ||
+                type == xwayland.atoms[NET_WM_WINDOW_TYPE_NORMAL]) {
+            return true;
+        }
+    }
+#endif
+    return false;
+}
+
+
+void init_xwayland(struct wl_display *display, struct seat *seat)
+{
+#if JAPOKWM_HAS_XWAYLAND
+    /*
+     * Initialise the XWayland X server.
+     * It will be started when the first X client is started.
+     */
+    server.xwayland.wlr_xwayland = wlr_xwayland_create(server.wl_display,
+            server.compositor, true);
+    if (server.xwayland.wlr_xwayland) {
+        server.xwayland_ready.notify = handle_xwayland_ready;
+        wl_signal_add(&server.xwayland.wlr_xwayland->events.ready,
+                &server.xwayland_ready);
+        wl_signal_add(&server.xwayland.wlr_xwayland->events.new_surface,
+                &server.new_xwayland_surface);
+        wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, seat->wlr_seat);
+
+        setenv("DISPLAY", server.xwayland.wlr_xwayland->display_name, true);
+    } else {
+        printf("failed to setup XWayland X server, continuing without it");
+        unsetenv("DISPLAY");
+    }
+#endif
 }

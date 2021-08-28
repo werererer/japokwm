@@ -23,9 +23,6 @@ struct server {
     struct wlr_backend *backend;
     struct wlr_compositor *compositor;
 
-    struct xwayland xwayland;
-    struct wl_listener xwayland_ready;
-
     struct wlr_xdg_shell *xdg_shell;
     struct wlr_layer_shell_v1 *layer_shell;
     struct wlr_xdg_decoration_manager_v1 *xdeco_mgr;
@@ -87,7 +84,12 @@ struct server {
     struct wl_listener new_layer_shell_surface;
     struct wl_listener new_pointer_constraint;
 
+#if JAPOKWM_HAS_XWAYLAND
+    struct xwayland xwayland;
+    struct wl_listener xwayland_ready;
+
     struct wl_listener new_xwayland_surface;
+#endif
 };
 
 extern struct server server;

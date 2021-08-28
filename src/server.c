@@ -47,7 +47,9 @@ static void init_event_handlers(struct server *server)
     server->new_layer_shell_surface = (struct wl_listener){.notify = create_notify_layer_shell};
     server->new_pointer_constraint = (struct wl_listener){.notify = handle_new_pointer_constraint};
 
+#if JAPOKWM_HAS_XWAYLAND
     server->new_xwayland_surface = (struct wl_listener){.notify = create_notifyx11};
+#endif
 }
 
 void init_server()

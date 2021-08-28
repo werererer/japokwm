@@ -40,7 +40,9 @@ static int setup();
 static void cleanup()
 {
     close_error_file();
+#if JAPOKWM_HAS_XWAYLAND
     wlr_xwayland_destroy(server.xwayland.wlr_xwayland);
+#endif
     wl_display_destroy_clients(server.wl_display);
 
     wlr_output_layout_destroy(server.output_layout);
@@ -203,26 +205,9 @@ static int setup()
     server.input_manager = create_input_manager();
     struct seat *seat = create_seat("seat0");
 
-    /*
-     * Initialise the XWayland X server.
-     * It will be started when the first X client is started.
-     */
-    server.xwayland.wlr_xwayland = wlr_xwayland_create(server.wl_display,
-            server.compositor, true);
-    if (server.xwayland.wlr_xwayland) {
-        server.xwayland_ready.notify = handle_xwayland_ready;
-        wl_signal_add(&server.xwayland.wlr_xwayland->events.ready,
-                &server.xwayland_ready);
-        wl_signal_add(&server.xwayland.wlr_xwayland->events.new_surface,
-                &server.new_xwayland_surface);
-        wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, seat->wlr_seat);
-
-        setenv("DISPLAY", server.xwayland.wlr_xwayland->display_name, true);
-    } else {
-        printf("failed to setup XWayland X server, continuing without it");
-        unsetenv("DISPLAY");
-    }
-
+#ifdef JAPOKWM_HAS_XWAYLAND
+    init_xwayland(server.wl_display, seat);
+#endif
     return 0;
 }
 
