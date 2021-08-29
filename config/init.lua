@@ -7,6 +7,10 @@ local function on_start()
     -- action.exec("japokmsg 'action.create_output()'")
 end
 
+-- -- eval string. Everything that will be opened after that will be moved to the
+-- -- scratchpad and will be shown
+-- action.scratch_show("anki")
+
 event.add_listener("on_start", on_start)
 
 config.set_inner_gaps(0)

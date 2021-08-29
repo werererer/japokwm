@@ -130,10 +130,6 @@ void unmap_notifyx11(struct wl_listener *listener, void *data)
     arrange();
     struct monitor *m = selected_monitor;
     focus_most_recent_container(m->tagset);
-
-    struct seat *seat = input_manager_get_default_seat();
-    wlr_seat_pointer_clear_focus(seat->wlr_seat);
-    wlr_seat_keyboard_clear_focus(seat->wlr_seat);
 }
 
 void maprequestx11(struct wl_listener *listener, void *data)
