@@ -13,6 +13,10 @@ int container_set_sticky(lua_State *L)
 
     struct monitor *m = selected_monitor;
     struct container *con = get_container(m->tagset, i);
+
+    if (!con)
+        return 0;
+
     client_setsticky(con->client, sticky);
     return 0;
 }

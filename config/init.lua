@@ -11,8 +11,6 @@ end
 -- -- scratchpad and will be shown
 -- action.scratch_show("anki")
 
-config.add_mon_rule({output = ""})
-
 event.add_listener("on_start", on_start)
 
 config.set_inner_gaps(0)

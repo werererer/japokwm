@@ -52,6 +52,8 @@ void add_container_to_tile(struct container *con)
     call_create_container_function(ev, get_position_in_container_stack(con));
 
     con->is_tiled = true;
+
+    apply_rules(server.default_layout->options.rules, con);
 }
 
 void remove_container_from_tile(struct container *con)
@@ -465,7 +467,7 @@ void repush(int pos1, int pos2)
         arrange();
 }
 
-void fix_position(struct container *con)
+void container_fix_position(struct container *con)
 {
     if (!con)
         return;

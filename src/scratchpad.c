@@ -18,7 +18,7 @@ void move_to_scratchpad(struct container *con, int position)
     struct tagset *tagset = monitor_get_active_tagset(m);
 
     con->on_scratchpad = true;
-    set_container_floating(con, fix_position, true);
+    set_container_floating(con, container_fix_position, true);
 
     if (server.scratchpad->len== 0) {
         g_ptr_array_add(server.scratchpad, con);

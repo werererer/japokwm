@@ -288,6 +288,24 @@ void focus_most_recent_container(struct tagset *tagset)
     focus_container(con);
 }
 
+static void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tagset)
+{
+    if (!old_tagset)
+        return;
+
+    struct workspace *ws = get_workspace(tagset->selected_ws_id);
+    int len = length_of_composed_list(old_tagset->list_set->container_lists);
+    int pos = len-1;
+    for (int i = len-1; i >= 0; i--) {
+        struct container *con = get_in_composed_list(old_tagset->list_set->container_lists, pos);
+        if (con->client->sticky) {
+            debug_print("move container: %p\n", con);
+            move_container_to_workspace(con, ws);
+        }
+        pos--;
+    }
+}
+
 void focus_tagset_no_ref(struct tagset *tagset)
 {
     if(!tagset)
@@ -300,18 +318,8 @@ void focus_tagset_no_ref(struct tagset *tagset)
 
     struct tagset *old_tagset = m->tagset;
 
-    if (old_tagset) {
-        //
-        for (int i = 0; i < length_of_composed_list(old_tagset->list_set->container_lists); i++) {
-            struct container *con = get_in_composed_list(old_tagset->list_set->container_lists, i);
-            struct workspace *ws = get_workspace(tagset->selected_ws_id);
-            if (con->client->sticky) {
-                move_container_to_workspace(con, ws);
-            }
-        }
-    }
-
     tagset_write_to_workspaces(m->tagset);
+    tagset_move_sticky_containers(old_tagset, tagset);
     tagset_workspaces_disconnect(old_tagset);
     tagset_workspaces_connect(tagset);
     tagset_release(m->tagset);

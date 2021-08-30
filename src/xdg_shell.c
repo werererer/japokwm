@@ -96,8 +96,6 @@ void map_request(struct wl_listener *listener, void *data)
     struct workspace *ws = get_workspace(c->ws_id);
     c->bw = ws->layout->options.tile_border_px;
 
-    apply_rules(server.default_layout->options.rules, c->con);
-
     g_ptr_array_add(server.normal_clients, c);
 
     struct container *con = c->con;

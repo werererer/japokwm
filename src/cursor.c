@@ -436,7 +436,7 @@ void move_resize(struct cursor *cursor, int ui)
         return;
 
     /* Float the window and tell motion_notify to grab it */
-    set_container_floating(grabc, fix_position, true);
+    set_container_floating(grabc, container_fix_position, true);
 
     struct wlr_cursor *wlr_cursor = cursor->wlr_cursor;
     switch (cursor->cursor_mode = ui) {
