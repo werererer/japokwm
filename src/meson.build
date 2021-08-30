@@ -60,10 +60,8 @@ srcs = files(
     'utils/parseConfigUtils.c',
     'utils/stringUtils.c',
     'utils/writeFile.c',
-    'wlr-layer-shell-unstable-v1-protocol.c',
     'wlr_signal.c',
     'workspace.c',
-    'xdg-shell-protocol.c',
     'xdg_shell.c',
     'xwayland.c',
   )
