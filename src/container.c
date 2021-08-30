@@ -18,6 +18,7 @@
 #include "ipc-server.h"
 #include "layer_shell.h"
 #include "workspace.h"
+#include "rules/rule.h"
 
 static void add_container_to_workspace(struct container *con, struct workspace *ws);
 
@@ -32,7 +33,6 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     con->focusable = true;
     con->client->ws_id = m->tagset->selected_ws_id;
 
-    apply_rules(con);
     return con;
 }
 
@@ -298,26 +298,6 @@ void apply_bounds(struct container *con, struct wlr_box box)
         con->geom.x = box.x;
     if (con->geom.y + con->geom.height + 2 * con->client->bw <= box.y)
         con->geom.y = box.y;
-}
-
-void apply_rules(struct container *con)
-{
-    for (int i = 0; i < server.default_layout->options.rule_count; i++) {
-        const struct rule r = server.default_layout->options.rules[i];
-        bool same_id = strcmp(r.id, con->client->app_id) == 0;
-        bool id_empty = strcmp(r.id, "") == 0;
-        bool same_title = strcmp(r.title, con->client->title) == 0;
-        bool title_empty = strcmp(r.title, "") == 0;
-        if ((same_id || id_empty) && (same_title || title_empty)) {
-            lua_geti(L, LUA_REGISTRYINDEX, r.lua_func_ref);
-            struct monitor *m = container_get_monitor(con);
-            struct workspace *ws = monitor_get_active_workspace(m);
-            guint position;
-            g_ptr_array_find(ws->list_set->container_lists, con, &position);
-            lua_pushinteger(L, position);
-            lua_call_safe(L, 1, 0, 0);
-        }
-    }
 }
 
 void commit_notify(struct wl_listener *listener, void *data)

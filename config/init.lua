@@ -11,6 +11,8 @@ end
 -- -- scratchpad and will be shown
 -- action.scratch_show("anki")
 
+config.add_mon_rule({output = ""})
+
 event.add_listener("on_start", on_start)
 
 config.set_inner_gaps(0)
@@ -81,4 +83,3 @@ config.bind_key("mod-t",         function() action.set_floating(false)    end)
 config.bind_key("mod-M1",  function() action.move_resize(info.cursor.mode.move) end)
 config.bind_key("mod-M2",  function() action.move_resize(info.cursor.mode.resize) end)
 config.bind_key("M1", function() action.focus_container(info.get_container_under_cursor()) end)
-print("execute finished")

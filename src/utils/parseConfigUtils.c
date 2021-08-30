@@ -19,6 +19,7 @@
 #include "utils/writeFile.h"
 #include "stringop.h"
 #include "utils/coreUtils.h"
+#include "rules/mon_rule.h"
 
 static const char *plugin_relative_paths[] = {
     "autoload",
@@ -141,8 +142,10 @@ int load_config(lua_State *L)
 {
     int success = 0;
     if (server.config_file != NULL && strcmp(server.config_file, "") != 0) {
+        debug_print("load file\n");
         success = load_file(L, server.config_file);
     } else {
+        debug_print("load_default_config\n");
         success = load_default_config(L);
     }
     return success;
@@ -221,7 +224,7 @@ static void *_notify_msg(void *arg)
 
     if (!notify_notification_show(n, 0)) 
     {
-        printf("show has failed!\n");
+        printf("showing notification failed!\n");
     }
     return NULL;
 }
@@ -246,19 +249,21 @@ void handle_error(const char *msg)
     write_to_file(error_fd, "\n");
 }
 
-char *get_config_array_str(lua_State *L, const char *name, size_t i)
+const char *get_config_str(lua_State *L, int idx)
+{
+    if (!lua_isstring(L, idx)) {
+        return "";
+    }
+    const char *str = luaL_checkstring(L, idx);
+    return str;
+}
+
+const char *get_config_array_str(lua_State *L, const char *name, size_t i)
 {
     lua_rawgeti(L, -1, i);
-    if (!lua_isstring(L, -1)) {
-        char c[NUM_CHARS] = "";
-        handle_error(c);
-        return NULL;
-    }
-    const char *str = luaL_checkstring(L, -1);
+    const char *str = get_config_str(L, -1);
     lua_pop(L, 1);
-
-    char *termcmd = strdup(str);
-    return termcmd;
+    return str;
 }
 
 static float get_config_array_float(lua_State *L, const char *name, size_t i)
@@ -287,7 +292,7 @@ static int get_config_array_int(lua_State *L, const char *name, size_t i)
     return f;
 }
 
-static int get_config_array_func_id(lua_State *L, const char *name, int i)
+static int get_config_array_func(lua_State *L, const char *name, int i)
 {
     lua_rawgeti(L, -1, i);
     if (!lua_isfunction(L, -1)) {
@@ -301,25 +306,33 @@ static int get_config_array_func_id(lua_State *L, const char *name, int i)
     return f;
 }
 
-struct rule get_config_array_rule(lua_State *L, const char* name, size_t i)
+struct rule *get_config_rule(lua_State *L)
 {
-    struct rule rule;
-    lua_rawgeti(L, -1, i);
-
-    rule.id  = get_config_array_str(L, name, 1);
-    rule.title  = get_config_array_str(L, name, 2);
-    rule.lua_func_ref = get_config_array_func_id(L, name, 3);
+    lua_getfield(L, -1, "class");
+    const char *id = get_config_str(L, -1);
+    lua_pop(L, 1);
+    lua_getfield(L, -1, "name");
+    const char *title = get_config_str(L, -1);
+    lua_pop(L, 1);
+    lua_getfield(L, -1, "callback");
+    int lua_func_ref = 0;
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lua_func_ref);
 
     lua_pop(L, 1);
+
+    struct rule *rule = create_rule(id, title, lua_func_ref);
     return rule;
 }
 
-struct monrule get_config_array_monrule(lua_State *L, const char* name, size_t i)
+struct mon_rule *get_config_mon_rule(lua_State *L)
 {
-    struct monrule monrule;
-    lua_rawgeti(L, -1, i);
+    lua_getfield(L, -1, "output");
+    const char *output_name = get_config_str(L, -1);
+    lua_pop(L, 1);
+    lua_getfield(L, -1, "callback");
+    int lua_func_ref = 0;
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lua_func_ref);
 
-    monrule.name = get_config_array_str(L, name, 1);
-    monrule.lua_func_ref = get_config_array_func_id(L, name, 2);
-    return monrule;
+    struct mon_rule *mon_rule = create_mon_rule(output_name, lua_func_ref);
+    return mon_rule;
 }

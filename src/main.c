@@ -124,7 +124,7 @@ static int setup()
      * if an X11 server is running. The NULL argument here optionally allows you
      * to pass in a custom renderer if wlr_renderer doesnt). */
     if (!(server.backend = wlr_backend_autocreate(server.wl_display))) {
-        printf("couldn't create backend");
+        printf("couldn't create backend\n");
         return EXIT_FAILURE;
     }
 
@@ -301,7 +301,7 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     if (setup()) {
-        printf("failed to setup japokwm");
+        printf("failed to setup japokwm\n");
         return EXIT_FAILURE;
     }
 

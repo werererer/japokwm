@@ -14,6 +14,8 @@ deps += [luaDep]
 
 main = files('main.c')
 srcs = files(
+    'rules/rule.c',
+    'rules/mon_rule.c',
     'input_manager.c',
     'seat.c',
     'bitset/bitset.c',

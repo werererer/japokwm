@@ -44,10 +44,8 @@ struct options {
     struct resize_constraints master_constraints;
 
     GPtrArray *tag_names;
-    struct rule *rules;
-    size_t rule_count;
-    struct monrule *monrules;
-    size_t monrule_count;
+    GPtrArray *rules;
+    GPtrArray *mon_rules;
 
     int repeat_rate;
     int repeat_delay;

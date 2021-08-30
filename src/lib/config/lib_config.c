@@ -8,6 +8,8 @@
 #include "monitor.h"
 #include "workspace.h"
 #include "keybinding.h"
+#include "rules/rule.h"
+#include "rules/mon_rule.h"
 
 int lib_reload(lua_State *L)
 {
@@ -140,34 +142,21 @@ int lib_create_workspaces(lua_State *L)
 
     size_t len = lua_rawlen(L, -1);
     for (int i = 0; i < len; i++) {
-        char *ws_name = get_config_array_str(L, "workspaces", i+1);
-        g_ptr_array_add(tag_names, ws_name);
+        const char *ws_name = get_config_array_str(L, "workspaces", i+1);
+        g_ptr_array_add(tag_names, strdup(ws_name));
     }
     lua_pop(L, 1);
-
-    /* update_workspaces(server.workspaces, tag_names); */
-
-/*     ipc_event_workspace(); */
 
     return 0;
 }
 
-int lib_set_rules(lua_State *L)
+int lib_add_rule(lua_State *L)
 {
-    if (server.default_layout->options.rules)
-        free(server.default_layout->options.rules);
-
-    size_t len = lua_rawlen(L, -1);
-    server.default_layout->options.rule_count = len;
-    server.default_layout->options.rules = calloc(len, sizeof(struct rule));
-    struct rule *rules = server.default_layout->options.rules;
-
-    for (int i = 0; i < server.default_layout->options.rule_count; i++) {
-        struct rule r = get_config_array_rule(L, "rules", i+1);
-        rules[i] = r;
-    }
-
+    GPtrArray *rules = server.default_layout->options.rules;
+    struct rule *rule = get_config_rule(L);
     lua_pop(L, 1);
+
+    g_ptr_array_add(rules, rule);
     return 0;
 }
 
@@ -184,22 +173,13 @@ int lib_create_layout_set(lua_State *L)
     return 0;
 }
 
-int lib_set_monrules(lua_State *L)
+int lib_add_mon_rule(lua_State *L)
 {
-    if (server.default_layout->options.monrules)
-        free(server.default_layout->options.monrules);
-
-    size_t len = lua_rawlen(L, -1);
-    server.default_layout->options.monrule_count = len;
-    server.default_layout->options.monrules = calloc(len, sizeof(struct monrule));
-    struct monrule *rules = server.default_layout->options.monrules;
-
-    for (int i = 0; i < len; i++) {
-        struct monrule r = get_config_array_monrule(L, "rules", i+1);
-        rules[i] = r;
-    }
-
+    struct mon_rule *mon_rule = get_config_mon_rule(L);
     lua_pop(L, 1);
+
+    GPtrArray *mon_rules = server.default_layout->options.mon_rules;
+    g_ptr_array_add(mon_rules, mon_rule);
     return 0;
 }
 

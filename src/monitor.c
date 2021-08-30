@@ -24,7 +24,6 @@ struct monitor *selected_monitor;
 static void handle_output_damage_frame(struct wl_listener *listener, void *data);
 static void handle_output_frame(struct wl_listener *listener, void *data);
 static void handle_output_mode(struct wl_listener *listener, void *data);
-static void evaluate_monrules(struct wlr_output *output);
 
 void create_monitor(struct wl_listener *listener, void *data)
 {
@@ -91,7 +90,7 @@ void create_monitor(struct wl_listener *listener, void *data)
         call_on_start_function(server.default_layout->options.event_handler);
     }
 
-    evaluate_monrules(output);
+    apply_mon_rules(server.default_layout->options.mon_rules, m);
 
     focus_next_unoccupied_workspace(m, server.workspaces, get_workspace(0));
     load_default_layout(L);
@@ -123,21 +122,6 @@ void create_output(struct wlr_backend *backend, void *data)
         *done = true;
     }
 /* #endif */
-}
-
-
-
-static void evaluate_monrules(struct wlr_output *output)
-{
-    for (int i = 0; i < server.default_layout->options.monrule_count; i++) {
-        struct monrule r = server.default_layout->options.monrules[i];
-        if (!r.name || strstr(output->name, r.name)) {
-            if (!r.lua_func_ref)
-                continue;
-            lua_rawgeti(L, LUA_REGISTRYINDEX, r.lua_func_ref);
-            lua_call_safe(L, 0, 0, 0);
-        }
-    }
 }
 
 static void handle_output_frame(struct wl_listener *listener, void *data)

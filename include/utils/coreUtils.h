@@ -40,13 +40,6 @@ typedef GPtrArray GPtrArray2D;
     for(int keep = 1, count = 0, size = LENGTH(array); keep && count < size; keep = 1, count++)\
         for(item = array[count]; keep; keep = 0)\
 
-/* rules */
-struct rule {
-    char *id;
-    char *title;
-    int lua_func_ref;
-};
-
 extern struct lua_State *L;
 
 bool dir_exists(const char *path);
@@ -135,4 +128,4 @@ void *get_relative_item_in_composed_list(GPtrArray *arrays, int i, int j);
 
 int exec(const char *cmd);
 bool is_approx_equal(double a, double b, double error_range);
-#endif
+#endif /* COREUTILS */

@@ -50,7 +50,6 @@ struct wlr_box get_monitor_local_box(struct wlr_box box, struct monitor *m);
 struct wlr_fbox lua_togeometry(lua_State *L);
 
 void apply_bounds(struct container *con, struct wlr_box bbox);
-void apply_rules(struct container *con);
 void commit_notify(struct wl_listener *listener, void *data);
 void container_damage_borders(struct container *con, struct wlr_box *geom);
 void container_damage_part(struct container *con);

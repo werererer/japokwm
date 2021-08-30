@@ -11,6 +11,7 @@
 #include "container.h"
 #include "tile/tileUtils.h"
 #include "workspace.h"
+#include "rules/rule.h"
 
 static void destroyxdeco(struct wl_listener *listener, void *data);
 static void getxdecomode(struct wl_listener *listener, void *data);
@@ -94,6 +95,8 @@ void map_request(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
     struct workspace *ws = get_workspace(c->ws_id);
     c->bw = ws->layout->options.tile_border_px;
+
+    apply_rules(server.default_layout->options.rules, c->con);
 
     g_ptr_array_add(server.normal_clients, c);
 

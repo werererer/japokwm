@@ -8,6 +8,8 @@
 
 #include "utils/coreUtils.h"
 #include "layout.h"
+#include "rules/rule.h"
+#include "rules/mon_rule.h"
 
 GPtrArray *create_default_config_paths();
 
@@ -32,8 +34,9 @@ int lua_getglobal_safe(lua_State *L, const char *name);
 void notify_msg(const char *msg);
 void handle_error(const char *msg);
 
-struct rule get_config_array_rule(lua_State *L, const char* name, size_t i);
-char *get_config_array_str(lua_State *L, const char *name, size_t i);
-struct monrule get_config_array_monrule(lua_State *L, const char* name, size_t i);
+struct rule *get_config_rule(lua_State *L);
+const char *get_config_str(lua_State *L, int idx);
+const char *get_config_array_str(lua_State *L, const char *name, size_t i);
+struct mon_rule *get_config_mon_rule(lua_State *L);
 
 #endif /* PARSE_CONFIG_UTILS_H */
