@@ -79,12 +79,6 @@ void destroy_notify(struct wl_listener *listener, void *data)
 
     wl_list_remove(&c->new_popup.link);
 
-    struct seat *seat = input_manager_get_default_seat();
-    if (get_wlrsurface(c) == seat->wlr_seat->pointer_state.focused_surface) {
-        wlr_seat_pointer_clear_focus(seat->wlr_seat);
-        wlr_seat_keyboard_clear_focus(seat->wlr_seat);
-    }
-
     destroy_container(c->con);
     destroy_client(c);
 }
