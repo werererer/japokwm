@@ -1,4 +1,3 @@
-#include <check.h>
 #include <stdio.h>
 
 #include "workspace.h"
