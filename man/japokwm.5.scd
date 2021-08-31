@@ -339,11 +339,11 @@ integers
 	get the root area
 <return> ++
 	table(x, y, width, height) ++
-	<where> ++ 
-		x: integer - x coordinate
-		y: integer - y coordinate
-		width: integer - width of the root area
-		height: integer - height of the root area
+<where> ++ 
+	x: integer - x coordinate ++
+	y: integer - y coordinate ++
+	width: integer - width of the root area ++
+	height: integer - height of the root area
 
 *get_next_empty_workspace()* ++
 	Get next workspaces not used by any window
