@@ -1,0 +1,20 @@
+name: Tests
+on:
+  push:
+      branches:
+          - master
+          - development
+  workflow_dispatch:
+jobs:
+    container:
+        runs-on: ubuntu-latest
+        container: archlinux
+        steps:
+            - uses: actions/checkout@v2
+            - run: |
+                uname -a
+                pacman -Sy --noconfirm
+                pacman -S --noconfirm base-devel
+                pacman -S --noconfirm paru
+                paru -S japokwm-git
+              name: Run in container
