@@ -172,18 +172,18 @@ void seat_configure_xcursor(struct seat *seat) {
         }
     }
 
-/*     for (int i = 0; i < root->outputs->length; ++i) { */
-/*         struct sway_output *sway_output = root->outputs->items[i]; */
-/*         struct wlr_output *output = sway_output->wlr_output; */
-/*         bool result = */
-/*             wlr_xcursor_manager_load(seat->cursor->xcursor_manager, */
-/*                 output->scale); */
-/*         if (!result) { */
-/*             sway_log(SWAY_ERROR, */
-/*                 "Cannot load xcursor theme for output '%s' with scale %f", */
-/*                 output->name, output->scale); */
-/*         } */
-/*     } */
+    for (int i = 0; i < server.mons->len; ++i) {
+        struct monitor *m = g_ptr_array_index(server.mons, i);
+        struct wlr_output *output = m->wlr_output;
+        bool result =
+            wlr_xcursor_manager_load(seat->cursor->xcursor_mgr,
+                output->scale);
+        if (!result) {
+            printf(
+                "Cannot load xcursor theme for output '%s' with scale %f",
+                output->name, output->scale);
+        }
+    }
 
     // Reset the cursor so that we apply it to outputs that just appeared
         debug_print("set null1\n");
