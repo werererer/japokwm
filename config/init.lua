@@ -1,16 +1,15 @@
 config.create_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
 
+-- focus follows mouse
 config.set_sloppy_focus(true)
+
+local termcmd = "/usr/bin/termite"
 
 local function on_start()
     -- execute programs or do what ever you want e.g.:
-    -- action.exec("japokmsg 'action.create_output()'")
+    -- action.exec(termcmd)
 end
-
--- -- eval string. Everything that will be opened after that will be moved to the
--- -- scratchpad and will be shown
--- action.scratch_show("anki")
-
+-- executes function on_start when the 
 event.add_listener("on_start", on_start)
 
 config.set_inner_gaps(0)
@@ -21,7 +20,9 @@ config.create_layout_set("default", layouts)
 
 config.set_default_layout(layouts[1])
 
-local termcmd = "/usr/bin/termite"
+-- set it to 4 to use super instead
+config.set_mod(1)
+
 config.bind_key("mod-p",         function() action.exec("rofi -show run") end)
 config.bind_key("mod-e",         function() action.view(info.get_next_empty_workspace(info.get_workspace(), info.direction.right)) end)
 config.bind_key("mod-period",    function() action.toggle_workspace() end)
