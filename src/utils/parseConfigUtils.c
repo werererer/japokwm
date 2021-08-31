@@ -55,8 +55,8 @@ static int load_file(lua_State *L, const char *file)
 GPtrArray *create_default_config_paths()
 {
     GPtrArray *config_paths = g_ptr_array_new();
-    g_ptr_array_add(config_paths, "$HOME/.config/japokwm/");
     g_ptr_array_add(config_paths, "$XDG_CONFIG_HOME/japokwm/");
+    g_ptr_array_add(config_paths, "$HOME/.config/japokwm/");
     g_ptr_array_add(config_paths, "/etc/japokwm/");
     return config_paths;
 }

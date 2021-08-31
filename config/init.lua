@@ -15,7 +15,7 @@ event.add_listener("on_start", on_start)
 
 config.set_inner_gaps(0)
 
-local layouts = {"tmp", "two_pane", "monocle", "tile"}
+local layouts = {"two_pane", "monocle", "tile"}
 
 config.create_layout_set("default", layouts)
 
