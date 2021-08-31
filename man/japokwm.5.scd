@@ -112,7 +112,6 @@ integers
    when a layout is created.
 :< {"", function() print("test") end}
 
-
 # NAMESPACES
 [[ *Namespace*
 :[ *Description*
@@ -154,6 +153,9 @@ integers
 # ACTION
 *arrange()* ++
 	Arrange containers to the given information
+
+*create_output()* ++
+	just create another output
 
 *decrease_nmaster()* ++
 	decrease the number of master windows
@@ -253,8 +255,14 @@ integers
 *swap_workspace(i, i2)*
 	swap the workspace i with the workspace i2 ++
 <where> ++
-	i: integer workspace at i ++
-	i2: integer workspace at i2
+	i: integer - workspace at i ++
+	i2: integer - workspace at i2
+
+*tag_view(i)*
+	tag a view
+<where> ++
+	i: integer - an integer representing a binary number where each digit
+	represents a workspace that will be toggled
 
 *toggle_bars()* ++
 	toggles layer_shell bars
