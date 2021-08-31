@@ -333,7 +333,17 @@ integers
 *get_nmaster()* ++
 	get the number of master windows ++
 <return> ++
-	 integer - number of master windows
+	integer - number of master windows
+
+*get_root_area()* ++
+	get the root area
+<return> ++
+	table(x, y, width, height) ++
+	<where> ++ 
+		x: integer - x coordinate
+		y: integer - y coordinate
+		width: integer - width of the root area
+		height: integer - height of the root area
 
 *get_next_empty_workspace()* ++
 	Get next workspaces not used by any window
@@ -363,6 +373,21 @@ integers
 	boolean - whether it is in limit
 
 # CONFIG
+*add_mon_rule(rule)*
+	add a rule for monitors
+<where> ++
+	rule: rule - 
+
+*add_rule(rule)*
+	add a rule for containers
+<where> ++
+	rule: rule - 
+
+*bind_key(bind, func)*
+	bind a keybinding to a lua function
+<where> ++
+	bind: keybinding - the binding that will execute the function
+	func: function() - the function that will be executed
 
 *create_layout_set(name, layouts)*
 	create a new layout_set ++
@@ -415,11 +440,6 @@ integers
 <where> ++
 	d: direction
 
-*set_keybinds(k)*
-	set all keybindings existing in Japokwm and overwrite old keybindings ++
-<where> ++
-	k: array(keybinding, ...)
-
 *set_layout_constraints(min_width: a, max_width: b, min_height: c, max_height: d)* ++
 	Set the minimum and maximum dimensions of resizing any window ++
 <where> ++
@@ -459,11 +479,6 @@ integers
 <where> ++
 	i: integer
 
-*set_monrules(r)* ++
-	set the rules applied for the respective monitor ++
-<where> ++
-	r: array(monrule)
-
 *set_outer_gaps(i)* ++
 	set how large the gap between all the windows and the root is ++
 <where> ++
@@ -490,15 +505,23 @@ integers
 <where> ++
 	d: direction
 
+*set_resize_function(func)* ++
+	the function that handles resizing windows in a layout
+<where> ++
+	func: function(layout_data, o_layout_data, resize_data, n, direction) - the
+	function that will be called when you resize your containers ++
+	<where> ++
+		layout_data: layout_data - the data for the current layout ++
+		o_layout_data: layout_data - the layout how it originally was ++ 
+		resize_data: array(array(integer, ...)) - which layout_data_elements to
+		include when resizing ++
+		n: float - how much it should resize ++
+		direction: direction - which directions to resize to
+
 *set_root_color(color)* ++
 	set color of the root ++
 <where> ++
 	color: color
-
-*set_rules(r)* ++
-	set the rules ++
-<where> ++
-	r: array(rule)
 
 *set_sloppy_focus(b)* ++
 	set whether to use sloppy focus or not. If sloppy focus is activated you ++
@@ -547,6 +570,7 @@ set_master_layout_data ++
 set_outer_gaps ++
 set_resize_data ++
 set_resize_direction ++
+set_resize_function ++
 set_sloppy_focus ++
 set_smart_hidden_edges ++
 set_tile_borderpx
