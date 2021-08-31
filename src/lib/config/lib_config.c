@@ -83,7 +83,7 @@ int lib_set_mod(lua_State *L)
     int i = luaL_checkinteger(L, -1);
 
     // there are only 4 mods ranging from 1-4
-    i = MAX(MIN(i, 3), 0);
+    i = MAX(MIN(i-1, 3), 0);
 
     server.default_layout->options.modkey = i;
     lua_pop(L, 1);

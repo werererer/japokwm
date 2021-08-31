@@ -113,6 +113,7 @@ static void seat_update_capabilities(struct seat *seat) {
     // We must call cursor_set_image while the wlr_seat has the capabilities
     // otherwise it's a no op.
     if ((caps & WL_SEAT_CAPABILITY_POINTER) == 0) {
+        debug_print("set null0\n");
         cursor_set_image(seat->cursor, NULL, NULL);
         wlr_seat_set_capabilities(seat->wlr_seat, caps);
     } else {
@@ -154,32 +155,6 @@ void seat_configure_xcursor(struct seat *seat) {
         if (cursor_theme != NULL) {
             setenv("XCURSOR_THEME", cursor_theme, 1);
         }
-
-#if HAVE_XWAYLAND
-        if (server.xwayland.wlr_xwayland && (!server.xwayland.xcursor_manager ||
-                !xcursor_manager_is_named(server.xwayland.xcursor_manager,
-                    cursor_theme) ||
-                server.xwayland.xcursor_manager->size != cursor_size)) {
-
-            wlr_xcursor_manager_destroy(server.xwayland.xcursor_manager);
-
-            server.xwayland.xcursor_manager =
-                wlr_xcursor_manager_create(cursor_theme, cursor_size);
-            sway_assert(server.xwayland.xcursor_manager,
-                        "Cannot create XCursor manager for theme");
-
-            wlr_xcursor_manager_load(server.xwayland.xcursor_manager, 1);
-            struct wlr_xcursor *xcursor = wlr_xcursor_manager_get_xcursor(
-                server.xwayland.xcursor_manager, "left_ptr", 1);
-            if (xcursor != NULL) {
-                struct wlr_xcursor_image *image = xcursor->images[0];
-                wlr_xwayland_set_cursor(
-                    server.xwayland.wlr_xwayland, image->buffer,
-                    image->width * 4, image->width, image->height,
-                    image->hotspot_x, image->hotspot_y);
-            }
-        }
-#endif
     }
 
     /* Create xcursor manager if we don't have one already, or if the
@@ -211,6 +186,7 @@ void seat_configure_xcursor(struct seat *seat) {
 /*     } */
 
     // Reset the cursor so that we apply it to outputs that just appeared
+        debug_print("set null1\n");
     cursor_set_image(seat->cursor, NULL, NULL);
     cursor_set_image(seat->cursor, "left_ptr", NULL);
     wlr_cursor_warp(seat->cursor->wlr_cursor, NULL, seat->cursor->wlr_cursor->x,

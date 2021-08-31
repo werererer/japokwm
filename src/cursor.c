@@ -57,7 +57,7 @@ static void handle_axis_notify(struct wl_listener *listener, void *data)
             event->delta_discrete, event->source);
 }
 
-void cursor_update_image(struct cursor *cursor) {
+static void cursor_update_image(struct cursor *cursor) {
     cursor_set_image(cursor, "left_ptr", NULL);
 }
 

@@ -61,7 +61,6 @@ void handle_cursor_frame(struct wl_listener *listener, void *data);
 void handle_set_cursor(struct wl_listener *listener, void *data);
 void cursor_constrain(struct cursor *cursor, struct wlr_pointer_constraint_v1 *constraint);
 void handle_new_pointer_constraint(struct wl_listener *listener, void *data);
-void cursor_update_image(struct cursor *cursor);
 
 void focus_under_cursor(struct cursor *cursor, uint32_t time);
 void cursor_handle_activity_from_device(struct cursor *cursor, struct wlr_input_device *device);
