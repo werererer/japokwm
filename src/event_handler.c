@@ -25,14 +25,16 @@ void destroy_event_handler(struct event_handler *event_handler)
 GPtrArray *event_name_to_signal(struct event_handler *event_handler,
         const char *event)
 {
-    if (strcmp(event, "on_start") == 0)
-        return event_handler->on_start_func_refs;
-    if (strcmp(event, "on_focus") == 0)
-        return event_handler->on_focus_func_refs;
-    if (strcmp(event, "on_update") == 0)
-        return event_handler->on_update_func_refs;
-    if (strcmp(event, "on_create_container") == 0)
-        return event_handler->on_create_container_func_refs;
+    const char *events[] = {
+        "on_start",
+        "on_focus",
+        "on_update",
+        "on_create_container"
+    };
+    for (int i = 0; i < LENGTH(events); i++) {
+        if (strcmp(event, events[i]) == 0)
+            return event_handler->on_start_func_refs;
+    }
     return NULL;
 }
 

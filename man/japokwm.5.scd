@@ -116,7 +116,7 @@ integers
 # NAMESPACES
 [[ *Namespace*
 :< *Description*
-|  *action*
+|  action
 :< Execute an action
 |  config
 :< Configure certain properties or the behavior of the window manager
@@ -128,6 +128,11 @@ integers
 :< Configure certain properties or the behavior of a layout
 |  l
 :< Configure things locally to the layout
+
+# EVENTS
+[[ *Event name*
+:< *Description*
+|  
 
 # ACTION
 *arrange()* ++
@@ -274,34 +279,13 @@ integers
 	sticky: boolean - whether container is sticky
 
 # EVENT
-*set_update_function(func)* ++
-	set the update function ++
+*add_listener(event_name, func)* ++
+	add a add_listener to an event ++
 <where> ++
-	func: function(n) - it will be called every time the another ++
-		layout_element will be loaded ++
+	event_name: string - identifier of the event ++
+	func: function(n) - the function that will be called on event specified by event_name ++
 	<where> ++
-		n: integer - n represents the amount of containers  
-
-*set_on_focus_function(func)* ++
-	set the update function ++
-<where> ++
-	func: function(n) - it will be called every time a new container is ++
-	selected layout_element will be loaded ++
-	<where> ++
-		n: integer - n represents the current container position
-
-*set_on_start_function(func)* ++
-	set the function that is executed on start of the windowmanager.
-<where> ++
-	func: function() - it will be called when the windowmanager launches
-
-*set_create_container_function()* ++
-	set the create_container function
-<where> ++
-	func: function(n) - it will be called every time a container is created ++
-		by Japokwm ++
-	<where> ++
-		n: integer - n represents the current container position
+		n: integer - n represents the amount of containers
 
 # LAYOUT
 *set(name, layout_data)* ++
@@ -481,8 +465,6 @@ integers
 <where> ++
 	d: direction
 
-*
-
 *set_root_color(color)* ++
 	set color of the root ++
 <where> ++
@@ -545,9 +527,7 @@ set_smart_hidden_edges ++
 set_tile_borderpx
 
 ## EVENT
-set_create_container_function ++
-set_update_function ++
- 
+add_listener
 
 # SEE ALSO
 *japokwm*(1)
