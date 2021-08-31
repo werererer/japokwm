@@ -19,4 +19,4 @@ jobs:
                 cd paru
                 makepkg -si
                 paru -S japokwm-git
-              name: Run in container
+              name: Run Test Aur
