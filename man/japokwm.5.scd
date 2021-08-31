@@ -115,24 +115,41 @@ integers
 
 # NAMESPACES
 [[ *Namespace*
-:< *Description*
+:[ *Description*
 |  action
-:< Execute an action
+:  Execute an action
 |  config
-:< Configure certain properties or the behavior of the window manager
+:  Configure certain properties or the behavior of the window manager
 |  container
-:< Configure certain properties or the behavior of a container
+:  Configure certain properties or the behavior of a container
 |  event
-:< Bind a function to an event
+:  Bind a function to an event
 |  layout
-:< Configure certain properties or the behavior of a layout
+:  Configure certain properties or the behavior of a layout
 |  l
-:< Configure things locally to the layout
+:  Configure things locally to the layout
 
 # EVENTS
 [[ *Event name*
-:< *Description*
-|  
+:[ *when*
+:[ *signature*
+:[ *Description*
+|  on_start
+:  once when the windowmanager starts
+:  void function()
+:  
+|  on_focus
+:  when a new window is focused
+:  void function(int i)
+:  i: container id
+|  on_update
+:  when the state of the layout is updated
+:  void function(int i)
+:  i: count of containers
+|  on_create_container
+:  when a container is created
+:  void function(int i)
+:  i: container id
 
 # ACTION
 *arrange()* ++
