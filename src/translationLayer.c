@@ -1,22 +1,24 @@
 #include "translationLayer.h"
-#include "cursor.h"
-#include "lib/actions/actions.h"
-#include "lib/actions/libcontainer.h"
-#include "lib/config/config.h"
-#include "lib/config/localconfig.h"
-#include "lib/event_handler/lib_event_handler.h"
-#include "lib/layout/lib_layout.h"
-#include "lib/info/info.h"
-#include "lib/event_handler/local_event_handler.h"
-#include "lib/monitor/lib_monitor.h"
-#include "tile/tile.h"
+
 #include <lauxlib.h>
 #include <lua.h>
 #include <wayland-server-protocol.h>
 
+#include "cursor.h"
+#include "lib/actions/lib_actions.h"
+#include "lib/actions/lib_container.h"
+#include "lib/config/lib_config.h"
+#include "lib/config/local_config.h"
+#include "lib/event_handler/lib_event_handler.h"
+#include "lib/layout/lib_layout.h"
+#include "lib/info/lib_info.h"
+#include "lib/event_handler/local_event_handler.h"
+#include "lib/monitor/lib_monitor.h"
+
 static const struct luaL_Reg action[] =
 {
     {"arrange", lib_arrange},
+    {"create_output", lib_create_output},
     {"decrease_nmaster", lib_decrease_nmaster},
     {"exec", lib_exec},
     {"focus_container", lib_focus_container},
@@ -38,6 +40,7 @@ static const struct luaL_Reg action[] =
     {"set_nmaster", lib_set_nmaster},
     {"show_scratchpad", lib_show_scratchpad},
     {"swap_workspace", lib_swap_workspace},
+    {"tag_view", lib_tag_view},
     {"toggle_bars", lib_toggle_bars},
     {"toggle_floating", lib_toggle_floating},
     {"toggle_layout", lib_toggle_layout},
@@ -58,17 +61,13 @@ static const struct luaL_Reg container[] =
 
 static const struct luaL_Reg event[] =
 {
-    {"set_create_container_function", lib_set_create_container_function},
-    {"set_on_focus_function", lib_set_on_focus_function},
-    {"set_on_start_function", lib_set_on_start_function},
-    {"set_update_function", lib_set_update_function},
+    {"add_listener", lib_add_listener},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg localevent[] =
 {
-    {"set_update_function", local_set_update_function},
-    {"set_create_container_function", local_set_create_container_function},
+    {"add_listener", local_add_listener},
     {NULL, NULL},
 };
 
@@ -77,6 +76,7 @@ static const struct luaL_Reg info[] =
     {"get_container_under_cursor", lib_get_container_under_cursor},
     {"get_next_empty_workspace", lib_get_next_empty_workspace},
     {"get_nmaster", lib_get_nmaster},
+    {"get_root_area", lib_get_root_area},
     {"get_this_container_count", lib_get_this_container_count},
     {"get_workspace", lib_get_workspace},
     {"is_container_not_in_limit", lib_is_container_not_in_limit},
@@ -87,6 +87,9 @@ static const struct luaL_Reg info[] =
 
 static const struct luaL_Reg config[] = 
 {
+    {"add_mon_rule", lib_add_mon_rule},
+    {"add_rule", lib_add_rule},
+    {"bind_key", lib_bind_key},
     {"create_layout_set", lib_create_layout_set},
     {"create_workspaces", lib_create_workspaces},
     {"reload", lib_reload},
@@ -97,19 +100,17 @@ static const struct luaL_Reg config[] =
     {"set_focus_color", lib_set_focus_color},
     {"set_hidden_edges", lib_set_hidden_edges},
     {"set_inner_gaps", lib_set_inner_gaps},
-    {"set_keybinds", lib_set_keybinds},
     {"set_layout_constraints", lib_set_layout_constraints},
     {"set_master_constraints", lib_set_master_constraints},
     {"set_master_layout_data", lib_set_master_layout_data},
     {"set_mod", lib_set_mod},
-    {"set_monrules", lib_set_monrules},
     {"set_outer_gaps", lib_set_outer_gaps},
     {"set_repeat_delay", lib_set_repeat_delay},
     {"set_repeat_rate", lib_set_repeat_rate},
     {"set_resize_data", lib_set_resize_data},
     {"set_resize_direction", lib_set_resize_direction},
+    {"set_resize_function", lib_set_resize_function},
     {"set_root_color", lib_set_root_color},
-    {"set_rules", lib_set_rules},
     {"set_sloppy_focus", lib_set_sloppy_focus},
     {"set_smart_hidden_edges", lib_set_smart_hidden_edges},
     {"set_tile_borderpx", lib_set_tile_borderpx},
@@ -130,6 +131,7 @@ static const struct luaL_Reg localconfig[] =
     {"set_outer_gaps", local_set_outer_gaps},
     {"set_resize_data", local_set_resize_data},
     {"set_resize_direction", local_set_resize_direction},
+    {"set_resize_function", local_set_resize_function},
     {"set_sloppy_focus", local_set_sloppy_focus},
     {"set_smart_hidden_edges", local_set_smart_hidden_edges},
     {"set_tile_borderpx", local_set_tile_borderpx},
@@ -226,8 +228,10 @@ static void load_info()
     lua_setglobal(L, "info");
 }
 
-void load_libs(lua_State *L)
+void load_lua_api(lua_State *L)
 {
+    luaL_openlibs(L);
+
     luaL_newlib(L, action);
     lua_setglobal(L, "action");
 

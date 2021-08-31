@@ -27,6 +27,7 @@ struct layout {
     int n_master_abs;
     // the amount master windows
     int nmaster;
+    int lua_resize_function_ref;
     int lua_layout_ref;
     int lua_layout_copy_data_ref;
     int lua_layout_original_copy_data_ref;
@@ -43,7 +44,7 @@ struct layout *create_layout(lua_State *L);
 void destroy_layout(struct layout *lt);
 
 bool is_same_layout(struct layout layout, struct layout layout2);
-bool lua_islayout_data(lua_State *L, const char *name);
+bool lua_is_layout_data(lua_State *L, const char *name);
 void lua_copy_table(lua_State *L, int *ref);
 // copy table and override old value
 void lua_copy_table_safe(lua_State *L, int *ref);
@@ -53,5 +54,5 @@ void copy_layout(struct layout *dest_lt, struct layout *src_lt);
 // copy layout and override all references with the given ones
 void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt);
 
-int cmp_layout(const struct layout *lt1, const struct layout *lt2);
+int cmp_layout(const void *ptr1, const void *ptr2);
 #endif /* LAYOUT_H */

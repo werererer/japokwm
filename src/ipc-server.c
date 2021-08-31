@@ -16,7 +16,6 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <wayland-server-core.h>
-#include <wlr/types/wlr_list.h>
 #include <wlr/util/log.h>
 
 #include "ipc-json.h"
@@ -30,7 +29,7 @@
 
 static int ipc_socket = -1;
 static struct sockaddr_un *ipc_sockaddr = NULL;
-static struct wlr_list ipc_client_list;
+static GPtrArray *ipc_client_list;
 
 static const char ipc_magic[] = {'i', '3', '-', 'i', 'p', 'c'};
 
@@ -124,11 +123,12 @@ void ipc_init(struct wl_event_loop *wl_event_loop) {
         printf("Unable to listen on IPC socket\n");
     }
 
-    // Set i3 IPC socket path so that i3-msg works out of the box
-    /* setenv("I3SOCK", ipc_sockaddr->sun_path, 1); */
+    // Set SWAY IPC socket path so that waybar automatically shows
+    // workspaces(tags)
     setenv("SWAYSOCK", ipc_sockaddr->sun_path, 1);
+    setenv("JAPOKWMSOCK", ipc_sockaddr->sun_path, 1);
 
-    wlr_list_init(&ipc_client_list);
+    ipc_client_list = g_ptr_array_new();
 
     wl_event_loop_add_fd(wl_event_loop, ipc_socket,
             WL_EVENT_READABLE, ipc_handle_connection, wl_event_loop);
@@ -149,7 +149,7 @@ struct sockaddr_un *ipc_user_sockaddr(void) {
         dir = "/tmp";
     }
     if (path_size <= snprintf(ipc_sockaddr->sun_path, path_size,
-            "%s/sway-ipc.%u.%i.sock", dir, getuid(), getpid())) {
+            "%s/japokwm-ipc.%u.%i.sock", dir, getuid(), getpid())) {
         printf("Socket path won't fit into ipc_sockaddr->sun_path\n");
     }
 
@@ -198,7 +198,7 @@ int ipc_handle_connection(int fd, uint32_t mask, void *data) {
         return 0;
     }
 
-    wlr_list_push(&ipc_client_list, client);
+    g_ptr_array_add(ipc_client_list, client);
     return 0;
 }
 
@@ -271,8 +271,8 @@ int ipc_client_handle_readable(int client_fd, uint32_t mask, void *data) {
 
 static void ipc_send_event(const char *json_string, enum ipc_command_type event) {
     struct ipc_client *client;
-    for (size_t i = 0; i < ipc_client_list.length; i++) {
-        client = ipc_client_list.items[i];
+    for (size_t i = 0; i < ipc_client_list->len; i++) {
+        client = g_ptr_array_index(ipc_client_list, i);
         if ((client->subscribed_events & event_mask(event)) == 0) {
             continue;
         }
@@ -344,10 +344,10 @@ void ipc_client_disconnect(struct ipc_client *client) {
         wl_event_source_remove(client->writable_event_source);
     }
     size_t i = 0;
-    while (i < ipc_client_list.length && ipc_client_list.items[i] != client) {
+    while (i < ipc_client_list->len && g_ptr_array_index(ipc_client_list, i) != client) {
         i++;
     }
-    wlr_list_del(&ipc_client_list, i);
+    g_ptr_array_remove_index(ipc_client_list, i);
     free(client->write_buffer);
     close(client->fd);
     free(client);
@@ -384,35 +384,31 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
 
     switch (payload_type) {
         case IPC_COMMAND:
-            execute_command(buf);
-            ipc_send_reply(client, payload_type, "", strlen(""));
+        {
+            char *line = strtok(buf, "\n");
+            while (line) {
+                size_t line_length = strlen(line);
+                if (line + line_length >= buf + payload_length) {
+                    break;
+                }
+                line[line_length] = ';';
+                line = strtok(NULL, "\n");
+            }
+
+            struct cmd_results *results = execute_command(buf, NULL, NULL);
+            /* transaction_commit_dirty(); */
+            char *json = cmd_results_to_json(results);
+            int length = strlen(json);
+            ipc_send_reply(client, payload_type, json, (uint32_t)length);
+            free(json);
+            free(results);
             goto exit_cleanup;
-            break;
+        }
         case IPC_GET_WORKSPACES:
             {
-                json_object *array = json_object_new_array();
+                json_object *array;
 
-                for (int i = 0; i < server.mons.length; i++) {
-                    struct monitor *m = server.mons.items[i];
-                    for (int ws_id = 0; ws_id < server.workspaces.length; ws_id++) {
-                        printf("ws_id: %i\n", ws_id);
-                        struct workspace *ws = get_workspace(ws_id);
-                        bool has_clients = workspace_has_clients(ws);
-                        bool is_workspace_selected = m->ws_id == ws_id;
-                        bool is_workspace_active = selected_monitor->ws_id == ws_id;
-                        printf("has_clients: %i\n", has_clients);
-                        printf("is_workspace_selected: %i\n", is_workspace_selected);
-                        printf("is_workspace_active: %i\n", is_workspace_active);
-                        if (!has_clients && !is_workspace_selected) 
-                            continue;
-                        if (ws->m != m)
-                            continue;
-
-                        json_object *ws_object = ipc_json_describe_workspace(
-                                ws, is_workspace_active);
-                        json_object_array_add(array, ws_object);
-                    }
-                }
+                array = ipc_json_describe_tagsets(NULL);
 
                 const char *json_string = json_object_get_string(array);
                 ipc_send_reply(client, payload_type, json_string,
@@ -424,6 +420,8 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
         case IPC_SUBSCRIBE:
             {
                 // TODO: Check if they're permitted to use these events
+                // NOTE: this will probably be fixed by sway, if so copy its
+                // implementation and call it a day
                 struct json_object *request = json_tokener_parse(buf);
 
                 bool is_tick = false;
@@ -438,7 +436,7 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
                         const char msg[] = "{\"success\": false}";
                         ipc_send_reply(client, payload_type, msg, strlen(msg));
                         json_object_put(request);
-                        wlr_log(WLR_INFO, "Unsupported event type in subscribe request");
+                        printf("Unsupported event type in subscribe request\n");
                         goto exit_cleanup;
                     }
                 }

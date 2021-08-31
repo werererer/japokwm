@@ -9,6 +9,9 @@ typedef struct {
 } Decoration;
 
 void create_notify_xdg(struct wl_listener *listener, void *data);
+void destroy_notify(struct wl_listener *listener, void *data);
+void map_request(struct wl_listener *listener, void *data);
+void unmap_notify(struct wl_listener *listener, void *data);
 void createxdeco(struct wl_listener *listener, void *data);
 
 #endif /* XDG_SHELL_H */

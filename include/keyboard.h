@@ -6,10 +6,16 @@
 #include <wlr/types/wlr_pointer.h>
 #include <wlr/backend/multi.h>
 #include <xkbcommon/xkbcommon.h>
+#include <wlr/types/wlr_input_device.h>
+
+#include "seat.h"
 
 struct keyboard {
-    struct wl_list link;
-    struct wlr_input_device *device;
+    struct seat *seat;
+    struct seat_device *seat_device;
+
+    int32_t repeat_rate;
+    int32_t repeat_delay;
 
     struct wl_listener modifiers;
     struct wl_listener key;
@@ -19,7 +25,8 @@ struct keyboard {
 typedef uint32_t xkb_keysym_t;
 
 void cleanupkeyboard(struct wl_listener *listener, void *data);
-void create_keyboard(struct wlr_input_device *device);
+void create_keyboard(struct seat *seat, struct seat_device *device);
+void destroy_keyboard(struct keyboard *kb);
 void keypress(struct wl_listener *listener, void *data);
 void keypressmod(struct wl_listener *listener, void *data);
 

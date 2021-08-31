@@ -1,5 +1,5 @@
-#ifndef ACTIONS_H
-#define ACTIONS_H
+#ifndef LIB_ACTIONS_H
+#define LIB_ACTIONS_H
 #include <lua.h>
 #include <lauxlib.h>
 #include <stdint.h>
@@ -8,6 +8,7 @@
 #include "client.h"
 
 int lib_arrange(lua_State *L);
+int lib_create_output(lua_State *L);
 int lib_focus_container(lua_State *L);
 int lib_focus_on_hidden_stack(lua_State *L);
 int lib_focus_on_stack(lua_State *L);
@@ -31,6 +32,7 @@ int lib_toggle_layout(lua_State *L);
 int lib_toggle_view(lua_State *L);
 int lib_toggle_workspace(lua_State *L);
 int lib_view(lua_State *L);
+int lib_tag_view(lua_State *L);
 int lib_zoom(lua_State *L);
 int lib_set_nmaster(lua_State *L);
 int lib_increase_nmaster(lua_State *L);
@@ -38,4 +40,4 @@ int lib_decrease_nmaster(lua_State *L);
 int lib_move_workspace_to(lua_State *L);
 int lib_swap_workspace(lua_State *L);
 
-#endif /* ACTIONS_H */
+#endif /* LIB_ACTIONS_H */

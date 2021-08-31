@@ -1,4 +1,4 @@
-#include "lib/actions/actions.h"
+#include "lib/actions/lib_actions.h"
 
 #include <inttypes.h>
 #include <lua.h>
@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <wayland-util.h>
 #include <wlr/types/wlr_xdg_shell.h>
+#include <wlr/backend/multi.h>
 
 #include "container.h"
 #include "ipc-server.h"
@@ -30,6 +31,24 @@ int lib_arrange(lua_State *L)
     return 0;
 }
 
+int lib_create_output(lua_State *L)
+{
+    if (!wlr_backend_is_multi(server.backend)) {
+        lua_pushstring(L, "Expected a multi backend");
+        return 1;
+    }
+
+    bool done = false;
+    wlr_multi_for_each_backend(server.backend, create_output, &done);
+
+    if (!done) {
+        lua_pushstring(L, "Can only create outputs for Wayland, X11 or headless backends");
+        return 1;
+    }
+
+    return 0;
+}
+
 int lib_focus_container(lua_State *L)
 {
     int pos = luaL_checkinteger(L, -1);
@@ -39,7 +58,7 @@ int lib_focus_container(lua_State *L)
     if (!con)
         return 0;
 
-    focus_container(con, FOCUS_NOOP);
+    focus_container(con);
     return 0;
 }
 
@@ -57,11 +76,11 @@ int lib_resize_main(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace(m->ws_id);
+    struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = ws->layout;
     int dir = lt->options.resize_dir;
 
-    lua_getglobal_safe(L, "Resize_main_all");
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_resize_function_ref);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_original_copy_data_ref);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_resize_data_ref);
@@ -85,7 +104,7 @@ int lib_set_floating(lua_State *L)
 
     struct monitor *m = selected_monitor;
     set_container_monitor(sel, m);
-    set_container_floating(sel, fix_position, floating);
+    set_container_floating(sel, container_fix_position, floating);
 
     arrange();
     return 0;
@@ -153,9 +172,10 @@ int lib_focus_on_hidden_stack(lua_State *L)
 
 int lib_move_resize(lua_State *L)
 {
+    struct seat *seat = input_manager_get_default_seat();
     int ui = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    move_resize(ui);
+    move_resize(seat->cursor, ui);
     return 0;
 }
 
@@ -164,7 +184,7 @@ int lib_move_to_scratchpad(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
-    struct container *con = get_container(get_workspace(m->ws_id), i);
+    struct container *con = get_container(m->tagset, i);
     move_to_scratchpad(con, 0);
     return 0;
 }
@@ -178,18 +198,40 @@ int lib_view(lua_State *L)
     if (!m)
         return 0;
 
-    struct workspace *ws = get_workspace(ws_id);
-    if (!ws)
+    tagset_focus_workspace(ws_id);
+    arrange();
+    return 0;
+}
+
+int lib_tag_view(lua_State *L)
+{
+    uint64_t tags_dec = luaL_checkinteger(L, -1);
+
+    lua_pop(L, 1);
+
+    struct monitor *m = selected_monitor;
+    if (!m)
         return 0;
 
-    push_workspace(m, ws);
+    BitSet *tmp_bitset = bitset_from_value(tags_dec);
+    BitSet *bitset = bitset_create(server.workspaces->len);
+    for (int i = 0; i < bitset->size; i++) {
+        int last_bit_id = tmp_bitset->size - 1;
+        bitset_assign(bitset, i, bitset_test(tmp_bitset, last_bit_id - i));
+    }
+    bitset_destroy(tmp_bitset);
+
+    tagset_toggle_add(m->tagset, bitset);
+    arrange();
     return 0;
 }
 
 int lib_toggle_view(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    focus_most_recent_container(get_workspace(m->ws_id), FOCUS_LIFT);
+    focus_most_recent_container(m->tagset);
+    struct container *sel = get_focused_container(m);
+    lift_container(sel);
     arrange(false);
     return 0;
 }
@@ -199,7 +241,7 @@ int lib_toggle_floating(lua_State *L)
     struct container *sel = get_focused_container(selected_monitor);
     if (!sel)
         return 0;
-    set_container_floating(sel, fix_position, !sel->floating);
+    set_container_floating(sel, container_fix_position, !sel->floating);
     arrange();
     return 0;
 }
@@ -219,7 +261,6 @@ int lib_move_container_to_workspace(lua_State *L)
 
 int lib_quit(lua_State *L)
 {
-    printf("quit\n");
     wl_display_terminate(server.wl_display);
     close_error_file();
     return 0;
@@ -228,18 +269,19 @@ int lib_quit(lua_State *L)
 int lib_zoom(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tagset *tagset = monitor_get_active_tagset(m);
 
     struct container *sel = get_focused_container(m);
 
     if (!sel)
         return 0;
 
-    int position = wlr_list_find(&ws->tiled_containers, cmp_ptr, sel);
-    if (position == INVALID_POSITION)
+    guint position;
+    bool found = g_ptr_array_find(tagset->list_set->tiled_containers, sel, &position);
+    if (!found)
         return 0;
 
-    if (sel == ws->tiled_containers.items[0]) {
+    if (sel == g_ptr_array_index(tagset->list_set->tiled_containers, 0)) {
         repush(1, 0);
     } else {
         repush(position, 0);
@@ -248,12 +290,12 @@ int lib_zoom(lua_State *L)
     arrange();
 
     // focus new master window
-    struct container *con0 = get_container(ws, 0);
-    focus_container(con0, FOCUS_NOOP);
+    struct container *con = get_container(tagset, 0);
+    focus_container(con);
 
     struct layout *lt = get_layout_in_monitor(m);
     if (lt->options.arrange_by_focus) {
-        focus_most_recent_container(ws, FOCUS_NOOP);
+        focus_most_recent_container(tagset);
         arrange();
     }
     return 0;
@@ -307,7 +349,6 @@ int lib_load_prev_layout_in_set(lua_State *L)
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
     if (!lua_is_index_defined(L, layout_set_key)) {
-        printf("is nil return\n");
         lua_pop(L, 1);
         return 0;
     }
@@ -372,8 +413,8 @@ int lib_kill(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct workspace *ws = get_workspace(m->ws_id);
-    struct container *con = get_container(ws, i);
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    struct container *con = get_container(tagset, i);
 
     if (!con)
         return 0;
@@ -394,8 +435,7 @@ int lib_toggle_layout(lua_State *L)
 
 int lib_toggle_workspace(lua_State *L)
 {
-    struct monitor *m = selected_monitor;
-    push_workspace(m, get_workspace(server.previous_workspace_id));
+    push_tagset(server.previous_tagset);
     return 0;
 }
 
@@ -408,22 +448,24 @@ int lib_swap_workspace(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tagset *tagset = monitor_get_active_tagset(m);
 
-    for (int i = 0; i < ws->tiled_containers.length; i++) {
+    for (int i = 0; i < tagset->list_set->tiled_containers->len; i++) {
         struct container *con = get_container(0, i);
-        if (exist_on(con, get_workspace(ws_id1))) {
+        struct workspace *ws1 = get_workspace(ws_id1);
+        if (exist_on(workspace_get_tagset(ws1), con)) {
             con->client->ws_id = ws_id2;
             continue;
         }
-        if (exist_on(con, get_workspace(ws_id2))) {
+        struct workspace *ws2 = get_workspace(ws_id2);
+        if (exist_on(workspace_get_tagset(ws2), con)) {
             con->client->ws_id = ws_id1;
             continue;
         }
     }
 
     arrange();
-    focus_most_recent_container(ws, FOCUS_NOOP);
+    focus_most_recent_container(tagset);
     root_damage_whole(m->root);
     return 0;
 }

@@ -1,8 +1,10 @@
 #include "keybinding.h"
+#include "input_manager.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "stringop.h"
+#include "workspace.h"
 
 const char *mods[8] = {"Shift_L", "Caps_Lock", "Control_L", "Alt_L", "", "", "Super_L", "ISO_Level3_Shift"};
 const char *modkeys[4] = {"Alt_L", "Num_Lock", "ISO_Level3_Shift", "Super_L"};
@@ -38,7 +40,7 @@ static void sym_to_binding(char *dest, int mods, int sym)
 static void resolve_keybind_element(char *sym_dest, const char *bind)
 {
     struct monitor *m = selected_monitor;
-    struct workspace *ws = get_workspace(m->ws_id);
+    struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = ws->layout;
 
     if (strcmp(bind, "mod") == 0) {
@@ -70,71 +72,69 @@ static void resolve_keybind_element(char *sym_dest, const char *bind)
 
 static bool is_same_keybind_element(const char *bind, const char *bind2)
 {
-    struct wlr_list bindarr = split_string(bind, "-");
-    struct wlr_list bind2arr = split_string(bind2, "-");
+    GPtrArray *bindarr = split_string(bind, "-");
+    GPtrArray *bind2arr = split_string(bind2, "-");
 
-    if (bind2arr.length == 0)
+    if (bind2arr->len == 0)
         return true;
-    if (bindarr.length != bind2arr.length)
+    if (bindarr->len != bind2arr->len)
         return false;
 
     // remove all resolved items out of bind2arr found in bindarr
-    for (int i = 0; i < bindarr.length; i++) {
-        int str1len = strlen(bind2arr.items[i]);
+    for (int i = 0; i < bindarr->len; i++) {
+        int str1len = strlen(g_ptr_array_index(bind2arr, i));
         char bindelem[str1len];
-        resolve_keybind_element(bindelem, bindarr.items[i]);
+        resolve_keybind_element(bindelem, g_ptr_array_index(bindarr, i));
 
-        for (int j = 0; j < bind2arr.length; j++) {
-            int str2len = strlen(bind2arr.items[j]);
+        for (int j = 0; j < bind2arr->len; j++) {
+            int str2len = strlen(g_ptr_array_index(bind2arr, j));
             char bind2elem[str2len];
-            resolve_keybind_element(bind2elem, bind2arr.items[j]);
+            resolve_keybind_element(bind2elem, g_ptr_array_index(bind2arr, j));
 
-            if (strcmp(bindarr.items[i], bind2elem) == 0) {
-                wlr_list_del(&bind2arr, j);
+            if (strcmp(g_ptr_array_index(bindarr, i), bind2elem) == 0) {
+                g_ptr_array_remove_index(bind2arr, j);
                 break;
             }
         }
     }
 
     // if no items remain in bind2arr the bind must be correct
-    bool ret = bind2arr.length == 0;
+    bool ret = bind2arr->len == 0;
 
     return ret;
 }
 
 static bool is_same_keybind(const char *bind, const char *bind2)
 {
-    bool same = false;
-    same = is_same_keybind_element(bind, bind2);
+    bool same = is_same_keybind_element(bind, bind2);
     return same;
 }
 
-static bool process_binding(lua_State *L, char *bind, int lua_ref)
+static bool process_binding(lua_State *L, char *bind, GPtrArray *keybindings)
 {
     bool handled = false;
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lua_ref);
-    int len = lua_rawlen(L, -1);
-    for (int i = 0; i < len; i++) {
-        lua_rawgeti(L, -1, i+1);
-        lua_rawgeti(L, -1, 1);
-        const char *ref = luaL_checkstring(L, -1);
-        lua_pop(L, 1);
-        if (is_same_keybind(bind, ref)) {
-            lua_rawgeti(L, -1, 2);
+    for (int i = 0; i < keybindings->len; i++) {
+        struct keybinding *keybinding = g_ptr_array_index(keybindings, i);
+        if (is_same_keybind(bind, keybinding->binding)) {
+            lua_rawgeti(L, LUA_REGISTRYINDEX, keybinding->lua_func_ref);
             lua_call_safe(L, 0, 0, 0);
             handled = true;
         }
-        lua_pop(L, 1);
     }
-    lua_pop(L, 1);
     return handled;
+}
+
+struct keybinding *create_keybinding()
+{
+    struct keybinding *keybinding = calloc(1, sizeof(struct keybinding));
+    return keybinding;
 }
 
 bool handle_keybinding(int mods, int sym)
 {
     char bind[128] = "";
     sym_to_binding(bind, mods, sym);
-    bool handled = process_binding(L, bind, server.default_layout->options.keybinds_ref);
+    bool handled = process_binding(L, bind, server.default_layout->options.keybindings);
     return handled;
 }
 

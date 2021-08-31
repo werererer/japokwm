@@ -7,26 +7,17 @@
 
 #include "client.h"
 #include "options.h"
-
-enum focus_actions {
-    FOCUS_NOOP,
-    FOCUS_LIFT,
-};
+#include "monitor.h"
 
 struct container {
-    /* sticky containers */
-    struct wl_list stlink;
-
-    struct wl_listener commit;
-
     /* layout-relative, includes border */
     struct wlr_box geom;
     struct wlr_box prev_geom;
     struct wlr_box prev_floating_geom;
     struct client *client;
 
-    struct monitor *m;
-    struct monitor *prev_m;
+    bool is_xwayland_popup;
+    bool is_tiled;
     bool floating;
     bool focusable;
     bool has_border;
@@ -44,6 +35,9 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 
 void destroy_container(struct container *con);
 
+void add_container_to_tile(struct container *con);
+void remove_container_from_tile(struct container *con);
+
 struct container *get_focused_container(struct monitor *m);
 struct container *xy_to_container(double x, double y);
 struct container *get_container_on_focus_stack(int ws_id, int position);
@@ -56,13 +50,12 @@ struct wlr_box get_monitor_local_box(struct wlr_box box, struct monitor *m);
 struct wlr_fbox lua_togeometry(lua_State *L);
 
 void apply_bounds(struct container *con, struct wlr_box bbox);
-void apply_rules(struct container *con);
 void commit_notify(struct wl_listener *listener, void *data);
 void container_damage_borders(struct container *con, struct wlr_box *geom);
 void container_damage_part(struct container *con);
 void container_damage_whole(struct container *con);
-void fix_position(struct container *con);
-void focus_container(struct container *con, enum focus_actions a);
+void container_fix_position(struct container *con);
+void focus_container(struct container *con);
 void focus_on_hidden_stack(struct monitor *m, int i);
 void focus_on_stack(struct monitor *m, int i);
 /* Find the topmost visible client (if any) at point (x, y), including
@@ -75,11 +68,17 @@ void set_container_monitor(struct container *con, struct monitor *m);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
 
-int absolute_x_to_container_relative(struct container *con, int x);
-int absolute_y_to_container_relative(struct container *con, int y);
+void set_container_workspace(struct container *con, struct workspace *ws);
+void move_container_to_workspace(struct container *con, struct workspace *ws);
+
+struct monitor *container_get_monitor(struct container *con);
+
+int absolute_x_to_container_relative(struct wlr_box geom, int x);
+int absolute_y_to_container_relative(struct wlr_box geom, int y);
 int get_position_in_container_stack(struct container *con);
 
 struct container *get_container_from_container_stack_position(int i);
 
 bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *resize_constraints);
+bool container_is_bar(struct container *con);
 #endif /* CONTAINER_H */

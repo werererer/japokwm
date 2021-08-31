@@ -16,6 +16,7 @@
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "utils/gapUtils.h"
+#include "layer_shell.h"
 
 struct wlr_renderer *drw;
 struct render_data render_data;
@@ -222,7 +223,7 @@ static void scissor_output(struct wlr_output *output, pixman_box32_t *rect)
 // TODO refactor the name it doesn't represent what this does perfectly
 static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *borders, enum wlr_edges hidden_edges)
 {
-    struct monitor *m = con->m;
+    struct monitor *m = container_get_monitor(con);
 
     enum wlr_edges containers_hidden_edges = WLR_EDGE_NONE;
     // hide edges if needed
@@ -254,7 +255,8 @@ static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *bo
 
 static void render_borders(struct container *con, struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct container *sel = get_focused_container(con->m);
+    struct monitor *container_monitor = container_get_monitor(con);
+    struct container *sel = get_focused_container(container_monitor);
 
     if (con->has_border) {
         double ox, oy;
@@ -273,10 +275,10 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
         };
 
         enum wlr_edges hidden_edges = WLR_EDGE_NONE;
-        struct workspace *ws = monitor_get_active_workspace(m);
-        struct layout *lt = ws->layout;
+        struct tagset *tagset = monitor_get_active_tagset(m);
+        struct layout *lt = tagset_get_layout(tagset);
         if (lt->options.smart_hidden_edges) {
-            if (ws->tiled_containers.length <= 1) {
+            if (tagset->list_set->tiled_containers->len <= 1) {
                 hidden_edges = get_hidden_edges(con, borders, lt->options.hidden_edges);
             }
         } else {
@@ -298,9 +300,9 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
 {
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    for (int i = length_of_composed_list(&server.normal_visual_stack_lists); i >= 0; i--) {
-        struct container *con = get_in_composed_list(&server.normal_visual_stack_lists, i);
-        if (!visible_on(con, get_workspace(m->ws_id)))
+    for (int i = length_of_composed_list(server.normal_visual_stack_lists)-1; i >= 0; i--) {
+        struct container *con = get_in_composed_list(server.normal_visual_stack_lists, i);
+        if (!visible_on(monitor_get_active_tagset(m), con))
             continue;
 
         render_borders(con, m, output_damage);
@@ -321,20 +323,15 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
 {
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    for (int i = 0; i < length_of_composed_list(&server.layer_visual_stack_lists); i++) {
-        struct container *con = get_in_composed_list(&server.layer_visual_stack_lists, i);
+    GPtrArray *layer_list = get_layer_list(m, layer);
+    for (int i = 0; i < layer_list->len; i++) {
+        struct container *con = g_ptr_array_index(layer_list, i);
 
-        if (con->client->type != LAYER_SHELL)
-            continue;
-        if (con->client->surface.layer->current.layer != layer)
-            continue;
-        if (!visible_on(con, get_workspace(m->ws_id)))
+        if (!visible_on(monitor_get_active_tagset(m), con))
             continue;
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
-        con->geom.width = surface->current.width;
-        con->geom.height = surface->current.height;
-        render_surface_iterator(m, surface, con->geom, output_damage, con->alpha);
+        render_surface_iterator(m, surface, con->geom, output_damage, 1.0);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -344,9 +341,9 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
 
 static void render_independents(struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct workspace *ws = monitor_get_active_workspace(m);
-    for (int i = 0; i < ws->independent_containers.length; i++) {
-        struct container *con = ws->independent_containers.items[i];
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    for (int i = 0; i < tagset->list_set->independent_containers->len; i++) {
+        struct container *con = g_ptr_array_index(tagset->list_set->independent_containers, i);
         struct wlr_surface *surface = get_wlrsurface(con->client);
 
         con->geom.width = surface->current.width;
@@ -361,8 +358,8 @@ static void render_independents(struct monitor *m, pixman_region32_t *output_dam
 
 static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
 {
-    for (int i = 0; i < server.popups.length; i++) {
-        struct xdg_popup *popup = server.popups.items[i];
+    for (int i = 0; i < server.popups->len; i++) {
+        struct xdg_popup *popup = g_ptr_array_index(server.popups, i);
         struct wlr_surface *surface = popup->xdg->base->surface;
         render_surface_iterator(m, surface, popup->geom, output_damage, 1.0f);
 
@@ -401,7 +398,6 @@ void render_monitor(struct monitor *m, pixman_region32_t *damage)
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY, damage);
 
-    wlr_list_for_each(&render_data.textures, (void*)render_texture);
     render_popups(m, damage);
 
     /* Hardware cursors are rendered by the GPU on a separate plane, and can be

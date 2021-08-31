@@ -1,8 +1,8 @@
 # unit test setup
-extraLibs = [dependency('check')]
 c_args = ['-I../include']
 
 test_files = files(
+    'tagset_test.c',
     'container_test.c',
     'tile/tileUtils_test.c',
     'utils/coreUtils_test.c',
@@ -10,6 +10,7 @@ test_files = files(
     'utils/stringUtils_test.c',
     'workspace_test.c',
     'scratchpad_test.c',
+    'bitset_test.c'
     )
 
 foreach test_file: test_files
@@ -21,8 +22,8 @@ foreach test_file: test_files
 
     t = executable(test_file_name, [test_file], 
                c_args: c_args,
-               dependencies: [deps, extraLibs],
-               include_directories: inc,
+               dependencies: [deps],
+               include_directories: include_dirs,
                link_with: [wmlib],
               )
 

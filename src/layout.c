@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <lua.h>
+#include <assert.h>
 
 #include "server.h"
 #include "utils/coreUtils.h"
@@ -30,8 +31,12 @@ struct layout *create_layout(lua_State *L)
 
     lua_get_default_layout_data(L);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_copy_data_ref);
+
     lua_createtable(L, 0, 0);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_ref);
+
+    lua_get_default_resize_function(L);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_resize_function_ref);
 
     return lt;
 }
@@ -53,6 +58,7 @@ void lua_copy_table(lua_State *L, int *ref)
 
 void lua_copy_table_safe(lua_State *L, int *ref)
 {
+    assert(lua_istable(L, -1));
     lua_getglobal_safe(L, "Deep_copy");
     lua_insert(L, -2);
     lua_call_safe(L, 1, 1, 0);
@@ -63,23 +69,23 @@ void lua_copy_table_safe(lua_State *L, int *ref)
 
 struct resize_constraints lua_toresize_constrains(lua_State *L)
 {
-    struct resize_constraints resize_constrains;
+    struct resize_constraints resize_constraints;
     lua_getfield(L, -1, "min_width");
-    resize_constrains.min_width = luaL_checknumber(L, -1);
+    resize_constraints.min_width = luaL_checknumber(L, -1);
     lua_pop(L, 1);
 
     lua_getfield(L, -1, "max_width");
-    resize_constrains.max_width = luaL_checknumber(L, -1);
+    resize_constraints.max_width = luaL_checknumber(L, -1);
     lua_pop(L, 1);
 
     lua_getfield(L, -1, "min_height");
-    resize_constrains.min_height = luaL_checknumber(L, -1);
+    resize_constraints.min_height = luaL_checknumber(L, -1);
     lua_pop(L, 1);
 
     lua_getfield(L, -1, "max_height");
-    resize_constrains.max_height = luaL_checknumber(L, -1);
+    resize_constraints.max_height = luaL_checknumber(L, -1);
     lua_pop(L, 1);
-    return resize_constrains;
+    return resize_constraints;
 }
 
 bool is_same_layout(struct layout layout, struct layout layout2)
@@ -96,6 +102,7 @@ void copy_layout(struct layout *dest_lt, struct layout *src_lt)
     dest_lt->lua_layout_original_copy_data_ref = 0;
     dest_lt->lua_layout_ref = 0;
     dest_lt->lua_master_layout_data_ref = 0;
+    dest_lt->lua_resize_function_ref = 0;
     copy_layout_safe(dest_lt, src_lt);
 }
 
@@ -124,11 +131,6 @@ void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt)
         lua_copy_table_safe(L, &dest_lt->lua_layout_original_copy_data_ref);
     }
 
-    if (src_lt->lua_layout_original_copy_data_ref > 0) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, src_lt->lua_layout_original_copy_data_ref);
-        lua_copy_table_safe(L, &dest_lt->lua_layout_original_copy_data_ref);
-    }
-
     if (src_lt->lua_master_layout_data_ref > 0) {
         lua_get_default_master_layout_data(L);
         lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->lua_master_layout_data_ref);
@@ -139,12 +141,17 @@ void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt)
         lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->lua_resize_data_ref);
     }
 
+    if (src_lt->lua_resize_function_ref > 0) {
+        lua_get_default_resize_function(L);
+        lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->lua_resize_function_ref);
+    }
+
     copy_options(&dest_lt->options, &src_lt->options);
 
     return;
 }
 
-bool lua_islayout_data(lua_State *L, const char *name)
+bool lua_is_layout_data(lua_State *L, const char *name)
 {
     if (!lua_istable(L, -1))
         return false;
@@ -179,7 +186,9 @@ bool lua_islayout_data(lua_State *L, const char *name)
     return true;
 }
 
-int cmp_layout(const struct layout *lt1, const struct layout *lt2)
+int cmp_layout(const void *ptr1, const void *ptr2)
 {
-    return strcmp(lt1->symbol, lt2->symbol);
+    const struct layout *lt1 = ptr1;
+    const struct layout *lt2 = ptr2;
+    return strcmp(lt1->symbol, lt2->symbol) == 0;
 }

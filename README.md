@@ -8,6 +8,9 @@ Japokwm is a dynamic tiling wayland compositor where you are able to create new 
 - Create any layout you want with a 3 dimensional Array:
 ![](edit_layout.gif)
 - Layout specific configs
+- a client to control the windowmanager from the terminal - japokmsg based on
+  swaymsg
+- a dwm based tagging system instead of normal(boring) workspaces
 
 ## Download
   [AUR](https://aur.archlinux.org/packages/japokwm-git)
@@ -32,4 +35,4 @@ japokwm is in it's alpha stage and bugs may accour (If you find them please repo
 - unittests
 
 ## Acknowledgements
-japokwm forked dwl and uses wlroots to do the heavy lifting
+japokwm forked dwl and uses wlroots and parts of sway to do the heavy lifting

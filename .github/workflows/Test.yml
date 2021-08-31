@@ -20,8 +20,7 @@ jobs:
                 pacman -S --noconfirm lua
                 pacman -S --noconfirm wayland
                 pacman -S --noconfirm wayland-protocols
-                pacman -S --noconfirm check
-                pacman -S --noconfirm gcovr
+                pacman -S --noconfirm libnotify
                 pacman -S --noconfirm scdoc
               name: Run in container
             - run: |

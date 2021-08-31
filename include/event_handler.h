@@ -2,15 +2,21 @@
 #define EVENT_HANDLER_H
 
 #include <lua.h>
+#include <stdlib.h>
+#include <glib.h>
 
 struct event_handler {
-    int update_func_ref;
-    int create_container_func_ref;
-    int on_start_func_ref;
-    int on_focus_func_ref;
+    GPtrArray *on_start_func_refs;
+    GPtrArray *on_focus_func_refs;
+    GPtrArray *on_update_func_refs;
+    GPtrArray *on_create_container_func_refs;
 };
 
-struct event_handler get_default_event_handler();
+struct event_handler *create_event_handler();
+
+
+GPtrArray *event_name_to_signal(struct event_handler *event_handler,
+        const char *event);
 
 /*
  * int n refers to the affected container position in container stack

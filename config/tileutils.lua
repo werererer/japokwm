@@ -3,47 +3,19 @@ local Y<const> = 2
 local WIDTH<const> = 3
 local HEIGHT<const> = 4
 
-local function _copy(obj, target)
-    local n = 0
-  -- clear target table
-    for k,v in pairs(target) do
-        if type(v) == "table" then
-            v.__del = true
-            n = n + 1
-        else
-            target[k] = nil
+function Deep_copy(orig)
+    local orig_type = type(orig)
+    local copy
+    if orig_type == 'table' then
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[Deep_copy(orig_key)] = Deep_copy(orig_value)
         end
+        setmetatable(copy, Deep_copy(getmetatable(orig)))
+    else -- number, string, boolean, etc
+        copy = orig
     end
-  -- copy obj into target
-    for k,v in pairs(obj) do
-        if type(v) == "table" then
-            local t = target[k]
-            if t then
-                t.__del = nil
-                n = n - 1
-            else
-                t = {}
-                target[k] = t
-            end
-            _copy(v, t)
-        else
-            target[k] = v
-        end
-    end
-  -- clear no use sub table in target
-    if n > 0 then
-        for k,v in pairs(target) do
-            if type(v) == "table" and v.__del then
-                target[k] = nil
-            end
-        end
-    end
-end
-
-function Deep_copy(obj, target)
-    target = target or {}
-    _copy(obj, target)
-    return target
+    return copy
 end
 
 -- set: which window conf set
@@ -63,13 +35,13 @@ function Move_container(container, n, d)
 end
 
 -- TODO this is a mess fix it!!
-function Is_resize_locked(layout_data, o_layout_data, i, j, n, directions)
-    local lt_data = Deep_copy(layout_data)
-    local main_con = lt_data[i][j]
+function Is_resize_locked(layout_data_el, o_layout_data_el, i, n, directions)
+    local lt_data_el = Deep_copy(layout_data_el)
+    local main_con = lt_data_el[i]
 
     for x = 1,#directions do
         local dir = directions[x]
-        local resize_containers = Get_resize_affected_containers(lt_data, o_layout_data, i, j, dir, Get_alternative_container, Is_affected_by_resize_of)
+        local resize_containers = Get_resize_affected_containers(lt_data_el, o_layout_data_el, i, dir, Get_alternative_container, Is_affected_by_resize_of)
         main_con = Deep_copy(Move_resize(main_con, 0, n, dir))
         local alt_con = Get_alternative_container(main_con, dir)
 
@@ -78,9 +50,8 @@ function Is_resize_locked(layout_data, o_layout_data, i, j, n, directions)
         end
 
         for k = 1,#resize_containers do
-            local li = resize_containers[k][5]
-            local lj = resize_containers[k][6]
-            local c = lt_data[li][lj]
+            local lj = resize_containers[k][5]
+            local c = lt_data_el[lj]
 
             c[X] = alt_con[X] + (resize_containers[k][X] * alt_con[WIDTH])
             c[Y] = alt_con[Y] + (resize_containers[k][Y] * alt_con[HEIGHT])
@@ -118,71 +89,6 @@ function Move_resize(container, nmove, nresize, d)
     return con
 end
 
--- n: number
--- d: amount of digits
-function Floor(n, d)
-    if (n < 1e-10) then return 0 end
-    local power = 10^d
-    return math.floor(n * power) / power
-end
-
-function Is_approx_equal(a, b)
-    return math.abs(a - b) < 0.001
-end
-
-function Get_current_container(container, d)
-    local alt = {0, 0, 1, 1}
-    if d == info.direction.top then
-        alt[Y] = 0
-        alt[HEIGHT] = container[Y]
-    elseif d == info.direction.bottom then
-        alt[Y] = container[Y] + container[HEIGHT]
-        alt[HEIGHT] = 1 - (container[Y] + container[HEIGHT])
-    elseif d == info.direction.left then
-        alt[X] = 0
-        alt[WIDTH] = container[X]
-    elseif d == info.direction.right then
-        alt[X] = container[X] + container[WIDTH]
-        alt[WIDTH] = 1 - alt[X]
-    end
-    return alt
-end
-
-function Is_container_right_to(ref_con, con)
-    local right = con[X] > ref_con[X] + ref_con[WIDTH]
-    right = right or Is_approx_equal(con[X], ref_con[X] + ref_con[WIDTH])
-    return right
-end
-
-function Is_container_left_to(ref_con, con)
-    local left = con[X] + con[WIDTH] < ref_con[X]
-    left = left or Is_approx_equal(con[X] + con[WIDTH], ref_con[X])
-    return left
-end
-
-function Is_container_over(ref_con, con)
-    local over = con[Y] + con[HEIGHT] < ref_con[Y]
-    over = over or Is_approx_equal(con[Y] + con[HEIGHT], ref_con[Y])
-    return over
-end
-
-function Is_container_under(ref_con, con)
-    local under = con[Y] > ref_con[Y] + ref_con[HEIGHT]
-    under = under or Is_approx_equal(con[Y], ref_con[Y] + ref_con[HEIGHT])
-    return under
-end
-
-function Does_container_not_intersect_with(ref_con, con)
-    return Is_container_left_to(ref_con, con)
-    or Is_container_right_to(ref_con, con)
-    or Is_container_under(ref_con, con)
-    or Is_container_over(ref_con, con)
-end
-
-function Load_layout(layout_name)
-  action.load_layout(layout_name)
-end
-
 -- put all directions into a list
 function Get_directions(d)
     local list = {}
@@ -203,70 +109,4 @@ function Get_directions(d)
         d = d - 1
     end
     return list
-end
-
--- if d == info.direction.left then "raytrace" to the left like that and return the
--- geometry of that area
--- +--------------------------+
--- |< - - - - +---------+     |
--- ||         |         |     |
--- ||    a    |    o    |     |
--- ||         |         |     |
--- |< - - - - +---------+     |
--- +--------------------------+
--- where w is the original window and a is the alternative window
-function Get_alternative_container(container, d)
-    local alt_con = {0, 0, 1, 1}
-    if d == info.direction.top then
-        alt_con[Y] = 0
-        alt_con[HEIGHT] = container[Y]
-    elseif d == info.direction.bottom then
-        alt_con[Y] = container[Y] + container[HEIGHT]
-        alt_con[HEIGHT] = 1 - alt_con[Y]
-    elseif d == info.direction.left then
-        alt_con[X] = 0
-        alt_con[WIDTH] = container[X]
-    elseif d == info.direction.right then
-        alt_con[X] = container[X] + container[WIDTH]
-        alt_con[WIDTH] = 1 - alt_con[X]
-    end
-    return alt_con
-end
-
-function Get_main_container(container, d)
-    local con = {container[X], container[Y], container[WIDTH], container[HEIGHT]}
-    if d == info.direction.top then
-        con[X] = 0
-        con[WIDTH] = 1
-    elseif d == info.direction.bottom then
-        con[X] = 0
-        con[WIDTH] = 1
-    elseif d == info.direction.left then
-        con[Y] = 0
-        con[HEIGHT] = 1
-    elseif d == info.direction.right then
-        con[Y] = 0
-        con[HEIGHT] = 1
-    end
-    return con
-end
-
-function Get_edge_container(container, d)
-    local con = {container[X], container[Y], container[WIDTH], container[HEIGHT]}
-    if d == info.direction.top then
-        con[X] = 0
-        con[WIDTH] = 1
-    elseif d == info.direction.bottom then
-        con[X] = 0
-        con[WIDTH] = 1
-    elseif d == info.direction.left then
-        con[Y] = 0
-        con[HEIGHT] = 1
-    elseif d == info.direction.right then
-        con[X] = container[X] + container[WIDTH]
-        con[Y] = container[Y] + container[HEIGHT]
-        con[WIDTH] = 1 - con[X]
-        con[HEIGHT] = 1 - con[Y]
-    end
-    return con
 end

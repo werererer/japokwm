@@ -1,23 +1,27 @@
 #include "options.h"
 
 #include <string.h>
+#include <glib.h>
 
 #include "client.h"
 #include "utils/coreUtils.h"
 #include "layout.h"
+#include "keybinding.h"
+#include "utils/vector.h"
 
-void init_tagnames(struct wlr_list *tag_names)
+GPtrArray *create_tagnames()
 {
-    wlr_list_init(tag_names);
-    wlr_list_push(tag_names, "1:1");
-    wlr_list_push(tag_names, "2:2");
-    wlr_list_push(tag_names, "3:3");
-    wlr_list_push(tag_names, "4:4");
-    wlr_list_push(tag_names, "5:5");
-    wlr_list_push(tag_names, "6:6");
-    wlr_list_push(tag_names, "7:7");
-    wlr_list_push(tag_names, "8:8");
-    wlr_list_push(tag_names, "9:9");
+    GPtrArray *tag_names = g_ptr_array_new();
+    g_ptr_array_add(tag_names, "1:1");
+    g_ptr_array_add(tag_names, "2:2");
+    g_ptr_array_add(tag_names, "3:3");
+    g_ptr_array_add(tag_names, "4:4");
+    g_ptr_array_add(tag_names, "5:5");
+    g_ptr_array_add(tag_names, "6:6");
+    g_ptr_array_add(tag_names, "7:7");
+    g_ptr_array_add(tag_names, "8:8");
+    g_ptr_array_add(tag_names, "9:9");
+    return tag_names;
 }
 
 struct options get_default_options()
@@ -45,18 +49,17 @@ struct options get_default_options()
         .float_border_px = 3,
         .inner_gap = 0,
         .outer_gap = 0,
-        .event_handler = get_default_event_handler(),
-        .monrule_count = 0,
-        .monrules = NULL,
-        .rule_count = 0,
-        .rules = NULL,
+        .event_handler = create_event_handler(),
+        .mon_rules = g_ptr_array_new(),
+        .rules = g_ptr_array_new(),
         .modkey = 0,
         .arrange_by_focus = false,
         .hidden_edges = WLR_EDGE_NONE,
         .smart_hidden_edges = false,
     };
 
-    init_tagnames(&options.tag_names);
+    options.tag_names = create_tagnames();
+    options.keybindings = g_ptr_array_new();
     return options;
 }
 

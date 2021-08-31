@@ -4,6 +4,8 @@
 #include <wlr/xwayland.h>
 #include <xcb/xproto.h>
 
+#include "client.h"
+
 enum atom_name {
     NET_WM_WINDOW_TYPE_NORMAL,
     NET_WM_WINDOW_TYPE_DIALOG,
@@ -30,5 +32,13 @@ struct xwayland {
 void create_notifyx11(struct wl_listener *listener, void *data);
 void handle_xwayland_ready(struct wl_listener *listener, void *data);
 void maprequestx11(struct wl_listener *listener, void *data);
+void unmap_notifyx11(struct wl_listener *listener, void *data);
+void destroy_notifyx11(struct wl_listener *listener, void *data);
+
+bool xwayland_popups_exist();
+
+bool x11_wants_floating(struct client *c);
+bool x11_is_popup_menu(struct client *c);
+void init_xwayland(struct wl_display *display, struct seat *seat);
 
 #endif /* XWAYLAND_H */

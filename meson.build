@@ -1,37 +1,50 @@
-project('japokwm', 'c')
+project('japokwm', 'c', version: '0.3')
 pkg = import('pkgconfig')
 
 wayland_scanner = find_program('wayland-scanner', native: true)
 
-# this variable will be initialized in protocols dir
-protocolsDir = 'protocols'
-protocols = files(
-    protocolsDir + '/wlr-layer-shell-unstable-v1.xml',
-    protocolsDir + '/xdg-shell.xml',
-    # protocolsDir + '/wlr-foreign-toplevel-management-unstable-v1.xml',
-    )
 root = meson.source_root()
 
+cc = meson.get_compiler('c')
+
+# add version macro
+version = '"@0@"'.format(meson.project_version())
+git = find_program('git', native: true, required: false)
+if git.found()
+    git_commit = run_command([git, 'rev-parse', '--short', 'HEAD'])
+    git_branch = run_command([git, 'rev-parse', '--abbrev-ref', 'HEAD'])
+    if git_commit.returncode() == 0 and git_branch.returncode() == 0
+        version = '"@0@-@1@ (" __DATE__ ", branch \'@2@\')"'.format(
+            meson.project_version(),
+            git_commit.stdout().strip(),
+            git_branch.stdout().strip(),
+        )
+    endif
+endif
+add_project_arguments('-DJAPOKWM_VERSION=@0@'.format(version), language: 'c')
+
+if get_option('xwayland')
+  add_project_arguments('-DJAPOKWM_HAS_XWAYLAND=1'.format(version), language: 'c')
+else
+  add_project_arguments('-DJAPOKWM_HAS_XWAYLAND=0'.format(version), language: 'c')
+endif
+
+if get_option('debug')
+  add_project_arguments('-DDEBUG=1'.format(version), language: 'c')
+else
+  add_project_arguments('-DDEBUG=0'.format(version), language: 'c')
+endif
+
+datadir = get_option('datadir')
+install_data(
+    'japokwm.desktop',
+    install_dir: join_paths(datadir, 'wayland-sessions')
+)
+
 # generate needed protocol files
-srcDir = 'src/'
-includeDir = 'include/'
-inc = include_directories(includeDir, '/usr/include/json-c/')
-foreach p:protocols
-    pName = run_command('basename', p, '.xml').stdout().strip()
-    postfix = '-protocol'
-    cFile = srcDir / pName + postfix +'.c'
-    cHeader = includeDir / pName + postfix + '.h'
-    # if cFile doesn't exist create Source
-    if run_command('[', '-f', cFile, ']').returncode() != 0
-        run_command(wayland_scanner, 'private-code', p, cFile)
-        message('generate: ' + cFile)
-    endif
-    # if cHeader doesn't exist create Header
-    if run_command('[', '-f', cHeader, ']').returncode() != 0
-        run_command(wayland_scanner, 'server-header', p, cHeader)
-        message('generate: ' + cHeader)
-    endif
-endforeach
+src_dir = 'src/'
+include_dir = 'include/'
+include_dirs = include_directories(include_dir, '/usr/include/json-c/')
 
 scdoc = dependency('scdoc', version: '>=1.9.2', native: true)
 if scdoc.found()
@@ -60,8 +73,33 @@ if scdoc.found()
     endforeach
 endif
 
+commonSrcs = files(
+  'common/stringop.c'
+  )
+
+wayland_server = dependency('wayland-server')
+wayland_protos = dependency('wayland-protocols', version: '>=1.14')
+wayland_client = dependency('wayland-client')
+deps = [\
+    dependency('xcb'),
+    dependency('xkbcommon'),
+    dependency('wayland-egl'),
+    wayland_server,
+    wayland_client,
+    wayland_protos,
+    dependency('pixman-1'),
+    dependency('wlroots', version: '>=0.13'),
+    dependency('x11'),
+    dependency('json-c'),
+    dependency('libnotify'),
+    dependency('threads'),
+    dependency('libinput'),
+    ]
+
 # meson.add_install_script('install.sh')
 # config files
 subdir('src')
+subdir('protocols')
 subdir('config')
 subdir('test')
+subdir('japokmsg')

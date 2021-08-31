@@ -1,62 +1,85 @@
 #include "command.h"
-#include <string.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <wordexp.h>
-#include <wlr/types/wlr_list.h>
-#include "workspace.h"
-#include "monitor.h"
-#include "stringop.h"
-#include "keybinding.h"
-#include "server.h"
 
-void execute_command(const char *_exec)
+#include <json-c/json.h>
+
+#include "utils/parseConfigUtils.h"
+
+struct cmd_results *cmd_results_new(enum cmd_status status,
+        const char *format, ...) {
+    struct cmd_results *results = malloc(sizeof(struct cmd_results));
+    if (!results) {
+        /* sway_log(SWAY_ERROR, "Unable to allocate command results"); */
+        return NULL;
+    }
+    results->status = status;
+    if (format) {
+        char *error = malloc(256);
+        va_list args;
+        va_start(args, format);
+        if (error) {
+            vsnprintf(error, 256, format, args);
+        }
+        va_end(args);
+        results->error = error;
+    } else {
+        results->error = NULL;
+    }
+    return results;
+}
+
+void free_cmd_results(struct cmd_results *results) {
+    if (results->error) {
+        free(results->error);
+    }
+    free(results);
+}
+
+struct cmd_results *cmd_eval(const char *cmd)
 {
-    // Split command list
-    char *exec = strdup(_exec);
-    char *head = exec;
-    char matched_delim = ';';
-    const char *cmd = argsep(&head, ";,", &matched_delim);
-
-    for (; isspace(*cmd); ++cmd) {}
-
-    if (strcmp(cmd, "") == 0) {
-        printf("Ignoring empty command.\n");
-        return;
-    }
-    printf("Handling command '%s'\n", cmd);
-    //TODO better handling of argv
-    int argc;
-    char **argv = split_args(cmd, &argc);
-    if (strcmp(argv[0], "exec") != 0 &&
-            strcmp(argv[0], "exec_always") != 0 &&
-            strcmp(argv[0], "mode") != 0) {
-        for (int i = 1; i < argc; ++i) {
-            if (*argv[i] == '\"' || *argv[i] == '\'') {
-                strip_quotes(argv[i]);
-            }
-        }
+    // load is the equivalent to eval and was introduced in lua 5.2
+    lua_getglobal_safe(L, "load");
+    lua_pushstring(L, cmd);
+    lua_call_safe(L, 1, 1, 0);
+    // load returns a function pointer to the evaluated expression now we have
+    // to call this function
+    int lua_status = lua_pcall(L, 0, 1, 0);
+    if (lua_status != LUA_OK) {
+        const char *errmsg = luaL_checkstring(L, -1);
+        lua_pop(L, 1);
+        return cmd_results_new(CMD_FAILURE, errmsg);
     }
 
-    // execute command
-    if (strcmp(argv[0], "workspace") == 0) {
-        bool handled = false;
-        int i;
-        for (i = 0; i < server.workspaces.length; i++) {
-            struct workspace *ws = get_workspace(i);
-            if (strcmp(ws->name, argv[1]) == 0) {
-                handled = true;
-                break;
-            }
-        }
-        if (handled) {
-            if (key_state_has_modifiers(MOD_SHIFT)) {
-                focus_workspace(selected_monitor, get_workspace(i));
-            } else {
-                struct workspace *ws = get_workspace(i);
-                push_selected_workspace(selected_monitor, ws);
-            }
-        }
+    const char *text = "";
+    if (!lua_isnil(L, -1)) {
+        text = lua_tostring(L, -1);
     }
-    free(argv);
+    lua_pop(L, 1);
+
+    return cmd_results_new(CMD_SUCCESS, text);
+}
+
+struct cmd_results *execute_command(char *cmd, struct wlr_seat *seat,
+        struct container *con) {
+    struct cmd_results *res = cmd_eval(cmd);
+    return res;
+}
+
+char *cmd_results_to_json(struct cmd_results *results) {
+    json_object *result_array = json_object_new_array();
+
+    json_object *root = json_object_new_object();
+    json_object_object_add(root, "success",
+            json_object_new_boolean(results->status == CMD_SUCCESS));
+    if (results->error) {
+        json_object_object_add(root, "parse_error",
+                json_object_new_boolean(results->status == CMD_INVALID));
+        json_object_object_add(
+                root, "error", json_object_new_string(results->error));
+    }
+    json_object_array_add(result_array, root);
+
+    const char *json = json_object_to_json_string(result_array);
+    char *res = strdup(json);
+    json_object_put(result_array);
+    return res;
 }

@@ -8,7 +8,6 @@
 #include "container.h"
 #include "popup.h"
 #include "server.h"
-#include "tile/tile.h"
 #include "tile/tileUtils.h"
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"
@@ -98,26 +97,35 @@ static void unfocus_client(struct client *c)
     }
 }
 
-void focus_client(struct client *old, struct client *c)
+void focus_surface(struct seat *seat, struct wlr_surface *surface)
 {
-    struct wlr_keyboard *kb = wlr_seat_get_keyboard(server.seat);
+    assert(surface != NULL);
 
+    struct wlr_seat *wlr_seat = seat->wlr_seat;
+    struct wlr_keyboard *kb = wlr_seat_get_keyboard(wlr_seat);
+
+    /* Have a client, so focus its top-level wlr_surface */
+    wlr_seat_keyboard_notify_enter(wlr_seat, surface, kb->keycodes,
+            kb->num_keycodes, &kb->modifiers);
+}
+
+void focus_client(struct seat *seat, struct client *old, struct client *c)
+{
     struct wlr_surface *old_surface = get_base_wlrsurface(old);
     struct wlr_surface *new_surface = get_base_wlrsurface(c);
     if (old_surface != new_surface) {
+        cursor_constrain(seat->cursor, NULL);
         unfocus_client(old);
     }
 
     /* Update wlroots'c keyboard focus */
     if (!c) {
-        /* With no client, all we have left is to clear focus */
-        wlr_seat_keyboard_notify_clear_focus(server.seat);
+        /* struct wlr_seat *wlr_seat = seat->wlr_seat; */
+        wlr_seat_keyboard_notify_clear_focus(seat->wlr_seat);
         return;
     }
-
-    /* Have a client, so focus its top-level wlr_surface */
-    wlr_seat_keyboard_notify_enter(server.seat, get_wlrsurface(c), kb->keycodes,
-            kb->num_keycodes, &kb->modifiers);
+    /* Update wlroots'c keyboard focus */
+    focus_surface(seat, get_wlrsurface(c));
 
     /* Activate the new client */
     switch (c->type) {
@@ -212,10 +220,10 @@ void client_handle_set_app_id(struct wl_listener *listener, void *data)
 
 void reset_tiled_client_borders(int border_px)
 {
-    for (int i = 0; i < server.normal_clients.length; i++) {
-        struct client *c = server.normal_clients.items[i];
-        struct workspace *ws = get_workspace(selected_monitor->ws_id);
-        if (!exist_on(c->con, ws))
+    for (int i = 0; i < server.normal_clients->len; i++) {
+        struct client *c = g_ptr_array_index(server.normal_clients, i);
+        struct tagset *tagset = selected_monitor->tagset;
+        if (!exist_on(tagset, c->con))
             continue;
         if (c->con->floating)
             continue;
@@ -225,133 +233,13 @@ void reset_tiled_client_borders(int border_px)
 
 void reset_floating_client_borders(int border_px)
 {
-    for (int i = 0; i < server.normal_clients.length; i++) {
-        struct client *c = server.normal_clients.items[i];
-        struct workspace *ws = get_workspace(selected_monitor->ws_id);
-        if (!exist_on(c->con, ws))
+    for (int i = 0; i < server.normal_clients->len; i++) {
+        struct client *c = g_ptr_array_index(server.normal_clients, i);
+        struct tagset *tagset = selected_monitor->tagset;
+        if (!exist_on(tagset, c->con))
             continue;
         if (!c->con->floating)
             continue;
         c->bw = border_px;
     }
-}
-
-bool wants_floating(struct client *c)
-{
-    if (c->type != X11_MANAGED && c->type != X11_UNMANAGED)
-        return false;
-
-    struct wlr_xwayland_surface *surface = c->surface.xwayland;
-    struct xwayland xwayland = server.xwayland;
-
-    if (surface->modal)
-        return true;
-
-    for (size_t i = 0; i < surface->window_type_len; ++i) {
-        xcb_atom_t type = surface->window_type[i];
-        if (type == xwayland.atoms[NET_WM_WINDOW_TYPE_DIALOG] ||
-                type == xwayland.atoms[NET_WM_WINDOW_TYPE_UTILITY] ||
-                type == xwayland.atoms[NET_WM_WINDOW_TYPE_TOOLBAR] ||
-                type == xwayland.atoms[NET_WM_WINDOW_TYPE_POPUP_MENU] ||
-                type == xwayland.atoms[NET_WM_WINDOW_TYPE_SPLASH]) {
-            return true;
-        }
-    }
-
-    struct wlr_xwayland_surface_size_hints *size_hints = surface->size_hints;
-    if (size_hints != NULL &&
-            size_hints->min_width > 0 && size_hints->min_height > 0 &&
-            (size_hints->max_width == size_hints->min_width ||
-            size_hints->max_height == size_hints->min_height)) {
-        return true;
-    }
-
-    return false;
-}
-
-bool is_popup_menu(struct client *c)
-{
-    struct wlr_xwayland_surface *surface = c->surface.xwayland;
-    struct xwayland xwayland = server.xwayland;
-    for (size_t i = 0; i < surface->window_type_len; ++i) {
-        xcb_atom_t type = surface->window_type[i];
-        if (type == xwayland.atoms[NET_WM_WINDOW_TYPE_POPUP_MENU] ||
-                type == xwayland.atoms[NET_WM_WINDOW_TYPE_POPUP] ||
-                type == xwayland.atoms[NET_WM_WINDOW_TYPE_MENU] ||
-                type == xwayland.atoms[NET_WM_WINDOW_TYPE_NORMAL]) {
-            return true;
-        }
-    }
-    return false;
-}
-
-void destroy_notify(struct wl_listener *listener, void *data)
-{
-    /* Called when the surface is destroyed and should never be shown again. */
-    struct client *c = wl_container_of(listener, c, destroy);
-
-    wl_list_remove(&c->map.link);
-    wl_list_remove(&c->unmap.link);
-    wl_list_remove(&c->destroy.link);
-
-    switch (c->type) {
-        case LAYER_SHELL:
-            wl_list_remove(&c->new_popup.link);
-            break;
-        case XDG_SHELL:
-            wl_list_remove(&c->new_popup.link);
-            wl_list_remove(&c->set_title.link);
-            wl_list_remove(&c->set_app_id.link);
-            break;
-        case X11_MANAGED:
-            wl_list_remove(&c->set_title.link);
-        default:
-            break;
-    }
-
-    destroy_client(c);
-}
-
-void maprequest(struct wl_listener *listener, void *data)
-{
-    /* Called when the surface is mapped, or ready to display on-screen. */
-    struct client *c = wl_container_of(listener, c, map);
-
-    struct monitor *m = selected_monitor;
-    if (c->type == LAYER_SHELL) {
-        m = output_to_monitor(c->surface.layer->output);
-    }
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct layout *lt = ws->layout;
-
-    c->ws_id = ws->id;
-    c->bw = lt->options.tile_border_px;
-
-    switch (c->type) {
-        case LAYER_SHELL:
-            wlr_list_push(&server.non_tiled_clients, c);
-            break;
-        default:
-            wlr_list_push(&server.normal_clients, c);
-    }
-    create_container(c, m, true);
-
-    arrange();
-    focus_most_recent_container(get_workspace(m->ws_id), FOCUS_NOOP);
-}
-
-void unmap_notify(struct wl_listener *listener, void *data)
-{
-    /* Called when the surface is unmapped, and should no longer be shown. */
-    struct client *c = wl_container_of(listener, c, unmap);
-
-    container_damage_whole(c->con);
-    destroy_container(c->con);
-    c->con = NULL;
-
-    remove_in_composed_list(&server.client_lists, cmp_ptr, c);
-
-    arrange();
-    struct monitor *m = selected_monitor;
-    focus_most_recent_container(get_workspace(m->ws_id), FOCUS_NOOP);
 }

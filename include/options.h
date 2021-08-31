@@ -3,8 +3,8 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
-#include <wlr/types/wlr_list.h>
 #include <wlr/util/edges.h>
+#include <glib.h>
 #include "event_handler.h"
 
 #define BLACK {0.0f, 0.0f, 0.0f, 1.0f}
@@ -43,11 +43,9 @@ struct options {
     struct resize_constraints layout_constraints;
     struct resize_constraints master_constraints;
 
-    struct wlr_list tag_names;
-    struct rule *rules;
-    size_t rule_count;
-    struct monrule *monrules;
-    size_t monrule_count;
+    GPtrArray *tag_names;
+    GPtrArray *rules;
+    GPtrArray *mon_rules;
 
     int repeat_rate;
     int repeat_delay;
@@ -57,17 +55,18 @@ struct options {
     bool arrange_by_focus;
     int resize_dir;
 
-    struct event_handler event_handler;
+    struct event_handler *event_handler;
     int tag_names_ref;
     int default_layout_ref;
-    int keybinds_ref;
 
     enum wlr_edges hidden_edges;
     bool smart_hidden_edges;
+
+    GPtrArray *keybindings;
 };
 
 struct options get_default_options();
-void init_tagnames(struct wlr_list *tag_names);
+GPtrArray *create_tagnames();
 void copy_options(struct options *dest_option, struct options *src_option);
 
 #endif /* OPTIONS_H */

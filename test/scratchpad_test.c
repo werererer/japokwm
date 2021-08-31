@@ -1,41 +1,21 @@
 #include <stdlib.h>
-#include <check.h>
+#include <glib.h>
 
 #include "scratchpad.h"
 
-START_TEST(show_scratchpad_crash_test)
+void tagset_connect_workspace_testestace()
 {
-    show_scratchpad();
-} END_TEST
-
-Suite *suite()
-{
-    Suite *s;
-    TCase *tc;
-
-    s = suite_create("scratchpad");
-    tc = tcase_create("Core");
-
-    tcase_add_test(tc, show_scratchpad_crash_test);
-
-    suite_add_tcase(s, tc);
-
-    return s;
+    /* show_scratchpad(); */
 }
 
-int main()
+#define PREFIX "scratchpad"
+#define add_test(func) g_test_add_func("/"PREFIX"/"#func, func)
+int main(int argc, char **argv)
 {
-    int numberFailed;
-    Suite *s;
-    SRunner *sr;
+    setbuf(stdout, NULL);
+    g_test_init(&argc, &argv, NULL);
 
-    s = suite();
-    sr = srunner_create(s);
+    add_test(tagset_connect_workspace_testestace);
 
-    srunner_run_all(sr, CK_NORMAL);
-    srunner_ntests_run(sr);
-    numberFailed = srunner_ntests_failed(sr);
-    srunner_free(sr);
-
-    return (numberFailed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return g_test_run();
 }

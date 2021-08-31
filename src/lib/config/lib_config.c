@@ -1,4 +1,4 @@
-#include "lib/config/config.h"
+#include "lib/config/lib_config.h"
 #include "utils/gapUtils.h"
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"
@@ -7,16 +7,17 @@
 #include "ipc-server.h"
 #include "monitor.h"
 #include "workspace.h"
+#include "keybinding.h"
+#include "rules/rule.h"
+#include "rules/mon_rule.h"
 
 int lib_reload(lua_State *L)
 {
-    struct workspace *ws = get_workspace(selected_monitor->ws_id);
-
     server.default_layout->options = get_default_options();
 
-    remove_loaded_layouts(&server.workspaces);
+    remove_loaded_layouts(server.workspaces);
     load_config(L);
-    load_default_layout(L, ws);
+    load_default_layout(L);
 
     ipc_event_workspace();
 
@@ -136,39 +137,26 @@ int lib_set_default_layout(lua_State *L)
 // TODO refactor this function hard to read
 int lib_create_workspaces(lua_State *L)
 {
-    struct wlr_list *tag_names = &server.default_layout->options.tag_names;
-    wlr_list_clear(tag_names, NULL);
+    GPtrArray *tag_names = server.default_layout->options.tag_names;
+    list_clear(tag_names, NULL);
 
     size_t len = lua_rawlen(L, -1);
     for (int i = 0; i < len; i++) {
-        char *ws_name = get_config_array_str(L, "workspaces", i+1);
-        wlr_list_push(tag_names, ws_name);
+        const char *ws_name = get_config_array_str(L, "workspaces", i+1);
+        g_ptr_array_add(tag_names, strdup(ws_name));
     }
     lua_pop(L, 1);
-
-    update_workspaces(&server.workspaces, tag_names);
-
-    ipc_event_workspace();
 
     return 0;
 }
 
-int lib_set_rules(lua_State *L)
+int lib_add_rule(lua_State *L)
 {
-    if (server.default_layout->options.rules)
-        free(server.default_layout->options.rules);
-
-    size_t len = lua_rawlen(L, -1);
-    server.default_layout->options.rule_count = len;
-    server.default_layout->options.rules = calloc(len, sizeof(struct rule));
-    struct rule *rules = server.default_layout->options.rules;
-
-    for (int i = 0; i < server.default_layout->options.rule_count; i++) {
-        struct rule r = get_config_array_rule(L, "rules", i+1);
-        rules[i] = r;
-    }
-
+    GPtrArray *rules = server.default_layout->options.rules;
+    struct rule *rule = get_config_rule(L);
     lua_pop(L, 1);
+
+    g_ptr_array_add(rules, rule);
     return 0;
 }
 
@@ -185,28 +173,23 @@ int lib_create_layout_set(lua_State *L)
     return 0;
 }
 
-int lib_set_monrules(lua_State *L)
+int lib_add_mon_rule(lua_State *L)
 {
-    if (server.default_layout->options.monrules)
-        free(server.default_layout->options.monrules);
-
-    size_t len = lua_rawlen(L, -1);
-    server.default_layout->options.monrule_count = len;
-    server.default_layout->options.monrules = calloc(len, sizeof(struct monrule));
-    struct monrule *rules = server.default_layout->options.monrules;
-
-    for (int i = 0; i < len; i++) {
-        struct monrule r = get_config_array_monrule(L, "rules", i+1);
-        rules[i] = r;
-    }
-
+    struct mon_rule *mon_rule = get_config_mon_rule(L);
     lua_pop(L, 1);
+
+    GPtrArray *mon_rules = server.default_layout->options.mon_rules;
+    g_ptr_array_add(mon_rules, mon_rule);
     return 0;
 }
 
-int lib_set_keybinds(lua_State *L)
+int lib_bind_key(lua_State *L)
 {
-    lua_copy_table_safe(L, &server.default_layout->options.keybinds_ref);
+    struct keybinding *keybinding = create_keybinding();
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &keybinding->lua_func_ref);
+    keybinding->binding = strdup(luaL_checkstring(L, -1));
+    lua_pop(L, 1);
+    g_ptr_array_add(server.default_layout->options.keybindings, keybinding);
     return 0;
 }
 
@@ -231,9 +214,15 @@ int lib_set_resize_direction(lua_State *L)
     return 0;
 }
 
+int lib_set_resize_function(lua_State *L)
+{
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &server.default_layout->lua_resize_function_ref);
+    return 0;
+}
+
 int lib_set_master_layout_data(lua_State *L)
 {
-    if (lua_islayout_data(L, "master_layout_data"))
+    if (lua_is_layout_data(L, "master_layout_data"))
         lua_copy_table_safe(L, &server.default_layout->lua_master_layout_data_ref);
     else
         lua_pop(L, 1);

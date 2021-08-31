@@ -1,13 +1,16 @@
 #include "keyboard.h"
 
+#include "seat.h"
 #include "server.h"
 #include "keybinding.h"
+#include "utils/coreUtils.h"
 
 static bool handle_VT_keys(struct keyboard *kb, uint32_t keycode)
 {
     const xkb_keysym_t *syms;
+    struct wlr_input_device *wlr_device = kb->seat_device->input_device->wlr_device;
     int nsyms =
-        xkb_state_key_get_syms(kb->device->keyboard->xkb_state, keycode, &syms);
+        xkb_state_key_get_syms(wlr_device->keyboard->xkb_state, keycode, &syms);
     bool handled = false;
 
     for (int i = 0; i < nsyms; i++) {
@@ -34,44 +37,48 @@ void cleanupkeyboard(struct wl_listener *listener, void *data)
     struct wlr_input_device *device = data;
     struct keyboard *kb = device->data;
 
-    wl_list_remove(&kb->destroy.link);
-    wl_list_remove(&kb->link);
-    free(kb);
+    destroy_keyboard(kb);
 }
 
-void create_keyboard(struct wlr_input_device *device)
+void create_keyboard(struct seat *seat, struct seat_device *seat_device)
 {
-    struct xkb_context *context;
-    struct xkb_keymap *keymap;
-    struct keyboard *kb;
-
-    kb = device->data = calloc(1, sizeof(*kb));
-    kb->device = device;
+    struct wlr_input_device *wlr_device = seat_device->input_device->wlr_device;
+    struct keyboard *kb = wlr_device->data = calloc(1, sizeof(struct keyboard));
+    kb->seat_device = seat_device;
+    kb->seat = seat;
 
     /* Prepare an XKB keymap and assign it to the keyboard. */
-    context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
-    keymap = xkb_map_new_from_names(context, NULL,
+    struct xkb_context *context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+    struct xkb_keymap *keymap = xkb_map_new_from_names(context, NULL,
         XKB_KEYMAP_COMPILE_NO_FLAGS);
 
-    wlr_keyboard_set_keymap(device->keyboard, keymap);
+    wlr_keyboard_set_keymap(wlr_device->keyboard, keymap);
     xkb_keymap_unref(keymap);
     xkb_context_unref(context);
-    wlr_keyboard_set_repeat_info(device->keyboard,
+    wlr_keyboard_set_repeat_info(wlr_device->keyboard,
             server.default_layout->options.repeat_rate,
             server.default_layout->options.repeat_delay);
 
     /* Here we set up listeners for keyboard events. */
-    kb->modifiers.notify = keypressmod;
-    wl_signal_add(&device->keyboard->events.modifiers, &kb->modifiers);
-    kb->key.notify = keypress;
-    wl_signal_add(&device->keyboard->events.key, &kb->key);
-    kb->destroy.notify = cleanupkeyboard;
-    wl_signal_add(&device->events.destroy, &kb->destroy);
+    LISTEN(&wlr_device->keyboard->events.modifiers, &kb->modifiers, keypressmod);
+    LISTEN(&wlr_device->keyboard->events.key, &kb->key, keypress);
+    LISTEN(&wlr_device->events.destroy, &kb->destroy, cleanupkeyboard);
 
-    wlr_seat_set_keyboard(server.seat, device);
+    wlr_seat_set_keyboard(seat->wlr_seat, wlr_device);
 
     /* And add the keyboard to our list of server.keyboards */
-    wl_list_insert(&server.keyboards, &kb->link);
+    g_ptr_array_add(server.keyboards, kb);
+}
+
+void destroy_keyboard(struct keyboard *kb)
+{
+    if (!kb)
+        return;
+    wl_list_remove(&kb->modifiers.link);
+    wl_list_remove(&kb->key.link);
+    wl_list_remove(&kb->destroy.link);
+    g_ptr_array_remove(server.keyboards, kb);
+    free(kb);
 }
 
 void keypress(struct wl_listener *listener, void *data)
@@ -86,12 +93,13 @@ void keypress(struct wl_listener *listener, void *data)
     /* Get a list of keysyms based on the keymap for this keyboard */
     const xkb_keysym_t *syms;
     struct xkb_state *state;
-    xkb_state_key_get_one_sym(kb->device->keyboard->xkb_state, keycode);
+    struct wlr_input_device *wlr_device = kb->seat_device->input_device->wlr_device;
+    xkb_state_key_get_one_sym(wlr_device->keyboard->xkb_state, keycode);
 
     /* create new state to clear the shift modifier to get a instead of A */
-    state = xkb_state_new(kb->device->keyboard->keymap);
+    state = xkb_state_new(wlr_device->keyboard->keymap);
     int nsyms = xkb_state_key_get_syms(state, keycode, &syms);
-    uint32_t mods = wlr_keyboard_get_modifiers(kb->device->keyboard);
+    uint32_t mods = wlr_keyboard_get_modifiers(wlr_device->keyboard);
 
     bool handled = false;
     /* On _press_, attempt to process a compositor keybinding. */
@@ -106,9 +114,10 @@ void keypress(struct wl_listener *listener, void *data)
     }
 
     if (!handled) {
+        struct wlr_seat *wlr_seat = kb->seat_device->seat->wlr_seat;
         /* Pass unhandled keycodes along to the client. */
-        wlr_seat_set_keyboard(server.seat, kb->device);
-        wlr_seat_keyboard_notify_key(server.seat, event->time_msec,
+        wlr_seat_set_keyboard(wlr_seat, wlr_device);
+        wlr_seat_keyboard_notify_key(wlr_seat, event->time_msec,
             event->keycode, event->state);
     }
 }
@@ -124,8 +133,9 @@ void keypressmod(struct wl_listener *listener, void *data)
      * to the same seat. You can swap out the underlying wlr_keyboard like this
      * and wlr_seat handles this transparently.
      */
-    wlr_seat_set_keyboard(server.seat, kb->device);
+    struct wlr_seat *wlr_seat = kb->seat->wlr_seat;
+    wlr_seat_set_keyboard(wlr_seat, kb->seat_device->input_device->wlr_device);
     /* Send modifiers to the client. */
-    wlr_seat_keyboard_notify_modifiers(server.seat,
-        &kb->device->keyboard->modifiers);
+    wlr_seat_keyboard_notify_modifiers(wlr_seat,
+        &kb->seat_device->input_device->wlr_device->keyboard->modifiers);
 }

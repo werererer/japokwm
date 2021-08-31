@@ -16,6 +16,7 @@
 #include "workspace.h"
 #include "monitor.h"
 #include "utils/coreUtils.h"
+#include "stringop.h"
 
 static json_object *ipc_json_create_rect(struct wlr_box *box) {
     json_object *rect = json_object_new_object();
@@ -74,25 +75,111 @@ struct focus_inactive_data {
     json_object *object;
 };
 
-json_object *ipc_json_describe_workspace(struct workspace *ws, bool focused)
+// note: full_name must use malloced memory
+static void add_infix(char **full_name, const char *prefix, const char *postfix)
 {
-    struct monitor *m = ws->m;
+    const char *delimiter = ":";
+
+    GPtrArray *content = split_string(*full_name, delimiter);
+    char *position = strdup("");
+    char *name;
+    char *content0 = g_ptr_array_index(content, 0);
+    if (content->len > 1) {
+        position = realloc(position, strlen(content0)+strlen(delimiter)+1);
+        strcpy(position, content0);
+        strcat(position, delimiter);
+        int name_byte_len = strlen(*full_name)-strlen(position)+1;
+        name = malloc(name_byte_len);
+        memmove(name, *full_name + strlen(position), name_byte_len);
+    } else {
+        name = content0;
+    }
+
+    int full_name_string_length = strlen(position) + strlen(prefix)
+        + strlen(name) + strlen(postfix) + 1;
+    *full_name = realloc(*full_name, full_name_string_length);
+    strcpy(*full_name, position);
+    strcat(*full_name, prefix);
+    strcat(*full_name, name);
+    strcat(*full_name, postfix);
+
+    free(name);
+    free(position);
+}
+
+static bool is_workspace_extern(struct workspace *ws)
+{
+    if (!ws->selected_tagset)
+        return false;
+    if (!ws->tagset)
+        return false;
+    bool is_extern = ws->tagset->m != ws->selected_tagset->m;
+    return is_extern;
+}
+
+static bool is_workspace_the_selected_one(struct workspace *ws)
+{
+    if (!ws->selected_tagset)
+        return false;
+    return ws->selected_tagset->selected_ws_id == ws->id
+        && tagset_is_visible(ws->selected_tagset)
+        && !is_workspace_extern(ws);
+}
+
+json_object *ipc_json_describe_tagsets()
+{
+    json_object *array = json_object_new_array();
+
+    for (int i = 0; i < server.workspaces->len; i++) {
+        struct workspace *ws = get_workspace(i);
+        struct monitor *m = workspace_get_monitor(ws);
+
+        if (!m)
+            continue;
+        if (!workspace_is_visible(ws))
+            continue;
+
+        char *full_name = strdup(ws->name);
+        if (is_workspace_the_selected_one(ws)) {
+            add_infix(&full_name, "*", "*");
+        }
+
+        bool is_active = workspace_is_active(ws);
+        json_object *tagset_object = ipc_json_describe_tag(full_name, is_active, m);
+        json_object_array_add(array, tagset_object);
+
+        // for the second monitor
+        if (is_workspace_extern(ws)) {
+            struct monitor *selected_monitor = workspace_get_selected_monitor(ws);
+            char *hidden_name = strdup(ws->name);
+            add_infix(&hidden_name, "(", ")");
+            json_object *tagset_object = ipc_json_describe_tag(hidden_name, false, selected_monitor);
+            json_object_array_add(array, tagset_object);
+            free(hidden_name);
+        }
+        free(full_name);
+    }
+    return array;
+}
+
+json_object *ipc_json_describe_tag(const char *name, bool is_active_workspace, struct monitor *m)
+{
     struct wlr_box box;
     box = m->geom;
 
-    char *s = strdup(ws->name);
+    char *s = strdup(name);
 
-    json_object *object = ipc_json_create_node(0, s, focused, NULL, &box);
+    json_object *object = ipc_json_create_node(0, s, is_active_workspace, NULL, &box);
 
     json_object *children = json_object_new_array();
     json_object_object_add(object, "nodes", children);
 
     int num;
-    if (isdigit(ws->name[0])) {
+    if (isdigit(name[0])) {
         errno = 0;
         char *endptr = NULL;
-        long long parsed_num = strtoll(ws->name, &endptr, 10);
-        if (errno != 0 || parsed_num > INT32_MAX || parsed_num < 0 || endptr == ws->name) {
+        long long parsed_num = strtoll(name, &endptr, 10);
+        if (errno != 0 || parsed_num > INT32_MAX || parsed_num < 0 || endptr == name) {
             num = -1;
         } else {
             num = (int) parsed_num;
@@ -103,8 +190,8 @@ json_object *ipc_json_describe_workspace(struct workspace *ws, bool focused)
     json_object_object_add(object, "num", json_object_new_int(num));
 
     json_object_object_add(object, "fullscreen_mode", json_object_new_int(0));
-    json_object_object_add(object, "output", ws->m ?
-            json_object_new_string(ws->m->wlr_output->name) : NULL);
+    json_object_object_add(object, "output", m ?
+            json_object_new_string(m->wlr_output->name) : NULL);
     json_object_object_add(object, "type", json_object_new_string("workspace"));
     json_object_object_add(object, "urgent",
             json_object_new_boolean(false));
@@ -148,7 +235,7 @@ json_object *ipc_json_describe_selected_container(struct monitor *m)
     json_object_object_get_ex(monitor_object, "nodes", &monitor_children);
 
     struct workspace *ws = monitor_get_active_workspace(selected_monitor);
-    json_object *workspace_object = ipc_json_describe_workspace(ws, false);
+    json_object *workspace_object = ipc_json_describe_tag(ws->name, true, selected_monitor);
     json_object_array_add(monitor_children, workspace_object);
     json_object *workspace_children;
     json_object_object_get_ex(monitor_object, "nodes", &workspace_children);
@@ -159,4 +246,3 @@ json_object *ipc_json_describe_selected_container(struct monitor *m)
 
     return root_object;
 }
-

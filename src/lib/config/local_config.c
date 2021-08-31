@@ -1,8 +1,9 @@
-#include "lib/config/localconfig.h"
+#include "lib/config/local_config.h"
 
 #include "monitor.h"
 #include "utils/gapUtils.h"
 #include "utils/coreUtils.h"
+#include "workspace.h"
 
 int local_set_arrange_by_focus(lua_State *L)
 {
@@ -124,11 +125,18 @@ int local_set_resize_direction(lua_State *L)
     return 0;
 }
 
+int local_set_resize_function(lua_State *L)
+{
+    struct layout *lt = get_layout_in_monitor(selected_monitor);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_resize_function_ref);
+    return 0;
+}
+
 int local_set_master_layout_data(lua_State *L)
 {
     struct layout *lt = get_layout_in_monitor(selected_monitor);
 
-    if (lua_islayout_data(L, "master_layout_data"))
+    if (lua_is_layout_data(L, "master_layout_data"))
         lua_copy_table_safe(L, &lt->lua_master_layout_data_ref);
     else
         lua_pop(L, 1);

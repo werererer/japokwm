@@ -3,6 +3,6 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-void load_libs(lua_State *L);
+void load_lua_api(lua_State *L);
 
 #endif /* TRANSLATION_LAYER_H */

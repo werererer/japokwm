@@ -4,13 +4,14 @@
 #include "monitor.h"
 #include "server.h"
 #include "utils/coreUtils.h"
+#include "workspace.h"
 
 // TODO refactor
 int lib_set_layout(lua_State *L)
 {
     int ref = 0;
     // 2. argument -- layout_set
-    if (lua_islayout_data(L, "layout_data")) {
+    if (lua_is_layout_data(L, "layout_data")) {
         lua_ref_safe(L, LUA_REGISTRYINDEX, &ref);
     } else {
         lua_pop(L, 1);
@@ -30,12 +31,13 @@ int lib_set_layout(lua_State *L)
 
     struct workspace *ws = monitor_get_active_workspace(selected_monitor);
 
-    int i = wlr_list_find(&ws->loaded_layouts, (cmp_func_t)cmp_layout, &lt);
-    if (i != -1) {
-        struct layout *old_lt = ws->loaded_layouts.items[i];
+    guint i;
+    bool found = g_ptr_array_find_with_equal_func(ws->loaded_layouts, lt, cmp_layout, &i);
+    if (found) {
+        struct layout *old_lt = g_ptr_array_index(ws->loaded_layouts, i);
         lt->lua_layout_copy_data_ref = old_lt->lua_layout_copy_data_ref;
     } else {
-        wlr_list_insert(&ws->loaded_layouts, 0, lt);
+        g_ptr_array_insert(ws->loaded_layouts, 0, lt);
 
         if (ref > 0) {
             lt->lua_layout_copy_data_ref = ref;

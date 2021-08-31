@@ -21,7 +21,7 @@ struct xdg_popup {
 void popup_handle_destroy(struct wl_listener *listener, void *data);
 void popup_handle_new_popup(struct wl_listener *listener, void *data);
 void destroy_popups();
-struct wlr_surface *get_popup_surface_under_cursor(double *sx, double *sy);
+struct wlr_surface *get_popup_surface_under_cursor(struct cursor *cursor, double *sx, double *sy);
 struct xdg_popup *get_latest_popup();
 bool popups_exist();
 #endif /* POPUP_H */

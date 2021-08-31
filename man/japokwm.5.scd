@@ -112,26 +112,50 @@ integers
    when a layout is created.
 :< {"", function() print("test") end}
 
-
 # NAMESPACES
 [[ *Namespace*
-:< *Description*
-|  *action*
-:< Execute an action
+:[ *Description*
+|  action
+:  Execute an action
 |  config
-:< Configure certain properties or the behavior of the window manager
+:  Configure certain properties or the behavior of the window manager
 |  container
-:< Configure certain properties or the behavior of a container
+:  Configure certain properties or the behavior of a container
 |  event
-:< Bind a function to an event
+:  Bind a function to an event
 |  layout
-:< Configure certain properties or the behavior of a layout
+:  Configure certain properties or the behavior of a layout
 |  l
-:< Configure things locally to the layout
+:  Configure things locally to the layout
+
+# EVENTS
+[[ *Event name*
+:[ *when*
+:[ *signature*
+:[ *Description*
+|  on_start
+:  once when the windowmanager starts
+:  void function()
+:  
+|  on_focus
+:  when a new window is focused
+:  void function(int i)
+:  i: container id
+|  on_update
+:  when the state of the layout is updated
+:  void function(int i)
+:  i: count of containers
+|  on_create_container
+:  when a container is created
+:  void function(int i)
+:  i: container id
 
 # ACTION
 *arrange()* ++
 	Arrange containers to the given information
+
+*create_output()* ++
+	just create another output
 
 *decrease_nmaster()* ++
 	decrease the number of master windows
@@ -231,8 +255,14 @@ integers
 *swap_workspace(i, i2)*
 	swap the workspace i with the workspace i2 ++
 <where> ++
-	i: integer workspace at i ++
-	i2: integer workspace at i2
+	i: integer - workspace at i ++
+	i2: integer - workspace at i2
+
+*tag_view(i)*
+	tag a view
+<where> ++
+	i: integer - an integer representing a binary number where each digit
+	represents a workspace that will be toggled
 
 *toggle_bars()* ++
 	toggles layer_shell bars
@@ -274,34 +304,13 @@ integers
 	sticky: boolean - whether container is sticky
 
 # EVENT
-*set_update_function(func)* ++
-	set the update function ++
+*add_listener(event_name, func)* ++
+	add a add_listener to an event ++
 <where> ++
-	func: function(n) - it will be called every time the another ++
-		layout_element will be loaded ++
+	event_name: string - identifier of the event ++
+	func: function(n) - the function that will be called on event specified by event_name ++
 	<where> ++
-		n: integer - n represents the amount of containers  
-
-*set_on_focus_function(func)* ++
-	set the update function ++
-<where> ++
-	func: function(n) - it will be called every time a new container is ++
-	selected layout_element will be loaded ++
-	<where> ++
-		n: integer - n represents the current container position
-
-*set_on_start_function(func)* ++
-	set the function that is executed on start of the windowmanager.
-<where> ++
-	func: function() - it will be called when the windowmanager launches
-
-*set_create_container_function()* ++
-	set the create_container function
-<where> ++
-	func: function(n) - it will be called every time a container is created ++
-		by Japokwm ++
-	<where> ++
-		n: integer - n represents the current container position
+		n: integer - n represents the amount of containers
 
 # LAYOUT
 *set(name, layout_data)* ++
@@ -324,7 +333,17 @@ integers
 *get_nmaster()* ++
 	get the number of master windows ++
 <return> ++
-	 integer - number of master windows
+	integer - number of master windows
+
+*get_root_area()* ++
+	get the root area
+<return> ++
+	table(x, y, width, height) ++
+<where> ++ 
+	x: integer - x coordinate ++
+	y: integer - y coordinate ++
+	width: integer - width of the root area ++
+	height: integer - height of the root area
 
 *get_next_empty_workspace()* ++
 	Get next workspaces not used by any window
@@ -354,6 +373,21 @@ integers
 	boolean - whether it is in limit
 
 # CONFIG
+*add_mon_rule(rule)*
+	add a rule for monitors
+<where> ++
+	rule: rule - 
+
+*add_rule(rule)*
+	add a rule for containers
+<where> ++
+	rule: rule - 
+
+*bind_key(bind, func)*
+	bind a keybinding to a lua function
+<where> ++
+	bind: keybinding - the binding that will execute the function
+	func: function() - the function that will be executed
 
 *create_layout_set(name, layouts)*
 	create a new layout_set ++
@@ -406,11 +440,6 @@ integers
 <where> ++
 	d: direction
 
-*set_keybinds(k)*
-	set all keybindings existing in Japokwm and overwrite old keybindings ++
-<where> ++
-	k: array(keybinding, ...)
-
 *set_layout_constraints(min_width: a, max_width: b, min_height: c, max_height: d)* ++
 	Set the minimum and maximum dimensions of resizing any window ++
 <where> ++
@@ -450,11 +479,6 @@ integers
 <where> ++
 	i: integer
 
-*set_monrules(r)* ++
-	set the rules applied for the respective monitor ++
-<where> ++
-	r: array(monrule)
-
 *set_outer_gaps(i)* ++
 	set how large the gap between all the windows and the root is ++
 <where> ++
@@ -481,15 +505,23 @@ integers
 <where> ++
 	d: direction
 
+*set_resize_function(func)* ++
+	the function that handles resizing windows in a layout
+<where> ++
+	func: function(layout_data, o_layout_data, resize_data, n, direction) - the
+	function that will be called when you resize your containers ++
+	<where> ++
+		layout_data: layout_data - the data for the current layout ++
+		o_layout_data: layout_data - the layout how it originally was ++ 
+		resize_data: array(array(integer, ...)) - which layout_data_elements to
+		include when resizing ++
+		n: float - how much it should resize ++
+		direction: direction - which directions to resize to
+
 *set_root_color(color)* ++
 	set color of the root ++
 <where> ++
 	color: color
-
-*set_rules(r)* ++
-	set the rules ++
-<where> ++
-	r: array(rule)
 
 *set_sloppy_focus(b)* ++
 	set whether to use sloppy focus or not. If sloppy focus is activated you ++
@@ -538,14 +570,13 @@ set_master_layout_data ++
 set_outer_gaps ++
 set_resize_data ++
 set_resize_direction ++
+set_resize_function ++
 set_sloppy_focus ++
 set_smart_hidden_edges ++
 set_tile_borderpx
 
 ## EVENT
-set_create_container_function ++
-set_update_function ++
- 
+add_listener
 
 # SEE ALSO
 *japokwm*(1)

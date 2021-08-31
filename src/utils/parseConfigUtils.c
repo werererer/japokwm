@@ -1,7 +1,6 @@
 #include "utils/parseConfigUtils.h"
-#include "options.h"
-#include "server.h"
-#include "utils/writeFile.h"
+
+#include <assert.h>
 #include <lauxlib.h>
 #include <wlr/util/log.h>
 #include <lua.h>
@@ -11,38 +10,41 @@
 #include <translationLayer.h>
 #include <execinfo.h>
 #include <sys/stat.h>
+#include <libnotify/notify.h>
+#include <pthread.h>
+#include <fts.h>
+
+#include "options.h"
+#include "server.h"
+#include "utils/writeFile.h"
 #include "stringop.h"
 #include "utils/coreUtils.h"
+#include "rules/mon_rule.h"
 
-static const char *config_paths[] = {
-    "$HOME/.config/japokwm/",
-    "$XDG_CONFIG_HOME/japokwm/",
-    "/etc/japokwm/",
+static const char *plugin_relative_paths[] = {
+    "autoload",
+    "plugins",
 };
 
 static const char *config_file = "init.lua";
 static const char *error_file = "init.err";
 static int error_fd = -1;
 
-static int load_file(lua_State *L, const char *path, const char *file);
+static int load_file(lua_State *L, const char *file);
 
 // returns 0 upon success and 1 upon failure
-static int load_file(lua_State *L, const char *path, const char *file)
+static int load_file(lua_State *L, const char *file)
 {
-    char config_file[strlen(path)+strlen(file)];
-    strcpy(config_file, "");
-    join_path(config_file, path);
-    join_path(config_file, file);
-
-    if (!file_exists(config_file)) {
-        return 1;
+    printf("load file: %s\n", file);
+    if (!file_exists(file)) {
+        return EXIT_FAILURE;
     }
 
-    if (luaL_loadfile(L, config_file)) {
+    if (luaL_loadfile(L, file)) {
         const char *errmsg = luaL_checkstring(L, -1);
         lua_pop(L, 1);
         handle_error(errmsg);
-        return 1;
+        return EXIT_FAILURE;
     }
 
     int ret = lua_call_safe(L, 0, 0, 0);
@@ -50,13 +52,23 @@ static int load_file(lua_State *L, const char *path, const char *file)
     return ret;
 }
 
+GPtrArray *create_default_config_paths()
+{
+    GPtrArray *config_paths = g_ptr_array_new();
+    g_ptr_array_add(config_paths, "$HOME/.config/japokwm/");
+    g_ptr_array_add(config_paths, "$XDG_CONFIG_HOME/japokwm/");
+    g_ptr_array_add(config_paths, "/etc/japokwm/");
+    return config_paths;
+}
+
 char *get_config_file(const char *file)
 {
-    for (size_t i = 0; i < LENGTH(config_paths); ++i) {
-        char *path = strdup(config_paths[i]);
+    debug_print("get config file: %s\n", file);
+    for (size_t i = 0; i < server.config_paths->len; ++i) {
+        char *path = strdup(g_ptr_array_index(server.config_paths, i));
+        debug_print("path: %s\n", path);
+        join_path(&path, file);
         expand_path(&path);
-        path = realloc(path, strlen(path) + strlen(file));
-        join_path(path, file);
         if (file_exists(path))
             return path;
         free(path);
@@ -71,10 +83,6 @@ char *get_config_layout_path()
 
 char *get_config_dir(const char *file)
 {
-    if (strcmp(server.config_dir, "") != 0 && dir_exists(server.config_dir)) {
-        return strdup(server.config_dir);
-    }
-
     char *abs_file = get_config_file(file);
     if (!abs_file)
         return NULL;
@@ -86,79 +94,46 @@ void append_to_lua_path(lua_State *L, const char *path)
 {
     lua_getglobal(L, "package");
     lua_getfield(L, -1, "path");
-    const char * curr_path = luaL_checkstring(L, -1);
+    const char *curr_path = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    char path_var[strlen(curr_path) + 1 + strlen(path) + strlen("/?.lua")];
+    char *path_var = malloc(strlen(curr_path) + strlen(path) + 2);
     strcpy(path_var, curr_path);
     strcat(path_var, ";");
     strcat(path_var, path);
-    join_path(path_var, "/?.lua");
 
     lua_pushstring(L, path_var);
     lua_setfield(L, -2, "path");
     lua_pop(L, 1);
+    free(path_var);
+}
+
+static int load_plugin_paths(lua_State *L)
+{
+    char *base_path = get_config_dir(config_file);
+    for (int i = 0; i < LENGTH(plugin_relative_paths); i++) {
+        char *base = strdup(base_path);
+        const char *path = plugin_relative_paths[i];
+        join_path(&base, path);
+        join_path(&base, "?");
+        join_path(&base, "init.lua");
+        append_to_lua_path(L, base);
+        free(base);
+    }
+    free(base_path);
+    return 1;
 }
 
 // returns 0 upon success and 1 upon failure
 static int load_default_config(lua_State *L)
 {
-    char *config_path = get_config_dir(config_file);
-    printf("config_dir: %s\n", config_path);
+    char *file_path = get_config_file(config_file);
+    if (!file_path)
+        return EXIT_FAILURE;
 
-    // get the index of the config file in config_paths array
-    int default_id = -1;
-    for (int i = 0; i < LENGTH(config_paths); i++) {
-        char *path = strdup(config_paths[i]);
-        expand_path(&path);
-        if (path_compare(path, config_path) == 0) {
-            default_id = i;
-            free(path);
-            break;
-        }
-        free(path);
-    }
+    int success = load_file(L, file_path);
+    free(file_path);
 
-    bool loaded_custom_path = false;
-    if (default_id == -1) {
-        default_id = 0;
-        // try to load the file given by config_path
-        char *path = strdup(config_path);
-        expand_path(&path);
-
-        append_to_lua_path(L, config_path);
-
-        loaded_custom_path = (load_file(L, path, config_file) == EXIT_SUCCESS);
-        free(path);
-    }
-
-    if (config_path)
-        free(config_path);
-
-    if (loaded_custom_path)
-        return EXIT_SUCCESS;
-
-    int success = EXIT_SUCCESS;
-    // repeat loop until the first config file was loaded successfully
-    for (int i = 0; i < LENGTH(config_paths); i++) {
-        if (i < default_id)
-            continue;
-
-        char *path = strdup(config_paths[i]);
-        expand_path(&path);
-
-        append_to_lua_path(L, config_paths[i]);
-
-        if (load_file(L, path, config_file) == EXIT_FAILURE) {
-            success = EXIT_FAILURE;
-            free(path);
-            continue;
-        }
-
-        // when config loaded successfully break;
-        free(path);
-        break;
-    }
     return success;
 }
 
@@ -166,10 +141,11 @@ static int load_default_config(lua_State *L)
 int load_config(lua_State *L)
 {
     int success = 0;
-    if (strcmp(server.config_file, "") != 0) {
-        printf("load custom config file: %s\n", server.config_file);
-        success = load_file(L, "", server.config_file);
+    if (server.config_file != NULL && strcmp(server.config_file, "") != 0) {
+        debug_print("load file\n");
+        success = load_file(L, server.config_file);
     } else {
+        debug_print("load_default_config\n");
         success = load_default_config(L);
     }
     return success;
@@ -178,51 +154,31 @@ int load_config(lua_State *L)
 // returns 0 upon success and 1 upon failure
 int init_utils(lua_State *L)
 {
+    load_plugin_paths(L);
     const char *tile_file = "tile.lua";
     char *config_dir = get_config_dir(tile_file);
 
     if (!config_dir)
-        return 1;
+        return EXIT_FAILURE;
 
-    // get the value of the
-    int default_id = 0;
-    for (int i = 0; i < LENGTH(config_paths); i++) {
-        char *path = strdup(config_paths[default_id]);
-        expand_path(&path);
-        if (path_compare(path, config_dir) == 0) {
-            default_id = i;
-            break;
-        }
-        free(path);
-    }
+    char *dir = strdup(config_dir);
+    join_path(&dir, "?.lua");
+    append_to_lua_path(L, dir);
+    free(dir);
+
+    char *file_path = strdup(config_dir);
+    join_path(&file_path, tile_file);
+    int success = load_file(L, file_path);
+
     free(config_dir);
+    free(file_path);
 
-    bool success = true;
-    // repeat loop until the first config file was loaded successfully
-    for (int i = 0; i < LENGTH(config_paths); i++) {
-        if (i < default_id)
-            continue;
-
-        char *path = strdup(config_paths[i]);
-        expand_path(&path);
-
-        append_to_lua_path(L, config_paths[i]);
-
-        if (load_file(L, path, tile_file))
-            continue;
-
-        // when config loaded successfully break;
-        success = false;
-        break;
-    }
     return success;
 }
 
 void init_error_file()
 {
-    char *ef = get_config_file("");
-    ef = realloc(ef, strlen(ef)+strlen(error_file));
-    join_path(ef, error_file);
+    char *ef = get_config_file(error_file);
     error_fd = open(ef, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     free(ef);
 }
@@ -257,9 +213,33 @@ int lua_getglobal_safe(lua_State *L, const char *name)
     return LUA_OK;
 }
 
+static void *_notify_msg(void *arg)
+{
+    char *msg = arg;
+    notify_init(msg);
+    NotifyNotification* n = notify_notification_new ("Error in config file", 
+            msg,
+            0);
+    notify_notification_set_timeout(n, 10000); // 10 seconds
+
+    if (!notify_notification_show(n, 0)) 
+    {
+        printf("showing notification failed!\n");
+    }
+    return NULL;
+}
+
+void notify_msg(const char *msg)
+{
+    pthread_t thread;
+    pthread_create(&thread, NULL, _notify_msg, (char *)msg);
+    pthread_detach(thread);
+}
+
 void handle_error(const char *msg)
 {
-    wlr_log(WLR_ERROR, "%s", msg);
+    notify_msg(msg);
+    printf("%s\n", msg);
 
     // if error file not initialized
     if (error_fd < 0)
@@ -269,54 +249,27 @@ void handle_error(const char *msg)
     write_to_file(error_fd, "\n");
 }
 
-char *get_config_array_str(lua_State *L, const char *name, size_t i)
+const char *get_config_str(lua_State *L, int idx)
 {
-    lua_rawgeti(L, -1, i);
-    if (!lua_isstring(L, -1)) {
-        char c[NUM_CHARS] = "";
-        handle_error(c);
-        return NULL;
-    }
-    const char *str = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-
-    char *termcmd = strdup(str);
-    return termcmd;
-}
-
-char *get_config_str(lua_State *L, char *name)
-{
-    lua_getglobal_safe(L, name);
-    if (!lua_isstring(L, -1)) {
-        char c[NUM_CHARS] = "";
-        handle_error(c);
+    if (!lua_isstring(L, idx)) {
         return "";
     }
-    const char *str = luaL_checkstring(L, -1);
-    char *termcmd = calloc(strlen(str), sizeof(char));
-    strcpy(termcmd, str);
+    const char *str = luaL_checkstring(L, idx);
+    return str;
+}
+
+const char *get_config_array_str(lua_State *L, const char *name, size_t i)
+{
+    lua_rawgeti(L, -1, i);
+    const char *str = get_config_str(L, -1);
     lua_pop(L, 1);
-    return termcmd;
+    return str;
 }
 
 static float get_config_array_float(lua_State *L, const char *name, size_t i)
 {
     lua_rawgeti(L, -1, i);
     if (!lua_isnumber(L, -1)) {
-        char c[NUM_CHARS] = "";
-        handle_error(c);
-        return 0;
-    }
-    float f = luaL_checknumber(L, -1);
-    lua_pop(L, 1);
-    return f;
-}
-
-float get_config_float(lua_State *L, char *name)
-{
-    lua_getglobal_safe(L, name);
-    if (!lua_isnumber(L, -1)) {
-        /* write_to_file(fd, "ERROR: %s is not a number\n"); */
         char c[NUM_CHARS] = "";
         handle_error(c);
         return 0;
@@ -339,44 +292,7 @@ static int get_config_array_int(lua_State *L, const char *name, size_t i)
     return f;
 }
 
-int get_config_int(lua_State *L, char *name)
-{
-    lua_getglobal_safe(L, name);
-    if (!lua_isinteger(L, -1)) {
-        char c[NUM_CHARS] = "";
-        handle_error(c);
-        return 0;
-    }
-    int i = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-    return i;
-}
-
-/* static bool get_config_array_bool(lua_State *L, const char *name, size_t i) */
-/* { */
-/*     lua_rawgeti(L, -1, i); */
-/*     if (!lua_isboolean(L, -1)) { */
-/*         return false; */
-/*     } */
-/*     bool f = lua_toboolean(L, -1); */
-/*     lua_pop(L, 1); */
-/*     return f; */
-/* } */
-
-bool get_config_bool(lua_State *L, char *name)
-{
-    lua_getglobal_safe(L, name);
-    if (!lua_isboolean(L, -1)) {
-        char c[NUM_CHARS] = "";
-        handle_error(c);
-        return false;
-    }
-    bool b = lua_toboolean(L, -1);
-    lua_pop(L, 1);
-    return b;
-}
-
-static int get_config_array_func_id(lua_State *L, const char *name, int i)
+static int get_config_array_func(lua_State *L, const char *name, int i)
 {
     lua_rawgeti(L, -1, i);
     if (!lua_isfunction(L, -1)) {
@@ -390,145 +306,33 @@ static int get_config_array_func_id(lua_State *L, const char *name, int i)
     return f;
 }
 
-void call_arrange_func(lua_State *L, int funcId, int n)
+struct rule *get_config_rule(lua_State *L)
 {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, funcId);
-    lua_pushinteger(L, n);
-    lua_call_safe(L, 1, 0, 0);
-}
-
-void call_function(lua_State *L, struct layout lt)
-{
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt.lua_layout_ref);
-    lua_pushinteger(L, lt.n_area);
-    lua_call_safe(L, 1, 0, 0);
-}
-
-struct layout get_config_layout(lua_State *L, char *name)
-{
-    lua_getglobal_safe(L, name);
-    struct layout layout = {
-        .symbol = get_config_array_str(L, name, 1),
-        .name = get_config_array_str(L, name, 2),
-        .n_area = 1,
-        .nmaster = 1,
-        .lua_layout_ref = 0,
-        .lua_layout_copy_data_ref = 0,
-        .lua_layout_original_copy_data_ref = 0,
-        .options = get_default_options(),
-    };
+    lua_getfield(L, -1, "class");
+    const char *id = get_config_str(L, -1);
     lua_pop(L, 1);
-    return layout;
-}
-
-struct rule get_config_array_rule(lua_State *L, const char* name, size_t i)
-{
-    struct rule rule;
-    lua_rawgeti(L, -1, i);
-
-    rule.id  = get_config_array_str(L, name, 1);
-    rule.title  = get_config_array_str(L, name, 2);
-    rule.lua_func_ref = get_config_array_func_id(L, name, 3);
+    lua_getfield(L, -1, "name");
+    const char *title = get_config_str(L, -1);
+    lua_pop(L, 1);
+    lua_getfield(L, -1, "callback");
+    int lua_func_ref = 0;
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lua_func_ref);
 
     lua_pop(L, 1);
+
+    struct rule *rule = create_rule(id, title, lua_func_ref);
     return rule;
 }
 
-struct rule get_config_rule(lua_State *L, char *name)
+struct mon_rule *get_config_mon_rule(lua_State *L)
 {
-    struct rule rule;
-    rule.id  = get_config_array_str(L, name, 1);
-    rule.title  = get_config_array_str(L, name, 2);
-    rule.lua_func_ref = get_config_array_func_id(L, name, 3);
-    return rule;
-}
-
-struct monrule get_config_array_monrule(lua_State *L, const char* name, size_t i)
-{
-    struct monrule monrule;
-    lua_rawgeti(L, -1, i);
-
-    monrule.name = get_config_array_str(L, name, 1);
-    monrule.lua_func_ref = get_config_array_func_id(L, name, 2);
-    return monrule;
-}
-
-struct monrule get_config_monrule(lua_State *L, char *name)
-{
-    struct monrule monrule;
-    lua_getglobal_safe(L, name);
-
-    monrule.name = get_config_array_str(L, name, 1);
-    monrule.lua_func_ref = get_config_array_func_id(L, name, 2);
-
+    lua_getfield(L, -1, "output");
+    const char *output_name = get_config_str(L, -1);
     lua_pop(L, 1);
-    return monrule;
-}
+    lua_getfield(L, -1, "callback");
+    int lua_func_ref = 0;
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lua_func_ref);
 
-struct layout get_config_key(lua_State *L, char *name)
-{
-    struct layout key = (struct layout)get_config_layout(L, name);
-    return key;
-}
-
-void get_config_str_arr(lua_State *L, struct wlr_list *resArr, char *name)
-{
-    lua_getglobal_safe(L, name);
-    size_t len = lua_rawlen(L, -1);
-
-    for (int i = 0; i < len; i++)
-        wlr_list_push(resArr, get_config_array_str(L, name, i+1));
-    lua_pop(L, 1);
-}
-
-void get_config_int_arr(lua_State *L, int resArr[], char *name)
-{
-    lua_getglobal_safe(L, name);
-    size_t len = lua_rawlen(L, -1);
-
-    for (int i = 0; i < len; i++)
-        resArr[i] = get_config_array_int(L, name, i);
-}
-
-void get_config_float_arr(lua_State *L, float resArr[], char *name)
-{
-    lua_getglobal_safe(L, name);
-    size_t len = lua_rawlen(L, -1);
-
-    for (int i = 0; i < len; i++)
-        resArr[i] = get_config_array_float(L, name, i+1);
-    lua_pop(L, 1);
-}
-
-void get_config_rule_arr(lua_State *L, struct rule **rules, size_t *rule_count, char *name)
-{
-    lua_getglobal_safe(L, name);
-    size_t len = lua_rawlen(L, -1);
-    *rule_count = len;
-    *rules = calloc(len, sizeof(struct rule));
-
-    for (int i = 0; i < len; i++)
-        *rules[i] = get_config_array_rule(L, name, i+1);
-
-    lua_pop(L, 1);
-}
-
-void get_config_mon_rule_arr(lua_State *L, struct monrule **monrules, size_t *monrule_count, char *name)
-{
-    lua_getglobal_safe(L, name);
-    size_t len = lua_rawlen(L, -1);
-    *monrule_count = len;
-    *monrules = calloc(len, sizeof(struct monrule));
-
-    for (int i = 0; i < len; i++) {
-        *monrules[i-1] = get_config_array_monrule(L, name, i+1);
-    }
-
-    lua_pop(L, 1);
-}
-
-void call_func(int funcid)
-{
-    lua_rawgeti(L, LUA_REGISTRYINDEX, funcid);
-    lua_call_safe(L, 0, 0, 0);
+    struct mon_rule *mon_rule = create_mon_rule(output_name, lua_func_ref);
+    return mon_rule;
 }
