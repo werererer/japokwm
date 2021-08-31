@@ -481,6 +481,8 @@ integers
 <where> ++
 	d: direction
 
+*
+
 *set_root_color(color)* ++
 	set color of the root ++
 <where> ++
