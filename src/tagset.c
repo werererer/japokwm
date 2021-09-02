@@ -56,33 +56,41 @@ static void tagset_append_list_sets(struct tagset *tagset, struct workspace *ws)
 
             bool added = false;
             debug_print("works0\n");
-            for (int k = 0; k < dest_list->len; k++) {
-                struct container *dest_con = g_ptr_array_index(dest_list, k);
-                guint dest_pos;
-                if (!g_ptr_array_find(src_list, dest_con, &dest_pos)) {
-                    debug_print("not found1\n");
-                    continue;
-                }
-
-                if (src_pos < dest_pos) {
-                    debug_print("src_pos: %i dest_pos: %i\n", src_pos, dest_pos);
-                    continue;
-                }
-
-                debug_print("works1\n");
-                guint final_pos;
-                bool final_found = g_ptr_array_find(dest_list, dest_con, &final_pos);
-                assert(final_found == true);
-                final_pos++;
-
-                debug_print("add container: %p to tagset: %p\n", src_con, tagset);
-
-                g_ptr_array_insert(dest_list, final_pos, src_con);
+            if (src_pos == 0) {
+                g_ptr_array_insert(dest_list, 0, src_con);
                 added = true;
-                break;
+            } else {
+                for (int k = 0; k < dest_list->len; k++) {
+                    struct container *dest_con = g_ptr_array_index(dest_list, k);
+                    guint dest_pos;
+                    if (!g_ptr_array_find(src_list, dest_con, &dest_pos)) {
+                        debug_print("not found1\n");
+                        continue;
+                    }
+
+                    debug_print("src_pos: %i dest_pos: %i\n", src_pos, dest_pos);
+                    if (src_pos < dest_pos) {
+                        debug_print("don't end src_pos: %i dest_pos: %i\n", src_pos, dest_pos);
+                        continue;
+                    }
+
+                    debug_print("works1\n");
+                    guint final_pos;
+                    bool final_found = g_ptr_array_find(dest_list, dest_con, &final_pos);
+                    assert(final_found == true);
+                    final_pos++;
+
+                    debug_print("add container: %p to tagset: %p\n", src_con, tagset);
+                    debug_print("pos: %i\n", final_pos);
+
+                    g_ptr_array_insert(dest_list, final_pos, src_con);
+                    added = true;
+                    break;
+                }
             }
 
             if (!added) {
+                debug_print("add the boring way: %p\n", src_con);
                 g_ptr_array_add(dest_list, src_con);
                 added = true;
             }
@@ -122,10 +130,8 @@ void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
 {
     /* tagset_write_to_workspaces(tagset); */
     tagset_workspaces_disconnect(tagset);
-    tagset_unload_workspaces(tagset);
     tagset_assign_workspaces(tagset, bitset);
     tagset_workspaces_connect(tagset);
-    tagset_load_workspaces(tagset, bitset);
 }
 
 
@@ -164,11 +170,12 @@ static void tagset_workspace_disconnect(struct tagset *tagset, struct workspace 
 {
     if (!tagset)
         return;
+    tagset_unload_workspace(tagset, ws);
     ws->tagset = NULL;
     if (ws->selected_tagset != tagset && ws->selected_tagset) {
         // move the workspace back
         ws->tagset = ws->selected_tagset;
-        /* tagset_load_workspace(ws->tagset, ws); */
+        tagset_load_workspace(ws->tagset, ws);
     }
 }
 
@@ -195,12 +202,12 @@ static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws
 {
     ws->prev_m = tagset->m;
 
-    /* tagset_unload_workspace(ws->tagset, ws); */
+    tagset_unload_workspace(ws->tagset, ws);
     ws->tagset = tagset;
     if (tagset->selected_ws_id == ws->id) {
         ws->selected_tagset = tagset;
     }
-    /* tagset_load_workspace(tagset, ws); */
+    tagset_load_workspace(tagset, ws);
 }
 
 static void tagset_workspaces_connect(struct tagset *tagset)
