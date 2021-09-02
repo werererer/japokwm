@@ -458,8 +458,10 @@ void repush(int pos1, int pos2)
 
     struct container *con = g_ptr_array_index(tagset->list_set->tiled_containers, pos1);
 
-    g_ptr_array_remove(tiled_containers, con);
-    g_ptr_array_insert(tiled_containers, pos2, con);
+    // TODO: this doesn't work if tiled by focus
+    struct workspace *ws = get_workspace(tagset->selected_ws_id);
+    workspace_remove_container_from_containers_locally(ws, con);
+    workspace_add_container_to_containers_locally(ws, con, pos2);
 
     arrange();
 

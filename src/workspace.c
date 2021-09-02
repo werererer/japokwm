@@ -329,25 +329,44 @@ void rename_workspace(struct workspace *ws, const char *name)
     ws->name = strdup(name);
 }
 
+void list_set_add_container_to_containers(struct list_set *list_set, struct container *con, int i)
+{
+    if (con->floating) {
+        g_ptr_array_insert(list_set->floating_containers, i, con);
+        return;
+    }
+    if (con->hidden) {
+        g_ptr_array_insert(list_set->hidden_containers, i, con);
+        return;
+    }
+    assert(list_set->tiled_containers->len >= i);
+    if (list_set->tiled_containers->len <= 0) {
+        g_ptr_array_add(list_set->tiled_containers, con);
+    } else {
+        g_ptr_array_insert(list_set->tiled_containers, i, con);
+    }
+}
+
 void workspace_add_container_to_containers(struct workspace *ws, struct container *con, int i)
 {
     assert(con != NULL);
 
     DO_ACTION_GLOBALLY(server.workspaces,
-        if (con->floating) {
-            g_ptr_array_insert(list_set->floating_containers, i, con);
-            continue;
-        }
-        if (con->hidden) {
-            g_ptr_array_insert(list_set->hidden_containers, i, con);
-            continue;
-        }
-        assert(list_set->tiled_containers->len >= i);
-        if (list_set->tiled_containers->len <= 0) {
-            g_ptr_array_add(list_set->tiled_containers, con);
-        } else {
-            g_ptr_array_insert(list_set->tiled_containers, i, con);
-        }
+        list_set_add_container_to_containers(list_set, con, i);
+    );
+}
+
+void workspace_remove_container_from_containers_locally(struct workspace *ws, struct container *con)
+{
+    DO_ACTION_LOCALLY(ws,
+        remove_in_composed_list(list_set->container_lists, cmp_ptr, con);
+    );
+}
+
+void workspace_add_container_to_containers_locally(struct workspace *ws, struct container *con, int i)
+{
+    DO_ACTION_LOCALLY(ws,
+        list_set_add_container_to_containers(list_set, con, i);
     );
 }
 
