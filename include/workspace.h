@@ -19,8 +19,10 @@
         \
         for (int _i = 0; _i < workspace->subscribed_tagsets->len; _i++) {\
             struct tagset *_tagset = g_ptr_array_index(workspace->subscribed_tagsets, _i);\
-            list_set = _tagset->list_set;\
-            action\
+            if (visible_on(_tagset, con)) {\
+                list_set = _tagset->list_set;\
+                action\
+            }\
         }\
     } while (0)
 
