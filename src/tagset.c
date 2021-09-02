@@ -18,13 +18,9 @@ static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws,
 static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces);
 static void tagset_set_tag(struct tagset *tagset, struct workspace *ws, bool load);
 static void tagset_set_tags(struct tagset *tagset, BitSet *workspaces);
-static void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces);
 static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws);
-static void tagset_unload_workspaces(struct tagset *tagset);
 static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_clear_workspaces(struct tagset *tagset);
-static void tagset_workspaces_disconnect(struct tagset *tagset);
-static void tagset_workspaces_connect(struct tagset *tagset);
 
 static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws);
 
@@ -136,7 +132,7 @@ void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
 
 
 // you should use tagset_write_to_workspace to unload workspaces first else
-static void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces)
+void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces)
 {
     assert(tagset != NULL);
 
@@ -179,7 +175,7 @@ static void tagset_workspace_disconnect(struct tagset *tagset, struct workspace 
     }
 }
 
-static void tagset_workspaces_disconnect(struct tagset *tagset)
+void tagset_workspaces_disconnect(struct tagset *tagset)
 {
     if (!tagset)
         return;
@@ -210,7 +206,7 @@ static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws
     tagset_load_workspace(tagset, ws);
 }
 
-static void tagset_workspaces_connect(struct tagset *tagset)
+void tagset_workspaces_connect(struct tagset *tagset)
 {
     if (!tagset)
         return;
@@ -271,7 +267,7 @@ static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws)
     tagset_unsubscribe_from_workspace(tagset, ws);
 }
 
-static void tagset_unload_workspaces(struct tagset *tagset)
+void tagset_unload_workspaces(struct tagset *tagset)
 {
     assert(tagset != NULL);
 

@@ -84,6 +84,12 @@ void focus_tagset_no_ref(struct tagset *tagset);
 void push_tagset(struct tagset *tagset);
 void push_tagset_no_ref(struct tagset *tagset);
 
+void tagset_workspaces_disconnect(struct tagset *tagset);
+void tagset_workspaces_connect(struct tagset *tagset);
+
+void tagset_unload_workspaces(struct tagset *tagset);
+void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces);
+
 struct layout *tagset_get_layout(struct tagset *tagset);
 
 #endif /* TAGSET_H */
