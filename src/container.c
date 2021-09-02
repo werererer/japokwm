@@ -328,6 +328,7 @@ void focus_container(struct container *con)
 
     struct monitor *m = container_get_monitor(con);
     struct tagset *tagset = monitor_get_active_tagset(m);
+    struct workspace *ws = get_workspace(tagset->selected_ws_id);
 
     if (!visible_on(tagset, con))
         return;
@@ -335,8 +336,8 @@ void focus_container(struct container *con)
     struct container *sel = get_focused_container(m);
 
     /* Put the new client atop the focus stack */
-    remove_in_composed_list(tagset->list_set->focus_stack_lists, cmp_ptr, con);
-    list_set_add_container_to_focus_stack(tagset->list_set, con);
+    workspace_remove_container_from_focus_stack_locally(ws, con);
+    workspace_add_container_to_focus_stack_locally(ws, con);
 
     struct container *new_sel = get_focused_container(m);
 

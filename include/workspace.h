@@ -96,6 +96,8 @@ void rename_workspace(struct workspace *ws, const char *name);
 void list_set_add_container_to_focus_stack(struct list_set *list_set, struct container *con);
 void workspace_add_container_to_containers(struct workspace *ws, struct container *con, int i);
 void workspace_add_container_to_focus_stack(struct workspace *ws, struct container *con);
+void workspace_remove_container_from_focus_stack_locally(struct workspace *ws, struct container *con);
+void workspace_add_container_to_focus_stack_locally(struct workspace *ws, struct container *con);
 void add_container_to_stack(struct container *con);
 
 void workspace_remove_container(struct workspace *ws, struct container *con);

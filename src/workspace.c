@@ -389,6 +389,20 @@ void workspace_add_container_to_focus_stack(struct workspace *ws, struct contain
             );
 }
 
+void workspace_remove_container_from_focus_stack_locally(struct workspace *ws, struct container *con)
+{
+    DO_ACTION_LOCALLY(ws, 
+            remove_in_composed_list(list_set->focus_stack_lists, cmp_ptr, con);
+            );
+}
+
+void workspace_add_container_to_focus_stack_locally(struct workspace *ws, struct container *con)
+{
+    DO_ACTION_LOCALLY(ws, 
+            list_set_add_container_to_focus_stack(list_set, con);
+            );
+}
+
 void add_container_to_stack(struct container *con)
 {
     if (!con)
