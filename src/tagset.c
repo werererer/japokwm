@@ -31,27 +31,21 @@ static void tagset_append_list_sets(struct tagset *tagset, struct workspace *ws)
     struct list_set *dest = tagset->list_set;
     struct workspace *sel_ws = get_workspace(tagset->selected_ws_id);
     struct list_set *src = sel_ws->list_set;
-    debug_print("start tagset_append_list_sets\n");
-    debug_print("sel workspace: %i\n", sel_ws->id);
 
     for (int i = 0; i < dest->all_lists->len; i++) {
         GPtrArray *dest_list = g_ptr_array_index(dest->all_lists, i);
         GPtrArray *src_list = g_ptr_array_index(src->all_lists, i);
-        debug_print("src_list length: %i\n", src_list->len);
         for (int j = 0; j < src_list->len; j++) {
             struct container *src_con = g_ptr_array_index(src_list, j);
             if (src_con->client->ws_id != ws->id) {
-                debug_print("con: %p not on ws: %i\n", src_con, ws->id);
                 continue;
             }
             guint src_pos;
             if (!g_ptr_array_find(src_list, src_con, &src_pos)) {
-                debug_print("not found1\n");
                 continue;
             }
 
             bool added = false;
-            debug_print("works0\n");
             if (src_pos == 0) {
                 g_ptr_array_insert(dest_list, 0, src_con);
                 added = true;
@@ -60,24 +54,17 @@ static void tagset_append_list_sets(struct tagset *tagset, struct workspace *ws)
                     struct container *dest_con = g_ptr_array_index(dest_list, k);
                     guint dest_pos;
                     if (!g_ptr_array_find(src_list, dest_con, &dest_pos)) {
-                        debug_print("not found1\n");
                         continue;
                     }
 
-                    debug_print("src_pos: %i dest_pos: %i\n", src_pos, dest_pos);
                     if (src_pos < dest_pos) {
-                        debug_print("don't end src_pos: %i dest_pos: %i\n", src_pos, dest_pos);
                         continue;
                     }
 
-                    debug_print("works1\n");
                     guint final_pos;
                     bool final_found = g_ptr_array_find(dest_list, dest_con, &final_pos);
                     assert(final_found == true);
                     final_pos++;
-
-                    debug_print("add container: %p to tagset: %p\n", src_con, tagset);
-                    debug_print("pos: %i\n", final_pos);
 
                     g_ptr_array_insert(dest_list, final_pos, src_con);
                     added = true;
@@ -86,13 +73,11 @@ static void tagset_append_list_sets(struct tagset *tagset, struct workspace *ws)
             }
 
             if (!added) {
-                debug_print("add the boring way: %p\n", src_con);
                 g_ptr_array_add(dest_list, src_con);
                 added = true;
             }
         }
     }
-    debug_print("end tagset append list_sets\n");
 }
 
 static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspace *ws)
@@ -240,6 +225,9 @@ static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
     assert(tagset != NULL);
     assert(ws != NULL);
     bool bit = bitset_test(tagset->loaded_workspaces, ws->id);
+
+    debug_print("tagset: %i load ws: %i\n", tagset->selected_ws_id, ws->id);
+
     if (bit)
         return;
 
@@ -250,6 +238,29 @@ static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
 static void tagset_unsubscribe_from_workspace(struct tagset *tagset, struct workspace *ws)
 {
     g_ptr_array_remove(ws->subscribed_tagsets, tagset);
+}
+
+static void tagset_remove_workspace(struct tagset *tagset, struct workspace *ws)
+{
+    struct list_set *dest = tagset->list_set;
+    struct list_set *src = ws->list_set;
+
+    for (int i = 0; i < src->all_lists->len; i++) {
+        GPtrArray *src_containers = g_ptr_array_index(src->all_lists, i);
+        GPtrArray *dest_list = g_ptr_array_index(dest->all_lists, i);
+        for (int j = 0; j < src_containers->len; j++) {
+            struct container *con = g_ptr_array_index(src_containers, j);
+
+            if (con->client->ws_id != ws->id)
+                continue;
+
+            guint position;
+            bool found = g_ptr_array_find(dest_list, con, &position);
+            if (found) {
+                g_ptr_array_remove_index(dest_list, position);
+            }
+        }
+    }
 }
 
 static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws)
@@ -263,7 +274,7 @@ static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws)
         return;
 
     bitset_reset(tagset->loaded_workspaces, ws->id);
-    list_set_remove_list_set(tagset->list_set, ws->list_set);
+    tagset_remove_workspace(tagset, ws);
     tagset_unsubscribe_from_workspace(tagset, ws);
 }
 
@@ -519,6 +530,7 @@ static void handle_too_few_workspaces(uint32_t ws_id)
 
 void tagset_focus_workspace(int ws_id)
 {
+    debug_print("\ntagset_focus_workspace\n");
     if (ws_id >= server.workspaces->len) {
         handle_too_few_workspaces(ws_id);
     }
