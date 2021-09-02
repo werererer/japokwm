@@ -10,7 +10,7 @@
 /* when an action should change the workspace and the tagsets associated with it
  * you should use this macro.
  * NOTE: use to jump to the end of the current action*/
-#define DO_ACTION(workspace, action) \
+#define DO_ACTION_LOCALLY(workspace, action) \
     do {\
         struct list_set *list_set = workspace->list_set;\
         do {\
@@ -21,6 +21,14 @@
             struct tagset *_tagset = g_ptr_array_index(workspace->subscribed_tagsets, _i);\
             list_set = _tagset->list_set;\
             action\
+        }\
+    } while (0)
+
+#define DO_ACTION_GLOBALLY(workspaces, action) \
+    do {\
+        for (int _i = 0; _i < workspaces->len; _i++) {\
+            struct workspace *_ws = g_ptr_array_index(workspaces, _i);\
+            DO_ACTION_LOCALLY(_ws, action);\
         }\
     } while (0)
 

@@ -61,8 +61,10 @@ void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
 {
     tagset_write_to_workspaces(tagset);
     tagset_workspaces_disconnect(tagset);
+    tagset_unload_workspaces(tagset);
     tagset_assign_workspaces(tagset, bitset);
     tagset_workspaces_connect(tagset);
+    tagset_load_workspaces(tagset, bitset);
 }
 
 
@@ -101,12 +103,11 @@ static void tagset_workspace_disconnect(struct tagset *tagset, struct workspace 
 {
     if (!tagset)
         return;
-    tagset_unload_workspace(tagset, ws);
     ws->tagset = NULL;
     if (ws->selected_tagset != tagset && ws->selected_tagset) {
         // move the workspace back
         ws->tagset = ws->selected_tagset;
-        tagset_load_workspace(ws->tagset, ws);
+        /* tagset_load_workspace(ws->tagset, ws); */
     }
 }
 
@@ -127,20 +128,18 @@ static void tagset_workspaces_disconnect(struct tagset *tagset)
         struct workspace *ws = get_workspace(i);
         tagset_workspace_disconnect(tagset, ws);
     }
-
-
 }
 
 static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws)
 {
     ws->prev_m = tagset->m;
 
-    tagset_unload_workspace(ws->tagset, ws);
+    /* tagset_unload_workspace(ws->tagset, ws); */
     ws->tagset = tagset;
     if (tagset->selected_ws_id == ws->id) {
         ws->selected_tagset = tagset;
     }
-    tagset_load_workspace(tagset, ws);
+    /* tagset_load_workspace(tagset, ws); */
 }
 
 static void tagset_workspaces_connect(struct tagset *tagset)
@@ -176,6 +175,7 @@ static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
 {
     assert(tagset != NULL);
     assert(ws != NULL);
+    debug_print("tagset: %p load %i\n", tagset, ws->id);
     bool bit = bitset_test(tagset->loaded_workspaces, ws->id);
     if (bit)
         return;

@@ -333,7 +333,7 @@ void workspace_add_container_to_containers(struct workspace *ws, struct containe
 {
     assert(con != NULL);
 
-    DO_ACTION(ws,
+    DO_ACTION_GLOBALLY(server.workspaces,
         if (con->floating) {
             g_ptr_array_insert(list_set->floating_containers, i, con);
             continue;
@@ -384,7 +384,7 @@ void list_set_add_container_to_focus_stack(struct list_set *list_set, struct con
 
 void workspace_add_container_to_focus_stack(struct workspace *ws, struct container *con)
 {
-    DO_ACTION(ws, 
+    DO_ACTION_GLOBALLY(server.workspaces, 
             list_set_add_container_to_focus_stack(list_set, con);
             );
 }
@@ -422,21 +422,21 @@ void add_container_to_stack(struct container *con)
 
 void workspace_remove_container(struct workspace *ws, struct container *con)
 {
-    DO_ACTION(ws,
+    DO_ACTION_GLOBALLY(server.workspaces,
             remove_in_composed_list(list_set->container_lists, cmp_ptr, con);
             );
 }
 
 void workspace_remove_container_from_focus_stack(struct workspace *ws, struct container *con)
 {
-    DO_ACTION(ws,
+    DO_ACTION_GLOBALLY(server.workspaces,
             remove_in_composed_list(list_set->focus_stack_lists, cmp_ptr, con);
             );
 }
 
 void workspace_remove_independent_container(struct workspace *ws, struct container *con)
 {
-    DO_ACTION(ws,
+    DO_ACTION_GLOBALLY(server.workspaces,
             g_ptr_array_remove(list_set->independent_containers, con);
             );
 }

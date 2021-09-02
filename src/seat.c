@@ -113,7 +113,6 @@ static void seat_update_capabilities(struct seat *seat) {
     // We must call cursor_set_image while the wlr_seat has the capabilities
     // otherwise it's a no op.
     if ((caps & WL_SEAT_CAPABILITY_POINTER) == 0) {
-        debug_print("set null0\n");
         cursor_set_image(seat->cursor, NULL, NULL);
         wlr_seat_set_capabilities(seat->wlr_seat, caps);
     } else {
@@ -186,7 +185,6 @@ void seat_configure_xcursor(struct seat *seat) {
     }
 
     // Reset the cursor so that we apply it to outputs that just appeared
-        debug_print("set null1\n");
     cursor_set_image(seat->cursor, NULL, NULL);
     cursor_set_image(seat->cursor, "left_ptr", NULL);
     wlr_cursor_warp(seat->cursor->wlr_cursor, NULL, seat->cursor->wlr_cursor->x,
