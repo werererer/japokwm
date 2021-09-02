@@ -42,7 +42,5 @@ void destroy_list_set(struct list_set *list_set);
 
 void append_list_set(struct list_set *dest, struct list_set *src);
 void clear_list_set(struct list_set *list_set);
-// estimated time efficiency O(n*m)
-void list_set_remove_list_set(struct list_set *dest, struct list_set *src);
 
 #endif /* LIST_SET_H */

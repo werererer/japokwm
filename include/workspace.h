@@ -12,6 +12,10 @@
  * NOTE: use to jump to the end of the current action*/
 #define DO_ACTION_LOCALLY(workspace, action) \
     do {\
+        for (int i = 0; i < server.tagsets->len; i++) {\
+            struct tagset *tagset = g_ptr_array_index(server.tagsets, i);\
+            tagset->applied_action = false;\
+        }\
         struct list_set *list_set = workspace->list_set;\
         do {\
             action\
@@ -19,18 +23,40 @@
         \
         for (int _i = 0; _i < workspace->subscribed_tagsets->len; _i++) {\
             struct tagset *_tagset = g_ptr_array_index(workspace->subscribed_tagsets, _i);\
-            if (visible_on(_tagset, con)) {\
-                list_set = _tagset->list_set;\
-                action\
-            }\
+            if (_tagset->applied_action)\
+                continue;\
+            if (!visible_on(_tagset, con))\
+                continue;\
+            list_set = _tagset->list_set;\
+            action\
+            _tagset->applied_action = true;\
         }\
     } while (0)
 
 #define DO_ACTION_GLOBALLY(workspaces, action) \
     do {\
+        for (int i = 0; i < server.tagsets->len; i++) {\
+            struct tagset *tagset = g_ptr_array_index(server.tagsets, i);\
+            tagset->applied_action = false;\
+        }\
         for (int _i = 0; _i < workspaces->len; _i++) {\
             struct workspace *_ws = g_ptr_array_index(workspaces, _i);\
-            DO_ACTION_LOCALLY(_ws, action);\
+            \
+            struct list_set *list_set = _ws->list_set;\
+            do {\
+                action\
+            } while (0);\
+            \
+            for (int _i = 0; _i < _ws->subscribed_tagsets->len; _i++) {\
+                struct tagset *_tagset = g_ptr_array_index(_ws->subscribed_tagsets, _i);\
+                if (_tagset->applied_action)\
+                    continue;\
+                if (!visible_on(_tagset, con))\
+                    continue;\
+                list_set = _tagset->list_set;\
+                action\
+                _tagset->applied_action = true;\
+            }\
         }\
     } while (0)
 

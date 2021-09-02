@@ -162,7 +162,14 @@ int get_workspace_container_count(struct workspace *ws)
     if (!ws)
         return -1;
 
-    return length_of_composed_list(ws->list_set->visible_container_lists);
+    int count = 0;
+    for (int i = 0; i < length_of_composed_list(ws->list_set->visible_container_lists); i++) {
+        struct container *con = get_in_composed_list(ws->list_set->visible_container_lists, i);
+        if (con->client->ws_id == ws->id) {
+            count++;
+        }
+    }
+    return count;
 }
 
 bool is_workspace_empty(struct workspace *ws)

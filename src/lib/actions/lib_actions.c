@@ -435,7 +435,7 @@ int lib_toggle_layout(lua_State *L)
 
 int lib_toggle_workspace(lua_State *L)
 {
-    push_tagset(server.previous_tagset);
+    tagset_focus_tags(server.previous_workspace, server.previous_bitset);
     return 0;
 }
 

@@ -13,14 +13,12 @@
 #include "monitor.h"
 #include "cursor.h"
 
-static void tagset_write_to_workspaces(struct tagset *tagset);
 static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load);
 static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces);
 static void tagset_set_tag(struct tagset *tagset, struct workspace *ws, bool load);
 static void tagset_set_tags(struct tagset *tagset, BitSet *workspaces);
 static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws);
-static void tagset_clear_workspaces(struct tagset *tagset);
 
 static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws);
 
@@ -109,7 +107,6 @@ static void tagset_set_tag(struct tagset *tagset, struct workspace *ws, bool loa
 
 void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
 {
-    /* tagset_write_to_workspaces(tagset); */
     tagset_workspaces_disconnect(tagset);
     tagset_assign_workspaces(tagset, bitset);
     tagset_workspaces_connect(tagset);
@@ -392,7 +389,6 @@ void focus_tagset_no_ref(struct tagset *tagset)
 
     struct tagset *old_tagset = m->tagset;
 
-    /* tagset_write_to_workspaces(m->tagset); */
     tagset_move_sticky_containers(old_tagset, tagset);
     tagset_workspaces_disconnect(old_tagset);
     tagset_workspaces_connect(tagset);
@@ -415,19 +411,6 @@ void focus_tagset(struct tagset *tagset)
 
     tagset_acquire(tagset);
     focus_tagset_no_ref(tagset);
-}
-
-static void tagset_clear_workspaces(struct tagset *tagset)
-{
-    for (int i = 0; i < tagset->loaded_workspaces->size; i++) {
-        bool bit = bitset_test(tagset->loaded_workspaces, i);
-
-        if (!bit)
-            continue;
-
-        struct workspace *ws = get_workspace(i);
-        clear_list_set(ws->list_set);
-    }
 }
 
 static void tagset_append_to_workspaces(struct tagset *tagset)
@@ -471,15 +454,6 @@ static void tagset_append_to_sel_workspace(struct tagset *tagset)
     }
 }
 
-static void tagset_write_to_workspaces(struct tagset *tagset)
-{
-    if (!tagset)
-        return;
-
-    /* tagset_clear_sel_workspace(tagset); */
-    /* tagset_append_to_sel_workspace(tagset); */
-}
-
 struct layout *tagset_get_layout(struct tagset *tagset)
 {
     struct workspace *ws = get_workspace(tagset->selected_ws_id);
@@ -488,9 +462,10 @@ struct layout *tagset_get_layout(struct tagset *tagset)
 
 static void _set_previous_tagset(struct tagset *tagset)
 {
-    tagset_acquire(tagset);
-    tagset_release(server.previous_tagset);
-    server.previous_tagset = tagset;
+    if (!tagset)
+        return;
+    server.previous_bitset = bitset_copy(tagset->workspaces);
+    server.previous_workspace = tagset->selected_ws_id;
 }
 
 void push_tagset_no_ref(struct tagset *tagset)

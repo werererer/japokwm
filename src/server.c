@@ -55,7 +55,6 @@ static void init_event_handlers(struct server *server)
 void init_server()
 {
     server = (struct server) {
-        .previous_tagset = NULL,
     };
 
     init_lists(&server);

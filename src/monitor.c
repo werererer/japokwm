@@ -179,12 +179,12 @@ void destroy_monitor(struct wl_listener *listener, void *data)
     g_ptr_array_remove(server.mons, m);
     m->wlr_output->data = NULL;
 
-    if (server.previous_tagset) {
-        if (server.previous_tagset->m == m) {
-            tagset_release(server.previous_tagset);
-            server.previous_tagset = NULL;
-        }
-    }
+    /* if (server.previous_tagset) { */
+    /*     if (server.previous_tagset->m == m) { */
+    /*         tagset_release(server.previous_tagset); */
+    /*         server.previous_tagset = NULL; */
+    /*     } */
+    /* } */
 
     int len = length_of_composed_list(server.client_lists);
     int j = 0;

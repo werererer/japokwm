@@ -16,6 +16,7 @@
 #include "xwayland.h"
 #include "input_manager.h"
 #include "utils/coreUtils.h"
+#include "bitset/bitset.h"
 
 struct server {
     struct wl_display *wl_display;
@@ -50,7 +51,8 @@ struct server {
     char *config_file;
     char *config_dir;
 
-    struct tagset *previous_tagset;
+    int previous_workspace;
+    BitSet *previous_bitset;
 
     GPtrArray *client_lists;
     GPtrArray *normal_clients;
