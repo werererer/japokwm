@@ -27,11 +27,13 @@ static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspac
 static void tagset_append_list_sets(struct tagset *tagset, struct workspace *ws)
 {
     struct list_set *dest = tagset->list_set;
+    /* debug_print("append tagset: %i\n", tagset->selected_ws_id); */
     struct workspace *sel_ws = get_workspace(tagset->selected_ws_id);
     struct list_set *src = sel_ws->list_set;
 
     for (int i = 0; i < dest->all_lists->len; i++) {
         GPtrArray *dest_list = g_ptr_array_index(dest->all_lists, i);
+        /* debug_print("dest data: %p\n", dest_list->pdata); */
         GPtrArray *src_list = g_ptr_array_index(src->all_lists, i);
         for (int j = 0; j < src_list->len; j++) {
             struct container *src_con = g_ptr_array_index(src_list, j);
@@ -48,7 +50,8 @@ static void tagset_append_list_sets(struct tagset *tagset, struct workspace *ws)
                 g_ptr_array_insert(dest_list, 0, src_con);
                 added = true;
             } else {
-                for (int k = dest_list->len-1; k >= 0; k++) {
+                for (int k = dest_list->len-1; k >= 0; k--) {
+                    debug_print("k: %i\n", k);
                     struct container *dest_con = g_ptr_array_index(dest_list, k);
                     guint dest_pos;
                     if (!g_ptr_array_find(src_list, dest_con, &dest_pos)) {
@@ -80,7 +83,6 @@ static void tagset_append_list_sets(struct tagset *tagset, struct workspace *ws)
 
 static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspace *ws)
 {
-    g_ptr_array_add(ws->subscribed_tagsets, tagset);
     tagset_append_list_sets(tagset, ws);
 }
 
@@ -138,6 +140,9 @@ static void tagset_clean_destroyed_tagset(struct tagset *tagset)
         struct workspace *ws = get_workspace(i);
         if (ws->tagset == tagset) {
             ws->tagset = NULL;
+        }
+        if (ws->selected_tagset == tagset) {
+            ws->selected_tagset = NULL;
         }
     }
 }
@@ -223,8 +228,6 @@ static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
     assert(ws != NULL);
     bool bit = bitset_test(tagset->loaded_workspaces, ws->id);
 
-    debug_print("tagset: %i load ws: %i\n", tagset->selected_ws_id, ws->id);
-
     if (bit)
         return;
 
@@ -234,7 +237,10 @@ static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
 
 static void tagset_unsubscribe_from_workspace(struct tagset *tagset, struct workspace *ws)
 {
-    g_ptr_array_remove(ws->subscribed_tagsets, tagset);
+    ws->tagset = NULL;
+    if (ws->selected_tagset && ws->selected_tagset != tagset) {
+        tagset_load_workspace(ws->selected_tagset, ws);
+    }
 }
 
 static void tagset_remove_workspace(struct tagset *tagset, struct workspace *ws)
@@ -295,7 +301,7 @@ void tagset_unload_workspaces(struct tagset *tagset)
 
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *workspaces)
 {
-    struct tagset *tagset = g_rc_box_new0(struct tagset);
+    struct tagset *tagset = calloc(1, sizeof(struct tagset));
     tagset->m = m;
 
     tagset->selected_ws_id = selected_ws_id;
@@ -310,13 +316,11 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *work
     return tagset;
 }
 
-static void _destroy_tagset(void *tagset_ptr)
+void destroy_tagset(struct tagset *tagset)
 {
-    if (!tagset_ptr)
+    if (!tagset)
         return;
-
-    struct tagset *tagset = (struct tagset *)tagset_ptr;
-
+    debug_print("destroy tagset: %i\n", tagset->selected_ws_id);
     struct workspace *selected_workspace = get_workspace(tagset->selected_ws_id);
     if (selected_workspace->selected_tagset == tagset) {
         selected_workspace->selected_tagset = NULL;
@@ -328,20 +332,7 @@ static void _destroy_tagset(void *tagset_ptr)
     bitset_destroy(tagset->workspaces);
     bitset_destroy(tagset->loaded_workspaces);
     destroy_list_set(tagset->list_set);
-}
-
-void tagset_acquire(struct tagset *tagset)
-{
-    if (!tagset)
-        return;
-    g_rc_box_acquire(tagset);
-}
-
-void tagset_release(struct tagset *tagset)
-{
-    if (!tagset)
-        return;
-    g_rc_box_release_full(tagset, _destroy_tagset);
+    free(tagset);
 }
 
 void focus_most_recent_container(struct tagset *tagset)
@@ -377,22 +368,23 @@ static void tagset_move_sticky_containers(struct tagset *old_tagset, struct tags
     }
 }
 
-void focus_tagset_no_ref(struct tagset *tagset)
+void focus_tagset(struct tagset *tagset)
 {
     if(!tagset)
         return;
 
     struct monitor *m = tagset->m;
+    struct monitor *prev_m = selected_monitor;
 
-    focus_monitor(m);
     selected_monitor = m;
 
     struct tagset *old_tagset = m->tagset;
-
     tagset_move_sticky_containers(old_tagset, tagset);
     tagset_workspaces_disconnect(old_tagset);
     tagset_workspaces_connect(tagset);
-    tagset_release(m->tagset);
+    if (prev_m == m) {
+        destroy_tagset(old_tagset);
+    }
     m->tagset = tagset;
     ipc_event_workspace();
 
@@ -402,15 +394,6 @@ void focus_tagset_no_ref(struct tagset *tagset)
 
     struct seat *seat = input_manager_get_default_seat();
     cursor_rebase(seat->cursor);
-}
-
-void focus_tagset(struct tagset *tagset)
-{
-    if(!tagset)
-        return;
-
-    tagset_acquire(tagset);
-    focus_tagset_no_ref(tagset);
 }
 
 static void tagset_append_to_workspaces(struct tagset *tagset)
@@ -468,7 +451,7 @@ static void _set_previous_tagset(struct tagset *tagset)
     server.previous_workspace = tagset->selected_ws_id;
 }
 
-void push_tagset_no_ref(struct tagset *tagset)
+void push_tagset(struct tagset *tagset)
 {
     struct monitor *m = selected_monitor;
 
@@ -476,16 +459,7 @@ void push_tagset_no_ref(struct tagset *tagset)
         _set_previous_tagset(m->tagset);
     }
 
-    focus_tagset_no_ref(tagset);
-}
-
-void push_tagset(struct tagset *tagset)
-{
-    if (!tagset)
-        return;
-    tagset_acquire(tagset);
-
-    push_tagset_no_ref(tagset);
+    focus_tagset(tagset);
 }
 
 static void handle_too_few_workspaces(uint32_t ws_id)
@@ -505,7 +479,6 @@ static void handle_too_few_workspaces(uint32_t ws_id)
 
 void tagset_focus_workspace(int ws_id)
 {
-    debug_print("\ntagset_focus_workspace\n");
     if (ws_id >= server.workspaces->len) {
         handle_too_few_workspaces(ws_id);
     }
@@ -530,17 +503,12 @@ void tagset_toggle_add(struct tagset *tagset, BitSet *bitset)
 void tagset_focus_tags(int ws_id, struct BitSet *bitset)
 {
     struct workspace *ws = get_workspace(ws_id);
-    struct monitor *ws_m = workspace_get_monitor(ws);
+    struct monitor *ws_m = ws->prev_m;
+    debug_print("ws_m: %p\n", ws_m);
     struct monitor *m = ws_m ? ws_m : selected_monitor;
 
-    struct tagset *tagset = workspace_get_selected_tagset(ws);
-    if (tagset) {
-        tagset_set_tags(tagset, bitset);
-        push_tagset(tagset);
-    } else {
-        tagset = create_tagset(m, ws_id, bitset);
-        push_tagset_no_ref(tagset);
-    }
+    struct tagset *tagset = create_tagset(m, ws_id, bitset);
+    push_tagset(tagset);
 }
 
 struct container *get_container(struct tagset *tagset, int i)

@@ -12,25 +12,17 @@
  * NOTE: use to jump to the end of the current action*/
 #define DO_ACTION_LOCALLY(workspace, action) \
     do {\
-        for (int i = 0; i < server.tagsets->len; i++) {\
-            struct tagset *tagset = g_ptr_array_index(server.tagsets, i);\
-            tagset->applied_action = false;\
-        }\
         struct list_set *list_set = workspace->list_set;\
         do {\
             action\
         } while (0);\
         \
-        for (int _i = 0; _i < workspace->subscribed_tagsets->len; _i++) {\
-            struct tagset *_tagset = g_ptr_array_index(workspace->subscribed_tagsets, _i);\
-            if (_tagset->applied_action)\
-                continue;\
-            if (!visible_on(_tagset, con))\
-                continue;\
+        do {\
+            struct tagset *_tagset = workspace->tagset;\
+            assert(visible_on(_tagset, con) == true);\
             list_set = _tagset->list_set;\
             action\
-            _tagset->applied_action = true;\
-        }\
+        } while (0);\
     } while (0)
 
 #define DO_ACTION_GLOBALLY(workspaces, action) \
@@ -47,16 +39,18 @@
                 action\
             } while (0);\
             \
-            for (int _i = 0; _i < _ws->subscribed_tagsets->len; _i++) {\
-                struct tagset *_tagset = g_ptr_array_index(_ws->subscribed_tagsets, _i);\
+            do {\
+                struct tagset *_tagset = _ws->tagset;\
+                if (!_tagset)\
+                    continue;\
                 if (_tagset->applied_action)\
                     continue;\
                 if (!visible_on(_tagset, con))\
                     continue;\
                 list_set = _tagset->list_set;\
-                action\
                 _tagset->applied_action = true;\
-            }\
+                action\
+            } while (0);\
         }\
     } while (0)
 
@@ -81,8 +75,6 @@ struct workspace {
     struct tagset *selected_tagset;
 
     struct list_set *list_set;
-
-    GPtrArray *subscribed_tagsets;
 };
 
 GPtrArray *create_workspaces(GPtrArray *tag_names);

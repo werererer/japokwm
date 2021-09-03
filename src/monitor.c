@@ -173,8 +173,6 @@ void destroy_monitor(struct wl_listener *listener, void *data)
     wl_list_remove(&m->damage_frame.link);
     wl_list_remove(&m->destroy.link);
 
-    tagset_release(m->tagset);
-
     destroy_root(m->root);
     g_ptr_array_remove(server.mons, m);
     m->wlr_output->data = NULL;

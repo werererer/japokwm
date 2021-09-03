@@ -44,7 +44,6 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     push_layout(ws, lt);
 
     ws->list_set = create_list_set();
-    ws->subscribed_tagsets = g_ptr_array_new();
     return ws;
 }
 
@@ -93,7 +92,6 @@ void update_workspaces(GPtrArray *workspaces, GPtrArray *tag_names)
 
 void destroy_workspace(struct workspace *ws)
 {
-    g_ptr_array_free(ws->subscribed_tagsets, TRUE);
     for (int i = 0; i < length_of_composed_list(ws->list_set->container_lists); i++) {
         struct container *con = get_in_composed_list(ws->list_set->container_lists, i);
         struct client *c = con->client;
@@ -249,14 +247,14 @@ struct monitor *workspace_get_monitor(struct workspace *ws)
 {
     assert(ws != NULL);
 
+    if (ws->prev_m && !is_workspace_empty(ws)) {
+        return ws->prev_m;
+    }
     if (ws->tagset) {
         return ws->tagset->m;
     }
     if (ws->selected_tagset) {
         return ws->selected_tagset->m;
-    }
-    if (ws->prev_m && !is_workspace_empty(ws)) {
-        return ws->prev_m;
     }
     return NULL;
 }
@@ -325,7 +323,7 @@ void focus_next_unoccupied_workspace(struct monitor *m, GPtrArray *workspaces, s
     bitset_set(bitset, w->id);
 
     struct tagset *tagset = create_tagset(m, w->id, bitset);
-    push_tagset_no_ref(tagset);
+    push_tagset(tagset);
 }
 
 void rename_workspace(struct workspace *ws, const char *name)
