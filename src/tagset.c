@@ -48,7 +48,7 @@ static void tagset_append_list_sets(struct tagset *tagset, struct workspace *ws)
                 g_ptr_array_insert(dest_list, 0, src_con);
                 added = true;
             } else {
-                for (int k = 0; k < dest_list->len; k++) {
+                for (int k = dest_list->len-1; k >= 0; k++) {
                     struct container *dest_con = g_ptr_array_index(dest_list, k);
                     guint dest_pos;
                     if (!g_ptr_array_find(src_list, dest_con, &dest_pos)) {
