@@ -249,6 +249,7 @@ void handle_cursor_frame(struct wl_listener *listener, void *data)
 
 static bool handle_move_resize(struct cursor *cursor)
 {
+    debug_print("handle_move_resize\n");
     enum cursor_mode cursor_mode = cursor->cursor_mode;
     struct wlr_cursor *wlr_cursor = cursor->wlr_cursor;
     switch (cursor_mode) {
@@ -383,7 +384,6 @@ void handle_cursor_button(struct wl_listener *listener, void *data)
     struct cursor *cursor = wl_container_of(listener, cursor, button);
     struct wlr_event_pointer_button *event = data;
 
-    struct  wlr_seat *wlr_seat = cursor->seat->wlr_seat;
     switch (event->state) {
         case WLR_BUTTON_PRESSED:
             {
@@ -414,8 +414,17 @@ void handle_cursor_button(struct wl_listener *listener, void *data)
             }
             break;
     }
+
+    if (cursor->cursor_mode == CURSOR_RESIZE) {
+        return;
+    }
+    if (cursor->cursor_mode == CURSOR_MOVE) {
+        return;
+    }
+
     /* If the event wasn't handled by the compositor, notify the client with
      * pointer focus that a button press has occurred */
+    struct wlr_seat *wlr_seat = cursor->seat->wlr_seat;
     wlr_seat_pointer_notify_button(wlr_seat, event->time_msec, event->button,
             event->state);
 }
