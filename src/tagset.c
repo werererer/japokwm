@@ -509,6 +509,12 @@ void tagset_focus_tags(int ws_id, struct BitSet *bitset)
     push_tagset(tagset);
 }
 
+void tagset_reload(struct tagset *tagset)
+{
+    tagset_unload_workspaces(tagset);
+    tagset_load_workspaces(tagset, tagset->workspaces);
+}
+
 struct container *get_container(struct tagset *tagset, int i)
 {
     struct list_set *list_set = tagset->list_set;

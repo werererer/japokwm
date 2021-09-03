@@ -657,16 +657,10 @@ void set_container_workspace(struct container *con, struct workspace *ws)
     if (tagset->selected_ws_id == ws->id)
         return;
 
-    struct workspace *old_ws = get_workspace(con->client->ws_id);
-
-    workspace_remove_container(old_ws, con);
-    workspace_add_container_to_containers(ws, con, 0);
-
-    workspace_remove_container_from_focus_stack(old_ws, con);
-    workspace_add_container_to_focus_stack(ws, con);
-
     con->client->ws_id = ws->id;
     ws->prev_m = m;
+
+    tagset_reload(tagset);
 
     if (con->floating)
         con->client->bw = ws->layout->options.float_border_px;
