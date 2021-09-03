@@ -235,6 +235,17 @@ struct tagset *workspace_get_tagset(struct workspace *ws)
     return ws->tagset;
 }
 
+struct tagset *workspace_get_active_tagset(struct workspace *ws)
+{
+    struct tagset *tagset = ws->tagset;
+    if (!tagset) {
+        tagset = ws->selected_tagset;
+        if (!tagset)
+            return NULL;
+    }
+    return tagset;
+}
+
 struct monitor *workspace_get_selected_monitor(struct workspace *ws)
 {
     assert(ws != NULL);
@@ -363,10 +374,9 @@ void workspace_add_container_to_containers(struct workspace *ws, struct containe
 
 void workspace_remove_container_from_containers_locally(struct workspace *ws, struct container *con)
 {
-    if (!ws->tagset)
-        return;
     DO_ACTION_LOCALLY(ws,
-        struct layout *lt = tagset_get_layout(ws->tagset);
+        struct tagset *tagset = workspace_get_active_tagset(ws);
+        struct layout *lt = tagset_get_layout(tagset);
         if (lt->options.arrange_by_focus)
             remove_in_composed_list(list_set->focus_stack_lists, cmp_ptr, con);
         else
@@ -376,10 +386,9 @@ void workspace_remove_container_from_containers_locally(struct workspace *ws, st
 
 void workspace_add_container_to_containers_locally(struct workspace *ws, struct container *con, int i)
 {
-    if (!ws->tagset)
-        return;
     DO_ACTION_LOCALLY(ws,
-        struct layout *lt = tagset_get_layout(ws->tagset);
+        struct tagset *tagset = workspace_get_active_tagset(ws);
+        struct layout *lt = tagset_get_layout(tagset);
         if (lt->options.arrange_by_focus)
             list_set_add_container_to_focus_stack(list_set, con);
         else

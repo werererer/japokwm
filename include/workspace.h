@@ -18,12 +18,7 @@
         } while (0);\
         \
         do {\
-            struct tagset *_tagset = workspace->tagset;\
-            if (!_tagset) {\
-                _tagset = workspace->selected_tagset;\
-                if (!_tagset)\
-                    continue;\
-            }\
+            struct tagset *_tagset = workspace_get_active_tagset(workspace);\
             assert(exist_on(_tagset, con) == true);\
             list_set = _tagset->list_set;\
             action\
@@ -104,6 +99,7 @@ struct workspace *get_prev_empty_workspace(GPtrArray *workspaces, size_t i);
 
 struct tagset *workspace_get_selected_tagset(struct workspace *ws);
 struct tagset *workspace_get_tagset(struct workspace *ws);
+struct tagset *workspace_get_active_tagset(struct workspace *ws);
 
 struct monitor *workspace_get_selected_monitor(struct workspace *ws);
 struct monitor *workspace_get_monitor(struct workspace *ws); 
