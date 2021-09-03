@@ -250,6 +250,9 @@ static void tagset_remove_workspace(struct tagset *tagset, struct workspace *ws)
     for (int i = 0; i < length_of_composed_list(src->container_lists); i++) {
         struct container *con = get_in_composed_list(src->container_lists, i);
 
+        if (con->client->ws_id != ws->id)
+            continue;
+
         for (int j = 0; j < dest->all_lists->len; j++) {
             GPtrArray *dest_list = g_ptr_array_index(dest->all_lists, j);
             g_ptr_array_remove(dest_list, con);
