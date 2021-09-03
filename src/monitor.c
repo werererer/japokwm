@@ -299,5 +299,7 @@ inline struct workspace *monitor_get_active_workspace(struct monitor *m)
 
 inline struct layout *get_layout_in_monitor(struct monitor *m)
 {
+    if (!m)
+        return NULL;
     return monitor_get_active_workspace(m)->layout;
 }

@@ -3,10 +3,11 @@
 #include "client.h"
 #include "tile/tileUtils.h"
 #include "server.h"
+#include "bitset/bitset.h"
 
 int container_set_sticky(lua_State *L)
 {
-    bool sticky = lua_toboolean(L, -1);
+    /* bool sticky = lua_toboolean(L, -1); */
     lua_pop(L, 1);
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
@@ -17,7 +18,12 @@ int container_set_sticky(lua_State *L)
     if (!con)
         return 0;
 
-    client_setsticky(con->client, sticky);
+    BitSet *bitset = bitset_create(server.workspaces->len);
+    /* bitset_set(bitset, 0); */
+    /* bitset_set(bitset, 1); */
+    /* bitset_set(bitset, 2); */
+    /* bitset_set(bitset, 3); */
+    client_setsticky(con->client, bitset);
     return 0;
 }
 

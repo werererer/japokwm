@@ -88,7 +88,9 @@ void map_request(struct wl_listener *listener, void *data)
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
     struct workspace *ws = get_workspace(c->ws_id);
-    c->bw = ws->layout->options.tile_border_px;
+    if (ws) {
+        c->bw = ws->layout->options.tile_border_px;
+    }
 
     g_ptr_array_add(server.normal_clients, c);
 
@@ -96,7 +98,9 @@ void map_request(struct wl_listener *listener, void *data)
     add_container_to_tile(con);
     arrange();
     struct monitor *m = container_get_monitor(con);
-    focus_most_recent_container(m->tagset);
+    if (m) {
+        focus_most_recent_container(m->tagset);
+    }
 }
 
 void unmap_notify(struct wl_listener *listener, void *data)

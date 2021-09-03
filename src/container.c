@@ -21,6 +21,7 @@
 #include "rules/rule.h"
 
 static void add_container_to_workspace(struct container *con, struct workspace *ws);
+static void container_set_workspace_id(struct container *con, int ws_id);
 
 struct container *create_container(struct client *c, struct monitor *m, bool has_border)
 {
@@ -31,7 +32,7 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     con->alpha = 1.0f;
     con->has_border = has_border;
     con->focusable = true;
-    con->client->ws_id = m->tagset->selected_ws_id;
+    container_set_workspace_id(con, m->tagset->selected_ws_id);
 
     return con;
 }
@@ -47,9 +48,11 @@ void add_container_to_tile(struct container *con)
     add_container_to_workspace(con, get_workspace(con->client->ws_id));
 
     struct monitor *m = container_get_monitor(con);
-    struct layout *lt = get_layout_in_monitor(m);
-    struct event_handler *ev = lt->options.event_handler;
-    call_create_container_function(ev, get_position_in_container_stack(con));
+    if (m) {
+        struct layout *lt = get_layout_in_monitor(m);
+        struct event_handler *ev = lt->options.event_handler;
+        call_create_container_function(ev, get_position_in_container_stack(con));
+    }
 
     con->is_tiled = true;
 
@@ -601,6 +604,9 @@ struct monitor *container_get_monitor(struct container *con)
     }
 
     struct workspace *ws = get_workspace(con->client->ws_id);
+    if (!ws)
+        return NULL;
+
     struct monitor *m = workspace_get_monitor(ws);
     return m;
 }
@@ -646,6 +652,13 @@ bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *re
     return is_width_not_in_limit || is_height_not_in_limit;
 }
 
+static void container_set_workspace_id(struct container *con, int ws_id)
+{
+    con->client->ws_id = ws_id;
+    bitset_reset_all(con->client->sticky_workspaces);
+    bitset_set(con->client->sticky_workspaces, con->client->ws_id);
+}
+
 void set_container_workspace(struct container *con, struct workspace *ws)
 {
     if (!con)
@@ -657,7 +670,8 @@ void set_container_workspace(struct container *con, struct workspace *ws)
     if (tagset->selected_ws_id == ws->id)
         return;
 
-    con->client->ws_id = ws->id;
+    // TODO: cleanup code:
+    container_set_workspace_id(con, ws->id);
     ws->prev_m = m;
 
     tagset_reload(tagset);

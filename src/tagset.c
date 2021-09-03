@@ -12,6 +12,7 @@
 #include "ipc-server.h"
 #include "monitor.h"
 #include "cursor.h"
+#include "scratchpad.h"
 
 static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load);
 static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces);
@@ -28,13 +29,11 @@ static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspac
 static void tagset_append_list_sets(struct tagset *tagset, struct workspace *ws)
 {
     struct list_set *dest = tagset->list_set;
-    /* debug_print("append tagset: %i\n", tagset->selected_ws_id); */
     struct workspace *sel_ws = get_workspace(tagset->selected_ws_id);
     struct list_set *src = sel_ws->list_set;
 
     for (int i = 0; i < dest->all_lists->len; i++) {
         GPtrArray *dest_list = g_ptr_array_index(dest->all_lists, i);
-        /* debug_print("dest data: %p\n", dest_list->pdata); */
         GPtrArray *src_list = g_ptr_array_index(src->all_lists, i);
         for (int j = 0; j < src_list->len; j++) {
             struct container *src_con = g_ptr_array_index(src_list, j);
@@ -231,8 +230,6 @@ static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
     if (bit)
         return;
 
-    debug_print("tagset: %i load ws: %i\n", tagset->selected_ws_id, ws->id);
-
     bitset_set(tagset->loaded_workspaces, ws->id);
     tagset_subscribe_to_workspace(tagset, ws);
 }
@@ -269,8 +266,6 @@ static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws)
     bool bit = bitset_test(tagset->loaded_workspaces, ws->id);
     if (!bit)
         return;
-
-    debug_print("tagset: %i unload ws: %i\n", tagset->selected_ws_id, ws->id);
 
     bitset_reset(tagset->loaded_workspaces, ws->id);
     tagset_unsubscribe_from_workspace(tagset, ws);
@@ -315,7 +310,6 @@ void destroy_tagset(struct tagset *tagset)
 {
     if (!tagset)
         return;
-    debug_print("destroy tagset: %i\n", tagset->selected_ws_id);
     struct workspace *selected_workspace = get_workspace(tagset->selected_ws_id);
     if (selected_workspace->tagset == tagset) {
         selected_workspace->tagset = NULL;
@@ -348,6 +342,11 @@ void focus_most_recent_container(struct tagset *tagset)
     focus_container(con);
 }
 
+static bool workspace_contains_client(struct workspace *ws, struct client *client)
+{
+    return bitset_test(client->sticky_workspaces, ws->id);
+}
+
 static void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tagset)
 {
     if (!old_tagset)
@@ -358,9 +357,11 @@ static void tagset_move_sticky_containers(struct tagset *old_tagset, struct tags
     int pos = len-1;
     for (int i = len-1; i >= 0; i--) {
         struct container *con = get_in_composed_list(old_tagset->list_set->container_lists, pos);
-        if (con->client->sticky) {
-            debug_print("move container: %p\n", con);
-            move_container_to_workspace(con, ws);
+        bitset_test(con->client->sticky_workspaces, ws->id);
+        if (workspace_contains_client(ws, con->client)) {
+            con->client->ws_id = ws->id;
+        } else if (bitset_none(con->client->sticky_workspaces)) {
+            move_to_scratchpad(con, 0);
         }
         pos--;
     }
@@ -502,7 +503,6 @@ void tagset_focus_tags(int ws_id, struct BitSet *bitset)
 {
     struct workspace *ws = get_workspace(ws_id);
     struct monitor *ws_m = ws->selected_tagset ? ws->selected_tagset->m : NULL;
-    debug_print("ws_m: %p\n", ws_m);
     struct monitor *m = ws_m ? ws_m : selected_monitor;
 
     struct tagset *tagset = create_tagset(m, ws_id, bitset);
@@ -580,8 +580,20 @@ void workspace_id_to_tag(BitSet *dest, int ws_id)
     bitset_set(dest, ws_id);
 }
 
+bool tagset_contains_sticky_client(struct tagset *tagset, struct client *c)
+{
+    BitSet *bitset = bitset_copy(c->sticky_workspaces);
+    bitset_and(bitset, tagset->workspaces);
+    bool contains = bitset_any(bitset);
+    bitset_destroy(bitset);
+    return contains;
+}
+
 bool tagset_contains_client(struct tagset *tagset, struct client *c)
 {
+    if (tagset_contains_sticky_client(tagset, c))
+        return true;
+
     BitSet *bitset = bitset_create(server.workspaces->len);
     workspace_id_to_tag(bitset, c->ws_id);
     bitset_and(bitset, tagset->workspaces);
@@ -628,8 +640,6 @@ bool exist_on(struct tagset *tagset, struct container *con)
         return false;
 
     if (c->type == LAYER_SHELL)
-        return true;
-    if (c->sticky)
         return true;
 
     return tagset_contains_client(tagset, c);
