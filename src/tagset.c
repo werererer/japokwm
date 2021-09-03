@@ -19,6 +19,7 @@ static void tagset_set_tag(struct tagset *tagset, struct workspace *ws, bool loa
 static void tagset_set_tags(struct tagset *tagset, BitSet *workspaces);
 static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws);
+static void tagset_remove_workspace(struct tagset *tagset, struct workspace *ws);
 
 static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws);
 
@@ -51,7 +52,6 @@ static void tagset_append_list_sets(struct tagset *tagset, struct workspace *ws)
                 added = true;
             } else {
                 for (int k = dest_list->len-1; k >= 0; k--) {
-                    debug_print("k: %i\n", k);
                     struct container *dest_con = g_ptr_array_index(dest_list, k);
                     guint dest_pos;
                     if (!g_ptr_array_find(src_list, dest_con, &dest_pos)) {
@@ -155,7 +155,7 @@ static void tagset_workspace_disconnect(struct tagset *tagset, struct workspace 
         return;
     tagset_unload_workspace(tagset, ws);
     ws->tagset = NULL;
-    if (ws->selected_tagset != tagset && ws->selected_tagset) {
+    if (ws->selected_tagset && ws->selected_tagset != tagset) {
         // move the workspace back
         ws->tagset = ws->selected_tagset;
         tagset_load_workspace(ws->tagset, ws);
@@ -231,16 +231,15 @@ static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
     if (bit)
         return;
 
+    debug_print("tagset: %i load ws: %i\n", tagset->selected_ws_id, ws->id);
+
     bitset_set(tagset->loaded_workspaces, ws->id);
     tagset_subscribe_to_workspace(tagset, ws);
 }
 
 static void tagset_unsubscribe_from_workspace(struct tagset *tagset, struct workspace *ws)
 {
-    ws->tagset = NULL;
-    if (ws->selected_tagset && ws->selected_tagset != tagset) {
-        tagset_load_workspace(ws->selected_tagset, ws);
-    }
+    tagset_remove_workspace(tagset, ws);
 }
 
 static void tagset_remove_workspace(struct tagset *tagset, struct workspace *ws)
@@ -248,20 +247,12 @@ static void tagset_remove_workspace(struct tagset *tagset, struct workspace *ws)
     struct list_set *dest = tagset->list_set;
     struct list_set *src = ws->list_set;
 
-    for (int i = 0; i < src->all_lists->len; i++) {
-        GPtrArray *src_containers = g_ptr_array_index(src->all_lists, i);
-        GPtrArray *dest_list = g_ptr_array_index(dest->all_lists, i);
-        for (int j = 0; j < src_containers->len; j++) {
-            struct container *con = g_ptr_array_index(src_containers, j);
+    for (int i = 0; i < length_of_composed_list(src->container_lists); i++) {
+        struct container *con = get_in_composed_list(src->container_lists, i);
 
-            if (con->client->ws_id != ws->id)
-                continue;
-
-            guint position;
-            bool found = g_ptr_array_find(dest_list, con, &position);
-            if (found) {
-                g_ptr_array_remove_index(dest_list, position);
-            }
+        for (int j = 0; j < dest->all_lists->len; j++) {
+            GPtrArray *dest_list = g_ptr_array_index(dest->all_lists, j);
+            g_ptr_array_remove(dest_list, con);
         }
     }
 }
@@ -276,8 +267,9 @@ static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws)
     if (!bit)
         return;
 
+    debug_print("tagset: %i unload ws: %i\n", tagset->selected_ws_id, ws->id);
+
     bitset_reset(tagset->loaded_workspaces, ws->id);
-    tagset_remove_workspace(tagset, ws);
     tagset_unsubscribe_from_workspace(tagset, ws);
 }
 
@@ -310,7 +302,7 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *work
 
     tagset->workspaces = bitset_create(server.workspaces->len);
     tagset->loaded_workspaces = bitset_create(server.workspaces->len);
-    tagset_set_tags(tagset, workspaces);
+    tagset_assign_workspaces(tagset, workspaces);
 
     g_ptr_array_add(server.tagsets, tagset);
     return tagset;
@@ -322,6 +314,9 @@ void destroy_tagset(struct tagset *tagset)
         return;
     debug_print("destroy tagset: %i\n", tagset->selected_ws_id);
     struct workspace *selected_workspace = get_workspace(tagset->selected_ws_id);
+    if (selected_workspace->tagset == tagset) {
+        selected_workspace->tagset = NULL;
+    }
     if (selected_workspace->selected_tagset == tagset) {
         selected_workspace->selected_tagset = NULL;
     }
@@ -503,7 +498,7 @@ void tagset_toggle_add(struct tagset *tagset, BitSet *bitset)
 void tagset_focus_tags(int ws_id, struct BitSet *bitset)
 {
     struct workspace *ws = get_workspace(ws_id);
-    struct monitor *ws_m = ws->prev_m;
+    struct monitor *ws_m = ws->selected_tagset ? ws->selected_tagset->m : NULL;
     debug_print("ws_m: %p\n", ws_m);
     struct monitor *m = ws_m ? ws_m : selected_monitor;
 

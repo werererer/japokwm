@@ -19,7 +19,12 @@
         \
         do {\
             struct tagset *_tagset = workspace->tagset;\
-            assert(visible_on(_tagset, con) == true);\
+            if (!_tagset) {\
+                _tagset = workspace->selected_tagset;\
+                if (!_tagset)\
+                    continue;\
+            }\
+            assert(exist_on(_tagset, con) == true);\
             list_set = _tagset->list_set;\
             action\
         } while (0);\
@@ -27,6 +32,7 @@
 
 #define DO_ACTION_GLOBALLY(workspaces, action) \
     do {\
+        debug_print("do action globally\n");\
         for (int i = 0; i < server.tagsets->len; i++) {\
             struct tagset *tagset = g_ptr_array_index(server.tagsets, i);\
             tagset->applied_action = false;\
@@ -45,7 +51,7 @@
                     continue;\
                 if (_tagset->applied_action)\
                     continue;\
-                if (!visible_on(_tagset, con))\
+                if (!exist_on(_tagset, con))\
                     continue;\
                 list_set = _tagset->list_set;\
                 _tagset->applied_action = true;\
