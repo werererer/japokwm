@@ -16,6 +16,8 @@ void move_to_scratchpad(struct container *con, int position)
 
     struct monitor *m = container_get_monitor(con);
     struct tagset *tagset = monitor_get_active_tagset(m);
+    // TODO: try to remove this
+    set_container_floating(con, container_fix_position, false);
 
     con->client->ws_id = INVALID_WORKSPACE_ID;
     con->on_scratchpad = true;
@@ -56,7 +58,6 @@ static void hide_container(struct container *con)
         return;
     }
 
-    g_ptr_array_remove(server.scratchpad, con);
     move_to_scratchpad(con, -1);
 }
 
@@ -65,11 +66,11 @@ static void show_container(struct container *con)
     struct monitor *m = selected_monitor;
     struct workspace *ws = monitor_get_active_workspace(m);
 
+    con->hidden = false;
     container_set_workspace_id(con, ws->id);
     set_container_floating(con, container_fix_position, true);
     resize(con, get_center_box(m->geom));
 
-    con->hidden = false;
     focus_container(con);
     lift_container(con);
     arrange();
