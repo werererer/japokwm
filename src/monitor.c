@@ -235,17 +235,8 @@ void focus_monitor(struct monitor *m)
 
     /* wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, m->wlr_output.) */
 
+    // move floating containers over
     struct tagset *tagset = monitor_get_active_tagset(m);
-    if (selected_monitor) {
-        struct tagset *sel_ts = monitor_get_active_tagset(selected_monitor);
-        for (int i = 0; i < sel_ts->list_set->floating_containers->len; i++) {
-            struct container *con = g_ptr_array_index(sel_ts->list_set->floating_containers, i);
-            if (visible_on(sel_ts, con)) {
-                struct workspace *ws = get_workspace(tagset->selected_ws_id);
-                move_container_to_workspace(con, ws);
-            }
-        }
-    }
 
     selected_monitor = m;
     focus_tagset(tagset);

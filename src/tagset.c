@@ -348,21 +348,11 @@ void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tag
     if (!old_tagset)
         return;
 
-    struct workspace *ws = get_workspace(tagset->selected_ws_id);
     int len = length_of_composed_list(old_tagset->list_set->container_lists);
     int pos = len-1;
     for (int i = len-1; i >= 0; i--) {
         struct container *con = get_in_composed_list(old_tagset->list_set->container_lists, pos);
-        bitset_test(con->client->sticky_workspaces, ws->id);
-        if (con->on_scratchpad) {
-            continue;
-        }
-
-        if (workspace_sticky_contains_client(ws, con->client)) {
-            con->client->ws_id = ws->id;
-        } else if (bitset_none(con->client->sticky_workspaces)) {
-            move_to_scratchpad(con, 0);
-        }
+        container_move_sticky_containers(con);
         pos--;
     }
 }
