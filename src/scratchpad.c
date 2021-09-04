@@ -66,7 +66,6 @@ static void show_container(struct container *con)
     struct workspace *ws = monitor_get_active_workspace(m);
 
     container_set_workspace_id(con, ws->id);
-
     set_container_floating(con, container_fix_position, true);
     resize(con, get_center_box(m->geom));
 
@@ -82,9 +81,22 @@ void show_scratchpad()
         return;
 
     struct container *con = g_ptr_array_index(server.scratchpad, 0);
-    if (con->hidden) {
-        show_container(con);
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = monitor_get_active_workspace(m);
+    bool visible_on_other_workspace = !con->hidden && ws->id != con->client->ws_id;
+    if (visible_on_other_workspace) {
+        container_set_workspace_id(con, ws->id);
+        set_container_floating(con, container_fix_position, true);
+        resize(con, get_center_box(m->geom));
+
+        focus_container(con);
+        lift_container(con);
+        container_damage_whole(con);
     } else {
-        hide_container(con);
+        if (con->hidden) {
+            show_container(con);
+        } else {
+            hide_container(con);
+        }
     }
 }

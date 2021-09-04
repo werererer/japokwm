@@ -294,6 +294,7 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *work
     struct tagset *tagset = calloc(1, sizeof(struct tagset));
     tagset->m = m;
 
+    debug_print("create_tagset: %i\n", selected_ws_id);
     tagset->selected_ws_id = selected_ws_id;
 
     tagset->list_set = create_list_set();
@@ -354,13 +355,13 @@ void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tag
         struct container *con = get_in_composed_list(old_tagset->list_set->container_lists, pos);
         bitset_test(con->client->sticky_workspaces, ws->id);
         if (con->on_scratchpad) {
+            continue;
+        }
+
+        if (workspace_sticky_contains_client(ws, con->client)) {
             con->client->ws_id = ws->id;
-        } else {
-            if (workspace_sticky_contains_client(ws, con->client)) {
-                con->client->ws_id = ws->id;
-            } else if (bitset_none(con->client->sticky_workspaces)) {
-                move_to_scratchpad(con, 0);
-            }
+        } else if (bitset_none(con->client->sticky_workspaces)) {
+            move_to_scratchpad(con, 0);
         }
         pos--;
     }
@@ -369,6 +370,8 @@ void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tag
 static void restore_floating_containers(struct tagset *tagset)
 {
     GPtrArray *floating_list = tagset_get_floating_list(tagset);
+    if (!floating_list)
+        return;
     for (int i = 0; i < floating_list->len; i++) {
         struct container *con = g_ptr_array_index(floating_list, i);
         struct wlr_box *con_geom = container_get_geom(con);
@@ -390,7 +393,7 @@ void focus_tagset(struct tagset *tagset)
     tagset_move_sticky_containers(old_tagset, tagset);
     tagset_workspaces_disconnect(old_tagset);
     tagset_workspaces_connect(tagset);
-    if (prev_m == m) {
+    if (prev_m == m && old_tagset != tagset) {
         destroy_tagset(old_tagset);
     }
     m->tagset = tagset;
@@ -449,6 +452,8 @@ static void tagset_append_to_sel_workspace(struct tagset *tagset)
 struct layout *tagset_get_layout(struct tagset *tagset)
 {
     struct workspace *ws = get_workspace(tagset->selected_ws_id);
+    if (!ws)
+        return NULL;
     return ws->layout;
 }
 
@@ -568,6 +573,9 @@ GPtrArray *tagset_get_tiled_list(struct tagset *tagset)
 GPtrArray *tagset_get_floating_list(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);
+
+    if (!lt)
+        return NULL;
 
     if (lt->options.arrange_by_focus)
         return tagset->list_set->focus_stack_normal;

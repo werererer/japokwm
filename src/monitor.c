@@ -77,7 +77,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     m->root = create_root(m, m->geom);
 
     if (is_first_monitor) {
-
         focus_monitor(m);
 
         if (server.default_layout->options.tag_names->len <= 0) {

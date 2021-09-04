@@ -301,7 +301,8 @@ integers
 	make container sticky ++
 <where> ++
 	i: integer - position of the container
-	sticky: boolean - whether container is sticky
+	sticky: integer - should represent the binary number for the workspaces to
+	set it sticky to. If it is 0 the container will be moved to the scratchpad
 
 # EVENT
 *add_listener(event_name, func)* ++

@@ -27,7 +27,6 @@
 
 #define DO_ACTION_GLOBALLY(workspaces, action) \
     do {\
-        debug_print("do action globally\n");\
         for (int i = 0; i < server.tagsets->len; i++) {\
             struct tagset *tagset = g_ptr_array_index(server.tagsets, i);\
             tagset->applied_action = false;\

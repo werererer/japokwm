@@ -249,7 +249,6 @@ void handle_cursor_frame(struct wl_listener *listener, void *data)
 
 static bool handle_move_resize(struct cursor *cursor)
 {
-    debug_print("handle_move_resize\n");
     enum cursor_mode cursor_mode = cursor->cursor_mode;
     struct wlr_cursor *wlr_cursor = cursor->wlr_cursor;
     switch (cursor_mode) {
@@ -303,6 +302,7 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
     int cursorx = cursor->wlr_cursor->x;
     int cursory = cursor->wlr_cursor->y;
 
+    debug_print("mon: %p\n", xy_to_monitor(cursorx, cursory));
     focus_monitor(xy_to_monitor(cursorx, cursory));
 
     /* If handled successfully return */
