@@ -302,20 +302,17 @@ void apply_bounds(struct container *con, struct wlr_box box)
 {
     /* set minimum possible */
     struct wlr_box *con_geom = container_get_geom(con);
-    struct wlr_box geom = *con_geom;
-    geom.width = MAX(MIN_CONTAINER_WIDTH, geom.width);
-    geom.height = MAX(MIN_CONTAINER_HEIGHT, geom.height);
+    con_geom->width = MAX(MIN_CONTAINER_WIDTH, con_geom->width);
+    con_geom->height = MAX(MIN_CONTAINER_HEIGHT, con_geom->height);
 
-    if (geom.x >= box.x + box.width)
-        geom.x = box.x + box.width - geom.width;
-    if (geom.y >= box.y + box.height)
-        geom.y = box.y + box.height - geom.height;
-    if (geom.x + geom.width + 2 * con->client->bw <= box.x)
-        geom.x = box.x;
-    if (geom.y + geom.height + 2 * con->client->bw <= box.y)
-        geom.y = box.y;
-
-    container_set_geom(con, &geom);
+    if (con_geom->x >= box.x + box.width)
+        con_geom->x = box.x + box.width - con_geom->width;
+    if (con_geom->y >= box.y + box.height)
+        con_geom->y = box.y + box.height - con_geom->height;
+    if (con_geom->x + con_geom->width + 2 * con->client->bw <= box.x)
+        con_geom->x = box.x;
+    if (con_geom->y + con_geom->height + 2 * con->client->bw <= box.y)
+        con_geom->y = box.y;
 }
 
 void commit_notify(struct wl_listener *listener, void *data)
@@ -535,7 +532,7 @@ void set_container_floating(struct container *con, void (*fix_position)(struct c
         fix_position(con);
 
     if (!container_is_floating(con)) {
-        set_container_workspace(con, ws);
+        container_set_workspace(con, ws);
 
         if (con->on_scratchpad) {
             remove_container_from_scratchpad(con);
@@ -572,7 +569,7 @@ void set_container_monitor(struct container *con, struct monitor *m)
     }
 
     struct workspace *ws = monitor_get_active_workspace(m);
-    set_container_workspace(con, ws);
+    container_set_workspace(con, ws);
 }
 
 static void swap_booleans(bool *b1, bool *b2)
@@ -591,6 +588,7 @@ static void swap_integers(int *i1, int *i2)
 
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety)
 {
+    debug_print("move container\n");
     struct wlr_box *con_geom = container_get_geom(con);
     struct wlr_box geom = *con_geom;
     geom.x = cursor->x - offsetx;
@@ -601,6 +599,7 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
     }
     resize(con, geom);
     container_damage(con, true);
+    debug_print("move end\n");
 }
 
 void container_set_geom(struct container *con, struct wlr_box *geom)
@@ -621,7 +620,14 @@ void container_set_geom(struct container *con, struct wlr_box *geom)
     struct layout *lt = get_layout_in_monitor(m);
 
     if (container_is_floating(con) && !lt->options.arrange_by_focus) {
-        debug_print("set previous\n");
+        debug_print("prev: x: %i\n", con_geom->x);
+        debug_print("prev: y: %i\n", con_geom->y);
+        debug_print("prev: width: %i\n", con_geom->width);
+        debug_print("prev: height: %i\n", con_geom->height);
+        debug_print("current: x: %i\n", geom->x);
+        debug_print("current: y: %i\n", geom->y);
+        debug_print("current: width: %i\n", geom->width);
+        debug_print("current: height: %i\n", geom->height);
         con->prev_floating_geom = *con_geom;
     }
 
@@ -722,7 +728,7 @@ static void container_set_workspace_id(struct container *con, int ws_id)
     bitset_set(con->client->sticky_workspaces, con->client->ws_id);
 }
 
-void set_container_workspace(struct container *con, struct workspace *ws)
+void container_set_workspace(struct container *con, struct workspace *ws)
 {
     if (!con)
         return;
@@ -754,7 +760,7 @@ void move_container_to_workspace(struct container *con, struct workspace *ws)
     if (con->client->type == LAYER_SHELL)
         return;
 
-    set_container_workspace(con, ws);
+    container_set_workspace(con, ws);
     con->client->moved_workspace = true;
     container_damage_whole(con);
 

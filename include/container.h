@@ -73,7 +73,7 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
 void container_set_geom(struct container *con, struct wlr_box *geom);
 struct wlr_box *container_get_geom(struct container *con);
 
-void set_container_workspace(struct container *con, struct workspace *ws);
+void container_set_workspace(struct container *con, struct workspace *ws);
 void move_container_to_workspace(struct container *con, struct workspace *ws);
 
 struct monitor *container_get_monitor(struct container *con);
