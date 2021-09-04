@@ -19,7 +19,6 @@ void move_to_scratchpad(struct container *con, int position)
 
     con->client->ws_id = INVALID_WORKSPACE_ID;
     con->on_scratchpad = true;
-    set_container_floating(con, container_fix_position, true);
 
     if (server.scratchpad->len== 0) {
         g_ptr_array_add(server.scratchpad, con);
@@ -42,7 +41,7 @@ void move_to_scratchpad(struct container *con, int position)
 
 void remove_container_from_scratchpad(struct container *con)
 {
-    list_remove(server.scratchpad, cmp_ptr, con);
+    g_ptr_array_remove(server.scratchpad, con);
     con->on_scratchpad = false;
 }
 
@@ -57,21 +56,18 @@ static void hide_container(struct container *con)
         return;
     }
 
-    con->client->ws_id = INVALID_WORKSPACE_ID;
-
-    list_remove(server.scratchpad, cmp_ptr, con);
+    g_ptr_array_remove(server.scratchpad, con);
     move_to_scratchpad(con, -1);
-    con->hidden = true;
-    arrange();
 }
 
 static void show_container(struct container *con)
 {
     struct monitor *m = selected_monitor;
-
     struct workspace *ws = monitor_get_active_workspace(m);
-    con->client->ws_id = ws->id;
 
+    container_set_workspace_id(con, ws->id);
+
+    set_container_floating(con, container_fix_position, true);
     resize(con, get_center_box(m->geom));
 
     con->hidden = false;

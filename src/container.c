@@ -21,7 +21,6 @@
 #include "rules/rule.h"
 
 static void add_container_to_workspace(struct container *con, struct workspace *ws);
-static void container_set_workspace_id(struct container *con, int ws_id);
 
 struct container *create_container(struct client *c, struct monitor *m, bool has_border)
 {
@@ -139,7 +138,12 @@ static void container_damage(struct container *con, bool whole)
 {
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
-        damage_container_area(con, container_get_geom(con), m, whole);
+        struct wlr_box *con_geom = container_get_geom(con);
+
+        if (!con_geom)
+            continue;
+
+        damage_container_area(con, con_geom, m, whole);
     }
 
     struct client *c = con->client;
@@ -296,7 +300,6 @@ struct wlr_fbox lua_togeometry(lua_State *L)
     lua_pop(L, 1);
     return geom;
 }
-
 
 void apply_bounds(struct container *con, struct wlr_box box)
 {
@@ -637,14 +640,11 @@ void container_set_geom(struct container *con, struct wlr_box *geom)
 
 struct wlr_box *container_get_geom(struct container *con)
 {
-    struct monitor *m = container_get_monitor(con);
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    int ws_id = tagset->selected_ws_id;
-
-    if (ws_id < 0)
+    struct workspace *ws = container_get_workspace(con);
+    if (!ws)
         return NULL;
 
-    struct wlr_box *con_geom = g_ptr_array_index(con->geometries, ws_id);
+    struct wlr_box *con_geom = g_ptr_array_index(con->geometries, ws->id);
     return con_geom;
 }
 
@@ -721,7 +721,7 @@ bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *re
     return is_width_not_in_limit || is_height_not_in_limit;
 }
 
-static void container_set_workspace_id(struct container *con, int ws_id)
+void container_set_workspace_id(struct container *con, int ws_id)
 {
     con->client->ws_id = ws_id;
     bitset_reset_all(con->client->sticky_workspaces);
@@ -800,6 +800,10 @@ struct workspace *container_get_workspace(struct container *con)
 
 bool container_is_floating(struct container *con)
 {
+    if (!con)
+        return false;
     struct workspace *ws = container_get_workspace(con);
+    if (!ws)
+        return false;
     return bitset_test(con->floating_states, ws->id);
 }
