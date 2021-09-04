@@ -174,27 +174,15 @@ void destroy_monitor(struct wl_listener *listener, void *data)
     wl_list_remove(&m->damage_frame.link);
     wl_list_remove(&m->destroy.link);
 
+    destroy_tagset(m->tagset);
     destroy_root(m->root);
     g_ptr_array_remove(server.mons, m);
     m->wlr_output->data = NULL;
 
-    /* if (server.previous_tagset) { */
-    /*     if (server.previous_tagset->m == m) { */
-    /*         tagset_release(server.previous_tagset); */
-    /*         server.previous_tagset = NULL; */
-    /*     } */
-    /* } */
-
-    int len = length_of_composed_list(server.client_lists);
-    int j = 0;
-    while (j < len) {
-        struct client *c = get_in_composed_list(server.client_lists, j);
-        if (c->m == m) {
-            kill_client(c);
-            g_ptr_array_remove_index(server.client_lists, j);
-            len--;
-        } else {
-            j++;
+    for (int i = 0; i < server.workspaces->len; i++) {
+        struct workspace *ws = g_ptr_array_index(server.workspaces, i);
+        if (ws->prev_m == m) {
+            ws->prev_m = NULL;
         }
     }
 
@@ -204,7 +192,7 @@ void destroy_monitor(struct wl_listener *listener, void *data)
         return;
 
     struct monitor *new_focused_monitor = g_ptr_array_index(server.mons, 0);
-    focus_monitor(new_focused_monitor);
+    selected_monitor = new_focused_monitor;
 }
 
 void center_cursor_in_monitor(struct cursor *cursor, struct monitor *m)

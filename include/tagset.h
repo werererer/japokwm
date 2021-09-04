@@ -56,6 +56,7 @@ struct tagset {
  * afterwards also adds a ref counter of 1 therefore use focus_tagset_no_ref
  * instead.  */
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *workspaces);
+void destroy_tagset(struct tagset *tagset);
 
 void focus_most_recent_container(struct tagset *tagset);
 void focus_tagset(struct tagset *tagset);
