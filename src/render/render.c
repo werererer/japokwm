@@ -256,8 +256,8 @@ static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *bo
 
 static void render_borders(struct container *con, struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct monitor *container_monitor = container_get_monitor(con);
-    struct container *sel = get_focused_container(container_monitor);
+    // TODO: refactor here
+    struct container *sel = get_focused_container(selected_monitor);
 
     if (con->has_border) {
         double ox, oy;
@@ -307,6 +307,7 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
         if (!visible_on(monitor_get_active_tagset(m), con))
             continue;
 
+        debug_print("render con: %p with m: %p\n", con, m);
         render_borders(con, m, output_damage);
 
         /* This calls our render function for each surface among the

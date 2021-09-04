@@ -95,14 +95,12 @@ void remove_container_from_tile(struct container *con)
     con->is_tiled = false;
 }
 
-void container_damage_borders(struct container *con, struct wlr_box *geom)
+void container_damage_borders(struct container *con, struct monitor *m, struct wlr_box *geom)
 {
     if (!con)
         return;
     if (!geom)
         return;
-
-    struct monitor *m = container_get_monitor(con);
 
     if (!m)
         return;
@@ -128,31 +126,30 @@ void container_damage_borders(struct container *con, struct wlr_box *geom)
     }
 }
 
-static void damage_container_area(struct container *con, struct wlr_box *geom, 
-        struct monitor *m, bool whole)
+static void damage_container_area(struct container *con, struct wlr_box *geom,
+        bool whole)
 {
-    output_damage_surface(m, get_wlrsurface(con->client), geom, whole);
-    container_damage_borders(con, geom);
+    for (int i = 0; i < server.mons->len; i++) {
+        struct monitor *m = g_ptr_array_index(server.mons, i);
+        output_damage_surface(m, get_wlrsurface(con->client), geom, whole);
+        container_damage_borders(con, m, geom);
+    }
 }
 
 static void container_damage(struct container *con, bool whole)
 {
     for (int i = 0; i < server.mons->len; i++) {
-        struct monitor *m = g_ptr_array_index(server.mons, i);
         struct wlr_box *con_geom = container_get_geom(con);
 
         if (!con_geom)
             continue;
 
-        damage_container_area(con, con_geom, m, whole);
+        damage_container_area(con, con_geom, whole);
     }
 
     struct client *c = con->client;
     if (c->resized || c->moved_workspace) {
-        for (int i = 0; i < server.mons->len; i++) {
-            struct monitor *m = g_ptr_array_index(server.mons, i);
-            damage_container_area(con, &con->prev_geom, m, whole);
-        }
+        damage_container_area(con, &con->prev_geom, whole);
         c->resized = false;
         c->moved_workspace = false;
     }
@@ -361,9 +358,6 @@ void focus_container(struct container *con)
 
     ipc_event_window();
 
-    container_damage_borders(sel, container_get_geom(sel));
-    container_damage_borders(new_sel, container_get_geom(new_sel));
-
     struct layout *lt = tagset_get_layout(tagset);
     call_on_focus_function(lt->options.event_handler,
             get_position_in_container_stack(con));
@@ -382,7 +376,9 @@ void focus_on_stack(struct monitor *m, int i)
         return;
 
     struct tagset *tagset = monitor_get_active_tagset(m);
-    GPtrArray *visible_container_lists = tagset_get_visible_lists(tagset);
+    GPtrArray *visible_container_lists = tagset_get_global_floating_lists(tagset);
+    debug_print("len: %i\n", length_of_composed_list(visible_container_lists));
+    debug_print("len of server ws: %i\n", server.floating_containers->len);
 
     if (sel->client->type == LAYER_SHELL) {
         struct container *con = get_container(tagset, 0);

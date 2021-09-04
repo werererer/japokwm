@@ -53,7 +53,7 @@ struct wlr_fbox lua_togeometry(lua_State *L);
 
 void apply_bounds(struct container *con, struct wlr_box bbox);
 void commit_notify(struct wl_listener *listener, void *data);
-void container_damage_borders(struct container *con, struct wlr_box *geom);
+void container_damage_borders(struct container *con, struct monitor *m, struct wlr_box *geom);
 void container_damage_part(struct container *con);
 void container_damage_whole(struct container *con);
 void container_fix_position(struct container *con);

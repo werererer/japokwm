@@ -540,6 +540,17 @@ static bool container_intersects_with_monitor(struct container *con, struct moni
     return wlr_box_intersection(&tmp_geom, container_get_geom(con), &m->geom);
 }
 
+GPtrArray *tagset_get_global_floating_lists(struct tagset *tagset)
+{
+    struct layout *lt = tagset_get_layout(tagset);
+
+    if (lt->options.arrange_by_focus) {
+        return tagset->list_set->focus_stack_visible_lists;
+    } else {
+        return tagset->list_set->global_floating_container_lists;
+    }
+}
+
 GPtrArray *tagset_get_visible_lists(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);

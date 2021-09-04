@@ -13,6 +13,7 @@ struct list_set *create_list_set()
 
     list_set->container_lists = g_ptr_array_new();
     list_set->visible_container_lists = g_ptr_array_new();
+    list_set->global_floating_container_lists = g_ptr_array_new();
 
     list_set->independent_containers = g_ptr_array_new();
     list_set->tiled_containers = g_ptr_array_new();
@@ -25,6 +26,9 @@ struct list_set *create_list_set()
 
     g_ptr_array_add(list_set->visible_container_lists, list_set->tiled_containers);
     g_ptr_array_add(list_set->visible_container_lists, list_set->floating_containers);
+
+    g_ptr_array_add(list_set->global_floating_container_lists, list_set->tiled_containers);
+    g_ptr_array_add(list_set->global_floating_container_lists, server.floating_containers);
 
     list_set->focus_stack_lists = g_ptr_array_new();
     list_set->focus_stack_visible_lists = g_ptr_array_new();

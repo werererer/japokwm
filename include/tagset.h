@@ -68,6 +68,8 @@ void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tag
 
 struct container *get_container(struct tagset *tagset, int i);
 
+// get with server floating containers instead
+GPtrArray *tagset_get_global_floating_lists(struct tagset *tagset);
 GPtrArray *tagset_get_visible_lists(struct tagset *tagset);
 GPtrArray *tagset_get_tiled_list(struct tagset *tagset);
 GPtrArray *tagset_get_floating_list(struct tagset *tagset);

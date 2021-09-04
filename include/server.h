@@ -42,7 +42,6 @@ struct server {
     struct wlr_output_layout *output_layout;
     GPtrArray *keyboards;
 
-
     GPtrArray *workspaces;
 
     GPtrArray *scratchpad;
@@ -78,6 +77,8 @@ struct server {
     GPtrArray *layer_visual_stack_bottom;
     GPtrArray *layer_visual_stack_top;
     GPtrArray *layer_visual_stack_overlay;
+
+    GPtrArray *floating_containers;
 
     /* global event handlers */
     struct wl_listener new_output;

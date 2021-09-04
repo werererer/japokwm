@@ -450,6 +450,7 @@ void workspace_add_container_to_focus_stack_locally(struct workspace *ws, struct
 
 void workspace_remove_container_from_floating_stack_locally(struct workspace *ws, struct container *con)
 {
+    g_ptr_array_remove(server.floating_containers, con);
     DO_ACTION_LOCALLY(ws, 
             g_ptr_array_remove(list_set->floating_containers, con);
             );
@@ -457,6 +458,7 @@ void workspace_remove_container_from_floating_stack_locally(struct workspace *ws
 
 void workspace_add_container_to_floating_stack_locally(struct workspace *ws, struct container *con, int i)
 {
+    g_ptr_array_add(server.floating_containers, con);
     DO_ACTION_LOCALLY(ws, 
             g_ptr_array_insert(list_set->floating_containers, i, con);
             );
