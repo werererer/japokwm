@@ -8,17 +8,19 @@
 #include "client.h"
 #include "options.h"
 #include "monitor.h"
+#include "bitset/bitset.h"
 
 struct container {
     /* layout-relative, includes border */
-    struct wlr_box geom;
+    // geometry on each layout
+    GPtrArray *geometries;
+    BitSet *floating_states;
     struct wlr_box prev_geom;
     struct wlr_box prev_floating_geom;
     struct client *client;
 
     bool is_xwayland_popup;
     bool is_tiled;
-    bool floating;
     bool focusable;
     bool has_border;
     bool hidden;
@@ -68,17 +70,23 @@ void set_container_monitor(struct container *con, struct monitor *m);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
 
+void container_set_geom(struct container *con, struct wlr_box *geom);
+struct wlr_box *container_get_geom(struct container *con);
+
 void set_container_workspace(struct container *con, struct workspace *ws);
 void move_container_to_workspace(struct container *con, struct workspace *ws);
 
 struct monitor *container_get_monitor(struct container *con);
 
-int absolute_x_to_container_relative(struct wlr_box geom, int x);
-int absolute_y_to_container_relative(struct wlr_box geom, int y);
+int absolute_x_to_container_relative(struct wlr_box *geom, int x);
+int absolute_y_to_container_relative(struct wlr_box *geom, int y);
 int get_position_in_container_stack(struct container *con);
 
 struct container *get_container_from_container_stack_position(int i);
 
 bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *resize_constraints);
 bool container_is_bar(struct container *con);
+
+struct workspace *container_get_workspace(struct container *con);
+bool container_is_floating(struct container *con);
 #endif /* CONTAINER_H */

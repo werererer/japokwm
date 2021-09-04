@@ -17,6 +17,7 @@ void move_to_scratchpad(struct container *con, int position)
     struct monitor *m = container_get_monitor(con);
     struct tagset *tagset = monitor_get_active_tagset(m);
 
+    con->client->ws_id = INVALID_WORKSPACE_ID;
     con->on_scratchpad = true;
     set_container_floating(con, container_fix_position, true);
 
@@ -28,9 +29,10 @@ void move_to_scratchpad(struct container *con, int position)
         g_ptr_array_insert(server.scratchpad, new_position, con);
     }
 
-    remove_in_composed_list(tagset->list_set->container_lists, cmp_ptr, con);
-    list_remove(tagset->list_set->focus_stack_normal, cmp_ptr, con);
-    remove_in_composed_list(server.visual_stack_lists, cmp_ptr, con);
+    /* remove_in_composed_list(tagset->list_set->container_lists, cmp_ptr, con); */
+    /* list_remove(tagset->list_set->focus_stack_normal, cmp_ptr, con); */
+    /* remove_in_composed_list(server.visual_stack_lists, cmp_ptr, con); */
+    tagset_reload(tagset);
 
     container_damage_whole(con);
     focus_most_recent_container(tagset);
@@ -46,7 +48,7 @@ void remove_container_from_scratchpad(struct container *con)
 
 static void hide_container(struct container *con)
 {
-    struct monitor *m = container_get_monitor(con);
+    struct monitor *m = selected_monitor;
     struct container *sel = get_focused_container(m);
 
     if (!sel->on_scratchpad) {
@@ -55,9 +57,7 @@ static void hide_container(struct container *con)
         return;
     }
 
-    struct workspace *ws = get_workspace(con->client->ws_id);
-    workspace_remove_container(ws, con);
-    workspace_remove_container_from_focus_stack(ws, con);
+    con->client->ws_id = INVALID_WORKSPACE_ID;
 
     list_remove(server.scratchpad, cmp_ptr, con);
     move_to_scratchpad(con, -1);
@@ -67,11 +67,10 @@ static void hide_container(struct container *con)
 
 static void show_container(struct container *con)
 {
-    struct monitor *m = container_get_monitor(con);
+    struct monitor *m = selected_monitor;
 
     struct workspace *ws = monitor_get_active_workspace(m);
-    workspace_add_container_to_containers(ws, con, 0);
-    workspace_add_container_to_focus_stack(ws, con);
+    con->client->ws_id = ws->id;
 
     resize(con, get_center_box(m->geom));
 

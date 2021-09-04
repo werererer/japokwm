@@ -124,6 +124,8 @@ void workspace_remove_container_from_containers_locally(struct workspace *ws, st
 void workspace_add_container_to_containers_locally(struct workspace *ws, struct container *con, int i);
 void workspace_remove_container_from_focus_stack_locally(struct workspace *ws, struct container *con);
 void workspace_add_container_to_focus_stack_locally(struct workspace *ws, struct container *con);
+void workspace_remove_container_from_floating_stack_locally(struct workspace *ws, struct container *con);
+void workspace_add_container_to_floating_stack_locally(struct workspace *ws, struct container *con, int i);
 
 void workspace_remove_container(struct workspace *ws, struct container *con);
 void workspace_remove_container_from_focus_stack(struct workspace *ws, struct container *con);

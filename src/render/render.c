@@ -226,27 +226,28 @@ static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *bo
     struct monitor *m = container_get_monitor(con);
 
     enum wlr_edges containers_hidden_edges = WLR_EDGE_NONE;
+    struct wlr_box *con_geom = container_get_geom(con);
     // hide edges if needed
     if (hidden_edges & WLR_EDGE_LEFT) {
-        if (con->geom.x == m->root->geom.x) {
+        if (con_geom->x == m->root->geom.x) {
             containers_hidden_edges |= WLR_EDGE_LEFT;
             container_add_gaps(&borders[0], con->client->bw, WLR_EDGE_LEFT);
             container_add_gaps(&borders[1], con->client->bw, WLR_EDGE_LEFT);
         }
     }
     if (hidden_edges & WLR_EDGE_RIGHT) {
-        if (is_approx_equal(con->geom.x + con->geom.width, m->root->geom.x + m->root->geom.width, 3)) {
+        if (is_approx_equal(con_geom->x + con_geom->width, m->root->geom.x + m->root->geom.width, 3)) {
             containers_hidden_edges |= WLR_EDGE_RIGHT;
             container_add_gaps(&borders[0], con->client->bw, WLR_EDGE_RIGHT);
             container_add_gaps(&borders[1], con->client->bw, WLR_EDGE_RIGHT);
         }
     }
     if (hidden_edges & WLR_EDGE_TOP) {
-        if (con->geom.y == m->root->geom.y)
+        if (con_geom->y == m->root->geom.y)
             containers_hidden_edges |= WLR_EDGE_TOP;
     }
     if (hidden_edges & WLR_EDGE_BOTTOM) {
-        if (is_approx_equal(con->geom.y + con->geom.height, m->root->geom.y + m->root->geom.height, 3))
+        if (is_approx_equal(con_geom->y + con_geom->height, m->root->geom.y + m->root->geom.height, 3))
             containers_hidden_edges |= WLR_EDGE_BOTTOM;
     }
 
@@ -261,11 +262,12 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
     if (con->has_border) {
         double ox, oy;
         int w, h;
-        ox = con->geom.x - con->client->bw;
-        oy = con->geom.y - con->client->bw;
+        struct wlr_box *con_geom = container_get_geom(con);
+        ox = con_geom->x - con->client->bw;
+        oy = con_geom->y - con->client->bw;
         wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
-        w = con->geom.width;
-        h = con->geom.height;
+        w = con_geom->width;
+        h = con_geom->height;
 
         struct wlr_box *borders = (struct wlr_box[4]) {
             {ox, oy, w + 2 * con->client->bw, con->client->bw},             /* top */
@@ -311,7 +313,8 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
          * xdg_surface's toplevel and popups. */
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
-        render_surface_iterator(m, surface, con->geom, output_damage, con->alpha);
+        struct wlr_box *con_geom = container_get_geom(con);
+        render_surface_iterator(m, surface, *con_geom, output_damage, con->alpha);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -331,7 +334,8 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
             continue;
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
-        render_surface_iterator(m, surface, con->geom, output_damage, 1.0);
+        struct wlr_box *con_geom = container_get_geom(con);
+        render_surface_iterator(m, surface, *con_geom, output_damage, 1.0);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -346,9 +350,10 @@ static void render_independents(struct monitor *m, pixman_region32_t *output_dam
         struct container *con = g_ptr_array_index(tagset->list_set->independent_containers, i);
         struct wlr_surface *surface = get_wlrsurface(con->client);
 
-        con->geom.width = surface->current.width;
-        con->geom.height = surface->current.height;
-        render_surface_iterator(m, surface, con->geom, output_damage, 1.0f);
+        struct wlr_box *con_geom = container_get_geom(con);
+        con_geom->width = surface->current.width;
+        con_geom->height = surface->current.height;
+        render_surface_iterator(m, surface, *con_geom, output_damage, 1.0f);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);

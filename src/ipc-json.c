@@ -213,7 +213,7 @@ json_object *ipc_json_describe_container(struct container *con)
 {
     json_object *object = ipc_json_create_node(
             5, con ? con->client->title : NULL, true, NULL,
-            con ? &con->geom : NULL);
+            con ? container_get_geom(con) : NULL);
 
     json_object_object_add(object, "type", json_object_new_string("con"));
 

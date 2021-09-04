@@ -279,22 +279,10 @@ static void arrange_container(struct container *con, int arrange_position,
     // since gaps are halfed we need to multiply it by 2
     container_surround_gaps(&geom, 2*con->client->bw);
 
-    if (con->floating)
+    if (container_is_floating(con))
         con->geom_was_changed = true;
 
     resize(con, geom);
-}
-
-static void set_container_geom(struct container *con, struct wlr_box geom)
-{
-    struct monitor *m = container_get_monitor(con);
-    struct layout *lt = get_layout_in_monitor(m);
-
-    if (con->floating && !lt->options.arrange_by_focus)
-        con->prev_floating_geom = geom;
-
-    con->prev_geom = con->geom;
-    con->geom = geom;
 }
 
 void resize(struct container *con, struct wlr_box geom)
@@ -305,24 +293,25 @@ void resize(struct container *con, struct wlr_box geom)
      * the new size, then commit any movement that was prepared.
      */
 
-    set_container_geom(con, geom);
+    container_set_geom(con, &geom);
     con->client->resized = true;
 
     bool preserve_ratio = con->ratio != 0;
 
+    struct wlr_box *con_geom = container_get_geom(con);
     if (preserve_ratio) {
         /* calculated biggest container where con->geom.width and
          * con->geom.height = con->geom.width * con->ratio is inside geom.width
          * and geom.height
          * */
         float max_height = geom.height/con->ratio;
-        con->geom.width = MIN(geom.width, max_height);
-        con->geom.height = con->geom.width * con->ratio;
+        con_geom->width = MIN(geom.width, max_height);
+        con_geom->height = con_geom->width * con->ratio;
         // TODO make a function out of that 
         // center in x direction
-        con->geom.x += (geom.width - con->geom.width)/2;
+        con_geom->x += (geom.width - con_geom->width)/2;
         // center in y direction
-        con->geom.y += (geom.height - con->geom.height)/2;
+        con_geom->y += (geom.height - con_geom->height)/2;
     }
 
     apply_bounds(con, *wlr_output_layout_get_box(server.output_layout, NULL));
@@ -332,7 +321,7 @@ void resize(struct container *con, struct wlr_box geom)
         case XDG_SHELL:
             if (con->client->surface.xdg->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
                 wlr_xdg_toplevel_set_size(con->client->surface.xdg,
-                        con->geom.width, con->geom.height);
+                        con_geom->width, con_geom->height);
             }
             break;
         case LAYER_SHELL:
@@ -352,8 +341,8 @@ void resize(struct container *con, struct wlr_box geom)
         case X11_UNMANAGED:
         case X11_MANAGED:
             wlr_xwayland_surface_configure(con->client->surface.xwayland,
-                    con->geom.x, con->geom.y, con->geom.width,
-                    con->geom.height);
+                    con_geom->x, con_geom->y, con_geom->width,
+                    con_geom->height);
     }
 }
 

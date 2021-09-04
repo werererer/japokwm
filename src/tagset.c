@@ -358,12 +358,26 @@ static void tagset_move_sticky_containers(struct tagset *old_tagset, struct tags
     for (int i = len-1; i >= 0; i--) {
         struct container *con = get_in_composed_list(old_tagset->list_set->container_lists, pos);
         bitset_test(con->client->sticky_workspaces, ws->id);
-        if (workspace_contains_client(ws, con->client)) {
+        if (con->on_scratchpad) {
             con->client->ws_id = ws->id;
-        } else if (bitset_none(con->client->sticky_workspaces)) {
-            move_to_scratchpad(con, 0);
+        } else {
+            if (workspace_contains_client(ws, con->client)) {
+                con->client->ws_id = ws->id;
+            } else if (bitset_none(con->client->sticky_workspaces)) {
+                move_to_scratchpad(con, 0);
+            }
         }
         pos--;
+    }
+}
+
+static void restore_floating_containers(struct tagset *tagset)
+{
+    GPtrArray *floating_list = tagset_get_floating_list(tagset);
+    for (int i = 0; i < floating_list->len; i++) {
+        struct container *con = g_ptr_array_index(floating_list, i);
+        struct wlr_box *con_geom = container_get_geom(con);
+        resize(con, *con_geom);
     }
 }
 
@@ -385,6 +399,7 @@ void focus_tagset(struct tagset *tagset)
         destroy_tagset(old_tagset);
     }
     m->tagset = tagset;
+    restore_floating_containers(tagset);
     ipc_event_workspace();
 
     arrange();
@@ -532,7 +547,7 @@ static bool container_intersects_with_monitor(struct container *con, struct moni
         return false;
 
     struct wlr_box tmp_geom;
-    return wlr_box_intersection(&tmp_geom, &con->geom, &m->geom);
+    return wlr_box_intersection(&tmp_geom, container_get_geom(con), &m->geom);
 }
 
 GPtrArray *tagset_get_visible_lists(struct tagset *tagset)
@@ -626,8 +641,11 @@ bool exist_on(struct tagset *tagset, struct container *con)
     if (!con || !tagset)
         return false;
     struct monitor *m = container_get_monitor(con);
+    if (!m) {
+        return false;
+    }
     if (m != tagset->m) {
-        if (con->floating)
+        if (container_is_floating(con))
             return container_intersects_with_monitor(con, tagset->m)
                 && tagset_contains_client(m->tagset, con->client);
         else

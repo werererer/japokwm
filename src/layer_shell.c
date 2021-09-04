@@ -269,7 +269,8 @@ void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_ar
             wlr_layer_surface_v1_close(wlr_layer_surface);
             continue;
         }
-        con->geom = box;
+        // TODO: is that correct?
+        container_set_geom(con, &box);
 
         if (state->exclusive_zone > 0)
             apply_exclusive(usable_area, state->anchor, state->exclusive_zone,

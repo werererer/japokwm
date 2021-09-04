@@ -347,7 +347,7 @@ void rename_workspace(struct workspace *ws, const char *name)
 
 void list_set_add_container_to_containers(struct list_set *list_set, struct container *con, int i)
 {
-    if (con->floating) {
+    if (container_is_floating(con)) {
         g_ptr_array_insert(list_set->floating_containers, i, con);
         return;
     }
@@ -448,6 +448,20 @@ void workspace_add_container_to_focus_stack_locally(struct workspace *ws, struct
             );
 }
 
+void workspace_remove_container_from_floating_stack_locally(struct workspace *ws, struct container *con)
+{
+    DO_ACTION_LOCALLY(ws, 
+            g_ptr_array_remove(list_set->floating_containers, con);
+            );
+}
+
+void workspace_add_container_to_floating_stack_locally(struct workspace *ws, struct container *con, int i)
+{
+    DO_ACTION_LOCALLY(ws, 
+            g_ptr_array_insert(list_set->floating_containers, i, con);
+            );
+}
+
 void add_container_to_stack(struct container *con)
 {
     if (!con)
@@ -471,7 +485,7 @@ void add_container_to_stack(struct container *con)
         return;
     }
 
-    if (con->floating) {
+    if (container_is_floating(con)) {
         g_ptr_array_insert(server.floating_visual_stack, 0, con);
         return;
     }

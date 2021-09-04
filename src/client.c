@@ -226,7 +226,7 @@ void reset_tiled_client_borders(int border_px)
         struct tagset *tagset = selected_monitor->tagset;
         if (!exist_on(tagset, c->con))
             continue;
-        if (c->con->floating)
+        if (container_is_floating(c->con))
             continue;
         c->bw = border_px;
     }
@@ -239,7 +239,7 @@ void reset_floating_client_borders(int border_px)
         struct tagset *tagset = selected_monitor->tagset;
         if (!exist_on(tagset, c->con))
             continue;
-        if (!c->con->floating)
+        if (!container_is_floating(c->con))
             continue;
         c->bw = border_px;
     }

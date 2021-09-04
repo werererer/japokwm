@@ -318,8 +318,8 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
     struct container *focus_con = xy_to_container(cursorx, cursory);
     if (!is_popup_under_cursor && focus_con) {
         final_focus_surface = wlr_surface_surface_at(get_wlrsurface(focus_con->client),
-                absolute_x_to_container_relative(focus_con->geom, cursorx),
-                absolute_y_to_container_relative(focus_con->geom, cursory),
+                absolute_x_to_container_relative(container_get_geom(focus_con), cursorx),
+                absolute_y_to_container_relative(container_get_geom(focus_con), cursory),
                 &sx, &sy);
     }
 
@@ -355,12 +355,12 @@ void motion_notify(struct cursor *cursor, uint32_t time_msec,
     // Only apply pointer constraints to real pointer input.
     if (cursor->active_constraint && device->type == WLR_INPUT_DEVICE_POINTER) {
         struct container *con = xy_to_container(cursor->wlr_cursor->x, cursor->wlr_cursor->y);
-
+        struct wlr_box *con_geom = container_get_geom(con);
         double sx;
         double sy;
         if (con) {
-            sx = cursor->wlr_cursor->x - con->geom.x;
-            sy = cursor->wlr_cursor->y - con->geom.y;
+            sx = cursor->wlr_cursor->x - con_geom->x;
+            sy = cursor->wlr_cursor->y - con_geom->y;
         } else {
             sx = cursor->wlr_cursor->x;
             sy = cursor->wlr_cursor->y;
@@ -447,19 +447,20 @@ void move_resize(struct cursor *cursor, int ui)
     /* Float the window and tell motion_notify to grab it */
     set_container_floating(grabc, container_fix_position, true);
 
+    struct wlr_box *grabc_geom = container_get_geom(grabc);
     struct wlr_cursor *wlr_cursor = cursor->wlr_cursor;
     switch (cursor->cursor_mode = ui) {
         case CURSOR_MOVE:
             wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr, "fleur", wlr_cursor);
-            offsetx = absolute_x_to_container_relative(grabc->geom, wlr_cursor->x);
-            offsety = absolute_y_to_container_relative(grabc->geom, wlr_cursor->y);
+            offsetx = absolute_x_to_container_relative(grabc_geom, wlr_cursor->x);
+            offsety = absolute_y_to_container_relative(grabc_geom, wlr_cursor->y);
             break;
         case CURSOR_RESIZE:
             /* Doesn't work for X11 output - the next absolute motion event
              * returns the cursor to where it started */
             wlr_cursor_warp_closest(wlr_cursor, NULL,
-                    grabc->geom.x + grabc->geom.width,
-                    grabc->geom.y + grabc->geom.height);
+                    grabc_geom->x + grabc_geom->width,
+                    grabc_geom->y + grabc_geom->height);
             wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
                     "bottom_right_corner", wlr_cursor);
             break;
@@ -534,8 +535,9 @@ static void warp_to_constraint_cursor_hint(struct cursor *cursor)
 
         struct monitor *m = selected_monitor;
         struct container *con = get_focused_container(m);
-        double lx = sx + con->geom.x - m->geom.x;
-        double ly = sy + con->geom.x - m->geom.y;
+        struct wlr_box *con_geom = container_get_geom(con);
+        double lx = sx + con_geom->x - m->geom.x;
+        double ly = sy + con_geom->x - m->geom.y;
 
         wlr_cursor_warp(cursor->wlr_cursor, NULL, lx, ly);
 
@@ -573,9 +575,10 @@ static void check_constraint_region(struct cursor *cursor) {
     struct container *con = get_focused_container(selected_monitor);
     if (cursor->active_confine_requires_warp && con) {
         cursor->active_confine_requires_warp = false;
+        struct wlr_box *con_geom = container_get_geom(con);
 
-        double sx = cursor->wlr_cursor->x - con->geom.x;
-        double sy = cursor->wlr_cursor->y - con->geom.x;
+        double sx = cursor->wlr_cursor->x - con_geom->x;
+        double sy = cursor->wlr_cursor->y - con_geom->x;
 
         if (!pixman_region32_contains_point(region,
                 floor(sx), floor(sy), NULL)) {
@@ -586,8 +589,8 @@ static void check_constraint_region(struct cursor *cursor) {
                 double sy = (boxes[0].y1 + boxes[0].y2) / 2.;
 
                 wlr_cursor_warp_closest(cursor->wlr_cursor, NULL,
-                    sx + con->geom.x,
-                    sy + con->geom.x);
+                    sx + con_geom->x,
+                    sy + con_geom->x);
 
                 cursor_rebase(cursor);
             }
