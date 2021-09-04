@@ -302,6 +302,7 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
     int cursorx = cursor->wlr_cursor->x;
     int cursory = cursor->wlr_cursor->y;
 
+    debug_print("focus under cursor\n");
     debug_print("mon: %p\n", xy_to_monitor(cursorx, cursory));
     focus_monitor(xy_to_monitor(cursorx, cursory));
 
@@ -407,6 +408,7 @@ void handle_cursor_button(struct wl_listener *listener, void *data)
                         "left_ptr", cursor->wlr_cursor);
                 cursor->cursor_mode = CURSOR_NORMAL;
                 /* Drop the window off on its new monitor */
+                debug_print("handle_cursor_button\n");
                 struct monitor *m = xy_to_monitor(cursor->wlr_cursor->x,
                         cursor->wlr_cursor->y);
                 focus_monitor(m);

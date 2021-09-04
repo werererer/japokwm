@@ -182,6 +182,7 @@ struct container *get_focused_container(struct monitor *m)
 
 struct container *xy_to_container(double x, double y)
 {
+    debug_print("xy_to_container\n");
     struct monitor *m = xy_to_monitor(x, y);
     if (!m)
         return NULL;
@@ -623,14 +624,6 @@ void container_set_geom(struct container *con, struct wlr_box *geom)
     struct layout *lt = get_layout_in_monitor(m);
 
     if (container_is_floating(con) && !lt->options.arrange_by_focus) {
-        debug_print("prev: x: %i\n", con_geom->x);
-        debug_print("prev: y: %i\n", con_geom->y);
-        debug_print("prev: width: %i\n", con_geom->width);
-        debug_print("prev: height: %i\n", con_geom->height);
-        debug_print("current: x: %i\n", geom->x);
-        debug_print("current: y: %i\n", geom->y);
-        debug_print("current: width: %i\n", geom->width);
-        debug_print("current: height: %i\n", geom->height);
         con->prev_floating_geom = *con_geom;
     }
 
