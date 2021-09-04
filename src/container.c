@@ -31,7 +31,6 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     con->alpha = 1.0f;
     con->has_border = has_border;
     con->focusable = true;
-    container_set_workspace_id(con, m->tagset->selected_ws_id);
 
     con->geometries = g_ptr_array_new();
     for (int i = 0; i < server.workspaces->len; i++) {
@@ -39,6 +38,7 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
         g_ptr_array_add(con->geometries, geom);
     }
     con->floating_states = bitset_create(server.workspaces->len);
+    container_set_workspace_id(con, m->tagset->selected_ws_id);
 
     return con;
 }

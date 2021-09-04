@@ -63,6 +63,7 @@ void tagset_focus_workspace(int ws_id);
 void tagset_toggle_add(struct tagset *tagset, BitSet *bitset);
 void tagset_focus_tags(int ws_id, struct BitSet *bitset);
 void tagset_reload(struct tagset *tagset);
+void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tagset);
 
 struct container *get_container(struct tagset *tagset, int i);
 

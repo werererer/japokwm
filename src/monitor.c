@@ -86,6 +86,8 @@ void create_monitor(struct wl_listener *listener, void *data)
         }
 
         server.workspaces = create_workspaces(server.default_layout->options.tag_names);
+        server.previous_bitset = bitset_create(server.workspaces->len);
+        bitset_set(server.previous_bitset, server.previous_workspace);
 
         call_on_start_function(server.default_layout->options.event_handler);
     }

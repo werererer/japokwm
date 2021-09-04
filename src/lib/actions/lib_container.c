@@ -7,6 +7,7 @@
 
 int container_set_sticky(lua_State *L)
 {
+    // TODO fix this function
     /* bool sticky = lua_toboolean(L, -1); */
     lua_pop(L, 1);
     int i = luaL_checkinteger(L, -1);

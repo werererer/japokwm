@@ -12,6 +12,8 @@
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "ipc-server.h"
+#include "workspace.h"
+#include "scratchpad.h"
 
 struct client *create_client(enum shell shell_type, union surface_t surface)
 {
@@ -142,9 +144,27 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
     }
 }
 
+static void con_move_sticky_containers(struct container *con)
+{
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = monitor_get_active_workspace(m);
+    bitset_test(con->client->sticky_workspaces, ws->id);
+    if (con->on_scratchpad) {
+        con->client->ws_id = ws->id;
+    } else {
+        if (workspace_sticky_contains_client(ws, con->client)) {
+            con->client->ws_id = ws->id;
+        } else if (bitset_none(con->client->sticky_workspaces)) {
+            move_to_scratchpad(con, 0);
+        }
+    }
+}
+
 void client_setsticky(struct client *c, BitSet *workspaces)
 {
     c->sticky_workspaces = bitset_copy(workspaces);
+    struct container *con = c->con;
+    con_move_sticky_containers(con);
 }
 
 float calc_ratio(float width, float height)

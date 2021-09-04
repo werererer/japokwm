@@ -514,6 +514,11 @@ void workspace_remove_independent_container(struct workspace *ws, struct contain
             );
 }
 
+bool workspace_sticky_contains_client(struct workspace *ws, struct client *client)
+{
+    return bitset_test(client->sticky_workspaces, ws->id);
+}
+
 // TODO refactor this function
 void layout_set_set_layout(lua_State *L)
 {

@@ -83,4 +83,5 @@ void init_server()
     g_ptr_array_add(server.client_lists, server.independent_clients);
 
     server.tagsets = g_ptr_array_new();
+    server.previous_workspace = 0;
 }

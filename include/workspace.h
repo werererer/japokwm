@@ -131,5 +131,6 @@ void workspace_remove_container(struct workspace *ws, struct container *con);
 void workspace_remove_container_from_focus_stack(struct workspace *ws, struct container *con);
 void workspace_remove_independent_container(struct workspace *ws, struct container *con);
 
+bool workspace_sticky_contains_client(struct workspace *ws, struct client *client);
 
 #endif /* WORKSPACE_H */

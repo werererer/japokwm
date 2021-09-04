@@ -342,12 +342,7 @@ void focus_most_recent_container(struct tagset *tagset)
     focus_container(con);
 }
 
-static bool workspace_contains_client(struct workspace *ws, struct client *client)
-{
-    return bitset_test(client->sticky_workspaces, ws->id);
-}
-
-static void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tagset)
+void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tagset)
 {
     if (!old_tagset)
         return;
@@ -361,7 +356,7 @@ static void tagset_move_sticky_containers(struct tagset *old_tagset, struct tags
         if (con->on_scratchpad) {
             con->client->ws_id = ws->id;
         } else {
-            if (workspace_contains_client(ws, con->client)) {
+            if (workspace_sticky_contains_client(ws, con->client)) {
                 con->client->ws_id = ws->id;
             } else if (bitset_none(con->client->sticky_workspaces)) {
                 move_to_scratchpad(con, 0);
