@@ -23,7 +23,7 @@ config.set_default_layout(layouts[1])
 -- set it to 4 to use super instead
 config.set_mod(1)
 
-config.bind_key("mod-S-p",       function() container.set_sticky(info.this_container_position(), true) end)
+config.bind_key("mod-S-p",       function() container.set_sticky(info.this_container_position(), 255) end)
 config.bind_key("mod-p",         function() action.exec("rofi -show run") end)
 config.bind_key("mod-e",         function() action.view(info.get_next_empty_workspace(info.get_workspace(), info.direction.right)) end)
 config.bind_key("mod-period",    function() action.toggle_workspace() end)
