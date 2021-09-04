@@ -277,8 +277,6 @@ struct monitor *output_to_monitor(struct wlr_output *output)
 
 struct monitor *xy_to_monitor(double x, double y)
 {
-    printf("x: %f\n", x);
-    printf("y: %f\n", y);
     struct wlr_output *o = wlr_output_layout_output_at(server.output_layout, x, y);
     return o ? o->data : NULL;
 }

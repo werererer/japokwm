@@ -482,15 +482,18 @@ void add_container_to_stack(struct container *con)
                 g_ptr_array_insert(server.layer_visual_stack_overlay, 0, con);
                 break;
         }
+        debug_print("visual_stack len: %i\n", length_of_composed_list(server.visual_stack_lists));
         return;
     }
 
     if (container_is_floating(con)) {
         g_ptr_array_insert(server.floating_visual_stack, 0, con);
+        debug_print("visual_stack len: %i\n", length_of_composed_list(server.visual_stack_lists));
         return;
     }
 
     g_ptr_array_insert(server.tiled_visual_stack, 0, con);
+    debug_print("visual_stack len: %i\n", length_of_composed_list(server.visual_stack_lists));
 }
 
 void workspace_remove_container(struct workspace *ws, struct container *con)

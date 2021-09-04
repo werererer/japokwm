@@ -45,6 +45,7 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 
 void destroy_container(struct container *con)
 {
+    debug_print("destroy con: %p\n", con);
     g_ptr_array_free(con->geometries, true);
     bitset_destroy(con->floating_states);
     free(con);
@@ -545,7 +546,7 @@ void set_container_floating(struct container *con, void (*fix_position)(struct c
         g_ptr_array_remove(server.floating_visual_stack, con);
         g_ptr_array_insert(server.tiled_visual_stack, 0, con);
     } else {
-        g_ptr_array_remove(server.tiled_visual_stack, con);
+        remove_in_composed_list(server.visual_stack_lists, cmp_ptr, con);
         g_ptr_array_insert(server.floating_visual_stack, 0, con);
     }
 

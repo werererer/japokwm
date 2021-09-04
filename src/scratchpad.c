@@ -91,7 +91,7 @@ void show_scratchpad()
 
         focus_container(con);
         lift_container(con);
-        container_damage_whole(con);
+        arrange();
     } else {
         if (con->hidden) {
             show_container(con);
