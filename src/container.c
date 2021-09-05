@@ -714,9 +714,17 @@ bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *re
 
 void container_set_workspace_id(struct container *con, int ws_id)
 {
+    // TODO optimize this
+    struct workspace *prev_ws = get_workspace(con->client->ws_id);
+    struct tagset *prev_tagset = workspace_get_active_tagset(prev_ws);
     con->client->ws_id = ws_id;
     bitset_reset_all(con->client->sticky_workspaces);
     bitset_set(con->client->sticky_workspaces, con->client->ws_id);
+
+    tagset_reload(prev_tagset);
+    struct workspace *ws = get_workspace(ws_id);
+    struct tagset *tagset = workspace_get_active_tagset(ws);
+    tagset_reload(tagset);
 }
 
 void container_set_workspace(struct container *con, struct workspace *ws)
