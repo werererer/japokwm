@@ -524,6 +524,8 @@ void tagset_focus_tags(int ws_id, struct BitSet *bitset)
 
 void tagset_reload(struct tagset *tagset)
 {
+    if (!tagset)
+        return;
     tagset_unload_workspaces(tagset);
     tagset_load_workspaces(tagset, tagset->workspaces);
 }
