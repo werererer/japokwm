@@ -205,8 +205,7 @@ int get_floating_container_count(struct tagset *tagset)
     int n = 0;
 
     for (int i = 0; i < tagset->list_set->floating_containers->len; i++) {
-        struct workspace *ws = tagset_get_workspace(tagset);
-        struct container *con = get_container(ws, i);
+        struct container *con = g_ptr_array_index(tagset->list_set->floating_containers, i);
         if (con->client->type == LAYER_SHELL)
             continue;
         n++;
