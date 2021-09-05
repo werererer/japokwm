@@ -191,7 +191,7 @@ struct container *xy_to_container(double x, double y)
         struct container *con = get_in_composed_list(server.visual_stack_lists, i);
         if (!con->focusable)
             continue;
-        if (!visible_on(monitor_get_active_tagset(m), con))
+        if (!container_viewable_on_monitor(m, con))
             continue;
         if (!wlr_box_contains_point(container_get_geom(con), x, y))
             continue;
@@ -344,10 +344,9 @@ void focus_container(struct container *con)
         return;
 
     struct monitor *m = selected_monitor;
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    struct workspace *ws = get_workspace(tagset->selected_ws_id);
+    struct workspace *ws = monitor_get_active_workspace(m);
 
-    if (!visible_on(tagset, con))
+    if (!container_viewable_on_monitor(m, con))
         return;
 
     struct container *sel = get_focused_container(m);
@@ -360,6 +359,7 @@ void focus_container(struct container *con)
 
     ipc_event_window();
 
+    struct tagset *tagset = workspace_get_active_tagset(ws);
     struct layout *lt = tagset_get_layout(tagset);
     call_on_focus_function(lt->options.event_handler,
             get_position_in_container_stack(con));

@@ -204,9 +204,8 @@ void update_reduced_focus_stack(struct workspace *ws)
         list_clear(dest_list, NULL);
         for (int i = 0; i < src_list->len; i++) {
             struct container *con = g_ptr_array_index(src_list, i);
-            struct workspace *con_ws = get_workspace(con->client->ws_id);
-            struct tagset *tagset = workspace_get_active_tagset(ws);
-            if (exist_on(tagset, con) || (workspace_is_active(con_ws) && container_is_floating(con))) {
+            struct monitor *m = workspace_get_monitor(ws);
+            if (container_viewable_on_monitor(m, con)) {
                 g_ptr_array_add(dest_list, con);
             }
         }

@@ -703,6 +703,27 @@ bool tagset_contains_client(struct tagset *tagset, struct client *c)
     return contains;
 }
 
+bool container_viewable_on_monitor(struct monitor *m,
+        struct container *con)
+{
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    if (!tagset)
+        return false;
+    bool visible = visible_on(tagset, con);
+    if (visible)
+        return true;
+
+    bool intersects_with_monitor =
+        container_intersects_with_monitor(con, tagset->m);
+    if (!intersects_with_monitor)
+        return false;
+    bool is_floating = container_is_floating(con);
+    if (!is_floating)
+        return false;
+    return true;
+}
+
+
 bool visible_on(struct tagset *tagset, struct container *con)
 {
     if (!con)
