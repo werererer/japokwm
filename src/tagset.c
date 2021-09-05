@@ -359,13 +359,10 @@ static void restore_floating_containers(struct tagset *tagset)
 
 static void server_remove_floating_workspace(struct server *server, struct tagset *tagset)
 {
-    debug_print("server remove tagset: %i old len: %i\n", tagset->selected_ws_id, server->floating_containers->len);
     for (int i = 0; i < tagset->list_set->floating_containers->len; i++) {
         struct container *con = g_ptr_array_index(tagset->list_set->floating_containers, i);
         g_ptr_array_remove(server->floating_containers, con);
-        g_ptr_array_remove(server->focus_stack, con);
     }
-    debug_print("server remove tagset: %i new len: %i\n", tagset->selected_ws_id, server->floating_containers->len);
 }
 
 static void server_add_floating_workspace(struct server *server, struct tagset *tagset)
@@ -375,7 +372,6 @@ static void server_add_floating_workspace(struct server *server, struct tagset *
     for (int i = 0; i < tagset->list_set->floating_containers->len; i++) {
         struct container *con = g_ptr_array_index(tagset->list_set->floating_containers, i);
         g_ptr_array_add(server->floating_containers, con);
-        g_ptr_array_add(server->focus_stack, con);
     }
     debug_print("floating_len end: %i\n", server->floating_containers->len);
 }
@@ -399,10 +395,11 @@ void focus_tagset(struct tagset *tagset)
     }
     m->tagset = tagset;
     restore_floating_containers(tagset);
+    struct workspace *ws = tagset_get_workspace(tagset);
+    update_reduced_focus_stack(ws);
     ipc_event_workspace();
 
     arrange();
-    struct workspace *ws = tagset_get_workspace(tagset);
     focus_most_recent_container(ws);
     root_damage_whole(m->root);
 
@@ -545,15 +542,7 @@ static bool container_intersects_with_monitor(struct container *con, struct moni
 
 GPtrArray *tagset_get_global_floating_lists(struct tagset *tagset)
 {
-    struct layout *lt = tagset_get_layout(tagset);
-
-    //FIXME and similar functions
-    if (lt->options.arrange_by_focus) {
-        struct workspace *ws = tagset_get_workspace(tagset);
-        return ws->focus_stack_visible_lists;
-    } else {
-        return tagset->list_set->global_floating_container_lists;
-    }
+    return tagset->list_set->global_floating_container_lists;
 }
 
 GPtrArray *tagset_get_visible_lists(struct tagset *tagset)
@@ -562,7 +551,7 @@ GPtrArray *tagset_get_visible_lists(struct tagset *tagset)
 
     if (lt->options.arrange_by_focus) {
         struct workspace *ws = tagset_get_workspace(tagset);
-        return ws->focus_stack_visible_lists;
+        return ws->visible_focus_set->focus_stack_visible_lists;
     } else {
         return tagset->list_set->visible_container_lists;
     }
@@ -574,7 +563,7 @@ GPtrArray *tagset_get_tiled_list(struct tagset *tagset)
 
     if (lt->options.arrange_by_focus) {
         struct workspace *ws = tagset_get_workspace(tagset);
-        return ws->focus_stack_normal;
+        return ws->visible_focus_set->focus_stack_normal;
     } else {
         return tagset->list_set->tiled_containers;
     }
@@ -589,7 +578,7 @@ GPtrArray *tagset_get_floating_list(struct tagset *tagset)
 
     if (lt->options.arrange_by_focus) {
         struct workspace *ws = tagset_get_workspace(tagset);
-        return ws->focus_stack_normal;
+        return ws->visible_focus_set->focus_stack_normal;
     } else {
         return tagset->list_set->floating_containers;
     }
@@ -601,7 +590,7 @@ GPtrArray *tagset_get_hidden_list(struct tagset *tagset)
 
     if (lt->options.arrange_by_focus) {
         struct workspace *ws = tagset_get_workspace(tagset);
-        return ws->focus_stack_hidden;
+        return ws->visible_focus_set->focus_stack_hidden;
     } else {
         return tagset->list_set->hidden_containers;
     }

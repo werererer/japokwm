@@ -77,6 +77,7 @@ void remove_container_from_tile(struct container *con)
     struct workspace *ws = get_workspace(con->client->ws_id);
 
     workspace_remove_container_from_focus_stack(ws, con);
+    g_ptr_array_remove(server.floating_containers, con);
 
     switch (con->client->type) {
         case LAYER_SHELL:
@@ -176,7 +177,8 @@ struct container *get_focused_container(struct monitor *m)
         return NULL;
 
     struct workspace *ws = tagset_get_workspace(tagset);
-    return get_in_composed_list(ws->focus_stack_lists, 0);
+    struct container *con = get_in_composed_list(ws->visible_focus_set->focus_stack_visible_lists, 0);
+    return con;
 }
 
 struct container *xy_to_container(double x, double y)
@@ -377,8 +379,6 @@ void focus_on_stack(struct monitor *m, int i)
 
     struct tagset *tagset = monitor_get_active_tagset(m);
     GPtrArray *visible_container_lists = tagset_get_global_floating_lists(tagset);
-    debug_print("len: %i\n", length_of_composed_list(visible_container_lists));
-    debug_print("len of server ws: %i\n", server.floating_containers->len);
 
     if (sel->client->type == LAYER_SHELL) {
         struct workspace *ws = get_workspace(tagset->selected_ws_id);
@@ -482,8 +482,9 @@ void repush(int pos1, int pos2)
     arrange();
 
     struct layout *lt = get_layout_in_monitor(m);
-    if (lt->options.arrange_by_focus)
+    if (lt->options.arrange_by_focus) {
         arrange();
+    }
 }
 
 void container_fix_position(struct container *con)
@@ -684,9 +685,9 @@ int get_position_in_container_stack(struct container *con)
     if (!con)
         return INVALID_POSITION;
 
-    struct monitor *m = container_get_monitor(con);
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    int position = find_in_composed_list(tagset->list_set->global_floating_container_lists, cmp_ptr, con);
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = monitor_get_active_workspace(m);
+    int position = find_in_composed_list(ws->visible_focus_set->focus_stack_visible_lists, cmp_ptr, con);
     return position;
 }
 

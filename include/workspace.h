@@ -54,6 +54,21 @@
         }\
     } while (0)
 
+struct focus_set {
+    GPtrArray2D *focus_stack_lists_with_layer_shell;
+    GPtrArray2D *focus_stack_visible_lists;
+    GPtrArray2D *focus_stack_lists;
+
+    GPtrArray *focus_stack_layer_background;
+    GPtrArray *focus_stack_layer_bottom;
+    GPtrArray *focus_stack_layer_top;
+    GPtrArray *focus_stack_layer_overlay;
+    GPtrArray *focus_stack_on_top;
+    GPtrArray *focus_stack_normal;
+    GPtrArray *focus_stack_hidden;
+    GPtrArray *focus_stack_not_focusable;
+};
+
 /* A tag is simply a workspace that can be focused (like a normal workspace)
  * and can selected: which just means that all clients on the selected tags
  * will be combined to be shown on the focused tag
@@ -76,18 +91,8 @@ struct workspace {
 
     struct list_set *list_set;
 
-    GPtrArray2D *focus_stack_lists_with_layer_shell;
-    GPtrArray2D *focus_stack_visible_lists;
-    GPtrArray2D *focus_stack_lists;
-
-    GPtrArray *focus_stack_layer_background;
-    GPtrArray *focus_stack_layer_bottom;
-    GPtrArray *focus_stack_layer_top;
-    GPtrArray *focus_stack_layer_overlay;
-    GPtrArray *focus_stack_on_top;
-    GPtrArray *focus_stack_normal;
-    GPtrArray *focus_stack_hidden;
-    GPtrArray *focus_stack_not_focusable;
+    struct focus_set *focus_set;
+    struct focus_set *visible_focus_set;
 };
 
 GPtrArray *create_workspaces(GPtrArray *tag_names);
@@ -97,8 +102,12 @@ void destroy_workspace(struct workspace *ws);
 void update_workspaces(GPtrArray *workspaces, GPtrArray *tag_names);
 void update_workspace_ids(GPtrArray *workspaces);
 
+void update_reduced_focus_stack(struct workspace *ws);
+
 bool is_workspace_occupied(struct workspace *ws);
 bool workspace_is_visible(struct workspace *ws);
+bool is_workspace_the_selected_one(struct workspace *ws);
+bool is_workspace_extern(struct workspace *ws);
 bool workspace_is_active(struct workspace *ws);
 
 int get_workspace_container_count(struct workspace *ws);
