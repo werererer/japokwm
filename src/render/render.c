@@ -307,7 +307,6 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
         if (!visible_on(monitor_get_active_tagset(m), con))
             continue;
 
-        debug_print("render con: %p with m: %p\n", con, m);
         render_borders(con, m, output_damage);
 
         /* This calls our render function for each surface among the

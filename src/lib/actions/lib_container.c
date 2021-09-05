@@ -4,6 +4,7 @@
 #include "tile/tileUtils.h"
 #include "server.h"
 #include "bitset/bitset.h"
+#include "workspace.h"
 
 int container_set_sticky(lua_State *L)
 {
@@ -23,7 +24,8 @@ int container_set_sticky(lua_State *L)
     bitset_destroy(tmp_bitset);
 
     struct monitor *m = selected_monitor;
-    struct container *con = get_container(m->tagset, i);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct container *con = get_container(ws, i);
 
     if (!con)
         return 0;
@@ -44,8 +46,8 @@ int container_set_ratio(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
-    struct tagset *ts = monitor_get_active_tagset(m);
-    struct container *con = get_container(ts, position);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct container *con = get_container(ws, position);
 
     if (!con)
         return 0;
@@ -62,8 +64,8 @@ int container_set_alpha(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
-    struct tagset *ts = monitor_get_active_tagset(m);
-    struct container *con = get_container(ts, position);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct container *con = get_container(ws, position);
 
     if (!con)
         return 0;

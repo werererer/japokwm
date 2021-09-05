@@ -97,9 +97,8 @@ void map_request(struct wl_listener *listener, void *data)
     struct container *con = c->con;
     add_container_to_tile(con);
     arrange();
-    struct monitor *m = container_get_monitor(con);
-    if (m) {
-        focus_most_recent_container(m->tagset);
+    if (ws) {
+        focus_most_recent_container(ws);
     }
 }
 
@@ -116,7 +115,8 @@ void unmap_notify(struct wl_listener *listener, void *data)
 
     arrange();
     struct monitor *m = selected_monitor;
-    focus_most_recent_container(m->tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    focus_most_recent_container(ws);
 }
 
 void createxdeco(struct wl_listener *listener, void *data)

@@ -175,12 +175,12 @@ struct container *get_focused_container(struct monitor *m)
     if (!tagset)
         return NULL;
 
-    return get_in_composed_list(tagset->list_set->focus_stack_lists, 0);
+    struct workspace *ws = tagset_get_workspace(tagset);
+    return get_in_composed_list(ws->focus_stack_lists, 0);
 }
 
 struct container *xy_to_container(double x, double y)
 {
-    debug_print("xy_to_container\n");
     struct monitor *m = xy_to_monitor(x, y);
     if (!m)
         return NULL;
@@ -381,7 +381,8 @@ void focus_on_stack(struct monitor *m, int i)
     debug_print("len of server ws: %i\n", server.floating_containers->len);
 
     if (sel->client->type == LAYER_SHELL) {
-        struct container *con = get_container(tagset, 0);
+        struct workspace *ws = get_workspace(tagset->selected_ws_id);
+        struct container *con = get_container(ws, 0);
         focus_container(con);
         return;
     }
@@ -589,7 +590,6 @@ static void swap_integers(int *i1, int *i2)
 
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety)
 {
-    debug_print("move container\n");
     struct wlr_box *con_geom = container_get_geom(con);
     struct wlr_box geom = *con_geom;
     geom.x = cursor->x - offsetx;
@@ -600,7 +600,6 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
     }
     resize(con, geom);
     container_damage(con, true);
-    debug_print("move end\n");
 }
 
 void container_set_geom(struct container *con, struct wlr_box *geom)
@@ -687,15 +686,15 @@ int get_position_in_container_stack(struct container *con)
 
     struct monitor *m = container_get_monitor(con);
     struct tagset *tagset = monitor_get_active_tagset(m);
-    int position = find_in_composed_list(tagset->list_set->container_lists, cmp_ptr, con);
+    int position = find_in_composed_list(tagset->list_set->global_floating_container_lists, cmp_ptr, con);
     return position;
 }
 
 struct container *get_container_from_container_stack_position(int i)
 {
     struct monitor *m = selected_monitor;
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    struct container *con = get_container(tagset, i);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct container *con = get_container(ws, i);
     return con;
 }
 
@@ -756,8 +755,8 @@ void move_container_to_workspace(struct container *con, struct workspace *ws)
 
     arrange();
     struct monitor *m = container_get_monitor(con);
-    struct tagset *selected_tagset = monitor_get_active_tagset(m);
-    focus_most_recent_container(selected_tagset);
+    struct workspace *selected_workspace = monitor_get_active_workspace(m);
+    focus_most_recent_container(selected_workspace);
 
     ipc_event_workspace();
 }

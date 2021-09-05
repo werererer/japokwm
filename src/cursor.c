@@ -302,8 +302,6 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
     int cursorx = cursor->wlr_cursor->x;
     int cursory = cursor->wlr_cursor->y;
 
-    debug_print("focus under cursor\n");
-    debug_print("mon: %p\n", xy_to_monitor(cursorx, cursory));
     focus_monitor(xy_to_monitor(cursorx, cursory));
 
     /* If handled successfully return */

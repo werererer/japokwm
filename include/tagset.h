@@ -58,15 +58,12 @@ struct tagset {
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *workspaces);
 void destroy_tagset(struct tagset *tagset);
 
-void focus_most_recent_container(struct tagset *tagset);
 void focus_tagset(struct tagset *tagset);
 void tagset_focus_workspace(int ws_id);
 void tagset_toggle_add(struct tagset *tagset, BitSet *bitset);
 void tagset_focus_tags(int ws_id, struct BitSet *bitset);
 void tagset_reload(struct tagset *tagset);
 void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tagset);
-
-struct container *get_container(struct tagset *tagset, int i);
 
 // get with server floating containers instead
 GPtrArray *tagset_get_global_floating_lists(struct tagset *tagset);
@@ -96,5 +93,7 @@ void tagset_unload_workspaces(struct tagset *tagset);
 void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces);
 
 struct layout *tagset_get_layout(struct tagset *tagset);
+
+struct workspace *tagset_get_workspace(struct tagset *tagset);
 
 #endif /* TAGSET_H */

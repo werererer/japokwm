@@ -30,50 +30,11 @@ struct list_set *create_list_set()
     g_ptr_array_add(list_set->global_floating_container_lists, list_set->tiled_containers);
     g_ptr_array_add(list_set->global_floating_container_lists, server.floating_containers);
 
-    list_set->focus_stack_lists = g_ptr_array_new();
-    list_set->focus_stack_visible_lists = g_ptr_array_new();
-    list_set->focus_stack_lists_with_layer_shell = g_ptr_array_new();
-
-    list_set->focus_stack_layer_background = g_ptr_array_new();
-    list_set->focus_stack_layer_bottom = g_ptr_array_new();
-    list_set->focus_stack_layer_top = g_ptr_array_new();
-    list_set->focus_stack_layer_overlay = g_ptr_array_new();
-    list_set->focus_stack_on_top = g_ptr_array_new();
-    list_set->focus_stack_normal = g_ptr_array_new();
-    list_set->focus_stack_hidden = g_ptr_array_new();
-    list_set->focus_stack_not_focusable = g_ptr_array_new();
-
-    g_ptr_array_add(list_set->focus_stack_lists, list_set->focus_stack_layer_top);
-    g_ptr_array_add(list_set->focus_stack_lists, list_set->focus_stack_on_top);
-    g_ptr_array_add(list_set->focus_stack_lists, list_set->focus_stack_normal);
-    g_ptr_array_add(list_set->focus_stack_lists, list_set->focus_stack_not_focusable);
-    g_ptr_array_add(list_set->focus_stack_lists, list_set->focus_stack_hidden);
-
-    g_ptr_array_add(list_set->focus_stack_lists_with_layer_shell, list_set->focus_stack_layer_overlay);
-    g_ptr_array_add(list_set->focus_stack_lists_with_layer_shell, list_set->focus_stack_layer_top);
-    g_ptr_array_add(list_set->focus_stack_lists_with_layer_shell, list_set->focus_stack_on_top);
-    g_ptr_array_add(list_set->focus_stack_lists_with_layer_shell, list_set->focus_stack_normal);
-    g_ptr_array_add(list_set->focus_stack_lists_with_layer_shell, list_set->focus_stack_not_focusable);
-    g_ptr_array_add(list_set->focus_stack_lists_with_layer_shell, list_set->focus_stack_layer_bottom);
-    g_ptr_array_add(list_set->focus_stack_lists_with_layer_shell, list_set->focus_stack_layer_background);
-
-    g_ptr_array_add(list_set->focus_stack_visible_lists, list_set->focus_stack_on_top);
-    g_ptr_array_add(list_set->focus_stack_visible_lists, list_set->focus_stack_normal);
-    g_ptr_array_add(list_set->focus_stack_visible_lists, list_set->focus_stack_not_focusable);
-
     list_set->all_lists = g_ptr_array_new();
     g_ptr_array_add(list_set->all_lists, list_set->floating_containers);
     g_ptr_array_add(list_set->all_lists, list_set->tiled_containers);
     g_ptr_array_add(list_set->all_lists, list_set->hidden_containers);
     g_ptr_array_add(list_set->all_lists, list_set->independent_containers);
-    g_ptr_array_add(list_set->all_lists, list_set->focus_stack_layer_background);
-    g_ptr_array_add(list_set->all_lists, list_set->focus_stack_layer_bottom);
-    g_ptr_array_add(list_set->all_lists, list_set->focus_stack_layer_top);
-    g_ptr_array_add(list_set->all_lists, list_set->focus_stack_layer_overlay);
-    g_ptr_array_add(list_set->all_lists, list_set->focus_stack_on_top);
-    g_ptr_array_add(list_set->all_lists, list_set->focus_stack_normal);
-    g_ptr_array_add(list_set->all_lists, list_set->focus_stack_hidden);
-    g_ptr_array_add(list_set->all_lists, list_set->focus_stack_not_focusable);
     return list_set;
 }
 
@@ -85,19 +46,6 @@ void destroy_list_set(struct list_set *list_set)
     g_ptr_array_free(list_set->floating_containers, FALSE);
     g_ptr_array_free(list_set->container_lists, FALSE);
     g_ptr_array_free(list_set->visible_container_lists, FALSE);
-
-    g_ptr_array_free(list_set->focus_stack_layer_background, FALSE);
-    g_ptr_array_free(list_set->focus_stack_layer_bottom, FALSE);
-    g_ptr_array_free(list_set->focus_stack_layer_top, FALSE);
-    g_ptr_array_free(list_set->focus_stack_layer_overlay, FALSE);
-    g_ptr_array_free(list_set->focus_stack_lists, FALSE);
-    g_ptr_array_free(list_set->focus_stack_visible_lists, FALSE);
-    g_ptr_array_free(list_set->focus_stack_lists_with_layer_shell, FALSE);
-
-    g_ptr_array_free(list_set->focus_stack_on_top, FALSE);
-    g_ptr_array_free(list_set->focus_stack_normal, FALSE);
-    g_ptr_array_free(list_set->focus_stack_hidden, FALSE);
-    g_ptr_array_free(list_set->focus_stack_not_focusable, FALSE);
 
     g_ptr_array_free(list_set->all_lists, FALSE);
     free(list_set);

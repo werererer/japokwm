@@ -75,6 +75,19 @@ struct workspace {
     struct tagset *selected_tagset;
 
     struct list_set *list_set;
+
+    GPtrArray2D *focus_stack_lists_with_layer_shell;
+    GPtrArray2D *focus_stack_visible_lists;
+    GPtrArray2D *focus_stack_lists;
+
+    GPtrArray *focus_stack_layer_background;
+    GPtrArray *focus_stack_layer_bottom;
+    GPtrArray *focus_stack_layer_top;
+    GPtrArray *focus_stack_layer_overlay;
+    GPtrArray *focus_stack_on_top;
+    GPtrArray *focus_stack_normal;
+    GPtrArray *focus_stack_hidden;
+    GPtrArray *focus_stack_not_focusable;
 };
 
 GPtrArray *create_workspaces(GPtrArray *tag_names);
@@ -90,6 +103,9 @@ bool workspace_is_active(struct workspace *ws);
 
 int get_workspace_container_count(struct workspace *ws);
 bool is_workspace_empty(struct workspace *ws);
+
+void focus_most_recent_container(struct workspace *ws);
+struct container *get_container(struct workspace *ws, int i);
 
 struct workspace *find_next_unoccupied_workspace(GPtrArray *workspaces, struct workspace *ws);
 struct workspace *get_workspace(int id);
@@ -114,11 +130,11 @@ void reset_loaded_layout(struct workspace *ws);
 void remove_loaded_layouts(GPtrArray *workspaces);
 void rename_workspace(struct workspace *ws, const char *name);
 
-void list_set_add_container_to_focus_stack(struct list_set *list_set, struct container *con);
 void workspace_add_container_to_containers(struct workspace *ws, struct container *con, int i);
 void workspace_add_container_to_focus_stack(struct workspace *ws, struct container *con);
 void add_container_to_stack(struct container *con);
 
+void list_set_add_container_to_focus_stack(struct workspace *ws, struct container *con);
 void workspace_remove_container_from_containers_locally(struct workspace *ws, struct container *con);
 void workspace_add_container_to_containers_locally(struct workspace *ws, struct container *con, int i);
 void workspace_remove_container_from_focus_stack_locally(struct workspace *ws, struct container *con);

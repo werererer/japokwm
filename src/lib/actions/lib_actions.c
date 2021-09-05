@@ -182,7 +182,8 @@ int lib_move_to_scratchpad(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
-    struct container *con = get_container(m->tagset, i);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct container *con = get_container(ws, i);
     move_to_scratchpad(con, 0);
     return 0;
 }
@@ -227,7 +228,8 @@ int lib_tag_view(lua_State *L)
 int lib_toggle_view(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    focus_most_recent_container(m->tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    focus_most_recent_container(ws);
     struct container *sel = get_focused_container(m);
     lift_container(sel);
     arrange(false);
@@ -288,12 +290,13 @@ int lib_zoom(lua_State *L)
     arrange();
 
     // focus new master window
-    struct container *con = get_container(tagset, 0);
+    struct workspace *ws = get_workspace(tagset->selected_ws_id);
+    struct container *con = get_container(ws, 0);
     focus_container(con);
 
     struct layout *lt = get_layout_in_monitor(m);
     if (lt->options.arrange_by_focus) {
-        focus_most_recent_container(tagset);
+        focus_most_recent_container(ws);
         arrange();
     }
     return 0;
@@ -411,8 +414,8 @@ int lib_kill(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    struct container *con = get_container(tagset, i);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct container *con = get_container(ws, i);
 
     if (!con)
         return 0;
@@ -463,7 +466,8 @@ int lib_swap_workspace(lua_State *L)
     }
 
     arrange();
-    focus_most_recent_container(tagset);
+    struct workspace *ws = get_workspace(tagset->selected_ws_id);
+    focus_most_recent_container(ws);
     root_damage_whole(m->root);
     return 0;
 }

@@ -129,7 +129,8 @@ void unmap_notifyx11(struct wl_listener *listener, void *data)
 
     arrange();
     struct monitor *m = selected_monitor;
-    focus_most_recent_container(m->tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    focus_most_recent_container(ws);
 }
 
 void maprequestx11(struct wl_listener *listener, void *data)
@@ -195,8 +196,8 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
                 struct workspace *ws = monitor_get_active_workspace(m);
                 if (x11_is_popup_menu(c) || xwayland_surface->parent) {
-                    remove_in_composed_list(ws->list_set->focus_stack_lists, cmp_ptr, con);
-                    g_ptr_array_insert(ws->list_set->focus_stack_normal, 0, con);
+                    remove_in_composed_list(ws->focus_stack_lists, cmp_ptr, con);
+                    g_ptr_array_insert(ws->focus_stack_normal, 0, con);
 
                     con->is_xwayland_popup = true;
                     g_ptr_array_add(server.xwayland_popups, con);

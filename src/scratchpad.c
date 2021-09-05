@@ -36,7 +36,8 @@ void move_to_scratchpad(struct container *con, int position)
     tagset_reload(tagset);
 
     container_damage_whole(con);
-    focus_most_recent_container(tagset);
+    struct workspace *ws = get_workspace(tagset->selected_ws_id);
+    focus_most_recent_container(ws);
     con->hidden = true;
     arrange();
 }

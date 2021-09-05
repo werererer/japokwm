@@ -79,6 +79,7 @@ void init_server()
     server.independent_clients = g_ptr_array_new();
 
     server.floating_containers = g_ptr_array_new();
+    server.focus_stack = g_ptr_array_new();
 
     g_ptr_array_add(server.client_lists, server.normal_clients);
     g_ptr_array_add(server.client_lists, server.non_tiled_clients);

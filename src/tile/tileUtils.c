@@ -19,6 +19,7 @@
 #include "utils/parseConfigUtils.h"
 #include "event_handler.h"
 #include "layer_shell.h"
+#include "workspace.h"
 
 static void arrange_container(struct container *con, int arrange_position,
         struct wlr_box root_geom, int inner_gap);
@@ -171,7 +172,8 @@ int get_floating_container_count(struct tagset *tagset)
     int n = 0;
 
     for (int i = 0; i < tagset->list_set->floating_containers->len; i++) {
-        struct container *con = get_container(tagset, i);
+        struct workspace *ws = tagset_get_workspace(tagset);
+        struct container *con = get_container(ws, i);
         if (con->client->type == LAYER_SHELL)
             continue;
         n++;

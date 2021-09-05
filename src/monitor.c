@@ -274,7 +274,8 @@ inline struct workspace *monitor_get_active_workspace(struct monitor *m)
         return NULL;
 
     struct tagset *tagset = monitor_get_active_tagset(m);
-    return get_workspace(tagset->selected_ws_id);
+    struct workspace *ws = tagset_get_workspace(tagset);
+    return ws;
 }
 
 inline struct layout *get_layout_in_monitor(struct monitor *m)
