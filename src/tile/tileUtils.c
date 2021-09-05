@@ -263,6 +263,7 @@ void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,
     for (int i = 0; i < tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(tiled_containers, i);
 
+        con->arranged_by_focus = lt->options.arrange_by_focus;
         /* // the monitor must be on the same monitor as it is tiled on else it is */
         /* // a bug */
         /* printf("con: %i ws: %i monitor: %p\n", i, con->client->ws_id, container_get_monitor(con)); */

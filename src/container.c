@@ -625,9 +625,7 @@ void container_set_geom(struct container *con, struct wlr_box *geom)
 
     struct wlr_box *con_geom = g_ptr_array_index(con->geometries, ws_id);
 
-    struct layout *lt = get_layout_in_monitor(m);
-
-    if (container_is_floating(con) && !lt->options.arrange_by_focus) {
+    if (container_is_floating(con) && !con->arranged_by_focus) {
         con->prev_floating_geom = *con_geom;
     }
 

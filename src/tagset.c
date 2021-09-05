@@ -363,6 +363,7 @@ static void server_remove_floating_workspace(struct server *server, struct tagse
         struct container *con = g_ptr_array_index(tagset->list_set->floating_containers, i);
         g_ptr_array_remove(server->floating_containers, con);
     }
+    debug_print("floating_containers remove count: %i\n", server->floating_containers);
 }
 
 static void server_add_floating_workspace(struct server *server, struct tagset *tagset)
@@ -371,6 +372,7 @@ static void server_add_floating_workspace(struct server *server, struct tagset *
         struct container *con = g_ptr_array_index(tagset->list_set->floating_containers, i);
         g_ptr_array_add(server->floating_containers, con);
     }
+    debug_print("floating_containers count: %i\n", server->floating_containers);
 }
 
 void focus_tagset(struct tagset *tagset)
