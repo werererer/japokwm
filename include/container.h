@@ -26,9 +26,11 @@ struct container {
     bool hidden;
     bool on_scratchpad;
     bool on_top;
+
+    bool was_arranged_by_focus;
     bool arranged_by_focus;
     // if position -1 it is floating
-    bool geom_was_changed;
+    bool floating_container_geom_was_changed;
     // height = ratio * width
     float ratio;
     float alpha;

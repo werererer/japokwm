@@ -612,20 +612,15 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
 
 void container_set_geom(struct container *con, struct wlr_box *geom)
 {
-    struct monitor *m = container_get_monitor(con);
-    if (!m)
-        return;
     struct workspace *ws = container_get_workspace(con);
-    int ws_id = ws->id;
     if (!ws)
         return;
 
-    if (ws_id < 0)
-        return;
-
+    int ws_id = ws->id;
     struct wlr_box *con_geom = g_ptr_array_index(con->geometries, ws_id);
 
-    if (container_is_floating(con) && !con->arranged_by_focus) {
+    if (container_is_floating(con) && !con->was_arranged_by_focus) {
+        debug_print("set prev_floating_geom\n");
         con->prev_floating_geom = *con_geom;
     }
 
@@ -791,14 +786,7 @@ struct tagset *container_get_tagset(struct container *con)
 
 struct workspace *container_get_workspace(struct container *con)
 {
-    struct monitor *m = container_get_monitor(con);
-    if (!m)
-        return NULL;
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    int ws_id = tagset->selected_ws_id;
-    if (ws_id < 0)
-        return NULL;
-    struct workspace *ws = get_workspace(ws_id);
+    struct workspace *ws = get_workspace(con->client->ws_id);
     return ws;
 }
 

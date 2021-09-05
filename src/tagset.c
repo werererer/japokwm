@@ -619,7 +619,8 @@ void tagset_list_remove_index(GPtrArray *list, int i)
 
     if (lt->options.arrange_by_focus) {
         struct workspace *ws = tagset_get_workspace(tagset);
-        delete_from_composed_list(ws->focus_set->focus_stack_lists, i);
+        struct container *local_con = get_in_composed_list(ws->local_focus_set->focus_stack_lists, i);
+        remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, local_con);
         update_sub_focus_stack(ws);
     } else {
         g_ptr_array_remove_index(list, i);
@@ -665,8 +666,8 @@ struct container *tagset_list_steal_index(GPtrArray *list, int i)
 
     struct container *con = NULL;
     if (lt->options.arrange_by_focus) {
-        con = get_in_composed_list(ws->focus_set->focus_stack_lists, i);
-        delete_from_composed_list(ws->focus_set->focus_stack_lists, i);
+        con = get_in_composed_list(ws->local_focus_set->focus_stack_lists, i);
+        remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
         update_sub_focus_stack(ws);
     } else {
         con = g_ptr_array_steal_index(list, i);
