@@ -528,7 +528,7 @@ void tagset_reload(struct tagset *tagset)
     tagset_load_workspaces(tagset, tagset->workspaces);
 }
 
-static bool container_intersects_with_monitor(struct container *con, struct monitor *m)
+bool container_intersects_with_monitor(struct container *con, struct monitor *m)
 {
     if (!con)
         return false;
@@ -731,11 +731,7 @@ bool exist_on(struct tagset *tagset, struct container *con)
         return false;
     }
     if (m != tagset->m) {
-        if (container_is_floating(con))
-            return container_intersects_with_monitor(con, tagset->m)
-                && tagset_contains_client(m->tagset, con->client);
-        else
-            return false;
+        return false;
     }
 
     struct client *c = con->client;

@@ -525,7 +525,6 @@ void container_fix_position(struct container *con)
     struct workspace *ws = monitor_get_active_workspace(m);
 
     GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
-    /* GPtrArray *floating_containers = tagset_get_floating_list(tagset); */
     struct layout *lt = tagset_get_layout(tagset);
 
     if (!container_is_floating(con)) {

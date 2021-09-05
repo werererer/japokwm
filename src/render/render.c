@@ -29,6 +29,8 @@ static void scissor_output(struct wlr_output *output, pixman_box32_t *rect);
 static void render_texture(struct wlr_output *wlr_output,
         pixman_region32_t *output_damage, struct wlr_texture *texture,
         const struct wlr_box *box, float alpha);
+static bool container_should_be_rendered_on_monitor(struct monitor *m,
+        struct container *con);
 
 /* _box.x and .y are expected to be layout-local
    _box.width and .height are expected to be output-buffer-local */
@@ -298,13 +300,31 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
     }
 }
 
+static bool container_should_be_rendered_on_monitor(struct monitor *m,
+        struct container *con)
+{
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    bool visible = visible_on(tagset, con);
+    if (visible)
+        return true;
+
+    bool intersects_with_monitor =
+        container_intersects_with_monitor(con, tagset->m);
+    if (!intersects_with_monitor)
+        return false;
+    bool is_floating = container_is_floating(con);
+    if (!is_floating)
+        return false;
+    return true;
+}
+
 static void render_containers(struct monitor *m, pixman_region32_t *output_damage)
 {
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     for (int i = length_of_composed_list(server.normal_visual_stack_lists)-1; i >= 0; i--) {
         struct container *con = get_in_composed_list(server.normal_visual_stack_lists, i);
-        if (!visible_on(monitor_get_active_tagset(m), con))
+        if (!container_should_be_rendered_on_monitor(m, con))
             continue;
 
         render_borders(con, m, output_damage);
@@ -330,7 +350,7 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
     for (int i = 0; i < layer_list->len; i++) {
         struct container *con = g_ptr_array_index(layer_list, i);
 
-        if (!visible_on(monitor_get_active_tagset(m), con))
+        if (!container_should_be_rendered_on_monitor(m, con))
             continue;
 
         struct wlr_surface *surface = get_wlrsurface(con->client);

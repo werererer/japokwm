@@ -222,7 +222,7 @@ void update_local_focus_stack(struct workspace *ws)
         for (int i = 0; i < src_list->len; i++) {
             struct container *con = g_ptr_array_index(src_list, i);
             struct tagset *tagset = workspace_get_active_tagset(ws);
-            if (exist_on(tagset, con)) {
+            if (exist_on(tagset, con) && con->client->ws_id == ws->id) {
                 g_ptr_array_add(dest_list, con);
             }
         }
