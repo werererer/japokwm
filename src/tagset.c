@@ -363,7 +363,6 @@ static void server_remove_floating_workspace(struct server *server, struct tagse
         struct container *con = g_ptr_array_index(tagset->list_set->floating_containers, i);
         g_ptr_array_remove(server->floating_containers, con);
     }
-    debug_print("floating_containers remove count: %i\n", server->floating_containers);
 }
 
 static void server_add_floating_workspace(struct server *server, struct tagset *tagset)
@@ -372,7 +371,6 @@ static void server_add_floating_workspace(struct server *server, struct tagset *
         struct container *con = g_ptr_array_index(tagset->list_set->floating_containers, i);
         g_ptr_array_add(server->floating_containers, con);
     }
-    debug_print("floating_containers count: %i\n", server->floating_containers);
 }
 
 void focus_tagset(struct tagset *tagset)
@@ -604,8 +602,7 @@ void tagset_list_remove(GPtrArray *list, struct container *con)
 
     if (lt->options.arrange_by_focus) {
         struct workspace *ws = tagset_get_workspace(tagset);
-        remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
-        update_sub_focus_stack(ws);
+        workspace_remove_container_from_focus_stack_locally(ws, con);
     } else {
         g_ptr_array_remove(list, con);
     }
@@ -636,7 +633,7 @@ void tagset_list_add(GPtrArray *list, struct container *con)
 
     if (lt->options.arrange_by_focus) {
         struct workspace *ws = tagset_get_workspace(tagset);
-        list_set_add_container_to_focus_stack(ws, con);
+        list_set_append_container_to_focus_stack(ws, con);
         update_sub_focus_stack(ws);
     } else {
         g_ptr_array_add(list, con);
@@ -659,8 +656,10 @@ void tagset_list_insert(GPtrArray *list, int i, struct container *con)
 
 struct container *tagset_list_steal_index(GPtrArray *list, int i)
 {
-    if (list->len <= 0)
+    if (list->len <= 0) {
+        debug_print("list is empty\n");
         return NULL;
+    }
     struct container *_con = g_ptr_array_index(list, 0);
     struct tagset *tagset = container_get_tagset(_con);
     struct layout *lt = tagset_get_layout(tagset);

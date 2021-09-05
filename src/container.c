@@ -412,6 +412,12 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     debug_print("hidden len: %i\n", hidden_containers->len);
     struct container *con = get_relative_item_in_list(hidden_containers, 0, i);
 
+    debug_print("sel: %p\n", sel);
+    for (int i = 0; i < hidden_containers->len; i++) {
+        struct container *con = g_ptr_array_index(hidden_containers, i);
+        debug_print("hidden containers: %p\n", con);
+    }
+
     if (!con)
         return;
 
@@ -425,15 +431,17 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     con->hidden = false;
     sel->hidden = true;
 
-    struct layout *lt = tagset_get_layout(tagset);
+    /* struct layout *lt = tagset_get_layout(tagset); */
     /* replace selected container with a hidden one and move the selected
      * container to the end of the containers array */
-    if (lt->options.arrange_by_focus) {
-        struct workspace *ws = tagset_get_workspace(tagset);
-        workspace_remove_container_from_focus_stack_locally(ws, con);
-    } else {
-        g_ptr_array_remove(hidden_containers, con);
-    }
+    tagset_list_remove(hidden_containers, con);
+    /* if (lt->options.arrange_by_focus) { */
+    /*     struct workspace *ws = tagset_get_workspace(tagset); */
+    /*     workspace_remove_container_from_focus_stack_locally(ws, con); */
+    /* } else { */
+    /*     g_ptr_array_remove(hidden_containers, con); */
+    /* } */
+
 
     GPtrArray *visible_container_lists = tagset_get_visible_lists(tagset);
     GPtrArray *focus_list = find_list_in_composed_list(
@@ -441,20 +449,29 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     guint sel_index;
     g_ptr_array_find(focus_list, sel, &sel_index);
 
-    g_ptr_array_insert(focus_list, sel_index+1, con);
-    g_ptr_array_remove_index(focus_list, sel_index);
+    tagset_list_remove_index(focus_list, sel_index);
+    tagset_list_insert(focus_list, sel_index, con);
 
     if (i < 0) {
-        g_ptr_array_insert(hidden_containers, 0, sel);
+        tagset_list_insert(hidden_containers, 0, sel);
     } else {
-        g_ptr_array_add(hidden_containers, sel);
+        tagset_list_add(hidden_containers, sel);
+    }
+
+    debug_print("con: %p\n", con);
+    for (int i = 0; i < hidden_containers->len; i++) {
+        struct container *con = g_ptr_array_index(hidden_containers, i);
+        debug_print("hidden containers end: %p\n", con);
     }
 
     if (!con)
         return;
+    debug_print("hidden len end: %i\n", hidden_containers->len);
+
 
     focus_container(con);
     arrange();
+    debug_print("hidden len end 2: %i\n", hidden_containers->len);
 }
 
 void lift_container(struct container *con)

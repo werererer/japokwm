@@ -205,7 +205,8 @@ void update_reduced_focus_stack(struct workspace *ws)
         for (int i = 0; i < src_list->len; i++) {
             struct container *con = g_ptr_array_index(src_list, i);
             struct workspace *con_ws = get_workspace(con->client->ws_id);
-            if (ws == con_ws || (workspace_is_active(con_ws) && container_is_floating(con))) {
+            struct tagset *tagset = workspace_get_active_tagset(ws);
+            if (exist_on(tagset, con) || (workspace_is_active(con_ws) && container_is_floating(con))) {
                 g_ptr_array_add(dest_list, con);
             }
         }
@@ -220,8 +221,8 @@ void update_local_focus_stack(struct workspace *ws)
         list_clear(dest_list, NULL);
         for (int i = 0; i < src_list->len; i++) {
             struct container *con = g_ptr_array_index(src_list, i);
-            struct workspace *con_ws = get_workspace(con->client->ws_id);
-            if (ws == con_ws) {
+            struct tagset *tagset = workspace_get_active_tagset(ws);
+            if (exist_on(tagset, con)) {
                 g_ptr_array_add(dest_list, con);
             }
         }
@@ -536,6 +537,41 @@ void workspace_add_container_to_containers_locally(struct workspace *ws, struct 
             list_set_add_container_to_containers(list_set, con, i);
         );
     }
+}
+
+void list_set_append_container_to_focus_stack(struct workspace *ws, struct container *con)
+{
+    if (con->client->type == LAYER_SHELL) {
+        switch (con->client->surface.layer->current.layer) {
+            case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
+                g_ptr_array_add(ws->focus_set->focus_stack_layer_background, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
+                g_ptr_array_add(ws->focus_set->focus_stack_layer_bottom, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
+                g_ptr_array_add(ws->focus_set->focus_stack_layer_top, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
+                g_ptr_array_add(ws->focus_set->focus_stack_layer_overlay, con);
+                break;
+        }
+        return;
+    }
+    if (con->hidden) {
+        g_ptr_array_add(ws->focus_set->focus_stack_hidden, con);
+        return;
+    }
+    if (con->on_top) {
+        g_ptr_array_add(ws->focus_set->focus_stack_on_top, con);
+        return;
+    }
+    if (!con->focusable) {
+        g_ptr_array_add(ws->focus_set->focus_stack_not_focusable, con);
+        return;
+    }
+
+    g_ptr_array_add(ws->focus_set->focus_stack_normal, con);
 }
 
 void list_set_add_container_to_focus_stack(struct workspace *ws, struct container *con)

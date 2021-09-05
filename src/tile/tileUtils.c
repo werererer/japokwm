@@ -47,7 +47,6 @@ static void update_container_arranged_by_focus_state()
         struct container *con = get_in_composed_list(ws->visible_focus_set->focus_stack_lists, i);
         con->was_arranged_by_focus = con->arranged_by_focus;
         con->arranged_by_focus = mon_lt->options.arrange_by_focus;
-        debug_print("con: %p arranged_by_focus: %i\n", con, con->arranged_by_focus);
     }
 
 }
@@ -61,8 +60,6 @@ void arrange()
 
     update_container_arranged_by_focus_state();
     move_floating_containers_back();
-
-    debug_print("arrange end\n");
 }
 
 static void set_layout_ref(struct layout *lt, int n_area)
@@ -243,16 +240,8 @@ void arrange_monitor(struct monitor *m)
     GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
     GPtrArray *hidden_containers = tagset_get_hidden_list(tagset); 
 
-    /* debug_print("prev visible list: %i\n", length_of_composed_list(visible_container_lists)); */
-    /* debug_print("prev tiled list: %i\n", tiled_containers->len); */
-    /* debug_print("prev hidden list: %i\n", hidden_containers->len); */
-
     update_hidden_status_of_containers(m, visible_container_lists,
             tiled_containers, hidden_containers);
-
-    /* debug_print("visible list: %i\n", length_of_composed_list(visible_container_lists)); */
-    /* debug_print("tiled list: %i\n", tiled_containers->len); */
-    /* debug_print("hidden list: %i\n", hidden_containers->len); */
 
     arrange_containers(tagset, m->root->geom, tiled_containers);
 
@@ -395,7 +384,7 @@ void update_hidden_status_of_containers(struct monitor *m,
             tagset_list_add(tiled_containers, con);
         }
     } else {
-        for (int i = tiled_containers->len-1; i >= lt->n_tiled; i--) {
+        for (int i = tiled_containers->len-1; i >= MAX(lt->n_tiled, 0); i--) {
             struct container *con = tagset_list_steal_index(tiled_containers, i);
             con->hidden = true;
             tagset_list_insert(hidden_containers, 0, con);
