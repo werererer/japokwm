@@ -211,6 +211,7 @@ void update_reduced_focus_stack(struct workspace *ws)
             }
         }
     }
+    debug_print("reduced focus stack new len: %i\n", length_of_composed_list(ws->visible_focus_set->focus_stack_lists));
 }
 
 void update_local_focus_stack(struct workspace *ws)
