@@ -26,10 +26,13 @@ static void arrange_container(struct container *con, int arrange_position,
 
 void arrange()
 {
+    debug_print("\n arrange \n");
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
+        debug_print("mon: %p\n", m);
         arrange_monitor(m);
     }
+    debug_print("arrange end\n");
 }
 
 static void set_layout_ref(struct layout *lt, int n_area)
@@ -206,12 +209,16 @@ void arrange_monitor(struct monitor *m)
     update_layout_counters(tagset);
     call_update_function(lt->options.event_handler, lt->n_area);
 
-    GPtrArray *visible_container_lists = tagset_get_visible_lists(tagset);
+    GPtrArray2D *visible_container_lists = tagset_get_visible_lists(tagset);
     GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
     GPtrArray *hidden_containers = tagset_get_hidden_list(tagset); 
 
     update_hidden_status_of_containers(m, visible_container_lists,
             tiled_containers, hidden_containers);
+
+    debug_print("visible list: %i\n", length_of_composed_list(visible_container_lists));
+    debug_print("tiled list: %i\n", tiled_containers->len);
+    debug_print("hidden list: %i\n", hidden_containers->len);
 
     if (!lt->options.arrange_by_focus) {
         for (int i = 0; i < tagset->list_set->floating_containers->len; i++) {
@@ -360,14 +367,15 @@ void update_hidden_status_of_containers(struct monitor *m,
             struct container *con = g_ptr_array_index(hidden_containers, 0);
 
             con->hidden = false;
-            g_ptr_array_remove_index(hidden_containers, 0);
-            g_ptr_array_add(tiled_containers, con);
+
+            tagset_list_remove_index(hidden_containers, 0);
+            tagset_list_add(tiled_containers, con);
         }
     } else {
         for (int i = tiled_containers->len-1; i >= lt->n_tiled; i--) {
-            struct container *con = g_ptr_array_steal_index(tiled_containers, i);
+            struct container *con = tagset_list_steal_index(tiled_containers, i);
             con->hidden = true;
-            g_ptr_array_insert(hidden_containers, 0, con);
+            tagset_list_insert(hidden_containers, 0, con);
         }
     }
 

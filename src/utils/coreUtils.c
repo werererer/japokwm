@@ -445,9 +445,6 @@ void delete_from_composed_list(GPtrArray *arrays, int i)
         if (i < 0)
             break;
     }
-
-    // no item found
-    return;
 }
 
 int length_of_list(GPtrArray *array)

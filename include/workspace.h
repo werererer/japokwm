@@ -93,6 +93,7 @@ struct workspace {
 
     struct focus_set *focus_set;
     struct focus_set *visible_focus_set;
+    struct focus_set *local_focus_set;
 };
 
 GPtrArray *create_workspaces(GPtrArray *tag_names);
@@ -102,7 +103,9 @@ void destroy_workspace(struct workspace *ws);
 void update_workspaces(GPtrArray *workspaces, GPtrArray *tag_names);
 void update_workspace_ids(GPtrArray *workspaces);
 
+void update_sub_focus_stack(struct workspace *ws);
 void update_reduced_focus_stack(struct workspace *ws);
+void update_local_focus_stack(struct workspace *ws);
 
 bool is_workspace_occupied(struct workspace *ws);
 bool workspace_is_visible(struct workspace *ws);

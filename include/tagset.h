@@ -72,6 +72,12 @@ GPtrArray *tagset_get_tiled_list(struct tagset *tagset);
 GPtrArray *tagset_get_floating_list(struct tagset *tagset);
 GPtrArray *tagset_get_hidden_list(struct tagset *tagset);
 
+void tagset_list_remove(GPtrArray *list, struct container *con);
+void tagset_list_remove_index(GPtrArray *list, int i);
+void tagset_list_add(GPtrArray *list, struct container *con);
+void tagset_list_insert(GPtrArray *list, int i, struct container *con);
+struct container *tagset_list_steal_index(GPtrArray *list, int i);
+
 void workspace_id_to_tag(BitSet *dest, int ws_id);
 
 bool exist_on(struct tagset *tagset, struct container *con);

@@ -409,6 +409,7 @@ void focus_on_hidden_stack(struct monitor *m, int i)
 
     struct tagset *tagset = monitor_get_active_tagset(m);
     GPtrArray *hidden_containers = tagset_get_hidden_list(tagset);
+    debug_print("hidden len: %i\n", hidden_containers->len);
     struct container *con = get_relative_item_in_list(hidden_containers, 0, i);
 
     if (!con)
@@ -424,9 +425,15 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     con->hidden = false;
     sel->hidden = true;
 
+    struct layout *lt = tagset_get_layout(tagset);
     /* replace selected container with a hidden one and move the selected
      * container to the end of the containers array */
-    g_ptr_array_remove(hidden_containers, con);
+    if (lt->options.arrange_by_focus) {
+        struct workspace *ws = tagset_get_workspace(tagset);
+        workspace_remove_container_from_focus_stack_locally(ws, con);
+    } else {
+        g_ptr_array_remove(hidden_containers, con);
+    }
 
     GPtrArray *visible_container_lists = tagset_get_visible_lists(tagset);
     GPtrArray *focus_list = find_list_in_composed_list(
@@ -773,6 +780,15 @@ bool container_is_bar(struct container *con)
             return false;
             break;
     }
+}
+
+struct tagset *container_get_tagset(struct container *con)
+{
+    struct monitor *m = container_get_monitor(con);
+    if (!m)
+        return NULL;
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    return tagset;
 }
 
 struct workspace *container_get_workspace(struct container *con)
