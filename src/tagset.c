@@ -526,10 +526,14 @@ bool container_intersects_with_monitor(struct container *con, struct monitor *m)
 GPtrArray *server_update_floating_containers()
 {
     list_clear(server.floating_containers, NULL);
+    list_clear(server.floating_stack, NULL);
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
         struct tagset *tagset = monitor_get_active_tagset(m);
         wlr_list_cat(server.floating_containers, tagset->list_set->floating_containers);
+
+        struct workspace *ws = tagset_get_workspace(tagset);
+        wlr_list_cat(server.floating_stack, ws->visible_visual_set->floating_visual_stack);
     }
     return server.floating_containers;
 }
@@ -706,8 +710,22 @@ bool tagset_contains_client(struct tagset *tagset, struct client *c)
     return contains;
 }
 
-// TODO refactor this function
 bool container_viewable_on_monitor(struct monitor *m,
+        struct container *con)
+{
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    if (!tagset)
+        return false;
+    bool intersects_with_monitor =
+        container_intersects_with_monitor(con, tagset->m);
+    if (!intersects_with_monitor)
+        return false;
+
+    return container_potentially_viewable_on_monitor(m, con);
+}
+
+// TODO refactor this function
+bool container_potentially_viewable_on_monitor(struct monitor *m,
         struct container *con)
 {
     struct tagset *tagset = monitor_get_active_tagset(m);
@@ -717,10 +735,6 @@ bool container_viewable_on_monitor(struct monitor *m,
     if (visible)
         return true;
 
-    bool intersects_with_monitor =
-        container_intersects_with_monitor(con, tagset->m);
-    if (!intersects_with_monitor)
-        return false;
     bool is_floating = container_is_floating(con);
     if (!is_floating)
         return false;
@@ -734,7 +748,6 @@ bool container_viewable_on_monitor(struct monitor *m,
     }
     return false;
 }
-
 
 bool visible_on(struct tagset *tagset, struct container *con)
 {

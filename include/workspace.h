@@ -70,7 +70,8 @@ struct focus_set {
 };
 
 struct visual_set {
-    GPtrArray2D *all_stack_lists;
+    GPtrArray *all_stack_lists;
+    GPtrArray2D *stack_lists;
     GPtrArray2D *visual_stack_lists;
 
     GPtrArray *tiled_visual_stack;

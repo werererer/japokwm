@@ -304,8 +304,8 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     struct workspace *ws = monitor_get_active_workspace(m);
-    for (int i = length_of_composed_list(ws->visible_visual_set->visual_stack_lists)-1; i >= 0; i--) {
-        struct container *con = get_in_composed_list(ws->visible_visual_set->visual_stack_lists, i);
+    for (int i = length_of_composed_list(ws->visible_visual_set->all_stack_lists)-1; i >= 0; i--) {
+        struct container *con = get_in_composed_list(ws->visible_visual_set->all_stack_lists, i);
         if (!container_viewable_on_monitor(m, con))
             continue;
 

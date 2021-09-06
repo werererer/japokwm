@@ -74,6 +74,7 @@ struct server {
     GPtrArray *layer_visual_stack_top;
     GPtrArray *layer_visual_stack_overlay;
 
+    GPtrArray *floating_stack;
     GPtrArray *floating_containers;
 
     /* global event handlers */
