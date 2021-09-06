@@ -11,7 +11,6 @@
 #include "tile/tileUtils.h"
 #include "render/render.h"
 #include "input_manager.h"
-#include "workspace.h"
 
 void create_notify_layer_shell(struct wl_listener *listener, void *data)
 {
@@ -77,8 +76,7 @@ void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
 
     if (c->surface.layer->mapped)
         unmap_layer_surface(c);
-    struct workspace *ws = get_workspace(c->ws_id);
-    workspace_remove_container_from_visual_stack_layer(ws, c->con);
+    remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, c->con);
 
     wl_list_remove(&c->commit.link);
     wl_list_remove(&c->map.link);
@@ -111,12 +109,10 @@ void commitlayersurfacenotify(struct wl_listener *listener, void *data)
     struct container *con = c->con;
     container_damage_part(con);
 
-    struct workspace *ws = monitor_get_active_workspace(m);
     if (c->surface.layer->current.layer != wlr_layer_surface->current.layer) {
-        remove_in_composed_list(ws->visual_set->layer_visual_stack_lists, cmp_ptr, con);
+        remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
         g_ptr_array_insert(get_layer_list(m, wlr_layer_surface->current.layer), 0, con);
     }
-    update_visual_visible_stack(ws);
 }
 
 bool layer_shell_is_bar(struct container *con)
@@ -136,20 +132,19 @@ bool layer_shell_is_bar(struct container *con)
 
 GPtrArray *get_layer_list(struct monitor *m, enum zwlr_layer_shell_v1_layer layer)
 {
-    struct workspace *ws = monitor_get_active_workspace(m);
     GPtrArray *layer_list = NULL;
     switch (layer) {
         case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
-            layer_list = g_ptr_array_index(ws->visual_set->layer_visual_stack_lists, 3);
+            layer_list = g_ptr_array_index(server.layer_visual_stack_lists, 3);
             break;
         case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
-            layer_list = g_ptr_array_index(ws->visual_set->layer_visual_stack_lists, 2);
+            layer_list = g_ptr_array_index(server.layer_visual_stack_lists, 2);
             break;
         case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
-            layer_list = g_ptr_array_index(ws->visual_set->layer_visual_stack_lists, 1);
+            layer_list = g_ptr_array_index(server.layer_visual_stack_lists, 1);
             break;
         case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
-            layer_list = g_ptr_array_index(ws->visual_set->layer_visual_stack_lists, 0);
+            layer_list = g_ptr_array_index(server.layer_visual_stack_lists, 0);
             break;
     }
     return layer_list;
@@ -164,11 +159,10 @@ void arrange_layers(struct monitor *m)
     };
 
     // Arrange exclusive surfaces from top->bottom
-    struct workspace *ws = monitor_get_active_workspace(m);
-    arrangelayer(m, ws->visible_visual_set->layer_visual_stack_overlay, &usable_area, true);
-    arrangelayer(m, ws->visible_visual_set->layer_visual_stack_top, &usable_area, true);
-    arrangelayer(m, ws->visible_visual_set->layer_visual_stack_bottom, &usable_area, true);
-    arrangelayer(m, ws->visible_visual_set->layer_visual_stack_background, &usable_area, true);
+    arrangelayer(m, server.layer_visual_stack_overlay, &usable_area, true);
+    arrangelayer(m, server.layer_visual_stack_top, &usable_area, true);
+    arrangelayer(m, server.layer_visual_stack_bottom, &usable_area, true);
+    arrangelayer(m, server.layer_visual_stack_background, &usable_area, true);
 
     if (memcmp(&usable_area, &m->root->geom, sizeof(struct wlr_box))) {
         m->root->geom = usable_area;
@@ -176,10 +170,10 @@ void arrange_layers(struct monitor *m)
     }
 
     // Arrange non-exlusive surfaces from top->bottom
-    arrangelayer(m, ws->visible_visual_set->layer_visual_stack_overlay, &usable_area, false);
-    arrangelayer(m, ws->visible_visual_set->layer_visual_stack_top, &usable_area, false);
-    arrangelayer(m, ws->visible_visual_set->layer_visual_stack_bottom, &usable_area, false);
-    arrangelayer(m, ws->visible_visual_set->layer_visual_stack_background, &usable_area, false);
+    arrangelayer(m, server.layer_visual_stack_overlay, &usable_area, false);
+    arrangelayer(m, server.layer_visual_stack_top, &usable_area, false);
+    arrangelayer(m, server.layer_visual_stack_bottom, &usable_area, false);
+    arrangelayer(m, server.layer_visual_stack_background, &usable_area, false);
 
     struct seat *seat = input_manager_get_default_seat();
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat->wlr_seat);

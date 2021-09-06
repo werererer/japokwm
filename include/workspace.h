@@ -70,16 +70,11 @@ struct focus_set {
 };
 
 struct visual_set {
+    GPtrArray2D *all_stack_lists;
     GPtrArray2D *visual_stack_lists;
-    GPtrArray2D *normal_visual_stack_lists;
-    GPtrArray2D *layer_visual_stack_lists;
 
     GPtrArray *tiled_visual_stack;
     GPtrArray *floating_visual_stack;
-    GPtrArray *layer_visual_stack_background;
-    GPtrArray *layer_visual_stack_bottom;
-    GPtrArray *layer_visual_stack_top;
-    GPtrArray *layer_visual_stack_overlay;
 };
 
 /* A tag is simply a workspace that can be focused (like a normal workspace)
@@ -162,7 +157,7 @@ void rename_workspace(struct workspace *ws, const char *name);
 
 void workspace_add_container_to_containers(struct workspace *ws, struct container *con, int i);
 void workspace_add_container_to_focus_stack(struct workspace *ws, struct container *con);
-void add_container_to_stack(struct container *con);
+void add_container_to_stack(struct workspace *ws, struct container *con);
 
 void list_set_append_container_to_focus_stack(struct workspace *ws, struct container *con);
 void list_set_add_container_to_focus_stack(struct workspace *ws, struct container *con);

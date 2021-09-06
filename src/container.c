@@ -187,8 +187,8 @@ struct container *xy_to_container(double x, double y)
         return NULL;
     struct workspace *ws = monitor_get_active_workspace(m);
 
-    for (int i = 0; i < length_of_composed_list(ws->visual_set->visual_stack_lists); i++) {
-        struct container *con = get_in_composed_list(ws->visual_set->visual_stack_lists, i);
+    for (int i = 0; i < length_of_composed_list(ws->visual_set->all_stack_lists); i++) {
+        struct container *con = get_in_composed_list(ws->visual_set->all_stack_lists, i);
         if (!con->focusable)
             continue;
         if (!container_viewable_on_monitor(m, con))
@@ -220,12 +220,12 @@ static void add_container_to_workspace(struct container *con, struct workspace *
             break;
         case X11_UNMANAGED:
             g_ptr_array_insert(ws->list_set->independent_containers, 0, con);
-            add_container_to_stack(con);
+            workspace_add_container_to_visual_stack_normal(ws, con);
             break;
         case XDG_SHELL:
         case X11_MANAGED:
             workspace_add_container_to_containers(ws, con, 0);
-            add_container_to_stack(con);
+            workspace_add_container_to_visual_stack_normal(ws, con);
             break;
     }
     workspace_add_container_to_focus_stack(ws, con);
@@ -467,8 +467,9 @@ void lift_container(struct container *con)
 
     struct monitor *m = container_get_monitor(con);
     struct workspace *ws = monitor_get_active_workspace(m);
-    workspace_remove_container_from_visual_stack_normal(ws, con);
-    add_container_to_stack(con);
+    remove_in_composed_list(ws->visual_set->visual_stack_lists, cmp_ptr, con);
+    add_container_to_stack(ws, con);
+    update_visual_visible_stack(ws);
 }
 
 void repush(int pos1, int pos2)

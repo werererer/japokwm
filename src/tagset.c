@@ -111,6 +111,9 @@ void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
     tagset_workspaces_disconnect(tagset);
     tagset_assign_workspaces(tagset, bitset);
     tagset_workspaces_connect(tagset);
+    struct workspace *ws = tagset_get_workspace(tagset);
+    update_sub_focus_stack(ws);
+    update_visual_visible_stack(ws);
 }
 
 
@@ -374,6 +377,7 @@ void focus_tagset(struct tagset *tagset)
     restore_floating_containers(tagset);
     struct workspace *ws = tagset_get_workspace(tagset);
     update_sub_focus_stack(ws);
+    update_visual_visible_stack(ws);
     ipc_event_workspace();
 
     arrange();

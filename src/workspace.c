@@ -77,46 +77,37 @@ static void focus_set_destroy(struct focus_set *focus_set)
 static struct visual_set *visual_set_create()
 {
     struct visual_set *visual_set = calloc(1, sizeof(struct visual_set));
+    visual_set->all_stack_lists = g_ptr_array_new();
     visual_set->visual_stack_lists = g_ptr_array_new();
-    visual_set->normal_visual_stack_lists = g_ptr_array_new();
-    visual_set->layer_visual_stack_lists = g_ptr_array_new();
 
     visual_set->tiled_visual_stack = g_ptr_array_new();
     visual_set->floating_visual_stack = g_ptr_array_new();
-    visual_set->layer_visual_stack_background = g_ptr_array_new();
-    visual_set->layer_visual_stack_bottom = g_ptr_array_new();
-    visual_set->layer_visual_stack_top = g_ptr_array_new();
-    visual_set->layer_visual_stack_overlay = g_ptr_array_new();
 
-    g_ptr_array_add(visual_set->visual_stack_lists, visual_set->layer_visual_stack_overlay);
-    g_ptr_array_add(visual_set->visual_stack_lists, visual_set->layer_visual_stack_top);
+    g_ptr_array_add(visual_set->all_stack_lists, server.layer_visual_stack_overlay);
+    g_ptr_array_add(visual_set->all_stack_lists, server.layer_visual_stack_top);
+    g_ptr_array_add(visual_set->all_stack_lists, visual_set->floating_visual_stack);
+    g_ptr_array_add(visual_set->all_stack_lists, visual_set->tiled_visual_stack);
+    g_ptr_array_add(visual_set->all_stack_lists, server.layer_visual_stack_bottom);
+    g_ptr_array_add(visual_set->all_stack_lists, server.layer_visual_stack_background);
+
     g_ptr_array_add(visual_set->visual_stack_lists, visual_set->floating_visual_stack);
     g_ptr_array_add(visual_set->visual_stack_lists, visual_set->tiled_visual_stack);
-    g_ptr_array_add(visual_set->visual_stack_lists, visual_set->layer_visual_stack_bottom);
-    g_ptr_array_add(visual_set->visual_stack_lists, visual_set->layer_visual_stack_background);
-
-    g_ptr_array_add(visual_set->normal_visual_stack_lists, visual_set->floating_visual_stack);
-    g_ptr_array_add(visual_set->normal_visual_stack_lists, visual_set->tiled_visual_stack);
-
-    g_ptr_array_add(visual_set->layer_visual_stack_lists, visual_set->layer_visual_stack_overlay);
-    g_ptr_array_add(visual_set->layer_visual_stack_lists, visual_set->layer_visual_stack_top);
-    g_ptr_array_add(visual_set->layer_visual_stack_lists, visual_set->layer_visual_stack_bottom);
-    g_ptr_array_add(visual_set->layer_visual_stack_lists, visual_set->layer_visual_stack_background);
     return visual_set;
 }
 
 static void visual_set_destroy(struct visual_set *visual_set)
 {
-    visual_set->visual_stack_lists = g_ptr_array_new();
-    visual_set->normal_visual_stack_lists = g_ptr_array_new();
-    visual_set->layer_visual_stack_lists = g_ptr_array_new();
+    // TODO fix me
+    /* visual_set->visual_stack_lists = g_ptr_array_new(); */
+    /* visual_set->normal_visual_stack_lists = g_ptr_array_new(); */
+    /* visual_set->layer_visual_stack_lists = g_ptr_array_new(); */
 
-    visual_set->tiled_visual_stack = g_ptr_array_new();
-    visual_set->floating_visual_stack = g_ptr_array_new();
-    visual_set->layer_visual_stack_background = g_ptr_array_new();
-    visual_set->layer_visual_stack_bottom = g_ptr_array_new();
-    visual_set->layer_visual_stack_top = g_ptr_array_new();
-    visual_set->layer_visual_stack_overlay = g_ptr_array_new();
+    /* visual_set->tiled_visual_stack = g_ptr_array_new(); */
+    /* visual_set->floating_visual_stack = g_ptr_array_new(); */
+    /* visual_set->layer_visual_stack_background = g_ptr_array_new(); */
+    /* visual_set->layer_visual_stack_bottom = g_ptr_array_new(); */
+    /* visual_set->layer_visual_stack_top = g_ptr_array_new(); */
+    /* visual_set->layer_visual_stack_overlay = g_ptr_array_new(); */
     free(visual_set);
 }
 
@@ -286,8 +277,8 @@ void update_visual_visible_stack(struct workspace *ws)
         list_clear(dest_list, NULL);
         for (int i = 0; i < src_list->len; i++) {
             struct container *con = g_ptr_array_index(src_list, i);
-            struct tagset *tagset = workspace_get_active_tagset(ws);
-            if (exist_on(tagset, con)) {
+            struct monitor *m = workspace_get_monitor(ws);
+            if (visible_on(monitor_get_active_tagset(m), con)) {
                 g_ptr_array_add(dest_list, con);
             }
         }
@@ -712,48 +703,56 @@ void workspace_add_container_to_floating_stack_locally(struct workspace *ws, str
 
 void workspace_remove_container_from_visual_stack_layer(struct workspace *ws, struct container *con)
 {
-    remove_in_composed_list(ws->visual_set->layer_visual_stack_lists, cmp_ptr, con);
-    update_visual_visible_stack(ws);
+    for (int i = 0; i < server.workspaces->len; i++) {
+        struct workspace *ws = get_workspace(i);
+        remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
+        update_visual_visible_stack(ws);
+    }
 }
 
 void workspace_remove_container_from_visual_stack_normal(struct workspace *ws, struct container *con)
 {
-    remove_in_composed_list(ws->visual_set->visual_stack_lists, cmp_ptr, con);
-    update_visual_visible_stack(ws);
+    for (int i = 0; i < server.workspaces->len; i++) {
+        struct workspace *ws = get_workspace(i);
+        remove_in_composed_list(ws->visual_set->visual_stack_lists, cmp_ptr, con);
+        update_visual_visible_stack(ws);
+    }
 }
 
 void workspace_add_container_to_visual_stack_layer(struct workspace *ws, struct container *con)
 {
-    // FIXME
-    /* remove_in_composed_list(ws->visual_set->normal_visual_stack_lists, cmp_ptr, con); */
+    for (int i = 0; i < server.workspaces->len; i++) {
+        struct workspace *ws = get_workspace(i);
+        add_container_to_stack(ws, con);
+    }
 }
 
 void workspace_add_container_to_visual_stack_normal(struct workspace *ws, struct container *con)
 {
-    // FIXME
-    /* remove_in_composed_list(ws->visual_set->normal_visual_stack_lists, cmp_ptr, con); */
+    for (int i = 0; i < server.workspaces->len; i++) {
+        struct workspace *ws = get_workspace(i);
+        add_container_to_stack(ws, con);
+    }
 }
 
-void add_container_to_stack(struct container *con)
+void add_container_to_stack(struct workspace *ws, struct container *con)
 {
     if (!con)
         return;
 
-    struct monitor *m = container_get_monitor(con);
-    struct workspace *ws = monitor_get_active_workspace(m);
     if (con->client->type == LAYER_SHELL) {
         switch (con->client->surface.layer->current.layer) {
             case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
-                g_ptr_array_insert(ws->visual_set->layer_visual_stack_background, 0, con);
+                g_ptr_array_insert(server.layer_visual_stack_background, 0, con);
                 break;
             case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
-                g_ptr_array_insert(ws->visual_set->layer_visual_stack_bottom, 0, con);
+                g_ptr_array_insert(server.layer_visual_stack_bottom, 0, con);
                 break;
             case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
-                g_ptr_array_insert(ws->visual_set->layer_visual_stack_top, 0, con);
+                g_ptr_array_insert(server.layer_visual_stack_top, 0, con);
                 break;
             case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
-                g_ptr_array_insert(ws->visual_set->layer_visual_stack_overlay, 0, con);
+                g_ptr_array_insert(server.layer_visual_stack_overlay, 0, con);
                 break;
         }
         update_visual_visible_stack(ws);
