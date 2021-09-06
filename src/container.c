@@ -618,14 +618,16 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
 
 void container_set_geom(struct container *con, struct wlr_box *geom)
 {
-    struct workspace *ws = container_get_workspace(con);
+    struct tagset *tagset = container_get_tagset(con);
+    struct workspace *ws = tagset_get_workspace(tagset);
     if (!ws)
         return;
 
     int ws_id = ws->id;
     struct wlr_box *con_geom = g_ptr_array_index(con->geometries, ws_id);
 
-    if (container_is_floating(con) && !con->floating_container_geom_was_changed) {
+    if (container_is_floating_on_workspace(con, ws)
+            && !con->floating_container_geom_was_changed) {
         con->prev_floating_geom = *con_geom;
     }
 
@@ -635,7 +637,8 @@ void container_set_geom(struct container *con, struct wlr_box *geom)
 
 struct wlr_box *container_get_geom(struct container *con)
 {
-    struct workspace *ws = container_get_workspace(con);
+    struct tagset *tagset = container_get_tagset(con);
+    struct workspace *ws = tagset_get_workspace(tagset);
     if (!ws)
         return NULL;
 
@@ -809,6 +812,15 @@ bool container_is_floating(struct container *con)
         return false;
     struct tagset *tagset = container_get_tagset(con);
     struct workspace *ws = tagset_get_workspace(tagset);
+    if (!ws)
+        return false;
+    return bitset_test(con->floating_states, ws->id);
+}
+
+bool container_is_floating_on_workspace(struct container *con, struct workspace *ws)
+{
+    if (!con)
+        return false;
     if (!ws)
         return false;
     return bitset_test(con->floating_states, ws->id);
