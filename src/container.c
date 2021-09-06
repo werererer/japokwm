@@ -77,7 +77,6 @@ void remove_container_from_tile(struct container *con)
     struct workspace *ws = get_workspace(con->client->ws_id);
 
     workspace_remove_container_from_focus_stack(ws, con);
-    g_ptr_array_remove(server.floating_containers, con);
 
     switch (con->client->type) {
         case LAYER_SHELL:
@@ -637,7 +636,6 @@ void container_set_geom(struct container *con, struct wlr_box *geom)
     struct wlr_box *con_geom = g_ptr_array_index(con->geometries, ws_id);
 
     if (container_is_floating(con) && !con->was_arranged_by_focus) {
-        debug_print("set prev_floating_geom\n");
         con->prev_floating_geom = *con_geom;
     }
 

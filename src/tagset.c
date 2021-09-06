@@ -21,8 +21,6 @@ static void tagset_set_tags(struct tagset *tagset, BitSet *workspaces);
 static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_remove_workspace(struct tagset *tagset, struct workspace *ws);
-static void server_remove_floating_workspace(struct server *server, struct tagset *tagset);
-static void server_add_floating_workspace(struct server *server, struct tagset *tagset);
 
 static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws);
 
@@ -85,7 +83,6 @@ static void tagset_append_list_sets(struct tagset *tagset, struct workspace *ws)
 static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspace *ws)
 {
     tagset_append_list_sets(tagset, ws);
-    server_add_floating_workspace(&server, tagset);
 }
 
 static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load)
@@ -239,7 +236,6 @@ static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
 
 static void tagset_unsubscribe_from_workspace(struct tagset *tagset, struct workspace *ws)
 {
-    server_remove_floating_workspace(&server, tagset);
     tagset_remove_workspace(tagset, ws);
 }
 
@@ -354,22 +350,6 @@ static void restore_floating_containers(struct tagset *tagset)
         struct container *con = g_ptr_array_index(floating_list, i);
         struct wlr_box *con_geom = container_get_geom(con);
         resize(con, *con_geom);
-    }
-}
-
-static void server_remove_floating_workspace(struct server *server, struct tagset *tagset)
-{
-    for (int i = 0; i < tagset->list_set->floating_containers->len; i++) {
-        struct container *con = g_ptr_array_index(tagset->list_set->floating_containers, i);
-        g_ptr_array_remove(server->floating_containers, con);
-    }
-}
-
-static void server_add_floating_workspace(struct server *server, struct tagset *tagset)
-{
-    for (int i = 0; i < tagset->list_set->floating_containers->len; i++) {
-        struct container *con = g_ptr_array_index(tagset->list_set->floating_containers, i);
-        g_ptr_array_add(server->floating_containers, con);
     }
 }
 
@@ -539,8 +519,21 @@ bool container_intersects_with_monitor(struct container *con, struct monitor *m)
     return wlr_box_intersection(&tmp_geom, container_get_geom(con), &m->geom);
 }
 
+GPtrArray *server_update_floating_containers()
+{
+    list_clear(server.floating_containers, NULL);
+    for (int i = 0; i < server.mons->len; i++) {
+        struct monitor *m = g_ptr_array_index(server.mons, i);
+        struct tagset *tagset = monitor_get_active_tagset(m);
+        wlr_list_cat(server.floating_containers, tagset->list_set->floating_containers);
+    }
+    return server.floating_containers;
+}
+
 GPtrArray *tagset_get_global_floating_lists(struct tagset *tagset)
 {
+    debug_print("length of floating_containers: %i\n", server.floating_containers->len);
+    server_update_floating_containers();
     return tagset->list_set->global_floating_container_lists;
 }
 
@@ -703,6 +696,7 @@ bool tagset_contains_client(struct tagset *tagset, struct client *c)
     return contains;
 }
 
+// TODO refactor this function
 bool container_viewable_on_monitor(struct monitor *m,
         struct container *con)
 {
@@ -720,7 +714,15 @@ bool container_viewable_on_monitor(struct monitor *m,
     bool is_floating = container_is_floating(con);
     if (!is_floating)
         return false;
-    return true;
+
+    for (int i = 0; i < server.mons->len; i++) {
+        struct monitor *m = g_ptr_array_index(server.mons, i);
+        bool contains_client = tagset_contains_client(m->tagset, con->client);
+        if (contains_client) {
+            return true;
+        }
+    }
+    return false;
 }
 
 

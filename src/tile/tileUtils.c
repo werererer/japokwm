@@ -26,6 +26,7 @@ static void arrange_container(struct container *con, struct monitor *m,
 
 static void move_floating_containers_back()
 {
+    server_update_floating_containers();
     for (int i = 0; i < server.floating_containers->len; i++) {
         struct container *con = g_ptr_array_index(server.floating_containers, i);
         if (con->floating_container_geom_was_changed && !con->arranged_by_focus) {
@@ -33,7 +34,6 @@ static void move_floating_containers_back()
             con->floating_container_geom_was_changed = false;
         }
     }
-
 }
 
 static void update_container_arranged_by_focus_state()

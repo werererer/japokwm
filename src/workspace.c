@@ -210,7 +210,6 @@ void update_reduced_focus_stack(struct workspace *ws)
             }
         }
     }
-    debug_print("reduced focus stack new len: %i\n", length_of_composed_list(ws->visible_focus_set->focus_stack_lists));
 }
 
 void update_local_focus_stack(struct workspace *ws)
@@ -633,8 +632,6 @@ void workspace_add_container_to_focus_stack_locally(struct workspace *ws, struct
 
 void workspace_remove_container_from_floating_stack_locally(struct workspace *ws, struct container *con)
 {
-    g_ptr_array_remove(server.floating_containers, con);
-    debug_print("floating_containers.re len: %i\n", server.floating_containers->len);
     DO_ACTION_LOCALLY(ws, 
             g_ptr_array_remove(list_set->floating_containers, con);
             );
@@ -642,8 +639,6 @@ void workspace_remove_container_from_floating_stack_locally(struct workspace *ws
 
 void workspace_add_container_to_floating_stack_locally(struct workspace *ws, struct container *con, int i)
 {
-    g_ptr_array_add(server.floating_containers, con);
-    debug_print("floating_containers.ad len: %i\n", server.floating_containers->len);
     DO_ACTION_LOCALLY(ws, 
             g_ptr_array_insert(list_set->floating_containers, i, con);
             );
@@ -669,18 +664,15 @@ void add_container_to_stack(struct container *con)
                 g_ptr_array_insert(server.layer_visual_stack_overlay, 0, con);
                 break;
         }
-        /* debug_print("visual_stack len: %i\n", length_of_composed_list(server.visual_stack_lists)); */
         return;
     }
 
     if (container_is_floating(con)) {
         g_ptr_array_insert(server.floating_visual_stack, 0, con);
-        /* debug_print("visual_stack len: %i\n", length_of_composed_list(server.visual_stack_lists)); */
         return;
     }
 
     g_ptr_array_insert(server.tiled_visual_stack, 0, con);
-    /* debug_print("visual_stack len: %i\n", length_of_composed_list(server.visual_stack_lists)); */
 }
 
 void workspace_remove_container(struct workspace *ws, struct container *con)
