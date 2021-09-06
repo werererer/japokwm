@@ -776,6 +776,8 @@ bool exist_on(struct tagset *tagset, struct container *con)
 
 struct workspace *tagset_get_workspace(struct tagset *tagset)
 {
+    if (!tagset)
+        return NULL;
     struct workspace *ws = get_workspace(tagset->selected_ws_id);
     if (!ws)
         return NULL;

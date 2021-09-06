@@ -9,6 +9,7 @@
 #include "utils/coreUtils.h"
 #include "tile/tileUtils.h"
 #include "layer_shell.h"
+#include "workspace.h"
 
 struct anchor {
     uint32_t singular_anchor;
@@ -79,8 +80,13 @@ static struct wlr_box fit_root_area(struct root *root)
     struct wlr_box d_box = root->m->geom;
     struct wlr_box box = root->geom;
 
-    for (int i = 0; i < length_of_composed_list(server.layer_visual_stack_lists); i++) {
-        struct container *con = get_in_composed_list(server.layer_visual_stack_lists, i);
+    struct workspace *ws = monitor_get_active_workspace(root->m);
+    if (!ws) {
+        return root->geom;
+    }
+
+    for (int i = 0; i < length_of_composed_list(ws->visible_visual_set->layer_visual_stack_lists); i++) {
+        struct container *con = get_in_composed_list(ws->visible_visual_set->layer_visual_stack_lists, i);
 
         /* struct tagset *tagset = monitor_get_active_tagset(root->m); */
         /* if (!exist_on(tagset, con)) */
@@ -165,8 +171,9 @@ void root_damage_whole(struct root *root)
 void set_bars_visible(struct monitor *m, bool visible)
 {
     m->root->consider_layer_shell = visible;
-    for (int i = 0; i < length_of_composed_list(server.layer_visual_stack_lists); i++) {
-        struct container *con = get_in_composed_list(server.layer_visual_stack_lists, i);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    for (int i = 0; i < length_of_composed_list(ws->visible_visual_set->layer_visual_stack_lists); i++) {
+        struct container *con = get_in_composed_list(ws->visible_visual_set->layer_visual_stack_lists, i);
 
         if (!container_is_bar(con))
             continue;

@@ -80,14 +80,14 @@ void remove_container_from_tile(struct container *con)
 
     switch (con->client->type) {
         case LAYER_SHELL:
-            remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
+            workspace_remove_container_from_visual_stack_layer(ws, con);
             break;
         case X11_UNMANAGED:
-            remove_in_composed_list(server.normal_visual_stack_lists, cmp_ptr, con);
+            workspace_remove_container_from_visual_stack_normal(ws, con);
             workspace_remove_independent_container(ws, con);
             break;
         default:
-            remove_in_composed_list(server.normal_visual_stack_lists, cmp_ptr, con);
+            workspace_remove_container_from_visual_stack_normal(ws, con);
             workspace_remove_container(ws, con);
             break;
     }
@@ -185,9 +185,10 @@ struct container *xy_to_container(double x, double y)
     struct monitor *m = xy_to_monitor(x, y);
     if (!m)
         return NULL;
+    struct workspace *ws = monitor_get_active_workspace(m);
 
-    for (int i = 0; i < length_of_composed_list(server.visual_stack_lists); i++) {
-        struct container *con = get_in_composed_list(server.visual_stack_lists, i);
+    for (int i = 0; i < length_of_composed_list(ws->visual_set->visual_stack_lists); i++) {
+        struct container *con = get_in_composed_list(ws->visual_set->visual_stack_lists, i);
         if (!con->focusable)
             continue;
         if (!container_viewable_on_monitor(m, con))
@@ -464,7 +465,9 @@ void lift_container(struct container *con)
     if (con->client->type == LAYER_SHELL)
         return;
 
-    remove_in_composed_list(server.normal_visual_stack_lists, cmp_ptr, con);
+    struct monitor *m = container_get_monitor(con);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    workspace_remove_container_from_visual_stack_normal(ws, con);
     add_container_to_stack(con);
 }
 
@@ -548,11 +551,13 @@ void set_container_floating(struct container *con, void (*fix_position)(struct c
             remove_container_from_scratchpad(con);
         }
 
-        g_ptr_array_remove(server.floating_visual_stack, con);
-        g_ptr_array_insert(server.tiled_visual_stack, 0, con);
+        g_ptr_array_remove(ws->visual_set->floating_visual_stack, con);
+        g_ptr_array_insert(ws->visual_set->tiled_visual_stack, 0, con);
+        update_visual_visible_stack(ws);
     } else {
-        remove_in_composed_list(server.visual_stack_lists, cmp_ptr, con);
-        g_ptr_array_insert(server.floating_visual_stack, 0, con);
+        remove_in_composed_list(ws->visual_set->visual_stack_lists, cmp_ptr, con);
+        g_ptr_array_insert(ws->visual_set->floating_visual_stack, 0, con);
+        update_visual_visible_stack(ws);
     }
 
     lift_container(con);

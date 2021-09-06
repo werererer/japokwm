@@ -69,6 +69,19 @@ struct focus_set {
     GPtrArray *focus_stack_not_focusable;
 };
 
+struct visual_set {
+    GPtrArray2D *visual_stack_lists;
+    GPtrArray2D *normal_visual_stack_lists;
+    GPtrArray2D *layer_visual_stack_lists;
+
+    GPtrArray *tiled_visual_stack;
+    GPtrArray *floating_visual_stack;
+    GPtrArray *layer_visual_stack_background;
+    GPtrArray *layer_visual_stack_bottom;
+    GPtrArray *layer_visual_stack_top;
+    GPtrArray *layer_visual_stack_overlay;
+};
+
 /* A tag is simply a workspace that can be focused (like a normal workspace)
  * and can selected: which just means that all clients on the selected tags
  * will be combined to be shown on the focused tag
@@ -94,6 +107,9 @@ struct workspace {
     struct focus_set *focus_set;
     struct focus_set *visible_focus_set;
     struct focus_set *local_focus_set;
+
+    struct visual_set *visual_set;
+    struct visual_set *visible_visual_set;
 };
 
 GPtrArray *create_workspaces(GPtrArray *tag_names);
@@ -106,6 +122,8 @@ void update_workspace_ids(GPtrArray *workspaces);
 void update_sub_focus_stack(struct workspace *ws);
 void update_reduced_focus_stack(struct workspace *ws);
 void update_local_focus_stack(struct workspace *ws);
+
+void update_visual_visible_stack(struct workspace *ws);
 
 bool is_workspace_occupied(struct workspace *ws);
 bool workspace_is_visible(struct workspace *ws);
@@ -154,6 +172,11 @@ void workspace_remove_container_from_focus_stack_locally(struct workspace *ws, s
 void workspace_add_container_to_focus_stack_locally(struct workspace *ws, struct container *con);
 void workspace_remove_container_from_floating_stack_locally(struct workspace *ws, struct container *con);
 void workspace_add_container_to_floating_stack_locally(struct workspace *ws, struct container *con, int i);
+
+void workspace_remove_container_from_visual_stack_layer(struct workspace *ws, struct container *con);
+void workspace_add_container_to_visual_stack_layer(struct workspace *ws, struct container *con);
+void workspace_remove_container_from_visual_stack_normal(struct workspace *ws, struct container *con);
+void workspace_add_container_to_visual_stack_normal(struct workspace *ws, struct container *con);
 
 void workspace_remove_container(struct workspace *ws, struct container *con);
 void workspace_remove_container_from_focus_stack(struct workspace *ws, struct container *con);

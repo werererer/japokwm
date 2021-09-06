@@ -67,17 +67,6 @@ struct server {
 
     struct wlr_surface *old_surface;
 
-    GPtrArray2D *visual_stack_lists;
-    GPtrArray2D *normal_visual_stack_lists;
-    GPtrArray2D *layer_visual_stack_lists;
-
-    GPtrArray *tiled_visual_stack;
-    GPtrArray *floating_visual_stack;
-    GPtrArray *layer_visual_stack_background;
-    GPtrArray *layer_visual_stack_bottom;
-    GPtrArray *layer_visual_stack_top;
-    GPtrArray *layer_visual_stack_overlay;
-
     GPtrArray *floating_containers;
 
     /* global event handlers */
