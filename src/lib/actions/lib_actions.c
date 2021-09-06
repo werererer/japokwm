@@ -397,7 +397,6 @@ int lib_load_layout_in_set(lua_State *L)
 
 int lib_load_layout(lua_State *L)
 {
-    lua_rawgeti(L, -1, 1);
     const char *layout_name = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
