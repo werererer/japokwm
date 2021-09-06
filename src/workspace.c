@@ -416,7 +416,7 @@ void push_layout(struct workspace *ws, struct layout *lt)
 
 void load_default_layout(lua_State *L)
 {
-    load_layout(L, server.default_layout->name);
+    load_layout(L, server.default_layout->symbol);
 }
 
 void load_layout(lua_State *L, const char *name)

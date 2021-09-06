@@ -9,7 +9,6 @@
 #include "layout_set.h"
 
 struct layout {
-    const char *name;
     const char *symbol;
     // the amount of slave windows plus the master are (+1)
     int n_area;

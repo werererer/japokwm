@@ -73,6 +73,7 @@ static const struct luaL_Reg localevent[] =
 
 static const struct luaL_Reg info[] =
 {
+    {"get_active_layout", lib_get_active_layout},
     {"get_container_under_cursor", lib_get_container_under_cursor},
     {"get_next_empty_workspace", lib_get_next_empty_workspace},
     {"get_nmaster", lib_get_nmaster},

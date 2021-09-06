@@ -127,10 +127,10 @@ int lib_set_repeat_delay(lua_State *L)
 
 int lib_set_default_layout(lua_State *L)
 {
-    const char *name = luaL_checkstring(L, -1);
+    const char *symbol = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    server.default_layout->name = name;
+    server.default_layout->symbol = symbol;
     return 0;
 }
 

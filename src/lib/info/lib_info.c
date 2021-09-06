@@ -8,6 +8,16 @@
 #include "tile/tileUtils.h"
 #include "workspace.h"
 
+int lib_get_active_layout(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct tagset *tagset = monitor_get_active_tagset(m);
+
+    struct layout *lt = tagset_get_layout(tagset);
+    lua_pushstring(L, lt->symbol);
+    return 1;
+}
+
 int lib_get_this_container_count(lua_State *L)
 {
     struct monitor *m = selected_monitor;

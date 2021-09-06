@@ -321,6 +321,11 @@ integers
 	layout_data: layout_data - layout_data for the layout
 
 # INFO
+*get_active_layout()* ++
+	get the name of the layout currently active on the selected monitor
+<return> ++
+	string - name of the layout
+
 *get_this_container_count()* ++
 	get the amount of visible containers in this workspace
 <return> ++
