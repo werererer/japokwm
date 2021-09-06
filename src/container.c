@@ -545,8 +545,13 @@ void set_container_floating(struct container *con, void (*fix_position)(struct c
         fix_position(con);
 
     if (!container_is_floating(con)) {
-        struct workspace *sel_ws = monitor_get_active_workspace(selected_monitor);
-        container_set_workspace_id(con, sel_ws->id);
+        struct workspace *ws = container_get_workspace(con);
+        struct tagset *tagset = workspace_get_selected_tagset(ws);
+        if (tagset) {
+            struct monitor *m = selected_monitor;
+            struct workspace *sel_ws = monitor_get_active_workspace(m);
+            container_set_workspace_id(con, sel_ws->id);
+        }
 
         if (con->on_scratchpad) {
             remove_container_from_scratchpad(con);
