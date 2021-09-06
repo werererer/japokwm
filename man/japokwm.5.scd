@@ -191,7 +191,7 @@ integers
 *load_layout(l)* ++
 	load a layout ++
 <where> ++
-	l: table(a: string, b: string) where
+	l: string - represents the layout name
 
 *load_layout_in_set(set, i: position)* ++
 	load a layout in the layout set ++
