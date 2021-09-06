@@ -533,8 +533,14 @@ GPtrArray *server_update_floating_containers()
 GPtrArray *tagset_get_global_floating_lists(struct tagset *tagset)
 {
     debug_print("length of floating_containers: %i\n", server.floating_containers->len);
-    server_update_floating_containers();
-    return tagset->list_set->global_floating_container_lists;
+    struct layout *lt = tagset_get_layout(tagset);
+    struct workspace *ws = tagset_get_workspace(tagset);
+    if (lt->options.arrange_by_focus) {
+        // TODO this doesn't seem right
+        return ws->visible_focus_set->focus_stack_visible_lists;
+    } else {
+        return tagset->list_set->global_floating_container_lists;
+    }
 }
 
 GPtrArray *tagset_get_visible_lists(struct tagset *tagset)
