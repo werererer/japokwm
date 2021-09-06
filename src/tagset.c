@@ -535,6 +535,11 @@ GPtrArray *server_update_floating_containers()
         struct workspace *ws = tagset_get_workspace(tagset);
         wlr_list_cat(server.floating_stack, ws->visible_visual_set->floating_visual_stack);
     }
+    debug_print("floating_stack len: %i\n", server.floating_stack->len);
+    for (int i = 0; i < server.floating_stack->len; i++) {
+        struct container *con = g_ptr_array_index(server.floating_stack, i);
+        debug_print("is floating: %i\n", container_is_floating(con));
+    }
     return server.floating_containers;
 }
 

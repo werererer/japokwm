@@ -807,7 +807,8 @@ bool container_is_floating(struct container *con)
 {
     if (!con)
         return false;
-    struct workspace *ws = container_get_workspace(con);
+    struct tagset *tagset = container_get_tagset(con);
+    struct workspace *ws = tagset_get_workspace(tagset);
     if (!ws)
         return false;
     return bitset_test(con->floating_states, ws->id);
