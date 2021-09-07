@@ -228,19 +228,20 @@ static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *bo
 
     enum wlr_edges containers_hidden_edges = WLR_EDGE_NONE;
     struct wlr_box *con_geom = container_get_geom(con);
+    int border_width = container_get_border_width(con);
     // hide edges if needed
     if (hidden_edges & WLR_EDGE_LEFT) {
         if (con_geom->x == m->root->geom.x) {
             containers_hidden_edges |= WLR_EDGE_LEFT;
-            container_add_gaps(&borders[0], con->client->bw, WLR_EDGE_LEFT);
-            container_add_gaps(&borders[1], con->client->bw, WLR_EDGE_LEFT);
+            container_add_gaps(&borders[0], border_width, WLR_EDGE_LEFT);
+            container_add_gaps(&borders[1], border_width, WLR_EDGE_LEFT);
         }
     }
     if (hidden_edges & WLR_EDGE_RIGHT) {
         if (is_approx_equal(con_geom->x + con_geom->width, m->root->geom.x + m->root->geom.width, 3)) {
             containers_hidden_edges |= WLR_EDGE_RIGHT;
-            container_add_gaps(&borders[0], con->client->bw, WLR_EDGE_RIGHT);
-            container_add_gaps(&borders[1], con->client->bw, WLR_EDGE_RIGHT);
+            container_add_gaps(&borders[0], border_width, WLR_EDGE_RIGHT);
+            container_add_gaps(&borders[1], border_width, WLR_EDGE_RIGHT);
         }
     }
     if (hidden_edges & WLR_EDGE_TOP) {
@@ -264,17 +265,19 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
         double ox, oy;
         int w, h;
         struct wlr_box *con_geom = container_get_geom(con);
-        ox = con_geom->x - con->client->bw;
-        oy = con_geom->y - con->client->bw;
+        int border_width = container_get_border_width(con);
+        debug_print("border_width: %i\n", border_width);
+        ox = con_geom->x - border_width;
+        oy = con_geom->y - border_width;
         wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
         w = con_geom->width;
         h = con_geom->height;
 
         struct wlr_box *borders = (struct wlr_box[4]) {
-            {ox, oy, w + 2 * con->client->bw, con->client->bw},             /* top */
-                {ox, oy + con->client->bw + h, w + 2 * con->client->bw, con->client->bw}, /* bottom */
-                {ox, oy + con->client->bw, con->client->bw, h},                 /* left */
-                {ox + con->client->bw + w, oy + con->client->bw, con->client->bw, h},     /* right */
+            {ox, oy, w + 2 * border_width, border_width},             /* top */
+                {ox, oy + border_width + h, w + 2 * border_width, border_width}, /* bottom */
+                {ox, oy + border_width, border_width, h},                 /* left */
+                {ox + border_width + w, oy + border_width, border_width, h},     /* right */
         };
 
         enum wlr_edges hidden_edges = WLR_EDGE_NONE;

@@ -139,11 +139,9 @@ void maprequestx11(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
     struct wlr_xwayland_surface *xwayland_surface = c->surface.xwayland;
     struct monitor *m = selected_monitor;
-    struct layout *lt = get_layout_in_monitor(m);
 
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
     c->ws_id = m->tagset->selected_ws_id;
-    c->bw = lt->options.tile_border_px;
 
     struct container *con = c->con;
     add_container_to_tile(con);
@@ -185,7 +183,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
                 con->on_top = false;
                 if (x11_wants_floating(con->client)) {
-                    set_container_floating(con, container_fix_position, true);
+                    container_set_floating(con, container_fix_position, true);
                     resize(con, prefered_geom);
                 }
                 break;
@@ -208,7 +206,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
                 con->has_border = false;
                 lift_container(con);
-                set_container_floating(con, NULL, true);
+                container_set_floating(con, NULL, true);
                 resize(con, prefered_geom);
                 break;
             }

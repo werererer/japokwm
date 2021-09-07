@@ -10,17 +10,23 @@
 #include "monitor.h"
 #include "bitset/bitset.h"
 
+struct container_property {
+    struct wlr_box geom;
+    int border_width;
+    bool floating;
+};
+
 struct container {
+    GPtrArray *properties;
+
     /* layout-relative, includes border */
     // geometry on each layout
-    GPtrArray *geometries;
-    BitSet *floating_states;
     struct wlr_box prev_geom;
     struct wlr_box prev_floating_geom;
     struct client *client;
 
-    bool is_xwayland_popup;
     bool is_tiled;
+    bool is_xwayland_popup;
     bool focusable;
     bool has_border;
     bool hidden;
@@ -67,14 +73,23 @@ void focus_on_stack(struct monitor *m, int i);
  * borders. This relies on stack being ordered from top to bottom. */
 void lift_container(struct container *con);
 void repush(int pos, int pos2);
-void set_container_floating(struct container *con, void (*fix_position)(struct container *con), bool floating);
+void container_set_floating(struct container *con, void (*fix_position)(struct container *con),
+        bool floating);
 void set_container_hidden_status(struct container *con, bool b);
 void set_container_monitor(struct container *con, struct monitor *m);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
 
+struct container_property *container_get_property(struct container *con);
+struct container_property *container_get_property_at_workspace(
+        struct container *con,
+        struct workspace *ws);
+
 void container_set_geom(struct container *con, struct wlr_box *geom);
 struct wlr_box *container_get_geom(struct container *con);
+
+void container_set_border_width(struct container *con, int border_width);
+int container_get_border_width(struct container *con);
 
 void container_set_workspace_id(struct container *con, int ws_id);
 void container_set_workspace(struct container *con, struct workspace *ws);

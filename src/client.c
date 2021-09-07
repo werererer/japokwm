@@ -248,7 +248,7 @@ void reset_tiled_client_borders(int border_px)
             continue;
         if (container_is_floating(c->con))
             continue;
-        c->bw = border_px;
+        container_set_border_width(c->con, border_px);
     }
 }
 
@@ -261,6 +261,6 @@ void reset_floating_client_borders(int border_px)
             continue;
         if (!container_is_floating(c->con))
             continue;
-        c->bw = border_px;
+        container_set_border_width(c->con, border_px);
     }
 }

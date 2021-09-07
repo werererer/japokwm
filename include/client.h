@@ -28,7 +28,6 @@ struct client {
     struct wl_listener unmap;
     struct wl_listener destroy;
     struct wl_listener new_popup;
-    int bw;
 
     enum shell type;
     const char *title;

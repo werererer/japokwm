@@ -299,12 +299,16 @@ static void arrange_container(struct container *con, struct monitor *m,
     struct wlr_box geom = get_nth_geom_in_layout(L, lt, root_geom, arrange_position);
     container_surround_gaps(&geom, inner_gap);
 
-    // since gaps are halfed we need to multiply it by 2
-    container_surround_gaps(&geom, 2*con->client->bw);
-
     if (container_is_floating(con)) {
         con->floating_container_geom_was_changed = true;
+        container_set_border_width(con, lt->options.float_border_px);
+    } else {
+        container_set_border_width(con, lt->options.tile_border_px);
     }
+
+    // since gaps are halfed we need to multiply it by 2
+    int border_width = container_get_border_width(con);
+    container_surround_gaps(&geom, 2*border_width);
 
     resize(con, geom);
 }

@@ -102,7 +102,7 @@ int lib_set_floating(lua_State *L)
     if (!sel)
         return 0;
 
-    set_container_floating(sel, container_fix_position, floating);
+    container_set_floating(sel, container_fix_position, floating);
 
     arrange();
     return 0;
@@ -241,7 +241,7 @@ int lib_toggle_floating(lua_State *L)
     struct container *sel = get_focused_container(selected_monitor);
     if (!sel)
         return 0;
-    set_container_floating(sel, container_fix_position, !container_is_floating(sel));
+    container_set_floating(sel, container_fix_position, !container_is_floating(sel));
     arrange();
     return 0;
 }
