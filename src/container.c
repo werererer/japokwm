@@ -28,8 +28,9 @@ static struct container_property *create_container_property()
     return property;
 }
 
-static void destroy_container_property(struct container_property *property)
+static void destroy_container_property(void *property_ptr)
 {
+    struct container_property *property = property_ptr;
     free(property);
 }
 
@@ -43,7 +44,7 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     con->has_border = has_border;
     con->focusable = true;
 
-    con->properties = g_ptr_array_new();
+    con->properties = g_ptr_array_new_with_free_func(destroy_container_property);
     for (int i = 0; i < server.workspaces->len; i++) {
         struct container_property *container_property = create_container_property();
         g_ptr_array_add(con->properties, container_property);
@@ -55,8 +56,6 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 
 void destroy_container(struct container *con)
 {
-    debug_print("destroy con: %p\n", con);
-    // FIXME
     g_ptr_array_free(con->properties, true);
     free(con);
 }
