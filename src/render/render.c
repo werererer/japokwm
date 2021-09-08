@@ -266,7 +266,6 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
         int w, h;
         struct wlr_box *con_geom = container_get_geom(con);
         int border_width = container_get_border_width(con);
-        debug_print("border_width: %i\n", border_width);
         ox = con_geom->x - border_width;
         oy = con_geom->y - border_width;
         wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
@@ -350,9 +349,9 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
 
 static void render_independents(struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    for (int i = 0; i < tagset->list_set->independent_containers->len; i++) {
-        struct container *con = g_ptr_array_index(tagset->list_set->independent_containers, i);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    for (int i = 0; i < ws->independent_containers->len; i++) {
+        struct container *con = g_ptr_array_index(ws->independent_containers, i);
         struct wlr_surface *surface = get_wlrsurface(con->client);
 
         struct wlr_box *con_geom = container_get_geom(con);

@@ -69,7 +69,7 @@ void add_container_to_tile(struct container *con)
     if (m) {
         struct layout *lt = get_layout_in_monitor(m);
         struct event_handler *ev = lt->options.event_handler;
-        call_create_container_function(ev, get_position_in_container_stack(con));
+        call_create_container_function(ev, get_position_in_container_focus_stack(con));
     }
 
     con->is_tiled = true;
@@ -228,7 +228,7 @@ static void add_container_to_workspace(struct container *con, struct workspace *
             }
             break;
         case X11_UNMANAGED:
-            g_ptr_array_insert(ws->list_set->independent_containers, 0, con);
+            g_ptr_array_insert(ws->independent_containers, 0, con);
             workspace_add_container_to_visual_stack_normal(ws, con);
             break;
         case XDG_SHELL:
@@ -373,7 +373,7 @@ void focus_container(struct container *con)
     struct tagset *tagset = workspace_get_active_tagset(ws);
     struct layout *lt = tagset_get_layout(tagset);
     call_on_focus_function(lt->options.event_handler,
-            get_position_in_container_stack(con));
+            get_position_in_container_focus_stack(con));
 
     struct client *old_c = sel ? sel->client : NULL;
     struct client *new_c = new_sel ? new_sel->client : NULL;
@@ -390,7 +390,6 @@ void focus_on_stack(struct monitor *m, int i)
 
     struct tagset *tagset = monitor_get_active_tagset(m);
     GPtrArray *visible_container_lists = tagset_get_global_floating_lists(tagset);
-    debug_print("visible list length: %i\n", visible_container_lists->len);
 
     if (sel->client->type == LAYER_SHELL) {
         struct workspace *ws = get_workspace(tagset->selected_ws_id);
@@ -498,8 +497,7 @@ void repush(int pos1, int pos2)
 
     // TODO: this doesn't work if tiled by focus
     struct workspace *ws = get_workspace(tagset->selected_ws_id);
-    workspace_remove_container_from_containers_locally(ws, con);
-    workspace_add_container_to_containers_locally(ws, con, pos2);
+    workspace_repush(ws, con, pos2);
 
     arrange();
 
@@ -738,7 +736,7 @@ inline int absolute_y_to_container_relative(struct wlr_box *geom, int y)
     return y - geom->y;
 }
 
-int get_position_in_container_stack(struct container *con)
+int get_position_in_container_focus_stack(struct container *con)
 {
     if (!con)
         return INVALID_POSITION;
@@ -746,6 +744,17 @@ int get_position_in_container_stack(struct container *con)
     struct monitor *m = selected_monitor;
     struct workspace *ws = monitor_get_active_workspace(m);
     int position = find_in_composed_list(ws->visible_focus_set->focus_stack_visible_lists, cmp_ptr, con);
+    return position;
+}
+
+int get_position_in_container_stack(struct container *con)
+{
+    if (!con)
+        return INVALID_POSITION;
+
+    struct monitor *m = selected_monitor;
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    int position = find_in_composed_list(tagset->list_set->visible_container_lists, cmp_ptr, con);
     return position;
 }
 

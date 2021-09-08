@@ -33,7 +33,17 @@ int lib_this_container_position(lua_State *L)
     struct monitor *m = selected_monitor;
     struct container *sel = get_focused_container(m);
 
-    int position = get_position_in_container_stack(sel);
+    int position = get_position_in_container_focus_stack(sel);
+    lua_pushinteger(L, position);
+    return 1;
+}
+
+int lib_stack_position_container_position(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct container *sel = get_focused_container(m);
+
+    int position = get_position_in_container_focus_stack(sel);
     lua_pushinteger(L, position);
     return 1;
 }
@@ -82,7 +92,7 @@ int lib_get_container_under_cursor(lua_State *L)
     struct wlr_cursor *wlr_cursor = seat->cursor->wlr_cursor;
 
     struct container *con = xy_to_container(wlr_cursor->x, wlr_cursor->y);
-    int pos = get_position_in_container_stack(con);
+    int pos = get_position_in_container_focus_stack(con);
     lua_pushinteger(L, pos);
     return 1;
 }

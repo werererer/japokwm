@@ -140,6 +140,9 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     // fill layout stack with reasonable values
     push_layout(ws, lt);
     push_layout(ws, lt);
+
+    ws->independent_containers = g_ptr_array_new();
+
     ws->focus_set = focus_set_create();
     ws->visible_focus_set = focus_set_create();
     ws->local_focus_set = focus_set_create();
@@ -216,6 +219,8 @@ struct container *get_container(struct workspace *ws, int i)
 
 void destroy_workspace(struct workspace *ws)
 {
+    g_ptr_array_free(ws->independent_containers, false);
+
     focus_set_destroy(ws->focus_set);
     focus_set_destroy(ws->visible_focus_set);
     focus_set_destroy(ws->local_focus_set);
@@ -799,6 +804,54 @@ void workspace_remove_independent_container(struct workspace *ws, struct contain
     DO_ACTION_GLOBALLY(server.workspaces,
             g_ptr_array_remove(list_set->independent_containers, con);
             );
+}
+
+static int get_in_container_stack(struct container *con)
+{
+    if (!con)
+        return INVALID_POSITION;
+
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = monitor_get_active_workspace(m);
+    int position = find_in_composed_list(ws->list_set->visible_container_lists, cmp_ptr, con);
+    return position;
+}
+
+static GArray *container_array_get_positions_array(GPtrArray *containers)
+{
+    GArray *positions = g_array_new(false, false, sizeof(int));
+    for (int i = 0; i < containers->len; i++) {
+        struct container *con = g_ptr_array_index(containers, i);
+        int position = get_in_container_stack(con);
+        g_array_append_val(positions, position);
+    }
+    return positions;
+}
+
+void workspace_repush(struct workspace *ws, struct container *con, int new_pos)
+{
+    struct tagset *tagset = workspace_get_active_tagset(ws);
+
+    GPtrArray *tiled_list = tagset_get_tiled_list(tagset);
+
+    GArray *prev_positions = container_array_get_positions_array(tiled_list);
+    g_ptr_array_remove(tiled_list, con);
+    g_ptr_array_insert(tiled_list, new_pos, con);
+    GArray *positions = container_array_get_positions_array(tiled_list);
+
+    GPtrArray *tiled_containers = g_ptr_array_new();
+    wlr_list_cat(tiled_containers, ws->list_set->tiled_containers);
+
+    for (int i = 0; i < prev_positions->len; i++) {
+        int prev_position = g_array_index(prev_positions, int, i);
+        int position = g_array_index(positions, int, i);
+        struct container *prev_con = g_ptr_array_index(tiled_containers, position);
+        g_ptr_array_index(ws->list_set->tiled_containers, prev_position) = prev_con;
+    }
+
+    g_ptr_array_free(tiled_containers, false);
+    g_array_free(prev_positions, false);
+    g_array_free(positions, false);
 }
 
 bool workspace_sticky_contains_client(struct workspace *ws, struct client *client)

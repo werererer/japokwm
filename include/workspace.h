@@ -99,6 +99,7 @@ struct workspace {
     struct tagset *selected_tagset;
 
     struct list_set *list_set;
+    GPtrArray *independent_containers;
 
     struct focus_set *focus_set;
     struct focus_set *visible_focus_set;
@@ -177,6 +178,8 @@ void workspace_add_container_to_visual_stack_normal(struct workspace *ws, struct
 void workspace_remove_container(struct workspace *ws, struct container *con);
 void workspace_remove_container_from_focus_stack(struct workspace *ws, struct container *con);
 void workspace_remove_independent_container(struct workspace *ws, struct container *con);
+
+void workspace_repush(struct workspace *ws, struct container *con, int i);
 
 bool workspace_sticky_contains_client(struct workspace *ws, struct client *client);
 

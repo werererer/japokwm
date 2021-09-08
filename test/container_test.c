@@ -114,7 +114,7 @@ void focus_container_test()
 
 void get_position_in_container_stack_crash_test()
 {
-    get_position_in_container_stack(NULL);
+    get_position_in_container_focus_stack(NULL);
 }
 
 void get_focused_container_crash_test()

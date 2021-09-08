@@ -83,6 +83,7 @@ static const struct luaL_Reg info[] =
     {"is_container_not_in_limit", lib_is_container_not_in_limit},
     {"is_container_not_in_master_limit", lib_is_container_not_in_master_limit},
     {"this_container_position", lib_this_container_position},
+    {"stack_position_container_position", lib_stack_position_container_position},
     {NULL, NULL},
 };
 

@@ -15,7 +15,6 @@ struct list_set *create_list_set()
     list_set->visible_container_lists = g_ptr_array_new();
     list_set->global_floating_container_lists = g_ptr_array_new();
 
-    list_set->independent_containers = g_ptr_array_new();
     list_set->tiled_containers = g_ptr_array_new();
     list_set->hidden_containers = g_ptr_array_new();
     list_set->floating_containers = g_ptr_array_new();

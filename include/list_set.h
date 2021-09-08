@@ -21,8 +21,6 @@ struct list_set {
     GPtrArray *floating_containers;
     GPtrArray *tiled_containers;
     GPtrArray *hidden_containers;
-
-    GPtrArray *independent_containers;
 };
 
 struct list_set *create_list_set();

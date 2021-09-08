@@ -13,5 +13,6 @@ int lib_get_workspace(lua_State *L);
 int lib_is_container_not_in_limit(lua_State *L);
 int lib_is_container_not_in_master_limit(lua_State *L);
 int lib_this_container_position(lua_State *L);
+int lib_stack_position_container_position(lua_State *L);
 
 #endif /* INFO_H */
