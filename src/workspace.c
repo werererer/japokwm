@@ -801,9 +801,7 @@ void workspace_remove_container_from_focus_stack(struct workspace *ws, struct co
 
 void workspace_remove_independent_container(struct workspace *ws, struct container *con)
 {
-    DO_ACTION_GLOBALLY(server.workspaces,
-            g_ptr_array_remove(list_set->independent_containers, con);
-            );
+    g_ptr_array_remove(ws->independent_containers, con);
 }
 
 static int get_in_container_stack(struct container *con)

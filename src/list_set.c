@@ -33,13 +33,11 @@ struct list_set *create_list_set()
     g_ptr_array_add(list_set->all_lists, list_set->floating_containers);
     g_ptr_array_add(list_set->all_lists, list_set->tiled_containers);
     g_ptr_array_add(list_set->all_lists, list_set->hidden_containers);
-    g_ptr_array_add(list_set->all_lists, list_set->independent_containers);
     return list_set;
 }
 
 void destroy_list_set(struct list_set *list_set)
 {
-    g_ptr_array_free(list_set->independent_containers, FALSE);
     g_ptr_array_free(list_set->tiled_containers, FALSE);
     g_ptr_array_free(list_set->hidden_containers, FALSE);
     g_ptr_array_free(list_set->floating_containers, FALSE);
