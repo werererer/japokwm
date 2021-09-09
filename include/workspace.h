@@ -179,6 +179,8 @@ void workspace_remove_container(struct workspace *ws, struct container *con);
 void workspace_remove_container_from_focus_stack(struct workspace *ws, struct container *con);
 void workspace_remove_independent_container(struct workspace *ws, struct container *con);
 
+GArray *container_array2D_get_positions_array(GPtrArray2D *containers);
+GArray *container_array_get_positions_array(GPtrArray *containers);
 void workspace_repush(struct workspace *ws, struct container *con, int i);
 
 bool workspace_sticky_contains_client(struct workspace *ws, struct client *client);

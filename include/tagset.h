@@ -59,6 +59,7 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *work
 void destroy_tagset(struct tagset *tagset);
 
 void focus_tagset(struct tagset *tagset);
+void tagset_write_to_workspaces(struct tagset *tagset);
 void tagset_focus_workspace(int ws_id);
 void tagset_toggle_add(struct tagset *tagset, BitSet *bitset);
 void tagset_focus_tags(int ws_id, struct BitSet *bitset);

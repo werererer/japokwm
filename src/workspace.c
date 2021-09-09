@@ -815,7 +815,19 @@ static int get_in_container_stack(struct container *con)
     return position;
 }
 
-static GArray *container_array_get_positions_array(GPtrArray *containers)
+GArray *container_array2D_get_positions_array(GPtrArray2D *containers)
+{
+    GArray *positions = g_array_new(false, false, sizeof(int));
+    for (int i = 0; i < length_of_composed_list(containers); i++) {
+        struct container *con = get_in_composed_list(containers, i);
+        int position = get_in_container_stack(con);
+        g_array_append_val(positions, position);
+    }
+    return positions;
+}
+
+
+GArray *container_array_get_positions_array(GPtrArray *containers)
 {
     GArray *positions = g_array_new(false, false, sizeof(int));
     for (int i = 0; i < containers->len; i++) {
@@ -832,24 +844,9 @@ void workspace_repush(struct workspace *ws, struct container *con, int new_pos)
 
     GPtrArray *tiled_list = tagset_get_tiled_list(tagset);
 
-    GArray *prev_positions = container_array_get_positions_array(tiled_list);
     g_ptr_array_remove(tiled_list, con);
     g_ptr_array_insert(tiled_list, new_pos, con);
-    GArray *positions = container_array_get_positions_array(tiled_list);
-
-    GPtrArray *tiled_containers = g_ptr_array_new();
-    wlr_list_cat(tiled_containers, ws->list_set->tiled_containers);
-
-    for (int i = 0; i < prev_positions->len; i++) {
-        int prev_position = g_array_index(prev_positions, int, i);
-        int position = g_array_index(positions, int, i);
-        struct container *prev_con = g_ptr_array_index(tiled_containers, position);
-        g_ptr_array_index(ws->list_set->tiled_containers, prev_position) = prev_con;
-    }
-
-    g_ptr_array_free(tiled_containers, false);
-    g_array_free(prev_positions, false);
-    g_array_free(positions, false);
+    tagset_write_to_workspaces(tagset);
 }
 
 bool workspace_sticky_contains_client(struct workspace *ws, struct client *client)
