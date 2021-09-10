@@ -11,7 +11,9 @@
 #include "bitset/bitset.h"
 
 struct container_property {
+    // geometry on each layout
     struct wlr_box geom;
+    /* layout-relative, includes border */
     int border_width;
     bool floating;
 };
@@ -19,8 +21,8 @@ struct container_property {
 struct container {
     GPtrArray *properties;
 
-    /* layout-relative, includes border */
-    // geometry on each layout
+    // if this is set it will overwrite the other geometries
+    struct wlr_box global_geom;
     struct wlr_box prev_geom;
     struct wlr_box prev_floating_geom;
     struct client *client;

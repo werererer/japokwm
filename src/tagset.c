@@ -383,7 +383,6 @@ void focus_tagset(struct tagset *tagset)
 
     arrange();
     focus_most_recent_container(ws);
-    root_damage_whole(m->root);
 
     struct seat *seat = input_manager_get_default_seat();
     cursor_rebase(seat->cursor);
@@ -753,8 +752,10 @@ bool container_viewable_on_monitor(struct monitor *m,
         return false;
     bool intersects_with_monitor =
         container_intersects_with_monitor(con, tagset->m);
-    if (!intersects_with_monitor)
+    if (!intersects_with_monitor) {
+        debug_print("not intersects with monitor\n");
         return false;
+    }
 
     return container_potentially_viewable_on_monitor(m, con);
 }
@@ -779,7 +780,7 @@ bool container_potentially_viewable_on_monitor(struct monitor *m,
         struct tagset *tagset = monitor_get_active_tagset(m);
         bool contains_client = tagset_contains_client(tagset->workspaces, con->client);
         if (contains_client) {
-            return true;
+            return false;
         }
     }
     return false;

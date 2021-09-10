@@ -659,6 +659,9 @@ void container_set_geom(struct container *con, struct wlr_box *geom)
     struct container_property *property =
         container_get_property(con);
     struct wlr_box *con_geom = &property->geom;
+    if (con->client->type == LAYER_SHELL) {
+        con_geom = &con->global_geom;
+    }
 
     if (container_is_floating(con)
             && !con->floating_container_geom_was_changed) {
@@ -675,6 +678,9 @@ struct wlr_box *container_get_geom(struct container *con)
     struct workspace *ws = tagset_get_workspace(tagset);
 
     struct wlr_box *geom = container_workspace_get_geom(con, ws);
+    if (con->client->type == LAYER_SHELL) {
+        geom = &con->global_geom;
+    }
     return geom;
 }
 
