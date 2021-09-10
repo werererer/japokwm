@@ -844,7 +844,7 @@ bool tagset_visible_on(struct tagset *tagset, struct container *con)
         return false;
     if (!con)
         return false;
-    return exist_on(tagset->m, tagset->workspaces, tagset->selected_ws_id, con);
+    return visible_on(tagset->m, tagset->workspaces, tagset->selected_ws_id, con);
 }
 
 struct workspace *tagset_get_workspace(struct tagset *tagset)

@@ -4,7 +4,6 @@ config.create_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"
 config.set_sloppy_focus(true)
 
 config.set_automatic_workspace_naming(true)
--- symbol.set_alias("browser", ":(")
 
 local termcmd = "/usr/bin/termite"
 

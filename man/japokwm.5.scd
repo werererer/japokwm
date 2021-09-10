@@ -416,6 +416,13 @@ integers
 <where> ++
 	b: boolean
 
+*set_automatic_workspace_naming(b)* ++
+	if b is true workspaces will be automatically to the app-id of the focused 
+	container on on that particular workspace
+<where> ++
+	b: boolean
+
+
 *set_border_color(color)* ++
 	set the border color of windows ++
 <where> ++
