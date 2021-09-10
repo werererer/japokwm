@@ -273,7 +273,6 @@ void update_reduced_focus_stack(struct workspace *ws)
             }
         }
     }
-    debug_print("after len: %i\n", length_of_composed_list(ws->visible_focus_set->focus_stack_lists));
 }
 
 void update_local_focus_stack(struct workspace *ws)
@@ -579,10 +578,8 @@ void workspace_update_names(struct server *server, GPtrArray *workspaces)
 
         char *name = strdup(default_name);
 
-        //TODO continue
-        char number[12];
-        sprintf(number, "%lu:", ws->id+1);
-        char *num_name = strdup(number);
+        //TODO refactor
+        char *num_name = strdup("");
 
         if (con
                 && con->client->surface.xdg->toplevel->app_id != NULL
@@ -601,7 +598,13 @@ void workspace_update_names(struct server *server, GPtrArray *workspaces)
                     name = "";
                     break;
             }
-            append_string(&num_name, num_name);
+
+            char ws_number[12];
+            char ws_name_number[12];
+            sprintf(ws_number, "%lu:", ws->id);
+            sprintf(ws_name_number, "%lu:", ws->id+1);
+            append_string(&num_name, ws_number);
+            append_string(&num_name, ws_name_number);
         }
 
         append_string(&num_name, name);
