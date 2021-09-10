@@ -887,3 +887,34 @@ bool container_is_floating_on_workspace(struct container *con, struct workspace 
         return false;
     return property->floating;
 }
+
+const char *container_get_app_id(struct container *con)
+{
+    if (!con)
+        return "";
+
+    const char *name = "";
+    struct client *c = con->client;
+    switch (c->type) {
+        case XDG_SHELL:
+            if (c->surface.xdg->toplevel->app_id)
+                c->app_id = c->surface.xdg->toplevel->app_id;
+            break;
+        case LAYER_SHELL:
+            c->app_id = "";
+            break;
+        case X11_MANAGED:
+        case X11_UNMANAGED:
+            c->app_id = c->surface.xwayland->class;
+            break;
+    }
+
+    if (con
+            && con->client->app_id != NULL
+            && g_strcmp0(con->client->app_id, "") != 0
+       ) {
+
+        name = con->client->app_id;
+    }
+    return name;
+}

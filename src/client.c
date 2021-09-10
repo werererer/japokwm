@@ -217,6 +217,10 @@ void client_handle_set_title(struct wl_listener *listener, void *data)
 
 void client_handle_set_app_id(struct wl_listener *listener, void *data)
 {
+    debug_print("set app id\n");
+    debug_print("set app id\n");
+    debug_print("set app id\n");
+    debug_print("set app id\n");
     struct client *c = wl_container_of(listener, c, set_app_id);
     const char *app_id;
     /* rule matching */
@@ -226,7 +230,7 @@ void client_handle_set_app_id(struct wl_listener *listener, void *data)
                 app_id = c->surface.xdg->toplevel->app_id;
             break;
         case LAYER_SHELL:
-            app_id = "test";
+            app_id = "";
             break;
         case X11_MANAGED:
         case X11_UNMANAGED:

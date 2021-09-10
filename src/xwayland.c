@@ -50,6 +50,7 @@ void create_notifyx11(struct wl_listener *listener, void *data)
     LISTEN(&xwayland_surface->events.unmap, &c->unmap, unmap_notifyx11);
     LISTEN(&xwayland_surface->events.destroy, &c->destroy, destroy_notifyx11);
     LISTEN(&xwayland_surface->events.set_title, &c->set_title, client_handle_set_title);
+    LISTEN(&xwayland_surface->events.set_class, &c->set_app_id, client_handle_set_app_id);
     LISTEN(&xwayland_surface->events.request_activate, &c->activate, activatex11);
 
     create_container(c, selected_monitor, true);
@@ -70,6 +71,7 @@ void destroy_notifyx11(struct wl_listener *listener, void *data)
     wl_list_remove(&c->unmap.link);
     wl_list_remove(&c->destroy.link);
     wl_list_remove(&c->set_title.link);
+    wl_list_remove(&c->set_app_id.link);
 
     destroy_client(c);
 }

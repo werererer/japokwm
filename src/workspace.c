@@ -256,9 +256,6 @@ void update_sub_focus_stack(struct workspace *ws)
 
 void update_reduced_focus_stack(struct workspace *ws)
 {
-    debug_print("reduce in ws:%i\n", ws->id);
-    debug_print("src len: %i\n", length_of_composed_list(ws->focus_set->focus_stack_lists));
-    debug_print("prev len: %i\n", length_of_composed_list(ws->visible_focus_set->focus_stack_lists));
     for (int i = 0; i < ws->focus_set->focus_stack_lists->len; i++) {
         GPtrArray *src_list = g_ptr_array_index(ws->focus_set->focus_stack_lists, i);
         GPtrArray *dest_list = g_ptr_array_index(ws->visible_focus_set->focus_stack_lists, i);
@@ -576,28 +573,18 @@ void workspace_update_names(struct server *server, GPtrArray *workspaces)
         }
         struct container *con = workspace_get_focused_container(ws);
 
-        char *name = strdup(default_name);
+        const char *name = default_name;
 
         //TODO refactor
         char *num_name = strdup("");
 
+        const char *app_id = container_get_app_id(con);
         if (con
-                && con->client->surface.xdg->toplevel->app_id != NULL
-                && g_strcmp0(con->client->surface.xdg->toplevel->app_id, "") != 0
+                && app_id != NULL
+                && g_strcmp0(app_id, "") != 0
                 ) {
-            debug_print("set name\n");
-            switch(con->client->type) {
-                case XDG_SHELL:
-                    name = con->client->surface.xdg->toplevel->app_id;
-                    break;
-                case X11_MANAGED:
-                case X11_UNMANAGED:
-                    name = con->client->surface.xwayland->class;
-                    break;
-                case LAYER_SHELL:
-                    name = "";
-                    break;
-            }
+
+            name = app_id;
 
             char ws_number[12];
             char ws_name_number[12];
