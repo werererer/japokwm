@@ -383,6 +383,7 @@ void focus_tagset(struct tagset *tagset)
 
     arrange();
     focus_most_recent_container(ws);
+    root_damage_whole(m->root);
 
     struct seat *seat = input_manager_get_default_seat();
     cursor_rebase(seat->cursor);
@@ -780,7 +781,7 @@ bool container_potentially_viewable_on_monitor(struct monitor *m,
         struct tagset *tagset = monitor_get_active_tagset(m);
         bool contains_client = tagset_contains_client(tagset->workspaces, con->client);
         if (contains_client) {
-            return false;
+            return true;
         }
     }
     return false;
