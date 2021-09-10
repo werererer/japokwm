@@ -3,6 +3,9 @@ config.create_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"
 -- focus follows mouse
 config.set_sloppy_focus(true)
 
+config.set_automatic_workspace_naming(true)
+-- symbol.set_alias("browser", ":(")
+
 local termcmd = "/usr/bin/termite"
 
 local function on_start()
@@ -24,8 +27,7 @@ config.set_default_layout(layouts[1])
 config.set_mod(1)
 
 config.bind_key("mod-S-p",       function() container.set_sticky(info.this_container_position(), 255) end)
-config.bind_key("mod-p",         function() action.focus_container()end)
--- config.bind_key("mod-p",         function() action.exec("rofi -show run") end)
+config.bind_key("mod-p",         function() action.exec("rofi -show run") end)
 config.bind_key("mod-e",         function() action.view(info.get_next_empty_workspace(info.get_workspace(), info.direction.right)) end)
 config.bind_key("mod-period",    function() action.toggle_workspace() end)
 config.bind_key("mod-S-period",  function() action.toggle_layout() end)

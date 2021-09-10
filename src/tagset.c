@@ -376,6 +376,7 @@ void focus_tagset(struct tagset *tagset)
     m->tagset = tagset;
     restore_floating_containers(tagset);
     struct workspace *ws = tagset_get_workspace(tagset);
+    ws->prev_workspaces = bitset_copy(tagset->workspaces);
     update_sub_focus_stack(ws);
     update_visual_visible_stack(ws);
     ipc_event_workspace();
@@ -524,6 +525,8 @@ void tagset_toggle_add(struct tagset *tagset, BitSet *bitset)
     bitset_xor(new_bitset, tagset->workspaces);
 
     tagset_set_tags(tagset, new_bitset);
+    struct workspace *ws = tagset_get_workspace(tagset);
+    ws->prev_workspaces = bitset_copy(tagset->workspaces);
     ipc_event_workspace();
 }
 
@@ -720,23 +723,23 @@ void workspace_id_to_tag(BitSet *dest, int ws_id)
     bitset_set(dest, ws_id);
 }
 
-bool tagset_contains_sticky_client(struct tagset *tagset, struct client *c)
+bool tagset_contains_sticky_client(BitSet *tagset_workspaces, struct client *c)
 {
     BitSet *bitset = bitset_copy(c->sticky_workspaces);
-    bitset_and(bitset, tagset->workspaces);
+    bitset_and(bitset, tagset_workspaces);
     bool contains = bitset_any(bitset);
     bitset_destroy(bitset);
     return contains;
 }
 
-bool tagset_contains_client(struct tagset *tagset, struct client *c)
+bool tagset_contains_client(BitSet *workspaces, struct client *c)
 {
-    if (tagset_contains_sticky_client(tagset, c))
+    if (tagset_contains_sticky_client(workspaces, c))
         return true;
 
     BitSet *bitset = bitset_create(server.workspaces->len);
     workspace_id_to_tag(bitset, c->ws_id);
-    bitset_and(bitset, tagset->workspaces);
+    bitset_and(bitset, workspaces);
     bool contains = bitset_any(bitset);
     bitset_destroy(bitset);
     return contains;
@@ -763,7 +766,8 @@ bool container_potentially_viewable_on_monitor(struct monitor *m,
     struct tagset *tagset = monitor_get_active_tagset(m);
     if (!tagset)
         return false;
-    bool visible = visible_on(tagset, con);
+    monitor_get_active_workspace(m);
+    bool visible = tagset_visible_on(tagset, con);
     if (visible)
         return true;
 
@@ -773,7 +777,8 @@ bool container_potentially_viewable_on_monitor(struct monitor *m,
 
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
-        bool contains_client = tagset_contains_client(m->tagset, con->client);
+        struct tagset *tagset = monitor_get_active_tagset(m);
+        bool contains_client = tagset_contains_client(tagset->workspaces, con->client);
         if (contains_client) {
             return true;
         }
@@ -781,14 +786,14 @@ bool container_potentially_viewable_on_monitor(struct monitor *m,
     return false;
 }
 
-bool visible_on(struct tagset *tagset, struct container *con)
+bool visible_on(struct monitor *m, BitSet *workspaces, int i, struct container *con)
 {
     if (!con)
         return false;
     if (con->hidden)
         return false;
 
-    return exist_on(tagset, con);
+    return exist_on(m, workspaces, i, con);
 }
 
 bool tagset_is_visible(struct tagset *tagset)
@@ -800,15 +805,17 @@ bool tagset_is_visible(struct tagset *tagset)
     return tagset->m->tagset == tagset;
 }
 
-bool exist_on(struct tagset *tagset, struct container *con)
+bool exist_on(struct monitor *m, BitSet *workspaces, int i, struct container *con)
 {
-    if (!con || !tagset)
+    if (!con)
         return false;
-    struct monitor *m = container_get_monitor(con);
-    if (!m) {
+    if (!workspaces)
+        return false;
+    struct monitor *con_m = container_get_monitor(con);
+    if (!con_m) {
         return false;
     }
-    if (m != tagset->m) {
+    if (con_m != m) {
         return false;
     }
 
@@ -820,7 +827,25 @@ bool exist_on(struct tagset *tagset, struct container *con)
     if (c->type == LAYER_SHELL)
         return true;
 
-    return tagset_contains_client(tagset, c);
+    return tagset_contains_client(workspaces, c);
+}
+
+bool tagset_exist_on(struct tagset *tagset, struct container *con)
+{
+    if (!tagset)
+        return false;
+    if (!con)
+        return false;
+    return exist_on(tagset->m, tagset->workspaces, tagset->selected_ws_id, con);
+}
+
+bool tagset_visible_on(struct tagset *tagset, struct container *con)
+{
+    if (!tagset)
+        return false;
+    if (!con)
+        return false;
+    return exist_on(tagset->m, tagset->workspaces, tagset->selected_ws_id, con);
 }
 
 struct workspace *tagset_get_workspace(struct tagset *tagset)

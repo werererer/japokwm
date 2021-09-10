@@ -56,6 +56,7 @@ struct options get_default_options()
         .arrange_by_focus = false,
         .hidden_edges = WLR_EDGE_NONE,
         .smart_hidden_edges = false,
+        .automatic_workspace_naming = false,
     };
 
     options.tag_names = create_tagnames();

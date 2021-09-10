@@ -244,7 +244,7 @@ void reset_tiled_client_borders(int border_px)
     for (int i = 0; i < server.normal_clients->len; i++) {
         struct client *c = g_ptr_array_index(server.normal_clients, i);
         struct tagset *tagset = selected_monitor->tagset;
-        if (!exist_on(tagset, c->con))
+        if (!tagset_exist_on(tagset, c->con))
             continue;
         if (container_is_floating(c->con))
             continue;
@@ -257,7 +257,7 @@ void reset_floating_client_borders(int border_px)
     for (int i = 0; i < server.normal_clients->len; i++) {
         struct client *c = g_ptr_array_index(server.normal_clients, i);
         struct tagset *tagset = selected_monitor->tagset;
-        if (!exist_on(tagset, c->con))
+        if (!tagset_exist_on(tagset, c->con))
             continue;
         if (!container_is_floating(c->con))
             continue;

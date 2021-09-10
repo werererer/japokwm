@@ -379,6 +379,7 @@ void focus_container(struct container *con)
     struct client *new_c = new_sel ? new_sel->client : NULL;
     struct seat *seat = input_manager_get_default_seat();
     focus_client(seat, old_c, new_c);
+    workspace_update_names(&server, server.workspaces);
 }
 
 void focus_on_stack(struct monitor *m, int i)
@@ -670,6 +671,13 @@ struct wlr_box *container_get_geom(struct container *con)
 {
     struct tagset *tagset = container_get_tagset(con);
     struct workspace *ws = tagset_get_workspace(tagset);
+
+    struct wlr_box *geom = container_workspace_get_geom(con, ws);
+    return geom;
+}
+
+struct wlr_box *container_workspace_get_geom(struct container *con, struct workspace *ws)
+{
     if (!ws)
         return NULL;
 
@@ -678,6 +686,7 @@ struct wlr_box *container_get_geom(struct container *con)
     struct wlr_box *con_geom = &property->geom;
     return con_geom;
 }
+
 
 void container_set_border_width(struct container *con, int border_width)
 {

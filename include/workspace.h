@@ -6,6 +6,7 @@
 #include "layout.h"
 #include "list_set.h"
 #include "container.h"
+#include "server.h"
 
 /* when an action should change the workspace and the tagsets associated with it
  * you should use this macro.
@@ -19,7 +20,7 @@
         \
         do {\
             struct tagset *_tagset = workspace_get_active_tagset(workspace);\
-            assert(exist_on(_tagset, con) == true);\
+            assert(tagset_exist_on(_tagset, con) == true);\
             list_set = _tagset->list_set;\
             action\
         } while (0);\
@@ -45,7 +46,7 @@
                     continue;\
                 if (_tagset->applied_action)\
                     continue;\
-                if (!exist_on(_tagset, con))\
+                if (!tagset_exist_on(_tagset, con))\
                     continue;\
                 list_set = _tagset->list_set;\
                 _tagset->applied_action = true;\
@@ -91,6 +92,7 @@ struct workspace {
     size_t id;
     char *name;
 
+    BitSet *prev_workspaces;
     // the last monitor the workspace was on
     struct monitor *prev_m;
     // the latest tagset
@@ -155,7 +157,9 @@ void load_default_layout(lua_State *L);
 void load_layout(lua_State *L, const char *name);
 void reset_loaded_layout(struct workspace *ws);
 void remove_loaded_layouts(GPtrArray *workspaces);
-void rename_workspace(struct workspace *ws, const char *name);
+void workspace_rename(struct workspace *ws, const char *name);
+void workspace_update_names(struct server *server, GPtrArray *workspaces);
+struct container *workspace_get_focused_container(struct workspace *ws);
 
 void workspace_add_container_to_containers(struct workspace *ws, struct container *con, int i);
 void workspace_add_container_to_focus_stack(struct workspace *ws, struct container *con);

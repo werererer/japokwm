@@ -35,6 +35,17 @@ int lib_set_arrange_by_focus(lua_State *L)
     return 0;
 }
 
+int lib_set_automatic_workspace_naming(lua_State *L)
+{
+    struct layout *lt = server.default_layout;
+
+    // 1. argument
+    lt->options.automatic_workspace_naming = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+    ipc_event_workspace();
+    return 0;
+}
+
 int lib_set_inner_gaps(lua_State *L)
 {
     struct layout *lt = server.default_layout;

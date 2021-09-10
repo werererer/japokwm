@@ -88,10 +88,13 @@ bool container_viewable_on_monitor(struct monitor *m,
         struct container *con);
 bool container_potentially_viewable_on_monitor(struct monitor *m,
         struct container *con);
-bool exist_on(struct tagset *tagset, struct container *con);
-bool tagset_contains_client(struct tagset *tagset, struct client *c);
-bool visible_on(struct tagset *tagset, struct container *con);
+bool exist_on(struct monitor *m, BitSet *workspaces, int i, struct container *con);
+bool tagset_contains_client(BitSet *workspaces, struct client *c);
+bool visible_on(struct monitor *m, BitSet *workspaces, int i, struct container *con);
 bool tagset_is_visible(struct tagset *tagset);
+
+bool tagset_exist_on(struct tagset *tagset, struct container *con);
+bool tagset_visible_on(struct tagset *tagset, struct container *con);
 
 // adds a refcount of 1 to tagset
 void focus_tagset(struct tagset *tagset);

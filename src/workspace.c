@@ -12,6 +12,7 @@
 #include "tile/tileUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "container.h"
+#include "stringop.h"
 
 static void update_workspaces_id(GPtrArray *workspaces)
 {
@@ -141,6 +142,7 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     push_layout(ws, lt);
     push_layout(ws, lt);
 
+    ws->prev_workspaces = bitset_create(server.workspaces->len);
     ws->independent_containers = g_ptr_array_new();
 
     ws->focus_set = focus_set_create();
@@ -192,7 +194,7 @@ void update_workspaces(GPtrArray *workspaces, GPtrArray *tag_names)
     for (int i = 0; i < server.workspaces->len; i++) {
         struct workspace *ws = g_ptr_array_index(server.workspaces, i);
         const char *name = g_ptr_array_index(tag_names, i);
-        rename_workspace(ws, name);
+        workspace_rename(ws, name);
     }
 }
 
@@ -204,6 +206,7 @@ void focus_most_recent_container(struct workspace *ws)
     if (!con) {
         con = get_container(ws, 0);
         if (!con) {
+            workspace_update_names(&server, server.workspaces);
             ipc_event_window();
             return;
         }
@@ -221,6 +224,7 @@ void destroy_workspace(struct workspace *ws)
 {
     g_ptr_array_free(ws->independent_containers, false);
 
+    bitset_destroy(ws->prev_workspaces);
     focus_set_destroy(ws->focus_set);
     focus_set_destroy(ws->visible_focus_set);
     focus_set_destroy(ws->local_focus_set);
@@ -252,18 +256,24 @@ void update_sub_focus_stack(struct workspace *ws)
 
 void update_reduced_focus_stack(struct workspace *ws)
 {
+    debug_print("reduce in ws:%i\n", ws->id);
+    debug_print("src len: %i\n", length_of_composed_list(ws->focus_set->focus_stack_lists));
+    debug_print("prev len: %i\n", length_of_composed_list(ws->visible_focus_set->focus_stack_lists));
     for (int i = 0; i < ws->focus_set->focus_stack_lists->len; i++) {
         GPtrArray *src_list = g_ptr_array_index(ws->focus_set->focus_stack_lists, i);
         GPtrArray *dest_list = g_ptr_array_index(ws->visible_focus_set->focus_stack_lists, i);
         list_clear(dest_list, NULL);
-        for (int i = 0; i < src_list->len; i++) {
-            struct container *con = g_ptr_array_index(src_list, i);
+        for (int j = 0; j < src_list->len; j++) {
+            struct container *con = g_ptr_array_index(src_list, j);
             struct monitor *m = workspace_get_monitor(ws);
-            if (container_viewable_on_monitor(m, con)) {
+            bool viewable = container_viewable_on_monitor(m, con);
+            bool visible = visible_on(m, ws->prev_workspaces, ws->id, con);
+            if (viewable || visible) {
                 g_ptr_array_add(dest_list, con);
             }
         }
     }
+    debug_print("after len: %i\n", length_of_composed_list(ws->visible_focus_set->focus_stack_lists));
 }
 
 void update_local_focus_stack(struct workspace *ws)
@@ -272,10 +282,10 @@ void update_local_focus_stack(struct workspace *ws)
         GPtrArray *src_list = g_ptr_array_index(ws->focus_set->focus_stack_lists, i);
         GPtrArray *dest_list = g_ptr_array_index(ws->local_focus_set->focus_stack_lists, i);
         list_clear(dest_list, NULL);
-        for (int i = 0; i < src_list->len; i++) {
-            struct container *con = g_ptr_array_index(src_list, i);
-            struct tagset *tagset = workspace_get_active_tagset(ws);
-            if (exist_on(tagset, con)) {
+        for (int j = 0; j < src_list->len; j++) {
+            struct container *con = g_ptr_array_index(src_list, j);
+            struct monitor *m = workspace_get_monitor(ws);
+            if (exist_on(m, ws->prev_workspaces, ws->id, con)) {
                 g_ptr_array_add(dest_list, con);
             }
         }
@@ -544,12 +554,65 @@ void focus_next_unoccupied_workspace(struct monitor *m, GPtrArray *workspaces, s
     push_tagset(tagset);
 }
 
-void rename_workspace(struct workspace *ws, const char *name)
+void workspace_rename(struct workspace *ws, const char *name)
 {
     if (!ws)
         return;
     free(ws->name);
     ws->name = strdup(name);
+}
+
+void workspace_update_names(struct server *server, GPtrArray *workspaces)
+{
+    struct layout *lt = server->default_layout;
+    if (!lt->options.automatic_workspace_naming)
+        return;
+    for (int i = 0; i < workspaces->len; i++) {
+        struct workspace *ws = g_ptr_array_index(workspaces, i);
+        const char *default_name;
+        if (i < lt->options.tag_names->len) {
+            default_name = g_ptr_array_index(lt->options.tag_names, i);
+        } else {
+            default_name = ws->name;
+        }
+        struct container *con = workspace_get_focused_container(ws);
+
+        const char *name = default_name;
+        if (con
+                && con->client->surface.xdg->toplevel->app_id != NULL
+                && g_strcmp0(con->client->surface.xdg->toplevel->app_id, "") != 0
+                ) {
+            debug_print("set name\n");
+            switch(con->client->type) {
+                case XDG_SHELL:
+                    name = con->client->surface.xdg->toplevel->app_id;
+                    break;
+                case X11_MANAGED:
+                case X11_UNMANAGED:
+                    name = con->client->surface.xwayland->class;
+                    break;
+                case LAYER_SHELL:
+                    name = "l";
+                    break;
+            }
+        }
+
+        //TODO continue
+        char number[12];
+        sprintf(number, "%lu:", ws->id+1);
+        char *num_name = strdup(number);
+        append_string(&num_name, name);
+
+        workspace_rename(ws, num_name);
+        free(num_name);
+    }
+    ipc_event_workspace();
+}
+
+struct container *workspace_get_focused_container(struct workspace *ws)
+{
+    struct container *con = get_in_composed_list(ws->visible_focus_set->focus_stack_visible_lists, 0);
+    return con;
 }
 
 void list_set_add_container_to_containers(struct list_set *list_set, struct container *con, int i)
@@ -680,6 +743,7 @@ void list_set_add_container_to_focus_stack(struct workspace *ws, struct containe
 
 void workspace_add_container_to_focus_stack(struct workspace *ws, struct container *con)
 {
+    debug_print("add container to focus_stack\n");
     // TODO: refactor me
     for (int i = 0; i < server.workspaces->len; i++) {
         ws = g_ptr_array_index(server.workspaces, i);

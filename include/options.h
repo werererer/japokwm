@@ -56,11 +56,10 @@ struct options {
     int resize_dir;
 
     struct event_handler *event_handler;
-    int tag_names_ref;
-    int default_layout_ref;
 
     enum wlr_edges hidden_edges;
     bool smart_hidden_edges;
+    bool automatic_workspace_naming;
 
     GPtrArray *keybindings;
 };

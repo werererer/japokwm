@@ -87,6 +87,7 @@ struct container_property *container_get_property_at_workspace(
 
 void container_set_geom(struct container *con, struct wlr_box *geom);
 struct wlr_box *container_get_geom(struct container *con);
+struct wlr_box *container_workspace_get_geom(struct container *con, struct workspace *ws);
 
 void container_set_border_width(struct container *con, int border_width);
 int container_get_border_width(struct container *con);
