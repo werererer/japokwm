@@ -577,7 +577,13 @@ void workspace_update_names(struct server *server, GPtrArray *workspaces)
         }
         struct container *con = workspace_get_focused_container(ws);
 
-        const char *name = default_name;
+        char *name = strdup(default_name);
+
+        //TODO continue
+        char number[12];
+        sprintf(number, "%lu:", ws->id+1);
+        char *num_name = strdup(number);
+
         if (con
                 && con->client->surface.xdg->toplevel->app_id != NULL
                 && g_strcmp0(con->client->surface.xdg->toplevel->app_id, "") != 0
@@ -592,18 +598,17 @@ void workspace_update_names(struct server *server, GPtrArray *workspaces)
                     name = con->client->surface.xwayland->class;
                     break;
                 case LAYER_SHELL:
-                    name = "l";
+                    name = "";
                     break;
             }
+            append_string(&num_name, num_name);
         }
 
-        //TODO continue
-        char number[12];
-        sprintf(number, "%lu:", ws->id+1);
-        char *num_name = strdup(number);
         append_string(&num_name, name);
 
-        workspace_rename(ws, num_name);
+        char final_name[12];
+        strncpy(final_name, num_name, 12);
+        workspace_rename(ws, final_name);
         free(num_name);
     }
     ipc_event_workspace();

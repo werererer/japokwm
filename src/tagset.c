@@ -766,7 +766,6 @@ bool container_potentially_viewable_on_monitor(struct monitor *m,
     struct tagset *tagset = monitor_get_active_tagset(m);
     if (!tagset)
         return false;
-    monitor_get_active_workspace(m);
     bool visible = tagset_visible_on(tagset, con);
     if (visible)
         return true;
