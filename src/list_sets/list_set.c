@@ -42,22 +42,10 @@ void destroy_list_set(struct container_set *list_set)
     free(list_set);
 }
 
-void append_list_set(struct container_set *dest, struct container_set *src)
-{
-    for (int i = 0; i < dest->container_lists->len; i++) {
-        GPtrArray *dest_list = g_ptr_array_index(dest->container_lists, i);
-        GPtrArray *src_list = g_ptr_array_index(src->container_lists, i);
-        wlr_list_cat(dest_list, src_list);
-    }
-}
-
 void clear_list_set(struct container_set *list_set)
 {
-    /* debug_print("\nclear_list_set\n"); */
     for (int i = 0; i < list_set->container_lists->len; i++) {
         GPtrArray *dest_list = g_ptr_array_index(list_set->container_lists, i);
-        /* debug_print("prev list data: %p\n", dest_list->pdata); */
         list_clear(dest_list, NULL);
-        /* debug_print("list data: %p\n", dest_list->pdata); */
     }
 }

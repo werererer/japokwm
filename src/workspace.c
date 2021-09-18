@@ -738,7 +738,6 @@ void list_set_add_container_to_focus_stack(struct workspace *ws, struct containe
 
 void workspace_add_container_to_focus_stack(struct workspace *ws, struct container *con)
 {
-    debug_print("add container to focus_stack\n");
     // TODO: refactor me
     for (int i = 0; i < server.workspaces->len; i++) {
         ws = g_ptr_array_index(server.workspaces, i);

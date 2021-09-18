@@ -26,58 +26,106 @@ static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws
 
 static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspace *ws);
 
+static int find_final_position(
+        GPtrArray *src_list,
+        GPtrArray *dest_list,
+        struct container *con)
+{
+    guint src_pos;
+    g_ptr_array_find(src_list, con, &src_pos);
+
+    guint final_pos = 0;
+    for (int k = dest_list->len-1; k >= 0; k--) {
+        struct container *dest_con = g_ptr_array_index(dest_list, k);
+        guint dest_pos;
+        if (!g_ptr_array_find(src_list, dest_con, &dest_pos)) {
+            continue;
+        }
+
+        if (src_pos < dest_pos) {
+            continue;
+        }
+
+        g_ptr_array_find(dest_list, dest_con, &final_pos);
+        final_pos++;
+        break;
+    }
+
+    debug_print("final_pos: %i\n", final_pos);
+    return final_pos;
+}
+
+static void add_to_list(GPtrArray *dest, GPtrArray *src, struct container *src_con)
+{
+    int final_position = find_final_position(src, dest, src_con);
+    g_ptr_array_insert(dest, final_position, src_con);
+}
+
+static void list_append_list_under_condition(
+        GPtrArray *dest,
+        GPtrArray *src,
+        bool is_condition(
+            struct workspace *ws,
+            GPtrArray *src_list,
+            struct container *con
+            ),
+        struct workspace *ws
+        )
+{
+    for (int i = 0; i < src->len; i++) {
+        struct container *src_con = g_ptr_array_index(src, i);
+
+        if (!is_condition(ws, src, src_con))
+            continue;
+
+        add_to_list(dest, src, src_con);
+    }
+}
+
+static void lists_append_list_under_condition(
+        GPtrArray2D *dest,
+        GPtrArray2D *src,
+        bool is_condition(
+            struct workspace *ws,
+            GPtrArray *src_list,
+            struct container *con
+            ),
+        struct workspace *ws
+        )
+{
+    assert(src->len == dest->len);
+
+    for (int i = 0; i < dest->len; i++) {
+        GPtrArray *dest_list = g_ptr_array_index(dest, i);
+        GPtrArray *src_list = g_ptr_array_index(src, i);
+        list_append_list_under_condition(dest_list, src_list, is_condition, ws);
+    }
+}
+
+bool is_valid_for_container_list(
+        struct workspace *ws,
+        GPtrArray *src_list,
+        struct container *src_con
+        )
+{
+    if (src_con->client->ws_id != ws->id) {
+        return false;
+    }
+
+    return true;
+}
+
 static void tagset_append_list_sets(struct tagset *tagset, struct workspace *ws)
 {
     struct container_set *dest = tagset->list_set;
     struct workspace *sel_ws = get_workspace(tagset->selected_ws_id);
     struct container_set *src = sel_ws->list_set;
 
-    for (int i = 0; i < dest->container_lists->len; i++) {
-        GPtrArray *dest_list = g_ptr_array_index(dest->container_lists, i);
-        GPtrArray *src_list = g_ptr_array_index(src->container_lists, i);
-        for (int j = 0; j < src_list->len; j++) {
-            struct container *src_con = g_ptr_array_index(src_list, j);
-            if (src_con->client->ws_id != ws->id) {
-                continue;
-            }
-            guint src_pos;
-            if (!g_ptr_array_find(src_list, src_con, &src_pos)) {
-                continue;
-            }
-
-            bool added = false;
-            if (src_pos == 0) {
-                g_ptr_array_insert(dest_list, 0, src_con);
-                added = true;
-            } else {
-                for (int k = dest_list->len-1; k >= 0; k--) {
-                    struct container *dest_con = g_ptr_array_index(dest_list, k);
-                    guint dest_pos;
-                    if (!g_ptr_array_find(src_list, dest_con, &dest_pos)) {
-                        continue;
-                    }
-
-                    if (src_pos < dest_pos) {
-                        continue;
-                    }
-
-                    guint final_pos;
-                    bool final_found = g_ptr_array_find(dest_list, dest_con, &final_pos);
-                    assert(final_found == true);
-                    final_pos++;
-
-                    g_ptr_array_insert(dest_list, final_pos, src_con);
-                    added = true;
-                    break;
-                }
-            }
-
-            if (!added) {
-                g_ptr_array_add(dest_list, src_con);
-                added = true;
-            }
-        }
-    }
+    lists_append_list_under_condition(
+            dest->container_lists,
+            src->container_lists,
+            is_valid_for_container_list,
+            ws);
 }
 
 static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspace *ws)
@@ -444,12 +492,6 @@ void tagset_write_to_workspaces(struct tagset *tagset)
     GPtrArray *tiled_containers = g_ptr_array_new();
     wlr_list_cat(tiled_containers, ws->list_set->tiled_containers);
 
-    for (int i = 0; i < positions->len; i++) {
-        int number1 = g_array_index(positions, int, i);
-        int number2 = g_array_index(prev_positions, int, i);
-        debug_print("numb1: %i numb2: %i\n", number1, number2);
-    }
-
     for (int i = 0; i < prev_positions->len; i++) {
         int prev_position = g_array_index(prev_positions, int, i);
         int position = g_array_index(positions, int, i);
@@ -754,7 +796,6 @@ bool container_viewable_on_monitor(struct monitor *m,
     bool intersects_with_monitor =
         container_intersects_with_monitor(con, tagset->m);
     if (!intersects_with_monitor) {
-        debug_print("not intersects with monitor\n");
         return false;
     }
 

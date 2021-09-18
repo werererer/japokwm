@@ -398,7 +398,6 @@ void render_monitor(struct monitor *m, pixman_region32_t *damage)
     /* Begin the renderer (calls glViewport and some other GL sanity checks) */
     wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
 
-    debug_print("render monitor\n");
     clear_frame(m, m->root->color, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM, damage);
