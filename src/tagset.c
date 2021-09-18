@@ -32,9 +32,9 @@ static void tagset_append_list_sets(struct tagset *tagset, struct workspace *ws)
     struct workspace *sel_ws = get_workspace(tagset->selected_ws_id);
     struct list_set *src = sel_ws->list_set;
 
-    for (int i = 0; i < dest->all_lists->len; i++) {
-        GPtrArray *dest_list = g_ptr_array_index(dest->all_lists, i);
-        GPtrArray *src_list = g_ptr_array_index(src->all_lists, i);
+    for (int i = 0; i < dest->container_lists->len; i++) {
+        GPtrArray *dest_list = g_ptr_array_index(dest->container_lists, i);
+        GPtrArray *src_list = g_ptr_array_index(src->container_lists, i);
         for (int j = 0; j < src_list->len; j++) {
             struct container *src_con = g_ptr_array_index(src_list, j);
             if (src_con->client->ws_id != ws->id) {
@@ -253,8 +253,8 @@ static void tagset_remove_workspace(struct tagset *tagset, struct workspace *ws)
         if (con->client->ws_id != ws->id)
             continue;
 
-        for (int j = 0; j < dest->all_lists->len; j++) {
-            GPtrArray *dest_list = g_ptr_array_index(dest->all_lists, j);
+        for (int j = 0; j < dest->container_lists->len; j++) {
+            GPtrArray *dest_list = g_ptr_array_index(dest->container_lists, j);
             g_ptr_array_remove(dest_list, con);
         }
     }
@@ -391,12 +391,12 @@ void focus_tagset(struct tagset *tagset)
 
 static void tagset_append_to_workspaces(struct tagset *tagset)
 {
-    for (int i = 0; i < tagset->list_set->all_lists->len; i++) {
-        GPtrArray *tagset_list = g_ptr_array_index(tagset->list_set->all_lists, i);
+    for (int i = 0; i < tagset->list_set->container_lists->len; i++) {
+        GPtrArray *tagset_list = g_ptr_array_index(tagset->list_set->container_lists, i);
         for (int j = 0; j < tagset_list->len; j++) {
             struct container *con = g_ptr_array_index(tagset_list, j);
             struct workspace *ws = get_workspace(con->client->ws_id);
-            GPtrArray *ws_list = g_ptr_array_index(ws->list_set->all_lists, i);
+            GPtrArray *ws_list = g_ptr_array_index(ws->list_set->container_lists, i);
 
             g_ptr_array_add(ws_list, con);
         }
@@ -419,11 +419,11 @@ static void tagset_clear_sel_workspace(struct tagset *tagset)
 static void tagset_append_to_sel_workspace(struct tagset *tagset)
 {
     struct workspace *ws = get_workspace(tagset->selected_ws_id);
-    for (int i = 0; i < tagset->list_set->all_lists->len; i++) {
-        GPtrArray *tagset_list = g_ptr_array_index(tagset->list_set->all_lists, i);
+    for (int i = 0; i < tagset->list_set->container_lists->len; i++) {
+        GPtrArray *tagset_list = g_ptr_array_index(tagset->list_set->container_lists, i);
         for (int j = 0; j < tagset_list->len; j++) {
             struct container *con = g_ptr_array_index(tagset_list, j);
-            GPtrArray *ws_list = g_ptr_array_index(ws->list_set->all_lists, i);
+            GPtrArray *ws_list = g_ptr_array_index(ws->list_set->container_lists, i);
 
             g_ptr_array_add(ws_list, con);
         }
