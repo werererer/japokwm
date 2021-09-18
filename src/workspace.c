@@ -610,7 +610,7 @@ struct container *workspace_get_focused_container(struct workspace *ws)
     return con;
 }
 
-void list_set_add_container_to_containers(struct list_set *list_set, struct container *con, int i)
+void list_set_add_container_to_containers(struct container_set *list_set, struct container *con, int i)
 {
     if (container_is_floating(con)) {
         g_ptr_array_insert(list_set->floating_containers, i, con);

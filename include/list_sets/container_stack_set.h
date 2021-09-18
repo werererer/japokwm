@@ -1,7 +1,6 @@
-#ifndef LIST_SET_H
-#define LIST_SET_H
+#ifndef CONTAINER_STACK_H
+#define CONTAINER_STACK_H
 
-#include <stdlib.h>
 #include <glib.h>
 
 #include "utils/coreUtils.h"
@@ -9,7 +8,7 @@
 /*
  * list_set is used by tagsets and workspaces to hold all containers on them
  * */
-struct list_set {
+struct container_set {
     /* consists out of the lists of tiled_containers, hidden_containers and
      * floating_containers */
     GPtrArray2D *container_lists;
@@ -21,10 +20,4 @@ struct list_set {
     GPtrArray *hidden_containers;
 };
 
-struct list_set *create_list_set();
-void destroy_list_set(struct list_set *list_set);
-
-void append_list_set(struct list_set *dest, struct list_set *src);
-void clear_list_set(struct list_set *list_set);
-
-#endif /* LIST_SET_H */
+#endif /* CONTAINER_STACK_H */

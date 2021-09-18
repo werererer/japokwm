@@ -3,7 +3,7 @@
 #include <assert.h>
 
 #include "bitset/bitset.h"
-#include "list_set.h"
+#include "list_sets/list_set.h"
 #include "server.h"
 #include "workspace.h"
 #include "utils/coreUtils.h"
@@ -28,9 +28,9 @@ static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspac
 
 static void tagset_append_list_sets(struct tagset *tagset, struct workspace *ws)
 {
-    struct list_set *dest = tagset->list_set;
+    struct container_set *dest = tagset->list_set;
     struct workspace *sel_ws = get_workspace(tagset->selected_ws_id);
-    struct list_set *src = sel_ws->list_set;
+    struct container_set *src = sel_ws->list_set;
 
     for (int i = 0; i < dest->container_lists->len; i++) {
         GPtrArray *dest_list = g_ptr_array_index(dest->container_lists, i);
@@ -244,8 +244,8 @@ static void tagset_unsubscribe_from_workspace(struct tagset *tagset, struct work
 
 static void tagset_remove_workspace(struct tagset *tagset, struct workspace *ws)
 {
-    struct list_set *dest = tagset->list_set;
-    struct list_set *src = ws->list_set;
+    struct container_set *dest = tagset->list_set;
+    struct container_set *src = ws->list_set;
 
     for (int i = 0; i < length_of_composed_list(src->container_lists); i++) {
         struct container *con = get_in_composed_list(src->container_lists, i);

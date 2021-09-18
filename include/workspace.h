@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "layout.h"
-#include "list_set.h"
+#include "list_sets/focus_stack_set.h"
+#include "list_sets/visual_stack_set.h"
 #include "container.h"
 #include "server.h"
 
@@ -13,7 +14,7 @@
  * NOTE: use to jump to the end of the current action*/
 #define DO_ACTION_LOCALLY(workspace, action) \
     do {\
-        struct list_set *list_set = workspace->list_set;\
+        struct container_set *list_set = workspace->list_set;\
         do {\
             action\
         } while (0);\
@@ -35,7 +36,7 @@
         for (int _i = 0; _i < workspaces->len; _i++) {\
             struct workspace *_ws = g_ptr_array_index(workspaces, _i);\
             \
-            struct list_set *list_set = _ws->list_set;\
+            struct container_set *list_set = _ws->list_set;\
             do {\
                 action\
             } while (0);\
@@ -54,30 +55,6 @@
             } while (0);\
         }\
     } while (0)
-
-struct focus_set {
-    GPtrArray2D *focus_stack_lists_with_layer_shell;
-    GPtrArray2D *focus_stack_visible_lists;
-    GPtrArray2D *focus_stack_lists;
-
-    GPtrArray *focus_stack_layer_background;
-    GPtrArray *focus_stack_layer_bottom;
-    GPtrArray *focus_stack_layer_top;
-    GPtrArray *focus_stack_layer_overlay;
-    GPtrArray *focus_stack_on_top;
-    GPtrArray *focus_stack_normal;
-    GPtrArray *focus_stack_hidden;
-    GPtrArray *focus_stack_not_focusable;
-};
-
-struct visual_set {
-    GPtrArray *all_stack_lists;
-    GPtrArray2D *stack_lists;
-    GPtrArray2D *visual_stack_lists;
-
-    GPtrArray *tiled_visual_stack;
-    GPtrArray *floating_visual_stack;
-};
 
 /* A tag is simply a workspace that can be focused (like a normal workspace)
  * and can selected: which just means that all clients on the selected tags
@@ -100,7 +77,7 @@ struct workspace {
     // the tagset that currently has this workspace selected
     struct tagset *selected_tagset;
 
-    struct list_set *list_set;
+    struct container_set *list_set;
     GPtrArray *independent_containers;
 
     struct focus_set *focus_set;

@@ -1,4 +1,4 @@
-#include "list_set.h"
+#include "list_sets/list_set.h"
 
 #include <assert.h>
 
@@ -7,9 +7,9 @@
 #include "utils/coreUtils.h"
 #include "container.h"
 
-struct list_set *create_list_set()
+struct container_set *create_list_set()
 {
-    struct list_set *list_set = calloc(1, sizeof(struct list_set));
+    struct container_set *list_set = calloc(1, sizeof(struct container_set));
 
     list_set->container_lists = g_ptr_array_new();
     list_set->visible_container_lists = g_ptr_array_new();
@@ -32,7 +32,7 @@ struct list_set *create_list_set()
     return list_set;
 }
 
-void destroy_list_set(struct list_set *list_set)
+void destroy_list_set(struct container_set *list_set)
 {
     g_ptr_array_free(list_set->tiled_containers, FALSE);
     g_ptr_array_free(list_set->hidden_containers, FALSE);
@@ -42,7 +42,7 @@ void destroy_list_set(struct list_set *list_set)
     free(list_set);
 }
 
-void append_list_set(struct list_set *dest, struct list_set *src)
+void append_list_set(struct container_set *dest, struct container_set *src)
 {
     for (int i = 0; i < dest->container_lists->len; i++) {
         GPtrArray *dest_list = g_ptr_array_index(dest->container_lists, i);
@@ -51,7 +51,7 @@ void append_list_set(struct list_set *dest, struct list_set *src)
     }
 }
 
-void clear_list_set(struct list_set *list_set)
+void clear_list_set(struct container_set *list_set)
 {
     /* debug_print("\nclear_list_set\n"); */
     for (int i = 0; i < list_set->container_lists->len; i++) {

@@ -6,7 +6,8 @@
 
 #include "bitset/bitset.h"
 #include "client.h"
-#include "list_set.h"
+#include "list_sets/list_set.h"
+#include "list_sets/container_stack_set.h"
 #include "layout.h"
 #include "utils/coreUtils.h"
 
@@ -47,7 +48,7 @@ struct tagset {
      * floating windows don't belong to the layout and are thereby not counted */
     int n_all;
 
-    struct list_set *list_set;
+    struct container_set *list_set;
 
     bool applied_action;
 };
