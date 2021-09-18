@@ -6,13 +6,18 @@
 #include <wlr/util/log.h>
 #include <wlr/types/wlr_cursor.h>
 
+#include "client.h"
 #include "ipc-server.h"
+#include "list_sets/container_stack_set.h"
 #include "monitor.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "container.h"
 #include "stringop.h"
+#include "list_sets/list_set.h"
+#include "list_sets/focus_stack_set.h"
+#include "list_sets/visual_stack_set.h"
 
 static void update_workspaces_id(GPtrArray *workspaces)
 {

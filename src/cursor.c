@@ -5,11 +5,12 @@
 #include <wlr/util/region.h>
 
 #include "container.h"
+#include "keybinding.h"
+#include "monitor.h"
+#include "popup.h"
+#include "seat.h"
 #include "server.h"
 #include "tile/tileUtils.h"
-#include "popup.h"
-#include "keybinding.h"
-#include "seat.h"
 #include "workspace.h"
 
 static struct container *grabc = NULL;

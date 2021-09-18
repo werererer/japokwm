@@ -3,6 +3,7 @@
 #include <lauxlib.h>
 #include <lua.h>
 #include <wayland-server-protocol.h>
+#include <wlr/types/wlr_output_layout.h>
 
 #include "cursor.h"
 #include "lib/actions/lib_actions.h"
@@ -154,7 +155,7 @@ static const struct luaL_Reg monitor[] =
     {NULL, NULL},
 };
 
-static void load_info()
+static void load_info(lua_State *L)
 {
     luaL_newlib(L, info);
 
@@ -252,7 +253,7 @@ void load_lua_api(lua_State *L)
     lua_setfield(L, -2, "config");
     lua_setglobal(L, "l");
 
-    load_info();
+    load_info(L);
 
     luaL_newlib(L, config);
     lua_setglobal(L, "config");

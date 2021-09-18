@@ -3,11 +3,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "layout.h"
-#include "list_sets/focus_stack_set.h"
-#include "list_sets/visual_stack_set.h"
-#include "container.h"
-#include "server.h"
+#include "utils/coreUtils.h"
+
+#include "bitset/bitset.h"
+
+struct layout;
+struct focus_set;
+struct visual_set;
+struct client;
+struct container;
+struct server;
 
 /* when an action should change the workspace and the tagsets associated with it
  * you should use this macro.

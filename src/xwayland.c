@@ -3,11 +3,14 @@
 #include <stdlib.h>
 #include <wlr/util/log.h>
 
+#include "client.h"
 #include "container.h"
+#include "monitor.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "seat.h"
 #include "workspace.h"
+#include "list_sets/focus_stack_set.h"
 
 #if JAPOKWM_HAS_XWAYLAND
 static const char *atom_map[ATOM_LAST] = {

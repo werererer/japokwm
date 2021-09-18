@@ -7,6 +7,7 @@
 #include <assert.h>
 
 #include "client.h"
+#include "list_sets/container_stack_set.h"
 #include "server.h"
 #include "monitor.h"
 #include "tile/tileUtils.h"
@@ -19,6 +20,8 @@
 #include "layer_shell.h"
 #include "workspace.h"
 #include "rules/rule.h"
+#include "list_sets/focus_stack_set.h"
+#include "list_sets/visual_stack_set.h"
 
 static void add_container_to_workspace(struct container *con, struct workspace *ws);
 

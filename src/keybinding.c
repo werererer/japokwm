@@ -1,4 +1,7 @@
 #include "keybinding.h"
+
+#include <X11/Xlib.h>
+
 #include "input_manager.h"
 #include "server.h"
 #include "tile/tileUtils.h"

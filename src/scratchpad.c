@@ -1,5 +1,6 @@
 #include "scratchpad.h"
 
+#include "client.h"
 #include "monitor.h"
 #include "server.h"
 #include "tile/tileUtils.h"

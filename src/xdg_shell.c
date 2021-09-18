@@ -5,6 +5,7 @@
 #include <wlr/util/edges.h>
 
 #include "client.h"
+#include "monitor.h"
 #include "popup.h"
 #include "server.h"
 #include "utils/coreUtils.h"

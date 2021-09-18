@@ -4,6 +4,7 @@
 
 #include "container.h"
 #include "monitor.h"
+#include "seat.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "workspace.h"

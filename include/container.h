@@ -4,11 +4,11 @@
 #include <lua.h>
 #include <wlr/types/wlr_box.h>
 #include <wlr/types/wlr_cursor.h>
+#include <glib.h>
 
-#include "client.h"
-#include "options.h"
-#include "monitor.h"
-#include "bitset/bitset.h"
+struct monitor;
+struct resize_constraints;
+struct workspace;
 
 struct container_property {
     // geometry on each layout

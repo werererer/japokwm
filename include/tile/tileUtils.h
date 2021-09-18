@@ -1,8 +1,11 @@
 #ifndef TILEUTILS
 #define TILEUTILS
+
 #include "utils/coreUtils.h"
-#include "container.h"
-#include "monitor.h"
+
+struct container;
+struct tagset;
+struct monitor;
 
 struct client *focustop(struct monitor *m);
 void arrange();

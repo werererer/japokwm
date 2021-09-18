@@ -9,7 +9,10 @@
 #include <wlr/util/region.h>
 #include <string.h>
 
+#include "container.h"
 #include "client.h"
+#include "list_sets/container_stack_set.h"
+#include "list_sets/visual_stack_set.h"
 #include "monitor.h"
 #include "popup.h"
 #include "root.h"

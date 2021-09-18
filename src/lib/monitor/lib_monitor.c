@@ -1,5 +1,8 @@
 #include "lib/monitor/lib_monitor.h"
 
+#include <lauxlib.h>
+#include <lua.h>
+
 #include "monitor.h"
 
 int lib_set_scale(lua_State *L)

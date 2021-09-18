@@ -6,7 +6,7 @@
 #include <wlr/types/wlr_seat.h>
 #include <wlr/types/wlr_pointer_constraints_v1.h>
 
-#include "seat.h"
+struct seat_device;
 
 enum cursor_mode {
     CURSOR_NORMAL,

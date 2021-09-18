@@ -3,6 +3,7 @@
 #include <glib.h>
 #include <assert.h>
 
+#include "client.h"
 #include "server.h"
 #include "workspace.h"
 #include "utils/parseConfigUtils.h"

@@ -1,6 +1,7 @@
 #include "lib/actions/lib_container.h"
 #include "container.h"
 #include "client.h"
+#include "monitor.h"
 #include "tile/tileUtils.h"
 #include "server.h"
 #include "bitset/bitset.h"

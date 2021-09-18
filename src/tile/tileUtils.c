@@ -11,6 +11,7 @@
 #include <stdlib.h>
 
 #include "container.h"
+#include "list_sets/container_stack_set.h"
 #include "monitor.h"
 #include "root.h"
 #include "server.h"
@@ -20,6 +21,7 @@
 #include "event_handler.h"
 #include "layer_shell.h"
 #include "workspace.h"
+#include "list_sets/focus_stack_set.h"
 
 static void arrange_container(struct container *con, struct monitor *m,
         int arrange_position, struct wlr_box root_geom, int inner_gap);

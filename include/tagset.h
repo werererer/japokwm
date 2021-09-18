@@ -5,11 +5,9 @@
 #include <stdlib.h>
 
 #include "bitset/bitset.h"
-#include "client.h"
-#include "list_sets/list_set.h"
-#include "list_sets/container_stack_set.h"
-#include "layout.h"
-#include "utils/coreUtils.h"
+
+struct client;
+struct container;
 
 /* A tagset consists of a list_set, a struct to hold all relevant containers,
  * information on which monitor it belongs to and the list of workspaces it
