@@ -175,6 +175,45 @@ void join_path(char **base, const char *file)
     strcat(*base, file);
 }
 
+// Function to implement lower_bound
+int lower_bound(const void *key, const void *base,
+        size_t nmemb, size_t size,
+        int (*compar)(const void *, const void *))
+{
+    // Initialise starting index and
+    // ending index
+    int low = 0;
+    int high = nmemb;
+ 
+    // Till low is less than high
+    while (low < high-1) {
+        int mid = low + (high - low) / 2;
+ 
+        // If X is less than or equal
+        // to arr[mid], then find in
+        // left subarray
+        const unsigned char *p = (const unsigned char *)base + mid * size;
+        int cmp = compar(key, p);
+        if (cmp < 0) {
+            high = mid-1;
+            printf("is on the left new low: %i new high: %i\n", low, high);
+        }
+        else if (cmp == 0) {
+            printf("anyways break\n");
+            break;
+        }
+        // If condition is not right
+        // then find in right subarray
+        else {
+            printf("is on the right new low: %i new high: %i\n", mid, high);
+            low = mid;
+        }
+    }
+
+    // Return the lower_bound index
+    return low;
+}
+
 void debug_print(const char *fmt, ...)
 {
 #if DEBUG

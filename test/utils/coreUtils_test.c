@@ -225,6 +225,23 @@ void get_relative_item_in_list_test()
     g_assert_cmpstr(get_relative_item_in_composed_list(lists, 3, -2), ==, "1");
 }
 
+void lower_bound_test()
+{
+    int base[6] = {1, 4, 5, 6, 8, 9};
+
+    int key1 = 2;
+    int low1 = lower_bound(&key1, base, 6, sizeof(int), cmp_int);
+    g_assert_cmpint(low1, ==, 0);
+
+    int key2 = 100;
+    int low2 = lower_bound(&key2, base, 6, sizeof(int), cmp_int);
+    g_assert_cmpint(low2, ==, 5);
+
+    int key3 = -100;
+    int low3 = lower_bound(&key3, base, 6, sizeof(int), cmp_int);
+    g_assert_cmpint(low3, ==, 0);
+}
+
 #define PREFIX "coreUtils"
 #define add_test(func) g_test_add_func("/"PREFIX"/"#func, func)
 int main(int argc, char **argv)
@@ -239,6 +256,7 @@ int main(int argc, char **argv)
     add_test(wlr_list_find_in_composed_list_test);
     add_test(cross_sum_test);
     add_test(get_relative_item_in_list_test);
+    add_test(lower_bound_test);
 
     return g_test_run();
 }

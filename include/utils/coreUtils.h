@@ -48,6 +48,11 @@ char last_char(const char *str);
 // returns exactly the same values as strcmp
 int path_compare(const char *path1, const char *path2);
 void join_path(char **base, const char *file);
+// works exactly like c++'s std::lower_bound
+int lower_bound(const void *key, const void *base,
+        size_t nmemb, size_t size,
+        int (*compar)(const void *, const void *));
+
 
 void debug_print(const char *fmt, ...);
 
