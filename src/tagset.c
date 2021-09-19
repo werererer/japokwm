@@ -617,6 +617,27 @@ GPtrArray *tagset_get_visible_lists(struct tagset *tagset)
     }
 }
 
+GPtrArray *tagset_get_global_floating_copy(struct tagset *tagset)
+{
+    struct layout *lt = tagset_get_layout(tagset);
+
+    if (lt->options.arrange_by_focus) {
+        GPtrArray *visible_global_floating_list_copy =
+            list2D_create_filtered_sub_list(
+                tagset->local_focus_set->focus_stack_visible_lists,
+                container_is_visible
+                );
+        return visible_global_floating_list_copy;
+    } else {
+        GPtrArray *visible_global_floating_list_copy =
+            list2D_create_filtered_sub_list(
+                tagset->con_set->global_floating_container_lists,
+                container_is_visible
+                );
+        return visible_global_floating_list_copy;
+    }
+}
+
 GPtrArray *tagset_get_tiled_list(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);
@@ -642,14 +663,20 @@ GPtrArray *tagset_get_floating_list(struct tagset *tagset)
     }
 }
 
-GPtrArray *tagset_get_hidden_list(struct tagset *tagset)
+GPtrArray *tagset_get_hidden_list_copy(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);
 
     if (lt->options.arrange_by_focus) {
-        return tagset->local_focus_set->focus_stack_hidden;
+        GPtrArray *hidden_list = list_create_filtered_sub_list(
+                tagset->local_focus_set->focus_stack_normal,
+                container_is_hidden);
+        return hidden_list;
     } else {
-        return tagset->con_set->hidden_containers;
+        GPtrArray *hidden_list = list_create_filtered_sub_list(
+                tagset->con_set->tiled_containers,
+                container_is_hidden);
+        return hidden_list;
     }
 }
 

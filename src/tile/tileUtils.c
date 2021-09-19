@@ -115,7 +115,7 @@ static void update_layout_counters(struct tagset *tagset)
     lt->n_area_max = get_layout_container_max_area_count(tagset);
     lt->n_master_abs = get_master_container_count(tagset);
     lt->n_floating = get_floating_container_count(tagset);
-    lt->n_tiled = lt->n_area + lt->n_master_abs-1;
+    lt->n_tiled = lt->n_area-1 + lt->n_master_abs;
     lt->n_tiled_max = lt->n_area_max + lt->n_master_abs-1;
     lt->n_visible = lt->n_tiled + lt->n_floating;
     lt->n_hidden = tagset->n_all - lt->n_visible;
@@ -239,10 +239,10 @@ void arrange_monitor(struct monitor *m)
 
     GPtrArray2D *visible_container_lists = tagset_get_visible_lists(tagset);
     GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
-    GPtrArray *hidden_containers = tagset_get_hidden_list(tagset); 
 
-    update_hidden_status_of_containers(m, visible_container_lists,
-            tiled_containers, hidden_containers);
+    update_hidden_status_of_containers(
+            m, visible_container_lists,
+            tiled_containers);
 
     arrange_containers(tagset, m->root->geom, tiled_containers);
 
@@ -375,36 +375,15 @@ void resize(struct container *con, struct wlr_box geom)
 }
 
 void update_hidden_status_of_containers(struct monitor *m, 
-        GPtrArray2D *visible_container_lists, GPtrArray *tiled_containers,
-        GPtrArray *hidden_containers)
+        GPtrArray2D *visible_container_lists, GPtrArray *tiled_containers)
 {
     struct layout *lt = get_layout_in_monitor(m);
 
-    if (lt->n_tiled > tiled_containers->len) {
-        int n_missing = MIN(lt->n_tiled - tiled_containers->len, hidden_containers->len);
-        for (int i = 0; i < n_missing; i++) {
-            struct container *con = g_ptr_array_index(hidden_containers, 0);
+    for (int i = 0; i < tiled_containers->len; i++) {
+        struct container *con = g_ptr_array_index(tiled_containers, i);
 
-            con->hidden = false;
-
-            tagset_list_remove_index(hidden_containers, 0);
-            tagset_list_add(tiled_containers, con);
-        }
-    } else {
-        for (int i = tiled_containers->len-1; i >= MAX(lt->n_tiled, 0); i--) {
-            struct container *con = tagset_list_steal_index(tiled_containers, i);
-            con->hidden = true;
-            tagset_list_insert(hidden_containers, 0, con);
-        }
-    }
-
-    for (int i = 0; i < length_of_composed_list(visible_container_lists); i++) {
-        struct container *con = get_in_composed_list(visible_container_lists, i);
-        con->hidden = false;
-    }
-    for (int i = 0; i < hidden_containers->len; i++) {
-        struct container *con = g_ptr_array_index(hidden_containers, i);
-        con->hidden = true;
+        bool is_hidden = i >= lt->n_tiled;
+        con->hidden = is_hidden;
     }
 }
 
@@ -417,8 +396,7 @@ int get_tiled_container_count(struct tagset *tagset)
 {
     int n = 0;
     GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
-    GPtrArray *hidden_containers = tagset_get_hidden_list(tagset);
 
-    n = tiled_containers->len + hidden_containers->len;
+    n = tiled_containers->len;
     return n;
 }

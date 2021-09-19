@@ -463,10 +463,6 @@ void list_set_add_container_to_containers(struct container_set *list_set, struct
         g_ptr_array_insert(list_set->floating_containers, i, con);
         return;
     }
-    if (con->hidden) {
-        g_ptr_array_insert(list_set->hidden_containers, i, con);
-        return;
-    }
     assert(list_set->tiled_containers->len >= i);
     if (list_set->tiled_containers->len <= 0) {
         g_ptr_array_add(list_set->tiled_containers, con);
@@ -532,10 +528,6 @@ void list_set_append_container_to_focus_stack(struct workspace *ws, struct conta
         }
         return;
     }
-    if (con->hidden) {
-        g_ptr_array_add(ws->focus_set->focus_stack_hidden, con);
-        return;
-    }
     if (con->on_top) {
         g_ptr_array_add(ws->focus_set->focus_stack_on_top, con);
         return;
@@ -565,10 +557,6 @@ void list_set_add_container_to_focus_stack(struct focus_set *focus_set, struct c
                 g_ptr_array_insert(focus_set->focus_stack_layer_overlay, 0, con);
                 break;
         }
-        return;
-    }
-    if (con->hidden) {
-        g_ptr_array_insert(focus_set->focus_stack_hidden, 0, con);
         return;
     }
     if (con->on_top) {

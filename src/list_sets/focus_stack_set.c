@@ -18,14 +18,12 @@ struct focus_set *focus_set_create()
     focus_set->focus_stack_layer_overlay = g_ptr_array_new();
     focus_set->focus_stack_on_top = g_ptr_array_new();
     focus_set->focus_stack_normal = g_ptr_array_new();
-    focus_set->focus_stack_hidden = g_ptr_array_new();
     focus_set->focus_stack_not_focusable = g_ptr_array_new();
 
     g_ptr_array_add(focus_set->focus_stack_lists, focus_set->focus_stack_layer_top);
     g_ptr_array_add(focus_set->focus_stack_lists, focus_set->focus_stack_on_top);
     g_ptr_array_add(focus_set->focus_stack_lists, focus_set->focus_stack_normal);
     g_ptr_array_add(focus_set->focus_stack_lists, focus_set->focus_stack_not_focusable);
-    g_ptr_array_add(focus_set->focus_stack_lists, focus_set->focus_stack_hidden);
 
     g_ptr_array_add(focus_set->focus_stack_lists_with_layer_shell, focus_set->focus_stack_layer_overlay);
     g_ptr_array_add(focus_set->focus_stack_lists_with_layer_shell, focus_set->focus_stack_layer_top);
@@ -37,7 +35,6 @@ struct focus_set *focus_set_create()
 
     g_ptr_array_add(focus_set->focus_stack_visible_lists, focus_set->focus_stack_on_top);
     g_ptr_array_add(focus_set->focus_stack_visible_lists, focus_set->focus_stack_normal);
-    g_ptr_array_add(focus_set->focus_stack_visible_lists, focus_set->focus_stack_not_focusable);
 
     return focus_set;
 }
@@ -54,7 +51,6 @@ void focus_set_destroy(struct focus_set *focus_set)
 
     g_ptr_array_free(focus_set->focus_stack_on_top, FALSE);
     g_ptr_array_free(focus_set->focus_stack_normal, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_hidden, FALSE);
     g_ptr_array_free(focus_set->focus_stack_not_focusable, FALSE);
 }
 

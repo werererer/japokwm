@@ -18,7 +18,6 @@ struct focus_set {
     GPtrArray *focus_stack_layer_overlay;
     GPtrArray *focus_stack_on_top;
     GPtrArray *focus_stack_normal;
-    GPtrArray *focus_stack_hidden;
     GPtrArray *focus_stack_not_focusable;
 };
 

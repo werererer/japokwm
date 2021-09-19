@@ -16,6 +16,12 @@ typedef bool is_condition_t(
         );
 
 GPtrArray *list_create_sub_list(GPtrArray *list, int start_idx, int end_idx);
+GPtrArray *list2D_create_filtered_sub_list(
+        GPtrArray2D *list,
+        bool is_condition(struct container *con));
+GPtrArray *list_create_filtered_sub_list(
+        GPtrArray2D *list,
+        bool is_condition(struct container *con));
 void lists_cat_to_list(GPtrArray2D *dest, GPtrArray2D *src);
 void lists_append_list_under_condition(
         GPtrArray2D *dest,
@@ -24,6 +30,7 @@ void lists_append_list_under_condition(
         struct workspace *ws
         );
 void sub_list_write_to_parent_list(GPtrArray2D *parent, GPtrArray2D *child);
+void sub_list_write_to_parent_list1D(GPtrArray *parent, GPtrArray *child);
 void lists_clear(GPtrArray2D *lists);
 
 #endif /* LIST_SET_H */

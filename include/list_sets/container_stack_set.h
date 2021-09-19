@@ -19,7 +19,6 @@ struct container_set {
 
     GPtrArray *floating_containers;
     GPtrArray *tiled_containers;
-    GPtrArray *hidden_containers;
 };
 
 struct container_set *create_container_set();
