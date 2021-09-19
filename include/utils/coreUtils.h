@@ -109,6 +109,8 @@ GPtrArray *find_list_in_composed_list(GPtrArray *arrays,
 
 GPtrArray *list_insert_into_relative_position(GPtrArray *lists, int index, void *item);
 
+GPtrArray2D *lists_copy_structure(GPtrArray2D *src);
+
 // compare pointers and return 0 if they are equal and 1 otherwise
 int cmp_int(const void *ptr1, const void *ptr2);
 int cmp_ptr(const void *ptr1, const void *ptr2);

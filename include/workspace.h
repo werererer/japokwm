@@ -98,10 +98,6 @@ void destroy_workspace(struct workspace *ws);
 void update_workspaces(GPtrArray *workspaces, GPtrArray *tag_names);
 void update_workspace_ids(GPtrArray *workspaces);
 
-void update_sub_focus_stack(struct workspace *ws);
-void update_reduced_focus_stack(struct workspace *ws);
-void update_local_focus_stack(struct workspace *ws);
-
 void update_visual_visible_stack(struct workspace *ws);
 
 bool is_workspace_occupied(struct workspace *ws);

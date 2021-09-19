@@ -103,7 +103,8 @@ static GArray *child_lists_get_positions_array(GPtrArray2D *child, GPtrArray2D *
     return positions;
 }
 
-void sub_list_write_to_parent_list(GPtrArray2D *parent, GPtrArray2D *child)
+void sub_list_write_to_parent_list(GPtrArray2D *parent,
+        GPtrArray2D *child)
 {
     GArray *positions = child_lists_get_positions_array(child, parent);
 

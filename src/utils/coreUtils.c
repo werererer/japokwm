@@ -139,6 +139,15 @@ GPtrArray *find_list_in_composed_list(GPtrArray *arrays,
     return NULL;
 }
 
+GPtrArray2D *lists_copy_structure(GPtrArray2D *src)
+{
+    GPtrArray2D *dest = g_ptr_array_new();
+    for (int i = 0; i < src->len; i++) {
+        g_ptr_array_add(dest, g_ptr_array_new());
+    }
+    return dest;
+}
+
 char last_char(const char *str)
 {
     if (strlen(str) == 0)

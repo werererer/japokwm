@@ -467,8 +467,7 @@ void focus_on_hidden_stack(struct monitor *m, int i)
 
 
     focus_container(con);
-    struct workspace *ws = container_get_workspace(con);
-    update_sub_focus_stack(ws);
+    update_sub_focus_stack(tagset);
     arrange();
     tagset_write_to_workspaces(tagset);
     debug_print("hidden len end 2: %i\n", hidden_containers->len);
