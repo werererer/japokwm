@@ -179,13 +179,15 @@ void container_damage_whole(struct container *con)
 
 struct container *get_focused_container(struct monitor *m)
 {
-    if (!m)
+    if (!m) {
         return NULL;
+    }
 
     struct tagset *tagset = monitor_get_active_tagset(m);
 
-    if (!tagset)
+    if (!tagset) {
         return NULL;
+    }
 
     struct container *con = get_in_composed_list(tagset->visible_focus_set->focus_stack_visible_lists, 0);
     return con;
@@ -347,6 +349,7 @@ void commit_notify(struct wl_listener *listener, void *data)
 
 void focus_container(struct container *con)
 {
+    debug_print("focus container: %p\n", con);
     if (!con)
         return;
     if (!con->focusable)
@@ -355,6 +358,7 @@ void focus_container(struct container *con)
         return;
     if (con->hidden)
         return;
+    debug_print("works 0\n", con);
 
     struct monitor *m = selected_monitor;
     struct workspace *ws = monitor_get_active_workspace(m);
@@ -365,8 +369,7 @@ void focus_container(struct container *con)
     struct container *sel = get_focused_container(m);
 
     /* Put the new client atop the focus stack */
-    workspace_remove_container_from_focus_stack_locally(ws, con);
-    workspace_add_container_to_focus_stack_locally(ws, con);
+    workspace_repush_on_focus_stack(ws, con, 0);
 
     struct container *new_sel = get_focused_container(m);
 
@@ -377,6 +380,7 @@ void focus_container(struct container *con)
     call_on_focus_function(lt->options.event_handler,
             get_position_in_container_focus_stack(con));
 
+    debug_print("sel is now: %p\n", sel);
     struct client *old_c = sel ? sel->client : NULL;
     struct client *new_c = new_sel ? new_sel->client : NULL;
     struct seat *seat = input_manager_get_default_seat();

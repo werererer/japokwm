@@ -426,7 +426,6 @@ void set_in_composed_list(GPtrArray *arrays, int i, void *value)
     for (int j = 0; j < arrays->len; j++) {
         GPtrArray *array = g_ptr_array_index(arrays, j);
         if (i >= 0 && i < array->len) {
-            printf("set pos: %p to %p\n", g_ptr_array_index(array, i), value);
             g_ptr_array_index(array, i) = value;
             return;
         }

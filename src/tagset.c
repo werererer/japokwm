@@ -66,6 +66,10 @@ void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
     tagset_workspaces_connect(tagset);
     update_sub_focus_stack(tagset);
     update_visual_visible_stack(tagset);
+    struct workspace *ws = tagset_get_workspace(tagset);
+    ws->prev_workspaces = bitset_copy(tagset->workspaces);
+    arrange();
+    focus_most_recent_container(ws);
 }
 
 
@@ -545,8 +549,6 @@ void tagset_toggle_add(struct tagset *tagset, BitSet *bitset)
     bitset_xor(new_bitset, tagset->workspaces);
 
     tagset_set_tags(tagset, new_bitset);
-    struct workspace *ws = tagset_get_workspace(tagset);
-    ws->prev_workspaces = bitset_copy(tagset->workspaces);
     ipc_event_workspace();
 }
 
@@ -703,7 +705,7 @@ void tagset_list_insert(GPtrArray *list, int i, struct container *con)
 
     if (lt->options.arrange_by_focus) {
         struct workspace *ws = tagset_get_workspace(tagset);
-        list_set_add_container_to_focus_stack(ws, con);
+        list_set_add_container_to_focus_stack(ws->focus_set, con);
         update_sub_focus_stack(tagset);
     } else {
         g_ptr_array_insert(list, i, con);

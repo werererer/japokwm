@@ -15,6 +15,7 @@ typedef bool is_condition_t(
         struct container *con
         );
 
+GPtrArray *list_create_sub_list(GPtrArray *list, int start_idx, int end_idx);
 void lists_cat_to_list(GPtrArray2D *dest, GPtrArray2D *src);
 void lists_append_list_under_condition(
         GPtrArray2D *dest,

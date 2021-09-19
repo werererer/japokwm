@@ -138,7 +138,7 @@ void workspace_add_container_to_focus_stack(struct workspace *ws, struct contain
 void add_container_to_stack(struct workspace *ws, struct container *con);
 
 void list_set_append_container_to_focus_stack(struct workspace *ws, struct container *con);
-void list_set_add_container_to_focus_stack(struct workspace *ws, struct container *con);
+void list_set_add_container_to_focus_stack(struct focus_set *focus_set, struct container *con);
 void workspace_remove_container_from_containers_locally(struct workspace *ws, struct container *con);
 void workspace_add_container_to_containers_locally(struct workspace *ws, struct container *con, int i);
 void workspace_remove_container_from_focus_stack_locally(struct workspace *ws, struct container *con);
@@ -158,6 +158,7 @@ void workspace_remove_independent_container(struct workspace *ws, struct contain
 GArray *container_array2D_get_positions_array(GPtrArray2D *containers);
 GArray *container_array_get_positions_array(GPtrArray *containers);
 void workspace_repush(struct workspace *ws, struct container *con, int i);
+void workspace_repush_on_focus_stack(struct workspace *ws, struct container *con, int i);
 
 bool workspace_sticky_contains_client(struct workspace *ws, struct client *client);
 

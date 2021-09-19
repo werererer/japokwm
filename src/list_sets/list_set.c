@@ -68,6 +68,21 @@ static void list_append_list_under_condition(
     }
 }
 
+GPtrArray *list_create_sub_list(GPtrArray *list, int start, int end)
+{
+    assert(start >= 0);
+    assert(start < end);
+    assert(end <= list->len);
+
+    GPtrArray *sub_list = g_ptr_array_new();
+    for (int i = start; i < end; i++) 
+    {
+        struct container *con = g_ptr_array_index(sub_list, i);
+        g_ptr_array_add(sub_list, con);
+    }
+    return sub_list;
+}
+
 void lists_cat_to_list(GPtrArray *dest, GPtrArray2D *src)
 {
     for (int i = 0; i < src->len; i++) {

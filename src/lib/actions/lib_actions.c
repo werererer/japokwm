@@ -222,7 +222,6 @@ int lib_tag_view(lua_State *L)
     bitset_destroy(tmp_bitset);
 
     tagset_toggle_add(m->tagset, bitset);
-    arrange();
     return 0;
 }
 
