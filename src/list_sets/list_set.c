@@ -52,7 +52,7 @@ void clear_list_set(struct container_set *list_set)
     }
 }
 
-static int find_final_position(
+static int find_insert_position(
         GPtrArray *src_list,
         GPtrArray *dest_list,
         struct container *con)
@@ -90,8 +90,8 @@ static void add_to_list(GPtrArray *dest, GPtrArray *src, struct container *src_c
         return;
     }
 
-    int final_position = find_final_position(src, dest, src_con);
-    g_ptr_array_insert(dest, final_position, src_con);
+    int insert_position = find_insert_position(src, dest, src_con);
+    g_ptr_array_insert(dest, insert_position, src_con);
 }
 
 static void list_append_list_under_condition(
