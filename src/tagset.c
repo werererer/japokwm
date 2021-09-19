@@ -17,6 +17,7 @@
 #include "scratchpad.h"
 #include "list_sets/visual_stack_set.h"
 #include "list_sets/focus_stack_set.h"
+#include "list_sets/container_stack_set.h"
 
 static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load);
 static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces);
@@ -30,35 +31,9 @@ static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws
 
 static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspace *ws);
 
-bool is_valid_for_container_list(
-        struct workspace *ws,
-        GPtrArray *src_list,
-        struct container *src_con
-        )
-{
-    if (src_con->client->ws_id != ws->id) {
-        return false;
-    }
-
-    return true;
-}
-
-static void tagset_append_list_sets(struct tagset *tagset, struct workspace *ws)
-{
-    struct container_set *dest = tagset->list_set;
-    struct workspace *sel_ws = get_workspace(tagset->selected_ws_id);
-    struct container_set *src = sel_ws->list_set;
-
-    lists_append_list_under_condition(
-            dest->container_lists,
-            src->container_lists,
-            is_valid_for_container_list,
-            ws);
-}
-
 static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspace *ws)
 {
-    tagset_append_list_sets(tagset, ws);
+    container_set_append(ws, tagset->list_set, ws->list_set);
 }
 
 static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load)

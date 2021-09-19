@@ -5,6 +5,8 @@
 
 #include "utils/coreUtils.h"
 
+struct workspace;
+
 /*
  * list_set is used by tagsets and workspaces to hold all containers on them
  * */
@@ -19,5 +21,10 @@ struct container_set {
     GPtrArray *tiled_containers;
     GPtrArray *hidden_containers;
 };
+
+void container_set_append(
+        struct workspace *ws,
+        struct container_set *dest,
+        struct container_set *src);
 
 #endif /* CONTAINER_STACK_H */
