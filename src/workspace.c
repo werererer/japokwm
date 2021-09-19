@@ -500,7 +500,7 @@ void workspace_add_container_to_containers_locally(struct workspace *ws, struct 
     struct tagset *tagset = workspace_get_active_tagset(ws);
     struct layout *lt = tagset_get_layout(tagset);
     if (lt->options.arrange_by_focus) {
-        list_set_add_container_to_focus_stack(ws->focus_set, con);
+        list_set_insert_container_to_focus_stack(ws->focus_set, con);
         update_sub_focus_stack(tagset);
     } else {
         DO_ACTION_LOCALLY(ws,
@@ -540,7 +540,7 @@ void list_set_append_container_to_focus_stack(struct workspace *ws, struct conta
     g_ptr_array_add(ws->focus_set->focus_stack_normal, con);
 }
 
-void list_set_add_container_to_focus_stack(struct focus_set *focus_set, struct container *con)
+void list_set_insert_container_to_focus_stack(struct focus_set *focus_set, struct container *con)
 {
     if (con->client->type == LAYER_SHELL) {
         switch (con->client->surface.layer->current.layer) {
@@ -576,7 +576,7 @@ void workspace_add_container_to_focus_stack(struct workspace *ws, struct contain
     // TODO: refactor me
     for (int i = 0; i < server.workspaces->len; i++) {
         ws = g_ptr_array_index(server.workspaces, i);
-        list_set_add_container_to_focus_stack(ws->focus_set, con);
+        list_set_insert_container_to_focus_stack(ws->focus_set, con);
         struct tagset *tagset = workspace_get_tagset(ws);
         update_sub_focus_stack(tagset);
     }
@@ -591,7 +591,7 @@ void workspace_remove_container_from_focus_stack_locally(struct workspace *ws, s
 
 void workspace_add_container_to_focus_stack_locally(struct workspace *ws, struct container *con)
 {
-    list_set_add_container_to_focus_stack(ws->focus_set, con);
+    list_set_insert_container_to_focus_stack(ws->focus_set, con);
     struct tagset *tagset = workspace_get_tagset(ws);
     update_sub_focus_stack(tagset);
 }
@@ -759,7 +759,7 @@ void workspace_repush_on_focus_stack(struct workspace *ws, struct container *con
     struct tagset *tagset = workspace_get_active_tagset(ws);
 
     remove_in_composed_list(tagset->visible_focus_set->focus_stack_lists, cmp_ptr, con);
-    list_set_add_container_to_focus_stack(tagset->visible_focus_set, con);
+    list_set_insert_container_to_focus_stack(tagset->visible_focus_set, con);
     focus_set_write_to_parent(ws->focus_set, tagset->visible_focus_set);
     update_sub_focus_stack(tagset);
 }

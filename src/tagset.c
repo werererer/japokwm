@@ -638,6 +638,23 @@ GPtrArray *tagset_get_global_floating_copy(struct tagset *tagset)
     }
 }
 
+GPtrArray *tagset_get_tiled_list_copy(struct tagset *tagset)
+{
+    struct layout *lt = tagset_get_layout(tagset);
+
+    GPtrArray *tiled_list = NULL;
+    if (lt->options.arrange_by_focus) {
+        tiled_list = list_create_filtered_sub_list(
+                tagset->local_focus_set->focus_stack_normal,
+                container_is_managed);
+        return tiled_list;
+    } else {
+        tiled_list = g_ptr_array_new();
+        wlr_list_cat(tiled_list, tagset->con_set->tiled_containers);
+        return tiled_list;
+    }
+}
+
 GPtrArray *tagset_get_tiled_list(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);
@@ -732,7 +749,7 @@ void tagset_list_insert(GPtrArray *list, int i, struct container *con)
 
     if (lt->options.arrange_by_focus) {
         struct workspace *ws = tagset_get_workspace(tagset);
-        list_set_add_container_to_focus_stack(ws->focus_set, con);
+        g_ptr_array_insert(ws->focus_set->focus_stack_normal, i, con);
         update_sub_focus_stack(tagset);
     } else {
         g_ptr_array_insert(list, i, con);

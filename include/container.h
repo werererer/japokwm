@@ -34,6 +34,7 @@ struct container {
     bool hidden;
     bool on_scratchpad;
     bool on_top;
+    bool is_unmanaged;
 
     bool was_arranged_by_focus;
     bool arranged_by_focus;
@@ -116,6 +117,7 @@ bool container_is_floating(struct container *con);
 bool container_is_floating_on_workspace(struct container *con, struct workspace *ws);
 bool container_is_hidden(struct container *con);
 bool container_is_visible(struct container *con);
+bool container_is_managed(struct container *con);
 
 const char *container_get_app_id(struct container *con);
 #endif /* CONTAINER_H */

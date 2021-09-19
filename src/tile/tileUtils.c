@@ -237,17 +237,17 @@ void arrange_monitor(struct monitor *m)
     update_layout_counters(tagset);
     call_update_function(lt->options.event_handler, lt->n_area);
 
-    GPtrArray2D *visible_container_lists = tagset_get_visible_lists(tagset);
-    GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
+    GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
 
-    update_hidden_status_of_containers(
-            m, visible_container_lists,
-            tiled_containers);
+    update_hidden_status_of_containers(m, tiled_containers);
 
     arrange_containers(tagset, m->root->geom, tiled_containers);
+    g_ptr_array_free(tiled_containers, FALSE);
 
     root_damage_whole(m->root);
     update_sub_focus_stack(tagset);
+    struct workspace *ws = tagset_get_workspace(tagset);
+    focus_most_recent_container(ws);
     update_visual_visible_stack(tagset);
 }
 
@@ -374,8 +374,7 @@ void resize(struct container *con, struct wlr_box geom)
     }
 }
 
-void update_hidden_status_of_containers(struct monitor *m, 
-        GPtrArray2D *visible_container_lists, GPtrArray *tiled_containers)
+void update_hidden_status_of_containers(struct monitor *m, GPtrArray *tiled_containers)
 {
     struct layout *lt = get_layout_in_monitor(m);
 

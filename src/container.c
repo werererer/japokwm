@@ -9,6 +9,7 @@
 #include "client.h"
 #include "list_sets/container_stack_set.h"
 #include "list_sets/list_set.h"
+#include "popup.h"
 #include "server.h"
 #include "monitor.h"
 #include "tile/tileUtils.h"
@@ -426,7 +427,6 @@ void focus_on_hidden_stack(struct monitor *m, int i)
 
     struct tagset *tagset = monitor_get_active_tagset(m);
     GPtrArray *hidden_containers = tagset_get_hidden_list_copy(tagset);
-    debug_print("get hidden len: %i\n", hidden_containers->len);
     struct container *con = get_relative_item_in_list(hidden_containers, 0, i);
     g_ptr_array_free(hidden_containers, FALSE);
 
@@ -434,13 +434,17 @@ void focus_on_hidden_stack(struct monitor *m, int i)
         return;
 
     GPtrArray *visible_container_lists = tagset_get_visible_lists(tagset);
-    debug_print("visible list length: %i\n", length_of_composed_list(visible_container_lists));
     GPtrArray *focus_list = find_list_in_composed_list(
             visible_container_lists, cmp_ptr, sel);
 
+    for (int i = 0; i < focus_list->len; i++) {
+        struct container *con = g_ptr_array_index(focus_list, i);
+        debug_print("focus list0: %p\n", con);
+    }
+
     if (container_is_floating(sel)) {
-        container_set_floating(con, container_fix_position, true);
-        container_set_floating(sel, container_fix_position, false);
+        container_set_floating(con, NULL, true);
+        container_set_floating(sel, NULL, false);
         struct wlr_box *sel_geom = container_get_geom(sel);
         resize(con, *sel_geom);
     }
@@ -454,11 +458,23 @@ void focus_on_hidden_stack(struct monitor *m, int i)
 
     struct layout *lt = tagset_get_layout(tagset);
     debug_print("n_tiled: %i\n", lt->n_tiled);
-    debug_print("focus list len: %i\n", focus_list->len);
+    debug_print("focus list len tmp: %i\n", focus_list->len);
+
+    for (int i = 0; i < focus_list->len; i++) {
+        struct container *con = g_ptr_array_index(focus_list, i);
+        debug_print("focus list1: %p\n", con);
+    }
+
     if (i < 0) {
+        debug_print("insert at position: %i\n", lt->n_tiled);
         tagset_list_insert(focus_list, lt->n_tiled, sel);
     } else {
         tagset_list_add(focus_list, sel);
+    }
+
+    for (int i = 0; i < focus_list->len; i++) {
+        struct container *con = g_ptr_array_index(focus_list, i);
+        debug_print("focus list2: %p\n", con);
     }
 
     con->hidden = false;
@@ -523,7 +539,7 @@ void container_fix_position(struct container *con)
     struct tagset *tagset = monitor_get_active_tagset(m);
     struct workspace *ws = monitor_get_active_workspace(m);
 
-    GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
+    GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
     struct layout *lt = tagset_get_layout(tagset);
 
     if (!container_is_floating(con)) {
@@ -902,6 +918,11 @@ bool container_is_hidden(struct container *con)
 bool container_is_visible(struct container *con)
 {
     return !container_is_hidden(con);
+}
+
+bool container_is_managed(struct container *con)
+{
+    return !con->is_unmanaged;
 }
 
 const char *container_get_app_id(struct container *con)

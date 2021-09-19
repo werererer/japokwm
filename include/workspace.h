@@ -138,7 +138,7 @@ void workspace_add_container_to_focus_stack(struct workspace *ws, struct contain
 void add_container_to_stack(struct workspace *ws, struct container *con);
 
 void list_set_append_container_to_focus_stack(struct workspace *ws, struct container *con);
-void list_set_add_container_to_focus_stack(struct focus_set *focus_set, struct container *con);
+void list_set_insert_container_to_focus_stack(struct focus_set *focus_set, struct container *con);
 void workspace_remove_container_from_containers_locally(struct workspace *ws, struct container *con);
 void workspace_add_container_to_containers_locally(struct workspace *ws, struct container *con, int i);
 void workspace_remove_container_from_focus_stack_locally(struct workspace *ws, struct container *con);
