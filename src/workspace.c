@@ -156,7 +156,7 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     ws->visual_set = visual_set_create();
     ws->visible_visual_set = visual_set_create();
 
-    ws->list_set = create_list_set();
+    ws->list_set = create_container_set();
     return ws;
 }
 
@@ -240,7 +240,7 @@ void destroy_workspace(struct workspace *ws)
         struct client *c = con->client;
         kill_client(c);
     }
-    destroy_list_set(ws->list_set);
+    destroy_container_set(ws->list_set);
     free(ws->name);
     free(ws);
 }

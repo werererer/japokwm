@@ -233,7 +233,7 @@ void tagset_unload_workspaces(struct tagset *tagset)
 {
     assert(tagset != NULL);
 
-    clear_list_set(tagset->list_set);
+    container_set_clear(tagset->list_set);
 
     for (int i = 0; i < tagset->loaded_workspaces->size; i++) {
         bool bit = bitset_test(tagset->loaded_workspaces, i);
@@ -254,7 +254,7 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *work
 
     tagset->selected_ws_id = selected_ws_id;
 
-    tagset->list_set = create_list_set();
+    tagset->list_set = create_container_set();
 
     tagset->workspaces = bitset_create(server.workspaces->len);
     tagset->loaded_workspaces = bitset_create(server.workspaces->len);
@@ -281,7 +281,7 @@ void destroy_tagset(struct tagset *tagset)
     g_ptr_array_remove(server.tagsets, tagset);
     bitset_destroy(tagset->workspaces);
     bitset_destroy(tagset->loaded_workspaces);
-    destroy_list_set(tagset->list_set);
+    destroy_container_set(tagset->list_set);
     free(tagset);
 }
 
@@ -367,7 +367,7 @@ static void tagset_clear_sel_workspace(struct tagset *tagset)
             continue;
 
         struct workspace *ws = get_workspace(i);
-        clear_list_set(ws->list_set);
+        container_set_clear(ws->list_set);
     }
 }
 

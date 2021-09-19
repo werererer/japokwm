@@ -22,9 +22,13 @@ struct container_set {
     GPtrArray *hidden_containers;
 };
 
+struct container_set *create_container_set();
+void destroy_container_set(struct container_set *container_set);
+
 void container_set_append(
         struct workspace *ws,
         struct container_set *dest,
         struct container_set *src);
+void container_set_clear(struct container_set *list_set);
 
 #endif /* CONTAINER_STACK_H */
