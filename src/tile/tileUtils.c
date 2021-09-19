@@ -54,6 +54,11 @@ static void update_container_arranged_by_focus_state()
 
 void arrange()
 {
+    for (int i = 0; i < server.floating_containers->len; i++) {
+        struct container *con = g_ptr_array_index(server.floating_containers, i);
+        con->hidden = false;
+    }
+
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
         arrange_monitor(m);

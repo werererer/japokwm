@@ -808,6 +808,8 @@ bool tagset_contains_client(BitSet *workspaces, struct client *c)
 bool container_viewable_on_monitor(struct monitor *m,
         struct container *con)
 {
+    if (container_is_hidden(con))
+        return false;
     struct tagset *tagset = monitor_get_active_tagset(m);
     if (!tagset)
         return false;
