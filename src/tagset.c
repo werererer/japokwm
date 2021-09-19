@@ -392,24 +392,9 @@ void tagset_write_to_workspaces(struct tagset *tagset)
     printf("write to wroskapce\n");
 
     struct workspace *ws = tagset_get_workspace(tagset);
-    GArray *positions = container_array2D_get_positions_array(tagset->list_set->container_lists);
-
-    GArray *prev_positions = g_array_copy(positions);
-    g_array_sort(prev_positions, cmp_int);
-
-    GPtrArray *tiled_containers = g_ptr_array_new();
-    wlr_list_cat(tiled_containers, ws->list_set->tiled_containers);
-
-    for (int i = 0; i < prev_positions->len; i++) {
-        int prev_position = g_array_index(prev_positions, int, i);
-        int position = g_array_index(positions, int, i);
-        struct container *prev_con = g_ptr_array_index(tiled_containers, position);
-        g_ptr_array_index(ws->list_set->tiled_containers, prev_position) = prev_con;
-    }
-
-    g_ptr_array_free(tiled_containers, false);
-    g_array_free(prev_positions, false);
-    g_array_free(positions, false);
+    sub_list_write_to_parent_list(
+            ws->list_set->container_lists,
+            tagset->list_set->container_lists);
 }
 
 

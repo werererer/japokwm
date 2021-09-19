@@ -71,6 +71,14 @@ static void list_append_list_under_condition(
     printf("end\n");
 }
 
+void lists_cat_to_list(GPtrArray *dest, GPtrArray2D *src)
+{
+    for (int i = 0; i < src->len; i++) {
+        GPtrArray *src_list = g_ptr_array_index(src, i);
+        wlr_list_cat(dest, src_list);
+    }
+}
+
 void lists_append_list_under_condition(
         GPtrArray2D *dest,
         GPtrArray2D *src,
@@ -85,6 +93,39 @@ void lists_append_list_under_condition(
         GPtrArray *src_list = g_ptr_array_index(src, i);
         list_append_list_under_condition(dest_list, src_list, is_condition, ws);
     }
+}
+
+static GArray *child_lists_get_positions_array(GPtrArray2D *child, GPtrArray2D *parent)
+{
+    GArray *positions = g_array_new(false, false, sizeof(int));
+    for (int i = 0; i < length_of_composed_list(child); i++) {
+        struct container *con = get_in_composed_list(child, i);
+        int position = find_in_composed_list(parent, cmp_ptr, con);
+        g_array_append_val(positions, position);
+    }
+    return positions;
+}
+
+void sub_list_write_to_parent_list(GPtrArray2D *parent, GPtrArray2D *child)
+{
+    GArray *positions = child_lists_get_positions_array(child, parent);
+
+    GArray *prev_positions = g_array_copy(positions);
+    g_array_sort(prev_positions, cmp_int);
+
+    GPtrArray *parent_containers = g_ptr_array_new();
+    lists_cat_to_list(parent_containers, parent);
+
+    for (int i = 0; i < prev_positions->len; i++) {
+        int prev_position = g_array_index(prev_positions, int, i);
+        int position = g_array_index(positions, int, i);
+        struct container *prev_con = g_ptr_array_index(parent_containers, position);
+        set_in_composed_list(parent, prev_position, prev_con);
+    }
+
+    g_ptr_array_free(parent_containers, false);
+    g_array_free(prev_positions, false);
+    g_array_free(positions, false);
 }
 
 void lists_clear(GPtrArray2D *lists)

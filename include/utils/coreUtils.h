@@ -121,6 +121,7 @@ void print_trace();
 
 /* a composed list is just a list consisting of lists so that if an index i is
  * given it returns the same value as if all the lists where concatenated */
+void set_in_composed_list(GPtrArray *arrays, int i, void *value);
 void *get_in_composed_list(GPtrArray *arrays, int i);
 GPtrArray *get_list_at_i_in_composed_list(GPtrArray *arrays, int i);
 void delete_from_composed_list(GPtrArray *arrays, int i);
