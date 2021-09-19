@@ -46,7 +46,7 @@ struct tagset {
      * floating windows don't belong to the layout and are thereby not counted */
     int n_all;
 
-    struct container_set *list_set;
+    struct container_set *con_set;
 
     bool applied_action;
 };

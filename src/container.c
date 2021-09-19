@@ -500,7 +500,7 @@ void repush(int pos1, int pos2)
     if (pos2 >= tiled_containers->len)
         return;
 
-    struct container *con = g_ptr_array_index(tagset->list_set->tiled_containers, pos1);
+    struct container *con = g_ptr_array_index(tagset->con_set->tiled_containers, pos1);
 
     // TODO: this doesn't work if tiled by focus
     struct workspace *ws = get_workspace(tagset->selected_ws_id);
@@ -775,7 +775,7 @@ int get_position_in_container_stack(struct container *con)
 
     struct monitor *m = selected_monitor;
     struct tagset *tagset = monitor_get_active_tagset(m);
-    int position = find_in_composed_list(tagset->list_set->visible_container_lists, cmp_ptr, con);
+    int position = find_in_composed_list(tagset->con_set->visible_container_lists, cmp_ptr, con);
     return position;
 }
 

@@ -41,7 +41,7 @@ void destroy_container_set(struct container_set *con_set)
     free(con_set);
 }
 
-static bool is_valid_for_container_list(
+static bool is_container_valid_to_append(
         struct workspace *ws,
         GPtrArray *src_list,
         struct container *src_con
@@ -54,6 +54,15 @@ static bool is_valid_for_container_list(
     return true;
 }
 
+void container_set_write_to_parent(
+        struct container_set *parent,
+        struct container_set *child)
+{
+    sub_list_write_to_parent_list(
+            parent->container_lists,
+            child->container_lists);
+}
+
 void container_set_append(
         struct workspace *ws,
         struct container_set *dest,
@@ -62,7 +71,7 @@ void container_set_append(
     lists_append_list_under_condition(
             dest->container_lists,
             src->container_lists,
-            is_valid_for_container_list,
+            is_container_valid_to_append,
             ws);
 }
 

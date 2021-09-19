@@ -285,7 +285,7 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
     struct tagset *tagset = monitor_get_active_tagset(m);
     struct layout *lt = tagset_get_layout(tagset);
     if (lt->options.smart_hidden_edges) {
-        if (tagset->list_set->tiled_containers->len <= 1) {
+        if (tagset->con_set->tiled_containers->len <= 1) {
             hidden_edges = get_hidden_edges(con, borders, lt->options.hidden_edges);
         }
     } else {

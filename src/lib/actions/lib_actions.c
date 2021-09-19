@@ -278,11 +278,11 @@ int lib_zoom(lua_State *L)
         return 0;
 
     guint position;
-    bool found = g_ptr_array_find(tagset->list_set->tiled_containers, sel, &position);
+    bool found = g_ptr_array_find(tagset->con_set->tiled_containers, sel, &position);
     if (!found)
         return 0;
 
-    if (sel == g_ptr_array_index(tagset->list_set->tiled_containers, 0)) {
+    if (sel == g_ptr_array_index(tagset->con_set->tiled_containers, 0)) {
         repush(1, 0);
     } else {
         repush(position, 0);
@@ -451,7 +451,7 @@ int lib_swap_workspace(lua_State *L)
     struct monitor *m = selected_monitor;
     struct tagset *tagset = monitor_get_active_tagset(m);
 
-    for (int i = 0; i < tagset->list_set->tiled_containers->len; i++) {
+    for (int i = 0; i < tagset->con_set->tiled_containers->len; i++) {
         struct container *con = get_container(0, i);
         struct workspace *ws1 = get_workspace(ws_id1);
         if (tagset_exist_on(workspace_get_tagset(ws1), con)) {

@@ -27,104 +27,6 @@ static void update_workspaces_id(GPtrArray *workspaces)
     }
 }
 
-static struct focus_set *focus_set_create()
-{
-    struct focus_set *focus_set = calloc(1, sizeof(struct focus_set));
-    focus_set->focus_stack_lists = g_ptr_array_new();
-    focus_set->focus_stack_visible_lists = g_ptr_array_new();
-    focus_set->focus_stack_lists_with_layer_shell = g_ptr_array_new();
-
-    focus_set->focus_stack_layer_background = g_ptr_array_new();
-    focus_set->focus_stack_layer_bottom = g_ptr_array_new();
-    focus_set->focus_stack_layer_top = g_ptr_array_new();
-    focus_set->focus_stack_layer_overlay = g_ptr_array_new();
-    focus_set->focus_stack_on_top = g_ptr_array_new();
-    focus_set->focus_stack_normal = g_ptr_array_new();
-    focus_set->focus_stack_hidden = g_ptr_array_new();
-    focus_set->focus_stack_not_focusable = g_ptr_array_new();
-
-    g_ptr_array_add(focus_set->focus_stack_lists, focus_set->focus_stack_layer_top);
-    g_ptr_array_add(focus_set->focus_stack_lists, focus_set->focus_stack_on_top);
-    g_ptr_array_add(focus_set->focus_stack_lists, focus_set->focus_stack_normal);
-    g_ptr_array_add(focus_set->focus_stack_lists, focus_set->focus_stack_not_focusable);
-    g_ptr_array_add(focus_set->focus_stack_lists, focus_set->focus_stack_hidden);
-
-    g_ptr_array_add(focus_set->focus_stack_lists_with_layer_shell, focus_set->focus_stack_layer_overlay);
-    g_ptr_array_add(focus_set->focus_stack_lists_with_layer_shell, focus_set->focus_stack_layer_top);
-    g_ptr_array_add(focus_set->focus_stack_lists_with_layer_shell, focus_set->focus_stack_on_top);
-    g_ptr_array_add(focus_set->focus_stack_lists_with_layer_shell, focus_set->focus_stack_normal);
-    g_ptr_array_add(focus_set->focus_stack_lists_with_layer_shell, focus_set->focus_stack_not_focusable);
-    g_ptr_array_add(focus_set->focus_stack_lists_with_layer_shell, focus_set->focus_stack_layer_bottom);
-    g_ptr_array_add(focus_set->focus_stack_lists_with_layer_shell, focus_set->focus_stack_layer_background);
-
-    g_ptr_array_add(focus_set->focus_stack_visible_lists, focus_set->focus_stack_on_top);
-    g_ptr_array_add(focus_set->focus_stack_visible_lists, focus_set->focus_stack_normal);
-    g_ptr_array_add(focus_set->focus_stack_visible_lists, focus_set->focus_stack_not_focusable);
-
-    return focus_set;
-}
-
-static void focus_set_destroy(struct focus_set *focus_set)
-{
-    g_ptr_array_free(focus_set->focus_stack_layer_background, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_layer_bottom, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_layer_top, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_layer_overlay, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_lists, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_visible_lists, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_lists_with_layer_shell, FALSE);
-
-    g_ptr_array_free(focus_set->focus_stack_on_top, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_normal, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_hidden, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_not_focusable, FALSE);
-}
-
-static struct visual_set *visual_set_create()
-{
-    struct visual_set *visual_set = calloc(1, sizeof(struct visual_set));
-    visual_set->all_stack_lists = g_ptr_array_new();
-    visual_set->stack_lists = g_ptr_array_new();
-    visual_set->visual_stack_lists = g_ptr_array_new();
-
-    visual_set->tiled_visual_stack = g_ptr_array_new();
-    visual_set->floating_visual_stack = g_ptr_array_new();
-
-    g_ptr_array_add(visual_set->all_stack_lists, server.layer_visual_stack_overlay);
-    g_ptr_array_add(visual_set->all_stack_lists, server.layer_visual_stack_top);
-    g_ptr_array_add(visual_set->all_stack_lists, server.floating_stack);
-    g_ptr_array_add(visual_set->all_stack_lists, visual_set->tiled_visual_stack);
-    g_ptr_array_add(visual_set->all_stack_lists, server.layer_visual_stack_bottom);
-    g_ptr_array_add(visual_set->all_stack_lists, server.layer_visual_stack_background);
-
-    g_ptr_array_add(visual_set->stack_lists, server.layer_visual_stack_overlay);
-    g_ptr_array_add(visual_set->stack_lists, server.layer_visual_stack_top);
-    g_ptr_array_add(visual_set->stack_lists, visual_set->floating_visual_stack);
-    g_ptr_array_add(visual_set->stack_lists, visual_set->tiled_visual_stack);
-    g_ptr_array_add(visual_set->stack_lists, server.layer_visual_stack_bottom);
-    g_ptr_array_add(visual_set->stack_lists, server.layer_visual_stack_background);
-
-    g_ptr_array_add(visual_set->visual_stack_lists, visual_set->floating_visual_stack);
-    g_ptr_array_add(visual_set->visual_stack_lists, visual_set->tiled_visual_stack);
-    return visual_set;
-}
-
-static void visual_set_destroy(struct visual_set *visual_set)
-{
-    // TODO fix me
-    /* visual_set->visual_stack_lists = g_ptr_array_new(); */
-    /* visual_set->normal_visual_stack_lists = g_ptr_array_new(); */
-    /* visual_set->layer_visual_stack_lists = g_ptr_array_new(); */
-
-    /* visual_set->tiled_visual_stack = g_ptr_array_new(); */
-    /* visual_set->floating_visual_stack = g_ptr_array_new(); */
-    /* visual_set->layer_visual_stack_background = g_ptr_array_new(); */
-    /* visual_set->layer_visual_stack_bottom = g_ptr_array_new(); */
-    /* visual_set->layer_visual_stack_top = g_ptr_array_new(); */
-    /* visual_set->layer_visual_stack_overlay = g_ptr_array_new(); */
-    free(visual_set);
-}
-
 GPtrArray *create_workspaces(GPtrArray *tag_names)
 {
     GPtrArray *workspaces = g_ptr_array_new();
@@ -156,7 +58,7 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     ws->visual_set = visual_set_create();
     ws->visible_visual_set = visual_set_create();
 
-    ws->list_set = create_container_set();
+    ws->con_set = create_container_set();
     return ws;
 }
 
@@ -235,12 +137,12 @@ void destroy_workspace(struct workspace *ws)
     focus_set_destroy(ws->local_focus_set);
     visual_set_destroy(ws->visual_set);
     visual_set_destroy(ws->visible_visual_set);
-    for (int i = 0; i < length_of_composed_list(ws->list_set->container_lists); i++) {
-        struct container *con = get_in_composed_list(ws->list_set->container_lists, i);
+    for (int i = 0; i < length_of_composed_list(ws->con_set->container_lists); i++) {
+        struct container *con = get_in_composed_list(ws->con_set->container_lists, i);
         struct client *c = con->client;
         kill_client(c);
     }
-    destroy_container_set(ws->list_set);
+    destroy_container_set(ws->con_set);
     free(ws->name);
     free(ws);
 }
@@ -379,8 +281,8 @@ int get_workspace_container_count(struct workspace *ws)
         return -1;
 
     int count = 0;
-    for (int i = 0; i < length_of_composed_list(ws->list_set->visible_container_lists); i++) {
-        struct container *con = get_in_composed_list(ws->list_set->visible_container_lists, i);
+    for (int i = 0; i < length_of_composed_list(ws->con_set->visible_container_lists); i++) {
+        struct container *con = get_in_composed_list(ws->con_set->visible_container_lists, i);
         if (con->client->ws_id == ws->id) {
             count++;
         }
@@ -638,7 +540,7 @@ void workspace_add_container_to_containers(struct workspace *ws, struct containe
     assert(con != NULL);
 
     DO_ACTION_GLOBALLY(server.workspaces,
-        list_set_add_container_to_containers(list_set, con, i);
+        list_set_add_container_to_containers(con_set, con, i);
     );
 }
 
@@ -652,7 +554,7 @@ void workspace_remove_container_from_containers_locally(struct workspace *ws, st
         remove_in_composed_list(ws->local_focus_set->focus_stack_lists, cmp_ptr, con);
     } else {
         DO_ACTION_LOCALLY(ws,
-            remove_in_composed_list(list_set->container_lists, cmp_ptr, con);
+            remove_in_composed_list(con_set->container_lists, cmp_ptr, con);
         );
     }
 }
@@ -666,7 +568,7 @@ void workspace_add_container_to_containers_locally(struct workspace *ws, struct 
         update_sub_focus_stack(ws);
     } else {
         DO_ACTION_LOCALLY(ws,
-            list_set_add_container_to_containers(list_set, con, i);
+            list_set_add_container_to_containers(con_set, con, i);
         );
     }
 }
@@ -766,14 +668,14 @@ void workspace_add_container_to_focus_stack_locally(struct workspace *ws, struct
 void workspace_remove_container_from_floating_stack_locally(struct workspace *ws, struct container *con)
 {
     DO_ACTION_LOCALLY(ws, 
-            g_ptr_array_remove(list_set->floating_containers, con);
+            g_ptr_array_remove(con_set->floating_containers, con);
             );
 }
 
 void workspace_add_container_to_floating_stack_locally(struct workspace *ws, struct container *con, int i)
 {
     DO_ACTION_LOCALLY(ws, 
-            g_ptr_array_insert(list_set->floating_containers, i, con);
+            g_ptr_array_insert(con_set->floating_containers, i, con);
             );
 }
 
@@ -848,7 +750,7 @@ void add_container_to_stack(struct workspace *ws, struct container *con)
 void workspace_remove_container(struct workspace *ws, struct container *con)
 {
     DO_ACTION_GLOBALLY(server.workspaces,
-            remove_in_composed_list(list_set->container_lists, cmp_ptr, con);
+            remove_in_composed_list(con_set->container_lists, cmp_ptr, con);
             );
 }
 
@@ -874,7 +776,7 @@ static int get_in_container_stack(struct container *con)
 
     struct monitor *m = selected_monitor;
     struct workspace *ws = monitor_get_active_workspace(m);
-    int position = find_in_composed_list(ws->list_set->visible_container_lists, cmp_ptr, con);
+    int position = find_in_composed_list(ws->con_set->visible_container_lists, cmp_ptr, con);
     return position;
 }
 

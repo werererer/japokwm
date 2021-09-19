@@ -13,4 +13,7 @@ struct visual_set {
     GPtrArray *floating_visual_stack;
 };
 
+struct visual_set *visual_set_create();
+void visual_set_destroy(struct visual_set *visual_set);
+
 #endif /* VISUAL_STACK_SET_H */

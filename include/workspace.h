@@ -19,7 +19,7 @@ struct server;
  * NOTE: use to jump to the end of the current action*/
 #define DO_ACTION_LOCALLY(workspace, action) \
     do {\
-        struct container_set *list_set = workspace->list_set;\
+        struct container_set *con_set = workspace->con_set;\
         do {\
             action\
         } while (0);\
@@ -27,7 +27,7 @@ struct server;
         do {\
             struct tagset *_tagset = workspace_get_active_tagset(workspace);\
             assert(tagset_exist_on(_tagset, con) == true);\
-            list_set = _tagset->list_set;\
+            con_set = _tagset->con_set;\
             action\
         } while (0);\
     } while (0)
@@ -41,7 +41,7 @@ struct server;
         for (int _i = 0; _i < workspaces->len; _i++) {\
             struct workspace *_ws = g_ptr_array_index(workspaces, _i);\
             \
-            struct container_set *list_set = _ws->list_set;\
+            struct container_set *con_set = _ws->con_set;\
             do {\
                 action\
             } while (0);\
@@ -54,7 +54,7 @@ struct server;
                     continue;\
                 if (!tagset_exist_on(_tagset, con))\
                     continue;\
-                list_set = _tagset->list_set;\
+                con_set = _tagset->con_set;\
                 _tagset->applied_action = true;\
                 action\
             } while (0);\
@@ -82,7 +82,7 @@ struct workspace {
     // the tagset that currently has this workspace selected
     struct tagset *selected_tagset;
 
-    struct container_set *list_set;
+    struct container_set *con_set;
     GPtrArray *independent_containers;
 
     struct focus_set *focus_set;

@@ -203,8 +203,8 @@ int get_floating_container_count(struct tagset *tagset)
 
     int n = 0;
 
-    for (int i = 0; i < tagset->list_set->floating_containers->len; i++) {
-        struct container *con = g_ptr_array_index(tagset->list_set->floating_containers, i);
+    for (int i = 0; i < tagset->con_set->floating_containers->len; i++) {
+        struct container *con = g_ptr_array_index(tagset->con_set->floating_containers, i);
         if (con->client->type == LAYER_SHELL)
             continue;
         n++;
@@ -412,7 +412,7 @@ void update_hidden_status_of_containers(struct monitor *m,
 
 int get_container_count(struct tagset *tagset)
 {
-    return length_of_composed_list(tagset->list_set->container_lists);
+    return length_of_composed_list(tagset->con_set->container_lists);
 }
 
 int get_tiled_container_count(struct tagset *tagset)

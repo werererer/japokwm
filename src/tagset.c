@@ -33,9 +33,9 @@ static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspac
 
 static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspace *ws)
 {
-    struct container_set *dest = tagset->list_set;
+    struct container_set *dest = tagset->con_set;
     struct workspace *sel_ws = get_workspace(tagset->selected_ws_id);
-    struct container_set *src = sel_ws->list_set;
+    struct container_set *src = sel_ws->con_set;
 
     container_set_append(ws, dest, src);
 }
@@ -199,8 +199,8 @@ static void tagset_unsubscribe_from_workspace(struct tagset *tagset, struct work
 
 static void tagset_remove_workspace(struct tagset *tagset, struct workspace *ws)
 {
-    struct container_set *dest = tagset->list_set;
-    struct container_set *src = ws->list_set;
+    struct container_set *dest = tagset->con_set;
+    struct container_set *src = ws->con_set;
 
     for (int i = 0; i < length_of_composed_list(src->container_lists); i++) {
         struct container *con = get_in_composed_list(src->container_lists, i);
@@ -233,7 +233,7 @@ void tagset_unload_workspaces(struct tagset *tagset)
 {
     assert(tagset != NULL);
 
-    container_set_clear(tagset->list_set);
+    container_set_clear(tagset->con_set);
 
     for (int i = 0; i < tagset->loaded_workspaces->size; i++) {
         bool bit = bitset_test(tagset->loaded_workspaces, i);
@@ -254,7 +254,7 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *work
 
     tagset->selected_ws_id = selected_ws_id;
 
-    tagset->list_set = create_container_set();
+    tagset->con_set = create_container_set();
 
     tagset->workspaces = bitset_create(server.workspaces->len);
     tagset->loaded_workspaces = bitset_create(server.workspaces->len);
@@ -281,7 +281,7 @@ void destroy_tagset(struct tagset *tagset)
     g_ptr_array_remove(server.tagsets, tagset);
     bitset_destroy(tagset->workspaces);
     bitset_destroy(tagset->loaded_workspaces);
-    destroy_container_set(tagset->list_set);
+    destroy_container_set(tagset->con_set);
     free(tagset);
 }
 
@@ -290,10 +290,10 @@ void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tag
     if (!old_tagset)
         return;
 
-    int len = length_of_composed_list(old_tagset->list_set->container_lists);
+    int len = length_of_composed_list(old_tagset->con_set->container_lists);
     int pos = len-1;
     for (int i = len-1; i >= 0; i--) {
-        struct container *con = get_in_composed_list(old_tagset->list_set->container_lists, pos);
+        struct container *con = get_in_composed_list(old_tagset->con_set->container_lists, pos);
         container_move_sticky_containers(con);
         pos--;
     }
@@ -346,12 +346,12 @@ void focus_tagset(struct tagset *tagset)
 
 static void tagset_append_to_workspaces(struct tagset *tagset)
 {
-    for (int i = 0; i < tagset->list_set->container_lists->len; i++) {
-        GPtrArray *tagset_list = g_ptr_array_index(tagset->list_set->container_lists, i);
+    for (int i = 0; i < tagset->con_set->container_lists->len; i++) {
+        GPtrArray *tagset_list = g_ptr_array_index(tagset->con_set->container_lists, i);
         for (int j = 0; j < tagset_list->len; j++) {
             struct container *con = g_ptr_array_index(tagset_list, j);
             struct workspace *ws = get_workspace(con->client->ws_id);
-            GPtrArray *ws_list = g_ptr_array_index(ws->list_set->container_lists, i);
+            GPtrArray *ws_list = g_ptr_array_index(ws->con_set->container_lists, i);
 
             g_ptr_array_add(ws_list, con);
         }
@@ -367,18 +367,18 @@ static void tagset_clear_sel_workspace(struct tagset *tagset)
             continue;
 
         struct workspace *ws = get_workspace(i);
-        container_set_clear(ws->list_set);
+        container_set_clear(ws->con_set);
     }
 }
 
 static void tagset_append_to_sel_workspace(struct tagset *tagset)
 {
     struct workspace *ws = get_workspace(tagset->selected_ws_id);
-    for (int i = 0; i < tagset->list_set->container_lists->len; i++) {
-        GPtrArray *tagset_list = g_ptr_array_index(tagset->list_set->container_lists, i);
+    for (int i = 0; i < tagset->con_set->container_lists->len; i++) {
+        GPtrArray *tagset_list = g_ptr_array_index(tagset->con_set->container_lists, i);
         for (int j = 0; j < tagset_list->len; j++) {
             struct container *con = g_ptr_array_index(tagset_list, j);
-            GPtrArray *ws_list = g_ptr_array_index(ws->list_set->container_lists, i);
+            GPtrArray *ws_list = g_ptr_array_index(ws->con_set->container_lists, i);
 
             g_ptr_array_add(ws_list, con);
         }
@@ -392,9 +392,7 @@ void tagset_write_to_workspaces(struct tagset *tagset)
     printf("write to wroskapce\n");
 
     struct workspace *ws = tagset_get_workspace(tagset);
-    sub_list_write_to_parent_list(
-            ws->list_set->container_lists,
-            tagset->list_set->container_lists);
+    container_set_write_to_parent(ws->con_set, tagset->con_set);
 }
 
 
@@ -501,7 +499,7 @@ GPtrArray *server_update_floating_containers()
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
         struct tagset *tagset = monitor_get_active_tagset(m);
-        wlr_list_cat(server.floating_containers, tagset->list_set->floating_containers);
+        wlr_list_cat(server.floating_containers, tagset->con_set->floating_containers);
 
         struct workspace *ws = tagset_get_workspace(tagset);
         wlr_list_cat(server.floating_stack, ws->visible_visual_set->floating_visual_stack);
@@ -517,7 +515,7 @@ GPtrArray *tagset_get_global_floating_lists(struct tagset *tagset)
         // TODO this doesn't seem right
         return ws->visible_focus_set->focus_stack_visible_lists;
     } else {
-        return tagset->list_set->global_floating_container_lists;
+        return tagset->con_set->global_floating_container_lists;
     }
 }
 
@@ -529,7 +527,7 @@ GPtrArray *tagset_get_visible_lists(struct tagset *tagset)
         struct workspace *ws = tagset_get_workspace(tagset);
         return ws->local_focus_set->focus_stack_visible_lists;
     } else {
-        return tagset->list_set->visible_container_lists;
+        return tagset->con_set->visible_container_lists;
     }
 }
 
@@ -541,7 +539,7 @@ GPtrArray *tagset_get_tiled_list(struct tagset *tagset)
         struct workspace *ws = tagset_get_workspace(tagset);
         return ws->local_focus_set->focus_stack_normal;
     } else {
-        return tagset->list_set->tiled_containers;
+        return tagset->con_set->tiled_containers;
     }
 }
 
@@ -556,7 +554,7 @@ GPtrArray *tagset_get_floating_list(struct tagset *tagset)
         struct workspace *ws = tagset_get_workspace(tagset);
         return ws->local_focus_set->focus_stack_normal;
     } else {
-        return tagset->list_set->floating_containers;
+        return tagset->con_set->floating_containers;
     }
 }
 
@@ -568,7 +566,7 @@ GPtrArray *tagset_get_hidden_list(struct tagset *tagset)
         struct workspace *ws = tagset_get_workspace(tagset);
         return ws->local_focus_set->focus_stack_hidden;
     } else {
-        return tagset->list_set->hidden_containers;
+        return tagset->con_set->hidden_containers;
     }
 }
 
