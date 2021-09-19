@@ -53,8 +53,6 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     ws->independent_containers = g_ptr_array_new();
 
     ws->focus_set = focus_set_create();
-    ws->visible_focus_set = focus_set_create();
-    ws->local_focus_set = focus_set_create();
     ws->visual_set = visual_set_create();
     ws->visible_visual_set = visual_set_create();
 
@@ -107,7 +105,8 @@ void update_workspaces(GPtrArray *workspaces, GPtrArray *tag_names)
 
 void focus_most_recent_container(struct workspace *ws)
 {
-    struct container *con = get_in_composed_list(ws->visible_focus_set->focus_stack_lists, 0);
+    struct tagset *tagset = workspace_get_active_tagset(ws);
+    struct container *con = get_in_composed_list(tagset->visible_focus_set->focus_stack_lists, 0);
 
     // FIXME
     if (!con) {
@@ -124,7 +123,8 @@ void focus_most_recent_container(struct workspace *ws)
 
 struct container *get_container(struct workspace *ws, int i)
 {
-    return get_in_composed_list(ws->visible_focus_set->focus_stack_visible_lists, i);
+    struct tagset *tagset = workspace_get_active_tagset(ws);
+    return get_in_composed_list(tagset->visible_focus_set->focus_stack_visible_lists, i);
 }
 
 void destroy_workspace(struct workspace *ws)
@@ -133,8 +133,6 @@ void destroy_workspace(struct workspace *ws)
 
     bitset_destroy(ws->prev_workspaces);
     focus_set_destroy(ws->focus_set);
-    focus_set_destroy(ws->visible_focus_set);
-    focus_set_destroy(ws->local_focus_set);
     visual_set_destroy(ws->visual_set);
     visual_set_destroy(ws->visible_visual_set);
     for (int i = 0; i < length_of_composed_list(ws->con_set->container_lists); i++) {
@@ -163,9 +161,12 @@ void update_sub_focus_stack(struct workspace *ws)
 
 void update_reduced_focus_stack(struct workspace *ws)
 {
+    struct tagset *tagset = workspace_get_active_tagset(ws);
+    if (!tagset)
+        return;
     for (int i = 0; i < ws->focus_set->focus_stack_lists->len; i++) {
         GPtrArray *src_list = g_ptr_array_index(ws->focus_set->focus_stack_lists, i);
-        GPtrArray *dest_list = g_ptr_array_index(ws->visible_focus_set->focus_stack_lists, i);
+        GPtrArray *dest_list = g_ptr_array_index(tagset->visible_focus_set->focus_stack_lists, i);
         list_clear(dest_list, NULL);
         for (int j = 0; j < src_list->len; j++) {
             struct container *con = g_ptr_array_index(src_list, j);
@@ -181,9 +182,12 @@ void update_reduced_focus_stack(struct workspace *ws)
 
 void update_local_focus_stack(struct workspace *ws)
 {
+    struct tagset *tagset = workspace_get_active_tagset(ws);
+    if (!tagset)
+        return;
     for (int i = 0; i < ws->focus_set->focus_stack_lists->len; i++) {
         GPtrArray *src_list = g_ptr_array_index(ws->focus_set->focus_stack_lists, i);
-        GPtrArray *dest_list = g_ptr_array_index(ws->local_focus_set->focus_stack_lists, i);
+        GPtrArray *dest_list = g_ptr_array_index(tagset->local_focus_set->focus_stack_lists, i);
         list_clear(dest_list, NULL);
         for (int j = 0; j < src_list->len; j++) {
             struct container *con = g_ptr_array_index(src_list, j);
@@ -513,7 +517,7 @@ void workspace_update_names(struct server *server, GPtrArray *workspaces)
 
 struct container *workspace_get_focused_container(struct workspace *ws)
 {
-    struct container *con = get_in_composed_list(ws->visible_focus_set->focus_stack_visible_lists, 0);
+    struct container *con = get_in_composed_list(ws->focus_set->focus_stack_visible_lists, 0);
     return con;
 }
 
@@ -550,8 +554,8 @@ void workspace_remove_container_from_containers_locally(struct workspace *ws, st
     struct layout *lt = tagset_get_layout(tagset);
     if (lt->options.arrange_by_focus) {
         remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
-        remove_in_composed_list(ws->visible_focus_set->focus_stack_lists, cmp_ptr, con);
-        remove_in_composed_list(ws->local_focus_set->focus_stack_lists, cmp_ptr, con);
+        remove_in_composed_list(tagset->visible_focus_set->focus_stack_lists, cmp_ptr, con);
+        remove_in_composed_list(tagset->local_focus_set->focus_stack_lists, cmp_ptr, con);
     } else {
         DO_ACTION_LOCALLY(ws,
             remove_in_composed_list(con_set->container_lists, cmp_ptr, con);
@@ -759,8 +763,11 @@ void workspace_remove_container_from_focus_stack(struct workspace *ws, struct co
     for (int i = 0; i < server.workspaces->len; i++) {
         ws = g_ptr_array_index(server.workspaces, i);
         remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
-        remove_in_composed_list(ws->visible_focus_set->focus_stack_lists, cmp_ptr, con);
-        remove_in_composed_list(ws->local_focus_set->focus_stack_lists, cmp_ptr, con);
+        struct tagset *tagset = workspace_get_active_tagset(ws);
+        if (!tagset)
+            continue;
+        remove_in_composed_list(tagset->visible_focus_set->focus_stack_lists, cmp_ptr, con);
+        remove_in_composed_list(tagset->local_focus_set->focus_stack_lists, cmp_ptr, con);
     }
 }
 

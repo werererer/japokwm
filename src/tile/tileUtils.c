@@ -42,11 +42,10 @@ static void update_container_arranged_by_focus_state()
 {
     // TODO: refactor this
     // manage the con->was_arranged_by_focus and con->arranged_by_focus variables
-    struct workspace *ws = monitor_get_active_workspace(selected_monitor);
-    struct tagset *mon_tagset = monitor_get_active_tagset(selected_monitor);
-    struct layout *mon_lt = tagset_get_layout(mon_tagset);
-    for (int i = 0; i < length_of_composed_list(ws->visible_focus_set->focus_stack_lists); i++) {
-        struct container *con = get_in_composed_list(ws->visible_focus_set->focus_stack_lists, i);
+    struct tagset *tagset = monitor_get_active_tagset(selected_monitor);
+    struct layout *mon_lt = tagset_get_layout(tagset);
+    for (int i = 0; i < length_of_composed_list(tagset->visible_focus_set->focus_stack_lists); i++) {
+        struct container *con = get_in_composed_list(tagset->visible_focus_set->focus_stack_lists, i);
         con->was_arranged_by_focus = con->arranged_by_focus;
         con->arranged_by_focus = mon_lt->options.arrange_by_focus;
     }

@@ -86,8 +86,6 @@ struct workspace {
     GPtrArray *independent_containers;
 
     struct focus_set *focus_set;
-    struct focus_set *visible_focus_set;
-    struct focus_set *local_focus_set;
 
     struct visual_set *visual_set;
     struct visual_set *visible_visual_set;

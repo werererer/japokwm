@@ -255,6 +255,8 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *work
     tagset->selected_ws_id = selected_ws_id;
 
     tagset->con_set = create_container_set();
+    tagset->visible_focus_set = focus_set_create();
+    tagset->local_focus_set = focus_set_create();
 
     tagset->workspaces = bitset_create(server.workspaces->len);
     tagset->loaded_workspaces = bitset_create(server.workspaces->len);
@@ -282,6 +284,8 @@ void destroy_tagset(struct tagset *tagset)
     bitset_destroy(tagset->workspaces);
     bitset_destroy(tagset->loaded_workspaces);
     destroy_container_set(tagset->con_set);
+    focus_set_destroy(tagset->visible_focus_set);
+    focus_set_destroy(tagset->local_focus_set);
     free(tagset);
 }
 
@@ -510,10 +514,9 @@ GPtrArray *server_update_floating_containers()
 GPtrArray *tagset_get_global_floating_lists(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);
-    struct workspace *ws = tagset_get_workspace(tagset);
     if (lt->options.arrange_by_focus) {
         // TODO this doesn't seem right
-        return ws->visible_focus_set->focus_stack_visible_lists;
+        return tagset->visible_focus_set->focus_stack_visible_lists;
     } else {
         return tagset->con_set->global_floating_container_lists;
     }
@@ -524,8 +527,7 @@ GPtrArray *tagset_get_visible_lists(struct tagset *tagset)
     struct layout *lt = tagset_get_layout(tagset);
 
     if (lt->options.arrange_by_focus) {
-        struct workspace *ws = tagset_get_workspace(tagset);
-        return ws->local_focus_set->focus_stack_visible_lists;
+        return tagset->local_focus_set->focus_stack_visible_lists;
     } else {
         return tagset->con_set->visible_container_lists;
     }
@@ -536,8 +538,7 @@ GPtrArray *tagset_get_tiled_list(struct tagset *tagset)
     struct layout *lt = tagset_get_layout(tagset);
 
     if (lt->options.arrange_by_focus) {
-        struct workspace *ws = tagset_get_workspace(tagset);
-        return ws->local_focus_set->focus_stack_normal;
+        return tagset->local_focus_set->focus_stack_normal;
     } else {
         return tagset->con_set->tiled_containers;
     }
@@ -551,8 +552,7 @@ GPtrArray *tagset_get_floating_list(struct tagset *tagset)
         return NULL;
 
     if (lt->options.arrange_by_focus) {
-        struct workspace *ws = tagset_get_workspace(tagset);
-        return ws->local_focus_set->focus_stack_normal;
+        return tagset->local_focus_set->focus_stack_normal;
     } else {
         return tagset->con_set->floating_containers;
     }
@@ -563,8 +563,7 @@ GPtrArray *tagset_get_hidden_list(struct tagset *tagset)
     struct layout *lt = tagset_get_layout(tagset);
 
     if (lt->options.arrange_by_focus) {
-        struct workspace *ws = tagset_get_workspace(tagset);
-        return ws->local_focus_set->focus_stack_hidden;
+        return tagset->local_focus_set->focus_stack_hidden;
     } else {
         return tagset->con_set->hidden_containers;
     }
@@ -593,7 +592,7 @@ void tagset_list_remove_index(GPtrArray *list, int i)
 
     if (lt->options.arrange_by_focus) {
         struct workspace *ws = tagset_get_workspace(tagset);
-        struct container *local_con = get_in_composed_list(ws->local_focus_set->focus_stack_lists, i);
+        struct container *local_con = get_in_composed_list(tagset->local_focus_set->focus_stack_lists, i);
         remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, local_con);
         update_sub_focus_stack(ws);
     } else {
@@ -642,7 +641,7 @@ struct container *tagset_list_steal_index(GPtrArray *list, int i)
 
     struct container *con = NULL;
     if (lt->options.arrange_by_focus) {
-        con = get_in_composed_list(ws->local_focus_set->focus_stack_lists, i);
+        con = get_in_composed_list(tagset->local_focus_set->focus_stack_lists, i);
         remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
         update_sub_focus_stack(ws);
     } else {

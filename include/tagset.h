@@ -47,6 +47,8 @@ struct tagset {
     int n_all;
 
     struct container_set *con_set;
+    struct focus_set *visible_focus_set;
+    struct focus_set *local_focus_set;
 
     bool applied_action;
 };

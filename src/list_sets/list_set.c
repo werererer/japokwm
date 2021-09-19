@@ -58,17 +58,14 @@ static void list_append_list_under_condition(
         struct workspace *ws
         )
 {
-    printf("\nstart\n");
     for (int i = 0; i < src->len; i++) {
         struct container *src_con = g_ptr_array_index(src, i);
-        printf("src: %p\n", src_con);
 
         if (!is_condition(ws, src, src_con))
             continue;
 
         add_to_list(dest, src, src_con);
     }
-    printf("end\n");
 }
 
 void lists_cat_to_list(GPtrArray *dest, GPtrArray2D *src)

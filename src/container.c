@@ -187,8 +187,7 @@ struct container *get_focused_container(struct monitor *m)
     if (!tagset)
         return NULL;
 
-    struct workspace *ws = tagset_get_workspace(tagset);
-    struct container *con = get_in_composed_list(ws->visible_focus_set->focus_stack_visible_lists, 0);
+    struct container *con = get_in_composed_list(tagset->visible_focus_set->focus_stack_visible_lists, 0);
     return con;
 }
 
@@ -763,8 +762,8 @@ int get_position_in_container_focus_stack(struct container *con)
         return INVALID_POSITION;
 
     struct monitor *m = selected_monitor;
-    struct workspace *ws = monitor_get_active_workspace(m);
-    int position = find_in_composed_list(ws->visible_focus_set->focus_stack_visible_lists, cmp_ptr, con);
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    int position = find_in_composed_list(tagset->visible_focus_set->focus_stack_visible_lists, cmp_ptr, con);
     return position;
 }
 
