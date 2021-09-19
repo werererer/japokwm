@@ -73,11 +73,6 @@ static int find_final_position(
     g_ptr_array_find(src_list, con, &pos);
     src_pos = pos;
 
-    if (dest_len > 0 && src_pos <= dest_positions[0]) {
-        // we have to return zero in that case TODO: why?
-        return 0;
-    }
-
     int final_pos = 1 + lower_bound(
             &src_pos,
             dest_positions,

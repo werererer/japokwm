@@ -233,13 +233,21 @@ void lower_bound_test()
     int low1 = lower_bound(&key1, base, 6, sizeof(int), cmp_int);
     g_assert_cmpint(low1, ==, 0);
 
-    int key2 = 100;
+    int key2 = 0;
     int low2 = lower_bound(&key2, base, 6, sizeof(int), cmp_int);
-    g_assert_cmpint(low2, ==, 5);
+    g_assert_cmpint(low2, ==, -1);
 
-    int key3 = -100;
+    int key3 = 5;
     int low3 = lower_bound(&key3, base, 6, sizeof(int), cmp_int);
-    g_assert_cmpint(low3, ==, 0);
+    g_assert_cmpint(low3, ==, 1);
+
+    int key5 = 100;
+    int low5 = lower_bound(&key5, base, 6, sizeof(int), cmp_int);
+    g_assert_cmpint(low5, ==, 5);
+
+    int key6 = -100;
+    int low6 = lower_bound(&key6, base, 6, sizeof(int), cmp_int);
+    g_assert_cmpint(low6, ==, -1);
 }
 
 #define PREFIX "coreUtils"

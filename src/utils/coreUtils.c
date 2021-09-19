@@ -183,7 +183,7 @@ int lower_bound(const void *key, const void *base,
 {
     // Initialise starting index and
     // ending index
-    int low = 0;
+    int low = -1;
     int high = nmemb;
  
     // Till low is less than high
@@ -195,7 +195,7 @@ int lower_bound(const void *key, const void *base,
         // left subarray
         const unsigned char *p = (const unsigned char *)base + mid * size;
         int cmp = compar(key, p);
-        if (cmp < 0) {
+        if (cmp <= 0) {
             high = mid;
             printf("is on the left new low: %i new high: %i\n", low, high);
         }
