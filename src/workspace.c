@@ -297,6 +297,8 @@ struct tagset *workspace_get_tagset(struct workspace *ws)
 
 struct tagset *workspace_get_active_tagset(struct workspace *ws)
 {
+    if (!ws)
+        return NULL;
     struct tagset *tagset = ws->tagset;
     if (!tagset) {
         tagset = ws->selected_tagset;
@@ -453,8 +455,13 @@ void workspace_update_names(struct server *server, GPtrArray *workspaces)
 
 struct container *workspace_get_focused_container(struct workspace *ws)
 {
-    struct container *con = get_in_composed_list(ws->focus_set->focus_stack_visible_lists, 0);
-    return con;
+    for (int i = 0; i < length_of_composed_list(ws->focus_set->focus_stack_lists); i++) {
+        struct container *con = get_in_composed_list(ws->focus_set->focus_stack_lists, i);
+        if (is_reduced_focus_stack(ws, con)) {
+            return con;
+        }
+    }
+    return NULL;
 }
 
 void list_set_add_container_to_containers(struct container_set *list_set, struct container *con, int i)

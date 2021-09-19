@@ -16,6 +16,7 @@
 #include "list_sets/visual_stack_set.h"
 #include "list_sets/focus_stack_set.h"
 #include "list_sets/container_stack_set.h"
+#include "workspace.h"
 
 static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load);
 static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces);
@@ -314,7 +315,18 @@ void update_sub_focus_stack(struct tagset *tagset)
     update_local_focus_stack(tagset);
 }
 
-static bool is_reduced_focus_stack(
+bool is_reduced_focus_stack(struct workspace *ws, struct container *con)
+{
+    struct monitor *m = workspace_get_monitor(ws);
+    bool viewable = container_viewable_on_monitor(m, con);
+    bool visible = visible_on(m, ws->prev_workspaces, con);
+    if (viewable || visible) {
+        return true;
+    }
+    return false;
+}
+
+static bool _is_reduced_focus_stack(
         struct workspace *ws,
         GPtrArray *src_list,
         struct container *con
@@ -322,7 +334,7 @@ static bool is_reduced_focus_stack(
 {
     struct monitor *m = workspace_get_monitor(ws);
     bool viewable = container_viewable_on_monitor(m, con);
-    bool visible = visible_on(m, ws->prev_workspaces, ws->id, con);
+    bool visible = visible_on(m, ws->prev_workspaces, con);
     if (viewable || visible) {
         return true;
     }
@@ -336,7 +348,7 @@ void update_reduced_focus_stack(struct tagset *tagset)
     lists_append_list_under_condition(
             tagset->visible_focus_set->focus_stack_lists,
             ws->focus_set->focus_stack_lists,
-            is_reduced_focus_stack,
+            _is_reduced_focus_stack,
             ws);
 }
 
@@ -347,7 +359,7 @@ static bool is_local_focus_stack(
         )
 {
     struct monitor *m = workspace_get_monitor(ws);
-    if (exist_on(m, ws->prev_workspaces, ws->id, con)) {
+    if (exist_on(m, ws->prev_workspaces, con)) {
         return true;
     }
     return false;
@@ -848,14 +860,14 @@ bool container_potentially_viewable_on_monitor(struct monitor *m,
     return false;
 }
 
-bool visible_on(struct monitor *m, BitSet *workspaces, int i, struct container *con)
+bool visible_on(struct monitor *m, BitSet *workspaces, struct container *con)
 {
     if (!con)
         return false;
     if (con->hidden)
         return false;
 
-    return exist_on(m, workspaces, i, con);
+    return exist_on(m, workspaces, con);
 }
 
 bool tagset_is_visible(struct tagset *tagset)
@@ -867,7 +879,7 @@ bool tagset_is_visible(struct tagset *tagset)
     return tagset->m->tagset == tagset;
 }
 
-bool exist_on(struct monitor *m, BitSet *workspaces, int i, struct container *con)
+bool exist_on(struct monitor *m, BitSet *workspaces, struct container *con)
 {
     if (!con)
         return false;
@@ -898,7 +910,7 @@ bool tagset_exist_on(struct tagset *tagset, struct container *con)
         return false;
     if (!con)
         return false;
-    return exist_on(tagset->m, tagset->workspaces, tagset->selected_ws_id, con);
+    return exist_on(tagset->m, tagset->workspaces, con);
 }
 
 bool tagset_visible_on(struct tagset *tagset, struct container *con)
@@ -907,7 +919,7 @@ bool tagset_visible_on(struct tagset *tagset, struct container *con)
         return false;
     if (!con)
         return false;
-    return visible_on(tagset->m, tagset->workspaces, tagset->selected_ws_id, con);
+    return visible_on(tagset->m, tagset->workspaces, con);
 }
 
 struct workspace *tagset_get_workspace(struct tagset *tagset)

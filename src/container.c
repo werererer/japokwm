@@ -443,10 +443,14 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     }
 
     if (container_is_floating(sel)) {
-        container_set_floating(con, NULL, true);
-        container_set_floating(sel, NULL, false);
-        struct wlr_box *sel_geom = container_get_geom(sel);
-        resize(con, *sel_geom);
+        // TODO implement this
+        // it could be something like this but I don't know
+        /* container_set_floating(con, container_fix_position_to_begin, true); */
+        /* container_set_floating(sel, container_fix_position_to_begin, false); */
+
+        /* struct wlr_box *sel_geom = container_get_geom(sel); */
+        /* resize(con, *sel_geom); */
+        return;
     }
 
     guint sel_index;
@@ -526,6 +530,26 @@ void repush(int pos1, int pos2)
     }
 }
 
+void container_fix_position_to_begin(struct container *con)
+{
+    if (!con)
+        return;
+
+    struct monitor *m = container_get_monitor(con);
+
+    if (!m)
+        return;
+
+    struct workspace *ws = monitor_get_active_workspace(m);
+    if (!container_is_floating(con)) {
+        workspace_remove_container_from_floating_stack_locally(ws, con);
+        workspace_add_container_to_containers_locally(ws, con, 0);
+    } else {
+        workspace_remove_container_from_containers_locally(ws, con);
+        workspace_add_container_to_floating_stack_locally(ws, con, 0);
+    }
+}
+
 void container_fix_position(struct container *con)
 {
     if (!con)
@@ -550,6 +574,7 @@ void container_fix_position(struct container *con)
         workspace_remove_container_from_containers_locally(ws, con);
         workspace_add_container_to_floating_stack_locally(ws, con, 0);
     }
+    g_ptr_array_free(tiled_containers, FALSE);
 }
 
 void container_set_floating(struct container *con, void (*fix_position)(struct container *con), bool floating)

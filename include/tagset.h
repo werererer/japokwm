@@ -8,6 +8,7 @@
 
 struct client;
 struct container;
+struct workspace;
 
 /* A tagset consists of a list_set, a struct to hold all relevant containers,
  * information on which monitor it belongs to and the list of workspaces it
@@ -69,6 +70,7 @@ void tagset_reload(struct tagset *tagset);
 void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tagset);
 
 void update_sub_focus_stack(struct tagset *tagset);
+bool is_reduced_focus_stack(struct workspace *ws, struct container *con);
 void update_reduced_focus_stack(struct tagset *tagset);
 void update_local_focus_stack(struct tagset *tagset);
 
@@ -98,9 +100,9 @@ bool container_viewable_on_monitor(struct monitor *m,
         struct container *con);
 bool container_potentially_viewable_on_monitor(struct monitor *m,
         struct container *con);
-bool exist_on(struct monitor *m, BitSet *workspaces, int i, struct container *con);
+bool exist_on(struct monitor *m, BitSet *workspaces, struct container *con);
 bool tagset_contains_client(BitSet *workspaces, struct client *c);
-bool visible_on(struct monitor *m, BitSet *workspaces, int i, struct container *con);
+bool visible_on(struct monitor *m, BitSet *workspaces, struct container *con);
 bool tagset_is_visible(struct tagset *tagset);
 
 bool tagset_exist_on(struct tagset *tagset, struct container *con);
