@@ -52,6 +52,20 @@ void clear_list_set(struct container_set *list_set)
     }
 }
 
+/* int cmp_container_pos(const void *src_pos_ptr, const void *con2_ptr) */
+/* { */
+/*     const int src_pos = *(int *)src_pos_ptr; */
+/*     const struct container *con2 = con2_ptr; */
+
+/*     if (i1 < i2) { */
+/*         return -1; */
+/*     } else if (i1 == i2) { */
+/*         return 0; */
+/*     } else { */
+/*         return 1; */
+/*     } */
+/* } */
+
 static int find_final_position(
         GPtrArray *src_list,
         GPtrArray *dest_list,
@@ -83,6 +97,7 @@ static int find_final_position(
 
 static void add_to_list(GPtrArray *dest, GPtrArray *src, struct container *src_con)
 {
+    lower_bound()
     int final_position = find_final_position(src, dest, src_con);
     g_ptr_array_insert(dest, final_position, src_con);
 }

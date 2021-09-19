@@ -195,12 +195,8 @@ int lower_bound(const void *key, const void *base,
         const unsigned char *p = (const unsigned char *)base + mid * size;
         int cmp = compar(key, p);
         if (cmp < 0) {
-            high = mid-1;
+            high = mid;
             printf("is on the left new low: %i new high: %i\n", low, high);
-        }
-        else if (cmp == 0) {
-            printf("anyways break\n");
-            break;
         }
         // If condition is not right
         // then find in right subarray
@@ -209,7 +205,7 @@ int lower_bound(const void *key, const void *base,
             low = mid;
         }
     }
-
+   
     // Return the lower_bound index
     return low;
 }
