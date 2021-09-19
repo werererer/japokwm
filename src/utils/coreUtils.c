@@ -85,11 +85,12 @@ bool remove_in_composed_list(GPtrArray *array, int (*compare)(const void *, cons
 
 int cmp_int(const void *ptr1, const void *ptr2)
 {
-    int i = *(int *)ptr1;
+    int i1 = *(int *)ptr1;
     int i2 = *(int *)ptr2;
-    if (i < i2) {
+    printf("cmp: %i and %i\n", i1, i2);
+    if (i1 < i2) {
         return -1;
-    } else if ( i == i2 ) {
+    } else if ( i1 == i2 ) {
         return 0;
     } else {
         return 1;

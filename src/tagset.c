@@ -33,7 +33,11 @@ static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspac
 
 static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspace *ws)
 {
-    container_set_append(ws, tagset->list_set, ws->list_set);
+    struct container_set *dest = tagset->list_set;
+    struct workspace *sel_ws = get_workspace(tagset->selected_ws_id);
+    struct container_set *src = sel_ws->list_set;
+
+    container_set_append(ws, dest, src);
 }
 
 static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load)
@@ -385,6 +389,7 @@ void tagset_write_to_workspaces(struct tagset *tagset)
 {
     if (!tagset)
         return;
+    printf("write to wroskapce\n");
 
     struct workspace *ws = tagset_get_workspace(tagset);
     GArray *positions = container_array2D_get_positions_array(tagset->list_set->container_lists);

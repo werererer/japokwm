@@ -52,52 +52,49 @@ void clear_list_set(struct container_set *list_set)
     }
 }
 
-/* int cmp_container_pos(const void *src_pos_ptr, const void *con2_ptr) */
-/* { */
-/*     const int src_pos = *(int *)src_pos_ptr; */
-/*     const struct container *con2 = con2_ptr; */
-
-/*     if (i1 < i2) { */
-/*         return -1; */
-/*     } else if (i1 == i2) { */
-/*         return 0; */
-/*     } else { */
-/*         return 1; */
-/*     } */
-/* } */
-
 static int find_final_position(
         GPtrArray *src_list,
         GPtrArray *dest_list,
         struct container *con)
 {
-    guint src_pos;
-    g_ptr_array_find(src_list, con, &src_pos);
+    // TODO further refactoring
+    const int dest_len = dest_list->len;
+    int dest_positions[dest_len];
+    for (int i = 0; i < dest_list->len; i++) {
+        struct container *dest_con = g_ptr_array_index(dest_list, i);
 
-    guint final_pos = 0;
-    for (int k = dest_list->len-1; k >= 0; k--) {
-        struct container *dest_con = g_ptr_array_index(dest_list, k);
-        guint dest_pos;
-        if (!g_ptr_array_find(src_list, dest_con, &dest_pos)) {
-            continue;
-        }
-
-        if (src_pos < dest_pos) {
-            continue;
-        }
-
-        g_ptr_array_find(dest_list, dest_con, &final_pos);
-        final_pos++;
-        break;
+        guint pos = 0;
+        g_ptr_array_find(src_list, dest_con, &pos);
+        dest_positions[i] = pos;
     }
 
-    debug_print("final_pos: %i\n", final_pos);
+    int src_pos = 0;
+    guint pos;
+    g_ptr_array_find(src_list, con, &pos);
+    src_pos = pos;
+
+    if (dest_len > 0 && src_pos <= dest_positions[0]) {
+        // we have to return zero in that case TODO: why?
+        return 0;
+    }
+
+    int final_pos = 1 + lower_bound(
+            &src_pos,
+            dest_positions,
+            dest_len,
+            sizeof(int),
+            cmp_int);
+
     return final_pos;
 }
 
 static void add_to_list(GPtrArray *dest, GPtrArray *src, struct container *src_con)
 {
-    lower_bound()
+    if (dest->len == 0) {
+        g_ptr_array_add(dest, src_con);
+        return;
+    }
+
     int final_position = find_final_position(src, dest, src_con);
     g_ptr_array_insert(dest, final_position, src_con);
 }
@@ -109,14 +106,17 @@ static void list_append_list_under_condition(
         struct workspace *ws
         )
 {
+    printf("\nstart\n");
     for (int i = 0; i < src->len; i++) {
         struct container *src_con = g_ptr_array_index(src, i);
+        printf("src: %p\n", src_con);
 
         if (!is_condition(ws, src, src_con))
             continue;
 
         add_to_list(dest, src, src_con);
     }
+    printf("end\n");
 }
 
 void lists_append_list_under_condition(
