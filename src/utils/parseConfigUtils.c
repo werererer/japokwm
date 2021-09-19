@@ -27,7 +27,7 @@ static const char *plugin_relative_paths[] = {
 };
 
 static const char *config_file = "init.lua";
-static const char *error_file = "init.err";
+static const char *error_file = "$HOME/.config/japokwm/init.err";
 static int error_fd = -1;
 
 static int load_file(lua_State *L, const char *file);
@@ -179,6 +179,8 @@ int init_utils(lua_State *L)
 void init_error_file()
 {
     char *ef = get_config_file(error_file);
+    char *ef_dir = dirname(ef);
+    mkdir(ef_dir, 0777);
     error_fd = open(ef, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     free(ef);
 }
