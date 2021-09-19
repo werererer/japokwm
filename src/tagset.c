@@ -1,5 +1,3 @@
-#include "tagset.h"
-
 #include <assert.h>
 
 #include "bitset/bitset.h"
@@ -67,8 +65,7 @@ void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
     tagset_assign_workspaces(tagset, bitset);
     tagset_workspaces_connect(tagset);
     update_sub_focus_stack(tagset);
-    struct workspace *ws = tagset_get_workspace(tagset);
-    update_visual_visible_stack(ws);
+    update_visual_visible_stack(tagset);
 }
 
 
@@ -257,6 +254,7 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *work
     tagset->con_set = create_container_set();
     tagset->visible_focus_set = focus_set_create();
     tagset->local_focus_set = focus_set_create();
+    tagset->visible_visual_set = visual_set_create();
 
     tagset->workspaces = bitset_create(server.workspaces->len);
     tagset->loaded_workspaces = bitset_create(server.workspaces->len);
@@ -286,6 +284,7 @@ void destroy_tagset(struct tagset *tagset)
     destroy_container_set(tagset->con_set);
     focus_set_destroy(tagset->visible_focus_set);
     focus_set_destroy(tagset->local_focus_set);
+    visual_set_destroy(tagset->visible_visual_set);
     free(tagset);
 }
 
@@ -361,6 +360,32 @@ void update_local_focus_stack(struct tagset *tagset)
             ws);
 }
 
+static bool is_visual_visible_stack(
+        struct workspace *ws,
+        GPtrArray *src_list,
+        struct container *con
+        )
+{
+    struct monitor *m = workspace_get_monitor(ws);
+    if (container_potentially_viewable_on_monitor(m, con)) {
+        return true;
+    }
+    return false;
+}
+
+void update_visual_visible_stack(struct tagset *tagset)
+{
+    if (!tagset)
+        return;
+    struct workspace *ws = tagset_get_workspace(tagset);
+    lists_clear(tagset->visible_visual_set->visual_stack_lists);
+    lists_append_list_under_condition(
+            tagset->visible_visual_set->visual_stack_lists,
+            ws->visual_set->visual_stack_lists,
+            is_visual_visible_stack,
+            ws);
+}
+
 static void restore_floating_containers(struct tagset *tagset)
 {
     GPtrArray *floating_list = tagset_get_floating_list(tagset);
@@ -395,7 +420,7 @@ void focus_tagset(struct tagset *tagset)
     struct workspace *ws = tagset_get_workspace(tagset);
     ws->prev_workspaces = bitset_copy(tagset->workspaces);
     update_sub_focus_stack(tagset);
-    update_visual_visible_stack(ws);
+    update_visual_visible_stack(tagset);
     ipc_event_workspace();
 
     arrange();
@@ -563,8 +588,7 @@ GPtrArray *server_update_floating_containers()
         struct tagset *tagset = monitor_get_active_tagset(m);
         wlr_list_cat(server.floating_containers, tagset->con_set->floating_containers);
 
-        struct workspace *ws = tagset_get_workspace(tagset);
-        wlr_list_cat(server.floating_stack, ws->visible_visual_set->floating_visual_stack);
+        wlr_list_cat(server.floating_stack, tagset->visible_visual_set->floating_visual_stack);
     }
     return server.floating_containers;
 }

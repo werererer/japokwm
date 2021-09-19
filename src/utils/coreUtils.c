@@ -87,7 +87,6 @@ int cmp_int(const void *ptr1, const void *ptr2)
 {
     int i1 = *(int *)ptr1;
     int i2 = *(int *)ptr2;
-    printf("cmp: %i and %i\n", i1, i2);
     if (i1 < i2) {
         return -1;
     } else if ( i1 == i2 ) {
@@ -206,12 +205,10 @@ int lower_bound(const void *key, const void *base,
         int cmp = compar(key, p);
         if (cmp <= 0) {
             high = mid;
-            printf("is on the left new low: %i new high: %i\n", low, high);
         }
         // If condition is not right
         // then find in right subarray
         else {
-            printf("is on the right new low: %i new high: %i\n", mid, high);
             low = mid;
         }
     }

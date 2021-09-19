@@ -49,6 +49,7 @@ struct tagset {
     struct container_set *con_set;
     struct focus_set *visible_focus_set;
     struct focus_set *local_focus_set;
+    struct visual_set *visible_visual_set;
 
     bool applied_action;
 };
@@ -70,6 +71,8 @@ void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tag
 void update_sub_focus_stack(struct tagset *tagset);
 void update_reduced_focus_stack(struct tagset *tagset);
 void update_local_focus_stack(struct tagset *tagset);
+
+void update_visual_visible_stack(struct tagset *tagset);
 
 bool container_intersects_with_monitor(struct container *con, struct monitor *m);
 

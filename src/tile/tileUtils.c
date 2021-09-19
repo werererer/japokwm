@@ -248,8 +248,7 @@ void arrange_monitor(struct monitor *m)
 
     root_damage_whole(m->root);
     update_sub_focus_stack(tagset);
-    struct workspace *ws = tagset_get_workspace(tagset);
-    update_visual_visible_stack(ws);
+    update_visual_visible_stack(tagset);
 }
 
 void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,

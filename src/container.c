@@ -484,7 +484,8 @@ void lift_container(struct container *con)
     struct workspace *ws = monitor_get_active_workspace(m);
     remove_in_composed_list(ws->visual_set->visual_stack_lists, cmp_ptr, con);
     add_container_to_stack(ws, con);
-    update_visual_visible_stack(ws);
+    struct tagset *tagset = workspace_get_tagset(ws);
+    update_visual_visible_stack(tagset);
 }
 
 void repush(int pos1, int pos2)
@@ -573,11 +574,12 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
 
         g_ptr_array_remove(ws->visual_set->floating_visual_stack, con);
         g_ptr_array_insert(ws->visual_set->tiled_visual_stack, 0, con);
-        update_visual_visible_stack(ws);
+        update_visual_visible_stack(tagset);
     } else {
         remove_in_composed_list(ws->visual_set->visual_stack_lists, cmp_ptr, con);
         g_ptr_array_insert(ws->visual_set->floating_visual_stack, 0, con);
-        update_visual_visible_stack(ws);
+        struct tagset *tagset = workspace_get_tagset(ws);
+        update_visual_visible_stack(tagset);
     }
 
     lift_container(con);

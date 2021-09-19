@@ -82,13 +82,11 @@ struct workspace {
     // the tagset that currently has this workspace selected
     struct tagset *selected_tagset;
 
-    struct container_set *con_set;
     GPtrArray *independent_containers;
 
+    struct container_set *con_set;
     struct focus_set *focus_set;
-
     struct visual_set *visual_set;
-    struct visual_set *visible_visual_set;
 };
 
 GPtrArray *create_workspaces(GPtrArray *tag_names);
@@ -97,8 +95,6 @@ void destroy_workspace(struct workspace *ws);
 
 void update_workspaces(GPtrArray *workspaces, GPtrArray *tag_names);
 void update_workspace_ids(GPtrArray *workspaces);
-
-void update_visual_visible_stack(struct workspace *ws);
 
 bool is_workspace_occupied(struct workspace *ws);
 bool workspace_is_visible(struct workspace *ws);
