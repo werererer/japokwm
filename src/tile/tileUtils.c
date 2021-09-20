@@ -58,7 +58,6 @@ void arrange()
         struct container *con = g_ptr_array_index(server.floating_containers, i);
         con->hidden = false;
     }
-
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
         arrange_monitor(m);
@@ -242,6 +241,7 @@ void arrange_monitor(struct monitor *m)
     call_update_function(lt->options.event_handler, lt->n_area);
 
     GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
+    debug_print("tiled containers length: %i\n", tiled_containers->len);
 
     update_hidden_status_of_containers(m, tiled_containers);
 

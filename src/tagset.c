@@ -658,7 +658,7 @@ GPtrArray *tagset_get_tiled_list_copy(struct tagset *tagset)
     if (lt->options.arrange_by_focus) {
         tiled_list = list_create_filtered_sub_list(
                 tagset->local_focus_set->focus_stack_normal,
-                container_is_tiled_and_managed);
+                container_is_managed);
         return tiled_list;
     } else {
         tiled_list = list_create_filtered_sub_list(
