@@ -119,7 +119,6 @@ int cmp_str(const void *s1, const void *s2);
 void lua_tocolor(float dest_color[static 4]);
 // like lua_ref but override the old value if *ref > 0
 void lua_ref_safe(lua_State *L, int t, int *ref);
-void print_trace();
 
 /* a composed list is just a list consisting of lists so that if an index i is
  * given it returns the same value as if all the lists where concatenated */

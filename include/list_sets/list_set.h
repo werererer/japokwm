@@ -19,6 +19,12 @@ GPtrArray *list_create_sub_list(GPtrArray *list, int start_idx, int end_idx);
 GPtrArray *list2D_create_filtered_sub_list(
         GPtrArray2D *list,
         bool is_condition(struct container *con));
+GPtrArray *list_create_filtered_sub_list_with_order(
+        GPtrArray *list,
+        GPtrArray *conditions);
+GPtrArray *list_create_filtered_sub_list_with_order(
+        GPtrArray2D *list,
+        GPtrArray *conditions);
 GPtrArray *list_create_filtered_sub_list(
         GPtrArray2D *list,
         bool is_condition(struct container *con));

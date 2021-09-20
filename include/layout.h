@@ -10,6 +10,10 @@
 
 struct layout {
     const char *symbol;
+
+    /* number of all windows in layout even if they are invisible). Note that
+     * floating windows don't belong to the layout and are thereby not counted */
+    int n_all;
     // the amount of slave windows plus the master are (+1)
     int n_area;
     int n_area_max;
@@ -22,7 +26,7 @@ struct layout {
     // number of tiled windows
     int n_tiled;
     int n_tiled_max;
-    // the absolute amount of windows
+    // the absolute amount of master windows
     int n_master_abs;
     // the amount master windows
     int nmaster;

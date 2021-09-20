@@ -14,10 +14,8 @@ struct container_set {
     /* consists out of the lists of tiled_containers, hidden_containers and
      * floating_containers */
     GPtrArray2D *container_lists;
-    GPtrArray2D *global_floating_container_lists;
     GPtrArray2D *visible_container_lists;
 
-    GPtrArray *floating_containers;
     GPtrArray *tiled_containers;
 };
 

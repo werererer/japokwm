@@ -80,6 +80,16 @@ int lib_get_nmaster(lua_State *L)
     return 1;
 }
 
+int lib_get_previous_layout(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = monitor_get_active_workspace(m);
+
+    struct layout *lt = ws->previous_layout;
+    lua_pushstring(L, lt->symbol);
+    return 1;
+}
+
 int lib_get_workspace(lua_State *L)
 {
     struct monitor *m = selected_monitor;

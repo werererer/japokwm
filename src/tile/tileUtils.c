@@ -73,9 +73,6 @@ static void set_layout_ref(struct layout *lt, int n_area)
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
 
     lua_rawgeti(L, -1, n_area);
-    // TODO refactor
-    int len = luaL_len(L, -1);
-    n_area = MAX(MIN(len, n_area), 1);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_ref);
 
     lua_pop(L, 1);
@@ -114,7 +111,7 @@ static void update_layout_counters(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);
 
-    tagset->n_all = get_container_count(tagset);
+    lt->n_all = get_container_count(tagset);
     lt->n_area = get_layout_container_area_count(tagset);
     set_layout_ref(lt, lt->n_area);
     lt->n_area_max = get_layout_container_max_area_count(tagset);
@@ -123,7 +120,7 @@ static void update_layout_counters(struct tagset *tagset)
     lt->n_tiled = lt->n_area-1 + lt->n_master_abs;
     lt->n_tiled_max = lt->n_area_max + lt->n_master_abs-1;
     lt->n_visible = lt->n_tiled + lt->n_floating;
-    lt->n_hidden = tagset->n_all - lt->n_visible;
+    lt->n_hidden = lt->n_all - lt->n_visible;
 }
 
 static struct wlr_fbox lua_unbox_layout_geom(lua_State *L, int i) {
@@ -207,12 +204,14 @@ int get_floating_container_count(struct tagset *tagset)
 
     int n = 0;
 
-    for (int i = 0; i < tagset->con_set->floating_containers->len; i++) {
-        struct container *con = g_ptr_array_index(tagset->con_set->floating_containers, i);
+    GPtrArray *floating_containers = tagset_get_floating_list_copy(tagset);
+    for (int i = 0; i < floating_containers->len; i++) {
+        struct container *con = g_ptr_array_index(floating_containers, i);
         if (con->client->type == LAYER_SHELL)
             continue;
         n++;
     }
+    g_ptr_array_free(floating_containers, FALSE);
     return n;
 }
 
@@ -243,6 +242,7 @@ void arrange_monitor(struct monitor *m)
     call_update_function(lt->options.event_handler, lt->n_area);
 
     GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
+    debug_print("tiled containers len: %i\n", tiled_containers->len);
 
     update_hidden_status_of_containers(m, tiled_containers);
 
@@ -399,8 +399,9 @@ int get_container_count(struct tagset *tagset)
 int get_tiled_container_count(struct tagset *tagset)
 {
     int n = 0;
-    GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
+    GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
 
     n = tiled_containers->len;
+    g_ptr_array_free(tiled_containers, FALSE);
     return n;
 }

@@ -78,13 +78,14 @@ static const struct luaL_Reg info[] =
     {"get_container_under_cursor", lib_get_container_under_cursor},
     {"get_next_empty_workspace", lib_get_next_empty_workspace},
     {"get_nmaster", lib_get_nmaster},
+    {"get_previous_layout", lib_get_previous_layout},
     {"get_root_area", lib_get_root_area},
     {"get_this_container_count", lib_get_this_container_count},
     {"get_workspace", lib_get_workspace},
     {"is_container_not_in_limit", lib_is_container_not_in_limit},
     {"is_container_not_in_master_limit", lib_is_container_not_in_master_limit},
-    {"this_container_position", lib_this_container_position},
     {"stack_position_container_position", lib_stack_position_container_position},
+    {"this_container_position", lib_this_container_position},
     {NULL, NULL},
 };
 

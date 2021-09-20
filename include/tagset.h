@@ -43,10 +43,6 @@ struct tagset {
     BitSet *workspaces;
     BitSet *loaded_workspaces;
 
-    /* number of all windows in layout even if they are invisible). Note that
-     * floating windows don't belong to the layout and are thereby not counted */
-    int n_all;
-
     struct container_set *con_set;
     struct focus_set *visible_focus_set;
     struct focus_set *local_focus_set;
@@ -80,12 +76,11 @@ bool container_intersects_with_monitor(struct container *con, struct monitor *m)
 
 // get with server floating containers instead
 GPtrArray *server_update_floating_containers();
-GPtrArray *tagset_get_global_floating_lists(struct tagset *tagset);
 GPtrArray *tagset_get_visible_lists(struct tagset *tagset);
 GPtrArray *tagset_get_global_floating_copy(struct tagset *tagset);
 GPtrArray *tagset_get_tiled_list_copy(struct tagset *tagset);
 GPtrArray *tagset_get_tiled_list(struct tagset *tagset);
-GPtrArray *tagset_get_floating_list(struct tagset *tagset);
+GPtrArray *tagset_get_floating_list_copy(struct tagset *tagset);
 GPtrArray *tagset_get_hidden_list_copy(struct tagset *tagset);
 
 void tagset_list_remove(GPtrArray *list, struct container *con);

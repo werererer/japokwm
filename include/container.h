@@ -116,9 +116,14 @@ struct workspace *container_get_workspace(struct container *con);
 struct tagset *container_get_tagset(struct container *con);
 bool container_is_floating(struct container *con);
 bool container_is_floating_on_workspace(struct container *con, struct workspace *ws);
+bool container_is_tiled(struct container *con);
+bool container_is_tiled_and_visible(struct container *con);
 bool container_is_hidden(struct container *con);
 bool container_is_visible(struct container *con);
+bool container_potentially_visible(struct container *con);
+bool container_is_unmanaged(struct container *con);
 bool container_is_managed(struct container *con);
+bool container_is_tiled_and_managed(struct container *con);
 
 const char *container_get_app_id(struct container *con);
 #endif /* CONTAINER_H */

@@ -104,6 +104,23 @@ GPtrArray *list2D_create_filtered_sub_list(
     return visible_global_floating_list_copy;
 }
 
+GPtrArray *list_create_filtered_sub_list_with_order(
+        GPtrArray *list,
+        GPtrArray *conditions)
+{
+    GPtrArray *final_list = g_ptr_array_new();
+
+    for (int i = 0; i < conditions->len; i++) {
+        bool (*arg_is_condition)(struct container *) = g_ptr_array_index(conditions, i);
+        GPtrArray *visible_global_floating_list_copy = 
+            list_create_filtered_sub_list(list, arg_is_condition); 
+        wlr_list_cat(final_list, visible_global_floating_list_copy);
+        g_ptr_array_free(visible_global_floating_list_copy, FALSE);
+    }
+
+    return final_list;
+}
+
 GPtrArray *list_create_filtered_sub_list(
         GPtrArray *list,
         bool is_condition(struct container *con))

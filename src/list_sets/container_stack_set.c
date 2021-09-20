@@ -12,19 +12,12 @@ struct container_set *create_container_set()
 
     con_set->container_lists = g_ptr_array_new();
     con_set->visible_container_lists = g_ptr_array_new();
-    con_set->global_floating_container_lists = g_ptr_array_new();
 
     con_set->tiled_containers = g_ptr_array_new();
-    con_set->floating_containers = g_ptr_array_new();
 
     g_ptr_array_add(con_set->container_lists, con_set->tiled_containers);
-    g_ptr_array_add(con_set->container_lists, con_set->floating_containers);
 
     g_ptr_array_add(con_set->visible_container_lists, con_set->tiled_containers);
-    g_ptr_array_add(con_set->visible_container_lists, con_set->floating_containers);
-
-    g_ptr_array_add(con_set->global_floating_container_lists, con_set->tiled_containers);
-    g_ptr_array_add(con_set->global_floating_container_lists, server.floating_containers);
 
     return con_set;
 }
@@ -32,7 +25,6 @@ struct container_set *create_container_set()
 void destroy_container_set(struct container_set *con_set)
 {
     g_ptr_array_free(con_set->tiled_containers, FALSE);
-    g_ptr_array_free(con_set->floating_containers, FALSE);
     g_ptr_array_free(con_set->container_lists, FALSE);
     g_ptr_array_free(con_set->visible_container_lists, FALSE);
     free(con_set);

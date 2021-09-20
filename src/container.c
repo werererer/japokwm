@@ -404,6 +404,7 @@ void focus_on_stack(struct monitor *m, int i)
     }
 
     GPtrArray *visible_container_list = tagset_get_global_floating_copy(tagset);
+    debug_print("visible_container_list len: %i\n", visible_container_list->len);
     guint sel_index;
     g_ptr_array_find(visible_container_list, sel, &sel_index);
     struct container *con =
@@ -426,7 +427,13 @@ void focus_on_hidden_stack(struct monitor *m, int i)
         return;
 
     struct tagset *tagset = monitor_get_active_tagset(m);
+    debug_print("tiled containers len: %i\n", tagset->con_set->tiled_containers->len);
+    for (int i = 0; i < tagset->con_set->tiled_containers->len; i++) {
+        struct container *con = g_ptr_array_index(tagset->con_set->tiled_containers, i);
+        printf("hidden: %i\n", con->hidden);
+    }
     GPtrArray *hidden_containers = tagset_get_hidden_list_copy(tagset);
+    debug_print("hidden containers len: %i\n", hidden_containers->len);
     struct container *con = get_relative_item_in_list(hidden_containers, 0, i);
     g_ptr_array_free(hidden_containers, FALSE);
 
@@ -509,14 +516,15 @@ void repush(int pos1, int pos2)
 {
     struct monitor *m = selected_monitor;
     struct tagset *tagset = monitor_get_active_tagset(m);
-    GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
+    GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
 
     if (pos1 >= tiled_containers->len)
         return;
     if (pos2 >= tiled_containers->len)
         return;
 
-    struct container *con = g_ptr_array_index(tagset->con_set->tiled_containers, pos1);
+    struct container *con = g_ptr_array_index(tiled_containers, pos1);
+    g_ptr_array_free(tiled_containers, FALSE);
 
     // TODO: this doesn't work if tiled by focus
     struct workspace *ws = get_workspace(tagset->selected_ws_id);
@@ -568,11 +576,8 @@ void container_fix_position(struct container *con)
 
     if (!container_is_floating(con)) {
         workspace_remove_container_from_floating_stack_locally(ws, con);
-        int position = MIN(tiled_containers->len, lt->n_tiled_max-1);
+        int position = lt->n_tiled;
         workspace_add_container_to_containers_locally(ws, con, position);
-    } else {
-        workspace_remove_container_from_containers_locally(ws, con);
-        workspace_add_container_to_floating_stack_locally(ws, con, 0);
     }
     g_ptr_array_free(tiled_containers, FALSE);
 }
@@ -935,19 +940,57 @@ bool container_is_floating_on_workspace(struct container *con, struct workspace 
     return property->floating;
 }
 
+bool container_is_tiled(struct container *con)
+{
+    return !container_is_floating(con);
+}
+
+bool container_is_tiled_and_visible(struct container *con)
+{
+    bool is_tiled = container_is_tiled(con);
+    bool is_visible = container_is_visible(con);
+    return is_tiled && is_visible;
+}
+
 bool container_is_hidden(struct container *con)
 {
+    bool potentially_visible = container_potentially_visible(con);
+    if (!potentially_visible) {
+        return false;
+    }
     return con->hidden;
 }
 
 bool container_is_visible(struct container *con)
 {
+    bool potentially_visible = container_potentially_visible(con);
+    if (!potentially_visible)
+        return false;
     return !container_is_hidden(con);
+}
+
+bool container_potentially_visible(struct container *con)
+{
+    struct monitor *m = selected_monitor;
+    bool potentially_visible = container_potentially_viewable_on_monitor(m, con);
+    return potentially_visible;
+}
+
+bool container_is_unmanaged(struct container *con)
+{
+    return con->is_unmanaged;
 }
 
 bool container_is_managed(struct container *con)
 {
-    return !con->is_unmanaged;
+    return !container_is_unmanaged(con);
+}
+
+bool container_is_tiled_and_managed(struct container *con)
+{
+    bool is_managed = container_is_managed(con);
+    bool is_tiled = container_is_tiled(con);
+    return is_managed && is_tiled;
 }
 
 const char *container_get_app_id(struct container *con)

@@ -322,7 +322,7 @@ integers
 
 # INFO
 *get_active_layout()* ++
-	get the name of the layout currently active on the selected monitor
+	get the name of the layout currently active on the selected workspace
 <return> ++
 	string - name of the layout
 
@@ -340,6 +340,11 @@ integers
 	get the number of master windows ++
 <return> ++
 	integer - number of master windows
+
+*get_previous_layout()* ++
+	get the name of the layout previously active on the selected workspace
+<return> ++
+	string - name of the layout
 
 *get_root_area()* ++
 	get the root area

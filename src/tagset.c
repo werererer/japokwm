@@ -404,7 +404,7 @@ void update_visual_visible_stack(struct tagset *tagset)
 
 static void restore_floating_containers(struct tagset *tagset)
 {
-    GPtrArray *floating_list = tagset_get_floating_list(tagset);
+    GPtrArray *floating_list = tagset_get_floating_list_copy(tagset);
     if (!floating_list)
         return;
     for (int i = 0; i < floating_list->len; i++) {
@@ -600,22 +600,12 @@ GPtrArray *server_update_floating_containers()
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
         struct tagset *tagset = monitor_get_active_tagset(m);
-        wlr_list_cat(server.floating_containers, tagset->con_set->floating_containers);
+        GPtrArray *floating_containers = tagset_get_floating_list_copy(tagset);
+        wlr_list_cat(server.floating_containers, floating_containers);
 
         wlr_list_cat(server.floating_stack, tagset->visible_visual_set->floating_visual_stack);
     }
     return server.floating_containers;
-}
-
-GPtrArray *tagset_get_global_floating_lists(struct tagset *tagset)
-{
-    struct layout *lt = tagset_get_layout(tagset);
-    if (lt->options.arrange_by_focus) {
-        // TODO this doesn't seem right
-        return tagset->visible_focus_set->focus_stack_visible_lists;
-    } else {
-        return tagset->con_set->global_floating_container_lists;
-    }
 }
 
 GPtrArray *tagset_get_visible_lists(struct tagset *tagset)
@@ -633,21 +623,31 @@ GPtrArray *tagset_get_global_floating_copy(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);
 
+    struct workspace *ws = tagset_get_workspace(tagset);
+
+    GPtrArray *conditions = g_ptr_array_new();
+    g_ptr_array_add(conditions, container_is_tiled_and_visible);
+    g_ptr_array_add(conditions, container_is_floating);
+
+    GPtrArray *visible_global_floating_list_copy;
     if (lt->options.arrange_by_focus) {
-        GPtrArray *visible_global_floating_list_copy =
-            list2D_create_filtered_sub_list(
-                tagset->local_focus_set->focus_stack_visible_lists,
-                container_is_visible
-                );
-        return visible_global_floating_list_copy;
+        // TODO: FIXME
+        /* visible_global_floating_list_copy = */
+        /*     list_create_filtered_sub_list_with_order( */
+        /*         ws->focus_set->focus_stack_visible_lists, */
+        /*         conditions */
+        /*         ); */
     } else {
-        GPtrArray *visible_global_floating_list_copy =
-            list2D_create_filtered_sub_list(
-                tagset->con_set->global_floating_container_lists,
-                container_is_visible
+        visible_global_floating_list_copy =
+            list_create_filtered_sub_list_with_order(
+                ws->con_set->tiled_containers,
+                conditions
                 );
-        return visible_global_floating_list_copy;
     }
+
+    g_ptr_array_free(conditions, FALSE);
+
+    return visible_global_floating_list_copy;
 }
 
 GPtrArray *tagset_get_tiled_list_copy(struct tagset *tagset)
@@ -658,11 +658,12 @@ GPtrArray *tagset_get_tiled_list_copy(struct tagset *tagset)
     if (lt->options.arrange_by_focus) {
         tiled_list = list_create_filtered_sub_list(
                 tagset->local_focus_set->focus_stack_normal,
-                container_is_managed);
+                container_is_tiled_and_managed);
         return tiled_list;
     } else {
-        tiled_list = g_ptr_array_new();
-        wlr_list_cat(tiled_list, tagset->con_set->tiled_containers);
+        tiled_list = list_create_filtered_sub_list(
+                tagset->con_set->tiled_containers,
+                container_is_tiled_and_managed);
         return tiled_list;
     }
 }
@@ -678,18 +679,26 @@ GPtrArray *tagset_get_tiled_list(struct tagset *tagset)
     }
 }
 
-GPtrArray *tagset_get_floating_list(struct tagset *tagset)
+GPtrArray *tagset_get_floating_list_copy(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);
 
     if (!lt)
         return NULL;
 
+    GPtrArray *floating_containers = g_ptr_array_new();
     if (lt->options.arrange_by_focus) {
-        return tagset->local_focus_set->focus_stack_normal;
+        floating_containers =
+            list_create_filtered_sub_list(
+                    tagset->local_focus_set->focus_stack_normal,
+                    container_is_floating);
     } else {
-        return tagset->con_set->floating_containers;
+        floating_containers =
+            list_create_filtered_sub_list(
+                    tagset->con_set->tiled_containers,
+                    container_is_floating);
     }
+    return floating_containers;
 }
 
 GPtrArray *tagset_get_hidden_list_copy(struct tagset *tagset)
@@ -841,7 +850,7 @@ bool container_potentially_viewable_on_monitor(struct monitor *m,
     struct tagset *tagset = monitor_get_active_tagset(m);
     if (!tagset)
         return false;
-    bool visible = tagset_visible_on(tagset, con);
+    bool visible = tagset_exist_on(tagset, con);
     if (visible)
         return true;
 

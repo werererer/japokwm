@@ -466,10 +466,6 @@ struct container *workspace_get_focused_container(struct workspace *ws)
 
 void list_set_add_container_to_containers(struct container_set *list_set, struct container *con, int i)
 {
-    if (container_is_floating(con)) {
-        g_ptr_array_insert(list_set->floating_containers, i, con);
-        return;
-    }
     assert(list_set->tiled_containers->len >= i);
     if (list_set->tiled_containers->len <= 0) {
         g_ptr_array_add(list_set->tiled_containers, con);
@@ -606,14 +602,14 @@ void workspace_add_container_to_focus_stack_locally(struct workspace *ws, struct
 void workspace_remove_container_from_floating_stack_locally(struct workspace *ws, struct container *con)
 {
     DO_ACTION_LOCALLY(ws, 
-            g_ptr_array_remove(con_set->floating_containers, con);
+            g_ptr_array_remove(con_set->tiled_containers, con);
             );
 }
 
 void workspace_add_container_to_floating_stack_locally(struct workspace *ws, struct container *con, int i)
 {
-    DO_ACTION_LOCALLY(ws, 
-            g_ptr_array_insert(con_set->floating_containers, i, con);
+    DO_ACTION_LOCALLY(ws,
+            g_ptr_array_insert(con_set->container_lists, i, con);
             );
 }
 
@@ -754,10 +750,18 @@ void workspace_repush(struct workspace *ws, struct container *con, int new_pos)
 {
     struct tagset *tagset = workspace_get_active_tagset(ws);
 
-    GPtrArray *tiled_list = tagset_get_tiled_list(tagset);
+    GPtrArray *actual_tiled_list = tagset_get_tiled_list(tagset);
 
+    GPtrArray *tiled_list = tagset_get_tiled_list_copy(tagset);
     g_ptr_array_remove(tiled_list, con);
     g_ptr_array_insert(tiled_list, new_pos, con);
+    sub_list_write_to_parent_list1D(actual_tiled_list, tiled_list);
+    debug_print("new_pos: %i\n", new_pos);
+    debug_print("tiled list len: %i\n", tiled_list);
+    debug_print("actual tiled list len: %i\n", actual_tiled_list);
+
+    g_ptr_array_free(tiled_list, FALSE);
+
     tagset_write_to_workspaces(tagset);
 }
 
