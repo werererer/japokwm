@@ -776,6 +776,9 @@ struct wlr_box *container_get_tiled_geom(struct container *con)
 {
     struct tagset *tagset = container_get_tagset(con);
     struct workspace *ws = tagset_get_workspace(tagset);
+    if (!ws) {
+        return NULL;
+    }
 
     struct container_property *property =
         g_ptr_array_index(con->properties, ws->id); 
@@ -792,6 +795,9 @@ struct wlr_box *container_get_floating_geom(struct container *con)
 {
     struct tagset *tagset = container_get_tagset(con);
     struct workspace *ws = tagset_get_workspace(tagset);
+    if (!ws) {
+        return NULL;
+    }
 
     struct container_property *property =
         g_ptr_array_index(con->properties, ws->id); 
@@ -807,8 +813,8 @@ struct wlr_box *container_get_floating_geom(struct container *con)
 struct wlr_box *container_get_current_geom(struct container *con)
 {
     struct wlr_box *geom = NULL;
-    struct tagset *tagset = container_get_tagset(con);
-    struct layout *lt = tagset_get_layout(tagset);
+    struct workspace *ws = container_get_workspace(con);
+    struct layout *lt = workspace_get_layout(ws);
     if (container_is_tiled(con) || lt->options.arrange_by_focus) {
         geom = container_get_tiled_geom(con);
     } else {

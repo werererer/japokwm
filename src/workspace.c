@@ -308,6 +308,13 @@ struct tagset *workspace_get_active_tagset(struct workspace *ws)
     return tagset;
 }
 
+struct layout *workspace_get_layout(struct workspace *ws)
+{
+    if (!ws)
+        return NULL;
+    return ws->layout;
+}
+
 struct monitor *workspace_get_selected_monitor(struct workspace *ws)
 {
     assert(ws != NULL);

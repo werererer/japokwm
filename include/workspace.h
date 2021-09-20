@@ -116,6 +116,7 @@ struct workspace *get_prev_empty_workspace(GPtrArray *workspaces, size_t i);
 struct tagset *workspace_get_selected_tagset(struct workspace *ws);
 struct tagset *workspace_get_tagset(struct workspace *ws);
 struct tagset *workspace_get_active_tagset(struct workspace *ws);
+struct layout *workspace_get_layout(struct workspace *ws);
 
 struct monitor *workspace_get_selected_monitor(struct workspace *ws);
 struct monitor *workspace_get_monitor(struct workspace *ws); 

@@ -512,9 +512,8 @@ void tagset_write_to_workspaces(struct tagset *tagset)
 struct layout *tagset_get_layout(struct tagset *tagset)
 {
     struct workspace *ws = get_workspace(tagset->selected_ws_id);
-    if (!ws)
-        return NULL;
-    return ws->layout;
+    struct layout *lt = workspace_get_layout(ws);
+    return lt;
 }
 
 static void _set_previous_tagset(struct tagset *tagset)
