@@ -13,6 +13,7 @@ struct workspace;
 struct container_property {
     // geometry on each layout
     struct wlr_box geom;
+    struct wlr_box floating_geom;
     /* layout-relative, includes border */
     int border_width;
     bool floating;
@@ -24,7 +25,6 @@ struct container {
     // if this is set it will overwrite the other geometries
     struct wlr_box global_geom;
     struct wlr_box prev_geom;
-    struct wlr_box prev_floating_geom;
     struct client *client;
 
     bool is_tiled;
@@ -89,9 +89,12 @@ struct container_property *container_get_property_at_workspace(
         struct container *con,
         struct workspace *ws);
 
-void container_set_geom(struct container *con, struct wlr_box *geom);
-struct wlr_box *container_get_geom(struct container *con);
-struct wlr_box *container_workspace_get_geom(struct container *con, struct workspace *ws);
+void container_set_current_geom(struct container *con, struct wlr_box *geom);
+void container_set_tiled_geom(struct container *con, struct wlr_box *geom);
+void container_set_floating_geom(struct container *con, struct wlr_box *geom);
+struct wlr_box *container_get_tiled_geom(struct container *con);
+struct wlr_box *container_get_floating_geom(struct container *con);
+struct wlr_box *container_get_current_geom(struct container *con);
 
 void container_set_border_width(struct container *con, int border_width);
 int container_get_border_width(struct container *con);

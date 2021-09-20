@@ -71,7 +71,8 @@ static void show_container(struct container *con)
     con->hidden = false;
     container_set_workspace_id(con, ws->id);
     container_set_floating(con, container_fix_position, true);
-    resize(con, get_center_box(m->geom));
+    struct wlr_box center_box = get_center_box(m->geom);
+    container_set_current_geom(con, &center_box);
 
     focus_container(con);
     lift_container(con);
@@ -90,7 +91,8 @@ void show_scratchpad()
     if (visible_on_other_workspace) {
         container_set_workspace_id(con, ws->id);
         container_set_floating(con, container_fix_position, true);
-        resize(con, get_center_box(m->geom));
+        struct wlr_box center_box = get_center_box(m->geom);
+        container_set_current_geom(con, &center_box);
 
         focus_container(con);
         lift_container(con);

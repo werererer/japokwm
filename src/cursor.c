@@ -318,8 +318,8 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
     struct container *focus_con = xy_to_container(cursorx, cursory);
     if (!is_popup_under_cursor && focus_con) {
         final_focus_surface = wlr_surface_surface_at(get_wlrsurface(focus_con->client),
-                absolute_x_to_container_relative(container_get_geom(focus_con), cursorx),
-                absolute_y_to_container_relative(container_get_geom(focus_con), cursory),
+                absolute_x_to_container_relative(container_get_current_geom(focus_con), cursorx),
+                absolute_y_to_container_relative(container_get_current_geom(focus_con), cursory),
                 &sx, &sy);
     }
 
@@ -355,7 +355,7 @@ void motion_notify(struct cursor *cursor, uint32_t time_msec,
     // Only apply pointer constraints to real pointer input.
     if (cursor->active_constraint && device->type == WLR_INPUT_DEVICE_POINTER) {
         struct container *con = xy_to_container(cursor->wlr_cursor->x, cursor->wlr_cursor->y);
-        struct wlr_box *con_geom = container_get_geom(con);
+        struct wlr_box *con_geom = container_get_current_geom(con);
         double sx;
         double sy;
         if (con) {
@@ -448,7 +448,7 @@ void move_resize(struct cursor *cursor, int ui)
     /* Float the window and tell motion_notify to grab it */
     container_set_floating(grabc, container_fix_position, true);
 
-    struct wlr_box *grabc_geom = container_get_geom(grabc);
+    struct wlr_box *grabc_geom = container_get_current_geom(grabc);
     struct wlr_cursor *wlr_cursor = cursor->wlr_cursor;
     switch (cursor->cursor_mode = ui) {
         case CURSOR_MOVE:
@@ -536,7 +536,7 @@ static void warp_to_constraint_cursor_hint(struct cursor *cursor)
 
         struct monitor *m = selected_monitor;
         struct container *con = get_focused_container(m);
-        struct wlr_box *con_geom = container_get_geom(con);
+        struct wlr_box *con_geom = container_get_current_geom(con);
         double lx = sx + con_geom->x - m->geom.x;
         double ly = sy + con_geom->x - m->geom.y;
 
@@ -576,7 +576,7 @@ static void check_constraint_region(struct cursor *cursor) {
     struct container *con = get_focused_container(selected_monitor);
     if (cursor->active_confine_requires_warp && con) {
         cursor->active_confine_requires_warp = false;
-        struct wlr_box *con_geom = container_get_geom(con);
+        struct wlr_box *con_geom = container_get_current_geom(con);
 
         double sx = cursor->wlr_cursor->x - con_geom->x;
         double sy = cursor->wlr_cursor->y - con_geom->x;

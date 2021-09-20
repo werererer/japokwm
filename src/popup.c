@@ -111,7 +111,7 @@ void popup_handle_new_popup(struct wl_listener *listener, void *data)
     struct monitor *m = container_get_monitor(con);
     if (m != selected_monitor)
         return;
-    struct xdg_popup *popup = create_popup(m, xdg_popup, container_get_geom(con), con);
+    struct xdg_popup *popup = create_popup(m, xdg_popup, container_get_current_geom(con), con);
     g_ptr_array_insert(server.popups, 0, popup);
 }
 
@@ -150,7 +150,7 @@ struct wlr_surface *get_popup_surface_under_cursor(struct cursor *cursor, double
         return NULL;
 
     struct wlr_surface *surface = NULL;
-    struct wlr_box *con_geom = container_get_geom(con);
+    struct wlr_box *con_geom = container_get_current_geom(con);
     switch (con->client->type) {
         case XDG_SHELL:
             surface = wlr_xdg_surface_surface_at(

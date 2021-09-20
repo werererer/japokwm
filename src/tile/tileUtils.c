@@ -31,10 +31,7 @@ static void move_floating_containers_back()
     server_update_floating_containers();
     for (int i = 0; i < server.floating_containers->len; i++) {
         struct container *con = g_ptr_array_index(server.floating_containers, i);
-        if (con->floating_container_geom_was_changed && !con->arranged_by_focus) {
-            resize(con, con->prev_floating_geom);
-            con->floating_container_geom_was_changed = false;
-        }
+        container_update_size(con);
     }
 }
 
@@ -58,6 +55,7 @@ void arrange()
         struct container *con = g_ptr_array_index(server.floating_containers, i);
         con->hidden = false;
     }
+
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
         arrange_monitor(m);
@@ -241,7 +239,6 @@ void arrange_monitor(struct monitor *m)
     call_update_function(lt->options.event_handler, lt->n_area);
 
     GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
-    debug_print("tiled containers length: %i\n", tiled_containers->len);
 
     update_hidden_status_of_containers(m, tiled_containers);
 
@@ -314,10 +311,10 @@ static void arrange_container(struct container *con, struct monitor *m,
     int border_width = container_get_border_width(con);
     container_surround_gaps(&geom, 2*border_width);
 
-    resize(con, geom);
+    container_set_tiled_geom(con, &geom);
 }
 
-void resize(struct container *con, struct wlr_box geom)
+void container_update_size(struct container *con)
 {
     /*
      * Note that I took some shortcuts here. In a more fleshed-out
@@ -325,27 +322,10 @@ void resize(struct container *con, struct wlr_box geom)
      * the new size, then commit any movement that was prepared.
      */
 
-    container_set_geom(con, &geom);
     con->client->resized = true;
 
-    bool preserve_ratio = con->ratio != 0;
 
-    struct wlr_box *con_geom = container_get_geom(con);
-    if (preserve_ratio) {
-        /* calculated biggest container where con->geom.width and
-         * con->geom.height = con->geom.width * con->ratio is inside geom.width
-         * and geom.height
-         * */
-        float max_height = geom.height/con->ratio;
-        con_geom->width = MIN(geom.width, max_height);
-        con_geom->height = con_geom->width * con->ratio;
-        // TODO make a function out of that 
-        // center in x direction
-        con_geom->x += (geom.width - con_geom->width)/2;
-        // center in y direction
-        con_geom->y += (geom.height - con_geom->height)/2;
-    }
-
+    struct wlr_box *con_geom = container_get_current_geom(con);
     apply_bounds(con, *wlr_output_layout_get_box(server.output_layout, NULL));
 
     /* wlroots makes this a no-op if size hasn't changed */

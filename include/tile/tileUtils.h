@@ -12,7 +12,7 @@ void arrange();
 void arrange_monitor(struct monitor *m);
 void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,
         GPtrArray *tiled_containers);
-void resize(struct container *con, struct wlr_box geom);
+void container_update_size(struct container *con);
 void update_hidden_status_of_containers(struct monitor *m, GPtrArray *tiled_containers);
 int lib_get_this_container_count();
 int get_container_count(struct tagset *tagset);

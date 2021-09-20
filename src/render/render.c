@@ -230,7 +230,7 @@ static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *bo
     struct monitor *m = container_get_monitor(con);
 
     enum wlr_edges containers_hidden_edges = WLR_EDGE_NONE;
-    struct wlr_box *con_geom = container_get_geom(con);
+    struct wlr_box *con_geom = container_get_current_geom(con);
     int border_width = container_get_border_width(con);
     // hide edges if needed
     if (hidden_edges & WLR_EDGE_LEFT) {
@@ -266,7 +266,7 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
 
     double ox, oy;
     int w, h;
-    struct wlr_box *con_geom = container_get_geom(con);
+    struct wlr_box *con_geom = container_get_current_geom(con);
     int border_width = container_get_border_width(con);
     ox = con_geom->x - border_width;
     oy = con_geom->y - border_width;
@@ -319,7 +319,7 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
          * xdg_surface's toplevel and popups. */
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
-        struct wlr_box *con_geom = container_get_geom(con);
+        struct wlr_box *con_geom = container_get_current_geom(con);
         render_surface_iterator(m, surface, *con_geom, output_damage, con->alpha);
 
         struct timespec now;
@@ -340,7 +340,7 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
             continue;
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
-        struct wlr_box *con_geom = container_get_geom(con);
+        struct wlr_box *con_geom = container_get_current_geom(con);
         render_surface_iterator(m, surface, *con_geom, output_damage, 1.0);
 
         struct timespec now;
@@ -356,7 +356,7 @@ static void render_independents(struct monitor *m, pixman_region32_t *output_dam
         struct container *con = g_ptr_array_index(ws->independent_containers, i);
         struct wlr_surface *surface = get_wlrsurface(con->client);
 
-        struct wlr_box *con_geom = container_get_geom(con);
+        struct wlr_box *con_geom = container_get_current_geom(con);
         con_geom->width = surface->current.width;
         con_geom->height = surface->current.height;
         render_surface_iterator(m, surface, *con_geom, output_damage, 1.0f);

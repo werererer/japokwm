@@ -153,7 +153,7 @@ static void damage_container_area(struct container *con, struct wlr_box *geom,
 static void container_damage(struct container *con, bool whole)
 {
     for (int i = 0; i < server.mons->len; i++) {
-        struct wlr_box *con_geom = container_get_geom(con);
+        struct wlr_box *con_geom = container_get_current_geom(con);
 
         if (!con_geom)
             continue;
@@ -208,7 +208,7 @@ struct container *xy_to_container(double x, double y)
             continue;
         if (!container_viewable_on_monitor(m, con))
             continue;
-        if (!wlr_box_contains_point(container_get_geom(con), x, y))
+        if (!wlr_box_contains_point(container_get_current_geom(con), x, y))
             continue;
 
         return con;
@@ -320,7 +320,7 @@ struct wlr_fbox lua_togeometry(lua_State *L)
 void apply_bounds(struct container *con, struct wlr_box box)
 {
     /* set minimum possible */
-    struct wlr_box *con_geom = container_get_geom(con);
+    struct wlr_box *con_geom = container_get_current_geom(con);
     con_geom->width = MAX(MIN_CONTAINER_WIDTH, con_geom->width);
     con_geom->height = MAX(MIN_CONTAINER_HEIGHT, con_geom->height);
 
@@ -441,8 +441,8 @@ void focus_on_hidden_stack(struct monitor *m, int i)
         container_set_floating(con, NULL, true);
         container_set_floating(sel, NULL, false);
 
-        struct wlr_box *sel_geom = container_get_geom(sel);
-        resize(con, *sel_geom);
+        struct wlr_box *sel_geom = container_get_floating_geom(sel);
+        container_set_floating_geom(con, sel_geom);
     }
 
     for (int i = 0; i < visible_containers->len; i++) {
@@ -578,16 +578,17 @@ void container_fix_position(struct container *con)
         return;
 
     struct tagset *tagset = monitor_get_active_tagset(m);
-    struct workspace *ws = monitor_get_active_workspace(m);
 
     GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
     struct layout *lt = tagset_get_layout(tagset);
 
     if (!container_is_floating(con)) {
-        workspace_remove_container_from_floating_stack_locally(ws, con);
-        int position = lt->n_tiled;
-        workspace_add_container_to_containers_locally(ws, con, position);
+        g_ptr_array_remove(tiled_containers, con);
+        int last_pos = lt->n_tiled;
+        g_ptr_array_insert(tiled_containers, last_pos, con);
     }
+    tagset_write_to_workspaces(tagset);
+    tagset_write_to_focus_stacks(tagset);
     g_ptr_array_free(tiled_containers, FALSE);
 }
 
@@ -628,6 +629,7 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
         g_ptr_array_insert(ws->visual_set->tiled_visual_stack, 0, con);
         update_visual_visible_stack(tagset);
     } else {
+        container_set_floating_geom(con, container_get_tiled_geom(con));
         set_container_hidden(con, false);
         remove_in_composed_list(ws->visual_set->visual_stack_lists, cmp_ptr, con);
         g_ptr_array_insert(ws->visual_set->floating_visual_stack, 0, con);
@@ -677,7 +679,7 @@ static void swap_integers(int *i1, int *i2)
 
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety)
 {
-    struct wlr_box *con_geom = container_get_geom(con);
+    struct wlr_box *con_geom = container_get_current_geom(con);
     struct wlr_box geom = *con_geom;
     geom.x = cursor->x - offsetx;
     geom.y = cursor->y - offsety;
@@ -685,7 +687,7 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
     if (con->on_scratchpad) {
         remove_container_from_scratchpad(con);
     }
-    resize(con, geom);
+    container_set_current_geom(con, &geom);
     container_damage(con, true);
 }
 
@@ -710,47 +712,110 @@ struct container_property *container_get_property_at_workspace(
     return property;
 }
 
-void container_set_geom(struct container *con, struct wlr_box *geom)
+void container_set_current_geom(struct container *con, struct wlr_box *geom)
+{
+    struct tagset *tagset = container_get_tagset(con);
+    struct layout *lt = tagset_get_layout(tagset);
+    if (container_is_tiled(con) || lt->options.arrange_by_focus) {
+        container_set_tiled_geom(con, geom);
+    } else {
+        container_set_floating_geom(con, geom);
+    }
+}
+
+void container_set_tiled_geom(struct container *con, struct wlr_box *geom)
 {
     struct container_property *property =
         container_get_property(con);
+
     struct wlr_box *con_geom = &property->geom;
+
     if (con->client->type == LAYER_SHELL) {
         con_geom = &con->global_geom;
     }
 
-    if (container_is_floating(con)
-            && !con->floating_container_geom_was_changed) {
-        con->prev_floating_geom = *con_geom;
+    // TODO: find out whether this works
+    bool preserve_ratio = con->ratio != 0;
+    if (preserve_ratio) {
+        /* calculated biggest container where con->geom.width and
+         * con->geom.height = con->geom.width * con->ratio is inside geom.width
+         * and geom.height
+         * */
+        float max_height = geom->height/con->ratio;
+        con_geom->width = MIN(geom->width, max_height);
+        con_geom->height = con_geom->width * con->ratio;
+        // TODO make a function out of that 
+        // center in x direction
+        con_geom->x += (geom->width - con_geom->width)/2;
+        // center in y direction
+        con_geom->y += (geom->height - con_geom->height)/2;
+    }
+
+
+    con->prev_geom = *con_geom;
+    *con_geom = *geom;
+    container_update_size(con);
+}
+
+void container_set_floating_geom(struct container *con, struct wlr_box *geom)
+{
+    struct container_property *property =
+        container_get_property(con);
+
+    struct wlr_box *con_geom = &property->floating_geom;
+    if (con->client->type == LAYER_SHELL) {
+        con_geom = &con->global_geom;
     }
 
     con->prev_geom = *con_geom;
     *con_geom = *geom;
+    container_update_size(con);
 }
 
-struct wlr_box *container_get_geom(struct container *con)
+struct wlr_box *container_get_tiled_geom(struct container *con)
 {
     struct tagset *tagset = container_get_tagset(con);
     struct workspace *ws = tagset_get_workspace(tagset);
 
-    struct wlr_box *geom = container_workspace_get_geom(con, ws);
+    struct container_property *property =
+        g_ptr_array_index(con->properties, ws->id); 
+
+    struct wlr_box *geom = &property->geom;
+
     if (con->client->type == LAYER_SHELL) {
         geom = &con->global_geom;
     }
     return geom;
 }
 
-struct wlr_box *container_workspace_get_geom(struct container *con, struct workspace *ws)
+struct wlr_box *container_get_floating_geom(struct container *con)
 {
-    if (!ws)
-        return NULL;
+    struct tagset *tagset = container_get_tagset(con);
+    struct workspace *ws = tagset_get_workspace(tagset);
 
     struct container_property *property =
         g_ptr_array_index(con->properties, ws->id); 
-    struct wlr_box *con_geom = &property->geom;
-    return con_geom;
+
+    struct wlr_box *geom = &property->floating_geom;
+
+    if (con->client->type == LAYER_SHELL) {
+        geom = &con->global_geom;
+    }
+    return geom;
 }
 
+struct wlr_box *container_get_current_geom(struct container *con)
+{
+    struct wlr_box *geom = NULL;
+    struct tagset *tagset = container_get_tagset(con);
+    struct layout *lt = tagset_get_layout(tagset);
+    if (container_is_tiled(con) || lt->options.arrange_by_focus) {
+        geom = container_get_tiled_geom(con);
+    } else {
+        geom = container_get_floating_geom(con);
+    }
+    return geom;
+}
 
 void container_set_border_width(struct container *con, int border_width)
 {
@@ -771,7 +836,7 @@ int container_get_border_width(struct container *con)
 void resize_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety)
 {
 
-    struct wlr_box *con_geom = container_get_geom(con);
+    struct wlr_box *con_geom = container_get_current_geom(con);
     struct wlr_box geom = *con_geom;
 
     geom.width = absolute_x_to_container_relative(con_geom, cursor->x - offsetx);
@@ -780,7 +845,7 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
     if (con->on_scratchpad) {
         remove_container_from_scratchpad(con);
     }
-    resize(con, geom);
+    container_set_current_geom(con, &geom);
     container_damage(con, true);
 }
 
