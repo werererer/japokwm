@@ -65,6 +65,7 @@ void tagset_focus_tags(int ws_id, struct BitSet *bitset);
 void tagset_reload(struct tagset *tagset);
 void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tagset);
 
+void tagset_write_to_focus_stacks(struct tagset *tagset);
 void update_sub_focus_stack(struct tagset *tagset);
 bool is_reduced_focus_stack(struct workspace *ws, struct container *con);
 void update_reduced_focus_stack(struct tagset *tagset);

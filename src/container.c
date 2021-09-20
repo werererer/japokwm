@@ -445,18 +445,27 @@ void focus_on_hidden_stack(struct monitor *m, int i)
         resize(con, *sel_geom);
     }
 
+    for (int i = 0; i < visible_containers->len; i++) {
+        struct container *con = g_ptr_array_index(visible_containers, i);
+        debug_print("focus list0.v: %p\n", con);
+    }
+    for (int i = 0; i < hidden_containers->len; i++) {
+        struct container *con = g_ptr_array_index(hidden_containers, i);
+        debug_print("focus list0.h: %p\n", con);
+    }
+
     guint sel_index;
-    assert(g_ptr_array_find(visible_containers, sel, &sel_index) == true);
+    if (!g_ptr_array_find(visible_containers, sel, &sel_index)) {
+        return;
+    }
     g_ptr_array_remove_index(visible_containers, sel_index);
     g_ptr_array_remove(hidden_containers, con);
     g_ptr_array_insert(visible_containers, sel_index, con);
 
-    struct layout *lt = tagset_get_layout(tagset);
-
     if (i < 0) {
-        g_ptr_array_insert(visible_containers, lt->n_tiled, sel);
+        g_ptr_array_insert(hidden_containers, 0, sel);
     } else {
-        g_ptr_array_add(visible_containers, sel);
+        g_ptr_array_add(hidden_containers, sel);
     }
 
     GPtrArray *result_list = g_ptr_array_new();
@@ -472,15 +481,29 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     }
 
     GPtrArray *tiled_list = tagset_get_tiled_list(tagset);
+
+    for (int i = 0; i < tiled_list->len; i++) {
+        struct container *con = g_ptr_array_index(tiled_list, i);
+        debug_print("focus list2: %p\n", con);
+    }
+
     sub_list_write_to_parent_list1D(tiled_list, result_list);
     tagset_write_to_workspaces(tagset);
-
+    tagset_write_to_focus_stacks(tagset);
     g_ptr_array_free(result_list, FALSE);
 
+    for (int i = 0; i < tiled_list->len; i++) {
+        struct container *con = g_ptr_array_index(tiled_list, i);
+        debug_print("focus list3: %p\n", con);
+    }
+
     arrange();
-    update_sub_focus_stack(tagset);
     focus_container(con);
-    tagset_write_to_workspaces(tagset);
+
+    for (int i = 0; i < tiled_list->len; i++) {
+        struct container *con = g_ptr_array_index(tiled_list, i);
+        debug_print("focus list4: %p\n", con);
+    }
 }
 
 void lift_container(struct container *con)

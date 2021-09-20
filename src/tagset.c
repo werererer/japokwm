@@ -307,6 +307,16 @@ void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tag
     }
 }
 
+void tagset_write_to_focus_stacks(struct tagset *tagset)
+{
+    if (!tagset)
+        return;
+
+    struct workspace *ws = tagset_get_workspace(tagset);
+    focus_set_write_to_parent(ws->focus_set, tagset->local_focus_set);
+    update_reduced_focus_stack(tagset);
+}
+
 void update_sub_focus_stack(struct tagset *tagset)
 {
     if (!tagset)
