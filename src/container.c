@@ -427,13 +427,7 @@ void focus_on_hidden_stack(struct monitor *m, int i)
         return;
 
     struct tagset *tagset = monitor_get_active_tagset(m);
-    debug_print("tiled containers len: %i\n", tagset->con_set->tiled_containers->len);
-    for (int i = 0; i < tagset->con_set->tiled_containers->len; i++) {
-        struct container *con = g_ptr_array_index(tagset->con_set->tiled_containers, i);
-        printf("hidden: %i\n", con->hidden);
-    }
     GPtrArray *hidden_containers = tagset_get_hidden_list_copy(tagset);
-    debug_print("hidden containers len: %i\n", hidden_containers->len);
     struct container *con = get_relative_item_in_list(hidden_containers, 0, i);
     g_ptr_array_free(hidden_containers, FALSE);
 

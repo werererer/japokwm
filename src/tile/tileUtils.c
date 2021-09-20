@@ -242,7 +242,6 @@ void arrange_monitor(struct monitor *m)
     call_update_function(lt->options.event_handler, lt->n_area);
 
     GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
-    debug_print("tiled containers len: %i\n", tiled_containers->len);
 
     update_hidden_status_of_containers(m, tiled_containers);
 

@@ -276,16 +276,18 @@ int lib_zoom(lua_State *L)
     if (!sel)
         return 0;
 
+    GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
     guint position;
-    bool found = g_ptr_array_find(tagset->con_set->tiled_containers, sel, &position);
+    bool found = g_ptr_array_find(tiled_containers, sel, &position);
     if (!found)
         return 0;
 
-    if (sel == g_ptr_array_index(tagset->con_set->tiled_containers, 0)) {
+    if (sel == g_ptr_array_index(tiled_containers, 0)) {
         repush(1, 0);
     } else {
         repush(position, 0);
     }
+    g_ptr_array_free(tiled_containers, FALSE);
 
     arrange();
 
