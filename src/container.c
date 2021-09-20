@@ -429,61 +429,53 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     struct tagset *tagset = monitor_get_active_tagset(m);
     GPtrArray *hidden_containers = tagset_get_hidden_list_copy(tagset);
     struct container *con = get_relative_item_in_list(hidden_containers, 0, i);
-    g_ptr_array_free(hidden_containers, FALSE);
 
     if (!con)
         return;
 
-    GPtrArray *visible_container_lists = tagset_get_visible_lists(tagset);
-    GPtrArray *focus_list = find_list_in_composed_list(
-            visible_container_lists, cmp_ptr, sel);
-
-    for (int i = 0; i < focus_list->len; i++) {
-        struct container *con = g_ptr_array_index(focus_list, i);
-        debug_print("focus list0: %p\n", con);
-    }
+    GPtrArray *visible_containers = tagset_get_visible_list_copy(tagset);
 
     if (container_is_floating(sel)) {
         // TODO implement this
         // it could be something like this but I don't know
-        /* container_set_floating(con, container_fix_position_to_begin, true); */
-        /* container_set_floating(sel, container_fix_position_to_begin, false); */
+        container_set_floating(con, NULL, true);
+        container_set_floating(sel, NULL, false);
 
-        /* struct wlr_box *sel_geom = container_get_geom(sel); */
-        /* resize(con, *sel_geom); */
-        return;
+        struct wlr_box *sel_geom = container_get_geom(sel);
+        resize(con, *sel_geom);
     }
 
     guint sel_index;
-    assert(g_ptr_array_find(focus_list, sel, &sel_index) == true);
-
-    tagset_list_remove(focus_list, con);
-    tagset_list_remove_index(focus_list, sel_index);
-    tagset_list_insert(focus_list, sel_index, con);
+    assert(g_ptr_array_find(visible_containers, sel, &sel_index) == true);
+    g_ptr_array_remove_index(visible_containers, sel_index);
+    g_ptr_array_remove(hidden_containers, con);
+    g_ptr_array_insert(visible_containers, sel_index, con);
 
     struct layout *lt = tagset_get_layout(tagset);
-    debug_print("n_tiled: %i\n", lt->n_tiled);
-    debug_print("focus list len tmp: %i\n", focus_list->len);
 
-    for (int i = 0; i < focus_list->len; i++) {
-        struct container *con = g_ptr_array_index(focus_list, i);
+    if (i < 0) {
+        g_ptr_array_insert(visible_containers, lt->n_tiled, sel);
+    } else {
+        g_ptr_array_add(visible_containers, sel);
+    }
+
+    GPtrArray *result_list = g_ptr_array_new();
+    wlr_list_cat(result_list, visible_containers);
+    wlr_list_cat(result_list, hidden_containers);
+
+    g_ptr_array_free(visible_containers, FALSE);
+    g_ptr_array_free(hidden_containers, FALSE);
+
+    for (int i = 0; i < result_list->len; i++) {
+        struct container *con = g_ptr_array_index(result_list, i);
         debug_print("focus list1: %p\n", con);
     }
 
-    if (i < 0) {
-        debug_print("insert at position: %i\n", lt->n_tiled);
-        tagset_list_insert(focus_list, lt->n_tiled, sel);
-    } else {
-        tagset_list_add(focus_list, sel);
-    }
+    GPtrArray *tiled_list = tagset_get_tiled_list(tagset);
+    sub_list_write_to_parent_list1D(tiled_list, result_list);
+    tagset_write_to_workspaces(tagset);
 
-    for (int i = 0; i < focus_list->len; i++) {
-        struct container *con = g_ptr_array_index(focus_list, i);
-        debug_print("focus list2: %p\n", con);
-    }
-
-    con->hidden = false;
-    sel->hidden = true;
+    g_ptr_array_free(result_list, FALSE);
 
     arrange();
     update_sub_focus_stack(tagset);
@@ -613,6 +605,7 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
         g_ptr_array_insert(ws->visual_set->tiled_visual_stack, 0, con);
         update_visual_visible_stack(tagset);
     } else {
+        set_container_hidden(con, false);
         remove_in_composed_list(ws->visual_set->visual_stack_lists, cmp_ptr, con);
         g_ptr_array_insert(ws->visual_set->floating_visual_stack, 0, con);
         struct tagset *tagset = workspace_get_tagset(ws);
@@ -624,7 +617,7 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
     container_damage_whole(con);
 }
 
-void set_container_hidden_status(struct container *con, bool b)
+void set_container_hidden(struct container *con, bool b)
 {
     con->hidden = b;
 }

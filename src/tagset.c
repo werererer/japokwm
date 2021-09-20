@@ -492,7 +492,7 @@ void tagset_write_to_workspaces(struct tagset *tagset)
 {
     if (!tagset)
         return;
-    printf("write to wroskapce\n");
+    printf("write to workspace\n");
 
     struct workspace *ws = tagset_get_workspace(tagset);
     container_set_write_to_parent(ws->con_set, tagset->con_set);
@@ -699,6 +699,23 @@ GPtrArray *tagset_get_floating_list_copy(struct tagset *tagset)
                     container_is_floating);
     }
     return floating_containers;
+}
+
+GPtrArray *tagset_get_visible_list_copy(struct tagset *tagset)
+{
+    struct layout *lt = tagset_get_layout(tagset);
+
+    GPtrArray *hidden_list = NULL;
+    if (lt->options.arrange_by_focus) {
+        hidden_list = list_create_filtered_sub_list(
+                tagset->local_focus_set->focus_stack_normal,
+                container_is_visible);
+    } else {
+        hidden_list = list_create_filtered_sub_list(
+                tagset->con_set->tiled_containers,
+                container_is_visible);
+    }
+    return hidden_list;
 }
 
 GPtrArray *tagset_get_hidden_list_copy(struct tagset *tagset)
