@@ -152,14 +152,12 @@ static void damage_container_area(struct container *con, struct wlr_box *geom,
 
 static void container_damage(struct container *con, bool whole)
 {
-    for (int i = 0; i < server.mons->len; i++) {
-        struct wlr_box *con_geom = container_get_current_geom(con);
+    if (!con)
+        return;
+    struct wlr_box *con_geom = container_get_current_geom(con);
+    assert(con_geom != NULL);
 
-        if (!con_geom)
-            continue;
-
-        damage_container_area(con, con_geom, whole);
-    }
+    damage_container_area(con, con_geom, whole);
 
     struct client *c = con->client;
     if (c->resized || c->moved_workspace) {
