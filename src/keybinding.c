@@ -1,5 +1,6 @@
 #include "keybinding.h"
 
+#include <string.h>
 #include <X11/Xlib.h>
 
 #include "input_manager.h"
@@ -33,44 +34,49 @@ static void mod_to_string(char *dest, unsigned int mod)
     }
 }
 
-static void sym_to_binding(char *dest, int mods, int sym)
+static void mod_to_binding(char *dest, int mods)
 {
     mod_to_string(dest, mods);
-    strcat(dest, XKeysymToString(sym));
+}
+
+static void sym_to_binding(char *dest, int sym)
+{
+    strcpy(dest, XKeysymToString(sym));
 }
 
 // this function converts a string to a xkeysym string element
-static void resolve_keybind_element(char *sym_dest, const char *bind)
+static char *resolve_keybind_element(const char *bind)
 {
     struct monitor *m = selected_monitor;
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = ws->layout;
 
     if (strcmp(bind, "mod") == 0) {
-        strcpy(sym_dest, modkeys[lt->options.modkey]);
-        return;
+        char *resolved = strdup(modkeys[lt->options.modkey]);
+        return resolved;
     }
     if (strcmp(bind, "M1") == 0) {
-        strcpy(sym_dest, mouse[0]);
-        return;
+        char *resolved = strdup(mouse[0]);
+        return resolved;
     }
     if (strcmp(bind, "M2") == 0) {
-        strcpy(sym_dest, mouse[1]);
-        return;
+        char *resolved = strdup(mouse[1]);
+        return resolved;
     }
     if (strcmp(bind, "M3") == 0) {
-        strcpy(sym_dest, mouse[2]);
-        return;
+        char *resolved = strdup(mouse[2]);
+        return resolved;
     }
     if (strcmp(bind, "C") == 0) {
-        strcpy(sym_dest, "Control_L");
-        return;
+        char *resolved = strdup("Control_L");
+        return resolved;
     }
     if (strcmp(bind, "S") == 0) {
-        strcpy(sym_dest, "Shift_L");
-        return;
+        char *resolved = strdup("Shift_L");
+        return resolved;
     }
-    strcpy(sym_dest, bind);
+    char *resolved = strdup(bind);
+    return resolved;
 }
 
 static bool is_same_keybind_element(const char *bind, const char *bind2)
@@ -85,20 +91,21 @@ static bool is_same_keybind_element(const char *bind, const char *bind2)
 
     // remove all resolved items out of bind2arr found in bindarr
     for (int i = 0; i < bindarr->len; i++) {
-        int str1len = strlen(g_ptr_array_index(bind2arr, i));
-        char bindelem[str1len];
-        resolve_keybind_element(bindelem, g_ptr_array_index(bindarr, i));
+        char *bind_el = g_ptr_array_index(bindarr, i);
+        char *bindelem = resolve_keybind_element(bind_el);
 
         for (int j = 0; j < bind2arr->len; j++) {
-            int str2len = strlen(g_ptr_array_index(bind2arr, j));
-            char bind2elem[str2len];
-            resolve_keybind_element(bind2elem, g_ptr_array_index(bind2arr, j));
+            char *bind2_el = g_ptr_array_index(bind2arr, j);
+            char *bind2elem = resolve_keybind_element(bind2_el);
 
-            if (strcmp(g_ptr_array_index(bindarr, i), bind2elem) == 0) {
+            if (strcmp(bindelem, bind2elem) == 0) {
                 g_ptr_array_remove_index(bind2arr, j);
+                free(bind2elem);
                 break;
             }
+            free(bind2elem);
         }
+        free(bindelem);
     }
 
     // if no items remain in bind2arr the bind must be correct
@@ -107,22 +114,80 @@ static bool is_same_keybind_element(const char *bind, const char *bind2)
     return ret;
 }
 
-static bool is_same_keybind(const char *bind, const char *bind2)
+bool is_old_combo_same(const char *bind)
 {
-    bool same = is_same_keybind_element(bind, bind2);
-    return same;
+    GPtrArray *bind_combos = split_string(bind, " ");
+
+    if (bind_combos->len < server.registered_key_combos->len) {
+        return false;
+    }
+
+    bool is_same = false;
+    for (int i = 0; i < server.registered_key_combos->len; i++) {
+        char *server_bind = g_ptr_array_index(server.registered_key_combos, i);
+        char *bind_combo = g_ptr_array_index(bind_combos, i);
+
+        if (is_same_keybind_element(server_bind, bind_combo)) {
+            is_same = true;
+        } else {
+            is_same = false;
+            return false;
+        }
+    }
+    return is_same;
 }
 
-static bool process_binding(lua_State *L, char *bind, GPtrArray *keybindings)
+bool is_same_keybind_completed(const char *bind, const char *bind2)
 {
+    GPtrArray *bind2combos = split_string(bind2, " ");
+    if (bind2combos->len == server.registered_key_combos->len) {
+        return true;
+    }
+    return false;
+}
+
+// bind2 is a saved bind
+bool has_equal_keybind_element(const char *bind, GPtrArray *keybindings)
+{
+    int current_combo_index = server.registered_key_combos->len;
+    for (int i = 0; i < keybindings->len; i++) {
+        struct keybinding *keybinding = g_ptr_array_index(keybindings, i);
+        const char *bind2 = keybinding->binding;
+        GPtrArray *bind2_combos = split_string(bind2, " ");
+
+        if (bind2_combos->len-1 < current_combo_index) {
+            continue;
+        }
+
+        const char *_current_bind2_combo = g_ptr_array_index(bind2_combos, current_combo_index);
+        char *current_bind2_combo = resolve_keybind_element(_current_bind2_combo);
+        bool is_equal = is_same_keybind_element(bind, current_bind2_combo);
+        free(current_bind2_combo);
+        if (is_equal) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool process_binding(lua_State *L, const char *bind, GPtrArray *keybindings)
+{
+    /* for (int i = 0; i < server.registered_key_combos->len; i++) { */
+    /*     const char *comb = g_ptr_array_index(server.registered_key_combos, i); */
+    /* } */
     bool handled = false;
     for (int i = 0; i < keybindings->len; i++) {
         struct keybinding *keybinding = g_ptr_array_index(keybindings, i);
-        if (is_same_keybind(bind, keybinding->binding)) {
-            lua_rawgeti(L, LUA_REGISTRYINDEX, keybinding->lua_func_ref);
-            lua_call_safe(L, 0, 0, 0);
-            handled = true;
-        }
+
+        if (!is_old_combo_same(keybinding->binding))
+            continue;
+        if (!is_same_keybind_completed(bind, keybinding->binding))
+            continue;
+
+        handled = true;
+        list_clear(server.registered_key_combos, free);
+        lua_rawgeti(L, LUA_REGISTRYINDEX, keybinding->lua_func_ref);
+        lua_call_safe(L, 0, 0, 0);
     }
     return handled;
 }
@@ -133,12 +198,79 @@ struct keybinding *create_keybinding()
     return keybinding;
 }
 
+static int millisec_get_available_seconds(int milli_sec)
+{
+    int available_seconds = milli_sec/1000;
+    return available_seconds;
+}
+
+static long millisec_to_nanosec(long milli_sec)
+{
+    return milli_sec * 100000;
+}
+
+static void reset_keycombo_timer(timer_t timer)
+{
+    long timeout = server.default_layout->options.key_combo_timeout;
+
+    int available_seconds = millisec_get_available_seconds(timeout);
+    timeout -= (1000*available_seconds);
+
+    long nano_timeout = millisec_to_nanosec(timeout);
+
+    struct itimerspec value = {
+        .it_value = (struct timespec) {
+            .tv_sec = available_seconds,
+            .tv_nsec = nano_timeout,
+        },
+        .it_interval = (struct timespec) {
+            .tv_sec = 0,
+            .tv_nsec = 0,
+        },
+    };
+
+    timer_settime(timer, 0, &value, NULL);
+}
+
+static bool sym_is_modifier(const char *sym)
+{
+    for (int i = 0; i < LENGTH(mods); i++) {
+        const char *mod = mods[i];
+        if (strcmp(mod, sym) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool handle_keybinding(int mods, int sym)
 {
-    char bind[128] = "";
-    sym_to_binding(bind, mods, sym);
-    bool handled = process_binding(L, bind, server.default_layout->options.keybindings);
-    return handled;
+    reset_keycombo_timer(server.combo_timer);
+
+    char bind[256] = "";
+    char mod_bind[128] = "";
+    mod_to_binding(mod_bind, mods);
+    char sym_bind[128] = "";
+    sym_to_binding(sym_bind, sym);
+
+    strcpy(bind, mod_bind);
+    strcat(bind, sym_bind);
+
+    if (sym_is_modifier(sym_bind)) {
+        return true;
+    }
+
+    if (!has_equal_keybind_element(bind, server.default_layout->options.keybindings)) {
+        list_clear(server.registered_key_combos, free);
+
+        // try again with no registered key combos
+        if (!has_equal_keybind_element(bind, server.default_layout->options.keybindings)) {
+            return false;
+        }
+    }
+    g_ptr_array_add(server.registered_key_combos, strdup(bind));
+    process_binding(L, bind, server.default_layout->options.keybindings);
+    return true;
 }
 
 bool key_state_has_modifiers(size_t mods)

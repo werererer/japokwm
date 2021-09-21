@@ -10,7 +10,8 @@ test_files = files(
     'utils/stringUtils_test.c',
     'workspace_test.c',
     'scratchpad_test.c',
-    'bitset_test.c'
+    'bitset_test.c',
+    'keybinding_test.c'
     )
 
 foreach test_file: test_files
@@ -24,6 +25,7 @@ foreach test_file: test_files
                c_args: c_args,
                dependencies: [deps],
                include_directories: include_dirs,
+               link_args: link_args,
                link_with: [wmlib],
               )
 

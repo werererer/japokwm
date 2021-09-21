@@ -25,6 +25,18 @@ static void init_lists(struct server *server)
     g_ptr_array_add(server->layer_visual_stack_lists, server->layer_visual_stack_background);
 }
 
+static void clear_key_combo_timer_callback(union sigval sev) {
+    list_clear(server.registered_key_combos, free);
+}
+
+static void init_timers(struct server *server)
+{
+    server->combo_sig_event.sigev_notify = SIGEV_THREAD;
+    server->combo_sig_event.sigev_notify_function = &clear_key_combo_timer_callback;
+
+    timer_create(CLOCK_REALTIME, &server->combo_sig_event, &server->combo_timer);
+}
+
 static void init_event_handlers(struct server *server)
 {
     server->new_output = (struct wl_listener){.notify = create_monitor};
@@ -43,11 +55,13 @@ void init_server()
     server = (struct server) {
     };
 
+    server.registered_key_combos = g_ptr_array_new();
+
     init_lists(&server);
+    init_timers(&server);
     init_event_handlers(&server);
 
     wl_list_init(&sticky_stack);
-
 
     server.mons = g_ptr_array_new();
     server.popups = g_ptr_array_new();

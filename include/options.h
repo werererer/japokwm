@@ -47,6 +47,8 @@ struct options {
     GPtrArray *rules;
     GPtrArray *mon_rules;
 
+    // timeout in milliseconds
+    int key_combo_timeout;
     int repeat_rate;
     int repeat_delay;
     int inner_gap;

@@ -42,6 +42,10 @@ struct server {
     struct wlr_output_layout *output_layout;
     GPtrArray *keyboards;
 
+    GPtrArray *registered_key_combos;
+    timer_t combo_timer;
+    struct sigevent combo_sig_event;
+
     GPtrArray *workspaces;
 
     GPtrArray *scratchpad;
