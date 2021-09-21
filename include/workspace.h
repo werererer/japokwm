@@ -107,6 +107,7 @@ bool is_workspace_empty(struct workspace *ws);
 
 void focus_most_recent_container(struct workspace *ws);
 struct container *get_container(struct workspace *ws, int i);
+struct container *get_container_in_stack(struct workspace *ws, int i);
 
 struct workspace *find_next_unoccupied_workspace(GPtrArray *workspaces, struct workspace *ws);
 struct workspace *get_workspace(int id);

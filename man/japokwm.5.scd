@@ -383,6 +383,13 @@ integers
 <return> ++
 	boolean - whether it is in limit
 
+*stack_position_to_position(i)* ++
+	converts a position on the container stack to a position
+<where> ++
+	i - the position of the container on the container stack
+<return> ++
+	i - the position of the container
+
 # CONFIG
 *add_mon_rule(rule)*
 	add a rule for monitors

@@ -43,7 +43,7 @@ config.bind_key("mod-space",     function() action.load_next_layout_in_set("defa
 config.bind_key("mod-minus",     function() action.move_to_scratchpad(info.this_container_position()) end)
 config.bind_key("mod-S-minus",   function() action.show_scratchpad() end)
 config.bind_key("mod-S-space",   function() action.load_prev_layout_in_set("default") end)
-config.bind_key("mod-m",         function() print("layout: ", info.get_active_layout()) end)
+config.bind_key("mod-m",         function() action.focus_container(info.stack_position_to_position(0)) end)
 config.bind_key("mod-S-t",       function() action.load_layout_in_set("default", 2) end)
 config.bind_key("mod-w",         function() action.load_layout_in_set("default", 3) end)
 config.bind_key("mod-S-w",       function() action.load_layout_in_set("default", 4) end)

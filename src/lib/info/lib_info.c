@@ -39,13 +39,17 @@ int lib_this_container_position(lua_State *L)
     return 1;
 }
 
-int lib_stack_position_container_position(lua_State *L)
+int lib_stack_position_to_position(lua_State *L)
 {
-    struct monitor *m = selected_monitor;
-    struct container *sel = get_focused_container(m);
+    int pos = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
 
-    int position = get_position_in_container_focus_stack(sel);
-    lua_pushinteger(L, position);
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = monitor_get_active_workspace(m);
+
+    struct container *con = get_container_in_stack(ws, pos);
+    int focus_position = get_position_in_container_focus_stack(con);
+    lua_pushinteger(L, focus_position);
     return 1;
 }
 

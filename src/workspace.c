@@ -126,6 +126,14 @@ struct container *get_container(struct workspace *ws, int i)
     return get_in_composed_list(tagset->visible_focus_set->focus_stack_visible_lists, i);
 }
 
+struct container *get_container_in_stack(struct workspace *ws, int i)
+{
+    struct tagset *tagset = workspace_get_active_tagset(ws);
+    GPtrArray *visible_list = tagset_get_visible_list_copy(tagset);
+    struct container *con = g_ptr_array_index(visible_list, i);
+    return con;
+}
+
 void destroy_workspace(struct workspace *ws)
 {
     g_ptr_array_free(ws->independent_containers, false);
