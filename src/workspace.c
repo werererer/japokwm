@@ -516,7 +516,7 @@ struct container *workspace_get_focused_container(struct workspace *ws)
 {
     for (int i = 0; i < length_of_composed_list(ws->focus_set->focus_stack_lists); i++) {
         struct container *con = get_in_composed_list(ws->focus_set->focus_stack_lists, i);
-        if (is_reduced_focus_stack(ws, con)) {
+        if (con->client->ws_id == ws->id) {
             return con;
         }
     }
