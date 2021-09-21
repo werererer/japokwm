@@ -536,6 +536,11 @@ integers
 		n: float - how much it should resize ++
 		direction: direction - which directions to resize to
 
+*set_combo_timeout(timout)* ++
+	set timeout for keyboard combos ++
+<where> ++
+	timout: integer
+
 *set_root_color(color)* ++
 	set color of the root ++
 <where> ++
