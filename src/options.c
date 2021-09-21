@@ -7,7 +7,6 @@
 #include "utils/coreUtils.h"
 #include "layout.h"
 #include "keybinding.h"
-#include "utils/vector.h"
 
 GPtrArray *create_tagnames()
 {

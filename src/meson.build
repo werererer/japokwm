@@ -19,7 +19,6 @@ srcs = files(
     'input_manager.c',
     'seat.c',
     'bitset/bitset.c',
-    'utils/vector.c',
     'client.c',
     'command.c',
     'container.c',

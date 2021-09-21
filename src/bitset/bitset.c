@@ -1,6 +1,6 @@
 #include "bitset/bitset.h"
-#include "utils/vector.h"
 #include "utils/coreUtils.h"
+#include <GLES2/gl2.h>
 #include <assert.h>
 #include <wlr/util/log.h>
 
@@ -10,7 +10,7 @@ BitSet *bitset_create(size_t minimum_number_of_bits) {
     BitSet *bitset = calloc(1, sizeof(BitSet));
     size_t number_of_bytes = BITS_TO_BYTES(minimum_number_of_bits);
 
-    bitset->bits = vector_create(number_of_bytes, sizeof(uint8_t));
+    bitset->bits = g_ptr_array_sized_new(number_of_bytes);
 
     bitset->size = minimum_number_of_bits;
     for (size_t byte = 0; byte < number_of_bytes; ++byte) {
@@ -20,48 +20,52 @@ BitSet *bitset_create(size_t minimum_number_of_bits) {
     return bitset;
 }
 
+static void *copy_int(const void *src_ptr, void *data)
+{
+    int *src = (int *)src_ptr;
+    int *dest = calloc(1, sizeof(uint8_t));
+    memcpy(dest, src, sizeof(uint8_t));
+    return dest;
+}
+
 BitSet* bitset_copy(BitSet* source) {
     assert(source != NULL);
 
     BitSet *destination = malloc(sizeof(BitSet));
-    destination->bits = vector_copy(source->bits);
+    destination->bits = g_ptr_array_copy(source->bits, copy_int, NULL);
     destination->size = source->size;
 
     return destination;
 }
 
-int bitset_move(BitSet* destination, BitSet* source) {
-    assert(destination != NULL);
-    assert(source != NULL);
-
-    if (destination == NULL) return BITSET_ERROR;
-    if (source == NULL) return BITSET_ERROR;
-
-    if (vector_move(destination->bits, source->bits) == VECTOR_ERROR) {
-        return BITSET_ERROR;
+void bitset_assign_bitset(BitSet** dest, BitSet* source)
+{
+    if (*dest == source) {
+        return;
     }
-    destination->size = source->size;
-
-    return BITSET_SUCCESS;
+    // TODO: this can be optimized
+    bitset_destroy(*dest);
+    *dest = bitset_copy(source);
 }
 
 int bitset_swap(BitSet* destination, BitSet* source) {
-    assert(destination != NULL);
-    assert(source != NULL);
+    // TODO: fix later
+    /* assert(destination != NULL); */
+    /* assert(source != NULL); */
 
-    if (destination == NULL) return BITSET_ERROR;
-    if (source == NULL) return BITSET_ERROR;
+    /* if (destination == NULL) return BITSET_ERROR; */
+    /* if (source == NULL) return BITSET_ERROR; */
 
-    if (vector_swap(destination->bits, source->bits) == VECTOR_ERROR) {
-        return BITSET_ERROR;
-    }
-    _vector_swap(&destination->size, &source->size);
+    /* if (vector_swap(destination->bits, source->bits) == VECTOR_ERROR) { */
+    /*     return BITSET_ERROR; */
+    /* } */
+    /* _vector_swap(&destination->size, &source->size); */
 
     return BITSET_SUCCESS;
 }
 
 void bitset_destroy(BitSet* bitset) {
-    vector_destroy(bitset->bits);
+    g_ptr_array_free(bitset->bits, true);
     free(bitset);
 }
 
@@ -79,8 +83,8 @@ int bitset_equals(BitSet* bitset1, BitSet* bitset2)
 {
     BitSet *bitset = bitset_copy(bitset1);
 
-    for (int i = 0; i < bitset->size; i++) {
-        bitset_toggle(bitset, i);
+    for (int bit = 0; bit < bitset->size; bit++) {
+        bitset_toggle(bitset, bit);
     }
 
     bitset_and(bitset, bitset2);
@@ -129,8 +133,8 @@ int bitset_flip(BitSet* bitset) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    VECTOR_FOR_EACH(bitset->bits, iterator) {
-        uint8_t* byte = iterator_get(&iterator);
+    for (int byte_idx = 0; byte_idx < bitset->bits->len; byte_idx++) {
+        uint8_t* byte = g_ptr_array_index(bitset->bits, byte_idx);
         *byte = ~(*byte);
     }
 
@@ -195,14 +199,14 @@ uint8_t* byte_get(BitSet* bitset, size_t index) {
     assert(bitset != NULL);
     if (bitset == NULL) return NULL;
 
-    return (uint8_t*)vector_get(bitset->bits, _byte_index(index));
+    return (uint8_t*)g_ptr_array_index(bitset->bits, _byte_index(index));
 }
 
 const uint8_t* byte_const_get(const BitSet* bitset, size_t index) {
     assert(bitset != NULL);
     if (bitset == NULL) return NULL;
 
-    return (const uint8_t*)vector_const_get(bitset->bits, _byte_index(index));
+    return (const uint8_t*)g_ptr_array_index(bitset->bits, _byte_index(index));
 }
 
 int bitset_msb(BitSet* bitset) {
@@ -228,19 +232,19 @@ int bitset_set_all_to_mask(BitSet* bitset, uint8_t mask) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    VECTOR_FOR_EACH(bitset->bits, byte) {
-        ITERATOR_GET_AS(uint8_t, &byte) = mask;
+    for (int byte_idx = 0; byte_idx < bitset->bits->len; byte_idx++) {
+        uint8_t *byte = g_ptr_array_index(bitset->bits, byte_idx);
+        *byte = mask;
     }
 
     return BITSET_SUCCESS;
 }
 
-int bitset_clear(BitSet* bitset) {
+void bitset_clear(BitSet* bitset) {
     assert(bitset != NULL);
-    if (bitset == NULL) return BITSET_ERROR;
     bitset->size = 0;
 
-    return vector_clear(bitset->bits);
+    list_clear(bitset->bits, free);
 }
 
 /* Size Management */
@@ -276,51 +280,40 @@ int bitset_push_zero(BitSet* bitset) {
     return BITSET_SUCCESS;
 }
 
-int bitset_pop(BitSet* bitset) {
+void bitset_pop(BitSet* bitset) {
     if (--bitset->size % 8 == 0) {
-        return bitset_shrink(bitset);
+        bitset_shrink(bitset);
     }
-    return BITSET_SUCCESS;
 }
 
 /* Capacity Management */
-int bitset_reserve(BitSet* bitset, size_t minimum_number_of_bits) {
+void bitset_reserve(BitSet* bitset, size_t minimum_number_of_bits) {
     assert(bitset != NULL);
-    if (bitset == NULL) return BITSET_ERROR;
 
     /* ERROR/SUCCESS flags are the same */
-    return vector_reserve(bitset->bits, BITS_TO_BYTES(minimum_number_of_bits));
+    g_ptr_array_set_size(bitset->bits, BITS_TO_BYTES(minimum_number_of_bits));
 }
 
-int bitset_grow(BitSet* bitset) {
-    uint8_t empty = 0;
+void bitset_grow(BitSet* bitset) {
 
     assert(bitset != NULL);
-    if (bitset == NULL) return BITSET_ERROR;
 
     /* ERROR/SUCCESS flags are the same */
-    return vector_push_back(bitset->bits, &empty);
+    uint8_t *empty = calloc(1, sizeof(uint8_t));
+    g_ptr_array_add(bitset->bits, empty);
 }
 
-int bitset_shrink(BitSet* bitset) {
+void bitset_shrink(BitSet* bitset) {
     assert(bitset != NULL);
-    if (bitset == NULL) return BITSET_ERROR;
 
-    /* ERROR/SUCCESS flags are the same */
-    return vector_pop_back(bitset->bits);
+    uint8_t *byte = g_ptr_array_steal_index(bitset->bits, bitset->size-1);
+    free(byte);
 }
 
 /* Information */
-bool bitset_is_initialized(const BitSet* bitset) {
-    assert(bitset != NULL);
-    if (bitset == NULL) return false;
-    return vector_is_initialized(bitset->bits);
-}
-
 size_t bitset_capacity(const BitSet* bitset) {
     assert(bitset != NULL);
-    if (bitset == NULL) return false;
-    return bitset->bits->size * 8;
+    return bitset->bits->len * 8;
 }
 
 size_t bitset_size_in_bytes(const BitSet* bitset) {
@@ -336,8 +329,9 @@ int bitset_count(BitSet* bitset) {
     if (bitset == NULL) return BITSET_ERROR;
 
     count = 0;
-    VECTOR_FOR_EACH(bitset->bits, byte) {
-        count += _byte_popcount(ITERATOR_GET_AS(uint8_t, &byte));
+    for (int byte_idx = 0; byte_idx < bitset->bits->len; byte_idx++) {
+        uint8_t *byte = g_ptr_array_index(bitset->bits, byte_idx);
+        count += _byte_popcount(*byte);
     }
 
     return count;
@@ -347,8 +341,9 @@ int bitset_all(BitSet* bitset) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    VECTOR_FOR_EACH(bitset->bits, byte) {
-        if (ITERATOR_GET_AS(uint8_t, &byte) != 0xff) {
+    for (int byte_idx = 0; byte_idx < bitset->bits->len; byte_idx++) {
+        uint8_t *byte = g_ptr_array_index(bitset->bits, byte_idx);
+        if (*byte != 0xff) {
             return false;
         }
     }
@@ -360,8 +355,9 @@ int bitset_any(BitSet* bitset) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    VECTOR_FOR_EACH(bitset->bits, byte) {
-        if (ITERATOR_GET_AS(uint8_t, &byte) != 0) {
+    for (int byte_idx = 0; byte_idx < bitset->bits->len; byte_idx++) {
+        uint8_t *byte = g_ptr_array_index(bitset->bits, byte_idx);
+        if (*byte != 0) {
             return true;
         }
     }
@@ -373,19 +369,15 @@ int bitset_none(BitSet* bitset) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    VECTOR_FOR_EACH(bitset->bits, byte) {
-        if (ITERATOR_GET_AS(uint8_t, &byte) != 0) {
-            return false;
-        }
-    }
+    return !bitset_any(bitset);
 
     return true;
 }
 
 void print_bitset(BitSet *bitset)
 {
-    for (int i = 0; i < bitset->size; i++) {
-        debug_print("%i\n", bitset_test(bitset, i));
+    for (int bit = 0; bit < bitset->size; bit++) {
+        debug_print("%i\n", bitset_test(bitset, bit));
     }
 }
 
@@ -404,10 +396,8 @@ int _bitset_increment_size(BitSet* bitset) {
     if (bitset == NULL) return BITSET_ERROR;
 
     if (bitset->size++ % 8 == 0) {
-        uint8_t empty = 0;
-        if (vector_push_back(bitset->bits, &empty) == VECTOR_ERROR) {
-            return BITSET_ERROR;
-        }
+        uint8_t *empty = calloc(1, sizeof(uint8_t));
+        g_ptr_array_add(bitset->bits, empty);
     }
 
     return BITSET_SUCCESS;

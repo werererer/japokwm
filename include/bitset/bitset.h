@@ -5,12 +5,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "utils/vector.h"
+#include "glib.h"
 
 /****************** DEFINTIIONS ******************/
 
-#define BITSET_ERROR VECTOR_ERROR
-#define BITSET_SUCCESS VECTOR_SUCCESS
+#define VECTOR_ERROR -1
+#define VECTOR_SUCCESS 0
+
+#define BITSET_ERROR -1
+#define BITSET_SUCCESS 0
 
 #define BITSET_INITIALIZER \
     { VECTOR_INITIALIZER, 0 }
@@ -20,7 +23,7 @@ typedef void (*bit_operator_t)(bool*, const bool*);
 /****************** STRUCTURES ******************/
 
 typedef struct BitSet {
-    Vector *bits;
+    GPtrArray *bits;
     size_t size;
 } BitSet;
 
@@ -30,7 +33,8 @@ typedef struct BitSet {
 BitSet *bitset_create(size_t minimum_number_of_bits);
 
 BitSet* bitset_copy(BitSet* source);
-int bitset_move(BitSet* destination, BitSet* source);
+// both dest and source must be initialized
+void bitset_assign_bitset(BitSet** dest, BitSet* source);
 int bitset_swap(BitSet* destination, BitSet* source);
 
 void bitset_destroy(BitSet* bitset);
@@ -64,21 +68,20 @@ int bitset_lsb(BitSet* bitset);
 int bitset_reset_all(BitSet* bitset);
 int bitset_set_all(BitSet* bitset);
 int bitset_set_all_to_mask(BitSet* bitset, uint8_t mask);
-int bitset_clear(BitSet* bitset);
+void bitset_clear(BitSet* bitset);
 
 /* Size Management */
 int bitset_push(BitSet* bitset, bool value);
 int bitset_push_one(BitSet* bitset);
 int bitset_push_zero(BitSet* bitset);
-int bitset_pop(BitSet* bitset);
+void bitset_pop(BitSet* bitset);
 
 /* Capacity Management */
-int bitset_reserve(BitSet* bitset, size_t minimum_number_of_bits);
-int bitset_grow(BitSet* bitset);
-int bitset_shrink(BitSet* bitset);
+void bitset_reserve(BitSet* bitset, size_t minimum_number_of_bits);
+void bitset_grow(BitSet* bitset);
+void bitset_shrink(BitSet* bitset);
 
 /* Information */
-bool bitset_is_initialized(const BitSet* bitset);
 size_t bitset_capacity(const BitSet* bitset);
 size_t bitset_size_in_bytes(const BitSet* bitset);
 
