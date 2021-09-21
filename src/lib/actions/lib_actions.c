@@ -450,22 +450,40 @@ int lib_swap_workspace(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
-    struct tagset *tagset = monitor_get_active_tagset(m);
 
-    for (int i = 0; i < tagset->con_set->tiled_containers->len; i++) {
-        struct container *con = get_container(0, i);
-        struct workspace *ws1 = get_workspace(ws_id1);
-        if (tagset_exist_on(workspace_get_tagset(ws1), con)) {
-            con->client->ws_id = ws_id2;
+    struct workspace *ws1 = get_workspace(ws_id1);
+    struct workspace *ws2 = get_workspace(ws_id2);
+
+    GPtrArray *future_ws2_containers = g_ptr_array_new();
+    for (int i = 0; i < length_of_composed_list(ws1->con_set->container_lists); i++) {
+        struct container *con = get_in_composed_list(ws1->con_set->container_lists, i);
+        struct monitor *ws_m = workspace_get_monitor(ws1);
+        if (!exist_on(ws_m, ws1->prev_workspaces, con))
             continue;
-        }
-        struct workspace *ws2 = get_workspace(ws_id2);
-        if (tagset_exist_on(workspace_get_tagset(ws2), con)) {
-            con->client->ws_id = ws_id1;
-            continue;
-        }
+
+        g_ptr_array_add(future_ws2_containers, con);
     }
 
+    for (int i = 0; i < length_of_composed_list(ws2->con_set->container_lists); i++) {
+        struct container *con = get_in_composed_list(ws2->con_set->container_lists, i);
+        struct monitor *ws_m = workspace_get_monitor(ws2);
+        if (!exist_on(ws_m, ws2->prev_workspaces, con))
+            continue;
+        con->client->ws_id = ws1->id;
+        bitset_reset_all(con->client->sticky_workspaces);
+        bitset_set(con->client->sticky_workspaces, con->client->ws_id);
+    }
+
+    for (int i = 0; i < future_ws2_containers->len; i++) {
+        struct container *con = g_ptr_array_index(future_ws2_containers, i);
+        con->client->ws_id = ws2->id;
+        bitset_reset_all(con->client->sticky_workspaces);
+        bitset_set(con->client->sticky_workspaces, con->client->ws_id);
+    }
+    g_ptr_array_free(future_ws2_containers, FALSE);
+
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    tagset_reload(tagset);
     arrange();
     struct workspace *ws = get_workspace(tagset->selected_ws_id);
     focus_most_recent_container(ws);
