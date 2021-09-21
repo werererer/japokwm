@@ -112,6 +112,7 @@ struct workspace *find_next_unoccupied_workspace(GPtrArray *workspaces, struct w
 struct workspace *get_workspace(int id);
 struct workspace *get_next_empty_workspace(GPtrArray *workspaces, size_t i);
 struct workspace *get_prev_empty_workspace(GPtrArray *workspaces, size_t i);
+struct workspace *get_nearest_empty_workspace(GPtrArray *workspaces, int ws_id);
 
 struct tagset *workspace_get_selected_tagset(struct workspace *ws);
 struct tagset *workspace_get_tagset(struct workspace *ws);

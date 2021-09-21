@@ -257,31 +257,75 @@ struct workspace *get_workspace(int id)
     return g_ptr_array_index(server.workspaces, id);
 }
 
-struct workspace *get_next_empty_workspace(GPtrArray *workspaces, size_t i)
+struct workspace *get_next_empty_workspace(GPtrArray *workspaces, size_t ws_id)
 {
+    for (int i = ws_id; i < workspaces->len; i++) {
+        struct workspace *ws = g_ptr_array_index(workspaces, i);
+        if (is_workspace_empty(ws)) {
+            return ws;
+        }
+    }
+
+    for (int i = ws_id-1; i >= 0; i--) {
+        struct workspace *ws = g_ptr_array_index(workspaces, i);
+        if (is_workspace_empty(ws)) {
+            return ws;
+        }
+    }
+
+    return NULL;
+}
+
+struct workspace *get_nearest_empty_workspace(GPtrArray *workspaces, int ws_id)
+{
+    struct workspace *initial_workspace = get_workspace(ws_id);
+    if (is_workspace_empty(initial_workspace)) {
+        return initial_workspace;
+    }
+
     struct workspace *ws = NULL;
-    for (int j = i; j < workspaces->len; j++) {
-        struct workspace *ws = g_ptr_array_index(workspaces, j);
-        if (is_workspace_empty(ws))
+    for (int i = 0, up_counter = ws_id+1, down_counter = ws_id-1;
+            i < workspaces->len;
+            i++,up_counter++,down_counter--) {
+
+        bool is_up_counter_valid = up_counter < workspaces->len;
+        bool is_down_counter_valid = down_counter >= 0;
+        if (is_down_counter_valid) {
+            ws = g_ptr_array_index(workspaces, down_counter);
+            if (is_workspace_empty(ws))
+                break;
+        }
+        if (is_up_counter_valid) {
+            ws = g_ptr_array_index(workspaces, up_counter);
+            if (is_workspace_empty(ws))
+                break;
+        }
+        if (!is_up_counter_valid && !is_down_counter_valid) {
             break;
+        }
     }
 
     return ws;
 }
 
-struct workspace *get_prev_empty_workspace(GPtrArray *workspaces, size_t i)
-{
-    if (i >= workspaces->len)
-        return NULL;
 
-    struct workspace *ws = NULL;
-    for (int j = i; j >= 0; j--) {
-        struct workspace *ws = g_ptr_array_index(workspaces, j);
-        if (is_workspace_empty(ws))
-            break;
+struct workspace *get_prev_empty_workspace(GPtrArray *workspaces, size_t ws_id)
+{
+    for (int i = ws_id; i >= 0; i--) {
+        struct workspace *ws = g_ptr_array_index(workspaces, i);
+        if (is_workspace_empty(ws)) {
+            return ws;
+        }
     }
 
-    return ws;
+    for (int i = ws_id+1; i < workspaces->len; i++) {
+        struct workspace *ws = g_ptr_array_index(workspaces, i);
+        if (is_workspace_empty(ws)) {
+            return ws;
+        }
+    }
+
+    return NULL;
 }
 
 struct tagset *workspace_get_selected_tagset(struct workspace *ws)

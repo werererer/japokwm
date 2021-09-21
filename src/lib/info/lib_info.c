@@ -56,7 +56,7 @@ int lib_get_next_empty_workspace(lua_State *L)
     int id = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct workspace *ws;
+    struct workspace *ws = NULL;
     switch (dir) {
         case WLR_DIRECTION_LEFT:
             ws = get_prev_empty_workspace(server.workspaces, id);
@@ -65,7 +65,11 @@ int lib_get_next_empty_workspace(lua_State *L)
             ws = get_next_empty_workspace(server.workspaces, id);
             break;
         default:
-            ws = get_workspace(id);
+            if (dir & WLR_DIRECTION_LEFT && dir & WLR_DIRECTION_RIGHT) {
+                ws = get_nearest_empty_workspace(server.workspaces, id);
+            } else {
+                ws = get_workspace(id);
+            }
     }
 
     int ws_id = (ws) ? ws->id : id;
