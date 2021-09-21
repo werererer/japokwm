@@ -57,6 +57,9 @@ static const struct luaL_Reg container[] =
     {"set_alpha", container_set_alpha},
     {"set_ratio", container_set_ratio},
     {"set_sticky", container_set_sticky},
+    {"set_sticky_restricted", container_set_sticky_restricted},
+    {"toggle_add_sticky", container_toggle_add_sticky},
+    {"toggle_add_sticky_restricted", container_toggle_add_sticky_restricted},
     {NULL, NULL},
 };
 
