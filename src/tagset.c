@@ -293,20 +293,6 @@ void destroy_tagset(struct tagset *tagset)
     free(tagset);
 }
 
-void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tagset)
-{
-    if (!old_tagset)
-        return;
-
-    int len = length_of_composed_list(old_tagset->con_set->container_lists);
-    int pos = len-1;
-    for (int i = len-1; i >= 0; i--) {
-        struct container *con = get_in_composed_list(old_tagset->con_set->container_lists, pos);
-        container_move_sticky_containers(con);
-        pos--;
-    }
-}
-
 void tagset_write_to_focus_stacks(struct tagset *tagset)
 {
     if (!tagset)
@@ -412,6 +398,15 @@ void update_visual_visible_stack(struct tagset *tagset)
             ws);
 }
 
+void tagset_move_sticky_containers(struct tagset *tagset)
+{
+    struct workspace *ws = get_workspace(tagset->selected_ws_id);
+    for (int i = 0; i < length_of_composed_list(ws->con_set->container_lists); i++) {
+        struct container *con = get_in_composed_list(ws->con_set->container_lists, i);
+        container_move_sticky_containers(con, ws->id);
+    }
+}
+
 static void restore_floating_containers(struct tagset *tagset)
 {
     GPtrArray *floating_list = tagset_get_floating_list_copy(tagset);
@@ -435,7 +430,6 @@ void focus_tagset(struct tagset *tagset)
     selected_monitor = m;
 
     struct tagset *old_tagset = m->tagset;
-    tagset_move_sticky_containers(old_tagset, tagset);
     tagset_workspaces_disconnect(old_tagset);
     tagset_workspaces_connect(tagset);
     if (prev_m == m && old_tagset != tagset) {
@@ -449,6 +443,7 @@ void focus_tagset(struct tagset *tagset)
     update_visual_visible_stack(tagset);
     ipc_event_workspace();
 
+    tagset_move_sticky_containers(tagset);
     arrange();
     focus_most_recent_container(ws);
     root_damage_whole(m->root);

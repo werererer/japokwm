@@ -99,6 +99,7 @@ struct wlr_box *container_get_current_geom(struct container *con);
 void container_set_border_width(struct container *con, int border_width);
 int container_get_border_width(struct container *con);
 
+void container_set_just_workspace_id(struct container *con, int ws_id);
 void container_set_workspace_id(struct container *con, int ws_id);
 void container_set_workspace(struct container *con, struct workspace *ws);
 void move_container_to_workspace(struct container *con, struct workspace *ws);
