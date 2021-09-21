@@ -401,8 +401,8 @@ void update_visual_visible_stack(struct tagset *tagset)
 void tagset_move_sticky_containers(struct tagset *tagset)
 {
     struct workspace *ws = get_workspace(tagset->selected_ws_id);
-    for (int i = 0; i < length_of_composed_list(ws->con_set->container_lists); i++) {
-        struct container *con = get_in_composed_list(ws->con_set->container_lists, i);
+    for (int i = 0; i < length_of_composed_list(tagset->con_set->container_lists); i++) {
+        struct container *con = get_in_composed_list(tagset->con_set->container_lists, i);
         container_move_sticky_containers(con, ws->id);
     }
 }
