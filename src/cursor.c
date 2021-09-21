@@ -326,11 +326,25 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
     pointer_focus(cursor->seat, final_focus_surface, sx, sy, time);
 
     if (focus_con) {
+        struct container *sel = get_focused_container(selected_monitor);
         struct workspace *ws = monitor_get_active_workspace(selected_monitor);
-        if (ws->layout->options.sloppy_focus &&
-                !popups_exist() && !xwayland_popups_exist()) {
+        if (!ws->layout->options.sloppy_focus)
+            return;
+        if (popups_exist())
+            return;
+        if (xwayland_popups_exist())
+            return;
+
+        if (focus_con != sel) {
+            server.xy_container_is_locked = true;
+        }
+        if (server.old_xy_container != focus_con) {
+            server.xy_container_is_locked = false;
+        }
+        if (!server.xy_container_is_locked) {
             focus_container(focus_con);
         }
+        server.old_xy_container = focus_con;
     }
 }
 

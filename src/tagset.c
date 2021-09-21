@@ -336,7 +336,7 @@ bool is_reduced_focus_stack(struct workspace *ws, struct container *con)
     return false;
 }
 
-static bool _is_reduced_focus_stack(
+bool _is_reduced_focus_stack(
         struct workspace *ws,
         GPtrArray *src_list,
         struct container *con

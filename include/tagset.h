@@ -68,6 +68,11 @@ void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tag
 void tagset_write_to_focus_stacks(struct tagset *tagset);
 void update_sub_focus_stack(struct tagset *tagset);
 bool is_reduced_focus_stack(struct workspace *ws, struct container *con);
+bool _is_reduced_focus_stack(
+        struct workspace *ws,
+        GPtrArray *src_list,
+        struct container *con
+        );
 void update_reduced_focus_stack(struct tagset *tagset);
 void update_local_focus_stack(struct tagset *tagset);
 

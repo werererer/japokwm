@@ -84,6 +84,11 @@ struct server {
     struct wl_listener new_layer_shell_surface;
     struct wl_listener new_pointer_constraint;
 
+    // TODO: give them a more sensible name they are here to fix a bug for
+    // sloppy focus
+    struct container *old_xy_container;
+    bool xy_container_is_locked;
+
 #if JAPOKWM_HAS_XWAYLAND
     struct xwayland xwayland;
     struct wl_listener xwayland_ready;
