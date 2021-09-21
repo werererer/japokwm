@@ -401,10 +401,12 @@ void update_visual_visible_stack(struct tagset *tagset)
 void tagset_move_sticky_containers(struct tagset *tagset)
 {
     struct workspace *ws = get_workspace(tagset->selected_ws_id);
-    for (int i = 0; i < length_of_composed_list(tagset->con_set->container_lists); i++) {
-        struct container *con = get_in_composed_list(tagset->con_set->container_lists, i);
+    GPtrArray *list = list2D_create_filtered_sub_list(ws->con_set->container_lists, container_exists);
+    for (int i = 0; i < list->len; i++) {
+        struct container *con = g_ptr_array_index(list, i);
         container_move_sticky_containers(con, ws->id);
     }
+    g_ptr_array_free(list, FALSE);
 }
 
 static void restore_floating_containers(struct tagset *tagset)

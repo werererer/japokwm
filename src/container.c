@@ -1064,6 +1064,14 @@ bool container_is_visible(struct container *con)
     return !container_is_hidden(con);
 }
 
+bool container_exists(struct container *con)
+{
+    bool on_scratchpad = container_is_on_scratchpad(con);
+    if (on_scratchpad)
+        return false;
+    return true;
+}
+
 bool container_potentially_visible(struct container *con)
 {
     struct monitor *m = selected_monitor;
@@ -1086,6 +1094,11 @@ bool container_is_tiled_and_managed(struct container *con)
     bool is_managed = container_is_managed(con);
     bool is_tiled = container_is_tiled(con);
     return is_managed && is_tiled;
+}
+
+bool container_is_on_scratchpad(struct container *con)
+{
+    return con->on_scratchpad;
 }
 
 const char *container_get_app_id(struct container *con)
