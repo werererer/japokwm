@@ -17,6 +17,7 @@ struct layout *create_layout(lua_State *L)
     lt->nmaster = 1;
     *lt = (struct layout) {
         .symbol = "",
+        .name = "",
         .n_area = 1,
         .nmaster = 1,
         .options = get_default_options(),

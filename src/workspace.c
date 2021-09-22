@@ -403,8 +403,34 @@ void load_default_layout(lua_State *L)
     load_layout(L, server.default_layout->symbol);
 }
 
+static void _load_layout(const char *name)
+{
+    struct workspace *ws = monitor_get_active_workspace(selected_monitor);
+
+    struct layout *lt = NULL;
+    guint i;
+    bool found = g_ptr_array_find_with_equal_func(ws->loaded_layouts, name, cmp_layout_to_string, &i);
+    if (found) {
+        lt = g_ptr_array_steal_index(ws->loaded_layouts, i);
+        g_ptr_array_insert(ws->loaded_layouts, 0, lt);
+    } else {
+        lt = create_layout(L);
+        copy_layout_safe(lt, server.default_layout);
+
+        lt->symbol = name;
+
+        g_ptr_array_insert(ws->loaded_layouts, 0, lt);
+    }
+    int layout_index = server.layout_set.lua_layout_index;
+    server.layout_set.lua_layout_index = layout_index;
+
+    push_layout(ws, lt);
+}
+
 void load_layout(lua_State *L, const char *name)
 {
+    _load_layout(name);
+
     char *config_path = get_config_file("layouts");
     char *file = strdup("");
     join_path(&file, config_path);
