@@ -635,14 +635,14 @@ GPtrArray *tagset_get_global_floating_copy(struct tagset *tagset)
     g_ptr_array_add(conditions, container_is_tiled_and_visible);
     g_ptr_array_add(conditions, container_is_floating);
 
-    GPtrArray *visible_global_floating_list_copy;
+    GPtrArray *visible_global_floating_list_copy = NULL;
     if (lt->options.arrange_by_focus) {
         // TODO: FIXME
-        /* visible_global_floating_list_copy = */
-        /*     list_create_filtered_sub_list_with_order( */
-        /*         ws->focus_set->focus_stack_visible_lists, */
-        /*         conditions */
-        /*         ); */
+        visible_global_floating_list_copy =
+            list_create_filtered_sub_list_with_order(
+                ws->focus_set->focus_stack_normal,
+                conditions
+                );
     } else {
         visible_global_floating_list_copy =
             list_create_filtered_sub_list_with_order(
