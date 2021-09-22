@@ -24,16 +24,9 @@ struct visual_set *visual_set_create()
 
 void visual_set_destroy(struct visual_set *visual_set)
 {
-    // TODO fix me
-    /* visual_set->visual_stack_lists = g_ptr_array_new(); */
-    /* visual_set->normal_visual_stack_lists = g_ptr_array_new(); */
-    /* visual_set->layer_visual_stack_lists = g_ptr_array_new(); */
-
-    /* visual_set->tiled_visual_stack = g_ptr_array_new(); */
-    /* visual_set->floating_visual_stack = g_ptr_array_new(); */
-    /* visual_set->layer_visual_stack_background = g_ptr_array_new(); */
-    /* visual_set->layer_visual_stack_bottom = g_ptr_array_new(); */
-    /* visual_set->layer_visual_stack_top = g_ptr_array_new(); */
-    /* visual_set->layer_visual_stack_overlay = g_ptr_array_new(); */
+    g_ptr_array_free(visual_set->stack_lists, FALSE);
+    g_ptr_array_free(visual_set->visual_stack_lists, FALSE);
+    g_ptr_array_free(visual_set->tiled_visual_stack, FALSE);
+    g_ptr_array_free(visual_set->floating_visual_stack, FALSE);
     free(visual_set);
 }
