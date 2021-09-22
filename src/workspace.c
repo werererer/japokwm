@@ -229,8 +229,8 @@ int get_workspace_container_count(struct workspace *ws)
         return -1;
 
     int count = 0;
-    for (int i = 0; i < length_of_composed_list(ws->con_set->visible_container_lists); i++) {
-        struct container *con = get_in_composed_list(ws->con_set->visible_container_lists, i);
+    for (int i = 0; i < length_of_composed_list(ws->con_set->container_lists); i++) {
+        struct container *con = get_in_composed_list(ws->con_set->container_lists, i);
         if (con->client->ws_id == ws->id) {
             count++;
         }
@@ -778,7 +778,7 @@ static int get_in_container_stack(struct container *con)
 
     struct monitor *m = selected_monitor;
     struct workspace *ws = monitor_get_active_workspace(m);
-    int position = find_in_composed_list(ws->con_set->visible_container_lists, cmp_ptr, con);
+    int position = find_in_composed_list(ws->con_set->container_lists, cmp_ptr, con);
     return position;
 }
 

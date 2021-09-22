@@ -621,7 +621,7 @@ GPtrArray *tagset_get_visible_lists(struct tagset *tagset)
     if (lt->options.arrange_by_focus) {
         return tagset->local_focus_set->focus_stack_visible_lists;
     } else {
-        return tagset->con_set->visible_container_lists;
+        return tagset->con_set->container_lists;
     }
 }
 
