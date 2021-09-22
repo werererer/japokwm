@@ -201,10 +201,10 @@ struct container *xy_to_container(double x, double y)
     struct monitor *m = xy_to_monitor(x, y);
     if (!m)
         return NULL;
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tagset *tagset = monitor_get_active_tagset(m);
 
-    for (int i = 0; i < length_of_composed_list(ws->visual_set->stack_lists); i++) {
-        struct container *con = get_in_composed_list(ws->visual_set->stack_lists, i);
+    for (int i = 0; i < length_of_composed_list(tagset->visible_visual_set->stack_lists); i++) {
+        struct container *con = get_in_composed_list(tagset->visible_visual_set->stack_lists, i);
         if (!con->focusable)
             continue;
         if (!container_viewable_on_monitor(m, con))
