@@ -499,7 +499,6 @@ void tagset_write_to_workspaces(struct tagset *tagset)
 {
     if (!tagset)
         return;
-    printf("write to workspace\n");
 
     struct workspace *ws = tagset_get_workspace(tagset);
     container_set_write_to_parent(ws->con_set, tagset->con_set);

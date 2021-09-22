@@ -6,19 +6,15 @@
 #include "utils/coreUtils.h"
 #include "workspace.h"
 
-// TODO refactor
 int lib_set_layout(lua_State *L)
 {
     int ref = 0;
-    // 2. argument -- layout_set
+    // 1. argument -- layout_set
     if (lua_is_layout_data(L, "layout_data")) {
         lua_ref_safe(L, LUA_REGISTRYINDEX, &ref);
     } else {
         lua_pop(L, 1);
     }
-    // 1. argument
-    /* const char *symbol = luaL_checkstring(L, -1); */
-    lua_pop(L, 1);
 
     struct workspace *ws = monitor_get_active_workspace(selected_monitor);
     struct layout *lt = workspace_get_layout(ws);

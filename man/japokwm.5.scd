@@ -314,10 +314,9 @@ integers
 		n: integer - n represents the amount of containers
 
 # LAYOUT
-*set(name, layout_data)* ++
+*set(layout_data)* ++
 	set layout ++
 <where> ++
-	name: (string) - name of this layout
 	layout_data: layout_data - layout_data for the layout
 
 # INFO

@@ -63,10 +63,8 @@ GPtrArray *create_default_config_paths()
 
 char *get_config_file(const char *file)
 {
-    debug_print("get config file: %s\n", file);
     for (size_t i = 0; i < server.config_paths->len; ++i) {
         char *path = strdup(g_ptr_array_index(server.config_paths, i));
-        debug_print("path: %s\n", path);
         join_path(&path, file);
         expand_path(&path);
         if (file_exists(path))
