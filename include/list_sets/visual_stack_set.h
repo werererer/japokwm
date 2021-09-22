@@ -5,8 +5,7 @@
 #include "utils/coreUtils.h"
 
 struct visual_set {
-    GPtrArray *all_stack_lists;
-    GPtrArray2D *stack_lists;
+    GPtrArray *stack_lists;
     GPtrArray2D *visual_stack_lists;
 
     GPtrArray *tiled_visual_stack;

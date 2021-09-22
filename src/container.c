@@ -203,8 +203,8 @@ struct container *xy_to_container(double x, double y)
         return NULL;
     struct workspace *ws = monitor_get_active_workspace(m);
 
-    for (int i = 0; i < length_of_composed_list(ws->visual_set->all_stack_lists); i++) {
-        struct container *con = get_in_composed_list(ws->visual_set->all_stack_lists, i);
+    for (int i = 0; i < length_of_composed_list(ws->visual_set->stack_lists); i++) {
+        struct container *con = get_in_composed_list(ws->visual_set->stack_lists, i);
         if (!con->focusable)
             continue;
         if (!container_viewable_on_monitor(m, con))
