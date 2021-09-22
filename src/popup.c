@@ -17,7 +17,7 @@
 
 static void popup_handle_new_subpopup(struct wl_listener *listener, void *data);
 static struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popup,
-        struct wlr_box parent_geom, struct container* toplevel);
+        struct wlr_box *parent_geom, struct container* toplevel);
 static void destroy_popup(struct xdg_popup *xdg_popup);
 static void popup_handle_commit(struct wl_listener *listener, void *data);
 static void popup_handle_map(struct wl_listener *listener, void *data);
@@ -25,7 +25,7 @@ static void popup_handle_unmap(struct wl_listener *listener, void *data);
 static void popup_damage(struct xdg_popup *xdg_popup, bool whole);
 
 static struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popup,
-        struct wlr_box parent_geom, struct container* toplevel)
+        struct wlr_box *parent_geom, struct container* toplevel)
 {
     struct xdg_popup *popup = xdg_popup->base->data =
         calloc(1, sizeof(struct xdg_popup));
@@ -40,8 +40,8 @@ static struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *x
 
     wlr_xdg_popup_unconstrain_from_box(popup->xdg, &box);
     // the root window may be resized. This must be adjusted
-    popup->geom.x = popup->xdg->geometry.x + parent_geom.x;
-    popup->geom.y = popup->xdg->geometry.y + parent_geom.y;
+    popup->geom.x = popup->xdg->geometry.x + parent_geom->x;
+    popup->geom.y = popup->xdg->geometry.y + parent_geom->y;
     popup->geom.width = popup->xdg->geometry.width;
     popup->geom.height = popup->xdg->geometry.height;
     popup->m = m;
@@ -111,7 +111,7 @@ void popup_handle_new_popup(struct wl_listener *listener, void *data)
     struct monitor *m = container_get_monitor(con);
     if (m != selected_monitor)
         return;
-    struct xdg_popup *popup = create_popup(m, xdg_popup, con->geom, con);
+    struct xdg_popup *popup = create_popup(m, xdg_popup, container_get_current_geom(con), con);
     g_ptr_array_insert(server.popups, 0, popup);
 }
 
@@ -122,7 +122,7 @@ static void popup_handle_new_subpopup(struct wl_listener *listener, void *data)
     struct wlr_xdg_popup *xdg_popup = data;
 
     struct xdg_popup *popup = create_popup(parent_popup->m, xdg_popup,
-            parent_popup->geom, parent_popup->toplevel);
+            &parent_popup->geom, parent_popup->toplevel);
     g_ptr_array_insert(server.popups, 0, popup);
 }
 
@@ -150,21 +150,22 @@ struct wlr_surface *get_popup_surface_under_cursor(struct cursor *cursor, double
         return NULL;
 
     struct wlr_surface *surface = NULL;
+    struct wlr_box *con_geom = container_get_current_geom(con);
     switch (con->client->type) {
         case XDG_SHELL:
             surface = wlr_xdg_surface_surface_at(
                     con->client->surface.xdg,
                     /* absolute mouse position to relative in regards to
                      * the client */
-                    absolute_x_to_container_relative(con->geom, cursorx),
-                    absolute_y_to_container_relative(con->geom, cursory),
+                    absolute_x_to_container_relative(con_geom, cursorx),
+                    absolute_y_to_container_relative(con_geom, cursory),
                     sx, sy);
             break;
         case LAYER_SHELL:
             surface = wlr_layer_surface_v1_surface_at(
                     con->client->surface.layer,
-                    absolute_x_to_container_relative(con->geom, cursorx),
-                    absolute_y_to_container_relative(con->geom, cursory),
+                    absolute_x_to_container_relative(con_geom, cursorx),
+                    absolute_y_to_container_relative(con_geom, cursory),
                     sx, sy);
             break;
         default:

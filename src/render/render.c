@@ -9,7 +9,10 @@
 #include <wlr/util/region.h>
 #include <string.h>
 
+#include "container.h"
 #include "client.h"
+#include "list_sets/container_stack_set.h"
+#include "list_sets/visual_stack_set.h"
 #include "monitor.h"
 #include "popup.h"
 #include "root.h"
@@ -17,6 +20,7 @@
 #include "tile/tileUtils.h"
 #include "utils/gapUtils.h"
 #include "layer_shell.h"
+#include "workspace.h"
 
 struct wlr_renderer *drw;
 struct render_data render_data;
@@ -226,27 +230,29 @@ static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *bo
     struct monitor *m = container_get_monitor(con);
 
     enum wlr_edges containers_hidden_edges = WLR_EDGE_NONE;
+    struct wlr_box *con_geom = container_get_current_geom(con);
+    int border_width = container_get_border_width(con);
     // hide edges if needed
     if (hidden_edges & WLR_EDGE_LEFT) {
-        if (con->geom.x == m->root->geom.x) {
+        if (con_geom->x == m->root->geom.x) {
             containers_hidden_edges |= WLR_EDGE_LEFT;
-            container_add_gaps(&borders[0], con->client->bw, WLR_EDGE_LEFT);
-            container_add_gaps(&borders[1], con->client->bw, WLR_EDGE_LEFT);
+            container_add_gaps(&borders[0], border_width, WLR_EDGE_LEFT);
+            container_add_gaps(&borders[1], border_width, WLR_EDGE_LEFT);
         }
     }
     if (hidden_edges & WLR_EDGE_RIGHT) {
-        if (is_approx_equal(con->geom.x + con->geom.width, m->root->geom.x + m->root->geom.width, 3)) {
+        if (is_approx_equal(con_geom->x + con_geom->width, m->root->geom.x + m->root->geom.width, 3)) {
             containers_hidden_edges |= WLR_EDGE_RIGHT;
-            container_add_gaps(&borders[0], con->client->bw, WLR_EDGE_RIGHT);
-            container_add_gaps(&borders[1], con->client->bw, WLR_EDGE_RIGHT);
+            container_add_gaps(&borders[0], border_width, WLR_EDGE_RIGHT);
+            container_add_gaps(&borders[1], border_width, WLR_EDGE_RIGHT);
         }
     }
     if (hidden_edges & WLR_EDGE_TOP) {
-        if (con->geom.y == m->root->geom.y)
+        if (con_geom->y == m->root->geom.y)
             containers_hidden_edges |= WLR_EDGE_TOP;
     }
     if (hidden_edges & WLR_EDGE_BOTTOM) {
-        if (is_approx_equal(con->geom.y + con->geom.height, m->root->geom.y + m->root->geom.height, 3))
+        if (is_approx_equal(con_geom->y + con_geom->height, m->root->geom.y + m->root->geom.height, 3))
             containers_hidden_edges |= WLR_EDGE_BOTTOM;
     }
 
@@ -255,43 +261,44 @@ static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *bo
 
 static void render_borders(struct container *con, struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct monitor *container_monitor = container_get_monitor(con);
-    struct container *sel = get_focused_container(container_monitor);
+    if (!con->has_border)
+        return;
 
-    if (con->has_border) {
-        double ox, oy;
-        int w, h;
-        ox = con->geom.x - con->client->bw;
-        oy = con->geom.y - con->client->bw;
-        wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
-        w = con->geom.width;
-        h = con->geom.height;
+    double ox, oy;
+    int w, h;
+    struct wlr_box *con_geom = container_get_current_geom(con);
+    int border_width = container_get_border_width(con);
+    ox = con_geom->x - border_width;
+    oy = con_geom->y - border_width;
+    wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
+    w = con_geom->width;
+    h = con_geom->height;
 
-        struct wlr_box *borders = (struct wlr_box[4]) {
-            {ox, oy, w + 2 * con->client->bw, con->client->bw},             /* top */
-                {ox, oy + con->client->bw + h, w + 2 * con->client->bw, con->client->bw}, /* bottom */
-                {ox, oy + con->client->bw, con->client->bw, h},                 /* left */
-                {ox + con->client->bw + w, oy + con->client->bw, con->client->bw, h},     /* right */
-        };
+    struct wlr_box *borders = (struct wlr_box[4]) {
+        {ox, oy, w + 2 * border_width, border_width},             /* top */
+            {ox, oy + border_width + h, w + 2 * border_width, border_width}, /* bottom */
+            {ox, oy + border_width, border_width, h},                 /* left */
+            {ox + border_width + w, oy + border_width, border_width, h},     /* right */
+    };
 
-        enum wlr_edges hidden_edges = WLR_EDGE_NONE;
-        struct tagset *tagset = monitor_get_active_tagset(m);
-        struct layout *lt = tagset_get_layout(tagset);
-        if (lt->options.smart_hidden_edges) {
-            if (tagset->list_set->tiled_containers->len <= 1) {
-                hidden_edges = get_hidden_edges(con, borders, lt->options.hidden_edges);
-            }
-        } else {
+    enum wlr_edges hidden_edges = WLR_EDGE_NONE;
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    struct layout *lt = tagset_get_layout(tagset);
+    if (lt->options.smart_hidden_edges) {
+        if (tagset->con_set->tiled_containers->len <= 1) {
             hidden_edges = get_hidden_edges(con, borders, lt->options.hidden_edges);
         }
+    } else {
+        hidden_edges = get_hidden_edges(con, borders, lt->options.hidden_edges);
+    }
 
-        /* Draw window borders */
-        const float *color = (con == sel) ? lt->options.focus_color : lt->options.border_color;
-        for (int i = 0; i < 4; i++) {
-            if ((hidden_edges & (1 << i)) == 0) {
-                scale_box(&borders[i], m->wlr_output->scale);
-                render_rect(m, output_damage, &borders[i], color);
-            }
+    /* Draw window borders */
+    struct container *sel = get_focused_container(m);
+    const float *color = (con == sel) ? lt->options.focus_color : lt->options.border_color;
+    for (int i = 0; i < 4; i++) {
+        if ((hidden_edges & (1 << i)) == 0) {
+            scale_box(&borders[i], m->wlr_output->scale);
+            render_rect(m, output_damage, &borders[i], color);
         }
     }
 }
@@ -300,9 +307,10 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
 {
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    for (int i = length_of_composed_list(server.normal_visual_stack_lists)-1; i >= 0; i--) {
-        struct container *con = get_in_composed_list(server.normal_visual_stack_lists, i);
-        if (!visible_on(monitor_get_active_tagset(m), con))
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    for (int i = length_of_composed_list(tagset->visible_visual_set->stack_lists)-1; i >= 0; i--) {
+        struct container *con = get_in_composed_list(tagset->visible_visual_set->stack_lists, i);
+        if (!container_viewable_on_monitor(m, con))
             continue;
 
         render_borders(con, m, output_damage);
@@ -311,7 +319,8 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
          * xdg_surface's toplevel and popups. */
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
-        render_surface_iterator(m, surface, con->geom, output_damage, con->alpha);
+        struct wlr_box *con_geom = container_get_current_geom(con);
+        render_surface_iterator(m, surface, *con_geom, output_damage, con->alpha);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -327,11 +336,12 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
     for (int i = 0; i < layer_list->len; i++) {
         struct container *con = g_ptr_array_index(layer_list, i);
 
-        if (!visible_on(monitor_get_active_tagset(m), con))
+        if (!container_viewable_on_monitor(m, con))
             continue;
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
-        render_surface_iterator(m, surface, con->geom, output_damage, 1.0);
+        struct wlr_box *con_geom = container_get_current_geom(con);
+        render_surface_iterator(m, surface, *con_geom, output_damage, 1.0);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -341,14 +351,15 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
 
 static void render_independents(struct monitor *m, pixman_region32_t *output_damage)
 {
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    for (int i = 0; i < tagset->list_set->independent_containers->len; i++) {
-        struct container *con = g_ptr_array_index(tagset->list_set->independent_containers, i);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    for (int i = 0; i < ws->independent_containers->len; i++) {
+        struct container *con = g_ptr_array_index(ws->independent_containers, i);
         struct wlr_surface *surface = get_wlrsurface(con->client);
 
-        con->geom.width = surface->current.width;
-        con->geom.height = surface->current.height;
-        render_surface_iterator(m, surface, con->geom, output_damage, 1.0f);
+        struct wlr_box *con_geom = container_get_current_geom(con);
+        con_geom->width = surface->current.width;
+        con_geom->height = surface->current.height;
+        render_surface_iterator(m, surface, *con_geom, output_damage, 1.0f);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);

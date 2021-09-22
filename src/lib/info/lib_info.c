@@ -4,9 +4,20 @@
 
 #include "container.h"
 #include "monitor.h"
+#include "seat.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "workspace.h"
+
+int lib_get_active_layout(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct tagset *tagset = monitor_get_active_tagset(m);
+
+    struct layout *lt = tagset_get_layout(tagset);
+    lua_pushstring(L, lt->symbol);
+    return 1;
+}
 
 int lib_get_this_container_count(lua_State *L)
 {
@@ -23,8 +34,22 @@ int lib_this_container_position(lua_State *L)
     struct monitor *m = selected_monitor;
     struct container *sel = get_focused_container(m);
 
-    int position = get_position_in_container_stack(sel);
+    int position = get_position_in_container_focus_stack(sel);
     lua_pushinteger(L, position);
+    return 1;
+}
+
+int lib_stack_position_to_position(lua_State *L)
+{
+    int pos = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = monitor_get_active_workspace(m);
+
+    struct container *con = get_container_in_stack(ws, pos);
+    int focus_position = get_position_in_container_focus_stack(con);
+    lua_pushinteger(L, focus_position);
     return 1;
 }
 
@@ -35,7 +60,7 @@ int lib_get_next_empty_workspace(lua_State *L)
     int id = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct workspace *ws;
+    struct workspace *ws = NULL;
     switch (dir) {
         case WLR_DIRECTION_LEFT:
             ws = get_prev_empty_workspace(server.workspaces, id);
@@ -44,7 +69,11 @@ int lib_get_next_empty_workspace(lua_State *L)
             ws = get_next_empty_workspace(server.workspaces, id);
             break;
         default:
-            ws = get_workspace(id);
+            if (dir & WLR_DIRECTION_LEFT && dir & WLR_DIRECTION_RIGHT) {
+                ws = get_nearest_empty_workspace(server.workspaces, id);
+            } else {
+                ws = get_workspace(id);
+            }
     }
 
     int ws_id = (ws) ? ws->id : id;
@@ -56,6 +85,16 @@ int lib_get_nmaster(lua_State *L)
 {
     struct layout *lt = get_layout_in_monitor(selected_monitor);
     lua_pushinteger(L, lt->nmaster);
+    return 1;
+}
+
+int lib_get_previous_layout(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = monitor_get_active_workspace(m);
+
+    struct layout *lt = ws->previous_layout;
+    lua_pushstring(L, lt->symbol);
     return 1;
 }
 
@@ -72,7 +111,7 @@ int lib_get_container_under_cursor(lua_State *L)
     struct wlr_cursor *wlr_cursor = seat->cursor->wlr_cursor;
 
     struct container *con = xy_to_container(wlr_cursor->x, wlr_cursor->y);
-    int pos = get_position_in_container_stack(con);
+    int pos = get_position_in_container_focus_stack(con);
     lua_pushinteger(L, pos);
     return 1;
 }

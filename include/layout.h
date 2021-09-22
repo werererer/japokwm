@@ -9,8 +9,11 @@
 #include "layout_set.h"
 
 struct layout {
-    const char *name;
     const char *symbol;
+
+    /* number of all windows in layout even if they are invisible). Note that
+     * floating windows don't belong to the layout and are thereby not counted */
+    int n_all;
     // the amount of slave windows plus the master are (+1)
     int n_area;
     int n_area_max;
@@ -23,7 +26,7 @@ struct layout {
     // number of tiled windows
     int n_tiled;
     int n_tiled_max;
-    // the absolute amount of windows
+    // the absolute amount of master windows
     int n_master_abs;
     // the amount master windows
     int nmaster;
@@ -55,4 +58,5 @@ void copy_layout(struct layout *dest_lt, struct layout *src_lt);
 void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt);
 
 int cmp_layout(const void *ptr1, const void *ptr2);
+int cmp_layout_to_string(const void *ptr1, const void *symbol_ptr);
 #endif /* LAYOUT_H */

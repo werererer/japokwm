@@ -77,7 +77,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     m->root = create_root(m, m->geom);
 
     if (is_first_monitor) {
-
         focus_monitor(m);
 
         if (server.default_layout->options.tag_names->len <= 0) {
@@ -86,6 +85,8 @@ void create_monitor(struct wl_listener *listener, void *data)
         }
 
         server.workspaces = create_workspaces(server.default_layout->options.tag_names);
+        server.previous_bitset = bitset_create(server.workspaces->len);
+        bitset_set(server.previous_bitset, server.previous_workspace);
 
         call_on_start_function(server.default_layout->options.event_handler);
     }
@@ -173,29 +174,15 @@ void destroy_monitor(struct wl_listener *listener, void *data)
     wl_list_remove(&m->damage_frame.link);
     wl_list_remove(&m->destroy.link);
 
-    tagset_release(m->tagset);
-
+    destroy_tagset(m->tagset);
     destroy_root(m->root);
     g_ptr_array_remove(server.mons, m);
     m->wlr_output->data = NULL;
 
-    if (server.previous_tagset) {
-        if (server.previous_tagset->m == m) {
-            tagset_release(server.previous_tagset);
-            server.previous_tagset = NULL;
-        }
-    }
-
-    int len = length_of_composed_list(server.client_lists);
-    int j = 0;
-    while (j < len) {
-        struct client *c = get_in_composed_list(server.client_lists, j);
-        if (c->m == m) {
-            kill_client(c);
-            g_ptr_array_remove_index(server.client_lists, j);
-            len--;
-        } else {
-            j++;
+    for (int i = 0; i < server.workspaces->len; i++) {
+        struct workspace *ws = g_ptr_array_index(server.workspaces, i);
+        if (ws->prev_m == m) {
+            ws->prev_m = NULL;
         }
     }
 
@@ -205,7 +192,7 @@ void destroy_monitor(struct wl_listener *listener, void *data)
         return;
 
     struct monitor *new_focused_monitor = g_ptr_array_index(server.mons, 0);
-    focus_monitor(new_focused_monitor);
+    selected_monitor = new_focused_monitor;
 }
 
 void center_cursor_in_monitor(struct cursor *cursor, struct monitor *m)
@@ -248,17 +235,8 @@ void focus_monitor(struct monitor *m)
 
     /* wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, m->wlr_output.) */
 
+    // move floating containers over
     struct tagset *tagset = monitor_get_active_tagset(m);
-    if (selected_monitor) {
-        struct tagset *sel_ts = monitor_get_active_tagset(selected_monitor);
-        for (int i = 0; i < sel_ts->list_set->floating_containers->len; i++) {
-            struct container *con = g_ptr_array_index(sel_ts->list_set->floating_containers, i);
-            if (visible_on(sel_ts, con)) {
-                struct workspace *ws = get_workspace(tagset->selected_ws_id);
-                move_container_to_workspace(con, ws);
-            }
-        }
-    }
 
     selected_monitor = m;
     focus_tagset(tagset);
@@ -296,10 +274,13 @@ inline struct workspace *monitor_get_active_workspace(struct monitor *m)
         return NULL;
 
     struct tagset *tagset = monitor_get_active_tagset(m);
-    return get_workspace(tagset->selected_ws_id);
+    struct workspace *ws = tagset_get_workspace(tagset);
+    return ws;
 }
 
 inline struct layout *get_layout_in_monitor(struct monitor *m)
 {
+    if (!m)
+        return NULL;
     return monitor_get_active_workspace(m)->layout;
 }

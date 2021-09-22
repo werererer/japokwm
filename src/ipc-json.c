@@ -107,29 +107,21 @@ static void add_infix(char **full_name, const char *prefix, const char *postfix)
     free(position);
 }
 
-static bool is_workspace_extern(struct workspace *ws)
+static bool sel_con_has_bitset_here(struct container *con, struct workspace *ws)
 {
-    if (!ws->selected_tagset)
+    if (!con)
         return false;
-    if (!ws->tagset)
-        return false;
-    bool is_extern = ws->tagset->m != ws->selected_tagset->m;
-    return is_extern;
-}
-
-static bool is_workspace_the_selected_one(struct workspace *ws)
-{
-    if (!ws->selected_tagset)
-        return false;
-    return ws->selected_tagset->selected_ws_id == ws->id
-        && tagset_is_visible(ws->selected_tagset)
-        && !is_workspace_extern(ws);
+    bool min_count = bitset_count(con->client->sticky_workspaces) > 1;
+    bool visible = bitset_test(con->client->sticky_workspaces, ws->id);
+    return min_count && visible;
 }
 
 json_object *ipc_json_describe_tagsets()
 {
     json_object *array = json_object_new_array();
 
+    struct workspace *sel_ws = monitor_get_active_workspace(selected_monitor);
+    struct container *sel_con = workspace_get_focused_container(sel_ws);
     for (int i = 0; i < server.workspaces->len; i++) {
         struct workspace *ws = get_workspace(i);
         struct monitor *m = workspace_get_monitor(ws);
@@ -140,6 +132,10 @@ json_object *ipc_json_describe_tagsets()
             continue;
 
         char *full_name = strdup(ws->name);
+
+        if (sel_con_has_bitset_here(sel_con, ws)) {
+            add_infix(&full_name, "", "+");
+        }
         if (is_workspace_the_selected_one(ws)) {
             add_infix(&full_name, "*", "*");
         }
@@ -213,7 +209,7 @@ json_object *ipc_json_describe_container(struct container *con)
 {
     json_object *object = ipc_json_create_node(
             5, con ? con->client->title : NULL, true, NULL,
-            con ? &con->geom : NULL);
+            con ? container_get_current_geom(con) : NULL);
 
     json_object_object_add(object, "type", json_object_new_string("con"));
 

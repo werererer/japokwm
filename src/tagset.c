@@ -1,9 +1,9 @@
-#include "tagset.h"
-
 #include <assert.h>
 
 #include "bitset/bitset.h"
-#include "list_set.h"
+#include "client.h"
+#include "list_sets/container_stack_set.h"
+#include "list_sets/list_set.h"
 #include "server.h"
 #include "workspace.h"
 #include "utils/coreUtils.h"
@@ -12,19 +12,19 @@
 #include "ipc-server.h"
 #include "monitor.h"
 #include "cursor.h"
+#include "scratchpad.h"
+#include "list_sets/visual_stack_set.h"
+#include "list_sets/focus_stack_set.h"
+#include "list_sets/container_stack_set.h"
+#include "workspace.h"
 
-static void tagset_write_to_workspaces(struct tagset *tagset);
 static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load);
 static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces);
 static void tagset_set_tag(struct tagset *tagset, struct workspace *ws, bool load);
 static void tagset_set_tags(struct tagset *tagset, BitSet *workspaces);
-static void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces);
 static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws);
-static void tagset_unload_workspaces(struct tagset *tagset);
 static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws);
-static void tagset_clear_workspaces(struct tagset *tagset);
-static void tagset_workspaces_disconnect(struct tagset *tagset);
-static void tagset_workspaces_connect(struct tagset *tagset);
+static void tagset_remove_workspace(struct tagset *tagset, struct workspace *ws);
 
 static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws);
 
@@ -32,8 +32,11 @@ static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspac
 
 static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspace *ws)
 {
-    g_ptr_array_add(ws->subscribed_tagsets, tagset);
-    append_list_set(tagset->list_set, ws->list_set);
+    struct container_set *dest = tagset->con_set;
+    struct workspace *sel_ws = tagset_get_workspace(tagset);
+    struct container_set *src = sel_ws->con_set;
+
+    container_set_append(ws, dest, src);
 }
 
 static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load)
@@ -59,15 +62,20 @@ static void tagset_set_tag(struct tagset *tagset, struct workspace *ws, bool loa
 
 void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
 {
-    tagset_write_to_workspaces(tagset);
     tagset_workspaces_disconnect(tagset);
     tagset_assign_workspaces(tagset, bitset);
     tagset_workspaces_connect(tagset);
+    update_sub_focus_stack(tagset);
+    update_visual_visible_stack(tagset);
+    struct workspace *ws = tagset_get_workspace(tagset);
+    ws->prev_workspaces = bitset_copy(tagset->workspaces);
+    arrange();
+    focus_most_recent_container(ws);
 }
 
 
-// you should use tagset_write_to_workspace to unload workspaces first else
-static void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces)
+// you should use tagset_write_to_workspaces to unload workspaces first else
+void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces)
 {
     assert(tagset != NULL);
 
@@ -92,6 +100,9 @@ static void tagset_clean_destroyed_tagset(struct tagset *tagset)
         if (ws->tagset == tagset) {
             ws->tagset = NULL;
         }
+        if (ws->selected_tagset == tagset) {
+            ws->selected_tagset = NULL;
+        }
     }
 }
 
@@ -103,14 +114,14 @@ static void tagset_workspace_disconnect(struct tagset *tagset, struct workspace 
         return;
     tagset_unload_workspace(tagset, ws);
     ws->tagset = NULL;
-    if (ws->selected_tagset != tagset && ws->selected_tagset) {
+    if (ws->selected_tagset && ws->selected_tagset != tagset) {
         // move the workspace back
         ws->tagset = ws->selected_tagset;
         tagset_load_workspace(ws->tagset, ws);
     }
 }
 
-static void tagset_workspaces_disconnect(struct tagset *tagset)
+void tagset_workspaces_disconnect(struct tagset *tagset)
 {
     if (!tagset)
         return;
@@ -127,8 +138,6 @@ static void tagset_workspaces_disconnect(struct tagset *tagset)
         struct workspace *ws = get_workspace(i);
         tagset_workspace_disconnect(tagset, ws);
     }
-
-
 }
 
 static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws)
@@ -143,7 +152,7 @@ static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws
     tagset_load_workspace(tagset, ws);
 }
 
-static void tagset_workspaces_connect(struct tagset *tagset)
+void tagset_workspaces_connect(struct tagset *tagset)
 {
     if (!tagset)
         return;
@@ -177,6 +186,7 @@ static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
     assert(tagset != NULL);
     assert(ws != NULL);
     bool bit = bitset_test(tagset->loaded_workspaces, ws->id);
+
     if (bit)
         return;
 
@@ -186,7 +196,25 @@ static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
 
 static void tagset_unsubscribe_from_workspace(struct tagset *tagset, struct workspace *ws)
 {
-    g_ptr_array_remove(ws->subscribed_tagsets, tagset);
+    tagset_remove_workspace(tagset, ws);
+}
+
+static void tagset_remove_workspace(struct tagset *tagset, struct workspace *ws)
+{
+    struct container_set *dest = tagset->con_set;
+    struct container_set *src = ws->con_set;
+
+    for (int i = 0; i < length_of_composed_list(src->container_lists); i++) {
+        struct container *con = get_in_composed_list(src->container_lists, i);
+
+        if (con->client->ws_id != ws->id)
+            continue;
+
+        for (int j = 0; j < dest->container_lists->len; j++) {
+            GPtrArray *dest_list = g_ptr_array_index(dest->container_lists, j);
+            g_ptr_array_remove(dest_list, con);
+        }
+    }
 }
 
 static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws)
@@ -200,15 +228,14 @@ static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws)
         return;
 
     bitset_reset(tagset->loaded_workspaces, ws->id);
-    list_set_remove_list_set(tagset->list_set, ws->list_set);
     tagset_unsubscribe_from_workspace(tagset, ws);
 }
 
-static void tagset_unload_workspaces(struct tagset *tagset)
+void tagset_unload_workspaces(struct tagset *tagset)
 {
     assert(tagset != NULL);
 
-    clear_list_set(tagset->list_set);
+    container_set_clear(tagset->con_set);
 
     for (int i = 0; i < tagset->loaded_workspaces->size; i++) {
         bool bit = bitset_test(tagset->loaded_workspaces, i);
@@ -224,29 +251,32 @@ static void tagset_unload_workspaces(struct tagset *tagset)
 
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *workspaces)
 {
-    struct tagset *tagset = g_rc_box_new0(struct tagset);
+    struct tagset *tagset = calloc(1, sizeof(struct tagset));
     tagset->m = m;
 
     tagset->selected_ws_id = selected_ws_id;
 
-    tagset->list_set = create_list_set();
+    tagset->con_set = create_container_set();
+    tagset->visible_focus_set = focus_set_create();
+    tagset->local_focus_set = focus_set_create();
+    tagset->visible_visual_set = visual_set_create();
 
     tagset->workspaces = bitset_create(server.workspaces->len);
     tagset->loaded_workspaces = bitset_create(server.workspaces->len);
-    tagset_set_tags(tagset, workspaces);
+    tagset_assign_workspaces(tagset, workspaces);
 
     g_ptr_array_add(server.tagsets, tagset);
     return tagset;
 }
 
-static void _destroy_tagset(void *tagset_ptr)
+void destroy_tagset(struct tagset *tagset)
 {
-    if (!tagset_ptr)
+    if (!tagset)
         return;
-
-    struct tagset *tagset = (struct tagset *)tagset_ptr;
-
     struct workspace *selected_workspace = get_workspace(tagset->selected_ws_id);
+    if (selected_workspace->tagset == tagset) {
+        selected_workspace->tagset = NULL;
+    }
     if (selected_workspace->selected_tagset == tagset) {
         selected_workspace->selected_tagset = NULL;
     }
@@ -256,82 +286,139 @@ static void _destroy_tagset(void *tagset_ptr)
     g_ptr_array_remove(server.tagsets, tagset);
     bitset_destroy(tagset->workspaces);
     bitset_destroy(tagset->loaded_workspaces);
-    destroy_list_set(tagset->list_set);
+    destroy_container_set(tagset->con_set);
+    focus_set_destroy(tagset->visible_focus_set);
+    focus_set_destroy(tagset->local_focus_set);
+    visual_set_destroy(tagset->visible_visual_set);
+    free(tagset);
 }
 
-void tagset_acquire(struct tagset *tagset)
+void tagset_write_to_focus_stacks(struct tagset *tagset)
 {
     if (!tagset)
         return;
-    g_rc_box_acquire(tagset);
+
+    struct workspace *ws = tagset_get_workspace(tagset);
+    focus_set_write_to_parent(ws->focus_set, tagset->local_focus_set);
+    update_reduced_focus_stack(tagset);
 }
 
-void tagset_release(struct tagset *tagset)
+void update_sub_focus_stack(struct tagset *tagset)
 {
     if (!tagset)
         return;
-    g_rc_box_release_full(tagset, _destroy_tagset);
+    update_reduced_focus_stack(tagset);
+    update_local_focus_stack(tagset);
 }
 
-void focus_most_recent_container(struct tagset *tagset)
+bool is_reduced_focus_stack(struct workspace *ws, struct container *con)
 {
-    struct container *con = get_in_composed_list(tagset->list_set->focus_stack_lists, 0);
-
-    if (!con) {
-        con = get_container(tagset, 0);
-        if (!con) {
-            ipc_event_window();
-            return;
-        }
+    struct monitor *m = workspace_get_monitor(ws);
+    bool viewable = container_viewable_on_monitor(m, con);
+    bool visible = visible_on(m, ws->prev_workspaces, con);
+    if (viewable || visible) {
+        return true;
     }
-
-    focus_container(con);
+    return false;
 }
 
-static void tagset_move_sticky_containers(struct tagset *old_tagset, struct tagset *tagset)
+bool _is_reduced_focus_stack(
+        struct workspace *ws,
+        GPtrArray *src_list,
+        struct container *con
+        )
 {
-    if (!old_tagset)
-        return;
+    struct monitor *m = workspace_get_monitor(ws);
+    bool viewable = container_viewable_on_monitor(m, con);
+    bool visible = visible_on(m, ws->prev_workspaces, con);
+    if (viewable || visible) {
+        return true;
+    }
+    return false;
+}
 
+void update_reduced_focus_stack(struct tagset *tagset)
+{
+    struct workspace *ws = tagset_get_workspace(tagset);
+    lists_clear(tagset->visible_focus_set->focus_stack_lists);
+    lists_append_list_under_condition(
+            tagset->visible_focus_set->focus_stack_lists,
+            ws->focus_set->focus_stack_lists,
+            _is_reduced_focus_stack,
+            ws);
+}
+
+static bool is_local_focus_stack(
+        struct workspace *ws,
+        GPtrArray *src_list,
+        struct container *con
+        )
+{
+    struct monitor *m = workspace_get_monitor(ws);
+    if (exist_on(m, ws->prev_workspaces, con)) {
+        return true;
+    }
+    return false;
+}
+
+void update_local_focus_stack(struct tagset *tagset)
+{
+    struct workspace *ws = tagset_get_workspace(tagset);
+    lists_clear(tagset->local_focus_set->focus_stack_lists);
+    lists_append_list_under_condition(
+            tagset->local_focus_set->focus_stack_lists,
+            ws->focus_set->focus_stack_lists,
+            is_local_focus_stack,
+            ws);
+}
+
+static bool is_visual_visible_stack(
+        struct workspace *ws,
+        GPtrArray *src_list,
+        struct container *con
+        )
+{
+    struct monitor *m = workspace_get_monitor(ws);
+    if (container_potentially_viewable_on_monitor(m, con)) {
+        return true;
+    }
+    return false;
+}
+
+void update_visual_visible_stack(struct tagset *tagset)
+{
+    if (!tagset)
+        return;
+    struct workspace *ws = tagset_get_workspace(tagset);
+    lists_clear(tagset->visible_visual_set->visual_stack_lists);
+    lists_append_list_under_condition(
+            tagset->visible_visual_set->visual_stack_lists,
+            ws->visual_set->visual_stack_lists,
+            is_visual_visible_stack,
+            ws);
+}
+
+void tagset_move_sticky_containers(struct tagset *tagset)
+{
     struct workspace *ws = get_workspace(tagset->selected_ws_id);
-    int len = length_of_composed_list(old_tagset->list_set->container_lists);
-    int pos = len-1;
-    for (int i = len-1; i >= 0; i--) {
-        struct container *con = get_in_composed_list(old_tagset->list_set->container_lists, pos);
-        if (con->client->sticky) {
-            debug_print("move container: %p\n", con);
-            move_container_to_workspace(con, ws);
-        }
-        pos--;
+    GPtrArray *list = list2D_create_filtered_sub_list(ws->con_set->container_lists, container_exists);
+    for (int i = 0; i < list->len; i++) {
+        struct container *con = g_ptr_array_index(list, i);
+        container_move_sticky_containers(con, ws->id);
     }
+    g_ptr_array_free(list, FALSE);
 }
 
-void focus_tagset_no_ref(struct tagset *tagset)
+static void restore_floating_containers(struct tagset *tagset)
 {
-    if(!tagset)
+    GPtrArray *floating_list = tagset_get_floating_list_copy(tagset);
+    if (!floating_list)
         return;
-
-    struct monitor *m = tagset->m;
-
-    focus_monitor(m);
-    selected_monitor = m;
-
-    struct tagset *old_tagset = m->tagset;
-
-    tagset_write_to_workspaces(m->tagset);
-    tagset_move_sticky_containers(old_tagset, tagset);
-    tagset_workspaces_disconnect(old_tagset);
-    tagset_workspaces_connect(tagset);
-    tagset_release(m->tagset);
-    m->tagset = tagset;
-    ipc_event_workspace();
-
-    arrange();
-    focus_most_recent_container(tagset);
-    root_damage_whole(m->root);
-
-    struct seat *seat = input_manager_get_default_seat();
-    cursor_rebase(seat->cursor);
+    for (int i = 0; i < floating_list->len; i++) {
+        struct container *con = g_ptr_array_index(floating_list, i);
+        struct wlr_box *con_geom = container_get_current_geom(con);
+        container_set_current_geom(con, con_geom);
+    }
 }
 
 void focus_tagset(struct tagset *tagset)
@@ -339,25 +426,49 @@ void focus_tagset(struct tagset *tagset)
     if(!tagset)
         return;
 
-    tagset_acquire(tagset);
-    focus_tagset_no_ref(tagset);
+    struct monitor *m = tagset->m;
+    struct monitor *prev_m = selected_monitor;
+
+    selected_monitor = m;
+
+    struct tagset *old_tagset = m->tagset;
+    tagset_workspaces_disconnect(old_tagset);
+    tagset_workspaces_connect(tagset);
+    if (prev_m == m && old_tagset != tagset) {
+        destroy_tagset(old_tagset);
+    }
+    m->tagset = tagset;
+    restore_floating_containers(tagset);
+    struct workspace *ws = tagset_get_workspace(tagset);
+    ws->prev_workspaces = bitset_copy(tagset->workspaces);
+    update_sub_focus_stack(tagset);
+    update_visual_visible_stack(tagset);
+    ipc_event_workspace();
+
+    tagset_move_sticky_containers(tagset);
+    arrange();
+    focus_most_recent_container(ws);
+    root_damage_whole(m->root);
+
+    struct seat *seat = input_manager_get_default_seat();
+    cursor_rebase(seat->cursor);
 }
 
-static void tagset_save_to_workspace(struct tagset *tagset, struct workspace *ws)
+static void tagset_append_to_workspaces(struct tagset *tagset)
 {
-    for (int i = 0; i < ws->list_set->all_lists->len; i++) {
-        GPtrArray *dest_list = g_ptr_array_index(ws->list_set->all_lists, i);
-        GPtrArray *src_list = g_ptr_array_index(tagset->list_set->all_lists, i);
-        for (int j = 0; j < src_list->len; j++) {
-            struct container *con = g_ptr_array_index(src_list, j);
-            if (con->client->ws_id != ws->id)
-                continue;
-            g_ptr_array_add(dest_list, con);
+    for (int i = 0; i < tagset->con_set->container_lists->len; i++) {
+        GPtrArray *tagset_list = g_ptr_array_index(tagset->con_set->container_lists, i);
+        for (int j = 0; j < tagset_list->len; j++) {
+            struct container *con = g_ptr_array_index(tagset_list, j);
+            struct workspace *ws = get_workspace(con->client->ws_id);
+            GPtrArray *ws_list = g_ptr_array_index(ws->con_set->container_lists, i);
+
+            g_ptr_array_add(ws_list, con);
         }
     }
 }
 
-static void tagset_clear_workspaces(struct tagset *tagset)
+static void tagset_clear_sel_workspace(struct tagset *tagset)
 {
     for (int i = 0; i < tagset->loaded_workspaces->size; i++) {
         bool bit = bitset_test(tagset->loaded_workspaces, i);
@@ -366,47 +477,50 @@ static void tagset_clear_workspaces(struct tagset *tagset)
             continue;
 
         struct workspace *ws = get_workspace(i);
-        clear_list_set(ws->list_set);
+        container_set_clear(ws->con_set);
     }
 }
 
-static void tagset_append_to_workspaces(struct tagset *tagset)
+static void tagset_append_to_sel_workspace(struct tagset *tagset)
 {
-    for (int i = 0; i < tagset->list_set->all_lists->len; i++) {
-        GPtrArray *tagset_list = g_ptr_array_index(tagset->list_set->all_lists, i);
+    struct workspace *ws = get_workspace(tagset->selected_ws_id);
+    for (int i = 0; i < tagset->con_set->container_lists->len; i++) {
+        GPtrArray *tagset_list = g_ptr_array_index(tagset->con_set->container_lists, i);
         for (int j = 0; j < tagset_list->len; j++) {
             struct container *con = g_ptr_array_index(tagset_list, j);
-            struct workspace *ws = get_workspace(con->client->ws_id);
-            GPtrArray *ws_list = g_ptr_array_index(ws->list_set->all_lists, i);
+            GPtrArray *ws_list = g_ptr_array_index(ws->con_set->container_lists, i);
 
             g_ptr_array_add(ws_list, con);
         }
     }
 }
 
-static void tagset_write_to_workspaces(struct tagset *tagset)
+void tagset_write_to_workspaces(struct tagset *tagset)
 {
     if (!tagset)
         return;
 
-    tagset_clear_workspaces(tagset);
-    tagset_append_to_workspaces(tagset);
+    struct workspace *ws = tagset_get_workspace(tagset);
+    container_set_write_to_parent(ws->con_set, tagset->con_set);
 }
+
 
 struct layout *tagset_get_layout(struct tagset *tagset)
 {
     struct workspace *ws = get_workspace(tagset->selected_ws_id);
-    return ws->layout;
+    struct layout *lt = workspace_get_layout(ws);
+    return lt;
 }
 
 static void _set_previous_tagset(struct tagset *tagset)
 {
-    tagset_acquire(tagset);
-    tagset_release(server.previous_tagset);
-    server.previous_tagset = tagset;
+    if (!tagset)
+        return;
+    server.previous_bitset = bitset_copy(tagset->workspaces);
+    server.previous_workspace = tagset->selected_ws_id;
 }
 
-void push_tagset_no_ref(struct tagset *tagset)
+void push_tagset(struct tagset *tagset)
 {
     struct monitor *m = selected_monitor;
 
@@ -414,16 +528,7 @@ void push_tagset_no_ref(struct tagset *tagset)
         _set_previous_tagset(m->tagset);
     }
 
-    focus_tagset_no_ref(tagset);
-}
-
-void push_tagset(struct tagset *tagset)
-{
-    if (!tagset)
-        return;
-    tagset_acquire(tagset);
-
-    push_tagset_no_ref(tagset);
+    focus_tagset(tagset);
 }
 
 static void handle_too_few_workspaces(uint32_t ws_id)
@@ -467,29 +572,22 @@ void tagset_toggle_add(struct tagset *tagset, BitSet *bitset)
 void tagset_focus_tags(int ws_id, struct BitSet *bitset)
 {
     struct workspace *ws = get_workspace(ws_id);
-    struct monitor *ws_m = workspace_get_monitor(ws);
+    struct monitor *ws_m = ws->selected_tagset ? ws->selected_tagset->m : NULL;
     struct monitor *m = ws_m ? ws_m : selected_monitor;
 
-    struct tagset *tagset = workspace_get_selected_tagset(ws);
-    if (tagset) {
-        tagset_set_tags(tagset, bitset);
-        push_tagset(tagset);
-    } else {
-        tagset = create_tagset(m, ws_id, bitset);
-        push_tagset_no_ref(tagset);
-    }
+    struct tagset *tagset = create_tagset(m, ws_id, bitset);
+    push_tagset(tagset);
 }
 
-struct container *get_container(struct tagset *tagset, int i)
+void tagset_reload(struct tagset *tagset)
 {
-    struct list_set *list_set = tagset->list_set;
-    if (!list_set)
-        return NULL;
-
-    return get_in_composed_list(list_set->container_lists, i);
+    if (!tagset)
+        return;
+    tagset_unload_workspaces(tagset);
+    tagset_load_workspaces(tagset, tagset->workspaces);
 }
 
-static bool container_intersects_with_monitor(struct container *con, struct monitor *m)
+bool container_intersects_with_monitor(struct container *con, struct monitor *m)
 {
     if (!con)
         return false;
@@ -497,47 +595,230 @@ static bool container_intersects_with_monitor(struct container *con, struct moni
         return false;
 
     struct wlr_box tmp_geom;
-    return wlr_box_intersection(&tmp_geom, &con->geom, &m->geom);
+    return wlr_box_intersection(&tmp_geom, container_get_current_geom(con), &m->geom);
+}
+
+GPtrArray *server_update_floating_containers()
+{
+    list_clear(server.floating_containers, NULL);
+    list_clear(server.floating_stack, NULL);
+    for (int i = 0; i < server.mons->len; i++) {
+        struct monitor *m = g_ptr_array_index(server.mons, i);
+        struct tagset *tagset = monitor_get_active_tagset(m);
+        GPtrArray *floating_containers = tagset_get_floating_list_copy(tagset);
+        wlr_list_cat(server.floating_containers, floating_containers);
+
+        wlr_list_cat(server.floating_stack, tagset->visible_visual_set->floating_visual_stack);
+    }
+    return server.floating_containers;
 }
 
 GPtrArray *tagset_get_visible_lists(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);
 
-    if (lt->options.arrange_by_focus)
-        return tagset->list_set->focus_stack_visible_lists;
-    else
-        return tagset->list_set->visible_container_lists;
+    if (lt->options.arrange_by_focus) {
+        return tagset->local_focus_set->focus_stack_visible_lists;
+    } else {
+        return tagset->con_set->container_lists;
+    }
+}
+
+GPtrArray *tagset_get_global_floating_copy(struct tagset *tagset)
+{
+    struct layout *lt = tagset_get_layout(tagset);
+
+    struct workspace *ws = tagset_get_workspace(tagset);
+
+    GPtrArray *conditions = g_ptr_array_new();
+    g_ptr_array_add(conditions, container_is_tiled_and_visible);
+    g_ptr_array_add(conditions, container_is_floating);
+
+    GPtrArray *visible_global_floating_list_copy = NULL;
+    if (lt->options.arrange_by_focus) {
+        // TODO: FIXME
+        visible_global_floating_list_copy =
+            list_create_filtered_sub_list_with_order(
+                ws->focus_set->focus_stack_normal,
+                conditions
+                );
+    } else {
+        visible_global_floating_list_copy =
+            list_create_filtered_sub_list_with_order(
+                ws->con_set->tiled_containers,
+                conditions
+                );
+    }
+
+    g_ptr_array_free(conditions, FALSE);
+
+    return visible_global_floating_list_copy;
+}
+
+GPtrArray *tagset_get_tiled_list_copy(struct tagset *tagset)
+{
+    struct layout *lt = tagset_get_layout(tagset);
+
+    GPtrArray *tiled_list = NULL;
+    if (lt->options.arrange_by_focus) {
+        tiled_list = list_create_filtered_sub_list(
+                tagset->local_focus_set->focus_stack_normal,
+                container_is_managed);
+        return tiled_list;
+    } else {
+        tiled_list = list_create_filtered_sub_list(
+                tagset->con_set->tiled_containers,
+                container_is_tiled_and_managed);
+        return tiled_list;
+    }
 }
 
 GPtrArray *tagset_get_tiled_list(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);
 
-    if (lt->options.arrange_by_focus)
-        return tagset->list_set->focus_stack_normal;
-    else
-        return tagset->list_set->tiled_containers;
+    if (lt->options.arrange_by_focus) {
+        return tagset->local_focus_set->focus_stack_normal;
+    } else {
+        return tagset->con_set->tiled_containers;
+    }
 }
 
-GPtrArray *tagset_get_floating_list(struct tagset *tagset)
+GPtrArray *tagset_get_floating_list_copy(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);
 
-    if (lt->options.arrange_by_focus)
-        return tagset->list_set->focus_stack_normal;
-    else
-        return tagset->list_set->floating_containers;
+    if (!lt)
+        return NULL;
+
+    GPtrArray *floating_containers = g_ptr_array_new();
+    if (lt->options.arrange_by_focus) {
+        floating_containers =
+            list_create_filtered_sub_list(
+                    tagset->local_focus_set->focus_stack_normal,
+                    container_is_floating);
+    } else {
+        floating_containers =
+            list_create_filtered_sub_list(
+                    tagset->con_set->tiled_containers,
+                    container_is_floating);
+    }
+    return floating_containers;
 }
 
-GPtrArray *tagset_get_hidden_list(struct tagset *tagset)
+GPtrArray *tagset_get_visible_list_copy(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);
 
-    if (lt->options.arrange_by_focus)
-        return tagset->list_set->focus_stack_hidden;
-    else
-        return tagset->list_set->hidden_containers;
+    GPtrArray *hidden_list = NULL;
+    if (lt->options.arrange_by_focus) {
+        hidden_list = list_create_filtered_sub_list(
+                tagset->local_focus_set->focus_stack_normal,
+                container_is_visible);
+    } else {
+        hidden_list = list_create_filtered_sub_list(
+                tagset->con_set->tiled_containers,
+                container_is_visible);
+    }
+    return hidden_list;
+}
+
+GPtrArray *tagset_get_hidden_list_copy(struct tagset *tagset)
+{
+    struct layout *lt = tagset_get_layout(tagset);
+
+    if (lt->options.arrange_by_focus) {
+        GPtrArray *hidden_list = list_create_filtered_sub_list(
+                tagset->local_focus_set->focus_stack_normal,
+                container_is_hidden);
+        return hidden_list;
+    } else {
+        GPtrArray *hidden_list = list_create_filtered_sub_list(
+                tagset->con_set->tiled_containers,
+                container_is_hidden);
+        return hidden_list;
+    }
+}
+
+void tagset_list_remove(GPtrArray *list, struct container *con)
+{
+    struct tagset *tagset = container_get_tagset(con);
+    struct layout *lt = tagset_get_layout(tagset);
+
+    if (lt->options.arrange_by_focus) {
+        struct workspace *ws = tagset_get_workspace(tagset);
+        workspace_remove_container_from_focus_stack_locally(ws, con);
+    } else {
+        g_ptr_array_remove(list, con);
+    }
+}
+
+void tagset_list_remove_index(GPtrArray *list, int i)
+{
+    if (list->len <= 0)
+        return;
+    struct container *con = g_ptr_array_index(list, 0);
+    struct tagset *tagset = container_get_tagset(con);
+    struct layout *lt = tagset_get_layout(tagset);
+
+    if (lt->options.arrange_by_focus) {
+        struct workspace *ws = tagset_get_workspace(tagset);
+        struct container *local_con = get_in_composed_list(tagset->local_focus_set->focus_stack_lists, i);
+        remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, local_con);
+        update_sub_focus_stack(tagset);
+    } else {
+        g_ptr_array_remove_index(list, i);
+    }
+}
+
+void tagset_list_add(GPtrArray *list, struct container *con)
+{
+    struct tagset *tagset = container_get_tagset(con);
+    struct layout *lt = tagset_get_layout(tagset);
+
+    if (lt->options.arrange_by_focus) {
+        struct workspace *ws = tagset_get_workspace(tagset);
+        list_set_append_container_to_focus_stack(ws, con);
+        update_sub_focus_stack(tagset);
+    } else {
+        g_ptr_array_add(list, con);
+    }
+}
+
+void tagset_list_insert(GPtrArray *list, int i, struct container *con)
+{
+    struct tagset *tagset = container_get_tagset(con);
+    struct layout *lt = tagset_get_layout(tagset);
+
+    if (lt->options.arrange_by_focus) {
+        struct workspace *ws = tagset_get_workspace(tagset);
+        g_ptr_array_insert(ws->focus_set->focus_stack_normal, i, con);
+        update_sub_focus_stack(tagset);
+    } else {
+        g_ptr_array_insert(list, i, con);
+    }
+}
+
+struct container *tagset_list_steal_index(GPtrArray *list, int i)
+{
+    if (list->len <= 0) {
+        debug_print("list is empty\n");
+        return NULL;
+    }
+    struct container *_con = g_ptr_array_index(list, 0);
+    struct tagset *tagset = container_get_tagset(_con);
+    struct layout *lt = tagset_get_layout(tagset);
+    struct workspace *ws = tagset_get_workspace(tagset);
+
+    struct container *con = NULL;
+    if (lt->options.arrange_by_focus) {
+        con = get_in_composed_list(tagset->local_focus_set->focus_stack_lists, i);
+        remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
+        update_sub_focus_stack(tagset);
+    } else {
+        con = g_ptr_array_steal_index(list, i);
+    }
+    return con;
 }
 
 void workspace_id_to_tag(BitSet *dest, int ws_id)
@@ -545,24 +826,79 @@ void workspace_id_to_tag(BitSet *dest, int ws_id)
     bitset_set(dest, ws_id);
 }
 
-bool tagset_contains_client(struct tagset *tagset, struct client *c)
+bool tagset_contains_sticky_client(BitSet *tagset_workspaces, struct client *c)
 {
-    BitSet *bitset = bitset_create(server.workspaces->len);
-    workspace_id_to_tag(bitset, c->ws_id);
-    bitset_and(bitset, tagset->workspaces);
+    BitSet *bitset = bitset_copy(c->sticky_workspaces);
+    bitset_and(bitset, tagset_workspaces);
     bool contains = bitset_any(bitset);
     bitset_destroy(bitset);
     return contains;
 }
 
-bool visible_on(struct tagset *tagset, struct container *con)
+bool tagset_contains_client(BitSet *workspaces, struct client *c)
+{
+    if (tagset_contains_sticky_client(workspaces, c))
+        return true;
+
+    BitSet *bitset = bitset_create(server.workspaces->len);
+    workspace_id_to_tag(bitset, c->ws_id);
+    bitset_and(bitset, workspaces);
+    bool contains = bitset_any(bitset);
+    bitset_destroy(bitset);
+    return contains;
+}
+
+bool container_viewable_on_monitor(struct monitor *m,
+        struct container *con)
+{
+    if (container_is_hidden(con))
+        return false;
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    if (!tagset)
+        return false;
+    bool intersects_with_monitor =
+        container_intersects_with_monitor(con, tagset->m);
+    if (!intersects_with_monitor) {
+        return false;
+    }
+
+    return container_potentially_viewable_on_monitor(m, con);
+}
+
+// TODO refactor this function
+bool container_potentially_viewable_on_monitor(struct monitor *m,
+        struct container *con)
+{
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    if (!tagset)
+        return false;
+    bool visible = tagset_exist_on(tagset, con);
+    if (visible)
+        return true;
+
+    bool is_floating = container_is_floating(con);
+    if (!is_floating)
+        return false;
+
+    for (int i = 0; i < server.mons->len; i++) {
+        struct monitor *m = g_ptr_array_index(server.mons, i);
+        struct tagset *tagset = monitor_get_active_tagset(m);
+        bool contains_client = tagset_contains_client(tagset->workspaces, con->client);
+        if (contains_client) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool visible_on(struct monitor *m, BitSet *workspaces, struct container *con)
 {
     if (!con)
         return false;
     if (con->hidden)
         return false;
 
-    return exist_on(tagset, con);
+    return exist_on(m, workspaces, con);
 }
 
 bool tagset_is_visible(struct tagset *tagset)
@@ -574,17 +910,18 @@ bool tagset_is_visible(struct tagset *tagset)
     return tagset->m->tagset == tagset;
 }
 
-bool exist_on(struct tagset *tagset, struct container *con)
+bool exist_on(struct monitor *m, BitSet *workspaces, struct container *con)
 {
-    if (!con || !tagset)
+    if (!con)
         return false;
-    struct monitor *m = container_get_monitor(con);
-    if (m != tagset->m) {
-        if (con->floating)
-            return container_intersects_with_monitor(con, tagset->m)
-                && tagset_contains_client(m->tagset, con->client);
-        else
-            return false;
+    if (!workspaces)
+        return false;
+    struct monitor *con_m = container_get_monitor(con);
+    if (!con_m) {
+        return false;
+    }
+    if (con_m != m) {
+        return false;
     }
 
     struct client *c = con->client;
@@ -594,8 +931,34 @@ bool exist_on(struct tagset *tagset, struct container *con)
 
     if (c->type == LAYER_SHELL)
         return true;
-    if (c->sticky)
-        return true;
 
-    return tagset_contains_client(tagset, c);
+    return tagset_contains_client(workspaces, c);
+}
+
+bool tagset_exist_on(struct tagset *tagset, struct container *con)
+{
+    if (!tagset)
+        return false;
+    if (!con)
+        return false;
+    return exist_on(tagset->m, tagset->workspaces, con);
+}
+
+bool tagset_visible_on(struct tagset *tagset, struct container *con)
+{
+    if (!tagset)
+        return false;
+    if (!con)
+        return false;
+    return visible_on(tagset->m, tagset->workspaces, con);
+}
+
+struct workspace *tagset_get_workspace(struct tagset *tagset)
+{
+    if (!tagset)
+        return NULL;
+    struct workspace *ws = get_workspace(tagset->selected_ws_id);
+    if (!ws)
+        return NULL;
+    return ws;
 }

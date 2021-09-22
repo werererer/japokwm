@@ -7,6 +7,8 @@
 #include "root.h"
 #include "tagset.h"
 
+struct cursor;
+
 struct monitor {
     struct wlr_output *wlr_output;
     struct wlr_output_damage *damage;

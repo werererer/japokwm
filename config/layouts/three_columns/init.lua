@@ -43,6 +43,6 @@ local layout_data = {
     }
 }
 
-layout.set("three_columns", layout_data)
+layout.set(layout_data)
 l.config.set_resize_direction(info.direction.right)
 l.config.set_hidden_edges(info.direction.all)

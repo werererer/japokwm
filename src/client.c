@@ -12,11 +12,14 @@
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "ipc-server.h"
+#include "workspace.h"
+#include "scratchpad.h"
 
 struct client *create_client(enum shell shell_type, union surface_t surface)
 {
     struct client *c = calloc(1, sizeof(struct client));
 
+    c->sticky_workspaces = bitset_create(server.workspaces->len);
     c->type = shell_type;
     c->surface = surface;
 
@@ -141,9 +144,50 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
     }
 }
 
-void client_setsticky(struct client *c, bool sticky)
+void container_move_sticky_containers_current_ws(struct container *con)
 {
-    c->sticky = sticky;
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = monitor_get_active_workspace(m);
+    container_move_sticky_containers(con, ws->id);
+}
+
+void container_move_sticky_containers(struct container *con, int ws_id)
+{
+    // TODO: refactor this function
+    struct workspace *ws = get_workspace(ws_id);
+    if (!bitset_test(con->client->sticky_workspaces, ws->id)) {
+        if (bitset_any(con->client->sticky_workspaces)) {
+            for (int i = 0; i < con->client->sticky_workspaces->size; i++) {
+                if (bitset_test(con->client->sticky_workspaces, i)) {
+                    container_set_just_workspace_id(con, i);
+                    arrange();
+                    focus_most_recent_container(ws);
+                    ipc_event_workspace();
+                }
+            }
+        } else {
+            move_to_scratchpad(con, 0);
+            return;
+        }
+        return;
+    }
+    if (con->on_scratchpad) {
+        return;
+    }
+
+    if (workspace_sticky_contains_client(ws, con->client)) {
+        container_set_just_workspace_id(con, ws->id);
+    } else if (bitset_none(con->client->sticky_workspaces)) {
+        move_to_scratchpad(con, 0);
+    }
+}
+
+void client_setsticky(struct client *c, BitSet *workspaces)
+{
+    bitset_assign_bitset(&c->sticky_workspaces, workspaces);
+    struct container *con = c->con;
+    container_move_sticky_containers_current_ws(con);
+    ipc_event_workspace();
 }
 
 float calc_ratio(float width, float height)
@@ -196,6 +240,10 @@ void client_handle_set_title(struct wl_listener *listener, void *data)
 
 void client_handle_set_app_id(struct wl_listener *listener, void *data)
 {
+    debug_print("set app id\n");
+    debug_print("set app id\n");
+    debug_print("set app id\n");
+    debug_print("set app id\n");
     struct client *c = wl_container_of(listener, c, set_app_id);
     const char *app_id;
     /* rule matching */
@@ -205,7 +253,7 @@ void client_handle_set_app_id(struct wl_listener *listener, void *data)
                 app_id = c->surface.xdg->toplevel->app_id;
             break;
         case LAYER_SHELL:
-            app_id = "test";
+            app_id = "";
             break;
         case X11_MANAGED:
         case X11_UNMANAGED:
@@ -223,11 +271,11 @@ void reset_tiled_client_borders(int border_px)
     for (int i = 0; i < server.normal_clients->len; i++) {
         struct client *c = g_ptr_array_index(server.normal_clients, i);
         struct tagset *tagset = selected_monitor->tagset;
-        if (!exist_on(tagset, c->con))
+        if (!tagset_exist_on(tagset, c->con))
             continue;
-        if (c->con->floating)
+        if (container_is_floating(c->con))
             continue;
-        c->bw = border_px;
+        container_set_border_width(c->con, border_px);
     }
 }
 
@@ -236,10 +284,10 @@ void reset_floating_client_borders(int border_px)
     for (int i = 0; i < server.normal_clients->len; i++) {
         struct client *c = g_ptr_array_index(server.normal_clients, i);
         struct tagset *tagset = selected_monitor->tagset;
-        if (!exist_on(tagset, c->con))
+        if (!tagset_exist_on(tagset, c->con))
             continue;
-        if (!c->con->floating)
+        if (!container_is_floating(c->con))
             continue;
-        c->bw = border_px;
+        container_set_border_width(c->con, border_px);
     }
 }

@@ -48,6 +48,11 @@ char last_char(const char *str);
 // returns exactly the same values as strcmp
 int path_compare(const char *path1, const char *path2);
 void join_path(char **base, const char *file);
+// works exactly like c++'s std::lower_bound
+int lower_bound(const void *key, const void *base,
+        size_t nmemb, size_t size,
+        int (*compar)(const void *, const void *));
+
 
 void debug_print(const char *fmt, ...);
 
@@ -104,17 +109,20 @@ GPtrArray *find_list_in_composed_list(GPtrArray *arrays,
 
 GPtrArray *list_insert_into_relative_position(GPtrArray *lists, int index, void *item);
 
+GPtrArray2D *lists_copy_structure(GPtrArray2D *src);
+
 // compare pointers and return 0 if they are equal and 1 otherwise
+int cmp_int(const void *ptr1, const void *ptr2);
 int cmp_ptr(const void *ptr1, const void *ptr2);
 int cmp_str(const void *s1, const void *s2);
 
 void lua_tocolor(float dest_color[static 4]);
 // like lua_ref but override the old value if *ref > 0
 void lua_ref_safe(lua_State *L, int t, int *ref);
-void print_trace();
 
 /* a composed list is just a list consisting of lists so that if an index i is
  * given it returns the same value as if all the lists where concatenated */
+void set_in_composed_list(GPtrArray *arrays, int i, void *value);
 void *get_in_composed_list(GPtrArray *arrays, int i);
 GPtrArray *get_list_at_i_in_composed_list(GPtrArray *arrays, int i);
 void delete_from_composed_list(GPtrArray *arrays, int i);

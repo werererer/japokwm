@@ -47,6 +47,8 @@ struct options {
     GPtrArray *rules;
     GPtrArray *mon_rules;
 
+    // timeout in milliseconds
+    int key_combo_timeout;
     int repeat_rate;
     int repeat_delay;
     int inner_gap;
@@ -56,11 +58,10 @@ struct options {
     int resize_dir;
 
     struct event_handler *event_handler;
-    int tag_names_ref;
-    int default_layout_ref;
 
     enum wlr_edges hidden_edges;
     bool smart_hidden_edges;
+    bool automatic_workspace_naming;
 
     GPtrArray *keybindings;
 };

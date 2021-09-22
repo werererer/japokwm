@@ -12,6 +12,7 @@
 #include "container.h"
 #include "ipc-server.h"
 #include "layout_set.h"
+#include "list_sets/container_stack_set.h"
 #include "monitor.h"
 #include "popup.h"
 #include "root.h"
@@ -102,9 +103,7 @@ int lib_set_floating(lua_State *L)
     if (!sel)
         return 0;
 
-    struct monitor *m = selected_monitor;
-    set_container_monitor(sel, m);
-    set_container_floating(sel, container_fix_position, floating);
+    container_set_floating(sel, container_fix_position, floating);
 
     arrange();
     return 0;
@@ -184,7 +183,8 @@ int lib_move_to_scratchpad(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     struct monitor *m = selected_monitor;
-    struct container *con = get_container(m->tagset, i);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct container *con = get_container(ws, i);
     move_to_scratchpad(con, 0);
     return 0;
 }
@@ -222,14 +222,14 @@ int lib_tag_view(lua_State *L)
     bitset_destroy(tmp_bitset);
 
     tagset_toggle_add(m->tagset, bitset);
-    arrange();
     return 0;
 }
 
 int lib_toggle_view(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    focus_most_recent_container(m->tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    focus_most_recent_container(ws);
     struct container *sel = get_focused_container(m);
     lift_container(sel);
     arrange(false);
@@ -241,7 +241,7 @@ int lib_toggle_floating(lua_State *L)
     struct container *sel = get_focused_container(selected_monitor);
     if (!sel)
         return 0;
-    set_container_floating(sel, container_fix_position, !sel->floating);
+    container_set_floating(sel, container_fix_position, !container_is_floating(sel));
     arrange();
     return 0;
 }
@@ -276,26 +276,29 @@ int lib_zoom(lua_State *L)
     if (!sel)
         return 0;
 
+    GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
     guint position;
-    bool found = g_ptr_array_find(tagset->list_set->tiled_containers, sel, &position);
+    bool found = g_ptr_array_find(tiled_containers, sel, &position);
     if (!found)
         return 0;
 
-    if (sel == g_ptr_array_index(tagset->list_set->tiled_containers, 0)) {
+    if (sel == g_ptr_array_index(tiled_containers, 0)) {
         repush(1, 0);
     } else {
         repush(position, 0);
     }
+    g_ptr_array_free(tiled_containers, FALSE);
 
     arrange();
 
     // focus new master window
-    struct container *con = get_container(tagset, 0);
+    struct workspace *ws = get_workspace(tagset->selected_ws_id);
+    struct container *con = get_container(ws, 0);
     focus_container(con);
 
     struct layout *lt = get_layout_in_monitor(m);
     if (lt->options.arrange_by_focus) {
-        focus_most_recent_container(tagset);
+        focus_most_recent_container(ws);
         arrange();
     }
     return 0;
@@ -396,7 +399,6 @@ int lib_load_layout_in_set(lua_State *L)
 
 int lib_load_layout(lua_State *L)
 {
-    lua_rawgeti(L, -1, 1);
     const char *layout_name = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
@@ -413,8 +415,8 @@ int lib_kill(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    struct container *con = get_container(tagset, i);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct container *con = get_container(ws, i);
 
     if (!con)
         return 0;
@@ -435,7 +437,7 @@ int lib_toggle_layout(lua_State *L)
 
 int lib_toggle_workspace(lua_State *L)
 {
-    push_tagset(server.previous_tagset);
+    tagset_focus_tags(server.previous_workspace, server.previous_bitset);
     return 0;
 }
 
@@ -448,24 +450,43 @@ int lib_swap_workspace(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = selected_monitor;
-    struct tagset *tagset = monitor_get_active_tagset(m);
 
-    for (int i = 0; i < tagset->list_set->tiled_containers->len; i++) {
-        struct container *con = get_container(0, i);
-        struct workspace *ws1 = get_workspace(ws_id1);
-        if (exist_on(workspace_get_tagset(ws1), con)) {
-            con->client->ws_id = ws_id2;
+    struct workspace *ws1 = get_workspace(ws_id1);
+    struct workspace *ws2 = get_workspace(ws_id2);
+
+    GPtrArray *future_ws2_containers = g_ptr_array_new();
+    for (int i = 0; i < length_of_composed_list(ws1->con_set->container_lists); i++) {
+        struct container *con = get_in_composed_list(ws1->con_set->container_lists, i);
+        struct monitor *ws_m = workspace_get_monitor(ws1);
+        if (!exist_on(ws_m, ws1->prev_workspaces, con))
             continue;
-        }
-        struct workspace *ws2 = get_workspace(ws_id2);
-        if (exist_on(workspace_get_tagset(ws2), con)) {
-            con->client->ws_id = ws_id1;
-            continue;
-        }
+
+        g_ptr_array_add(future_ws2_containers, con);
     }
 
+    for (int i = 0; i < length_of_composed_list(ws2->con_set->container_lists); i++) {
+        struct container *con = get_in_composed_list(ws2->con_set->container_lists, i);
+        struct monitor *ws_m = workspace_get_monitor(ws2);
+        if (!exist_on(ws_m, ws2->prev_workspaces, con))
+            continue;
+        con->client->ws_id = ws1->id;
+        bitset_reset_all(con->client->sticky_workspaces);
+        bitset_set(con->client->sticky_workspaces, con->client->ws_id);
+    }
+
+    for (int i = 0; i < future_ws2_containers->len; i++) {
+        struct container *con = g_ptr_array_index(future_ws2_containers, i);
+        con->client->ws_id = ws2->id;
+        bitset_reset_all(con->client->sticky_workspaces);
+        bitset_set(con->client->sticky_workspaces, con->client->ws_id);
+    }
+    g_ptr_array_free(future_ws2_containers, FALSE);
+
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    tagset_reload(tagset);
     arrange();
-    focus_most_recent_container(tagset);
+    struct workspace *ws = get_workspace(tagset->selected_ws_id);
+    focus_most_recent_container(ws);
     root_damage_whole(m->root);
     return 0;
 }

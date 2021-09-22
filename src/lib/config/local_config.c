@@ -1,5 +1,7 @@
 #include "lib/config/local_config.h"
 
+#include "client.h"
+#include "layout.h"
 #include "monitor.h"
 #include "utils/gapUtils.h"
 #include "utils/coreUtils.h"

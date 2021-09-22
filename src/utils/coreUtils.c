@@ -83,6 +83,19 @@ bool remove_in_composed_list(GPtrArray *array, int (*compare)(const void *, cons
     return false;
 }
 
+int cmp_int(const void *ptr1, const void *ptr2)
+{
+    int i1 = *(int *)ptr1;
+    int i2 = *(int *)ptr2;
+    if (i1 < i2) {
+        return -1;
+    } else if ( i1 == i2 ) {
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
 int cmp_ptr(const void *ptr1, const void *ptr2)
 {
     return ptr1 == ptr2 ? 0 : 1;
@@ -125,6 +138,15 @@ GPtrArray *find_list_in_composed_list(GPtrArray *arrays,
     return NULL;
 }
 
+GPtrArray2D *lists_copy_structure(GPtrArray2D *src)
+{
+    GPtrArray2D *dest = g_ptr_array_new();
+    for (int i = 0; i < src->len; i++) {
+        g_ptr_array_add(dest, g_ptr_array_new());
+    }
+    return dest;
+}
+
 char last_char(const char *str)
 {
     if (strlen(str) == 0)
@@ -160,6 +182,39 @@ void join_path(char **base, const char *file)
         *base[strlen(*base)-1] = '\0';
     }
     strcat(*base, file);
+}
+
+// Function to implement lower_bound
+int lower_bound(const void *key, const void *base,
+        size_t nmemb, size_t size,
+        int (*compar)(const void *, const void *))
+{
+    // Initialise starting index and
+    // ending index
+    int low = -1;
+    int high = nmemb;
+ 
+    // Till low is less than high
+    while (low < high-1) {
+        int mid = low + (high - low) / 2;
+ 
+        // If X is less than or equal
+        // to arr[mid], then find in
+        // left subarray
+        const unsigned char *p = (const unsigned char *)base + mid * size;
+        int cmp = compar(key, p);
+        if (cmp <= 0) {
+            high = mid;
+        }
+        // If condition is not right
+        // then find in right subarray
+        else {
+            low = mid;
+        }
+    }
+   
+    // Return the lower_bound index
+    return low;
 }
 
 void debug_print(const char *fmt, ...)
@@ -328,17 +383,6 @@ void lua_tocolor(float dest_color[static 4])
     }
 }
 
-void print_trace()
-{
-    void* callstack[128];
-    int i, frames = backtrace(callstack, 128);
-    char** strs = backtrace_symbols(callstack, frames);
-    for (i = 0; i < frames; ++i) {
-        printf("%s\n", strs[i]);
-    }
-    free(strs);
-}
-
 int exec(const char *cmd)
 {
     int ret_val = 0;
@@ -364,6 +408,21 @@ void *get_on_list(GPtrArray *list, int i)
         return NULL;
 
     return g_ptr_array_index(list, i);
+}
+
+void set_in_composed_list(GPtrArray *arrays, int i, void *value)
+{
+    for (int j = 0; j < arrays->len; j++) {
+        GPtrArray *array = g_ptr_array_index(arrays, j);
+        if (i >= 0 && i < array->len) {
+            g_ptr_array_index(array, i) = value;
+            return;
+        }
+        i -= array->len;
+
+        if (i < 0)
+            break;
+    }
 }
 
 void *get_in_composed_list(GPtrArray *arrays, int i)
@@ -445,9 +504,6 @@ void delete_from_composed_list(GPtrArray *arrays, int i)
         if (i < 0)
             break;
     }
-
-    // no item found
-    return;
 }
 
 int length_of_list(GPtrArray *array)

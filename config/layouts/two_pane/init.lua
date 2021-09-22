@@ -16,7 +16,7 @@ local function update(n)
     end
 end
 
-layout.set("two_pane", layout_data)
+layout.set(layout_data)
 l.event.add_listener("on_update", update)
 l.config.set_master_layout_data(
 {{{0, 0, 1, 1}}, {{0, 0, 0.5, 1}, {0.5, 0, 0.5, 1}}}

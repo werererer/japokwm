@@ -191,7 +191,7 @@ integers
 *load_layout(l)* ++
 	load a layout ++
 <where> ++
-	l: table(a: string, b: string) where
+	l: string - represents the layout name
 
 *load_layout_in_set(set, i: position)* ++
 	load a layout in the layout set ++
@@ -301,7 +301,8 @@ integers
 	make container sticky ++
 <where> ++
 	i: integer - position of the container
-	sticky: boolean - whether container is sticky
+	sticky: integer - should represent the binary number for the workspaces to
+	set it sticky to. If it is 0 the container will be moved to the scratchpad
 
 # EVENT
 *add_listener(event_name, func)* ++
@@ -313,13 +314,17 @@ integers
 		n: integer - n represents the amount of containers
 
 # LAYOUT
-*set(name, layout_data)* ++
+*set(layout_data)* ++
 	set layout ++
 <where> ++
-	name: (string) - name of this layout
 	layout_data: layout_data - layout_data for the layout
 
 # INFO
+*get_active_layout()* ++
+	get the name of the layout currently active on the selected workspace
+<return> ++
+	string - name of the layout
+
 *get_this_container_count()* ++
 	get the amount of visible containers in this workspace
 <return> ++
@@ -334,6 +339,11 @@ integers
 	get the number of master windows ++
 <return> ++
 	integer - number of master windows
+
+*get_previous_layout()* ++
+	get the name of the layout previously active on the selected workspace
+<return> ++
+	string - name of the layout
 
 *get_root_area()* ++
 	get the root area
@@ -372,6 +382,13 @@ integers
 <return> ++
 	boolean - whether it is in limit
 
+*stack_position_to_position(i)* ++
+	converts a position on the container stack to a position
+<where> ++
+	i - the position of the container on the container stack
+<return> ++
+	i - the position of the container
+
 # CONFIG
 *add_mon_rule(rule)*
 	add a rule for monitors
@@ -409,6 +426,13 @@ integers
 	if b is true windows will be tiled by means of the focus stack
 <where> ++
 	b: boolean
+
+*set_automatic_workspace_naming(b)* ++
+	if b is true workspaces will be automatically to the app-id of the focused 
+	container on on that particular workspace
+<where> ++
+	b: boolean
+
 
 *set_border_color(color)* ++
 	set the border color of windows ++
@@ -517,6 +541,11 @@ integers
 		include when resizing ++
 		n: float - how much it should resize ++
 		direction: direction - which directions to resize to
+
+*set_combo_timeout(timout)* ++
+	set timeout for keyboard combos ++
+<where> ++
+	timout: integer
 
 *set_root_color(color)* ++
 	set color of the root ++

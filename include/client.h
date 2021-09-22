@@ -4,6 +4,7 @@
 #include <wlr/types/wlr_layer_shell_v1.h>
 #include <wlr/xwayland.h>
 
+#include "bitset/bitset.h"
 #include "seat.h"
 
 enum shell { XDG_SHELL, X11_MANAGED, X11_UNMANAGED, LAYER_SHELL }; /* client types */
@@ -27,12 +28,11 @@ struct client {
     struct wl_listener unmap;
     struct wl_listener destroy;
     struct wl_listener new_popup;
-    int bw;
 
     enum shell type;
     const char *title;
     const char *app_id;
-    bool sticky;
+    BitSet *sticky_workspaces;
     // workspace id
     int ws_id;
 
@@ -44,9 +44,12 @@ struct client {
 struct client *create_client(enum shell shell_type, union surface_t surface);
 void destroy_client(struct client *c);
 
+void container_move_sticky_containers_current_ws(struct container *con);
+void container_move_sticky_containers(struct container *con, int ws_id);
+
 void focus_client(struct seat *seat, struct client *old, struct client *c);
 void focus_surface(struct seat *seat, struct wlr_surface *surface);
-void client_setsticky(struct client *c, bool sticky);
+void client_setsticky(struct client *c, BitSet *workspaces);
 void reset_tiled_client_borders(int border_bx);
 void reset_floating_client_borders(int border_px);
 void kill_client(struct client *c);

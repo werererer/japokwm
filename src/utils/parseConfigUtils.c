@@ -27,7 +27,7 @@ static const char *plugin_relative_paths[] = {
 };
 
 static const char *config_file = "init.lua";
-static const char *error_file = "init.err";
+static const char *error_file = "$HOME/.config/japokwm/init.err";
 static int error_fd = -1;
 
 static int load_file(lua_State *L, const char *file);
@@ -63,10 +63,8 @@ GPtrArray *create_default_config_paths()
 
 char *get_config_file(const char *file)
 {
-    debug_print("get config file: %s\n", file);
     for (size_t i = 0; i < server.config_paths->len; ++i) {
         char *path = strdup(g_ptr_array_index(server.config_paths, i));
-        debug_print("path: %s\n", path);
         join_path(&path, file);
         expand_path(&path);
         if (file_exists(path))
@@ -179,6 +177,8 @@ int init_utils(lua_State *L)
 void init_error_file()
 {
     char *ef = get_config_file(error_file);
+    char *ef_dir = dirname(ef);
+    mkdir(ef_dir, 0777);
     error_fd = open(ef, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     free(ef);
 }

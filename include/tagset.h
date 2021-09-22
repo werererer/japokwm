@@ -5,10 +5,10 @@
 #include <stdlib.h>
 
 #include "bitset/bitset.h"
-#include "client.h"
-#include "list_set.h"
-#include "layout.h"
-#include "utils/coreUtils.h"
+
+struct client;
+struct container;
+struct workspace;
 
 /* A tagset consists of a list_set, a struct to hold all relevant containers,
  * information on which monitor it belongs to and the list of workspaces it
@@ -43,47 +43,88 @@ struct tagset {
     BitSet *workspaces;
     BitSet *loaded_workspaces;
 
-    /* number of all windows in layout even if they are invisible). Note that
-     * floating windows don't belong to the layout and are thereby not counted */
-    int n_all;
+    struct container_set *con_set;
+    struct focus_set *visible_focus_set;
+    struct focus_set *local_focus_set;
+    struct visual_set *visible_visual_set;
 
-    struct list_set *list_set;
+    bool applied_action;
 };
 
 /* this creates a tagset with reference count of 1. Calling focus_tagset
  * afterwards also adds a ref counter of 1 therefore use focus_tagset_no_ref
  * instead.  */
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *workspaces);
-void tagset_acquire(struct tagset *tagset);
-void tagset_release(struct tagset *tagset);
+void destroy_tagset(struct tagset *tagset);
 
-void focus_most_recent_container(struct tagset *tagset);
 void focus_tagset(struct tagset *tagset);
+void tagset_write_to_workspaces(struct tagset *tagset);
 void tagset_focus_workspace(int ws_id);
 void tagset_toggle_add(struct tagset *tagset, BitSet *bitset);
 void tagset_focus_tags(int ws_id, struct BitSet *bitset);
+void tagset_reload(struct tagset *tagset);
+void tagset_move_sticky_containers(struct tagset *tagset);
 
-struct container *get_container(struct tagset *tagset, int i);
+void tagset_write_to_focus_stacks(struct tagset *tagset);
+void update_sub_focus_stack(struct tagset *tagset);
+bool is_reduced_focus_stack(struct workspace *ws, struct container *con);
+bool _is_reduced_focus_stack(
+        struct workspace *ws,
+        GPtrArray *src_list,
+        struct container *con
+        );
+void update_reduced_focus_stack(struct tagset *tagset);
+void update_local_focus_stack(struct tagset *tagset);
 
+void update_visual_visible_stack(struct tagset *tagset);
+
+bool container_intersects_with_monitor(struct container *con, struct monitor *m);
+
+// get with server floating containers instead
+GPtrArray *server_update_floating_containers();
 GPtrArray *tagset_get_visible_lists(struct tagset *tagset);
+GPtrArray *tagset_get_global_floating_copy(struct tagset *tagset);
+GPtrArray *tagset_get_tiled_list_copy(struct tagset *tagset);
 GPtrArray *tagset_get_tiled_list(struct tagset *tagset);
-GPtrArray *tagset_get_floating_list(struct tagset *tagset);
-GPtrArray *tagset_get_hidden_list(struct tagset *tagset);
+GPtrArray *tagset_get_floating_list_copy(struct tagset *tagset);
+GPtrArray *tagset_get_visible_list_copy(struct tagset *tagset);
+GPtrArray *tagset_get_hidden_list_copy(struct tagset *tagset);
+
+void tagset_list_remove(GPtrArray *list, struct container *con);
+void tagset_list_remove_index(GPtrArray *list, int i);
+void tagset_list_add(GPtrArray *list, struct container *con);
+void tagset_list_insert(GPtrArray *list, int i, struct container *con);
+struct container *tagset_list_steal_index(GPtrArray *list, int i);
 
 void workspace_id_to_tag(BitSet *dest, int ws_id);
 
-bool exist_on(struct tagset *tagset, struct container *con);
-bool tagset_contains_client(struct tagset *tagset, struct client *c);
-bool visible_on(struct tagset *tagset, struct container *con);
+bool container_viewable_on_monitor(struct monitor *m,
+        struct container *con);
+bool container_potentially_viewable_on_monitor(struct monitor *m,
+        struct container *con);
+bool exist_on(struct monitor *m, BitSet *workspaces, struct container *con);
+bool tagset_contains_client(BitSet *workspaces, struct client *c);
+bool visible_on(struct monitor *m, BitSet *workspaces, struct container *con);
 bool tagset_is_visible(struct tagset *tagset);
+
+bool tagset_exist_on(struct tagset *tagset, struct container *con);
+bool tagset_visible_on(struct tagset *tagset, struct container *con);
 
 // adds a refcount of 1 to tagset
 void focus_tagset(struct tagset *tagset);
-void focus_tagset_no_ref(struct tagset *tagset);
+void focus_tagset(struct tagset *tagset);
 // adds a refcount of 1 to tagset
 void push_tagset(struct tagset *tagset);
-void push_tagset_no_ref(struct tagset *tagset);
+void push_tagset(struct tagset *tagset);
+
+void tagset_workspaces_disconnect(struct tagset *tagset);
+void tagset_workspaces_connect(struct tagset *tagset);
+
+void tagset_unload_workspaces(struct tagset *tagset);
+void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces);
 
 struct layout *tagset_get_layout(struct tagset *tagset);
+
+struct workspace *tagset_get_workspace(struct tagset *tagset);
 
 #endif /* TAGSET_H */

@@ -16,6 +16,7 @@
 #include "xwayland.h"
 #include "input_manager.h"
 #include "utils/coreUtils.h"
+#include "bitset/bitset.h"
 
 struct server {
     struct wl_display *wl_display;
@@ -41,6 +42,9 @@ struct server {
     struct wlr_output_layout *output_layout;
     GPtrArray *keyboards;
 
+    GPtrArray *registered_key_combos;
+    timer_t combo_timer;
+    struct sigevent combo_sig_event;
 
     GPtrArray *workspaces;
 
@@ -50,7 +54,8 @@ struct server {
     char *config_file;
     char *config_dir;
 
-    struct tagset *previous_tagset;
+    int previous_workspace;
+    BitSet *previous_bitset;
 
     GPtrArray *client_lists;
     GPtrArray *normal_clients;
@@ -66,16 +71,15 @@ struct server {
 
     struct wlr_surface *old_surface;
 
-    GPtrArray2D *visual_stack_lists;
-    GPtrArray2D *normal_visual_stack_lists;
     GPtrArray2D *layer_visual_stack_lists;
 
-    GPtrArray *tiled_visual_stack;
-    GPtrArray *floating_visual_stack;
     GPtrArray *layer_visual_stack_background;
     GPtrArray *layer_visual_stack_bottom;
     GPtrArray *layer_visual_stack_top;
     GPtrArray *layer_visual_stack_overlay;
+
+    GPtrArray *floating_stack;
+    GPtrArray *floating_containers;
 
     /* global event handlers */
     struct wl_listener new_output;
@@ -83,6 +87,11 @@ struct server {
     struct wl_listener new_xdg_surface;
     struct wl_listener new_layer_shell_surface;
     struct wl_listener new_pointer_constraint;
+
+    // TODO: give them a more sensible name they are here to fix a bug for
+    // sloppy focus
+    struct container *old_xy_container;
+    bool xy_container_is_locked;
 
 #if JAPOKWM_HAS_XWAYLAND
     struct xwayland xwayland;

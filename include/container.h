@@ -4,28 +4,42 @@
 #include <lua.h>
 #include <wlr/types/wlr_box.h>
 #include <wlr/types/wlr_cursor.h>
+#include <glib.h>
 
-#include "client.h"
-#include "options.h"
-#include "monitor.h"
+struct monitor;
+struct resize_constraints;
+struct workspace;
+
+struct container_property {
+    // geometry on each layout
+    struct wlr_box geom;
+    struct wlr_box floating_geom;
+    /* layout-relative, includes border */
+    int border_width;
+    bool floating;
+};
 
 struct container {
-    /* layout-relative, includes border */
-    struct wlr_box geom;
+    GPtrArray *properties;
+
+    // if this is set it will overwrite the other geometries
+    struct wlr_box global_geom;
     struct wlr_box prev_geom;
-    struct wlr_box prev_floating_geom;
     struct client *client;
 
-    bool is_xwayland_popup;
     bool is_tiled;
-    bool floating;
+    bool is_xwayland_popup;
     bool focusable;
     bool has_border;
     bool hidden;
     bool on_scratchpad;
     bool on_top;
+    bool is_unmanaged;
+
+    bool was_arranged_by_focus;
+    bool arranged_by_focus;
     // if position -1 it is floating
-    bool geom_was_changed;
+    bool floating_container_geom_was_changed;
     // height = ratio * width
     float ratio;
     float alpha;
@@ -51,9 +65,10 @@ struct wlr_fbox lua_togeometry(lua_State *L);
 
 void apply_bounds(struct container *con, struct wlr_box bbox);
 void commit_notify(struct wl_listener *listener, void *data);
-void container_damage_borders(struct container *con, struct wlr_box *geom);
+void container_damage_borders(struct container *con, struct monitor *m, struct wlr_box *geom);
 void container_damage_part(struct container *con);
 void container_damage_whole(struct container *con);
+void container_fix_position_to_begin(struct container *con);
 void container_fix_position(struct container *con);
 void focus_container(struct container *con);
 void focus_on_hidden_stack(struct monitor *m, int i);
@@ -62,23 +77,59 @@ void focus_on_stack(struct monitor *m, int i);
  * borders. This relies on stack being ordered from top to bottom. */
 void lift_container(struct container *con);
 void repush(int pos, int pos2);
-void set_container_floating(struct container *con, void (*fix_position)(struct container *con), bool floating);
-void set_container_hidden_status(struct container *con, bool b);
+void container_set_floating(struct container *con, void (*fix_position)(struct container *con),
+        bool floating);
+void set_container_hidden(struct container *con, bool b);
 void set_container_monitor(struct container *con, struct monitor *m);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
 
-void set_container_workspace(struct container *con, struct workspace *ws);
+struct container_property *container_get_property(struct container *con);
+struct container_property *container_get_property_at_workspace(
+        struct container *con,
+        struct workspace *ws);
+
+void container_set_current_geom(struct container *con, struct wlr_box *geom);
+void container_set_tiled_geom(struct container *con, struct wlr_box *geom);
+void container_set_floating_geom(struct container *con, struct wlr_box *geom);
+struct wlr_box *container_get_tiled_geom(struct container *con);
+struct wlr_box *container_get_floating_geom(struct container *con);
+struct wlr_box *container_get_current_geom(struct container *con);
+
+void container_set_border_width(struct container *con, int border_width);
+int container_get_border_width(struct container *con);
+
+void container_set_just_workspace_id(struct container *con, int ws_id);
+void container_set_workspace_id(struct container *con, int ws_id);
+void container_set_workspace(struct container *con, struct workspace *ws);
 void move_container_to_workspace(struct container *con, struct workspace *ws);
 
 struct monitor *container_get_monitor(struct container *con);
 
-int absolute_x_to_container_relative(struct wlr_box geom, int x);
-int absolute_y_to_container_relative(struct wlr_box geom, int y);
+int absolute_x_to_container_relative(struct wlr_box *geom, int x);
+int absolute_y_to_container_relative(struct wlr_box *geom, int y);
+int get_position_in_container_focus_stack(struct container *con);
 int get_position_in_container_stack(struct container *con);
 
 struct container *get_container_from_container_stack_position(int i);
 
 bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *resize_constraints);
 bool container_is_bar(struct container *con);
+
+struct workspace *container_get_workspace(struct container *con);
+struct tagset *container_get_tagset(struct container *con);
+bool container_is_floating(struct container *con);
+bool container_is_floating_on_workspace(struct container *con, struct workspace *ws);
+bool container_is_tiled(struct container *con);
+bool container_is_tiled_and_visible(struct container *con);
+bool container_is_hidden(struct container *con);
+bool container_is_visible(struct container *con);
+bool container_potentially_visible(struct container *con);
+bool container_exists(struct container *con);
+bool container_is_unmanaged(struct container *con);
+bool container_is_managed(struct container *con);
+bool container_is_tiled_and_managed(struct container *con);
+bool container_is_on_scratchpad(struct container *con);
+
+const char *container_get_app_id(struct container *con);
 #endif /* CONTAINER_H */

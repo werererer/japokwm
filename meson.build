@@ -7,6 +7,8 @@ root = meson.source_root()
 
 cc = meson.get_compiler('c')
 
+link_args = ['-lm', '-lrt']
+
 # add version macro
 version = '"@0@"'.format(meson.project_version())
 git = find_program('git', native: true, required: false)
@@ -88,7 +90,7 @@ deps = [\
     wayland_client,
     wayland_protos,
     dependency('pixman-1'),
-    dependency('wlroots', version: '>=0.13'),
+    dependency('wlroots', version: ['>=0.14' ,'< 0.15']),
     dependency('x11'),
     dependency('json-c'),
     dependency('libnotify'),

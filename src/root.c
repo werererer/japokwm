@@ -9,6 +9,7 @@
 #include "utils/coreUtils.h"
 #include "tile/tileUtils.h"
 #include "layer_shell.h"
+#include "workspace.h"
 
 struct anchor {
     uint32_t singular_anchor;
@@ -78,6 +79,11 @@ static struct wlr_box fit_root_area(struct root *root)
 {
     struct wlr_box d_box = root->m->geom;
     struct wlr_box box = root->geom;
+
+    struct workspace *ws = monitor_get_active_workspace(root->m);
+    if (!ws) {
+        return root->geom;
+    }
 
     for (int i = 0; i < length_of_composed_list(server.layer_visual_stack_lists); i++) {
         struct container *con = get_in_composed_list(server.layer_visual_stack_lists, i);

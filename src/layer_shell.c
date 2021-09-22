@@ -205,7 +205,7 @@ void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_ar
     for (int i = 0; i < array->len; i++) {
         struct container *con = g_ptr_array_index(array, i);
 
-        if (!visible_on(monitor_get_active_tagset(m), con))
+        if (!tagset_visible_on(monitor_get_active_tagset(m), con))
             continue;
 
         struct wlr_layer_surface_v1 *wlr_layer_surface = con->client->surface.layer;
@@ -269,7 +269,8 @@ void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_ar
             wlr_layer_surface_v1_close(wlr_layer_surface);
             continue;
         }
-        con->geom = box;
+        // TODO: is that correct?
+        container_set_current_geom(con, &box);
 
         if (state->exclusive_zone > 0)
             apply_exclusive(usable_area, state->anchor, state->exclusive_zone,

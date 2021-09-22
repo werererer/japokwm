@@ -7,7 +7,6 @@
 #include "utils/coreUtils.h"
 #include "layout.h"
 #include "keybinding.h"
-#include "utils/vector.h"
 
 GPtrArray *create_tagnames()
 {
@@ -43,6 +42,7 @@ struct options get_default_options()
         .root_color = {0.3f, 0.3f, 0.3f, 1.0f},
         .focus_color = {1.0f, 0.0f, 0.0f, 1.0f},
         .border_color = {0.0f, 0.0f, 1.0f, 1.0f},
+        .key_combo_timeout = 1000,
         .repeat_rate = 25,
         .repeat_delay = 600,
         .tile_border_px = 3,
@@ -56,6 +56,7 @@ struct options get_default_options()
         .arrange_by_focus = false,
         .hidden_edges = WLR_EDGE_NONE,
         .smart_hidden_edges = false,
+        .automatic_workspace_naming = false,
     };
 
     options.tag_names = create_tagnames();

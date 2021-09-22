@@ -4,7 +4,8 @@
 #include <wlr/xwayland.h>
 #include <xcb/xproto.h>
 
-#include "client.h"
+struct client;
+struct seat;
 
 enum atom_name {
     NET_WM_WINDOW_TYPE_NORMAL,

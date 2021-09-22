@@ -3,6 +3,7 @@
 #include <lauxlib.h>
 #include <lua.h>
 #include <wayland-server-protocol.h>
+#include <wlr/types/wlr_output_layout.h>
 
 #include "cursor.h"
 #include "lib/actions/lib_actions.h"
@@ -56,6 +57,9 @@ static const struct luaL_Reg container[] =
     {"set_alpha", container_set_alpha},
     {"set_ratio", container_set_ratio},
     {"set_sticky", container_set_sticky},
+    {"set_sticky_restricted", container_set_sticky_restricted},
+    {"toggle_add_sticky", container_toggle_add_sticky},
+    {"toggle_add_sticky_restricted", container_toggle_add_sticky_restricted},
     {NULL, NULL},
 };
 
@@ -73,14 +77,17 @@ static const struct luaL_Reg localevent[] =
 
 static const struct luaL_Reg info[] =
 {
+    {"get_active_layout", lib_get_active_layout},
     {"get_container_under_cursor", lib_get_container_under_cursor},
     {"get_next_empty_workspace", lib_get_next_empty_workspace},
     {"get_nmaster", lib_get_nmaster},
+    {"get_previous_layout", lib_get_previous_layout},
     {"get_root_area", lib_get_root_area},
     {"get_this_container_count", lib_get_this_container_count},
     {"get_workspace", lib_get_workspace},
     {"is_container_not_in_limit", lib_is_container_not_in_limit},
     {"is_container_not_in_master_limit", lib_is_container_not_in_master_limit},
+    {"stack_position_to_position", lib_stack_position_to_position},
     {"this_container_position", lib_this_container_position},
     {NULL, NULL},
 };
@@ -94,6 +101,7 @@ static const struct luaL_Reg config[] =
     {"create_workspaces", lib_create_workspaces},
     {"reload", lib_reload},
     {"set_arrange_by_focus", lib_set_arrange_by_focus},
+    {"set_automatic_workspace_naming", lib_set_automatic_workspace_naming},
     {"set_border_color", lib_set_border_color},
     {"set_default_layout", lib_set_default_layout},
     {"set_float_borderpx", lib_set_float_borderpx},
@@ -151,7 +159,7 @@ static const struct luaL_Reg monitor[] =
     {NULL, NULL},
 };
 
-static void load_info()
+static void load_info(lua_State *L)
 {
     luaL_newlib(L, info);
 
@@ -249,7 +257,7 @@ void load_lua_api(lua_State *L)
     lua_setfield(L, -2, "config");
     lua_setglobal(L, "l");
 
-    load_info();
+    load_info(L);
 
     luaL_newlib(L, config);
     lua_setglobal(L, "config");

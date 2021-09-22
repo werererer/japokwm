@@ -17,7 +17,6 @@ struct layout *create_layout(lua_State *L)
     lt->nmaster = 1;
     *lt = (struct layout) {
         .symbol = "",
-        .name = "",
         .n_area = 1,
         .nmaster = 1,
         .options = get_default_options(),
@@ -191,4 +190,11 @@ int cmp_layout(const void *ptr1, const void *ptr2)
     const struct layout *lt1 = ptr1;
     const struct layout *lt2 = ptr2;
     return strcmp(lt1->symbol, lt2->symbol) == 0;
+}
+
+int cmp_layout_to_string(const void *ptr1, const void *symbol_ptr)
+{
+    const struct layout *lt1 = ptr1;
+    const char *symbol = symbol_ptr;
+    return strcmp(lt1->symbol, symbol) == 0;
 }

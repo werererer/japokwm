@@ -5,6 +5,7 @@
 #include <wlr/util/edges.h>
 
 #include "client.h"
+#include "monitor.h"
 #include "popup.h"
 #include "server.h"
 #include "utils/coreUtils.h"
@@ -88,15 +89,15 @@ void map_request(struct wl_listener *listener, void *data)
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
     struct workspace *ws = get_workspace(c->ws_id);
-    c->bw = ws->layout->options.tile_border_px;
 
     g_ptr_array_add(server.normal_clients, c);
 
     struct container *con = c->con;
     add_container_to_tile(con);
     arrange();
-    struct monitor *m = container_get_monitor(con);
-    focus_most_recent_container(m->tagset);
+    if (ws) {
+        focus_most_recent_container(ws);
+    }
 }
 
 void unmap_notify(struct wl_listener *listener, void *data)
@@ -112,7 +113,8 @@ void unmap_notify(struct wl_listener *listener, void *data)
 
     arrange();
     struct monitor *m = selected_monitor;
-    focus_most_recent_container(m->tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    focus_most_recent_container(ws);
 }
 
 void createxdeco(struct wl_listener *listener, void *data)

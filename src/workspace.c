@@ -6,12 +6,18 @@
 #include <wlr/util/log.h>
 #include <wlr/types/wlr_cursor.h>
 
+#include "client.h"
 #include "ipc-server.h"
+#include "list_sets/container_stack_set.h"
 #include "monitor.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "container.h"
+#include "stringop.h"
+#include "list_sets/list_set.h"
+#include "list_sets/focus_stack_set.h"
+#include "list_sets/visual_stack_set.h"
 
 static void update_workspaces_id(GPtrArray *workspaces)
 {
@@ -43,8 +49,12 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     push_layout(ws, lt);
     push_layout(ws, lt);
 
-    ws->list_set = create_list_set();
-    ws->subscribed_tagsets = g_ptr_array_new();
+    ws->prev_workspaces = bitset_create(server.workspaces->len);
+    ws->independent_containers = g_ptr_array_new();
+
+    ws->focus_set = focus_set_create();
+    ws->visual_set = visual_set_create();
+    ws->con_set = create_container_set();
     return ws;
 }
 
@@ -87,19 +97,53 @@ void update_workspaces(GPtrArray *workspaces, GPtrArray *tag_names)
     for (int i = 0; i < server.workspaces->len; i++) {
         struct workspace *ws = g_ptr_array_index(server.workspaces, i);
         const char *name = g_ptr_array_index(tag_names, i);
-        rename_workspace(ws, name);
+        workspace_rename(ws, name);
     }
+}
+
+void focus_most_recent_container(struct workspace *ws)
+{
+    struct tagset *tagset = workspace_get_active_tagset(ws);
+    struct container *con = get_in_composed_list(tagset->visible_focus_set->focus_stack_lists, 0);
+
+    // FIXME
+    if (!con) {
+        struct container *con = get_in_composed_list(tagset->con_set->container_lists, 0);
+        if (!con) {
+            return;
+        }
+    }
+
+    focus_container(con);
+}
+
+struct container *get_container(struct workspace *ws, int i)
+{
+    struct tagset *tagset = workspace_get_active_tagset(ws);
+    return get_in_composed_list(tagset->visible_focus_set->focus_stack_visible_lists, i);
+}
+
+struct container *get_container_in_stack(struct workspace *ws, int i)
+{
+    struct tagset *tagset = workspace_get_active_tagset(ws);
+    GPtrArray *visible_list = tagset_get_visible_list_copy(tagset);
+    struct container *con = g_ptr_array_index(visible_list, i);
+    return con;
 }
 
 void destroy_workspace(struct workspace *ws)
 {
-    g_ptr_array_free(ws->subscribed_tagsets, TRUE);
-    for (int i = 0; i < length_of_composed_list(ws->list_set->container_lists); i++) {
-        struct container *con = get_in_composed_list(ws->list_set->container_lists, i);
+    g_ptr_array_free(ws->independent_containers, false);
+
+    bitset_destroy(ws->prev_workspaces);
+    focus_set_destroy(ws->focus_set);
+    visual_set_destroy(ws->visual_set);
+    for (int i = 0; i < length_of_composed_list(ws->con_set->container_lists); i++) {
+        struct container *con = get_in_composed_list(ws->con_set->container_lists, i);
         struct client *c = con->client;
         kill_client(c);
     }
-    destroy_list_set(ws->list_set);
+    destroy_container_set(ws->con_set);
     free(ws->name);
     free(ws);
 }
@@ -146,6 +190,25 @@ bool workspace_is_visible(struct workspace *ws)
     return false;
 }
 
+bool is_workspace_extern(struct workspace *ws)
+{
+    if (!ws->selected_tagset)
+        return false;
+    if (!ws->tagset)
+        return false;
+    bool is_extern = ws->tagset->m != ws->selected_tagset->m;
+    return is_extern;
+}
+
+bool is_workspace_the_selected_one(struct workspace *ws)
+{
+    if (!ws->selected_tagset)
+        return false;
+    return ws->selected_tagset->selected_ws_id == ws->id
+        && tagset_is_visible(ws->selected_tagset)
+        && !is_workspace_extern(ws);
+}
+
 bool workspace_is_active(struct workspace *ws)
 {
     struct monitor *m = workspace_get_monitor(ws);
@@ -162,7 +225,14 @@ int get_workspace_container_count(struct workspace *ws)
     if (!ws)
         return -1;
 
-    return length_of_composed_list(ws->list_set->visible_container_lists);
+    int count = 0;
+    for (int i = 0; i < length_of_composed_list(ws->con_set->container_lists); i++) {
+        struct container *con = get_in_composed_list(ws->con_set->container_lists, i);
+        if (con->client->ws_id == ws->id) {
+            count++;
+        }
+    }
+    return count;
 }
 
 bool is_workspace_empty(struct workspace *ws)
@@ -192,31 +262,75 @@ struct workspace *get_workspace(int id)
     return g_ptr_array_index(server.workspaces, id);
 }
 
-struct workspace *get_next_empty_workspace(GPtrArray *workspaces, size_t i)
+struct workspace *get_next_empty_workspace(GPtrArray *workspaces, size_t ws_id)
 {
+    for (int i = ws_id; i < workspaces->len; i++) {
+        struct workspace *ws = g_ptr_array_index(workspaces, i);
+        if (is_workspace_empty(ws)) {
+            return ws;
+        }
+    }
+
+    for (int i = ws_id-1; i >= 0; i--) {
+        struct workspace *ws = g_ptr_array_index(workspaces, i);
+        if (is_workspace_empty(ws)) {
+            return ws;
+        }
+    }
+
+    return NULL;
+}
+
+struct workspace *get_nearest_empty_workspace(GPtrArray *workspaces, int ws_id)
+{
+    struct workspace *initial_workspace = get_workspace(ws_id);
+    if (is_workspace_empty(initial_workspace)) {
+        return initial_workspace;
+    }
+
     struct workspace *ws = NULL;
-    for (int j = i; j < workspaces->len; j++) {
-        struct workspace *ws = g_ptr_array_index(workspaces, j);
-        if (is_workspace_empty(ws))
+    for (int i = 0, up_counter = ws_id+1, down_counter = ws_id-1;
+            i < workspaces->len;
+            i++,up_counter++,down_counter--) {
+
+        bool is_up_counter_valid = up_counter < workspaces->len;
+        bool is_down_counter_valid = down_counter >= 0;
+        if (is_down_counter_valid) {
+            ws = g_ptr_array_index(workspaces, down_counter);
+            if (is_workspace_empty(ws))
+                break;
+        }
+        if (is_up_counter_valid) {
+            ws = g_ptr_array_index(workspaces, up_counter);
+            if (is_workspace_empty(ws))
+                break;
+        }
+        if (!is_up_counter_valid && !is_down_counter_valid) {
             break;
+        }
     }
 
     return ws;
 }
 
-struct workspace *get_prev_empty_workspace(GPtrArray *workspaces, size_t i)
-{
-    if (i >= workspaces->len)
-        return NULL;
 
-    struct workspace *ws = NULL;
-    for (int j = i; j >= 0; j--) {
-        struct workspace *ws = g_ptr_array_index(workspaces, j);
-        if (is_workspace_empty(ws))
-            break;
+struct workspace *get_prev_empty_workspace(GPtrArray *workspaces, size_t ws_id)
+{
+    for (int i = ws_id; i >= 0; i--) {
+        struct workspace *ws = g_ptr_array_index(workspaces, i);
+        if (is_workspace_empty(ws)) {
+            return ws;
+        }
     }
 
-    return ws;
+    for (int i = ws_id+1; i < workspaces->len; i++) {
+        struct workspace *ws = g_ptr_array_index(workspaces, i);
+        if (is_workspace_empty(ws)) {
+            return ws;
+        }
+    }
+
+    return NULL;
 }
 
 struct tagset *workspace_get_selected_tagset(struct workspace *ws)
@@ -228,6 +342,26 @@ struct tagset *workspace_get_selected_tagset(struct workspace *ws)
 struct tagset *workspace_get_tagset(struct workspace *ws)
 {
     return ws->tagset;
+}
+
+struct tagset *workspace_get_active_tagset(struct workspace *ws)
+{
+    if (!ws)
+        return NULL;
+    struct tagset *tagset = ws->tagset;
+    if (!tagset) {
+        tagset = ws->selected_tagset;
+        if (!tagset)
+            return NULL;
+    }
+    return tagset;
+}
+
+struct layout *workspace_get_layout(struct workspace *ws)
+{
+    if (!ws)
+        return NULL;
+    return ws->layout;
 }
 
 struct monitor *workspace_get_selected_monitor(struct workspace *ws)
@@ -263,10 +397,10 @@ void push_layout(struct workspace *ws, struct layout *lt)
 
 void load_default_layout(lua_State *L)
 {
-    load_layout(L, server.default_layout->name);
+    load_layout(L, server.default_layout->symbol);
 }
 
-void load_layout(lua_State *L, const char *name)
+static void load_layout_file(lua_State *L, const char *name)
 {
     char *config_path = get_config_file("layouts");
     char *file = strdup("");
@@ -287,6 +421,34 @@ void load_layout(lua_State *L, const char *name)
 
 cleanup:
     free(file);
+}
+
+void load_layout(lua_State *L, const char *name)
+{
+    struct workspace *ws = monitor_get_active_workspace(selected_monitor);
+
+    struct layout *lt = NULL;
+    guint i;
+    bool found = g_ptr_array_find_with_equal_func(ws->loaded_layouts, name, cmp_layout_to_string, &i);
+    if (found) {
+        lt = g_ptr_array_steal_index(ws->loaded_layouts, i);
+        g_ptr_array_insert(ws->loaded_layouts, 0, lt);
+        debug_print("steal\n");
+        push_layout(ws, lt);
+    } else {
+        debug_print("create layout\n");
+        lt = create_layout(L);
+        copy_layout_safe(lt, server.default_layout);
+
+        lt->symbol = name;
+
+        g_ptr_array_insert(ws->loaded_layouts, 0, lt);
+        push_layout(ws, lt);
+
+        load_layout_file(L, name);
+    }
+    int layout_index = server.layout_set.lua_layout_index;
+    server.layout_set.lua_layout_index = layout_index;
 }
 
 void reset_loaded_layout(struct workspace *ws)
@@ -318,10 +480,10 @@ void focus_next_unoccupied_workspace(struct monitor *m, GPtrArray *workspaces, s
     bitset_set(bitset, w->id);
 
     struct tagset *tagset = create_tagset(m, w->id, bitset);
-    push_tagset_no_ref(tagset);
+    push_tagset(tagset);
 }
 
-void rename_workspace(struct workspace *ws, const char *name)
+void workspace_rename(struct workspace *ws, const char *name)
 {
     if (!ws)
         return;
@@ -329,67 +491,250 @@ void rename_workspace(struct workspace *ws, const char *name)
     ws->name = strdup(name);
 }
 
+void workspace_update_names(struct server *server, GPtrArray *workspaces)
+{
+    struct layout *lt = server->default_layout;
+    if (!lt->options.automatic_workspace_naming)
+        return;
+    for (int i = 0; i < workspaces->len; i++) {
+        struct workspace *ws = g_ptr_array_index(workspaces, i);
+        const char *default_name;
+        if (i < lt->options.tag_names->len) {
+            default_name = g_ptr_array_index(lt->options.tag_names, i);
+        } else {
+            default_name = ws->name;
+        }
+        struct container *con = workspace_get_focused_container(ws);
+
+        const char *name = default_name;
+
+        //TODO refactor
+        char *num_name = strdup("");
+
+        const char *app_id = container_get_app_id(con);
+        if (con
+                && app_id != NULL
+                && g_strcmp0(app_id, "") != 0
+                ) {
+
+            name = app_id;
+
+            char ws_number[12];
+            char ws_name_number[12];
+            sprintf(ws_number, "%lu:", ws->id);
+            sprintf(ws_name_number, "%lu:", ws->id+1);
+            append_string(&num_name, ws_number);
+            append_string(&num_name, ws_name_number);
+        }
+
+        append_string(&num_name, name);
+
+        char final_name[12];
+        strncpy(final_name, num_name, 12);
+        workspace_rename(ws, final_name);
+        free(num_name);
+    }
+    ipc_event_workspace();
+}
+
+struct container *workspace_get_focused_container(struct workspace *ws)
+{
+    for (int i = 0; i < length_of_composed_list(ws->focus_set->focus_stack_lists); i++) {
+        struct container *con = get_in_composed_list(ws->focus_set->focus_stack_lists, i);
+        if (con->client->ws_id == ws->id) {
+            return con;
+        }
+    }
+    return NULL;
+}
+
+void list_set_add_container_to_containers(struct container_set *list_set, struct container *con, int i)
+{
+    assert(list_set->tiled_containers->len >= i);
+    if (list_set->tiled_containers->len <= 0) {
+        g_ptr_array_add(list_set->tiled_containers, con);
+    } else {
+        g_ptr_array_insert(list_set->tiled_containers, i, con);
+    }
+}
+
 void workspace_add_container_to_containers(struct workspace *ws, struct container *con, int i)
 {
     assert(con != NULL);
 
-    DO_ACTION(ws,
-        if (con->floating) {
-            g_ptr_array_insert(list_set->floating_containers, i, con);
-            continue;
-        }
-        if (con->hidden) {
-            g_ptr_array_insert(list_set->hidden_containers, i, con);
-            continue;
-        }
-        assert(list_set->tiled_containers->len >= i);
-        if (list_set->tiled_containers->len <= 0) {
-            g_ptr_array_add(list_set->tiled_containers, con);
-        } else {
-            g_ptr_array_insert(list_set->tiled_containers, i, con);
-        }
+    DO_ACTION_GLOBALLY(server.workspaces,
+        list_set_add_container_to_containers(con_set, con, i);
     );
 }
 
-void list_set_add_container_to_focus_stack(struct list_set *list_set, struct container *con)
+void workspace_remove_container_from_containers_locally(struct workspace *ws, struct container *con)
+{
+    struct tagset *tagset = workspace_get_active_tagset(ws);
+    struct layout *lt = tagset_get_layout(tagset);
+    if (lt->options.arrange_by_focus) {
+        remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
+        remove_in_composed_list(tagset->visible_focus_set->focus_stack_lists, cmp_ptr, con);
+        remove_in_composed_list(tagset->local_focus_set->focus_stack_lists, cmp_ptr, con);
+    } else {
+        DO_ACTION_LOCALLY(ws,
+            remove_in_composed_list(con_set->container_lists, cmp_ptr, con);
+        );
+    }
+}
+
+void workspace_add_container_to_containers_locally(struct workspace *ws, struct container *con, int i)
+{
+    struct tagset *tagset = workspace_get_active_tagset(ws);
+    struct layout *lt = tagset_get_layout(tagset);
+    if (lt->options.arrange_by_focus) {
+        list_set_insert_container_to_focus_stack(ws->focus_set, con);
+        update_sub_focus_stack(tagset);
+    } else {
+        DO_ACTION_LOCALLY(ws,
+            list_set_add_container_to_containers(con_set, con, i);
+        );
+    }
+}
+
+void list_set_append_container_to_focus_stack(struct workspace *ws, struct container *con)
 {
     if (con->client->type == LAYER_SHELL) {
         switch (con->client->surface.layer->current.layer) {
             case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
-                g_ptr_array_insert(list_set->focus_stack_layer_background, 0, con);
+                g_ptr_array_add(ws->focus_set->focus_stack_layer_background, con);
                 break;
             case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
-                g_ptr_array_insert(list_set->focus_stack_layer_bottom, 0, con);
+                g_ptr_array_add(ws->focus_set->focus_stack_layer_bottom, con);
                 break;
             case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
-                g_ptr_array_insert(list_set->focus_stack_layer_top, 0, con);
+                g_ptr_array_add(ws->focus_set->focus_stack_layer_top, con);
                 break;
             case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
-                g_ptr_array_insert(list_set->focus_stack_layer_overlay, 0, con);
+                g_ptr_array_add(ws->focus_set->focus_stack_layer_overlay, con);
                 break;
         }
         return;
     }
     if (con->on_top) {
-        g_ptr_array_insert(list_set->focus_stack_on_top, 0, con);
+        g_ptr_array_add(ws->focus_set->focus_stack_on_top, con);
         return;
     }
     if (!con->focusable) {
-        g_ptr_array_insert(list_set->focus_stack_not_focusable, 0, con);
+        g_ptr_array_add(ws->focus_set->focus_stack_not_focusable, con);
         return;
     }
 
-    g_ptr_array_insert(list_set->focus_stack_normal, 0, con);
+    g_ptr_array_add(ws->focus_set->focus_stack_normal, con);
+}
+
+void list_set_insert_container_to_focus_stack(struct focus_set *focus_set, struct container *con)
+{
+    if (con->client->type == LAYER_SHELL) {
+        switch (con->client->surface.layer->current.layer) {
+            case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
+                g_ptr_array_insert(focus_set->focus_stack_layer_background, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
+                g_ptr_array_insert(focus_set->focus_stack_layer_bottom, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
+                g_ptr_array_insert(focus_set->focus_stack_layer_top, 0, con);
+                break;
+            case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
+                g_ptr_array_insert(focus_set->focus_stack_layer_overlay, 0, con);
+                break;
+        }
+        return;
+    }
+    if (con->on_top) {
+        g_ptr_array_insert(focus_set->focus_stack_on_top, 0, con);
+        return;
+    }
+    if (!con->focusable) {
+        g_ptr_array_insert(focus_set->focus_stack_not_focusable, 0, con);
+        return;
+    }
+
+    g_ptr_array_insert(focus_set->focus_stack_normal, 0, con);
 }
 
 void workspace_add_container_to_focus_stack(struct workspace *ws, struct container *con)
 {
-    DO_ACTION(ws, 
-            list_set_add_container_to_focus_stack(list_set, con);
+    // TODO: refactor me
+    for (int i = 0; i < server.workspaces->len; i++) {
+        ws = g_ptr_array_index(server.workspaces, i);
+        list_set_insert_container_to_focus_stack(ws->focus_set, con);
+        struct tagset *tagset = workspace_get_tagset(ws);
+        update_sub_focus_stack(tagset);
+    }
+}
+
+void workspace_remove_container_from_focus_stack_locally(struct workspace *ws, struct container *con)
+{
+    remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
+    struct tagset *tagset = workspace_get_tagset(ws);
+    update_sub_focus_stack(tagset);
+}
+
+void workspace_add_container_to_focus_stack_locally(struct workspace *ws, struct container *con)
+{
+    list_set_insert_container_to_focus_stack(ws->focus_set, con);
+    struct tagset *tagset = workspace_get_tagset(ws);
+    update_sub_focus_stack(tagset);
+}
+
+void workspace_remove_container_from_floating_stack_locally(struct workspace *ws, struct container *con)
+{
+    DO_ACTION_LOCALLY(ws, 
+            g_ptr_array_remove(con_set->tiled_containers, con);
             );
 }
 
-void add_container_to_stack(struct container *con)
+void workspace_add_container_to_floating_stack_locally(struct workspace *ws, struct container *con, int i)
+{
+    DO_ACTION_LOCALLY(ws,
+            g_ptr_array_insert(con_set->container_lists, i, con);
+            );
+}
+
+void workspace_remove_container_from_visual_stack_layer(struct workspace *ws, struct container *con)
+{
+    // TODO optimize this function
+    for (int i = 0; i < server.workspaces->len; i++) {
+        struct workspace *ws = get_workspace(i);
+        remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
+        struct tagset *tagset = workspace_get_tagset(ws);
+        update_visual_visible_stack(tagset);
+    }
+}
+
+void workspace_remove_container_from_visual_stack_normal(struct workspace *ws, struct container *con)
+{
+    for (int i = 0; i < server.workspaces->len; i++) {
+        struct workspace *ws = get_workspace(i);
+        remove_in_composed_list(ws->visual_set->visual_stack_lists, cmp_ptr, con);
+        struct tagset *tagset = workspace_get_active_tagset(ws);
+        update_visual_visible_stack(tagset);
+    }
+}
+
+void workspace_add_container_to_visual_stack_layer(struct workspace *ws, struct container *con)
+{
+    for (int i = 0; i < server.workspaces->len; i++) {
+        struct workspace *ws = get_workspace(i);
+        add_container_to_stack(ws, con);
+    }
+}
+
+void workspace_add_container_to_visual_stack_normal(struct workspace *ws, struct container *con)
+{
+    for (int i = 0; i < server.workspaces->len; i++) {
+        struct workspace *ws = get_workspace(i);
+        add_container_to_stack(ws, con);
+    }
+}
+
+void add_container_to_stack(struct workspace *ws, struct container *con)
 {
     if (!con)
         return;
@@ -409,36 +754,114 @@ void add_container_to_stack(struct container *con)
                 g_ptr_array_insert(server.layer_visual_stack_overlay, 0, con);
                 break;
         }
+        struct tagset *tagset = workspace_get_tagset(ws);
+        update_visual_visible_stack(tagset);
         return;
     }
 
-    if (con->floating) {
-        g_ptr_array_insert(server.floating_visual_stack, 0, con);
+    if (container_is_floating(con)) {
+        g_ptr_array_insert(ws->visual_set->floating_visual_stack, 0, con);
+        struct tagset *tagset = workspace_get_tagset(ws);
+        update_visual_visible_stack(tagset);
         return;
     }
 
-    g_ptr_array_insert(server.tiled_visual_stack, 0, con);
+    g_ptr_array_insert(ws->visual_set->tiled_visual_stack, 0, con);
+    struct tagset *tagset = workspace_get_tagset(ws);
+    update_visual_visible_stack(tagset);
 }
 
 void workspace_remove_container(struct workspace *ws, struct container *con)
 {
-    DO_ACTION(ws,
-            remove_in_composed_list(list_set->container_lists, cmp_ptr, con);
+    DO_ACTION_GLOBALLY(server.workspaces,
+            remove_in_composed_list(con_set->container_lists, cmp_ptr, con);
             );
 }
 
 void workspace_remove_container_from_focus_stack(struct workspace *ws, struct container *con)
 {
-    DO_ACTION(ws,
-            remove_in_composed_list(list_set->focus_stack_lists, cmp_ptr, con);
-            );
+    for (int i = 0; i < server.workspaces->len; i++) {
+        ws = g_ptr_array_index(server.workspaces, i);
+        remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
+        struct tagset *tagset = workspace_get_active_tagset(ws);
+        if (!tagset)
+            continue;
+        remove_in_composed_list(tagset->visible_focus_set->focus_stack_lists, cmp_ptr, con);
+        remove_in_composed_list(tagset->local_focus_set->focus_stack_lists, cmp_ptr, con);
+    }
 }
 
 void workspace_remove_independent_container(struct workspace *ws, struct container *con)
 {
-    DO_ACTION(ws,
-            g_ptr_array_remove(list_set->independent_containers, con);
-            );
+    g_ptr_array_remove(ws->independent_containers, con);
+}
+
+static int get_in_container_stack(struct container *con)
+{
+    if (!con)
+        return INVALID_POSITION;
+
+    struct monitor *m = selected_monitor;
+    struct workspace *ws = monitor_get_active_workspace(m);
+    int position = find_in_composed_list(ws->con_set->container_lists, cmp_ptr, con);
+    return position;
+}
+
+GArray *container_array2D_get_positions_array(GPtrArray2D *containers)
+{
+    GArray *positions = g_array_new(false, false, sizeof(int));
+    for (int i = 0; i < length_of_composed_list(containers); i++) {
+        struct container *con = get_in_composed_list(containers, i);
+        int position = get_in_container_stack(con);
+        g_array_append_val(positions, position);
+    }
+    return positions;
+}
+
+
+GArray *container_array_get_positions_array(GPtrArray *containers)
+{
+    GArray *positions = g_array_new(false, false, sizeof(int));
+    for (int i = 0; i < containers->len; i++) {
+        struct container *con = g_ptr_array_index(containers, i);
+        int position = get_in_container_stack(con);
+        g_array_append_val(positions, position);
+    }
+    return positions;
+}
+
+void workspace_repush(struct workspace *ws, struct container *con, int new_pos)
+{
+    struct tagset *tagset = workspace_get_active_tagset(ws);
+
+    GPtrArray *actual_tiled_list = tagset_get_tiled_list(tagset);
+
+    GPtrArray *tiled_list = tagset_get_tiled_list_copy(tagset);
+    g_ptr_array_remove(tiled_list, con);
+    g_ptr_array_insert(tiled_list, new_pos, con);
+    sub_list_write_to_parent_list1D(actual_tiled_list, tiled_list);
+    debug_print("new_pos: %i\n", new_pos);
+    debug_print("tiled list len: %i\n", tiled_list);
+    debug_print("actual tiled list len: %i\n", actual_tiled_list);
+
+    g_ptr_array_free(tiled_list, FALSE);
+
+    tagset_write_to_workspaces(tagset);
+}
+
+void workspace_repush_on_focus_stack(struct workspace *ws, struct container *con, int new_pos)
+{
+    struct tagset *tagset = workspace_get_active_tagset(ws);
+
+    remove_in_composed_list(tagset->visible_focus_set->focus_stack_lists, cmp_ptr, con);
+    list_set_insert_container_to_focus_stack(tagset->visible_focus_set, con);
+    focus_set_write_to_parent(ws->focus_set, tagset->visible_focus_set);
+    update_sub_focus_stack(tagset);
+}
+
+bool workspace_sticky_contains_client(struct workspace *ws, struct client *client)
+{
+    return bitset_test(client->sticky_workspaces, ws->id);
 }
 
 // TODO refactor this function

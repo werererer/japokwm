@@ -11,6 +11,7 @@
 #include <stdlib.h>
 
 #include "container.h"
+#include "list_sets/container_stack_set.h"
 #include "monitor.h"
 #include "root.h"
 #include "server.h"
@@ -19,16 +20,49 @@
 #include "utils/parseConfigUtils.h"
 #include "event_handler.h"
 #include "layer_shell.h"
+#include "workspace.h"
+#include "list_sets/focus_stack_set.h"
 
-static void arrange_container(struct container *con, int arrange_position,
-        struct wlr_box root_geom, int inner_gap);
+static void arrange_container(struct container *con, struct monitor *m,
+        int arrange_position, struct wlr_box root_geom, int inner_gap);
+
+static void move_floating_containers_back()
+{
+    server_update_floating_containers();
+    for (int i = 0; i < server.floating_containers->len; i++) {
+        struct container *con = g_ptr_array_index(server.floating_containers, i);
+        container_update_size(con);
+    }
+}
+
+static void update_container_arranged_by_focus_state()
+{
+    // TODO: refactor this
+    // manage the con->was_arranged_by_focus and con->arranged_by_focus variables
+    struct tagset *tagset = monitor_get_active_tagset(selected_monitor);
+    struct layout *mon_lt = tagset_get_layout(tagset);
+    for (int i = 0; i < length_of_composed_list(tagset->visible_focus_set->focus_stack_lists); i++) {
+        struct container *con = get_in_composed_list(tagset->visible_focus_set->focus_stack_lists, i);
+        con->was_arranged_by_focus = con->arranged_by_focus;
+        con->arranged_by_focus = mon_lt->options.arrange_by_focus;
+    }
+
+}
 
 void arrange()
 {
+    for (int i = 0; i < server.floating_containers->len; i++) {
+        struct container *con = g_ptr_array_index(server.floating_containers, i);
+        con->hidden = false;
+    }
+
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
         arrange_monitor(m);
     }
+
+    update_container_arranged_by_focus_state();
+    move_floating_containers_back();
 }
 
 static void set_layout_ref(struct layout *lt, int n_area)
@@ -36,9 +70,6 @@ static void set_layout_ref(struct layout *lt, int n_area)
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
 
     lua_rawgeti(L, -1, n_area);
-    // TODO refactor
-    int len = luaL_len(L, -1);
-    n_area = MAX(MIN(len, n_area), 1);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_ref);
 
     lua_pop(L, 1);
@@ -77,23 +108,23 @@ static void update_layout_counters(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);
 
-    tagset->n_all = get_container_count(tagset);
+    lt->n_all = get_container_count(tagset);
     lt->n_area = get_layout_container_area_count(tagset);
     set_layout_ref(lt, lt->n_area);
     lt->n_area_max = get_layout_container_max_area_count(tagset);
     lt->n_master_abs = get_master_container_count(tagset);
     lt->n_floating = get_floating_container_count(tagset);
-    lt->n_tiled = lt->n_area + lt->n_master_abs-1;
+    lt->n_tiled = lt->n_area-1 + lt->n_master_abs;
     lt->n_tiled_max = lt->n_area_max + lt->n_master_abs-1;
     lt->n_visible = lt->n_tiled + lt->n_floating;
-    lt->n_hidden = tagset->n_all - lt->n_visible;
+    lt->n_hidden = lt->n_all - lt->n_visible;
 }
 
 static struct wlr_fbox lua_unbox_layout_geom(lua_State *L, int i) {
     struct wlr_fbox geom;
 
     if (luaL_len(L, -1) < i) {
-        debug_print("index to high: index %i len %lli", i, luaL_len(L, -1));
+        printf("ERROR: index to high: index %i len %lli", i, luaL_len(L, -1));
     }
 
     lua_rawgeti(L, -1, i);
@@ -170,12 +201,14 @@ int get_floating_container_count(struct tagset *tagset)
 
     int n = 0;
 
-    for (int i = 0; i < tagset->list_set->floating_containers->len; i++) {
-        struct container *con = get_container(tagset, i);
+    GPtrArray *floating_containers = tagset_get_floating_list_copy(tagset);
+    for (int i = 0; i < floating_containers->len; i++) {
+        struct container *con = g_ptr_array_index(floating_containers, i);
         if (con->client->type == LAYER_SHELL)
             continue;
         n++;
     }
+    g_ptr_array_free(floating_containers, FALSE);
     return n;
 }
 
@@ -198,32 +231,25 @@ void arrange_monitor(struct monitor *m)
     set_root_geom(m->root, m->geom);
 
     struct tagset *tagset = monitor_get_active_tagset(m);
+
     struct layout *lt = tagset_get_layout(tagset);
     container_surround_gaps(&m->root->geom, lt->options.outer_gap);
 
     update_layout_counters(tagset);
     call_update_function(lt->options.event_handler, lt->n_area);
 
-    GPtrArray *visible_container_lists = tagset_get_visible_lists(tagset);
-    GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
-    GPtrArray *hidden_containers = tagset_get_hidden_list(tagset); 
+    GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
 
-    update_hidden_status_of_containers(m, visible_container_lists,
-            tiled_containers, hidden_containers);
-
-    if (!lt->options.arrange_by_focus) {
-        for (int i = 0; i < tagset->list_set->floating_containers->len; i++) {
-            struct container *con = g_ptr_array_index(tagset->list_set->floating_containers, i);
-            if (con->geom_was_changed) {
-                resize(con, con->prev_floating_geom);
-                con->geom_was_changed = false;
-            }
-        }
-    }
+    update_hidden_status_of_containers(m, tiled_containers);
 
     arrange_containers(tagset, m->root->geom, tiled_containers);
+    g_ptr_array_free(tiled_containers, FALSE);
 
     root_damage_whole(m->root);
+    update_sub_focus_stack(tagset);
+    struct workspace *ws = tagset_get_workspace(tagset);
+    focus_most_recent_container(ws);
+    update_visual_visible_stack(tagset);
 }
 
 void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,
@@ -260,44 +286,35 @@ void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,
         /* printf("tagset: %p ->ws: %i ->m: %p\n", tagset, tagset->selected_ws_id, tagset->m); */
         /* assert(container_get_monitor(con) == tagset->m); */
 
-        arrange_container(con, i, root_geom, actual_inner_gap);
+        arrange_container(con, tagset->m, i, root_geom, actual_inner_gap);
     }
 }
 
-static void arrange_container(struct container *con, int arrange_position, 
-        struct wlr_box root_geom, int inner_gap)
+static void arrange_container(struct container *con, struct monitor *m,
+        int arrange_position, struct wlr_box root_geom, int inner_gap)
 {
     if (con->hidden)
         return;
 
-    struct monitor *m = container_get_monitor(con);
     struct layout *lt = get_layout_in_monitor(m);
-
     struct wlr_box geom = get_nth_geom_in_layout(L, lt, root_geom, arrange_position);
     container_surround_gaps(&geom, inner_gap);
 
+    if (container_is_floating(con)) {
+        con->floating_container_geom_was_changed = true;
+        container_set_border_width(con, lt->options.float_border_px);
+    } else {
+        container_set_border_width(con, lt->options.tile_border_px);
+    }
+
     // since gaps are halfed we need to multiply it by 2
-    container_surround_gaps(&geom, 2*con->client->bw);
+    int border_width = container_get_border_width(con);
+    container_surround_gaps(&geom, 2*border_width);
 
-    if (con->floating)
-        con->geom_was_changed = true;
-
-    resize(con, geom);
+    container_set_tiled_geom(con, &geom);
 }
 
-static void set_container_geom(struct container *con, struct wlr_box geom)
-{
-    struct monitor *m = container_get_monitor(con);
-    struct layout *lt = get_layout_in_monitor(m);
-
-    if (con->floating && !lt->options.arrange_by_focus)
-        con->prev_floating_geom = geom;
-
-    con->prev_geom = con->geom;
-    con->geom = geom;
-}
-
-void resize(struct container *con, struct wlr_box geom)
+void container_update_size(struct container *con)
 {
     /*
      * Note that I took some shortcuts here. In a more fleshed-out
@@ -305,26 +322,10 @@ void resize(struct container *con, struct wlr_box geom)
      * the new size, then commit any movement that was prepared.
      */
 
-    set_container_geom(con, geom);
     con->client->resized = true;
 
-    bool preserve_ratio = con->ratio != 0;
 
-    if (preserve_ratio) {
-        /* calculated biggest container where con->geom.width and
-         * con->geom.height = con->geom.width * con->ratio is inside geom.width
-         * and geom.height
-         * */
-        float max_height = geom.height/con->ratio;
-        con->geom.width = MIN(geom.width, max_height);
-        con->geom.height = con->geom.width * con->ratio;
-        // TODO make a function out of that 
-        // center in x direction
-        con->geom.x += (geom.width - con->geom.width)/2;
-        // center in y direction
-        con->geom.y += (geom.height - con->geom.height)/2;
-    }
-
+    struct wlr_box *con_geom = container_get_current_geom(con);
     apply_bounds(con, *wlr_output_layout_get_box(server.output_layout, NULL));
 
     /* wlroots makes this a no-op if size hasn't changed */
@@ -332,7 +333,7 @@ void resize(struct container *con, struct wlr_box geom)
         case XDG_SHELL:
             if (con->client->surface.xdg->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
                 wlr_xdg_toplevel_set_size(con->client->surface.xdg,
-                        con->geom.width, con->geom.height);
+                        con_geom->width, con_geom->height);
             }
             break;
         case LAYER_SHELL:
@@ -352,55 +353,34 @@ void resize(struct container *con, struct wlr_box geom)
         case X11_UNMANAGED:
         case X11_MANAGED:
             wlr_xwayland_surface_configure(con->client->surface.xwayland,
-                    con->geom.x, con->geom.y, con->geom.width,
-                    con->geom.height);
+                    con_geom->x, con_geom->y, con_geom->width,
+                    con_geom->height);
     }
 }
 
-void update_hidden_status_of_containers(struct monitor *m, 
-        GPtrArray2D *visible_container_lists, GPtrArray *tiled_containers,
-        GPtrArray *hidden_containers)
+void update_hidden_status_of_containers(struct monitor *m, GPtrArray *tiled_containers)
 {
     struct layout *lt = get_layout_in_monitor(m);
 
-    if (lt->n_tiled > tiled_containers->len) {
-        int n_missing = MIN(lt->n_tiled - tiled_containers->len, hidden_containers->len);
-        for (int i = 0; i < n_missing; i++) {
-            struct container *con = g_ptr_array_index(hidden_containers, 0);
+    for (int i = 0; i < tiled_containers->len; i++) {
+        struct container *con = g_ptr_array_index(tiled_containers, i);
 
-            con->hidden = false;
-            g_ptr_array_remove_index(hidden_containers, 0);
-            g_ptr_array_add(tiled_containers, con);
-        }
-    } else {
-        for (int i = tiled_containers->len-1; i >= lt->n_tiled; i--) {
-            struct container *con = g_ptr_array_steal_index(tiled_containers, i);
-            con->hidden = true;
-            g_ptr_array_insert(hidden_containers, 0, con);
-        }
-    }
-
-    for (int i = 0; i < length_of_composed_list(visible_container_lists); i++) {
-        struct container *con = get_in_composed_list(visible_container_lists, i);
-        con->hidden = false;
-    }
-    for (int i = 0; i < hidden_containers->len; i++) {
-        struct container *con = g_ptr_array_index(hidden_containers, i);
-        con->hidden = true;
+        bool is_hidden = i >= lt->n_tiled;
+        con->hidden = is_hidden;
     }
 }
 
 int get_container_count(struct tagset *tagset)
 {
-    return length_of_composed_list(tagset->list_set->container_lists);
+    return length_of_composed_list(tagset->con_set->container_lists);
 }
 
 int get_tiled_container_count(struct tagset *tagset)
 {
     int n = 0;
-    GPtrArray *tiled_containers = tagset_get_tiled_list(tagset);
-    GPtrArray *hidden_containers = tagset_get_hidden_list(tagset);
+    GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
 
-    n = tiled_containers->len + hidden_containers->len;
+    n = tiled_containers->len;
+    g_ptr_array_free(tiled_containers, FALSE);
     return n;
 }

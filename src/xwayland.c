@@ -3,11 +3,14 @@
 #include <stdlib.h>
 #include <wlr/util/log.h>
 
+#include "client.h"
 #include "container.h"
+#include "monitor.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "seat.h"
 #include "workspace.h"
+#include "list_sets/focus_stack_set.h"
 
 #if JAPOKWM_HAS_XWAYLAND
 static const char *atom_map[ATOM_LAST] = {
@@ -50,6 +53,7 @@ void create_notifyx11(struct wl_listener *listener, void *data)
     LISTEN(&xwayland_surface->events.unmap, &c->unmap, unmap_notifyx11);
     LISTEN(&xwayland_surface->events.destroy, &c->destroy, destroy_notifyx11);
     LISTEN(&xwayland_surface->events.set_title, &c->set_title, client_handle_set_title);
+    LISTEN(&xwayland_surface->events.set_class, &c->set_app_id, client_handle_set_app_id);
     LISTEN(&xwayland_surface->events.request_activate, &c->activate, activatex11);
 
     create_container(c, selected_monitor, true);
@@ -70,6 +74,7 @@ void destroy_notifyx11(struct wl_listener *listener, void *data)
     wl_list_remove(&c->unmap.link);
     wl_list_remove(&c->destroy.link);
     wl_list_remove(&c->set_title.link);
+    wl_list_remove(&c->set_app_id.link);
 
     destroy_client(c);
 }
@@ -129,7 +134,8 @@ void unmap_notifyx11(struct wl_listener *listener, void *data)
 
     arrange();
     struct monitor *m = selected_monitor;
-    focus_most_recent_container(m->tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    focus_most_recent_container(ws);
 }
 
 void maprequestx11(struct wl_listener *listener, void *data)
@@ -138,11 +144,9 @@ void maprequestx11(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
     struct wlr_xwayland_surface *xwayland_surface = c->surface.xwayland;
     struct monitor *m = selected_monitor;
-    struct layout *lt = get_layout_in_monitor(m);
 
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
     c->ws_id = m->tagset->selected_ws_id;
-    c->bw = lt->options.tile_border_px;
 
     struct container *con = c->con;
     add_container_to_tile(con);
@@ -184,19 +188,22 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
                 con->on_top = false;
                 if (x11_wants_floating(con->client)) {
-                    set_container_floating(con, container_fix_position, true);
-                    resize(con, prefered_geom);
+                    container_set_floating(con, container_fix_position, true);
+                    container_set_floating_geom(con, &prefered_geom);
                 }
                 break;
             }
         case X11_UNMANAGED:
             {
+                con->is_unmanaged = true;
                 g_ptr_array_add(server.independent_clients, c);
 
+                debug_print("is unmanaged\n");
                 struct workspace *ws = monitor_get_active_workspace(m);
                 if (x11_is_popup_menu(c) || xwayland_surface->parent) {
-                    remove_in_composed_list(ws->list_set->focus_stack_lists, cmp_ptr, con);
-                    g_ptr_array_insert(ws->list_set->focus_stack_normal, 0, con);
+                    debug_print("is popup\n");
+                    remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
+                    g_ptr_array_insert(ws->focus_set->focus_stack_normal, 0, con);
 
                     con->is_xwayland_popup = true;
                     g_ptr_array_add(server.xwayland_popups, con);
@@ -207,8 +214,8 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
                 con->has_border = false;
                 lift_container(con);
-                set_container_floating(con, NULL, true);
-                resize(con, prefered_geom);
+                container_set_floating(con, NULL, true);
+                container_set_floating_geom(con, &prefered_geom);
                 break;
             }
         default:
