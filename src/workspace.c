@@ -18,6 +18,7 @@
 #include "list_sets/list_set.h"
 #include "list_sets/focus_stack_set.h"
 #include "list_sets/visual_stack_set.h"
+#include "tagset.h"
 
 static void update_workspaces_id(GPtrArray *workspaces)
 {
@@ -433,10 +434,8 @@ void load_layout(lua_State *L, const char *name)
     if (found) {
         lt = g_ptr_array_steal_index(ws->loaded_layouts, i);
         g_ptr_array_insert(ws->loaded_layouts, 0, lt);
-        debug_print("steal\n");
         push_layout(ws, lt);
     } else {
-        debug_print("create layout\n");
         lt = create_layout(L);
         copy_layout_safe(lt, server.default_layout);
 

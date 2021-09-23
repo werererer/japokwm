@@ -9,6 +9,7 @@
 #include "utils/parseConfigUtils.h"
 #include "stringop.h"
 #include "workspace.h"
+#include "monitor.h"
 
 const char *mods[8] = {"Shift_L", "Caps_Lock", "Control_L", "Alt_L", "", "", "Super_L", "ISO_Level3_Shift"};
 const char *modkeys[4] = {"Alt_L", "Num_Lock", "ISO_Level3_Shift", "Super_L"};
@@ -192,10 +193,26 @@ static bool process_binding(lua_State *L, const char *bind, GPtrArray *keybindin
     return handled;
 }
 
-struct keybinding *create_keybinding()
+struct keybinding *create_keybinding(const char *binding, int lua_func_ref)
 {
     struct keybinding *keybinding = calloc(1, sizeof(struct keybinding));
+    keybinding->binding = strdup(binding);
+    keybinding->lua_func_ref = lua_func_ref;
     return keybinding;
+}
+
+void destroy_keybinding(struct keybinding *keybinding)
+{
+    free(keybinding->binding);
+    if (keybinding->lua_func_ref > 0) {
+        luaL_unref(L, LUA_REGISTRYINDEX, keybinding->lua_func_ref);
+    }
+    free(keybinding);
+}
+
+void destroy_keybinding0(void *keybinding)
+{
+    destroy_keybinding(keybinding);
 }
 
 static int millisec_get_available_seconds(int milli_sec)

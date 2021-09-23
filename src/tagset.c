@@ -17,6 +17,9 @@
 #include "list_sets/focus_stack_set.h"
 #include "list_sets/container_stack_set.h"
 #include "workspace.h"
+#include "tagset.h"
+#include "workspace.h"
+#include "root.h"
 
 static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load);
 static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces);

@@ -25,6 +25,7 @@
 #include "workspace.h"
 #include "xdg-shell-protocol.h"
 #include "scratchpad.h"
+#include "tagset.h"
 
 int lib_arrange(lua_State *L)
 {

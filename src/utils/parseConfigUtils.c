@@ -20,6 +20,8 @@
 #include "stringop.h"
 #include "utils/coreUtils.h"
 #include "rules/mon_rule.h"
+#include "workspace.h"
+#include "rules/rule.h"
 
 static const char *plugin_relative_paths[] = {
     "autoload",
@@ -27,7 +29,7 @@ static const char *plugin_relative_paths[] = {
 };
 
 static const char *config_file = "init.lua";
-static const char *error_file = "$HOME/.config/japokwm/init.err";
+static const char *error_file = "init.err";
 static int error_fd = -1;
 
 static int load_file(lua_State *L, const char *file);
@@ -149,6 +151,13 @@ int load_config(lua_State *L)
     return success;
 }
 
+void load_default_lua_config(lua_State *L)
+{
+    server.default_layout->options = get_default_options();
+    remove_loaded_layouts(server.workspaces);
+    load_default_keybindings();
+}
+
 // returns 0 upon success and 1 upon failure
 int init_utils(lua_State *L)
 {
@@ -176,11 +185,13 @@ int init_utils(lua_State *L)
 
 void init_error_file()
 {
-    char *ef = get_config_file(error_file);
-    char *ef_dir = dirname(ef);
+    char *ef_dir = get_config_dir(error_file);
     mkdir(ef_dir, 0777);
+    char *ef = strdup(ef_dir);
+    join_path(&ef, error_file);
     error_fd = open(ef, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     free(ef);
+    free(ef_dir);
 }
 
 void close_error_file()
@@ -239,8 +250,11 @@ void notify_msg(const char *msg)
 void handle_error(const char *msg)
 {
     notify_msg(msg);
-    printf("%s\n", msg);
 
+    printf("%s\n", msg);
+    load_default_lua_config(L);
+
+    debug_print("error_fd: %i\n", error_fd);
     // if error file not initialized
     if (error_fd < 0)
         return;

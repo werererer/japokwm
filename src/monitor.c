@@ -16,6 +16,9 @@
 #include "workspace.h"
 #include "utils/parseConfigUtils.h"
 #include "layer_shell.h"
+#include "rules/mon_rule.h"
+#include "root.h"
+#include "tagset.h"
 
 struct wl_list sticky_stack;
 

@@ -67,6 +67,7 @@ struct options {
 };
 
 struct options get_default_options();
+void load_default_keybindings();
 GPtrArray *create_tagnames();
 void copy_options(struct options *dest_option, struct options *src_option);
 

@@ -22,6 +22,7 @@
 #include "layer_shell.h"
 #include "workspace.h"
 #include "list_sets/focus_stack_set.h"
+#include "tagset.h"
 
 static void arrange_container(struct container *con, struct monitor *m,
         int arrange_position, struct wlr_box root_geom, int inner_gap);

@@ -5,7 +5,7 @@ config.set_sloppy_focus(true)
 
 config.set_automatic_workspace_naming(true)
 
-local termcmd = "/usr/bin/termite"
+local termcmd = "/usr/bin/alacritty"
 
 local function on_start()
     -- execute programs or do what ever you want e.g.:

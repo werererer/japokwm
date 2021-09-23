@@ -370,6 +370,11 @@ integers
 <return> ++
 	integer - container id
 
+*get_n_tiled()* ++
+	get the amount of containers currently visible ++
+<return> ++
+	integer - amount of containers
+
 *is_container_not_in_limit()* ++
 	returns whether a container doesn't violate min/max_width/height of the
 	constraints ++
