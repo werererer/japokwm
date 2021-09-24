@@ -11,6 +11,7 @@
 #include "seat.h"
 #include "workspace.h"
 #include "list_sets/focus_stack_set.h"
+#include "tagset.h"
 
 #if JAPOKWM_HAS_XWAYLAND
 static const char *atom_map[ATOM_LAST] = {

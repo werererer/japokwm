@@ -4,8 +4,7 @@
 #include <wlr/types/wlr_box.h>
 #include <wlr/types/wlr_output_damage.h>
 
-#include "root.h"
-#include "tagset.h"
+#include "bitset/bitset.h"
 
 struct cursor;
 

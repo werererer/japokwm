@@ -21,6 +21,7 @@
 #include "utils/gapUtils.h"
 #include "layer_shell.h"
 #include "workspace.h"
+#include "tagset.h"
 
 struct wlr_renderer *drw;
 struct render_data render_data;

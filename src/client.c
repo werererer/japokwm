@@ -14,6 +14,8 @@
 #include "ipc-server.h"
 #include "workspace.h"
 #include "scratchpad.h"
+#include "monitor.h"
+#include "tagset.h"
 
 struct client *create_client(enum shell shell_type, union surface_t surface)
 {
@@ -240,10 +242,6 @@ void client_handle_set_title(struct wl_listener *listener, void *data)
 
 void client_handle_set_app_id(struct wl_listener *listener, void *data)
 {
-    debug_print("set app id\n");
-    debug_print("set app id\n");
-    debug_print("set app id\n");
-    debug_print("set app id\n");
     struct client *c = wl_container_of(listener, c, set_app_id);
     const char *app_id;
     /* rule matching */

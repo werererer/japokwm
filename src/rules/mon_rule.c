@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "utils/parseConfigUtils.h"
+#include "server.h"
 
 struct mon_rule *create_mon_rule(const char *output_name, int lua_func_ref)
 {

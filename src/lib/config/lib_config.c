@@ -13,7 +13,12 @@
 
 int lib_reload(lua_State *L)
 {
+    close_error_file();
+    init_error_file();
+
     server.default_layout->options = get_default_options();
+    g_ptr_array_free(server.default_layout->options.keybindings, TRUE);
+    server.default_layout->options.keybindings = g_ptr_array_new();
 
     remove_loaded_layouts(server.workspaces);
     load_config(L);
@@ -196,9 +201,11 @@ int lib_add_mon_rule(lua_State *L)
 
 int lib_bind_key(lua_State *L)
 {
-    struct keybinding *keybinding = create_keybinding();
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &keybinding->lua_func_ref);
-    keybinding->binding = strdup(luaL_checkstring(L, -1));
+    int lua_func_ref = 0;
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lua_func_ref);
+    const char *binding = luaL_checkstring(L, -1);
+
+    struct keybinding *keybinding = create_keybinding(binding, lua_func_ref);
     lua_pop(L, 1);
     g_ptr_array_add(server.default_layout->options.keybindings, keybinding);
     return 0;

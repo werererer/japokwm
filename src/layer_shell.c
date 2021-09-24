@@ -11,6 +11,8 @@
 #include "tile/tileUtils.h"
 #include "render/render.h"
 #include "input_manager.h"
+#include "root.h"
+#include "tagset.h"
 
 void create_notify_layer_shell(struct wl_listener *listener, void *data)
 {

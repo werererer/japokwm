@@ -3,6 +3,7 @@
 #include <lua.h>
 
 #include "utils/parseConfigUtils.h"
+#include "utils/coreUtils.h"
 
 struct event_handler *create_event_handler()
 {

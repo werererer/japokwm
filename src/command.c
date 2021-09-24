@@ -3,6 +3,7 @@
 #include <json-c/json.h>
 
 #include "utils/parseConfigUtils.h"
+#include "server.h"
 
 struct cmd_results *cmd_results_new(enum cmd_status status,
         const char *format, ...) {

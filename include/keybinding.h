@@ -18,7 +18,9 @@ struct keybinding {
     int lua_func_ref;
 };
 
-struct keybinding *create_keybinding();
+struct keybinding *create_keybinding(const char *binding, int lua_func_ref);
+void destroy_keybinding(struct keybinding *keybinding);
+void destroy_keybinding0(void *keybinding);
 
 bool handle_keybinding(int mod, int sym);
 

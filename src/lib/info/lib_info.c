@@ -8,6 +8,9 @@
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "workspace.h"
+#include "layout.h"
+#include "tagset.h"
+#include "root.h"
 
 int lib_get_active_layout(lua_State *L)
 {
@@ -25,6 +28,16 @@ int lib_get_this_container_count(lua_State *L)
     struct tagset *tagset = monitor_get_active_tagset(m);
 
     int i = get_slave_container_count(tagset) + 1;
+    lua_pushinteger(L, i);
+    return 1;
+}
+
+int lib_get_n_tiled(lua_State *L)
+{
+    struct monitor *m = selected_monitor;
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    struct layout *lt = tagset_get_layout(tagset);
+    int i = lt->n_tiled;
     lua_pushinteger(L, i);
     return 1;
 }

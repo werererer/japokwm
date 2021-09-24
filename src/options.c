@@ -4,6 +4,7 @@
 #include <glib.h>
 
 #include "client.h"
+#include "server.h"
 #include "utils/coreUtils.h"
 #include "layout.h"
 #include "keybinding.h"
@@ -60,8 +61,43 @@ struct options get_default_options()
     };
 
     options.tag_names = create_tagnames();
-    options.keybindings = g_ptr_array_new();
+    options.keybindings = g_ptr_array_new_with_free_func(destroy_keybinding0);
     return options;
+}
+
+static struct keybinding *create_keybind(const char *binding, const char *command)
+{
+    int ref = 0;
+    char *cmd = g_strconcat("return function() ", command, " end", NULL);
+    luaL_dostring(L, cmd);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &ref);
+    free(cmd);
+    struct keybinding *keybinding = create_keybinding(binding, ref);
+    return keybinding;
+}
+
+static void add_keybind(GPtrArray *keybindings, const char *binding, const char *command)
+{
+    struct keybinding *keybinding = create_keybind(binding, command);
+    g_ptr_array_add(keybindings, keybinding);
+}
+
+void load_default_keybindings()
+{
+    struct layout *lt = server.default_layout;
+    struct options *options = &lt->options;
+    GPtrArray *keybindings = options->keybindings;
+
+    add_keybind(keybindings, "mod-S-q", "action.quit()");
+    add_keybind(keybindings, "mod-r", "config.reload()");
+    add_keybind(keybindings, "mod-S-c", "action.kill(info.this_container_position())");
+    add_keybind(keybindings, "mod-S-Return", "action.exec(\"/usr/bin/alacritty\")");
+    add_keybind(keybindings, "mod-j", "action.focus_on_stack(1)");
+    add_keybind(keybindings, "mod-k", "action.focus_on_stack(-1)");
+    add_keybind(keybindings, "mod-Return", "action.zoom()");
+    add_keybind(keybindings, "mod-S-h", "action.resize_main(-1/10)");
+    add_keybind(keybindings, "mod-S-l", "action.resize_main(1/10)");
+    return;
 }
 
 void copy_options(struct options *dest_option, struct options *src_option)
