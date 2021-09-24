@@ -38,11 +38,8 @@ static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspac
     struct container_set *dest = tagset->con_set;
     struct workspace *sel_ws = tagset_get_workspace(tagset);
     struct container_set *src = sel_ws->con_set;
-    debug_print("ws conset length: %i\n", sel_ws->con_set->tiled_containers->len);
 
-    debug_print("start tagset len: %i\n", tagset->con_set->tiled_containers->len);
     container_set_append(ws, dest, src);
-    debug_print("end tagset len: %i\n", tagset->con_set->tiled_containers->len);
 }
 
 static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load)
@@ -85,7 +82,6 @@ void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces)
 {
     assert(tagset != NULL);
 
-    debug_print("start: %i\n", tagset->con_set->tiled_containers->len);
     for (size_t i = 0; i < tagset->workspaces->size; i++) {
         bool bit = bitset_test(tagset->workspaces, i);
 
@@ -95,7 +91,6 @@ void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces)
         struct workspace *ws = get_workspace(i);
         tagset_load_workspace(tagset, ws);
     }
-    debug_print("end: %i\n", tagset->con_set->tiled_containers->len);
 }
 
 static void tagset_clean_destroyed_tagset(struct tagset *tagset)
@@ -150,7 +145,6 @@ void tagset_workspaces_disconnect(struct tagset *tagset)
 
 static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws)
 {
-    debug_print("workspace connect\n");
     ws->prev_m = tagset->m;
 
     tagset_unload_workspace(ws->tagset, ws);
@@ -159,7 +153,6 @@ static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws
         ws->selected_tagset = tagset;
     }
     tagset_load_workspace(tagset, ws);
-    debug_print("workspace connect end\n");
 }
 
 void tagset_workspaces_connect(struct tagset *tagset)
@@ -193,7 +186,6 @@ static void tagset_update_visible_tagset(struct tagset *tagset)
 
 static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
 {
-    debug_print("load workspace\n");
     assert(tagset != NULL);
     assert(ws != NULL);
     bool bit = bitset_test(tagset->loaded_workspaces, ws->id);
@@ -203,7 +195,6 @@ static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
 
     bitset_set(tagset->loaded_workspaces, ws->id);
     tagset_subscribe_to_workspace(tagset, ws);
-    debug_print("load workspace end\n");
 }
 
 static void tagset_unsubscribe_from_workspace(struct tagset *tagset, struct workspace *ws)
@@ -772,7 +763,6 @@ void tagset_list_insert(GPtrArray *list, int i, struct container *con)
 struct container *tagset_list_steal_index(GPtrArray *list, int i)
 {
     if (list->len <= 0) {
-        debug_print("list is empty\n");
         return NULL;
     }
     struct container *_con = g_ptr_array_index(list, 0);

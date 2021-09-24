@@ -185,7 +185,7 @@ int init_utils(lua_State *L)
 
 void init_error_file()
 {
-    char *ef_dir = get_config_dir(error_file);
+    char *ef_dir = get_config_dir(config_file);
     mkdir(ef_dir, 0777);
     char *ef = strdup(ef_dir);
     join_path(&ef, error_file);
