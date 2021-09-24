@@ -107,12 +107,13 @@ void focus_most_recent_container(struct workspace *ws)
     struct tagset *tagset = workspace_get_active_tagset(ws);
     struct container *con = get_in_composed_list(tagset->visible_focus_set->focus_stack_lists, 0);
 
-    // FIXME
+    // TODO: this can be exported to an external function
     if (!con) {
-        struct container *con = get_in_composed_list(tagset->con_set->container_lists, 0);
-        if (!con) {
+        if (tagset->con_set->tiled_containers->len <= 0)
             return;
-        }
+        struct container *con = g_ptr_array_index(tagset->con_set->tiled_containers, 0);
+        if (!con)
+            return;
     }
 
     focus_container(con);
@@ -139,8 +140,8 @@ void destroy_workspace(struct workspace *ws)
     bitset_destroy(ws->prev_workspaces);
     focus_set_destroy(ws->focus_set);
     visual_set_destroy(ws->visual_set);
-    for (int i = 0; i < length_of_composed_list(ws->con_set->container_lists); i++) {
-        struct container *con = get_in_composed_list(ws->con_set->container_lists, i);
+    for (int i = 0; i < ws->con_set->tiled_containers->len; i++) {
+        struct container *con = g_ptr_array_index(ws->con_set->tiled_containers, i);
         struct client *c = con->client;
         kill_client(c);
     }
@@ -227,8 +228,8 @@ int get_workspace_container_count(struct workspace *ws)
         return -1;
 
     int count = 0;
-    for (int i = 0; i < length_of_composed_list(ws->con_set->container_lists); i++) {
-        struct container *con = get_in_composed_list(ws->con_set->container_lists, i);
+    for (int i = 0; i < ws->con_set->tiled_containers->len; i++) {
+        struct container *con = g_ptr_array_index(ws->con_set->tiled_containers, i);
         if (con->client->ws_id == ws->id) {
             count++;
         }
@@ -547,13 +548,13 @@ struct container *workspace_get_focused_container(struct workspace *ws)
     return NULL;
 }
 
-void list_set_add_container_to_containers(struct container_set *list_set, struct container *con, int i)
+void list_set_add_container_to_containers(struct container_set *con_set, struct container *con, int i)
 {
-    assert(list_set->tiled_containers->len >= i);
-    if (list_set->tiled_containers->len <= 0) {
-        g_ptr_array_add(list_set->tiled_containers, con);
+    assert(con_set->tiled_containers->len >= i);
+    if (con_set->tiled_containers->len <= 0) {
+        g_ptr_array_add(con_set->tiled_containers, con);
     } else {
-        g_ptr_array_insert(list_set->tiled_containers, i, con);
+        g_ptr_array_insert(con_set->tiled_containers, i, con);
     }
 }
 
@@ -576,7 +577,7 @@ void workspace_remove_container_from_containers_locally(struct workspace *ws, st
         remove_in_composed_list(tagset->local_focus_set->focus_stack_lists, cmp_ptr, con);
     } else {
         DO_ACTION_LOCALLY(ws,
-            remove_in_composed_list(con_set->container_lists, cmp_ptr, con);
+            g_ptr_array_remove(con_set->tiled_containers, con);
         );
     }
 }
@@ -692,7 +693,7 @@ void workspace_remove_container_from_floating_stack_locally(struct workspace *ws
 void workspace_add_container_to_floating_stack_locally(struct workspace *ws, struct container *con, int i)
 {
     DO_ACTION_LOCALLY(ws,
-            g_ptr_array_insert(con_set->container_lists, i, con);
+            g_ptr_array_insert(con_set->tiled_containers, i, con);
             );
 }
 
@@ -773,7 +774,7 @@ void add_container_to_stack(struct workspace *ws, struct container *con)
 void workspace_remove_container(struct workspace *ws, struct container *con)
 {
     DO_ACTION_GLOBALLY(server.workspaces,
-            remove_in_composed_list(con_set->container_lists, cmp_ptr, con);
+            g_ptr_array_remove(con_set->tiled_containers, con);
             );
 }
 
@@ -802,7 +803,8 @@ static int get_in_container_stack(struct container *con)
 
     struct monitor *m = selected_monitor;
     struct workspace *ws = monitor_get_active_workspace(m);
-    int position = find_in_composed_list(ws->con_set->container_lists, cmp_ptr, con);
+    guint position = 0;
+    g_ptr_array_find(ws->con_set->tiled_containers, con, &position);
     return position;
 }
 

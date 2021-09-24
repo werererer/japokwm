@@ -35,6 +35,12 @@ void lists_append_list_under_condition(
         is_condition_t condition,
         struct workspace *ws
         );
+void list_append_list_under_condition(
+        GPtrArray *dest,
+        GPtrArray *src,
+        is_condition_t is_condition,
+        struct workspace *ws
+        );
 void sub_list_write_to_parent_list(GPtrArray2D *parent, GPtrArray2D *child);
 void sub_list_write_to_parent_list1D(GPtrArray *parent, GPtrArray *child);
 void lists_clear(GPtrArray2D *lists);

@@ -373,7 +373,7 @@ void update_hidden_status_of_containers(struct monitor *m, GPtrArray *tiled_cont
 
 int get_container_count(struct tagset *tagset)
 {
-    return length_of_composed_list(tagset->con_set->container_lists);
+    return tagset->con_set->tiled_containers->len;
 }
 
 int get_tiled_container_count(struct tagset *tagset)

@@ -51,7 +51,7 @@ static void add_to_list(GPtrArray *dest, GPtrArray *src, struct container *src_c
     g_ptr_array_insert(dest, insert_position, src_con);
 }
 
-static void list_append_list_under_condition(
+void list_append_list_under_condition(
         GPtrArray *dest,
         GPtrArray *src,
         is_condition_t is_condition,

@@ -869,7 +869,8 @@ int get_position_in_container_stack(struct container *con)
 
     struct monitor *m = selected_monitor;
     struct tagset *tagset = monitor_get_active_tagset(m);
-    int position = find_in_composed_list(tagset->con_set->container_lists, cmp_ptr, con);
+    guint position = 0;
+    g_ptr_array_find(tagset->con_set->tiled_containers, con, &position);
     return position;
 }
 

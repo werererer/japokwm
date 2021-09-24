@@ -82,7 +82,6 @@ bool container_intersects_with_monitor(struct container *con, struct monitor *m)
 
 // get with server floating containers instead
 GPtrArray *server_update_floating_containers();
-GPtrArray *tagset_get_visible_lists(struct tagset *tagset);
 GPtrArray *tagset_get_global_floating_copy(struct tagset *tagset);
 GPtrArray *tagset_get_tiled_list_copy(struct tagset *tagset);
 GPtrArray *tagset_get_tiled_list(struct tagset *tagset);

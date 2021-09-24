@@ -11,10 +11,6 @@ struct workspace;
  * list_set is used by tagsets and workspaces to hold all containers on them
  * */
 struct container_set {
-    /* consists out of the lists of tiled_containers, hidden_containers and
-     * floating_containers */
-    GPtrArray2D *container_lists;
-
     GPtrArray *tiled_containers;
 };
 
