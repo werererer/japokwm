@@ -456,8 +456,8 @@ int lib_swap_workspace(lua_State *L)
     struct workspace *ws2 = get_workspace(ws_id2);
 
     GPtrArray *future_ws2_containers = g_ptr_array_new();
-    for (int i = 0; i < length_of_composed_list(ws1->con_set->container_lists); i++) {
-        struct container *con = get_in_composed_list(ws1->con_set->container_lists, i);
+    for (int i = 0; i < ws1->con_set->tiled_containers->len; i++) {
+        struct container *con = g_ptr_array_index(ws1->con_set->tiled_containers, i);
         struct monitor *ws_m = workspace_get_monitor(ws1);
         if (!exist_on(ws_m, ws1->prev_workspaces, con))
             continue;
@@ -465,8 +465,8 @@ int lib_swap_workspace(lua_State *L)
         g_ptr_array_add(future_ws2_containers, con);
     }
 
-    for (int i = 0; i < length_of_composed_list(ws2->con_set->container_lists); i++) {
-        struct container *con = get_in_composed_list(ws2->con_set->container_lists, i);
+    for (int i = 0; i < ws2->con_set->tiled_containers->len; i++) {
+        struct container *con = g_ptr_array_index(ws2->con_set->tiled_containers, i);
         struct monitor *ws_m = workspace_get_monitor(ws2);
         if (!exist_on(ws_m, ws2->prev_workspaces, con))
             continue;
