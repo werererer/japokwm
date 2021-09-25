@@ -52,7 +52,7 @@ static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws,
 
 static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces)
 {
-    tagset->workspaces = bitset_copy(workspaces);
+     bitset_assign_bitset(&tagset->workspaces, workspaces);
 }
 
 static void tagset_set_tag(struct tagset *tagset, struct workspace *ws, bool load)
@@ -71,7 +71,7 @@ void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
     update_sub_focus_stack(tagset);
     update_visual_visible_stack(tagset);
     struct workspace *ws = tagset_get_workspace(tagset);
-    ws->prev_workspaces = bitset_copy(tagset->workspaces);
+    bitset_assign_bitset(&ws->prev_workspaces, tagset->workspaces);
     arrange();
     focus_most_recent_container(ws);
 }
@@ -440,7 +440,7 @@ void focus_tagset(struct tagset *tagset)
     m->tagset = tagset;
     restore_floating_containers(tagset);
     struct workspace *ws = tagset_get_workspace(tagset);
-    ws->prev_workspaces = bitset_copy(tagset->workspaces);
+    bitset_assign_bitset(&ws->prev_workspaces, tagset->workspaces);
     update_sub_focus_stack(tagset);
     update_visual_visible_stack(tagset);
     ipc_event_workspace();
@@ -488,7 +488,7 @@ static void _set_previous_tagset(struct tagset *tagset)
 {
     if (!tagset)
         return;
-    server.previous_bitset = bitset_copy(tagset->workspaces);
+    bitset_assign_bitset(&server.previous_bitset, tagset->workspaces);
     server.previous_workspace = tagset->selected_ws_id;
 }
 
