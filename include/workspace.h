@@ -25,9 +25,9 @@ struct server;
         } while (0);\
         \
         do {\
-            struct tagset *_tagset = workspace_get_active_tagset(workspace);\
-            assert(tagset_exist_on(_tagset, con) == true);\
-            con_set = _tagset->con_set;\
+            struct monitor *m = selected_monitor;\
+            struct tagset *_tagset = monitor_get_active_tagset(m);\
+            struct container_set *con_set = _tagset->con_set;\
             action\
         } while (0);\
     } while (0)
@@ -43,13 +43,12 @@ struct server;
             } while (0);\
             \
         }\
-        for (int _i = 0; _i < server.tagsets->len; _i++) {\
-            struct tagset *_tagset = g_ptr_array_index(server.tagsets, _i);\
-            if (!tagset_exist_on(_tagset, con))\
-                continue;\
+        do {\
+            struct monitor *m = selected_monitor;\
+            struct tagset *_tagset = monitor_get_active_tagset(m);\
             struct container_set *con_set = _tagset->con_set;\
             action\
-        }\
+        } while (0);\
     } while (0)
 
 /* A tag is simply a workspace that can be focused (like a normal workspace)
