@@ -21,13 +21,10 @@
 #include "workspace.h"
 #include "root.h"
 
-static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load);
 static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces);
-static void tagset_set_tag(struct tagset *tagset, struct workspace *ws, bool load);
 static void tagset_set_tags(struct tagset *tagset, BitSet *workspaces);
 static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_unload_workspace(struct tagset *tagset, struct workspace *ws);
-static void tagset_remove_workspace(struct tagset *tagset, struct workspace *ws);
 
 static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws);
 
@@ -42,25 +39,9 @@ static void tagset_subscribe_to_workspace(struct tagset *tagset, struct workspac
     container_set_append(ws, dest, src);
 }
 
-static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool load)
-{
-    if (!tagset)
-        return;
-
-    bitset_assign(tagset->workspaces, ws->id, load);
-}
-
 static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces)
 {
      bitset_assign_bitset(&tagset->workspaces, workspaces);
-}
-
-static void tagset_set_tag(struct tagset *tagset, struct workspace *ws, bool load)
-{
-    if (!tagset)
-        return;
-
-    bitset_assign(tagset->workspaces, ws->id, load);
 }
 
 void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
@@ -198,11 +179,6 @@ static void tagset_load_workspace(struct tagset *tagset, struct workspace *ws)
 }
 
 static void tagset_unsubscribe_from_workspace(struct tagset *tagset, struct workspace *ws)
-{
-    tagset_remove_workspace(tagset, ws);
-}
-
-static void tagset_remove_workspace(struct tagset *tagset, struct workspace *ws)
 {
     struct container_set *dest = tagset->con_set;
     struct container_set *src = ws->con_set;
