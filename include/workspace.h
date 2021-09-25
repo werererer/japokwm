@@ -34,10 +34,6 @@ struct server;
 
 #define DO_ACTION_GLOBALLY(workspaces, action) \
     do {\
-        for (int i = 0; i < server.tagsets->len; i++) {\
-            struct tagset *tagset = g_ptr_array_index(server.tagsets, i);\
-            tagset->applied_action = false;\
-        }\
         for (int _i = 0; _i < workspaces->len; _i++) {\
             struct workspace *_ws = g_ptr_array_index(workspaces, _i);\
             \
@@ -46,18 +42,13 @@ struct server;
                 action\
             } while (0);\
             \
-            do {\
-                struct tagset *_tagset = _ws->tagset;\
-                if (!_tagset)\
-                    continue;\
-                if (_tagset->applied_action)\
-                    continue;\
-                if (!tagset_exist_on(_tagset, con))\
-                    continue;\
-                con_set = _tagset->con_set;\
-                _tagset->applied_action = true;\
-                action\
-            } while (0);\
+        }\
+        for (int _i = 0; _i < server.tagsets->len; _i++) {\
+            struct tagset *_tagset = g_ptr_array_index(server.tagsets, _i);\
+            if (!tagset_exist_on(_tagset, con))\
+                continue;\
+            struct container_set *con_set = _tagset->con_set;\
+            action\
         }\
     } while (0)
 
