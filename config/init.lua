@@ -9,7 +9,8 @@ local termcmd = "/usr/bin/alacritty"
 
 local function on_start()
     -- execute programs or do what ever you want e.g.:
-    -- action.exec(termcmd)
+    -- action.exec("dbus-daemon --session --address=unix:path=$XDG_RUNTIME_DIR/bus")
+    -- action.exec("xsetroot -cursor_name left_ptr")
 end
 -- executes function on_start when the 
 event.add_listener("on_start", on_start)
