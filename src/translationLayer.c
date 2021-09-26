@@ -87,6 +87,7 @@ static const struct luaL_Reg info[] =
     {"get_root_area", lib_get_root_area},
     {"get_this_container_count", lib_get_this_container_count},
     {"get_workspace", lib_get_workspace},
+    {"get_workspace_count", lib_get_workspace_count},
     {"is_container_not_in_limit", lib_is_container_not_in_limit},
     {"is_container_not_in_master_limit", lib_is_container_not_in_master_limit},
     {"is_keycombo", lib_is_keycombo},

@@ -365,6 +365,11 @@ integers
 <return> ++
 	integer - workspace id
 
+*get_workspace_count()* ++
+	Get the amount of workspaces that currently exist
+<return> ++
+	integer - number of workspaces
+
 *get_container_under_cursor()* ++
 	get the container beneath the cursor ++
 <return> ++
