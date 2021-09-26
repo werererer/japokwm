@@ -264,8 +264,10 @@ integers
 	i: integer - an integer representing a binary number where each digit
 	represents a workspace that will be toggled
 
-*toggle_bars()* ++
+*toggle_bars(i)* ++
 	toggles layer_shell bars
+<where> ++
+	i: integer - the workspace from which the bar will be toggled
 
 *toggle_floating()* ++
 	toggles if current container is floating
