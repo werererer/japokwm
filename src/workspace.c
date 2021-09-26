@@ -19,6 +19,7 @@
 #include "list_sets/focus_stack_set.h"
 #include "list_sets/visual_stack_set.h"
 #include "tagset.h"
+#include "root.h"
 
 static void update_workspaces_id(GPtrArray *workspaces)
 {
@@ -56,6 +57,8 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     ws->focus_set = focus_set_create();
     ws->visual_set = visual_set_create();
     ws->con_set = create_container_set();
+
+    ws->consider_layer_shell = true;
     return ws;
 }
 
@@ -364,6 +367,28 @@ struct layout *workspace_get_layout(struct workspace *ws)
     if (!ws)
         return NULL;
     return ws->layout;
+}
+
+struct root *workspace_get_root(struct workspace *ws)
+{
+    struct monitor *m = workspace_get_monitor(ws);
+    struct root *root = monitor_get_active_root(m);
+    return root;
+}
+
+struct wlr_box workspace_get_active_geom(struct workspace *ws)
+{
+    struct wlr_box geom;
+    if (ws->consider_layer_shell) {
+        debug_print("use root geom\n");
+        struct root *root = workspace_get_root(ws);
+        geom = root->geom;
+    } else {
+        debug_print("use mon geom\n");
+        struct monitor *m = workspace_get_monitor(ws);
+        geom = m->geom;
+    }
+    return geom;
 }
 
 struct monitor *workspace_get_selected_monitor(struct workspace *ws)

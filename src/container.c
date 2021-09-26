@@ -358,7 +358,7 @@ void focus_container(struct container *con)
         return;
     if (con->is_xwayland_popup)
         return;
-    if (con->hidden)
+    if (container_get_hidden(con))
         return;
 
     struct monitor *m = selected_monitor;
@@ -600,7 +600,7 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
         update_visual_visible_stack(tagset);
     } else {
         container_set_floating_geom(con, container_get_tiled_geom(con));
-        set_container_hidden(con, false);
+        container_set_hidden(con, false);
         remove_in_composed_list(ws->visual_set->visual_stack_lists, cmp_ptr, con);
         g_ptr_array_insert(ws->visual_set->floating_visual_stack, 0, con);
         struct tagset *tagset = workspace_get_tagset(ws);
@@ -612,9 +612,11 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
     container_damage_whole(con);
 }
 
-void set_container_hidden(struct container *con, bool b)
+void container_set_hidden(struct container *con, bool b)
 {
-    con->hidden = b;
+    struct container_property *property =
+        container_get_property(con);
+    property->hidden = b;
 }
 
 void set_container_monitor(struct container *con, struct monitor *m)
@@ -791,6 +793,14 @@ struct wlr_box *container_get_current_geom(struct container *con)
         geom = container_get_floating_geom(con);
     }
     return geom;
+}
+
+bool container_get_hidden(struct container *con)
+{
+    struct container_property *property = container_get_property(con);
+    if (!property)
+        return false;
+    return property->hidden;
 }
 
 void container_set_border_width(struct container *con, int border_width)
@@ -1027,7 +1037,7 @@ bool container_is_hidden(struct container *con)
     if (!potentially_visible) {
         return false;
     }
-    return con->hidden;
+    return container_get_hidden(con);
 }
 
 bool container_is_visible(struct container *con)

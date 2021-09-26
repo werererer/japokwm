@@ -91,13 +91,12 @@ void keypress(struct wl_listener *listener, void *data)
     /* Translate libinput keycode -> xkbcommon */
     uint32_t keycode = event->keycode + 8;
     /* Get a list of keysyms based on the keymap for this keyboard */
-    const xkb_keysym_t *syms;
-    struct xkb_state *state;
     struct wlr_input_device *wlr_device = kb->seat_device->input_device->wlr_device;
     xkb_state_key_get_one_sym(wlr_device->keyboard->xkb_state, keycode);
 
     /* create new state to clear the shift modifier to get a instead of A */
-    state = xkb_state_new(wlr_device->keyboard->keymap);
+    struct xkb_state *state = xkb_state_new(wlr_device->keyboard->keymap);
+    const xkb_keysym_t *syms;
     int nsyms = xkb_state_key_get_syms(state, keycode, &syms);
     uint32_t mods = wlr_keyboard_get_modifiers(wlr_device->keyboard);
 
@@ -107,10 +106,20 @@ void keypress(struct wl_listener *listener, void *data)
     if (handle_VT_keys(kb, keycode))
         return;
 
-    if (event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-        for (i = 0; i < nsyms; i++) {
-            handled = handle_keybinding(mods, syms[i]);
-        }
+    switch (event->state) {
+        case WL_KEYBOARD_KEY_STATE_PRESSED:
+            for (i = 0; i < nsyms; i++) {
+                handled = handle_keybinding(mods, syms[i]);
+            }
+            server.prev_mods = mods;
+            break;
+        case WL_KEYBOARD_KEY_STATE_RELEASED:
+            // TODO: we can optimize this ;). It is called multiple times
+            // because multiple keys are released. good luck!
+            if (server.registered_key_combos->len <= 0) {
+                list_clear(server.named_key_combos, free);
+            }
+            break;
     }
 
     if (!handled) {

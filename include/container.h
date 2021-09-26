@@ -17,6 +17,7 @@ struct container_property {
     /* layout-relative, includes border */
     int border_width;
     bool floating;
+    bool hidden;
 };
 
 struct container {
@@ -31,7 +32,6 @@ struct container {
     bool is_xwayland_popup;
     bool focusable;
     bool has_border;
-    bool hidden;
     bool on_scratchpad;
     bool on_top;
     bool is_unmanaged;
@@ -79,7 +79,7 @@ void lift_container(struct container *con);
 void repush(int pos, int pos2);
 void container_set_floating(struct container *con, void (*fix_position)(struct container *con),
         bool floating);
-void set_container_hidden(struct container *con, bool b);
+void container_set_hidden(struct container *con, bool b);
 void set_container_monitor(struct container *con, struct monitor *m);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
@@ -95,6 +95,7 @@ void container_set_floating_geom(struct container *con, struct wlr_box *geom);
 struct wlr_box *container_get_tiled_geom(struct container *con);
 struct wlr_box *container_get_floating_geom(struct container *con);
 struct wlr_box *container_get_current_geom(struct container *con);
+bool container_get_hidden(struct container *con);
 
 void container_set_border_width(struct container *con, int border_width);
 int container_get_border_width(struct container *con);

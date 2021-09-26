@@ -77,6 +77,9 @@ struct workspace {
     struct container_set *con_set;
     struct focus_set *focus_set;
     struct visual_set *visual_set;
+
+    /* should anchored layershell programs be taken into consideration */
+    bool consider_layer_shell;
 };
 
 GPtrArray *create_workspaces(GPtrArray *tag_names);
@@ -109,6 +112,8 @@ struct tagset *workspace_get_selected_tagset(struct workspace *ws);
 struct tagset *workspace_get_tagset(struct workspace *ws);
 struct tagset *workspace_get_active_tagset(struct workspace *ws);
 struct layout *workspace_get_layout(struct workspace *ws);
+struct root *workspace_get_root(struct workspace *ws);
+struct wlr_box workspace_get_active_geom(struct workspace *ws);
 
 struct monitor *workspace_get_selected_monitor(struct workspace *ws);
 struct monitor *workspace_get_monitor(struct workspace *ws); 

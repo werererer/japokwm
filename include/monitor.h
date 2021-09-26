@@ -46,6 +46,8 @@ struct monitor *xy_to_monitor(double x, double y);
 struct tagset *monitor_get_active_tagset(struct monitor *m);
 struct workspace *monitor_get_active_workspace(struct monitor *m);
 struct layout *get_layout_in_monitor(struct monitor *m);
+struct root *monitor_get_active_root(struct monitor *m);
+struct wlr_box monitor_get_active_geom(struct monitor *m);
 
 extern struct monitor *selected_monitor;
 #endif /* MONITOR_H */

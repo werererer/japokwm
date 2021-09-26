@@ -166,3 +166,22 @@ int lib_is_container_not_in_master_limit(lua_State *L)
     bool not_in_limit = is_resize_not_in_limit(&geom, &lt->options.master_constraints);
     return not_in_limit;
 }
+
+int cmp_str_bool(const void *s1, const void *s2)
+{
+    return strcmp(s1, s2) == 0;
+}
+
+int lib_is_keycombo(lua_State *L)
+{
+    const char *key_combo_name = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+
+    debug_print("named keycombos len: %i\n", server.named_key_combos->len);
+    guint pos = 0;
+    bool found = g_ptr_array_find_with_equal_func(
+            server.named_key_combos,
+            key_combo_name, cmp_str_bool, &pos);
+    lua_pushboolean(L, found);
+    return 1;
+}

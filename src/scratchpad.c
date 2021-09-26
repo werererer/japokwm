@@ -41,7 +41,7 @@ void move_to_scratchpad(struct container *con, int position)
     struct workspace *ws = get_workspace(tagset->selected_ws_id);
     arrange();
     focus_most_recent_container(ws);
-    con->hidden = true;
+    container_set_hidden(con, true);
 }
 
 void remove_container_from_scratchpad(struct container *con)
@@ -69,7 +69,7 @@ static void show_container(struct container *con)
     struct monitor *m = selected_monitor;
     struct workspace *ws = monitor_get_active_workspace(m);
 
-    con->hidden = false;
+    container_set_hidden(con, false);
     container_set_workspace_id(con, ws->id);
     container_set_floating(con, container_fix_position, true);
     struct wlr_box center_box = get_center_box(m->geom);
@@ -88,7 +88,7 @@ void show_scratchpad()
     struct container *con = g_ptr_array_index(server.scratchpad, 0);
     struct monitor *m = selected_monitor;
     struct workspace *ws = monitor_get_active_workspace(m);
-    bool visible_on_other_workspace = !con->hidden && ws->id != con->client->ws_id;
+    bool visible_on_other_workspace = !container_get_hidden(con) && ws->id != con->client->ws_id;
     if (visible_on_other_workspace) {
         container_set_workspace_id(con, ws->id);
         container_set_floating(con, container_fix_position, true);
@@ -99,7 +99,7 @@ void show_scratchpad()
         lift_container(con);
         arrange();
     } else {
-        if (con->hidden) {
+        if (container_get_hidden(con)) {
             show_container(con);
         } else {
             hide_container(con);
