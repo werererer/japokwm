@@ -56,6 +56,7 @@ void init_server()
     };
 
     server.registered_key_combos = g_ptr_array_new();
+    server.named_key_combos = g_ptr_array_new();
 
     init_lists(&server);
     init_timers(&server);

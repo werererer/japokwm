@@ -67,7 +67,8 @@ int lib_focus_container(lua_State *L)
 int lib_toggle_bars(lua_State *L)
 {
     struct monitor *m = selected_monitor;
-    toggle_bars_visible(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    toggle_bars_visible(ws);
     arrange();
     return 0;
 }
@@ -113,6 +114,15 @@ int lib_set_floating(lua_State *L)
 int lib_show_scratchpad(lua_State *L)
 {
     show_scratchpad();
+    return 0;
+}
+
+int lib_start_keycombo(lua_State *L)
+{
+    const char *key_combo_name = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+
+    g_ptr_array_add(server.named_key_combos, strdup(key_combo_name));
     return 0;
 }
 

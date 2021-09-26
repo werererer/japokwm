@@ -57,7 +57,6 @@ static const struct anchors anchors = {
 struct root *create_root(struct monitor *m, struct wlr_box geom)
 {
     struct root *root = calloc(1, sizeof(struct root));
-    root->consider_layer_shell = true;
     root->m = m;
     set_root_geom(root, geom);
     return root;
@@ -75,9 +74,9 @@ static bool equals_anchor(const struct anchor *anchor, uint32_t anchor_value)
     return is_anchor_triplet || is_singular_anchor;
 }
 
-static struct wlr_box fit_root_area(struct root *root)
+static struct wlr_box fit_root_area(struct root *root, struct wlr_box geom)
 {
-    struct wlr_box d_box = root->m->geom;
+    struct wlr_box d_box = geom;
     struct wlr_box box = root->geom;
 
     struct workspace *ws = monitor_get_active_workspace(root->m);
@@ -124,27 +123,6 @@ static struct wlr_box fit_root_area(struct root *root)
     return box;
 }
 
-/* static void configure_layer_shell_container_geom(struct container *con, struct wlr_box ref) */
-/* { */
-/*     if (!con->client) */
-/*         return; */
-/*     if (con->client->type != LAYER_SHELL) */
-/*         return; */
-
-/*     struct monitor *m = container_get_monitor(con); */
-/*     int desired_width = con->client->surface.layer->current.desired_width; */
-/*     int desired_height = con->client->surface.layer->current.desired_height; */
-
-/*     struct wlr_box geom = { */
-/*         .x = ref.x + m->geom.x, */
-/*         .y = ref.y + m->geom.y, */
-/*         .width = desired_width != 0 ? desired_width : m->geom.width, */
-/*         .height = desired_height != 0 ? desired_height : m->geom.height, */
-/*     }; */
-
-/*     resize(con, geom); */
-/* } */
-
 void set_root_color(struct root *root, float color[static 4])
 {
     memcpy(root->color, color, sizeof(float)*4);
@@ -152,11 +130,7 @@ void set_root_color(struct root *root, float color[static 4])
 
 void set_root_geom(struct root *root, struct wlr_box geom)
 {
-    root->geom = geom;
-
-    if (root->consider_layer_shell) {
-        root->geom = fit_root_area(root);
-    }
+    root->geom = fit_root_area(root, geom);
 }
 
 void root_damage_whole(struct root *root)
@@ -168,26 +142,27 @@ void root_damage_whole(struct root *root)
     wlr_output_damage_add_box(m->damage, &geom);
 }
 
-void set_bars_visible(struct monitor *m, bool visible)
+void set_bars_visible(struct workspace *ws, bool visible)
 {
-    m->root->consider_layer_shell = visible;
+    ws->consider_layer_shell = visible;
     for (int i = 0; i < length_of_composed_list(server.layer_visual_stack_lists); i++) {
         struct container *con = get_in_composed_list(server.layer_visual_stack_lists, i);
 
         if (!container_is_bar(con))
             continue;
 
-        con->hidden = !visible;
+        container_set_hidden(con, !visible);
     }
+    struct monitor *m = workspace_get_monitor(ws);
     wlr_output_damage_add_whole(m->damage);
 }
 
-bool get_bars_visible(struct monitor *m)
+bool get_bars_visible(struct workspace *ws)
 {
-    return m->root->consider_layer_shell;
+    return ws->consider_layer_shell;
 }
 
-void toggle_bars_visible(struct monitor *m)
+void toggle_bars_visible(struct workspace *ws)
 {
-    set_bars_visible(m, !get_bars_visible(m));
+    set_bars_visible(ws, !get_bars_visible(ws));
 }

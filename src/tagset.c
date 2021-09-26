@@ -831,7 +831,7 @@ bool visible_on(struct monitor *m, BitSet *workspaces, struct container *con)
 {
     if (!con)
         return false;
-    if (con->hidden)
+    if (container_get_hidden(con))
         return false;
 
     return exist_on(m, workspaces, con);

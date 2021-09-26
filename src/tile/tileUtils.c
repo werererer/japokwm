@@ -54,7 +54,7 @@ void arrange()
 {
     for (int i = 0; i < server.floating_containers->len; i++) {
         struct container *con = g_ptr_array_index(server.floating_containers, i);
-        con->hidden = false;
+        container_set_hidden(con, false);
     }
 
     for (int i = 0; i < server.mons->len; i++) {
@@ -230,11 +230,12 @@ void arrange_monitor(struct monitor *m)
 {
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     set_root_geom(m->root, m->geom);
+    struct wlr_box active_geom = monitor_get_active_geom(m);
 
     struct tagset *tagset = monitor_get_active_tagset(m);
 
     struct layout *lt = tagset_get_layout(tagset);
-    container_surround_gaps(&m->root->geom, lt->options.outer_gap);
+    container_surround_gaps(&active_geom, lt->options.outer_gap);
 
     update_layout_counters(tagset);
     call_update_function(lt->options.event_handler, lt->n_area);
@@ -243,10 +244,10 @@ void arrange_monitor(struct monitor *m)
 
     update_hidden_status_of_containers(m, tiled_containers);
 
-    arrange_containers(tagset, m->root->geom, tiled_containers);
+    arrange_containers(tagset, active_geom, tiled_containers);
     g_ptr_array_free(tiled_containers, FALSE);
 
-    root_damage_whole(m->root);
+    wlr_output_damage_whole(m->wlr_output);
     update_sub_focus_stack(tagset);
     struct workspace *ws = tagset_get_workspace(tagset);
     focus_most_recent_container(ws);
@@ -294,7 +295,7 @@ void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,
 static void arrange_container(struct container *con, struct monitor *m,
         int arrange_position, struct wlr_box root_geom, int inner_gap)
 {
-    if (con->hidden)
+    if (container_get_hidden(con))
         return;
 
     struct layout *lt = get_layout_in_monitor(m);
@@ -367,7 +368,7 @@ void update_hidden_status_of_containers(struct monitor *m, GPtrArray *tiled_cont
         struct container *con = g_ptr_array_index(tiled_containers, i);
 
         bool is_hidden = i >= lt->n_tiled;
-        con->hidden = is_hidden;
+        container_set_hidden(con, is_hidden);
     }
 }
 

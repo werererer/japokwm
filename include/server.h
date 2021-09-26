@@ -41,10 +41,14 @@ struct server {
 
     struct wlr_output_layout *output_layout;
     GPtrArray *keyboards;
+    int prev_mods;
 
     GPtrArray *registered_key_combos;
     timer_t combo_timer;
     struct sigevent combo_sig_event;
+
+    // TODO: rename
+    GPtrArray *named_key_combos;
 
     GPtrArray *workspaces;
 
