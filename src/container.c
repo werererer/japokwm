@@ -614,8 +614,15 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
 
 void container_set_hidden(struct container *con, bool b)
 {
+    struct tagset *tagset = container_get_tagset(con);
+    struct workspace *ws = tagset_get_workspace(tagset);
+    container_set_hidden_at_workspace(con, b, ws);
+}
+
+void container_set_hidden_at_workspace(struct container *con, bool b, struct workspace *ws)
+{
     struct container_property *property =
-        container_get_property(con);
+        container_get_property_at_workspace(con, ws);
     property->hidden = b;
 }
 

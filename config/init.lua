@@ -35,6 +35,13 @@ local function exec_keycombo(i)
     action.start_keycombo("combo")
 end
 
+local function toggle_all_bars()
+    for i = 1,info.get_workspace_count() do
+        local ws_id = i-1
+        action.toggle_bars(ws_id)
+    end
+end
+
 config.bind_key("mod-S-p",       function() container.set_sticky(info.this_container_position(), 255) end)
 config.bind_key("mod-p",         function() action.exec("rofi -show run") end)
 config.bind_key("mod-e",         function() action.view(info.get_next_empty_workspace(info.get_workspace(), info.direction.left)) end)
@@ -57,7 +64,7 @@ config.bind_key("mod-m",         function() action.focus_container(info.stack_po
 config.bind_key("mod-S-t",       function() action.load_layout_in_set("default", 2) end)
 config.bind_key("mod-w",         function() action.load_layout_in_set("default", 3) end)
 config.bind_key("mod-S-w",       function() action.load_layout_in_set("default", 4) end)
-config.bind_key("mod-b",         function() action.toggle_bars() end)
+config.bind_key("mod-b",         function() toggle_all_bars() end)
 config.bind_key("mod-S-h",       function() action.resize_main(-1/10) end)
 config.bind_key("mod-S-l",       function() action.resize_main(1/10) end)
 config.bind_key("mod-Return",    function() action.zoom() end)

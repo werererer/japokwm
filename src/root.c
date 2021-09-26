@@ -151,10 +151,8 @@ void set_bars_visible(struct workspace *ws, bool visible)
         if (!container_is_bar(con))
             continue;
 
-        container_set_hidden(con, !visible);
+        container_set_hidden_at_workspace(con, !visible, ws);
     }
-    struct monitor *m = workspace_get_monitor(ws);
-    wlr_output_damage_add_whole(m->damage);
 }
 
 bool get_bars_visible(struct workspace *ws)

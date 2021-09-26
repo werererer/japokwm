@@ -66,8 +66,8 @@ int lib_focus_container(lua_State *L)
 
 int lib_toggle_bars(lua_State *L)
 {
-    struct monitor *m = selected_monitor;
-    struct workspace *ws = monitor_get_active_workspace(m);
+    int ws_id = luaL_checkinteger(L, -1);
+    struct workspace *ws = get_workspace(ws_id);
     toggle_bars_visible(ws);
     arrange();
     return 0;
