@@ -150,6 +150,22 @@ int lib_set_default_layout(lua_State *L)
     return 0;
 }
 
+int lib_set_entry_position_function(lua_State *L)
+{
+    int lua_func_ref = 0;
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lua_func_ref);
+    server.default_layout->options.new_position_func_ref = lua_func_ref;
+    return 0;
+}
+
+int lib_set_entry_focus_position_function(lua_State *L)
+{
+    int lua_func_ref = 0;
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lua_func_ref);
+    server.default_layout->options.new_focus_position_func_ref = lua_func_ref;
+    return 0;
+}
+
 // TODO refactor this function hard to read
 int lib_create_workspaces(lua_State *L)
 {

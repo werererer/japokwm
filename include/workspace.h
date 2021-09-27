@@ -131,18 +131,18 @@ void workspace_rename(struct workspace *ws, const char *name);
 void workspace_update_names(struct server *server, GPtrArray *workspaces);
 struct container *workspace_get_focused_container(struct workspace *ws);
 
-void workspace_add_container_to_containers(struct workspace *ws, struct container *con, int i);
-void workspace_add_container_to_focus_stack(struct workspace *ws, struct container *con);
+void workspace_add_container_to_containers(struct workspace *ws, int i, struct container *con);
+void workspace_add_container_to_focus_stack(struct workspace *ws, int i, struct container *con);
 void add_container_to_stack(struct workspace *ws, struct container *con);
 
 void list_set_append_container_to_focus_stack(struct workspace *ws, struct container *con);
-void list_set_insert_container_to_focus_stack(struct focus_set *focus_set, struct container *con);
+void list_set_insert_container_to_focus_stack(struct focus_set *focus_set, int position, struct container *con);
 void workspace_remove_container_from_containers_locally(struct workspace *ws, struct container *con);
-void workspace_add_container_to_containers_locally(struct workspace *ws, struct container *con, int i);
+void workspace_add_container_to_containers_locally(struct workspace *ws, int i, struct container *con);
 void workspace_remove_container_from_focus_stack_locally(struct workspace *ws, struct container *con);
 void workspace_add_container_to_focus_stack_locally(struct workspace *ws, struct container *con);
 void workspace_remove_container_from_floating_stack_locally(struct workspace *ws, struct container *con);
-void workspace_add_container_to_floating_stack_locally(struct workspace *ws, struct container *con, int i);
+void workspace_add_container_to_floating_stack_locally(struct workspace *ws, int i, struct container *con);
 
 void workspace_remove_container_from_visual_stack_layer(struct workspace *ws, struct container *con);
 void workspace_add_container_to_visual_stack_layer(struct workspace *ws, struct container *con);

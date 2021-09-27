@@ -24,6 +24,7 @@
 #include "rules/rule.h"
 #include "list_sets/focus_stack_set.h"
 #include "list_sets/visual_stack_set.h"
+#include "options.h"
 
 static void add_container_to_workspace(struct container *con, struct workspace *ws);
 
@@ -233,18 +234,24 @@ static void add_container_to_workspace(struct container *con, struct workspace *
                     == ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND) {
                 con->focusable = false;
             }
+            workspace_add_container_to_focus_stack(ws, 0, con);
             break;
         case X11_UNMANAGED:
             g_ptr_array_insert(ws->independent_containers, 0, con);
             workspace_add_container_to_visual_stack_normal(ws, con);
+            workspace_add_container_to_focus_stack(ws, 0, con);
             break;
         case XDG_SHELL:
         case X11_MANAGED:
-            workspace_add_container_to_containers(ws, con, 0);
-            workspace_add_container_to_visual_stack_normal(ws, con);
-            break;
+            {
+                int position = workspace_get_new_position(ws);
+                workspace_add_container_to_containers(ws, position, con);
+                workspace_add_container_to_visual_stack_normal(ws, con);
+                int new_focus_position = workspace_get_new_focus_position(ws);
+                workspace_add_container_to_focus_stack(ws, new_focus_position, con);
+                break;
+            }
     }
-    workspace_add_container_to_focus_stack(ws, con);
 }
 
 struct wlr_box get_center_box(struct wlr_box ref)
@@ -530,10 +537,10 @@ void container_fix_position_to_begin(struct container *con)
     struct workspace *ws = monitor_get_active_workspace(m);
     if (!container_is_floating(con)) {
         workspace_remove_container_from_floating_stack_locally(ws, con);
-        workspace_add_container_to_containers_locally(ws, con, 0);
+        workspace_add_container_to_containers_locally(ws, 0, con);
     } else {
         workspace_remove_container_from_containers_locally(ws, con);
-        workspace_add_container_to_floating_stack_locally(ws, con, 0);
+        workspace_add_container_to_floating_stack_locally(ws, 0, con);
     }
 }
 

@@ -108,6 +108,8 @@ static const struct luaL_Reg config[] =
     {"set_automatic_workspace_naming", lib_set_automatic_workspace_naming},
     {"set_border_color", lib_set_border_color},
     {"set_default_layout", lib_set_default_layout},
+    {"set_entry_position_function", lib_set_entry_position_function},
+    {"set_entry_focus_position_function", lib_set_entry_focus_position_function},
     {"set_float_borderpx", lib_set_float_borderpx},
     {"set_focus_color", lib_set_focus_color},
     {"set_hidden_edges", lib_set_hidden_edges},

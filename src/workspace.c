@@ -575,15 +575,10 @@ struct container *workspace_get_focused_container(struct workspace *ws)
 
 void list_set_add_container_to_containers(struct container_set *con_set, struct container *con, int i)
 {
-    assert(con_set->tiled_containers->len >= i);
-    if (con_set->tiled_containers->len <= 0) {
-        g_ptr_array_add(con_set->tiled_containers, con);
-    } else {
-        g_ptr_array_insert(con_set->tiled_containers, i, con);
-    }
+    list_insert(con_set->tiled_containers, i, con);
 }
 
-void workspace_add_container_to_containers(struct workspace *ws, struct container *con, int i)
+void workspace_add_container_to_containers(struct workspace *ws, int i, struct container *con)
 {
     assert(con != NULL);
 
@@ -607,12 +602,12 @@ void workspace_remove_container_from_containers_locally(struct workspace *ws, st
     }
 }
 
-void workspace_add_container_to_containers_locally(struct workspace *ws, struct container *con, int i)
+void workspace_add_container_to_containers_locally(struct workspace *ws, int i, struct container *con)
 {
     struct tagset *tagset = workspace_get_active_tagset(ws);
     struct layout *lt = tagset_get_layout(tagset);
     if (lt->options.arrange_by_focus) {
-        list_set_insert_container_to_focus_stack(ws->focus_set, con);
+        list_set_insert_container_to_focus_stack(ws->focus_set, 0, con);
         update_sub_focus_stack(tagset);
     } else {
         DO_ACTION_LOCALLY(ws,
@@ -652,43 +647,43 @@ void list_set_append_container_to_focus_stack(struct workspace *ws, struct conta
     g_ptr_array_add(ws->focus_set->focus_stack_normal, con);
 }
 
-void list_set_insert_container_to_focus_stack(struct focus_set *focus_set, struct container *con)
+void list_set_insert_container_to_focus_stack(struct focus_set *focus_set, int position, struct container *con)
 {
     if (con->client->type == LAYER_SHELL) {
         switch (con->client->surface.layer->current.layer) {
             case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
-                g_ptr_array_insert(focus_set->focus_stack_layer_background, 0, con);
+                list_insert(focus_set->focus_stack_layer_background, position, con);
                 break;
             case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
-                g_ptr_array_insert(focus_set->focus_stack_layer_bottom, 0, con);
+                list_insert(focus_set->focus_stack_layer_bottom, position, con);
                 break;
             case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
-                g_ptr_array_insert(focus_set->focus_stack_layer_top, 0, con);
+                list_insert(focus_set->focus_stack_layer_top, position, con);
                 break;
             case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
-                g_ptr_array_insert(focus_set->focus_stack_layer_overlay, 0, con);
+                list_insert(focus_set->focus_stack_layer_overlay, position, con);
                 break;
         }
         return;
     }
     if (con->on_top) {
-        g_ptr_array_insert(focus_set->focus_stack_on_top, 0, con);
+        list_insert(focus_set->focus_stack_on_top, position, con);
         return;
     }
     if (!con->focusable) {
-        g_ptr_array_insert(focus_set->focus_stack_not_focusable, 0, con);
+        list_insert(focus_set->focus_stack_not_focusable, position, con);
         return;
     }
 
-    g_ptr_array_insert(focus_set->focus_stack_normal, 0, con);
+    list_insert(focus_set->focus_stack_normal, position, con);
 }
 
-void workspace_add_container_to_focus_stack(struct workspace *ws, struct container *con)
+void workspace_add_container_to_focus_stack(struct workspace *ws, int pos, struct container *con)
 {
     // TODO: refactor me
     for (int i = 0; i < server.workspaces->len; i++) {
         ws = g_ptr_array_index(server.workspaces, i);
-        list_set_insert_container_to_focus_stack(ws->focus_set, con);
+        list_set_insert_container_to_focus_stack(ws->focus_set, pos, con);
         struct tagset *tagset = workspace_get_tagset(ws);
         update_sub_focus_stack(tagset);
     }
@@ -703,7 +698,7 @@ void workspace_remove_container_from_focus_stack_locally(struct workspace *ws, s
 
 void workspace_add_container_to_focus_stack_locally(struct workspace *ws, struct container *con)
 {
-    list_set_insert_container_to_focus_stack(ws->focus_set, con);
+    list_set_insert_container_to_focus_stack(ws->focus_set, 0, con);
     struct tagset *tagset = workspace_get_tagset(ws);
     update_sub_focus_stack(tagset);
 }
@@ -715,7 +710,7 @@ void workspace_remove_container_from_floating_stack_locally(struct workspace *ws
             );
 }
 
-void workspace_add_container_to_floating_stack_locally(struct workspace *ws, struct container *con, int i)
+void workspace_add_container_to_floating_stack_locally(struct workspace *ws, int i, struct container *con)
 {
     DO_ACTION_LOCALLY(ws,
             g_ptr_array_insert(con_set->tiled_containers, i, con);
@@ -880,7 +875,7 @@ void workspace_repush_on_focus_stack(struct workspace *ws, struct container *con
     struct tagset *tagset = workspace_get_active_tagset(ws);
 
     remove_in_composed_list(tagset->visible_focus_set->focus_stack_lists, cmp_ptr, con);
-    list_set_insert_container_to_focus_stack(tagset->visible_focus_set, con);
+    list_set_insert_container_to_focus_stack(tagset->visible_focus_set, new_pos, con);
     focus_set_write_to_parent(ws->focus_set, tagset->visible_focus_set);
     update_sub_focus_stack(tagset);
 }

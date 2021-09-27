@@ -4,10 +4,13 @@
 #include <glib.h>
 
 #include "client.h"
+#include "monitor.h"
 #include "server.h"
 #include "utils/coreUtils.h"
+#include "utils/parseConfigUtils.h"
 #include "layout.h"
 #include "keybinding.h"
+#include "workspace.h"
 
 GPtrArray *create_tagnames()
 {
@@ -106,4 +109,44 @@ void copy_options(struct options *dest_option, struct options *src_option)
 
     reset_tiled_client_borders(dest_option->tile_border_px);
     reset_floating_client_borders(dest_option->tile_border_px);
+}
+
+int workspace_get_new_position(struct workspace *ws)
+{
+    struct layout *lt = workspace_get_layout(ws);
+    int func_ref = lt->options.new_position_func_ref;
+    if (func_ref == 0) {
+        return 0;
+    } else {
+        int ws_id = ws->id;
+        bool is_focused = is_workspace_the_selected_one(ws)
+            && workspace_get_monitor(ws) == selected_monitor;
+        lua_rawgeti(L, LUA_REGISTRYINDEX, func_ref);
+        lua_pushinteger(L, ws_id);
+        lua_pushboolean(L, is_focused);
+        lua_call_safe(L, 2, 1, 0);
+        int i = luaL_checkinteger(L, -1);
+        lua_pop(L, 1);
+        return i;
+    }
+}
+
+int workspace_get_new_focus_position(struct workspace *ws)
+{
+    struct layout *lt = workspace_get_layout(ws);
+    int func_ref = lt->options.new_focus_position_func_ref;
+    if (func_ref == 0) {
+        return 0;
+    } else {
+        int ws_id = ws->id;
+        bool is_focused = is_workspace_the_selected_one(ws)
+            && workspace_get_monitor(ws) == selected_monitor;
+        lua_rawgeti(L, LUA_REGISTRYINDEX, func_ref);
+        lua_pushinteger(L, ws_id);
+        lua_pushboolean(L, is_focused);
+        lua_call_safe(L, 2, 1, 0);
+        int i = luaL_checkinteger(L, -1);
+        lua_pop(L, 1);
+        return i;
+    }
 }
