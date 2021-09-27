@@ -456,6 +456,33 @@ integers
 <where> ++
 	l: string - name/directory of the layout
 
+*set_entry_position_function(func)* ++
+	set a function that determins where new windows will be opened at in the
+	layout ++
+<where> ++
+	func: function(ws_id, is_focused) - the function that will be called ++
+	<where> ++
+		ws_id: integer - the workspace on which that happens ++
+		is_focused: bool - whether the workspace is currently focused/visible
+	<return> ++
+		integer - the new entry position
+
+*set_entry_focus_position_function(func)* ++
+	set a function that determins where new windows will land on the ++
+	focus_stack
+<where> ++
+	func: function(ws_id, is_focused) - the function that will be called ++
+	<where> ++
+		ws_id: integer - the workspace on which that happens ++
+		is_focused: bool - whether the workspace is currently focused/visible
+	<return> ++
+		integer - the new entry position
+
+*set_default_layout(l)* ++
+	set the default layout ++
+<where> ++
+	l: string - name/directory of the layout
+
 *set_float_borderpx(f)* ++
 	set the border width of floating windows in pixel ++
 <where> ++

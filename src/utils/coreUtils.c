@@ -39,6 +39,24 @@ void wlr_list_cat(GPtrArray *dest, GPtrArray *src)
     }
 }
 
+void list_insert(GPtrArray *array, int i, void *item)
+{
+    if (array->len <= 0) {
+        g_ptr_array_add(array, item);
+        return;
+    }
+    if (i >= array->len) {
+        g_ptr_array_add(array, item);
+        return;
+    }
+    if (i < 0) {
+        g_ptr_array_insert(array, 0, item);
+        return;
+    }
+
+    g_ptr_array_insert(array, i, item);
+}
+
 void list_clear(GPtrArray *array, void (*destroy_func)(void *))
 {
     for (int i = array->len-1; i >= 0; i--) {

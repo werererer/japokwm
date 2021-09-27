@@ -98,6 +98,7 @@ void lua_get_default_resize_data(lua_State *L);
 
 void list_clear(GPtrArray *array, void (*destroy_func)(void *));
 void wlr_list_cat(GPtrArray *dest, GPtrArray *src);
+void list_insert(GPtrArray *array, int i, void *item);
 
 /* return true on success and false on failure */
 bool list_remove(GPtrArray *array, int (*compare)(const void *, const void *), const void *cmp_to);

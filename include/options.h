@@ -21,6 +21,8 @@ enum hidden_edge_borders {
     SMART
 };
 
+struct workspace;
+
 struct resize_constraints {
     float min_width;
     float max_width;
@@ -64,11 +66,17 @@ struct options {
     bool automatic_workspace_naming;
 
     GPtrArray *keybindings;
+
+    int new_position_func_ref;
+    int new_focus_position_func_ref;
 };
 
 struct options get_default_options();
 void load_default_keybindings();
 GPtrArray *create_tagnames();
 void copy_options(struct options *dest_option, struct options *src_option);
+
+int workspace_get_new_position(struct workspace *ws);
+int workspace_get_new_focus_position(struct workspace *ws);
 
 #endif /* OPTIONS_H */

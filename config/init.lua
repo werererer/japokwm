@@ -42,6 +42,28 @@ local function toggle_all_bars()
     end
 end
 
+local function get_entry_position(ws_id, is_focused)
+    print("works")
+    if (is_focused) then
+        return 1
+    else
+        return 1
+    end
+end
+
+local function get_focus_entry_position(ws_id, is_focused)
+    print("works")
+    print("focus entry position")
+    if (is_focused) then
+        return 1
+    else
+        return 1
+    end
+end
+
+config.set_entry_position_function(get_entry_position)
+config.set_entry_focus_position_function(get_focus_entry_position)
+
 config.bind_key("mod-S-p",       function() container.set_sticky(info.this_container_position(), 255) end)
 config.bind_key("mod-p",         function() action.exec("rofi -show run") end)
 config.bind_key("mod-e",         function() action.view(info.get_next_empty_workspace(info.get_workspace(), info.direction.left)) end)
