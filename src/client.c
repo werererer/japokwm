@@ -148,7 +148,7 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
 
 void container_move_sticky_containers_current_ws(struct container *con)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     container_move_sticky_containers(con, ws->id);
 }
@@ -268,7 +268,8 @@ void reset_tiled_client_borders(int border_px)
 {
     for (int i = 0; i < server.normal_clients->len; i++) {
         struct client *c = g_ptr_array_index(server.normal_clients, i);
-        struct tagset *tagset = selected_monitor->tagset;
+        struct monitor *m = server_get_selected_monitor();
+        struct tagset *tagset = m->tagset;
         if (!tagset_exist_on(tagset, c->con))
             continue;
         if (container_is_floating(c->con))
@@ -281,7 +282,8 @@ void reset_floating_client_borders(int border_px)
 {
     for (int i = 0; i < server.normal_clients->len; i++) {
         struct client *c = g_ptr_array_index(server.normal_clients, i);
-        struct tagset *tagset = selected_monitor->tagset;
+        struct monitor *m = server_get_selected_monitor();
+        struct tagset *tagset = m->tagset;
         if (!tagset_exist_on(tagset, c->con))
             continue;
         if (!container_is_floating(c->con))

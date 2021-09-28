@@ -368,7 +368,7 @@ void focus_container(struct container *con)
     if (container_get_hidden(con))
         return;
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
 
     if (!container_viewable_on_monitor(m, con))
@@ -500,7 +500,7 @@ void lift_container(struct container *con)
 
 void repush(int pos1, int pos2)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct tagset *tagset = monitor_get_active_tagset(m);
     GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
 
@@ -580,7 +580,7 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
 
     struct monitor *m = container_get_monitor(con);
     if (!m)
-        m = selected_monitor;
+        m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
 
     struct container_property *property = container_get_property(con);
@@ -593,7 +593,7 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
         struct workspace *ws = container_get_workspace(con);
         struct tagset *tagset = workspace_get_selected_tagset(ws);
         if (tagset) {
-            struct monitor *m = selected_monitor;
+            struct monitor *m = server_get_selected_monitor();
             struct workspace *sel_ws = monitor_get_active_workspace(m);
             container_set_workspace_id(con, sel_ws->id);
         }
@@ -880,7 +880,7 @@ int get_position_in_container_focus_stack(struct container *con)
     if (!con)
         return INVALID_POSITION;
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct tagset *tagset = monitor_get_active_tagset(m);
     int position = find_in_composed_list(tagset->visible_focus_set->focus_stack_visible_lists, cmp_ptr, con);
     return position;
@@ -891,7 +891,7 @@ int get_position_in_container_stack(struct container *con)
     if (!con)
         return INVALID_POSITION;
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct tagset *tagset = monitor_get_active_tagset(m);
     guint position = 0;
     g_ptr_array_find(tagset->con_set->tiled_containers, con, &position);
@@ -900,7 +900,7 @@ int get_position_in_container_stack(struct container *con)
 
 struct container *get_container_from_container_stack_position(int i)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct container *con = get_container(ws, i);
     return con;
@@ -930,7 +930,7 @@ void container_set_just_workspace_id(struct container *con, int ws_id)
 
     tagset_reload(prev_tagset);
     struct workspace *ws = get_workspace(ws_id);
-    ws->prev_m = selected_monitor;
+    ws->prev_m = server_get_selected_monitor();
     struct tagset *tagset = workspace_get_active_tagset(ws);
     tagset_reload(tagset);
 }
@@ -1072,7 +1072,7 @@ bool container_exists(struct container *con)
 
 bool container_potentially_visible(struct container *con)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     bool potentially_visible = container_potentially_viewable_on_monitor(m, con);
     return potentially_visible;
 }

@@ -78,7 +78,7 @@ int lib_resize_main(lua_State *L)
     float n = luaL_checknumber(L, -1);
     lua_pop(L, 1);
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = ws->layout;
     int dir = lt->options.resize_dir;
@@ -101,7 +101,8 @@ int lib_set_floating(lua_State *L)
 {
     bool floating = lua_toboolean(L, -1);
     lua_pop(L, 1);
-    struct container *sel = get_focused_container(selected_monitor);
+    struct monitor *m = server_get_selected_monitor();
+    struct container *sel = get_focused_container(m);
     if (!sel)
         return 0;
 
@@ -128,7 +129,8 @@ int lib_start_keycombo(lua_State *L)
 
 int lib_set_nmaster(lua_State *L)
 {
-    struct layout *lt = get_layout_in_monitor(selected_monitor);
+    struct monitor *m = server_get_selected_monitor();
+    struct layout *lt = get_layout_in_monitor(m);
     lt->nmaster = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     arrange();
@@ -137,7 +139,8 @@ int lib_set_nmaster(lua_State *L)
 
 int lib_increase_nmaster(lua_State *L)
 {
-    struct layout *lt = get_layout_in_monitor(selected_monitor);
+    struct monitor *m = server_get_selected_monitor();
+    struct layout *lt = get_layout_in_monitor(m);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_master_layout_data_ref);
     int max_nmaster = luaL_len(L, -1);
     lua_pop(L, 1);
@@ -149,7 +152,8 @@ int lib_increase_nmaster(lua_State *L)
 
 int lib_decrease_nmaster(lua_State *L)
 {
-    struct layout *lt = get_layout_in_monitor(selected_monitor);
+    struct monitor *m = server_get_selected_monitor();
+    struct layout *lt = get_layout_in_monitor(m);
 
     lt->nmaster = MAX(1, lt->nmaster - 1);
     arrange();
@@ -168,7 +172,8 @@ int lib_focus_on_stack(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    focus_on_stack(selected_monitor, i);
+    struct monitor *m = server_get_selected_monitor();
+    focus_on_stack(m, i);
     return 0;
 }
 
@@ -176,7 +181,8 @@ int lib_focus_on_hidden_stack(lua_State *L)
 {
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    focus_on_hidden_stack(selected_monitor, i);
+    struct monitor *m = server_get_selected_monitor();
+    focus_on_hidden_stack(m, i);
     return 0;
 }
 
@@ -193,7 +199,7 @@ int lib_move_to_scratchpad(lua_State *L)
 {
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct container *con = get_container(ws, i);
     move_to_scratchpad(con, 0);
@@ -205,7 +211,7 @@ int lib_view(lua_State *L)
     unsigned int ws_id = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     if (!m)
         return 0;
 
@@ -220,9 +226,7 @@ int lib_tag_view(lua_State *L)
 
     lua_pop(L, 1);
 
-    struct monitor *m = selected_monitor;
-    if (!m)
-        return 0;
+    struct monitor *m = server_get_selected_monitor();
 
     BitSet *tmp_bitset = bitset_from_value(tags_dec);
     BitSet *bitset = bitset_create(server.workspaces->len);
@@ -238,7 +242,7 @@ int lib_tag_view(lua_State *L)
 
 int lib_toggle_view(lua_State *L)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     focus_most_recent_container(ws);
     struct container *sel = get_focused_container(m);
@@ -249,7 +253,8 @@ int lib_toggle_view(lua_State *L)
 
 int lib_toggle_floating(lua_State *L)
 {
-    struct container *sel = get_focused_container(selected_monitor);
+    struct monitor *m = server_get_selected_monitor();
+    struct container *sel = get_focused_container(m);
     if (!sel)
         return 0;
     container_set_floating(sel, container_fix_position, !container_is_floating(sel));
@@ -262,7 +267,7 @@ int lib_move_container_to_workspace(lua_State *L)
     unsigned int ws_id = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct container *con = get_focused_container(m);
 
     move_container_to_workspace(con, get_workspace(ws_id));
@@ -278,7 +283,7 @@ int lib_quit(lua_State *L)
 
 int lib_zoom(lua_State *L)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct tagset *tagset = monitor_get_active_tagset(m);
 
     struct container *sel = get_focused_container(m);
@@ -420,7 +425,7 @@ int lib_load_layout(lua_State *L)
 
 int lib_kill(lua_State *L)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
 
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
@@ -438,7 +443,7 @@ int lib_kill(lua_State *L)
 
 int lib_toggle_layout(lua_State *L)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     push_layout(ws, ws->previous_layout);
     arrange();
@@ -459,7 +464,7 @@ int lib_swap_workspace(lua_State *L)
     int ws_id2 = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
 
     struct workspace *ws1 = get_workspace(ws_id1);
     struct workspace *ws2 = get_workspace(ws_id2);

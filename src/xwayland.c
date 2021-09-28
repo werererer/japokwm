@@ -57,7 +57,7 @@ void create_notifyx11(struct wl_listener *listener, void *data)
     LISTEN(&xwayland_surface->events.set_class, &c->set_app_id, client_handle_set_app_id);
     LISTEN(&xwayland_surface->events.request_activate, &c->activate, activatex11);
 
-    create_container(c, selected_monitor, true);
+    create_container(c, server_get_selected_monitor(), true);
 }
 
 void destroy_notifyx11(struct wl_listener *listener, void *data)
@@ -134,7 +134,7 @@ void unmap_notifyx11(struct wl_listener *listener, void *data)
     remove_in_composed_list(server.client_lists, cmp_ptr, c);
 
     arrange();
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     focus_most_recent_container(ws);
 }
@@ -144,7 +144,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
     struct wlr_xwayland_surface *xwayland_surface = c->surface.xwayland;
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
 
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
     c->ws_id = m->tagset->selected_ws_id;

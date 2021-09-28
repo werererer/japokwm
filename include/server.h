@@ -65,6 +65,8 @@ struct server {
     GPtrArray *normal_clients;
     GPtrArray *independent_clients;
 
+    struct monitor *selected_monitor;
+
     GPtrArray *mons;
     GPtrArray *popups;
     // X11 popups are handled as containers
@@ -108,4 +110,7 @@ extern struct server server;
 
 void init_server();
 void finalize_server();
+
+struct monitor *server_get_selected_monitor();
+void server_set_selected_monitor(struct monitor *m);
 #endif /* SERVER_H */

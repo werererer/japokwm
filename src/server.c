@@ -143,3 +143,13 @@ void finalize_server()
 
     g_ptr_array_free(server.tagsets, TRUE);
 }
+
+struct monitor *server_get_selected_monitor()
+{
+    return server.selected_monitor;
+}
+
+void server_set_selected_monitor(struct monitor *m)
+{
+    server.selected_monitor = m;
+}

@@ -40,7 +40,8 @@ static void update_container_arranged_by_focus_state()
 {
     // TODO: refactor this
     // manage the con->was_arranged_by_focus and con->arranged_by_focus variables
-    struct tagset *tagset = monitor_get_active_tagset(selected_monitor);
+    struct monitor *m = server_get_selected_monitor();
+    struct tagset *tagset = monitor_get_active_tagset(m);
     struct layout *mon_lt = tagset_get_layout(tagset);
     for (int i = 0; i < length_of_composed_list(tagset->visible_focus_set->focus_stack_lists); i++) {
         struct container *con = get_in_composed_list(tagset->visible_focus_set->focus_stack_lists, i);

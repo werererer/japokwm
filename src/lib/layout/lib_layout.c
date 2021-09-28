@@ -16,7 +16,8 @@ int lib_set_layout(lua_State *L)
         lua_pop(L, 1);
     }
 
-    struct workspace *ws = monitor_get_active_workspace(selected_monitor);
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
     if (ref > 0) {
         lt->lua_layout_copy_data_ref = ref;

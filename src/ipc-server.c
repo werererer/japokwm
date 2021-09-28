@@ -454,7 +454,7 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
 
         case IPC_GET_TREE:
             {
-                struct monitor *m = selected_monitor;
+                struct monitor *m = server_get_selected_monitor();
                 json_object *tree = ipc_json_describe_selected_container(m);
                 const char *json_string = json_object_to_json_string(tree);
 

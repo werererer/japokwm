@@ -14,7 +14,7 @@ int container_set_ratio(lua_State *L)
     int position = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct container *con = get_container(ws, position);
 
@@ -32,7 +32,7 @@ int container_set_alpha(lua_State *L)
     int position = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct container *con = get_container(ws, position);
 
@@ -60,7 +60,7 @@ int container_set_sticky(lua_State *L)
     }
     bitset_destroy(tmp_bitset);
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct container *con = get_container(ws, i);
     debug_print("container set sticky: %p\n", con);
@@ -92,7 +92,7 @@ int container_set_sticky_restricted(lua_State *L)
     }
     bitset_destroy(tmp_bitset);
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct container *con = get_container(ws, i);
 
@@ -122,7 +122,7 @@ int container_toggle_add_sticky(lua_State *L)
     }
     bitset_destroy(tmp_bitset);
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct container *con = get_container(ws, i);
     if (!con)
@@ -159,7 +159,7 @@ int container_toggle_add_sticky_restricted(lua_State *L)
     }
     bitset_destroy(tmp_bitset);
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct container *con = get_container(ws, i);
     if (!con)

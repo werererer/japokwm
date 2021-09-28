@@ -64,7 +64,8 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
 
 void copy_layout_from_selected_workspace(GPtrArray *workspaces)
 {
-    struct layout *src_lt = get_layout_in_monitor(selected_monitor);
+    struct monitor *m = server_get_selected_monitor();
+    struct layout *src_lt = get_layout_in_monitor(m);
 
     for (int i = 0; i < workspaces->len; i++) {
         struct workspace *ws = g_ptr_array_index(workspaces, i);
@@ -452,7 +453,8 @@ cleanup:
 
 void load_layout(lua_State *L, const char *name)
 {
-    struct workspace *ws = monitor_get_active_workspace(selected_monitor);
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
 
     struct layout *lt = NULL;
     guint i;
@@ -821,7 +823,7 @@ static int get_in_container_stack(struct container *con)
     if (!con)
         return INVALID_POSITION;
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     guint position = 0;
     g_ptr_array_find(ws->con_set->tiled_containers, con, &position);

@@ -6,7 +6,8 @@
 
 int local_add_listener(lua_State *L)
 {
-    struct layout *lt = get_layout_in_monitor(selected_monitor);
+    struct monitor *m = server_get_selected_monitor();
+    struct layout *lt = get_layout_in_monitor(m);
     struct event_handler *event_handler = lt->options.event_handler;
 
     int *func_ref = calloc(1, sizeof(*func_ref));

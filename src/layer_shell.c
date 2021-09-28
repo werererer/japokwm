@@ -19,7 +19,8 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     struct wlr_layer_surface_v1 *wlr_layer_surface = data;
 
     if (!wlr_layer_surface->output) {
-        wlr_layer_surface->output = selected_monitor->wlr_output;
+        struct monitor *m = server_get_selected_monitor();
+        wlr_layer_surface->output = m->wlr_output;
     }
 
     union surface_t surface;

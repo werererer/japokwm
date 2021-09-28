@@ -51,7 +51,7 @@ void remove_container_from_scratchpad(struct container *con)
 
 static void hide_container(struct container *con)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct container *sel = get_focused_container(m);
 
     if (!sel->on_scratchpad) {
@@ -65,7 +65,7 @@ static void hide_container(struct container *con)
 
 static void show_container(struct container *con)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
 
     container_set_hidden(con, false);
@@ -85,7 +85,7 @@ void show_scratchpad()
         return;
 
     struct container *con = g_ptr_array_index(server.scratchpad, 0);
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     bool visible_on_other_workspace = !container_get_hidden(con) && ws->id != con->client->ws_id;
     if (visible_on_other_workspace) {
