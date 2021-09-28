@@ -63,7 +63,6 @@ struct server {
 
     GPtrArray *client_lists;
     GPtrArray *normal_clients;
-    GPtrArray *non_tiled_clients;
     GPtrArray *independent_clients;
 
     GPtrArray *mons;

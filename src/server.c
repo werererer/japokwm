@@ -101,14 +101,12 @@ void init_server()
     server.client_lists = g_ptr_array_new();
 
     server.normal_clients = g_ptr_array_new();
-    server.non_tiled_clients = g_ptr_array_new();
     server.independent_clients = g_ptr_array_new();
 
     server.floating_containers = g_ptr_array_new();
     server.floating_stack = g_ptr_array_new();
 
     g_ptr_array_add(server.client_lists, server.normal_clients);
-    g_ptr_array_add(server.client_lists, server.non_tiled_clients);
     g_ptr_array_add(server.client_lists, server.independent_clients);
 
     server.tagsets = g_ptr_array_new();
@@ -135,11 +133,10 @@ void finalize_server()
     /* server.config_paths = create_default_config_paths(); */
     /* server.workspaces = g_ptr_array_new(); */
 
-    /* server.client_lists = g_ptr_array_new(); */
+    g_ptr_array_free(server.client_lists, FALSE);
 
-    /* server.normal_clients = g_ptr_array_new(); */
-    /* server.non_tiled_clients = g_ptr_array_new(); */
-    /* server.independent_clients = g_ptr_array_new(); */
+    g_ptr_array_free(server.normal_clients, FALSE);
+    g_ptr_array_free(server.independent_clients, FALSE);
 
     /* server.floating_containers = g_ptr_array_new(); */
     /* server.floating_stack = g_ptr_array_new(); */
