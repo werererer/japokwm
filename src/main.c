@@ -10,7 +10,6 @@
 #include <wlr/types/wlr_gamma_control_v1.h>
 #include <wlr/types/wlr_primary_selection_v1.h>
 #include <wlr/types/wlr_screencopy_v1.h>
-#include <wlr/types/wlr_server_decoration.h>
 #include <wlr/types/wlr_viewporter.h>
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_output_v1.h>
@@ -36,18 +35,6 @@ static void cleanup();
 static void handle_new_inputdevice(struct wl_listener *listener, void *data);
 static void run(char *startup_cmd);
 static int setup();
-
-static void cleanup()
-{
-    close_error_file();
-    finalize_server();
-#if JAPOKWM_HAS_XWAYLAND
-    wlr_xwayland_destroy(server.xwayland.wlr_xwayland);
-#endif
-    wl_display_destroy_clients(server.wl_display);
-
-    wlr_output_layout_destroy(server.output_layout);
-}
 
 static void run(char *startup_cmd)
 {
@@ -119,16 +106,6 @@ static int setup()
     server.default_layout = create_layout(L);
     load_config(L);
 
-    /* The backend is a wlroots feature which abstracts the underlying input and
-     * output hardware. The autocreate option will choose the most suitable
-     * backend based on the current environment, such as opening an X11 window
-     * if an X11 server is running. The NULL argument here optionally allows you
-     * to pass in a custom renderer if wlr_renderer doesnt). */
-    if (!(server.backend = wlr_backend_autocreate(server.wl_display))) {
-        printf("couldn't create backend\n");
-        return EXIT_FAILURE;
-    }
-
     /* If we don't provide a renderer, autocreate makes a GLES2 renderer for us.
      * The renderer is responsible for defining the various pixel formats it
      * supports for shared memory, this configures that for clients. */
@@ -156,27 +133,12 @@ static int setup()
     server.output_layout = wlr_output_layout_create();
     wlr_xdg_output_manager_v1_create(server.wl_display, server.output_layout);
 
-    /* Configure a listener to be notified when new outputs are available on the
-     * backend. */
-    wl_signal_add(&server.backend->events.new_output, &server.new_output);
-
-    /* Set up our client lists and the xdg-shell. The xdg-shell is a
+    /* Set up the xdg-shell. The xdg-shell is a
      * Wayland protocol which is used for application windows. For more
      * detail on shells, refer to the article:
      *
      * https://drewdevault.com/2018/07/29/Wayland-shells.html
      */
-
-    server.xdg_shell = wlr_xdg_shell_create(server.wl_display);
-    wl_signal_add(&server.xdg_shell->events.new_surface, &server.new_xdg_surface);
-    // remove csd(client side decorations) completely from xdg based windows
-    wlr_server_decoration_manager_set_default_mode(
-            wlr_server_decoration_manager_create(server.wl_display),
-            WLR_SERVER_DECORATION_MANAGER_MODE_SERVER);
-
-    server.layer_shell = wlr_layer_shell_v1_create(server.wl_display);
-    wl_signal_add(&server.layer_shell->events.new_surface,
-            &server.new_layer_shell_surface);
 
     server.input_inhibitor_mgr = wlr_input_inhibit_manager_create(server.wl_display);
 
@@ -189,13 +151,6 @@ static int setup()
     /* setup relative pointer manager */
     server.relative_pointer_mgr = wlr_relative_pointer_manager_v1_create(server.wl_display);
     /* wl_signal_add(&server.virtual_keyboard_mgr->events.new_virtual_keyboard, &new_virtual_keyboard); */
-
-    /* Use xdg_decoration protocol to negotiate server-side decorations */
-    server.xdeco_mgr = wlr_xdg_decoration_manager_v1_create(server.wl_display);
-    wl_signal_add(&server.xdeco_mgr->events.new_toplevel_decoration, &server.new_xdeco);
-
-    server.pointer_constraints = wlr_pointer_constraints_v1_create(server.wl_display);
-    wl_signal_add(&server.pointer_constraints->events.new_constraint, &server.new_pointer_constraint);
 
     /*
      * Configures a seat, which is a single "seat" at which a user sits and
@@ -301,12 +256,8 @@ int main(int argc, char *argv[])
                 "XDG_RUNTIME_DIR is not set in the environment. Aborting.\n");
         return EXIT_FAILURE;
     }
-    if (setup()) {
-        printf("failed to setup japokwm\n");
-        return EXIT_FAILURE;
-    }
-
-    run(startup_cmd);
-    cleanup();
-    return EXIT_SUCCESS;
+    int status = start_server(startup_cmd);
+    stop_server();
+    finalize_server();
+    return status;
 }

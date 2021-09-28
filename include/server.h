@@ -111,6 +111,9 @@ extern struct server server;
 void init_server();
 void finalize_server();
 
+int start_server(char *startup_cmd);
+int stop_server();
+
 struct monitor *server_get_selected_monitor();
 void server_set_selected_monitor(struct monitor *m);
 #endif /* SERVER_H */
