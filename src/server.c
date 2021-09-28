@@ -125,25 +125,21 @@ void finalize_server()
     /* init_event_handlers(&server); */
 
     g_ptr_array_free(server.mons, TRUE);
-    /* server.popups = g_ptr_array_new(); */
-    /* server.xwayland_popups = g_ptr_array_new(); */
+    g_ptr_array_free(server.popups, FALSE);
+    g_ptr_array_free(server.xwayland_popups, FALSE);
 
-    /* server.scratchpad = g_ptr_array_new(); */
-    /* server.keyboards = g_ptr_array_new(); */
-    /* server.config_paths = create_default_config_paths(); */
-    /* server.workspaces = g_ptr_array_new(); */
+    g_ptr_array_free(server.scratchpad, TRUE);
+    g_ptr_array_free(server.keyboards, TRUE);
+    g_ptr_array_free(server.config_paths, FALSE);
+    g_ptr_array_free(server.workspaces, TRUE);
 
     g_ptr_array_free(server.client_lists, FALSE);
 
     g_ptr_array_free(server.normal_clients, FALSE);
     g_ptr_array_free(server.independent_clients, FALSE);
 
-    /* server.floating_containers = g_ptr_array_new(); */
-    /* server.floating_stack = g_ptr_array_new(); */
-
-    /* g_ptr_array_add(server.client_lists, server.normal_clients); */
-    /* g_ptr_array_add(server.client_lists, server.non_tiled_clients); */
-    /* g_ptr_array_add(server.client_lists, server.independent_clients); */
+    g_ptr_array_free(server.floating_containers, FALSE);
+    g_ptr_array_free(server.floating_stack, FALSE);
 
     g_ptr_array_free(server.tagsets, TRUE);
 }
