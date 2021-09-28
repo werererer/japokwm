@@ -45,9 +45,9 @@ end
 local function get_entry_position(ws_id, is_focused)
     print("works")
     if (is_focused) then
-        return 1
+        return 0
     else
-        return 1
+        return 0
     end
 end
 
@@ -55,9 +55,9 @@ local function get_focus_entry_position(ws_id, is_focused)
     print("works")
     print("focus entry position")
     if (is_focused) then
-        return 1
+        return 0
     else
-        return 1
+        return 0
     end
 end
 
