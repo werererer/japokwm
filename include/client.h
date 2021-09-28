@@ -39,6 +39,7 @@ struct client {
     // used to determine what to damage
     bool resized;
     bool moved_workspace;
+    bool is_independent;
 };
 
 struct client *create_client(enum shell shell_type, union surface_t surface);
@@ -50,7 +51,6 @@ void container_move_sticky_containers(struct container *con, int ws_id);
 void focus_client(struct seat *seat, struct client *old, struct client *c);
 void focus_surface(struct seat *seat, struct wlr_surface *surface);
 void client_setsticky(struct client *c, BitSet *workspaces);
-void reset_tiled_client_borders(int border_bx);
 void reset_floating_client_borders(int border_px);
 void kill_client(struct client *c);
 

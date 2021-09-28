@@ -182,11 +182,10 @@ void maprequestx11(struct wl_listener *listener, void *data)
         }
     }
 
+    g_ptr_array_add(server.normal_clients, c);
     switch (c->type) {
         case X11_MANAGED:
             {
-                g_ptr_array_add(server.normal_clients, c);
-
                 con->on_top = false;
                 if (x11_wants_floating(con->client)) {
                     container_set_floating(con, container_fix_position, true);
@@ -197,7 +196,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
         case X11_UNMANAGED:
             {
                 con->is_unmanaged = true;
-                g_ptr_array_add(server.independent_clients, c);
+                c->is_independent = true;
 
                 debug_print("is unmanaged\n");
                 struct workspace *ws = monitor_get_active_workspace(m);

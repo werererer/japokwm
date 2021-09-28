@@ -63,7 +63,6 @@ struct server {
 
     GPtrArray *client_lists;
     GPtrArray *normal_clients;
-    GPtrArray *independent_clients;
 
     struct monitor *selected_monitor;
 
