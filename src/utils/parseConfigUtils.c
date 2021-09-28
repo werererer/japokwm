@@ -196,6 +196,7 @@ void init_error_file()
 
 void close_error_file()
 {
+    assert(error_fd >= 0);
     close(error_fd);
     error_fd = -1;
 }
