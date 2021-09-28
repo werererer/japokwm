@@ -131,8 +131,6 @@ void unmap_notifyx11(struct wl_listener *listener, void *data)
     container_damage_whole(c->con);
     remove_container_from_tile(con);
 
-    remove_in_composed_list(server.client_lists, cmp_ptr, c);
-
     arrange();
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
@@ -182,7 +180,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
         }
     }
 
-    g_ptr_array_add(server.normal_clients, c);
     switch (c->type) {
         case X11_MANAGED:
             {

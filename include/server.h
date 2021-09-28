@@ -61,9 +61,6 @@ struct server {
     int previous_workspace;
     BitSet *previous_bitset;
 
-    GPtrArray *client_lists;
-    GPtrArray *normal_clients;
-
     struct monitor *selected_monitor;
 
     GPtrArray *mons;

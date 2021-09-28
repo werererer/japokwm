@@ -90,8 +90,6 @@ void map_request(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
     struct workspace *ws = get_workspace(c->ws_id);
 
-    g_ptr_array_add(server.normal_clients, c);
-
     struct container *con = c->con;
     add_container_to_tile(con);
     arrange();
@@ -108,8 +106,6 @@ void unmap_notify(struct wl_listener *listener, void *data)
     struct container *con = c->con;
     container_damage_whole(c->con);
     remove_container_from_tile(con);
-
-    remove_in_composed_list(server.client_lists, cmp_ptr, c);
 
     arrange();
     struct monitor *m = server_get_selected_monitor();
