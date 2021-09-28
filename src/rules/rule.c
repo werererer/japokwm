@@ -10,7 +10,7 @@
 
 struct rule *create_rule(const char *id, const char *title, int lua_func_ref)
 {
-    struct rule *rule = calloc(1, sizeof(struct rule));
+    struct rule *rule = calloc(1, sizeof(*rule));
     rule->id = strdup(id);
     rule->title = strdup(title);
     rule->lua_func_ref = lua_func_ref;

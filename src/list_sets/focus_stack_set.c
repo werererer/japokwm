@@ -7,7 +7,7 @@
 
 struct focus_set *focus_set_create()
 {
-    struct focus_set *focus_set = calloc(1, sizeof(struct focus_set));
+    struct focus_set *focus_set = calloc(1, sizeof(*focus_set));
     focus_set->focus_stack_lists = g_ptr_array_new();
     focus_set->focus_stack_visible_lists = g_ptr_array_new();
     focus_set->focus_stack_lists_with_layer_shell = g_ptr_array_new();

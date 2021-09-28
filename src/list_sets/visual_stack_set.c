@@ -3,7 +3,7 @@
 
 struct visual_set *visual_set_create()
 {
-    struct visual_set *visual_set = calloc(1, sizeof(struct visual_set));
+    struct visual_set *visual_set = calloc(1, sizeof(*visual_set));
     visual_set->stack_lists = g_ptr_array_new();
     visual_set->visual_stack_lists = g_ptr_array_new();
 

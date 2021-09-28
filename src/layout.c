@@ -13,7 +13,7 @@
 
 struct layout *create_layout(lua_State *L)
 {
-    struct layout *lt = calloc(1, sizeof(struct layout));
+    struct layout *lt = calloc(1, sizeof(*lt));
     lt->nmaster = 1;
     *lt = (struct layout) {
         .symbol = "",

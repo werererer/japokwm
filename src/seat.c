@@ -29,7 +29,7 @@ void handle_set_primary_selection(struct wl_listener *listener, void *data)
 
 struct seat *create_seat(const char *seat_name)
 {
-    struct seat *seat = calloc(1, sizeof(struct seat));
+    struct seat *seat = calloc(1, sizeof(*seat));
 
     seat->wlr_seat = wlr_seat_create(server.wl_display, seat_name);
     seat->wlr_seat->data = seat;
@@ -246,7 +246,7 @@ void seat_add_device(struct seat *seat, struct input_device *input_device) {
     }
 
     struct seat_device *seat_device =
-        calloc(1, sizeof(struct seat_device));
+        calloc(1, sizeof(*seat_device));
     if (!seat_device) {
         printf("could not allocate seat device");
         return;

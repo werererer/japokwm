@@ -227,7 +227,7 @@ void tagset_unload_workspaces(struct tagset *tagset)
 
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *workspaces)
 {
-    struct tagset *tagset = calloc(1, sizeof(struct tagset));
+    struct tagset *tagset = calloc(1, sizeof(*tagset));
     tagset->m = m;
 
     tagset->selected_ws_id = selected_ws_id;

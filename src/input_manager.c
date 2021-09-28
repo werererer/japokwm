@@ -118,7 +118,7 @@ static void handle_new_input(struct wl_listener *listener, void *data)
     struct input_manager *input_manager = wl_container_of(listener, input_manager, new_input);
     struct wlr_input_device *device = data;
 
-    struct input_device *input_device = calloc(1, sizeof(struct input_device));
+    struct input_device *input_device = calloc(1, sizeof(*input_device));
     device->data = input_device;
 
     input_device->wlr_device = device;
@@ -192,7 +192,7 @@ static void handle_new_virtual_pointer(struct wl_listener *listener, void *data)
         input_manager_seat_from_wlr_seat(event->suggested_seat) :
         input_manager_get_default_seat();
 
-    struct input_device *input_device = calloc(1, sizeof(struct input_device));
+    struct input_device *input_device = calloc(1, sizeof(*input_device));
     device->data = input_device;
 
     input_device->is_virtual = true;
@@ -213,7 +213,7 @@ static void handle_new_virtual_pointer(struct wl_listener *listener, void *data)
 
 struct input_manager *create_input_manager()
 {
-    struct input_manager *input_manager = calloc(1, sizeof(struct input_manager));
+    struct input_manager *input_manager = calloc(1, sizeof(*input_manager));
 
     input_manager->devices = g_ptr_array_new();
     input_manager->seats = g_ptr_array_new();

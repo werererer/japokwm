@@ -195,7 +195,7 @@ static bool process_binding(lua_State *L, const char *bind, GPtrArray *keybindin
 
 struct keybinding *create_keybinding(const char *binding, int lua_func_ref)
 {
-    struct keybinding *keybinding = calloc(1, sizeof(struct keybinding));
+    struct keybinding *keybinding = calloc(1, sizeof(*keybinding));
     keybinding->binding = strdup(binding);
     keybinding->lua_func_ref = lua_func_ref;
     return keybinding;

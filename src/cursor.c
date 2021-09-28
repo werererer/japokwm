@@ -132,7 +132,7 @@ static int hide_notify(void *data) {
 
 struct cursor *create_cursor(struct seat *seat)
 {
-    struct cursor *cursor = calloc(1, sizeof(struct cursor));
+    struct cursor *cursor = calloc(1, sizeof(*cursor));
 
     struct wlr_cursor *wlr_cursor = wlr_cursor_create();
     cursor->wlr_cursor = wlr_cursor;
@@ -677,8 +677,7 @@ void handle_new_pointer_constraint(struct wl_listener *listener, void *data)
     struct wlr_pointer_constraint_v1 *wlr_constraint = data;
     struct seat *seat = wlr_constraint->seat->data;
 
-    struct pointer_constraint *constraint =
-        calloc(1, sizeof(struct pointer_constraint));
+    struct pointer_constraint *constraint = calloc(1, sizeof(*constraint));
     constraint->cursor = seat->cursor;
     constraint->wlr_constraint = wlr_constraint;
 

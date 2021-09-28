@@ -9,7 +9,7 @@ int local_add_listener(lua_State *L)
     struct layout *lt = get_layout_in_monitor(selected_monitor);
     struct event_handler *event_handler = lt->options.event_handler;
 
-    int *func_ref = calloc(1, sizeof(int));
+    int *func_ref = calloc(1, sizeof(*func_ref));
     lua_ref_safe(L, LUA_REGISTRYINDEX, func_ref);
     const char *event = luaL_checkstring(L, -1);
     lua_pop(L, 1);

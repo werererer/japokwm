@@ -8,7 +8,7 @@
 
 struct mon_rule *create_mon_rule(const char *output_name, int lua_func_ref)
 {
-    struct mon_rule *mon_rule = calloc(1, sizeof(struct mon_rule));
+    struct mon_rule *mon_rule = calloc(1, sizeof(*mon_rule));
     mon_rule->output_name = strdup(output_name);
     mon_rule->lua_func_ref = lua_func_ref;
     return mon_rule;

@@ -30,7 +30,7 @@ static void add_container_to_workspace(struct container *con, struct workspace *
 
 static struct container_property *create_container_property()
 {
-    struct container_property *property = calloc(1, sizeof(struct container_property));
+    struct container_property *property = calloc(1, sizeof(*property));
     return property;
 }
 
@@ -42,7 +42,7 @@ static void destroy_container_property(void *property_ptr)
 
 struct container *create_container(struct client *c, struct monitor *m, bool has_border)
 {
-    struct container *con = calloc(1, sizeof(struct container));
+    struct container *con = calloc(1, sizeof(*con));
     con->client = c;
     c->con = con;
 
