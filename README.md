@@ -32,7 +32,7 @@ japokwm
 With version 0.3 I consider this project to be in it's beta stage that means the focus is now on fixing bugs and less about adding new features. In this stage bugs still may accour but way less than in the alpha stage (If you find them please report them here)
 
 ## TODO
-- fix bugs and inconveniences
+polish program and syntax for configuring
 
 ## Acknowledgements
 japokwm forked dwl and uses wlroots and parts of sway to do the heavy lifting
