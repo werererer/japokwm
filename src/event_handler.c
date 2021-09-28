@@ -7,7 +7,7 @@
 
 struct event_handler *create_event_handler()
 {
-    struct event_handler *event_handler = calloc(1, sizeof(struct event_handler));
+    struct event_handler *event_handler = calloc(1, sizeof(*event_handler));
     event_handler->on_start_func_refs = g_ptr_array_new();
     event_handler->on_focus_func_refs = g_ptr_array_new();
     event_handler->on_update_func_refs = g_ptr_array_new();

@@ -43,7 +43,7 @@ void cleanupkeyboard(struct wl_listener *listener, void *data)
 void create_keyboard(struct seat *seat, struct seat_device *seat_device)
 {
     struct wlr_input_device *wlr_device = seat_device->input_device->wlr_device;
-    struct keyboard *kb = wlr_device->data = calloc(1, sizeof(struct keyboard));
+    struct keyboard *kb = wlr_device->data = calloc(1, sizeof(*kb));
     kb->seat_device = seat_device;
     kb->seat = seat;
 

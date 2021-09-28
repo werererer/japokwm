@@ -56,7 +56,7 @@ static const struct anchors anchors = {
 
 struct root *create_root(struct monitor *m, struct wlr_box geom)
 {
-    struct root *root = calloc(1, sizeof(struct root));
+    struct root *root = calloc(1, sizeof(*root));
     root->m = m;
     set_root_geom(root, geom);
     return root;

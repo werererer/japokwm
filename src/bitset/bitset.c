@@ -7,7 +7,7 @@
 /****************** INTERFACE ******************/
 
 BitSet *bitset_create(size_t minimum_number_of_bits) {
-    BitSet *bitset = calloc(1, sizeof(BitSet));
+    BitSet *bitset = calloc(1, sizeof(*bitset));
     size_t number_of_bytes = BITS_TO_BYTES(minimum_number_of_bits);
 
     bitset->bits = g_ptr_array_sized_new(number_of_bytes);
@@ -23,7 +23,7 @@ BitSet *bitset_create(size_t minimum_number_of_bits) {
 static void *copy_int(const void *src_ptr, void *data)
 {
     int *src = (int *)src_ptr;
-    int *dest = calloc(1, sizeof(uint8_t));
+    int *dest = calloc(1, sizeof(*dest));
     memcpy(dest, src, sizeof(uint8_t));
     return dest;
 }
@@ -299,7 +299,7 @@ void bitset_grow(BitSet* bitset) {
     assert(bitset != NULL);
 
     /* ERROR/SUCCESS flags are the same */
-    uint8_t *empty = calloc(1, sizeof(uint8_t));
+    uint8_t *empty = calloc(1, sizeof(*empty));
     g_ptr_array_add(bitset->bits, empty);
 }
 
@@ -396,7 +396,7 @@ int _bitset_increment_size(BitSet* bitset) {
     if (bitset == NULL) return BITSET_ERROR;
 
     if (bitset->size++ % 8 == 0) {
-        uint8_t *empty = calloc(1, sizeof(uint8_t));
+        uint8_t *empty = calloc(1, sizeof(*empty));
         g_ptr_array_add(bitset->bits, empty);
     }
 

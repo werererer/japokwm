@@ -7,7 +7,7 @@
 
 int lib_add_listener(lua_State *L)
 {
-    int *func_ref = calloc(1, sizeof(int));
+    int *func_ref = calloc(1, sizeof(*func_ref));
     lua_ref_safe(L, LUA_REGISTRYINDEX, func_ref);
     const char *event = luaL_checkstring(L, -1);
     lua_pop(L, 1);

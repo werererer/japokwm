@@ -8,7 +8,7 @@
 
 struct container_set *create_container_set()
 {
-    struct container_set *con_set = calloc(1, sizeof(struct container_set));
+    struct container_set *con_set = calloc(1, sizeof(*con_set));
 
     con_set->tiled_containers = g_ptr_array_new();
 
