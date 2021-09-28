@@ -157,11 +157,6 @@ void init_server()
     server.floating_stack = g_ptr_array_new();
 
 
-    server.client_lists = g_ptr_array_new();
-
-    server.normal_clients = g_ptr_array_new();
-    g_ptr_array_add(server.client_lists, server.normal_clients);
-
     server.tagsets = g_ptr_array_new();
     server.previous_workspace = 0;
 }
@@ -184,10 +179,6 @@ void finalize_server()
     g_ptr_array_free(server.keyboards, TRUE);
     g_ptr_array_free(server.config_paths, FALSE);
     g_ptr_array_free(server.workspaces, TRUE);
-
-    g_ptr_array_free(server.client_lists, FALSE);
-
-    g_ptr_array_free(server.normal_clients, FALSE);
 
     g_ptr_array_free(server.floating_containers, FALSE);
     g_ptr_array_free(server.floating_stack, FALSE);
