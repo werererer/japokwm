@@ -108,4 +108,5 @@ struct server {
 extern struct server server;
 
 void init_server();
+void finalize_server();
 #endif /* SERVER_H */

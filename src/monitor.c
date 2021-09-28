@@ -20,8 +20,6 @@
 #include "root.h"
 #include "tagset.h"
 
-struct wl_list sticky_stack;
-
 struct monitor *selected_monitor;
 
 static void handle_output_damage_frame(struct wl_listener *listener, void *data);

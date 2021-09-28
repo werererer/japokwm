@@ -28,9 +28,6 @@ struct monrule {
     int lua_func_ref;
 };
 
-/* associated with stlink in container  */
-extern struct wl_list sticky_stack;
-
 void center_cursor_in_monitor(struct cursor *cursor, struct monitor *m);
 void create_monitor(struct wl_listener *listener, void *data);
 void create_output(struct wlr_backend *backend, void *data);
