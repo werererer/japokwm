@@ -40,6 +40,7 @@ static int setup();
 static void cleanup()
 {
     close_error_file();
+    finalize_server();
 #if JAPOKWM_HAS_XWAYLAND
     wlr_xwayland_destroy(server.xwayland.wlr_xwayland);
 #endif
