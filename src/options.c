@@ -107,7 +107,6 @@ void copy_options(struct options *dest_option, struct options *src_option)
 {
     memcpy(dest_option, src_option, sizeof(struct options));
 
-    reset_tiled_client_borders(dest_option->tile_border_px);
     reset_floating_client_borders(dest_option->tile_border_px);
 }
 

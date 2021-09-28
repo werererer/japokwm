@@ -264,30 +264,10 @@ void client_handle_set_app_id(struct wl_listener *listener, void *data)
     c->app_id = app_id;
 }
 
-void reset_tiled_client_borders(int border_px)
-{
-    for (int i = 0; i < server.normal_clients->len; i++) {
-        struct client *c = g_ptr_array_index(server.normal_clients, i);
-        struct monitor *m = server_get_selected_monitor();
-        struct tagset *tagset = m->tagset;
-        if (!tagset_exist_on(tagset, c->con))
-            continue;
-        if (container_is_floating(c->con))
-            continue;
-        container_set_border_width(c->con, border_px);
-    }
-}
-
 void reset_floating_client_borders(int border_px)
 {
-    for (int i = 0; i < server.normal_clients->len; i++) {
-        struct client *c = g_ptr_array_index(server.normal_clients, i);
-        struct monitor *m = server_get_selected_monitor();
-        struct tagset *tagset = m->tagset;
-        if (!tagset_exist_on(tagset, c->con))
-            continue;
-        if (!container_is_floating(c->con))
-            continue;
-        container_set_border_width(c->con, border_px);
+    for (int i = 0; i < server.floating_containers->len; i++) {
+        struct container *con = g_ptr_array_index(server.floating_containers, i);
+        container_set_border_width(con, border_px);
     }
 }

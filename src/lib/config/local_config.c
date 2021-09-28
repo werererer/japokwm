@@ -7,6 +7,7 @@
 #include "utils/coreUtils.h"
 #include "workspace.h"
 #include "server.h"
+#include "tile/tileUtils.h"
 
 int local_set_arrange_by_focus(lua_State *L)
 {
@@ -47,9 +48,10 @@ int local_set_tile_borderpx(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
     struct layout *lt = get_layout_in_monitor(m);
-    lt->options.tile_border_px = luaL_checkinteger(L, -1); lua_pop(L, 1);
+    lt->options.tile_border_px = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
 
-    reset_tiled_client_borders(lt->options.tile_border_px);
+    arrange();
     return 0;
 }
 
