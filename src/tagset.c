@@ -403,9 +403,9 @@ void focus_tagset(struct tagset *tagset)
         return;
 
     struct monitor *m = tagset->m;
-    struct monitor *prev_m = selected_monitor;
+    struct monitor *prev_m = server_get_selected_monitor();
 
-    selected_monitor = m;
+    server_set_selected_monitor(m);
 
     struct tagset *old_tagset = m->tagset;
     tagset_workspaces_disconnect(old_tagset);
@@ -470,7 +470,7 @@ static void _set_previous_tagset(struct tagset *tagset)
 
 void push_tagset(struct tagset *tagset)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
 
     if (m->tagset != tagset) {
         _set_previous_tagset(m->tagset);
@@ -521,7 +521,7 @@ void tagset_focus_tags(int ws_id, struct BitSet *bitset)
 {
     struct workspace *ws = get_workspace(ws_id);
     struct monitor *ws_m = ws->selected_tagset ? ws->selected_tagset->m : NULL;
-    struct monitor *m = ws_m ? ws_m : selected_monitor;
+    struct monitor *m = ws_m ? ws_m : server_get_selected_monitor();
 
     struct tagset *tagset = create_tagset(m, ws_id, bitset);
     push_tagset(tagset);

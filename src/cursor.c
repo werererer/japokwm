@@ -326,8 +326,9 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
     pointer_focus(cursor->seat, final_focus_surface, sx, sy, time);
 
     if (focus_con) {
-        struct container *sel = get_focused_container(selected_monitor);
-        struct workspace *ws = monitor_get_active_workspace(selected_monitor);
+        struct monitor *m = server_get_selected_monitor();
+        struct container *sel = get_focused_container(m);
+        struct workspace *ws = monitor_get_active_workspace(m);
         if (!ws->layout->options.sloppy_focus)
             return;
         if (popups_exist())
@@ -359,7 +360,8 @@ void motion_notify(struct cursor *cursor, uint32_t time_msec,
             dx, dy, dx_unaccel, dy_unaccel);
 
     if (!cursor->active_constraint) {
-        struct container *sel_con = get_focused_container(selected_monitor);
+        struct monitor *m = server_get_selected_monitor();
+        struct container *sel_con = get_focused_container(m);
         if (sel_con) {
             cursor->active_constraint = wlr_pointer_constraints_v1_constraint_for_surface(
                     server.pointer_constraints, get_wlrsurface(sel_con->client), wlr_seat);
@@ -545,10 +547,7 @@ static void warp_to_constraint_cursor_hint(struct cursor *cursor)
         double sx = constraint->current.cursor_hint.x;
         double sy = constraint->current.cursor_hint.y;
 
-        /* struct sway_view *view = view_from_wlr_surface(constraint->surface); */
-        /* struct sway_container *con = view->container; */
-
-        struct monitor *m = selected_monitor;
+        struct monitor *m = server_get_selected_monitor();
         struct container *con = get_focused_container(m);
         struct wlr_box *con_geom = container_get_current_geom(con);
         double lx = sx + con_geom->x - m->geom.x;
@@ -587,7 +586,8 @@ void handle_constraint_destroy(struct wl_listener *listener, void *data) {
 static void check_constraint_region(struct cursor *cursor) {
     struct wlr_pointer_constraint_v1 *constraint = cursor->active_constraint;
     pixman_region32_t *region = &constraint->region;
-    struct container *con = get_focused_container(selected_monitor);
+    struct monitor *m = server_get_selected_monitor();
+    struct container *con = get_focused_container(m);
     if (cursor->active_confine_requires_warp && con) {
         cursor->active_confine_requires_warp = false;
         struct wlr_box *con_geom = container_get_current_geom(con);
@@ -687,7 +687,8 @@ void handle_new_pointer_constraint(struct wl_listener *listener, void *data)
     constraint->destroy.notify = handle_constraint_destroy;
     wl_signal_add(&wlr_constraint->events.destroy, &constraint->destroy);
 
-    struct container *con = get_focused_container(selected_monitor);
+    struct monitor *m = server_get_selected_monitor();
+    struct container *con = get_focused_container(m);
     if (con) {
         struct wlr_surface *surface = get_wlrsurface(con->client);
         if (surface == wlr_constraint->surface) {

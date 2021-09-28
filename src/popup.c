@@ -108,7 +108,7 @@ void popup_handle_new_popup(struct wl_listener *listener, void *data)
 
     struct container *con = client->con;
     struct monitor *m = container_get_monitor(con);
-    if (m != selected_monitor)
+    if (m != server_get_selected_monitor())
         return;
     struct xdg_popup *popup = create_popup(m, xdg_popup, container_get_current_geom(con), con);
     g_ptr_array_insert(server.popups, 0, popup);

@@ -120,7 +120,7 @@ int workspace_get_new_position(struct workspace *ws)
     } else {
         int ws_id = ws->id;
         bool is_focused = is_workspace_the_selected_one(ws)
-            && workspace_get_monitor(ws) == selected_monitor;
+            && workspace_get_monitor(ws) == server_get_selected_monitor();
         lua_rawgeti(L, LUA_REGISTRYINDEX, func_ref);
         lua_pushinteger(L, ws_id);
         lua_pushboolean(L, is_focused);
@@ -140,7 +140,7 @@ int workspace_get_new_focus_position(struct workspace *ws)
     } else {
         int ws_id = ws->id;
         bool is_focused = is_workspace_the_selected_one(ws)
-            && workspace_get_monitor(ws) == selected_monitor;
+            && workspace_get_monitor(ws) == server_get_selected_monitor();
         lua_rawgeti(L, LUA_REGISTRYINDEX, func_ref);
         lua_pushinteger(L, ws_id);
         lua_pushboolean(L, is_focused);

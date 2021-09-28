@@ -14,7 +14,7 @@
 
 int lib_get_active_layout(lua_State *L)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct tagset *tagset = monitor_get_active_tagset(m);
 
     struct layout *lt = tagset_get_layout(tagset);
@@ -24,7 +24,7 @@ int lib_get_active_layout(lua_State *L)
 
 int lib_get_this_container_count(lua_State *L)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct tagset *tagset = monitor_get_active_tagset(m);
 
     int i = get_slave_container_count(tagset) + 1;
@@ -34,7 +34,7 @@ int lib_get_this_container_count(lua_State *L)
 
 int lib_get_n_tiled(lua_State *L)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct tagset *tagset = monitor_get_active_tagset(m);
     struct layout *lt = tagset_get_layout(tagset);
     int i = lt->n_tiled;
@@ -44,7 +44,7 @@ int lib_get_n_tiled(lua_State *L)
 
 int lib_this_container_position(lua_State *L)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct container *sel = get_focused_container(m);
 
     int position = get_position_in_container_focus_stack(sel);
@@ -57,7 +57,7 @@ int lib_stack_position_to_position(lua_State *L)
     int pos = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
 
     struct container *con = get_container_in_stack(ws, pos);
@@ -96,14 +96,15 @@ int lib_get_next_empty_workspace(lua_State *L)
 
 int lib_get_nmaster(lua_State *L)
 {
-    struct layout *lt = get_layout_in_monitor(selected_monitor);
+    struct monitor *m = server_get_selected_monitor();
+    struct layout *lt = get_layout_in_monitor(m);
     lua_pushinteger(L, lt->nmaster);
     return 1;
 }
 
 int lib_get_previous_layout(lua_State *L)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
 
     struct layout *lt = ws->previous_layout;
@@ -113,7 +114,7 @@ int lib_get_previous_layout(lua_State *L)
 
 int lib_get_workspace(lua_State *L)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     lua_pushinteger(L, m->tagset->selected_ws_id);
     return 1;
 }
@@ -137,7 +138,7 @@ int lib_get_container_under_cursor(lua_State *L)
 
 int lib_get_root_area(lua_State *L)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct root *root = m->root;
     lua_createtable(L, 1, 0);
     lua_pushinteger(L, root->geom.x);
@@ -153,7 +154,8 @@ int lib_get_root_area(lua_State *L)
 
 int lib_is_container_not_in_limit(lua_State *L)
 {
-    struct layout *lt = get_layout_in_monitor(selected_monitor);
+    struct monitor *m = server_get_selected_monitor();
+    struct layout *lt = get_layout_in_monitor(m);
 
     struct wlr_fbox geom = lua_togeometry(L);
     lua_pop(L, 1);
@@ -164,7 +166,8 @@ int lib_is_container_not_in_limit(lua_State *L)
 
 int lib_is_container_not_in_master_limit(lua_State *L)
 {
-    struct layout *lt = get_layout_in_monitor(selected_monitor);
+    struct monitor *m = server_get_selected_monitor();
+    struct layout *lt = get_layout_in_monitor(m);
 
     struct wlr_fbox geom = lua_togeometry(L);
     lua_pop(L, 1);

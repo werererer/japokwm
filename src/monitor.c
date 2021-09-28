@@ -20,8 +20,6 @@
 #include "root.h"
 #include "tagset.h"
 
-struct monitor *selected_monitor;
-
 static void handle_output_damage_frame(struct wl_listener *listener, void *data);
 static void handle_output_frame(struct wl_listener *listener, void *data);
 static void handle_output_mode(struct wl_listener *listener, void *data);
@@ -193,7 +191,7 @@ void destroy_monitor(struct wl_listener *listener, void *data)
         return;
 
     struct monitor *new_focused_monitor = g_ptr_array_index(server.mons, 0);
-    selected_monitor = new_focused_monitor;
+    server_set_selected_monitor(new_focused_monitor);
 }
 
 void center_cursor_in_monitor(struct cursor *cursor, struct monitor *m)
@@ -231,7 +229,7 @@ void focus_monitor(struct monitor *m)
 {
     if (!m)
         return;
-    if (selected_monitor == m)
+    if (server_get_selected_monitor() == m)
         return;
 
     /* wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, m->wlr_output.) */
@@ -239,7 +237,7 @@ void focus_monitor(struct monitor *m)
     // move floating containers over
     struct tagset *tagset = monitor_get_active_tagset(m);
 
-    selected_monitor = m;
+    server_set_selected_monitor(m);
     focus_tagset(tagset);
 }
 

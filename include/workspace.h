@@ -25,7 +25,7 @@ struct server;
         } while (0);\
         \
         do {\
-            struct monitor *m = selected_monitor;\
+            struct monitor *m = server_get_selected_monitor();\
             struct tagset *_tagset = monitor_get_active_tagset(m);\
             struct container_set *con_set = _tagset->con_set;\
             action\
@@ -44,7 +44,7 @@ struct server;
             \
         }\
         do {\
-            struct monitor *m = selected_monitor;\
+            struct monitor *m = server_get_selected_monitor();\
             struct tagset *_tagset = monitor_get_active_tagset(m);\
             struct container_set *con_set = _tagset->con_set;\
             action\

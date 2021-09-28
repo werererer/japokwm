@@ -120,7 +120,8 @@ json_object *ipc_json_describe_tagsets()
 {
     json_object *array = json_object_new_array();
 
-    struct workspace *sel_ws = monitor_get_active_workspace(selected_monitor);
+    struct monitor *sel_m = server_get_selected_monitor();
+    struct workspace *sel_ws = monitor_get_active_workspace(sel_m);
     struct container *sel_con = workspace_get_focused_container(sel_ws);
     for (int i = 0; i < server.workspaces->len; i++) {
         struct workspace *ws = get_workspace(i);
@@ -230,8 +231,9 @@ json_object *ipc_json_describe_selected_container(struct monitor *m)
     json_object *monitor_children;
     json_object_object_get_ex(monitor_object, "nodes", &monitor_children);
 
-    struct workspace *ws = monitor_get_active_workspace(selected_monitor);
-    json_object *workspace_object = ipc_json_describe_tag(ws->name, true, selected_monitor);
+    struct monitor *sel_m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(sel_m);
+    json_object *workspace_object = ipc_json_describe_tag(ws->name, true, sel_m);
     json_object_array_add(monitor_children, workspace_object);
     json_object *workspace_children;
     json_object_object_get_ex(monitor_object, "nodes", &workspace_children);

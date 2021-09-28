@@ -48,7 +48,7 @@ static void sym_to_binding(char *dest, int sym)
 // this function converts a string to a xkeysym string element
 static char *resolve_keybind_element(const char *bind)
 {
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = ws->layout;
 

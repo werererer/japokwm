@@ -63,7 +63,7 @@ void create_notify_xdg(struct wl_listener *listener, void *data)
 
     LISTEN(&xdg_surface->events.new_popup, &c->new_popup, popup_handle_new_popup);
 
-    create_container(c, selected_monitor, true);
+    create_container(c, server_get_selected_monitor(), true);
 }
 
 void destroy_notify(struct wl_listener *listener, void *data)
@@ -112,7 +112,7 @@ void unmap_notify(struct wl_listener *listener, void *data)
     remove_in_composed_list(server.client_lists, cmp_ptr, c);
 
     arrange();
-    struct monitor *m = selected_monitor;
+    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     focus_most_recent_container(ws);
 }
