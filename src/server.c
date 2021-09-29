@@ -163,8 +163,6 @@ void init_server()
 
 void finalize_server()
 {
-    // TODO: fix all lines that are commented out so that they to the opposite
-    // of init_server()
     g_ptr_array_free(server.registered_key_combos, TRUE);
     g_ptr_array_free(server.named_key_combos, TRUE);
 
@@ -312,6 +310,7 @@ int setup(struct server *server)
     /* setup relative pointer manager */
     server->relative_pointer_mgr = wlr_relative_pointer_manager_v1_create(server->wl_display);
     /* wl_signal_add(&server.virtual_keyboard_mgr->events.new_virtual_keyboard, &new_virtual_keyboard); */
+    init_event_handlers(server);
 
     /*
      * Configures a seat, which is a single "seat" at which a user sits and
@@ -322,7 +321,6 @@ int setup(struct server *server)
     server->input_manager = create_input_manager();
     struct seat *seat = create_seat("seat0");
 
-    init_event_handlers(server);
 #ifdef JAPOKWM_HAS_XWAYLAND
     init_xwayland(server->wl_display, seat);
 #endif

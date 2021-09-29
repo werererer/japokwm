@@ -118,24 +118,28 @@ static bool is_same_keybind_element(const char *bind, const char *bind2)
 bool is_old_combo_same(const char *bind)
 {
     GPtrArray *bind_combos = split_string(bind, " ");
+    bool ret_val = false;
 
     if (bind_combos->len < server.registered_key_combos->len) {
-        return false;
+        ret_val = false;
+        goto exit_cleanup;
     }
 
-    bool is_same = false;
     for (int i = 0; i < server.registered_key_combos->len; i++) {
         char *server_bind = g_ptr_array_index(server.registered_key_combos, i);
         char *bind_combo = g_ptr_array_index(bind_combos, i);
 
         if (is_same_keybind_element(server_bind, bind_combo)) {
-            is_same = true;
+            ret_val = true;
         } else {
-            is_same = false;
-            return false;
+            ret_val = false;
+            goto exit_cleanup;
         }
     }
-    return is_same;
+
+exit_cleanup:
+    g_ptr_array_free(bind_combos, true);
+    return ret_val;
 }
 
 bool is_same_keybind_completed(const char *bind, const char *bind2)
