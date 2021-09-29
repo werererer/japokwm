@@ -166,7 +166,6 @@ int main(int argc, char **argv) {
     uint32_t len = strlen(command);
     char *resp = ipc_single_command(socketfd, type, command, &len);
 
-    printf("works\n");
     // pretty print the json
     json_object *obj = json_tokener_parse(resp);
     if (obj == NULL) {

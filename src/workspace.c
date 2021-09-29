@@ -227,7 +227,7 @@ bool workspace_is_active(struct workspace *ws)
         return false;
 
     struct tagset *tagset = monitor_get_active_tagset(m);
-    return bitset_test(tagset->loaded_workspaces, ws->id);
+    return bitset_test(tagset->workspaces, ws->id);
 }
 
 int get_workspace_container_count(struct workspace *ws)
@@ -385,11 +385,9 @@ struct wlr_box workspace_get_active_geom(struct workspace *ws)
 {
     struct wlr_box geom;
     if (ws->consider_layer_shell) {
-        debug_print("use root geom\n");
         struct root *root = workspace_get_root(ws);
         geom = root->geom;
     } else {
-        debug_print("use mon geom\n");
         struct monitor *m = workspace_get_monitor(ws);
         geom = m->geom;
     }

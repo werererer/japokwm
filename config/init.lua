@@ -43,7 +43,6 @@ local function toggle_all_bars()
 end
 
 local function get_entry_position(ws_id, is_focused)
-    print("works")
     if (is_focused) then
         return 0
     else
@@ -52,8 +51,6 @@ local function get_entry_position(ws_id, is_focused)
 end
 
 local function get_focus_entry_position(ws_id, is_focused)
-    print("works")
-    print("focus entry position")
     if (is_focused) then
         return 0
     else
