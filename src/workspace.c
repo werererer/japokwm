@@ -29,15 +29,25 @@ static void update_workspaces_id(GPtrArray *workspaces)
     }
 }
 
+static void _destroy_workspace(void *ws)
+{
+    destroy_workspace(ws);
+}
+
 GPtrArray *create_workspaces(GPtrArray *tag_names)
 {
-    GPtrArray *workspaces = g_ptr_array_new();
+    GPtrArray *workspaces = g_ptr_array_new_with_free_func(_destroy_workspace);
     for (int i = 0; i < tag_names->len; i++) {
         const char *name = g_ptr_array_index(tag_names, i);
         struct workspace *ws = create_workspace(name, i, server.default_layout);
         g_ptr_array_add(workspaces, ws);
     }
     return workspaces;
+}
+
+void destroy_workspaces(GPtrArray *workspaces)
+{
+    g_ptr_array_free(workspaces, true);
 }
 
 struct workspace *create_workspace(const char *name, size_t id, struct layout *lt)
@@ -141,9 +151,12 @@ void destroy_workspace(struct workspace *ws)
 {
     g_ptr_array_free(ws->independent_containers, false);
 
+    g_ptr_array_free(ws->loaded_layouts, TRUE);
+
     bitset_destroy(ws->prev_workspaces);
     focus_set_destroy(ws->focus_set);
     visual_set_destroy(ws->visual_set);
+
     for (int i = 0; i < ws->con_set->tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(ws->con_set->tiled_containers, i);
         struct client *c = con->client;
@@ -160,15 +173,6 @@ void update_workspace_ids(GPtrArray *workspaces)
         struct workspace *ws = g_ptr_array_index(workspaces, i);
         ws->id = i;
     }
-}
-
-void destroy_workspaces(GPtrArray *workspaces)
-{
-    for (int i = 0; i < workspaces->len; i++) {
-        struct workspace *ws = g_ptr_array_index(workspaces, 0);
-        destroy_workspace(ws);
-    }
-    g_ptr_array_free(workspaces, true);
 }
 
 bool is_workspace_occupied(struct workspace *ws)
