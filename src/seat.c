@@ -52,6 +52,7 @@ struct seat *create_seat(const char *seat_name)
 
 void destroy_seat(struct seat *seat)
 {
+    wlr_xcursor_manager_destroy(seat->cursor->xcursor_mgr);
     g_ptr_array_remove(server.input_manager->seats, seat);
 
     g_ptr_array_free(seat->devices, false);
@@ -198,11 +199,6 @@ static void seat_configure_pointer(struct seat *seat,
     if ((seat->wlr_seat->capabilities & WL_SEAT_CAPABILITY_POINTER) == 0) {
         seat_configure_xcursor(seat);
     }
-    /* wlr_cursor_attach_input_device(seat->cursor->wlr_cursor, */
-    /*     seat_device->input_device->wlr_device); */
-    /* seat_apply_input_config(seat, seat_device); */
-    /* wl_event_source_timer_update( */
-    /*         seat->cursor->hide_source, cursor_get_timeout(seat->cursor)); */
 }
 
 static void seat_configure_keyboard(struct seat *seat,
