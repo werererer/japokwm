@@ -55,13 +55,13 @@ void list_append_list_under_condition(
         GPtrArray *dest,
         GPtrArray *src,
         is_condition_t is_condition,
-        struct workspace *ws
+        void *arg
         )
 {
     for (int i = 0; i < src->len; i++) {
         struct container *src_con = g_ptr_array_index(src, i);
 
-        if (!is_condition(ws, src, src_con))
+        if (!is_condition(arg, src, src_con))
             continue;
 
         add_to_list(dest, src, src_con);

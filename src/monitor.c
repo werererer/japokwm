@@ -297,7 +297,6 @@ struct root *monitor_get_active_root(struct monitor *m)
 struct wlr_box monitor_get_active_geom(struct monitor *m)
 {
     struct workspace *ws = monitor_get_active_workspace(m);
-    debug_print("geom ws: %i\n", ws->id);
     struct wlr_box geom = workspace_get_active_geom(ws);
     return geom;
 }

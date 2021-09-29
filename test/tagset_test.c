@@ -16,12 +16,10 @@ void tagset_connect_workspace_test()
 /*     ws[0].selected_tagset = NULL; */
 
     tagset1.workspaces = bitset_create(WORKSPACE_COUNT);
-    tagset1.loaded_workspaces = bitset_create(WORKSPACE_COUNT);
 
     bitset_set(tagset1.workspaces, 0);
 
     bitset_destroy(tagset1.workspaces);
-    bitset_destroy(tagset1.loaded_workspaces);
 }
 
 #define PREFIX "tagset"

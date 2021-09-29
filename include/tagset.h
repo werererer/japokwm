@@ -41,7 +41,6 @@ struct tagset {
     struct monitor *m;
     int selected_ws_id;
     BitSet *workspaces;
-    BitSet *loaded_workspaces;
 
     struct container_set *con_set;
     struct focus_set *visible_focus_set;
@@ -67,7 +66,7 @@ void tagset_write_to_focus_stacks(struct tagset *tagset);
 void update_sub_focus_stack(struct tagset *tagset);
 bool is_reduced_focus_stack(struct workspace *ws, struct container *con);
 bool _is_reduced_focus_stack(
-        struct workspace *ws,
+        void *workspace_ptr,
         GPtrArray *src_list,
         struct container *con
         );

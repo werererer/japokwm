@@ -5,6 +5,8 @@
 #include "list_sets/list_set.h"
 #include "server.h"
 #include "workspace.h"
+#include "monitor.h"
+#include "tagset.h"
 
 struct container_set *create_container_set()
 {
@@ -22,16 +24,16 @@ void destroy_container_set(struct container_set *con_set)
 }
 
 static bool is_container_valid_to_append(
-        struct workspace *ws,
+        void *tagset_ptr,
         GPtrArray *src_list,
         struct container *src_con
         )
 {
-    if (src_con->client->ws_id != ws->id) {
-        return false;
+    struct tagset *tagset = tagset_ptr;
+    if (tagset_exist_on(tagset, src_con)) {
+        return true;
     }
-
-    return true;
+    return false;
 }
 
 void container_set_write_to_parent(
@@ -44,7 +46,7 @@ void container_set_write_to_parent(
 }
 
 void container_set_append(
-        struct workspace *ws,
+        struct tagset *tagset,
         struct container_set *dest,
         struct container_set *src)
 {
@@ -52,7 +54,7 @@ void container_set_append(
             dest->tiled_containers,
             src->tiled_containers,
             is_container_valid_to_append,
-            ws);
+            tagset);
 }
 
 void container_set_clear(struct container_set *list_set)
