@@ -83,6 +83,8 @@ struct workspace {
 };
 
 GPtrArray *create_workspaces(GPtrArray *tag_names);
+void destroy_workspaces(GPtrArray *workspaces);
+
 struct workspace *create_workspace(const char *name, size_t id, struct layout *lt);
 void destroy_workspace(struct workspace *ws);
 

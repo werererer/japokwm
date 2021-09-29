@@ -138,7 +138,7 @@ bool is_old_combo_same(const char *bind)
     }
 
 exit_cleanup:
-    g_ptr_array_free(bind_combos, true);
+    g_ptr_array_free(bind_combos, TRUE);
     return ret_val;
 }
 

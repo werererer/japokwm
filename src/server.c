@@ -176,7 +176,6 @@ void finalize_server()
     g_ptr_array_free(server.scratchpad, TRUE);
     g_ptr_array_free(server.keyboards, TRUE);
     g_ptr_array_free(server.config_paths, FALSE);
-    g_ptr_array_free(server.workspaces, TRUE);
 
     g_ptr_array_free(server.floating_containers, FALSE);
     g_ptr_array_free(server.floating_stack, FALSE);
@@ -350,6 +349,8 @@ int stop_server()
     wl_display_destroy_clients(server.wl_display);
 
     wlr_output_layout_destroy(server.output_layout);
+
+    destroy_workspaces(server.workspaces);
 
     finalize_lua_api(&server);
 
