@@ -171,10 +171,13 @@ bool has_equal_keybind_element(const char *bind, GPtrArray *keybindings)
         GPtrArray *bind2_combos = split_string(bind2, " ");
 
         if (bind2_combos->len-1 < current_combo_index) {
+            g_ptr_array_free(bind2_combos, true);
             continue;
         }
 
         const char *_current_bind2_combo = g_ptr_array_index(bind2_combos, current_combo_index);
+        g_ptr_array_free(bind2_combos, true);
+
         char *current_bind2_combo = resolve_keybind_element(_current_bind2_combo);
         bool is_equal = is_same_keybind_element(bind, current_bind2_combo);
         free(current_bind2_combo);
