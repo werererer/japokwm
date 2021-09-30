@@ -346,22 +346,18 @@ int finalize(struct server *server)
 
 int stop_server()
 {
-    wl_display_destroy_clients(server.wl_display);
-
+    close_error_file();
     wlr_output_layout_destroy(server.output_layout);
 
     destroy_workspaces(server.workspaces);
 
     finalize_lua_api(&server);
 
-    finalize(&server);
-
     for (int i = 0; i < server.input_manager->seats->len; i++) {
-        struct seat *seat = g_ptr_array_index(server.input_manager->seats, i);
+        struct seat *seat = g_ptr_array_steal_index(server.input_manager->seats, 0);
         destroy_seat(seat);
     }
 
-    close_error_file();
 #if JAPOKWM_HAS_XWAYLAND
     wlr_xwayland_destroy(server.xwayland.wlr_xwayland);
 #endif

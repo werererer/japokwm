@@ -90,12 +90,6 @@ GPtrArray *tagset_get_floating_list_copy(struct tagset *tagset);
 GPtrArray *tagset_get_visible_list_copy(struct tagset *tagset);
 GPtrArray *tagset_get_hidden_list_copy(struct tagset *tagset);
 
-void tagset_list_remove(GPtrArray *list, struct container *con);
-void tagset_list_remove_index(GPtrArray *list, int i);
-void tagset_list_add(GPtrArray *list, struct container *con);
-void tagset_list_insert(GPtrArray *list, int i, struct container *con);
-struct container *tagset_list_steal_index(GPtrArray *list, int i);
-
 void workspace_id_to_tag(BitSet *dest, int ws_id);
 
 bool container_viewable_on_monitor(struct monitor *m,

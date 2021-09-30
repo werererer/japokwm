@@ -62,7 +62,6 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     push_layout(ws, lt);
 
     ws->prev_workspaces = bitset_create(server.workspaces->len);
-    ws->independent_containers = g_ptr_array_new();
 
     ws->focus_set = focus_set_create();
     ws->visual_set = visual_set_create();
@@ -149,8 +148,6 @@ struct container *get_container_in_stack(struct workspace *ws, int i)
 
 void destroy_workspace(struct workspace *ws)
 {
-    g_ptr_array_free(ws->independent_containers, false);
-
     g_ptr_array_free(ws->loaded_layouts, TRUE);
 
     bitset_destroy(ws->prev_workspaces);
@@ -688,7 +685,9 @@ void workspace_add_container_to_focus_stack(struct workspace *ws, int pos, struc
     for (int i = 0; i < server.workspaces->len; i++) {
         ws = g_ptr_array_index(server.workspaces, i);
         list_set_insert_container_to_focus_stack(ws->focus_set, pos, con);
-        struct tagset *tagset = workspace_get_tagset(ws);
+    }
+    for (int i = 0; i < server.tagsets->len; i++) {
+        struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
         update_sub_focus_stack(tagset);
     }
 }
@@ -738,7 +737,7 @@ void workspace_remove_container_from_visual_stack_normal(struct workspace *ws, s
 
     for (int i = 0; i < server.tagsets->len; i++) {
         struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
-        remove_in_composed_list(tagset->visible_visual_set->visual_stack_lists, cmp_ptr, con);
+        remove_in_composed_list(tagset->visible_visual_set->stack_lists, cmp_ptr, con);
     }
 }
 
@@ -819,11 +818,6 @@ void workspace_remove_container_from_focus_stack(struct workspace *ws, struct co
         remove_in_composed_list(tagset->visible_focus_set->focus_stack_lists, cmp_ptr, con);
         remove_in_composed_list(tagset->local_focus_set->focus_stack_lists, cmp_ptr, con);
     }
-}
-
-void workspace_remove_independent_container(struct workspace *ws, struct container *con)
-{
-    g_ptr_array_remove(ws->independent_containers, con);
 }
 
 static int get_in_container_stack(struct container *con)
