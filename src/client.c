@@ -267,8 +267,8 @@ void client_handle_set_app_id(struct wl_listener *listener, void *data)
 
 void reset_floating_client_borders(int border_px)
 {
-    for (int i = 0; i < server.floating_stack->len; i++) {
-        struct container *con = g_ptr_array_index(server.floating_stack, i);
+    for (int i = 0; i < server.container_stack->len; i++) {
+        struct container *con = g_ptr_array_index(server.container_stack, i);
         container_set_border_width(con, border_px);
     }
 }

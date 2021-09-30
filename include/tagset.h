@@ -44,7 +44,6 @@ struct tagset {
 
     struct container_set *con_set;
     struct focus_set *visible_focus_set;
-    struct focus_set *local_focus_set;
     struct visual_set *visible_visual_set;
 
     // whether the tagset needs to be reloaded
@@ -75,6 +74,7 @@ bool _is_reduced_focus_stack(
         );
 void update_reduced_focus_stack(struct tagset *tagset);
 void update_local_focus_stack(struct tagset *tagset);
+bool is_local_focus_stack(struct workspace *ws, struct container *con);
 
 bool is_visual_visible_stack(struct workspace *ws, struct container *con);
 

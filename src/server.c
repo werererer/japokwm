@@ -153,7 +153,7 @@ void init_server()
     server.config_paths = create_default_config_paths();
     server.workspaces = g_ptr_array_new();
 
-    server.floating_stack = g_ptr_array_new();
+    server.container_stack = g_ptr_array_new();
 
 
     server.tagsets = g_ptr_array_new();
@@ -176,7 +176,7 @@ void finalize_server()
     g_ptr_array_free(server.keyboards, TRUE);
     g_ptr_array_free(server.config_paths, FALSE);
 
-    g_ptr_array_free(server.floating_stack, FALSE);
+    g_ptr_array_free(server.container_stack, FALSE);
 
     g_ptr_array_free(server.tagsets, TRUE);
 }

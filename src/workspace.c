@@ -17,7 +17,6 @@
 #include "stringop.h"
 #include "list_sets/list_set.h"
 #include "list_sets/focus_stack_set.h"
-#include "list_sets/visual_stack_set.h"
 #include "tagset.h"
 #include "root.h"
 
@@ -593,7 +592,6 @@ void workspace_remove_container_from_containers_locally(struct workspace *ws, st
     if (lt->options.arrange_by_focus) {
         remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
         remove_in_composed_list(tagset->visible_focus_set->focus_stack_lists, cmp_ptr, con);
-        remove_in_composed_list(tagset->local_focus_set->focus_stack_lists, cmp_ptr, con);
     } else {
         DO_ACTION_LOCALLY(ws,
             g_ptr_array_remove(con_set->tiled_containers, con);
@@ -751,7 +749,7 @@ void add_container_to_layer_stack(struct workspace *ws, struct container *con)
 
 void remove_container_from_stack(struct workspace *ws, struct container *con)
 {
-    g_ptr_array_remove(server.floating_stack, con);
+    g_ptr_array_remove(server.container_stack, con);
 }
 
 void add_container_to_stack(struct workspace *ws, struct container *con)
@@ -760,7 +758,7 @@ void add_container_to_stack(struct workspace *ws, struct container *con)
         return;
     assert(con->client->type != LAYER_SHELL);
 
-    g_ptr_array_insert(server.floating_stack, 0, con);
+    g_ptr_array_insert(server.container_stack, 0, con);
 }
 
 void workspace_remove_container(struct workspace *ws, struct container *con)
@@ -780,7 +778,6 @@ void workspace_remove_container_from_focus_stack(struct workspace *ws, struct co
     for (int i = 0; i < server.tagsets->len; i++) {
         struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
         remove_in_composed_list(tagset->visible_focus_set->focus_stack_lists, cmp_ptr, con);
-        remove_in_composed_list(tagset->local_focus_set->focus_stack_lists, cmp_ptr, con);
     }
 }
 

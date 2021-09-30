@@ -12,7 +12,6 @@
 #include "container.h"
 #include "client.h"
 #include "list_sets/container_stack_set.h"
-#include "list_sets/visual_stack_set.h"
 #include "monitor.h"
 #include "popup.h"
 #include "root.h"
@@ -24,7 +23,6 @@
 #include "tagset.h"
 
 struct wlr_renderer *drw;
-struct render_data render_data;
 
 static void render_stack(struct monitor *m, pixman_region32_t *output_damage);
 static void scissor_output(struct wlr_output *output, pixman_box32_t *rect);

@@ -23,7 +23,6 @@
 #include "workspace.h"
 #include "rules/rule.h"
 #include "list_sets/focus_stack_set.h"
-#include "list_sets/visual_stack_set.h"
 #include "options.h"
 
 static void add_container_to_workspace(struct container *con, struct workspace *ws);
@@ -68,6 +67,7 @@ void destroy_container(struct container *con)
 
 void add_container_to_tile(struct container *con)
 {
+    debug_print("add con: %p to tile\n", con);
     assert(!con->is_on_tile);
     add_container_to_workspace(con, get_workspace(con->client->ws_id));
 

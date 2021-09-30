@@ -44,7 +44,6 @@ srcs = files(
     'list_sets/container_stack_set.c',
     'list_sets/focus_stack_set.c',
     'list_sets/list_set.c',
-    'list_sets/visual_stack_set.c',
     'main.c',
     'monitor.c',
     'options.c',
