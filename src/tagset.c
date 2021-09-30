@@ -273,6 +273,7 @@ void update_reduced_focus_stack(struct tagset *tagset)
             ws->focus_set->focus_stack_lists,
             _is_reduced_focus_stack,
             ws);
+    debug_print("new len: %i\n", length_of_composed_list(tagset->visible_focus_set->focus_stack_lists));
 }
 
 static bool is_local_focus_stack(
@@ -622,86 +623,6 @@ GPtrArray *tagset_get_hidden_list_copy(struct tagset *tagset)
                 container_is_hidden);
         return hidden_list;
     }
-}
-
-void tagset_list_remove(GPtrArray *list, struct container *con)
-{
-    struct tagset *tagset = container_get_tagset(con);
-    struct layout *lt = tagset_get_layout(tagset);
-
-    if (lt->options.arrange_by_focus) {
-        struct workspace *ws = tagset_get_workspace(tagset);
-        workspace_remove_container_from_focus_stack_locally(ws, con);
-    } else {
-        g_ptr_array_remove(list, con);
-    }
-}
-
-void tagset_list_remove_index(GPtrArray *list, int i)
-{
-    if (list->len <= 0)
-        return;
-    struct container *con = g_ptr_array_index(list, 0);
-    struct tagset *tagset = container_get_tagset(con);
-    struct layout *lt = tagset_get_layout(tagset);
-
-    if (lt->options.arrange_by_focus) {
-        struct workspace *ws = tagset_get_workspace(tagset);
-        struct container *local_con = get_in_composed_list(tagset->local_focus_set->focus_stack_lists, i);
-        remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, local_con);
-        update_sub_focus_stack(tagset);
-    } else {
-        g_ptr_array_remove_index(list, i);
-    }
-}
-
-void tagset_list_add(GPtrArray *list, struct container *con)
-{
-    struct tagset *tagset = container_get_tagset(con);
-    struct layout *lt = tagset_get_layout(tagset);
-
-    if (lt->options.arrange_by_focus) {
-        struct workspace *ws = tagset_get_workspace(tagset);
-        list_set_append_container_to_focus_stack(ws, con);
-        update_sub_focus_stack(tagset);
-    } else {
-        g_ptr_array_add(list, con);
-    }
-}
-
-void tagset_list_insert(GPtrArray *list, int i, struct container *con)
-{
-    struct tagset *tagset = container_get_tagset(con);
-    struct layout *lt = tagset_get_layout(tagset);
-
-    if (lt->options.arrange_by_focus) {
-        struct workspace *ws = tagset_get_workspace(tagset);
-        g_ptr_array_insert(ws->focus_set->focus_stack_normal, i, con);
-        update_sub_focus_stack(tagset);
-    } else {
-        g_ptr_array_insert(list, i, con);
-    }
-}
-
-struct container *tagset_list_steal_index(GPtrArray *list, int i)
-{
-    if (list->len <= 0) {
-        return NULL;
-    }
-    struct container *_con = g_ptr_array_index(list, 0);
-    struct tagset *tagset = container_get_tagset(_con);
-    struct layout *lt = tagset_get_layout(tagset);
-    struct workspace *ws = tagset_get_workspace(tagset);
-
-    struct container *con = NULL;
-    if (lt->options.arrange_by_focus) {
-        con = get_in_composed_list(tagset->local_focus_set->focus_stack_lists, i);
-        remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
-        update_sub_focus_stack(tagset);
-    } else {
-        con = g_ptr_array_steal_index(list, i);
-    }
-    return con;
 }
 
 void workspace_id_to_tag(BitSet *dest, int ws_id)

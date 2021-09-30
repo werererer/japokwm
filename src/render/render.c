@@ -27,7 +27,6 @@ struct wlr_renderer *drw;
 struct render_data render_data;
 
 static void render_containers(struct monitor *m, pixman_region32_t *output_damage);
-static void render_independents(struct monitor *m, pixman_region32_t *output_damage);
 static void render_layershell(struct monitor *m,
         enum zwlr_layer_shell_v1_layer layer, pixman_region32_t *output_damage);
 static void scissor_output(struct wlr_output *output, pixman_box32_t *rect);
@@ -350,24 +349,6 @@ static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer 
     }
 }
 
-static void render_independents(struct monitor *m, pixman_region32_t *output_damage)
-{
-    struct workspace *ws = monitor_get_active_workspace(m);
-    for (int i = 0; i < ws->independent_containers->len; i++) {
-        struct container *con = g_ptr_array_index(ws->independent_containers, i);
-        struct wlr_surface *surface = get_wlrsurface(con->client);
-
-        struct wlr_box *con_geom = container_get_current_geom(con);
-        con_geom->width = surface->current.width;
-        con_geom->height = surface->current.height;
-        render_surface_iterator(m, surface, *con_geom, output_damage, 1.0f);
-
-        struct timespec now;
-        clock_gettime(CLOCK_MONOTONIC, &now);
-        wlr_surface_send_frame_done(surface, &now);
-    }
-}
-
 static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
 {
     for (int i = 0; i < server.popups->len; i++) {
@@ -406,7 +387,6 @@ void render_monitor(struct monitor *m, pixman_region32_t *damage)
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM, damage);
     render_containers(m, damage);
-    render_independents(m, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP, damage);
     render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY, damage);
 

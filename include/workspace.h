@@ -72,8 +72,6 @@ struct workspace {
     // the tagset that currently has this workspace selected
     struct tagset *selected_tagset;
 
-    GPtrArray *independent_containers;
-
     struct container_set *con_set;
     struct focus_set *focus_set;
     struct visual_set *visual_set;
@@ -155,7 +153,6 @@ void workspace_add_container_to_visual_stack_normal(struct workspace *ws, struct
 
 void workspace_remove_container(struct workspace *ws, struct container *con);
 void workspace_remove_container_from_focus_stack(struct workspace *ws, struct container *con);
-void workspace_remove_independent_container(struct workspace *ws, struct container *con);
 
 GArray *container_array2D_get_positions_array(GPtrArray2D *containers);
 GArray *container_array_get_positions_array(GPtrArray *containers);

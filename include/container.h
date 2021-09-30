@@ -28,7 +28,7 @@ struct container {
     struct wlr_box prev_geom;
     struct client *client;
 
-    bool is_tiled;
+    bool is_on_tile;
     bool is_xwayland_popup;
     bool focusable;
     bool has_border;
@@ -36,10 +36,6 @@ struct container {
     bool on_top;
     bool is_unmanaged;
 
-    bool was_arranged_by_focus;
-    bool arranged_by_focus;
-    // if position -1 it is floating
-    bool floating_container_geom_was_changed;
     // height = ratio * width
     float ratio;
     float alpha;

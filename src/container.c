@@ -68,7 +68,7 @@ void destroy_container(struct container *con)
 
 void add_container_to_tile(struct container *con)
 {
-    assert(!con->is_tiled);
+    assert(!con->is_on_tile);
     add_container_to_workspace(con, get_workspace(con->client->ws_id));
 
     struct monitor *m = container_get_monitor(con);
@@ -78,14 +78,14 @@ void add_container_to_tile(struct container *con)
         call_create_container_function(ev, get_position_in_container_focus_stack(con));
     }
 
-    con->is_tiled = true;
+    con->is_on_tile = true;
 
     apply_rules(server.default_layout->options.rules, con);
 }
 
 void remove_container_from_tile(struct container *con)
 {
-    assert(con->is_tiled);
+    assert(con->is_on_tile);
     if (con->on_scratchpad)
         remove_container_from_scratchpad(con);
 
@@ -99,7 +99,6 @@ void remove_container_from_tile(struct container *con)
             break;
         case X11_UNMANAGED:
             workspace_remove_container_from_visual_stack_normal(ws, con);
-            workspace_remove_independent_container(ws, con);
             break;
         default:
             workspace_remove_container_from_visual_stack_normal(ws, con);
@@ -107,7 +106,7 @@ void remove_container_from_tile(struct container *con)
             break;
     }
 
-    con->is_tiled = false;
+    con->is_on_tile = false;
     workspace_update_names(&server, server.workspaces);
 }
 
@@ -237,7 +236,6 @@ static void add_container_to_workspace(struct container *con, struct workspace *
             workspace_add_container_to_visual_stack_layer(ws, con);
             break;
         case X11_UNMANAGED:
-            g_ptr_array_insert(ws->independent_containers, 0, con);
             workspace_add_container_to_visual_stack_normal(ws, con);
             workspace_add_container_to_focus_stack(ws, 0, con);
             break;
@@ -352,7 +350,7 @@ void commit_notify(struct wl_listener *listener, void *data)
         return;
 
     struct container *con = c->con;
-    if (con->is_tiled) {
+    if (con->is_on_tile) {
         container_damage_part(c->con);
     }
 }
@@ -498,7 +496,7 @@ void lift_container(struct container *con)
     update_visual_visible_stack(tagset);
     // TODO: why do we need arrange to refresh? find out and simplify if
     // possible
-    arrange();
+    server_update_floating_containers();
 }
 
 void repush(int pos1, int pos2)
@@ -620,6 +618,7 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
     lift_container(con);
     con->client->resized = true;
     container_damage_whole(con);
+    server_update_floating_containers();
 }
 
 void container_set_hidden(struct container *con, bool b)
