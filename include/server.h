@@ -70,8 +70,6 @@ struct server {
 
     GPtrArray *tagsets;
 
-    struct wlr_surface *old_surface;
-
     GPtrArray2D *layer_visual_stack_lists;
 
     GPtrArray *layer_visual_stack_background;
@@ -79,7 +77,7 @@ struct server {
     GPtrArray *layer_visual_stack_top;
     GPtrArray *layer_visual_stack_overlay;
 
-    GPtrArray *floating_stack;
+    GPtrArray *container_stack;
 
     /* global event handlers */
     struct wl_listener new_output;

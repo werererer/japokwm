@@ -29,8 +29,8 @@ static void arrange_container(struct container *con, struct monitor *m,
 
 void arrange()
 {
-    for (int i = 0; i < server.floating_stack->len; i++) {
-        struct container *con = g_ptr_array_index(server.floating_stack, i);
+    for (int i = 0; i < server.container_stack->len; i++) {
+        struct container *con = g_ptr_array_index(server.container_stack, i);
         container_set_hidden(con, false);
         container_update_size(con);
     }
