@@ -26,9 +26,7 @@
 struct wlr_renderer *drw;
 struct render_data render_data;
 
-static void render_containers(struct monitor *m, pixman_region32_t *output_damage);
-static void render_layershell(struct monitor *m,
-        enum zwlr_layer_shell_v1_layer layer, pixman_region32_t *output_damage);
+static void render_stack(struct monitor *m, pixman_region32_t *output_damage);
 static void scissor_output(struct wlr_output *output, pixman_box32_t *rect);
 static void render_texture(struct wlr_output *wlr_output,
         pixman_region32_t *output_damage, struct wlr_texture *texture,
@@ -303,12 +301,12 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
     }
 }
 
-static void render_containers(struct monitor *m, pixman_region32_t *output_damage)
+static void render_stack(struct monitor *m, pixman_region32_t *output_damage)
 {
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
     struct tagset *tagset = monitor_get_active_tagset(m);
-    GPtrArray *stack_list = tagset_get_stack_copy(tagset);
+    GPtrArray *stack_list = tagset_get_complete_stack_copy(tagset);
     for (int i = stack_list->len-1; i >= 0; i--) {
         struct container *con = g_ptr_array_index(stack_list, i);
         if (!container_viewable_on_monitor(m, con))
@@ -328,27 +326,6 @@ static void render_containers(struct monitor *m, pixman_region32_t *output_damag
         wlr_surface_send_frame_done(surface, &now);
     }
     g_ptr_array_free(stack_list, FALSE);
-}
-
-static void render_layershell(struct monitor *m, enum zwlr_layer_shell_v1_layer layer, pixman_region32_t *output_damage)
-{
-    /* Each subsequent window we render is rendered on top of the last. Because
-     * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    GPtrArray *layer_list = get_layer_list(m, layer);
-    for (int i = 0; i < layer_list->len; i++) {
-        struct container *con = g_ptr_array_index(layer_list, i);
-
-        if (!container_viewable_on_monitor(m, con))
-            continue;
-
-        struct wlr_surface *surface = get_wlrsurface(con->client);
-        struct wlr_box *con_geom = container_get_current_geom(con);
-        render_surface_iterator(m, surface, *con_geom, output_damage, 1.0);
-
-        struct timespec now;
-        clock_gettime(CLOCK_MONOTONIC, &now);
-        wlr_surface_send_frame_done(surface, &now);
-    }
 }
 
 static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
@@ -386,11 +363,7 @@ void render_monitor(struct monitor *m, pixman_region32_t *damage)
     wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
 
     clear_frame(m, m->root->color, damage);
-    render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND, damage);
-    render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM, damage);
-    render_containers(m, damage);
-    render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_TOP, damage);
-    render_layershell(m, ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY, damage);
+    render_stack(m, damage);
 
     render_popups(m, damage);
 
