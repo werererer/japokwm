@@ -46,6 +46,9 @@ struct tagset {
     struct focus_set *visible_focus_set;
     struct focus_set *local_focus_set;
     struct visual_set *visible_visual_set;
+
+    // whether the tagset needs to be reloaded
+    bool damaged;
 };
 
 /* this creates a tagset with reference count of 1. Calling focus_tagset
@@ -109,11 +112,11 @@ bool tagset_visible_on(struct tagset *tagset, struct container *con);
 void focus_tagset(struct tagset *tagset);
 void push_tagset(struct tagset *tagset);
 
+void tagset_workspaces_reconnect(struct tagset *tagset);
 void tagset_workspaces_disconnect(struct tagset *tagset);
 void tagset_workspaces_connect(struct tagset *tagset);
 
-void tagset_unload_workspaces(struct tagset *tagset);
-void tagset_load_workspaces(struct tagset *tagset, BitSet *workspaces);
+void tagset_load_workspaces();
 
 struct layout *tagset_get_layout(struct tagset *tagset);
 struct workspace *tagset_get_workspace(struct tagset *tagset);
