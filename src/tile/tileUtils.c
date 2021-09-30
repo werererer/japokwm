@@ -29,8 +29,8 @@ static void arrange_container(struct container *con, struct monitor *m,
 
 void arrange()
 {
-    for (int i = 0; i < server.floating_containers->len; i++) {
-        struct container *con = g_ptr_array_index(server.floating_containers, i);
+    for (int i = 0; i < server.floating_stack->len; i++) {
+        struct container *con = g_ptr_array_index(server.floating_stack, i);
         container_set_hidden(con, false);
         container_update_size(con);
     }
@@ -226,7 +226,6 @@ void arrange_monitor(struct monitor *m)
     update_sub_focus_stack(tagset);
     struct workspace *ws = tagset_get_workspace(tagset);
     focus_most_recent_container(ws);
-    update_visual_visible_stack(tagset);
 }
 
 void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,

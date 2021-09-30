@@ -76,19 +76,18 @@ bool _is_reduced_focus_stack(
 void update_reduced_focus_stack(struct tagset *tagset);
 void update_local_focus_stack(struct tagset *tagset);
 
-void update_visual_visible_stack(struct tagset *tagset);
 bool is_visual_visible_stack(struct workspace *ws, struct container *con);
 
 bool container_intersects_with_monitor(struct container *con, struct monitor *m);
 
 // get with server floating containers instead
-GPtrArray *server_update_floating_containers();
 GPtrArray *tagset_get_global_floating_copy(struct tagset *tagset);
 GPtrArray *tagset_get_tiled_list_copy(struct tagset *tagset);
 GPtrArray *tagset_get_tiled_list(struct tagset *tagset);
 GPtrArray *tagset_get_floating_list_copy(struct tagset *tagset);
 GPtrArray *tagset_get_visible_list_copy(struct tagset *tagset);
 GPtrArray *tagset_get_hidden_list_copy(struct tagset *tagset);
+GPtrArray *tagset_get_stack_copy(struct tagset *tagset);
 
 void workspace_id_to_tag(BitSet *dest, int ws_id);
 
