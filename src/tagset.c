@@ -249,7 +249,7 @@ bool _is_reduced_focus_stack(
     struct workspace *ws = workspace_ptr;
     struct monitor *m = workspace_get_monitor(ws);
     bool viewable = container_viewable_on_monitor(m, con);
-    bool visible = visible_on(m, ws->prev_workspaces, con);
+    bool visible = exist_on(m, ws->prev_workspaces, con);
     if (viewable || visible) {
         return true;
     }
