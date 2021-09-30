@@ -71,7 +71,7 @@ void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
     tagset_assign_workspaces(tagset, bitset);
     tagset_workspaces_connect(tagset);
     tagset_load_workspaces(tagset, tagset->workspaces);
-    update_sub_focus_stack(tagset);
+    update_reduced_focus_stack(tagset);
     struct workspace *ws = tagset_get_workspace(tagset);
     bitset_assign_bitset(&ws->prev_workspaces, tagset->workspaces);
     arrange();
@@ -276,7 +276,7 @@ bool is_local_focus_stack(struct workspace *ws, struct container *con)
     return false;
 }
 
-static bool _is_local_focus_stack(
+bool _is_local_focus_stack(
         void *workspace_ptr,
         GPtrArray *src_list,
         struct container *con
@@ -285,17 +285,6 @@ static bool _is_local_focus_stack(
     struct workspace *ws = workspace_ptr;
     bool is_local = is_local_focus_stack(ws, con);
     return is_local;
-}
-
-void update_local_focus_stack(struct tagset *tagset)
-{
-    /* struct workspace *ws = tagset_get_workspace(tagset); */
-    /* lists_clear(tagset->local_focus_set->focus_stack_lists); */
-    /* lists_append_list_under_condition( */
-    /*         tagset->local_focus_set->focus_stack_lists, */
-    /*         ws->focus_set->focus_stack_lists, */
-    /*         _is_local_focus_stack, */
-    /*         ws); */
 }
 
 bool is_visual_visible_stack(struct workspace *ws, struct container *con)
@@ -362,7 +351,7 @@ void focus_tagset(struct tagset *tagset)
     restore_floating_containers(tagset);
     struct workspace *ws = tagset_get_workspace(tagset);
     bitset_assign_bitset(&ws->prev_workspaces, tagset->workspaces);
-    update_sub_focus_stack(tagset);
+    update_reduced_focus_stack(tagset);
     ipc_event_workspace();
 
     tagset_move_sticky_containers(tagset);
@@ -514,9 +503,13 @@ GPtrArray *tagset_get_tiled_list_copy(struct tagset *tagset)
 
     GPtrArray *tiled_list = NULL;
     if (lt->options.arrange_by_focus) {
-        tiled_list = list_create_filtered_sub_list(
-                tagset->visible_focus_set->focus_stack_normal,
-                container_is_managed);
+        tiled_list = g_ptr_array_new();
+        struct workspace *ws = tagset_get_workspace(tagset);
+        list_append_list_under_condition(
+                tiled_list,
+                ws->focus_set->focus_stack_normal,
+                _is_local_focus_stack,
+                ws);
         return tiled_list;
     } else {
         tiled_list = list_create_filtered_sub_list(

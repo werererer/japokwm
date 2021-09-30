@@ -223,7 +223,7 @@ void arrange_monitor(struct monitor *m)
     g_ptr_array_free(tiled_containers, FALSE);
 
     wlr_output_damage_whole(m->wlr_output);
-    update_sub_focus_stack(tagset);
+    update_reduced_focus_stack(tagset);
     struct workspace *ws = tagset_get_workspace(tagset);
     focus_most_recent_container(ws);
 }

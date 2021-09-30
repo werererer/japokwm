@@ -605,7 +605,7 @@ void workspace_add_container_to_containers_locally(struct workspace *ws, int i, 
     struct layout *lt = tagset_get_layout(tagset);
     if (lt->options.arrange_by_focus) {
         list_set_insert_container_to_focus_stack(ws->focus_set, 0, con);
-        update_sub_focus_stack(tagset);
+        update_reduced_focus_stack(tagset);
     } else {
         DO_ACTION_LOCALLY(ws,
             list_set_add_container_to_containers(con_set, con, i);
@@ -684,7 +684,7 @@ void workspace_add_container_to_focus_stack(struct workspace *ws, int pos, struc
     }
     for (int i = 0; i < server.tagsets->len; i++) {
         struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
-        update_sub_focus_stack(tagset);
+        update_reduced_focus_stack(tagset);
     }
 }
 
@@ -692,14 +692,14 @@ void workspace_remove_container_from_focus_stack_locally(struct workspace *ws, s
 {
     remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
     struct tagset *tagset = workspace_get_tagset(ws);
-    update_sub_focus_stack(tagset);
+    update_reduced_focus_stack(tagset);
 }
 
 void workspace_add_container_to_focus_stack_locally(struct workspace *ws, struct container *con)
 {
     list_set_insert_container_to_focus_stack(ws->focus_set, 0, con);
     struct tagset *tagset = workspace_get_tagset(ws);
-    update_sub_focus_stack(tagset);
+    update_reduced_focus_stack(tagset);
 }
 
 void workspace_remove_container_from_floating_stack_locally(struct workspace *ws, struct container *con)
@@ -820,11 +820,11 @@ void workspace_repush(struct workspace *ws, struct container *con, int new_pos)
 {
     struct tagset *tagset = workspace_get_active_tagset(ws);
 
-    GPtrArray *actual_tiled_list = tagset_get_tiled_list(tagset);
-
     GPtrArray *tiled_list = tagset_get_tiled_list_copy(tagset);
     g_ptr_array_remove(tiled_list, con);
     g_ptr_array_insert(tiled_list, new_pos, con);
+
+    GPtrArray *actual_tiled_list = tagset_get_tiled_list(tagset);
     sub_list_write_to_parent_list1D(actual_tiled_list, tiled_list);
     debug_print("new_pos: %i\n", new_pos);
     debug_print("tiled list len: %i\n", tiled_list);
@@ -842,7 +842,6 @@ void workspace_repush_on_focus_stack(struct workspace *ws, struct container *con
     remove_in_composed_list(tagset->visible_focus_set->focus_stack_lists, cmp_ptr, con);
     list_set_insert_container_to_focus_stack(tagset->visible_focus_set, new_pos, con);
     focus_set_write_to_parent(ws->focus_set, tagset->visible_focus_set);
-    update_sub_focus_stack(tagset);
 }
 
 bool workspace_sticky_contains_client(struct workspace *ws, struct client *client)
