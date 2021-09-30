@@ -67,7 +67,6 @@ void destroy_container(struct container *con)
 
 void add_container_to_tile(struct container *con)
 {
-    debug_print("add con: %p to tile\n", con);
     assert(!con->is_on_tile);
     add_container_to_workspace(con, get_workspace(con->client->ws_id));
 
@@ -377,13 +376,11 @@ void focus_container(struct container *con)
         return;
 
     struct container *sel = get_focused_container(m);
-    debug_print("sel: %p\n", sel);
 
     /* Put the new client atop the focus stack */
     workspace_repush_on_focus_stack(ws, con, 0);
 
     struct container *new_sel = get_focused_container(m);
-    debug_print("new sel: %p\n", new_sel);
 
     ipc_event_window();
 
@@ -435,6 +432,8 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     if (!sel)
         return;
     if (sel->client->type == LAYER_SHELL)
+        return;
+    if (container_is_unmanaged(sel))
         return;
 
     struct tagset *tagset = monitor_get_active_tagset(m);
