@@ -122,6 +122,7 @@ bool container_is_bar(struct container *con);
 struct workspace *container_get_workspace(struct container *con);
 struct tagset *container_get_tagset(struct container *con);
 bool container_is_floating(struct container *con);
+bool container_is_floating_and_visible(struct container *con);
 bool container_is_floating_on_workspace(struct container *con, struct workspace *ws);
 bool container_is_tiled(struct container *con);
 bool container_is_tiled_and_visible(struct container *con);

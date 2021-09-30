@@ -111,7 +111,6 @@ void commitlayersurfacenotify(struct wl_listener *listener, void *data)
     struct container *con = c->con;
     container_damage_part(con);
 
-    debug_print("layer visual stack lists len: %i\n", length_of_composed_list(server.layer_visual_stack_lists));
     if (c->surface.layer->current.layer != wlr_layer_surface->current.layer) {
         remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
         g_ptr_array_insert(get_layer_list(m, wlr_layer_surface->current.layer), 0, con);

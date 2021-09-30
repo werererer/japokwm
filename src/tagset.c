@@ -516,7 +516,7 @@ GPtrArray *tagset_get_global_floating_copy(struct tagset *tagset)
 
     GPtrArray *conditions = g_ptr_array_new();
     g_ptr_array_add(conditions, container_is_tiled_and_visible);
-    g_ptr_array_add(conditions, container_is_floating);
+    g_ptr_array_add(conditions, container_is_floating_and_visible);
 
     GPtrArray *visible_global_floating_list_copy = NULL;
     if (lt->options.arrange_by_focus) {
