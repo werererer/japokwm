@@ -77,11 +77,11 @@ static bool equals_anchor(const struct anchor *anchor, uint32_t anchor_value)
 static struct wlr_box fit_root_area(struct root *root, struct wlr_box geom)
 {
     struct wlr_box d_box = geom;
-    struct wlr_box box = root->geom;
+    struct wlr_box box = d_box;
 
     struct workspace *ws = monitor_get_active_workspace(root->m);
     if (!ws) {
-        return root->geom;
+        return d_box;
     }
 
     for (int i = 0; i < length_of_composed_list(server.layer_visual_stack_lists); i++) {

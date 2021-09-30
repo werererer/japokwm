@@ -77,6 +77,7 @@ void update_reduced_focus_stack(struct tagset *tagset);
 void update_local_focus_stack(struct tagset *tagset);
 
 void update_visual_visible_stack(struct tagset *tagset);
+bool is_visual_visible_stack(struct workspace *ws, struct container *con);
 
 bool container_intersects_with_monitor(struct container *con, struct monitor *m);
 

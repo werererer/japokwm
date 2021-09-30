@@ -24,8 +24,11 @@
 static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool active);
 static void tagset_unset_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_set_workspace(struct tagset *tagset, struct workspace *ws);
+static void tagset_damage(struct tagset *tagset);
 static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces);
 static void tagset_set_tags(struct tagset *tagset, BitSet *workspaces);
+
+static bool tagset_is_damaged(struct tagset *tagset);
 
 static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws);
 
@@ -35,6 +38,7 @@ static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws,
         return;
     int ws_id = ws->id;
     bitset_assign(tagset->workspaces, ws_id, active);
+    tagset_damage(tagset);
 }
 
 static void tagset_unset_workspace(struct tagset *tagset, struct workspace *ws)
@@ -47,15 +51,23 @@ static void tagset_set_workspace(struct tagset *tagset, struct workspace *ws)
     tagset_assign_workspace(tagset, ws, true);
 }
 
+static void tagset_damage(struct tagset *tagset)
+{
+    tagset->damaged = true;
+}
+
+static bool tagset_is_damaged(struct tagset *tagset)
+{
+    return tagset->damaged;
+}
+
 static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces)
 {
-    debug_print("tagset: %p assign bitset: %p\n", tagset, workspaces);
     bitset_assign_bitset(&tagset->workspaces, workspaces);
 }
 
 void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
 {
-    debug_print("set tags\n");
     tagset_workspaces_disconnect(tagset);
     tagset_assign_workspaces(tagset, bitset);
     tagset_workspaces_connect(tagset);
@@ -73,12 +85,10 @@ void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
 void tagset_load_workspaces()
 {
     for (int i = 0; i < server.tagsets->len; i++) {
-        debug_print("tagset: %i\n", i);
         struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
 
-        // TODO: implement me
-        /* if (!tagset->damaged) */
-        /*     return; */
+        if (!tagset_is_damaged(tagset))
+            return;
 
         struct container_set *dest = tagset->con_set;
         struct workspace *sel_ws = tagset_get_workspace(tagset);
@@ -164,19 +174,6 @@ void tagset_workspaces_connect(struct tagset *tagset)
 
         struct workspace *ws = get_workspace(i);
         tagset_workspace_connect(tagset, ws);
-    }
-}
-
-static void tagset_update_visible_tagset(struct tagset *tagset)
-{
-    for (size_t i = 0; i < tagset->workspaces->size; i++) {
-        bool bit = bitset_test(tagset->workspaces, i);
-
-        if (!bit)
-            continue;
-
-        struct workspace *ws = get_workspace(i);
-        ws->prev_m = tagset->m;
     }
 }
 
@@ -303,18 +300,24 @@ void update_local_focus_stack(struct tagset *tagset)
             ws);
 }
 
-static bool is_visual_visible_stack(
+bool is_visual_visible_stack(struct workspace *ws, struct container *con)
+{
+    struct monitor *m = workspace_get_monitor(ws);
+    if (container_potentially_viewable_on_monitor(m, con)) {
+        return true;
+    }
+    return false;
+}
+
+static bool _is_visual_visible_stack(
         void *workspace_ptr,
         GPtrArray *src_list,
         struct container *con
         )
 {
     struct workspace *ws = workspace_ptr;
-    struct monitor *m = workspace_get_monitor(ws);
-    if (container_potentially_viewable_on_monitor(m, con)) {
-        return true;
-    }
-    return false;
+    bool is_visible = is_visual_visible_stack(ws, con);
+    return is_visible;
 }
 
 void update_visual_visible_stack(struct tagset *tagset)
@@ -326,7 +329,7 @@ void update_visual_visible_stack(struct tagset *tagset)
     lists_append_list_under_condition(
             tagset->visible_visual_set->visual_stack_lists,
             ws->visual_set->visual_stack_lists,
-            is_visual_visible_stack,
+            _is_visual_visible_stack,
             ws);
 }
 
@@ -474,9 +477,9 @@ void tagset_reload(struct tagset *tagset)
 {
     if (!tagset)
         return;
-    /* tagset_workspaces_disconnect(tagset); */
-    /* tagset_workspaces_connect(tagset); */
     tagset_load_workspaces();
+    /* update_sub_focus_stack(tagset); */
+    /* update_visual_visible_stack(tagset); */
 }
 
 bool container_intersects_with_monitor(struct container *con, struct monitor *m)

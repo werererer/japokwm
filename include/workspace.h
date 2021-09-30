@@ -135,7 +135,9 @@ struct container *workspace_get_focused_container(struct workspace *ws);
 
 void workspace_add_container_to_containers(struct workspace *ws, int i, struct container *con);
 void workspace_add_container_to_focus_stack(struct workspace *ws, int i, struct container *con);
+void remove_container_from_stack(struct workspace *ws, struct container *con);
 void add_container_to_stack(struct workspace *ws, struct container *con);
+void add_container_to_layer_stack(struct workspace *ws, struct container *con);
 
 void list_set_append_container_to_focus_stack(struct workspace *ws, struct container *con);
 void list_set_insert_container_to_focus_stack(struct focus_set *focus_set, int position, struct container *con);

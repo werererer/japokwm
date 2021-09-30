@@ -32,13 +32,11 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     LISTEN(&wlr_layer_surface->events.unmap, &client->unmap, unmap_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.destroy, &client->destroy, destroy_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.new_popup, &client->new_popup, popup_handle_new_popup);
-    LISTEN(&wlr_layer_surface->events.destroy, &client->new_popup, popup_handle_new_popup);
 
     struct monitor *m = wlr_layer_surface->output->data;
     client->m = m;
     struct container *con = create_container(client, m, false);
-    enum zwlr_layer_shell_v1_layer layer = wlr_layer_surface->client_pending.layer;
-    g_ptr_array_add(get_layer_list(m, layer), con);
+    add_container_to_tile(con);
 
     // Temporarily set the layer's current state to client_pending
     // so that we can easily arrange it
@@ -53,7 +51,7 @@ void map_layer_surface_notify(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
     /* wlr_surface_send_enter(get_wlrsurface(c), c->surface.layer->output); */
     /* motion_notify(0); */
-    add_container_to_tile(c->con);
+    debug_print("length of layer stack: %i\n", server.layer_visual_stack_bottom->len);
 }
 
 void unmap_layer_surface(struct client *c)
@@ -69,7 +67,6 @@ void unmap_layer_surface_notify(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, unmap);
     unmap_layer_surface(c);
-    remove_container_from_tile(c->con);
     container_damage_whole(c->con);
 }
 
@@ -94,6 +91,8 @@ void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
         c->surface.layer->output = NULL;
     }
 
+    remove_container_from_tile(c->con);
+
     destroy_container(c->con);
     destroy_client(c);
 }
@@ -112,6 +111,7 @@ void commitlayersurfacenotify(struct wl_listener *listener, void *data)
     struct container *con = c->con;
     container_damage_part(con);
 
+    debug_print("layer visual stack lists len: %i\n", length_of_composed_list(server.layer_visual_stack_lists));
     if (c->surface.layer->current.layer != wlr_layer_surface->current.layer) {
         remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
         g_ptr_array_insert(get_layer_list(m, wlr_layer_surface->current.layer), 0, con);

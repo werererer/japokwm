@@ -234,7 +234,7 @@ static void add_container_to_workspace(struct container *con, struct workspace *
                     == ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND) {
                 con->focusable = false;
             }
-            workspace_add_container_to_focus_stack(ws, 0, con);
+            workspace_add_container_to_visual_stack_layer(ws, con);
             break;
         case X11_UNMANAGED:
             g_ptr_array_insert(ws->independent_containers, 0, con);
@@ -492,10 +492,13 @@ void lift_container(struct container *con)
 
     struct monitor *m = container_get_monitor(con);
     struct workspace *ws = monitor_get_active_workspace(m);
-    remove_in_composed_list(ws->visual_set->visual_stack_lists, cmp_ptr, con);
+    remove_container_from_stack(ws, con);
     add_container_to_stack(ws, con);
     struct tagset *tagset = workspace_get_tagset(ws);
     update_visual_visible_stack(tagset);
+    // TODO: why do we need arrange to refresh? find out and simplify if
+    // possible
+    arrange();
 }
 
 void repush(int pos1, int pos2)
