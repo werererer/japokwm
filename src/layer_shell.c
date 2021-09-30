@@ -87,8 +87,7 @@ void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
 
     if (c->surface.layer->output) {
         struct monitor *m = c->surface.layer->output->data;
-        if (m)
-            arrange_layers(m);
+        arrange_layers(m);
         c->surface.layer->output = NULL;
     }
 
@@ -155,6 +154,9 @@ GPtrArray *get_layer_list(struct monitor *m, enum zwlr_layer_shell_v1_layer laye
 
 void arrange_layers(struct monitor *m)
 {
+    if (!m)
+        return;
+
     struct wlr_box usable_area = m->geom;
     uint32_t layers_above_shell[] = {
         ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
