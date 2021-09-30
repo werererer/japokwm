@@ -737,8 +737,9 @@ void workspace_remove_container_from_visual_stack_normal(struct workspace *ws, s
 
     for (int i = 0; i < server.tagsets->len; i++) {
         struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
-        remove_in_composed_list(tagset->visible_visual_set->stack_lists, cmp_ptr, con);
+        remove_in_composed_list(tagset->visible_visual_set->visual_stack_lists, cmp_ptr, con);
     }
+    server_update_floating_containers();
 }
 
 void workspace_add_container_to_visual_stack_layer(struct workspace *ws, struct container *con)
