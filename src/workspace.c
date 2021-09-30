@@ -723,31 +723,28 @@ void workspace_add_container_to_floating_stack_locally(struct workspace *ws, int
 
 void workspace_remove_container_from_visual_stack_layer(struct workspace *ws, struct container *con)
 {
-    // TODO optimize this function
-    for (int i = 0; i < server.workspaces->len; i++) {
-        struct workspace *ws = get_workspace(i);
-        remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
-        struct tagset *tagset = workspace_get_tagset(ws);
-        update_visual_visible_stack(tagset);
-    }
+    debug_print("remove con: %p from layer \n", con);
+    debug_print("new len: %i\n", length_of_composed_list(server.layer_visual_stack_lists));
+    debug_print("new len: %i\n", server.layer_visual_stack_bottom->len);
+    remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
 }
 
 void workspace_remove_container_from_visual_stack_normal(struct workspace *ws, struct container *con)
 {
     for (int i = 0; i < server.workspaces->len; i++) {
         struct workspace *ws = get_workspace(i);
-        remove_in_composed_list(ws->visual_set->visual_stack_lists, cmp_ptr, con);
-        struct tagset *tagset = workspace_get_active_tagset(ws);
-        update_visual_visible_stack(tagset);
+        remove_container_from_stack(ws, con);
+    }
+
+    for (int i = 0; i < server.tagsets->len; i++) {
+        struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
+        remove_in_composed_list(tagset->visible_visual_set->visual_stack_lists, cmp_ptr, con);
     }
 }
 
 void workspace_add_container_to_visual_stack_layer(struct workspace *ws, struct container *con)
 {
-    for (int i = 0; i < server.workspaces->len; i++) {
-        struct workspace *ws = get_workspace(i);
-        add_container_to_stack(ws, con);
-    }
+    add_container_to_layer_stack(ws, con);
 }
 
 void workspace_add_container_to_visual_stack_normal(struct workspace *ws, struct container *con)
@@ -756,43 +753,52 @@ void workspace_add_container_to_visual_stack_normal(struct workspace *ws, struct
         struct workspace *ws = get_workspace(i);
         add_container_to_stack(ws, con);
     }
+
+    for (int i = 0; i < server.tagsets->len; i++) {
+        struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
+        update_visual_visible_stack(tagset);
+    }
+}
+
+void add_container_to_layer_stack(struct workspace *ws, struct container *con)
+{
+    assert(con->client->type == LAYER_SHELL);
+
+    switch (con->client->surface.layer->current.layer) {
+        case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
+            g_ptr_array_insert(server.layer_visual_stack_background, 0, con);
+            break;
+        case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
+            g_ptr_array_insert(server.layer_visual_stack_bottom, 0, con);
+            break;
+        case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
+            g_ptr_array_insert(server.layer_visual_stack_top, 0, con);
+            break;
+        case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
+            g_ptr_array_insert(server.layer_visual_stack_overlay, 0, con);
+            break;
+    }
+    debug_print("add new len: %i\n", length_of_composed_list(server.layer_visual_stack_overlay));
+    return;
+}
+
+void remove_container_from_stack(struct workspace *ws, struct container *con)
+{
+    remove_in_composed_list(ws->visual_set->visual_stack_lists, cmp_ptr, con);
 }
 
 void add_container_to_stack(struct workspace *ws, struct container *con)
 {
     if (!con)
         return;
-
-    if (con->client->type == LAYER_SHELL) {
-        switch (con->client->surface.layer->current.layer) {
-            case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
-                g_ptr_array_insert(server.layer_visual_stack_background, 0, con);
-                break;
-            case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
-                g_ptr_array_insert(server.layer_visual_stack_bottom, 0, con);
-                break;
-            case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
-                g_ptr_array_insert(server.layer_visual_stack_top, 0, con);
-                break;
-            case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
-                g_ptr_array_insert(server.layer_visual_stack_overlay, 0, con);
-                break;
-        }
-        struct tagset *tagset = workspace_get_tagset(ws);
-        update_visual_visible_stack(tagset);
-        return;
-    }
+    assert(con->client->type != LAYER_SHELL);
 
     if (container_is_floating(con)) {
         g_ptr_array_insert(ws->visual_set->floating_visual_stack, 0, con);
-        struct tagset *tagset = workspace_get_tagset(ws);
-        update_visual_visible_stack(tagset);
         return;
     }
 
     g_ptr_array_insert(ws->visual_set->tiled_visual_stack, 0, con);
-    struct tagset *tagset = workspace_get_tagset(ws);
-    update_visual_visible_stack(tagset);
 }
 
 void workspace_remove_container(struct workspace *ws, struct container *con)
@@ -805,11 +811,12 @@ void workspace_remove_container(struct workspace *ws, struct container *con)
 void workspace_remove_container_from_focus_stack(struct workspace *ws, struct container *con)
 {
     for (int i = 0; i < server.workspaces->len; i++) {
-        ws = g_ptr_array_index(server.workspaces, i);
+        struct workspace *ws = g_ptr_array_index(server.workspaces, i);
         remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
-        struct tagset *tagset = workspace_get_active_tagset(ws);
-        if (!tagset)
-            continue;
+    }
+
+    for (int i = 0; i < server.tagsets->len; i++) {
+        struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
         remove_in_composed_list(tagset->visible_focus_set->focus_stack_lists, cmp_ptr, con);
         remove_in_composed_list(tagset->local_focus_set->focus_stack_lists, cmp_ptr, con);
     }
