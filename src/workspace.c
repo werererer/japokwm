@@ -64,7 +64,6 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     ws->prev_workspaces = bitset_create(server.workspaces->len);
 
     ws->focus_set = focus_set_create();
-    ws->visual_set = visual_set_create();
     ws->con_set = create_container_set();
 
     ws->consider_layer_shell = true;
@@ -152,7 +151,6 @@ void destroy_workspace(struct workspace *ws)
 
     bitset_destroy(ws->prev_workspaces);
     focus_set_destroy(ws->focus_set);
-    visual_set_destroy(ws->visual_set);
 
     for (int i = 0; i < ws->con_set->tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(ws->con_set->tiled_containers, i);
@@ -722,42 +720,12 @@ void workspace_add_container_to_floating_stack_locally(struct workspace *ws, int
 
 void workspace_remove_container_from_visual_stack_layer(struct workspace *ws, struct container *con)
 {
-    debug_print("remove con: %p from layer \n", con);
-    debug_print("new len: %i\n", length_of_composed_list(server.layer_visual_stack_lists));
-    debug_print("new len: %i\n", server.layer_visual_stack_bottom->len);
     remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
-}
-
-void workspace_remove_container_from_visual_stack_normal(struct workspace *ws, struct container *con)
-{
-    for (int i = 0; i < server.workspaces->len; i++) {
-        struct workspace *ws = get_workspace(i);
-        remove_container_from_stack(ws, con);
-    }
-
-    for (int i = 0; i < server.tagsets->len; i++) {
-        struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
-        remove_in_composed_list(tagset->visible_visual_set->visual_stack_lists, cmp_ptr, con);
-    }
-    server_update_floating_containers();
 }
 
 void workspace_add_container_to_visual_stack_layer(struct workspace *ws, struct container *con)
 {
     add_container_to_layer_stack(ws, con);
-}
-
-void workspace_add_container_to_visual_stack_normal(struct workspace *ws, struct container *con)
-{
-    for (int i = 0; i < server.workspaces->len; i++) {
-        struct workspace *ws = get_workspace(i);
-        add_container_to_stack(ws, con);
-    }
-
-    for (int i = 0; i < server.tagsets->len; i++) {
-        struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
-        update_visual_visible_stack(tagset);
-    }
 }
 
 void add_container_to_layer_stack(struct workspace *ws, struct container *con)
@@ -783,7 +751,7 @@ void add_container_to_layer_stack(struct workspace *ws, struct container *con)
 
 void remove_container_from_stack(struct workspace *ws, struct container *con)
 {
-    remove_in_composed_list(ws->visual_set->visual_stack_lists, cmp_ptr, con);
+    g_ptr_array_remove(server.floating_stack, con);
 }
 
 void add_container_to_stack(struct workspace *ws, struct container *con)
@@ -792,12 +760,7 @@ void add_container_to_stack(struct workspace *ws, struct container *con)
         return;
     assert(con->client->type != LAYER_SHELL);
 
-    if (container_is_floating(con)) {
-        g_ptr_array_insert(ws->visual_set->floating_visual_stack, 0, con);
-        return;
-    }
-
-    g_ptr_array_insert(ws->visual_set->tiled_visual_stack, 0, con);
+    g_ptr_array_insert(server.floating_stack, 0, con);
 }
 
 void workspace_remove_container(struct workspace *ws, struct container *con)

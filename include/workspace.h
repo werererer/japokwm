@@ -9,7 +9,6 @@
 
 struct layout;
 struct focus_set;
-struct visual_set;
 struct client;
 struct container;
 struct server;
@@ -25,7 +24,7 @@ struct server;
         } while (0);\
         \
         do {\
-            struct monitor *m = server_get_selected_monitor();\
+            struct monitor *m = container_get_monitor(con);\
             struct tagset *_tagset = monitor_get_active_tagset(m);\
             struct container_set *con_set = _tagset->con_set;\
             action\
@@ -44,7 +43,7 @@ struct server;
             \
         }\
         do {\
-            struct monitor *m = server_get_selected_monitor();\
+            struct monitor *m = container_get_monitor(con);\
             struct tagset *_tagset = monitor_get_active_tagset(m);\
             struct container_set *con_set = _tagset->con_set;\
             action\
@@ -74,7 +73,6 @@ struct workspace {
 
     struct container_set *con_set;
     struct focus_set *focus_set;
-    struct visual_set *visual_set;
 
     /* should anchored layershell programs be taken into consideration */
     bool consider_layer_shell;
@@ -148,8 +146,6 @@ void workspace_add_container_to_floating_stack_locally(struct workspace *ws, int
 
 void workspace_remove_container_from_visual_stack_layer(struct workspace *ws, struct container *con);
 void workspace_add_container_to_visual_stack_layer(struct workspace *ws, struct container *con);
-void workspace_remove_container_from_visual_stack_normal(struct workspace *ws, struct container *con);
-void workspace_add_container_to_visual_stack_normal(struct workspace *ws, struct container *con);
 
 void workspace_remove_container(struct workspace *ws, struct container *con);
 void workspace_remove_container_from_focus_stack(struct workspace *ws, struct container *con);

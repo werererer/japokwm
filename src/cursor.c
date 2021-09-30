@@ -325,28 +325,32 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
 
     pointer_focus(cursor->seat, final_focus_surface, sx, sy, time);
 
-    if (focus_con) {
-        struct monitor *m = server_get_selected_monitor();
-        struct container *sel = get_focused_container(m);
-        struct workspace *ws = monitor_get_active_workspace(m);
-        if (!ws->layout->options.sloppy_focus)
-            return;
-        if (popups_exist())
-            return;
-        if (xwayland_popups_exist())
-            return;
-
-        if (focus_con != sel) {
-            server.xy_container_is_locked = true;
-        }
-        if (server.old_xy_container != focus_con) {
-            server.xy_container_is_locked = false;
-        }
-        if (!server.xy_container_is_locked) {
-            focus_container(focus_con);
-        }
-        server.old_xy_container = focus_con;
+    debug_print("is locked: %i\n", server.xy_container_is_locked);
+    debug_print("new focus con: %p\n", focus_con);
+    if (!focus_con) {
+        return;
     }
+
+    struct monitor *m = server_get_selected_monitor();
+    struct container *sel = get_focused_container(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    if (!ws->layout->options.sloppy_focus)
+        return;
+    if (popups_exist())
+        return;
+    if (xwayland_popups_exist())
+        return;
+
+    if (focus_con != sel) {
+        server.xy_container_is_locked = true;
+    }
+    if (server.old_xy_container != focus_con) {
+        server.xy_container_is_locked = false;
+    }
+    if (!server.xy_container_is_locked) {
+        focus_container(focus_con);
+    }
+    server.old_xy_container = focus_con;
 }
 
 void motion_notify(struct cursor *cursor, uint32_t time_msec,
