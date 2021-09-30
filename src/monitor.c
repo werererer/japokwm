@@ -79,7 +79,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     m->root = create_root(m, m->geom);
 
     if (is_first_monitor) {
-        focus_monitor(m);
+        server_set_selected_monitor(m);
 
         if (server.default_layout->options.tag_names->len <= 0) {
             handle_error("tag_names is empty, loading default tag_names");
@@ -239,10 +239,9 @@ void focus_monitor(struct monitor *m)
     /* wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, m->wlr_output.) */
 
     // move floating containers over
-    struct tagset *tagset = monitor_get_active_tagset(m);
-
     server_set_selected_monitor(m);
-    focus_tagset(tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    tagset_focus_tags(ws->id, ws->prev_workspaces);
 }
 
 struct monitor *output_to_monitor(struct wlr_output *output)
