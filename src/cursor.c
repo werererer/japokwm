@@ -146,6 +146,7 @@ struct cursor *create_cursor(struct seat *seat)
             hide_notify, cursor);
 
     cursor->xcursor_mgr = wlr_xcursor_manager_create(NULL, 24);
+    wlr_xcursor_manager_load(cursor->xcursor_mgr, 1);
 
     /*
      * wlr_cursor *only* displays an image on screen. It does not move around
