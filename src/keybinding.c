@@ -85,10 +85,15 @@ static bool is_same_keybind_element(const char *bind, const char *bind2)
     GPtrArray *bindarr = split_string(bind, "-");
     GPtrArray *bind2arr = split_string(bind2, "-");
 
-    if (bind2arr->len == 0)
-        return true;
-    if (bindarr->len != bind2arr->len)
-        return false;
+    bool ret_val = false;
+    if (bind2arr->len == 0) {
+        g_ptr_array_free(bindarr, true);
+        goto exit_cleanup;
+    }
+    if (bindarr->len != bind2arr->len) {
+        ret_val = false;
+        goto exit_cleanup;
+    }
 
     // remove all resolved items out of bind2arr found in bindarr
     for (int i = 0; i < bindarr->len; i++) {
@@ -109,10 +114,15 @@ static bool is_same_keybind_element(const char *bind, const char *bind2)
         free(bindelem);
     }
 
-    // if no items remain in bind2arr the bind must be correct
-    bool ret = bind2arr->len == 0;
 
-    return ret;
+    // if no items remain in bind2arr the bind must be correct
+    ret_val = bind2arr->len == 0;
+
+exit_cleanup:
+    g_ptr_array_free(bindarr, true);
+    g_ptr_array_free(bind2arr, true);
+
+    return ret_val;
 }
 
 bool is_old_combo_same(const char *bind)
