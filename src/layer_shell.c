@@ -36,7 +36,6 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     struct monitor *m = wlr_layer_surface->output->data;
     client->m = m;
     struct container *con = create_container(client, m, false);
-    add_container_to_tile(con);
 
     // Temporarily set the layer's current state to client_pending
     // so that we can easily arrange it
@@ -44,6 +43,8 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     wlr_layer_surface->current = wlr_layer_surface->client_pending;
     arrange_layers(m);
     wlr_layer_surface->current = old_state;
+
+    add_container_to_tile(con);
 }
 
 void map_layer_surface_notify(struct wl_listener *listener, void *data)

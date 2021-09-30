@@ -204,7 +204,7 @@ struct container *xy_to_container(double x, double y)
         return NULL;
     struct tagset *tagset = monitor_get_active_tagset(m);
 
-    GPtrArray *stack_set = tagset_get_stack_copy(tagset);
+    GPtrArray *stack_set = tagset_get_complete_stack_copy(tagset);
     for (int i = 0; i < stack_set->len; i++) {
         struct container *con = g_ptr_array_index(stack_set, i);
         if (!con->focusable)

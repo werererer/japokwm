@@ -602,6 +602,21 @@ GPtrArray *tagset_get_stack_copy(struct tagset *tagset)
     return floating_copy;
 }
 
+GPtrArray *tagset_get_complete_stack_copy(struct tagset *tagset)
+{
+    GPtrArray *array = g_ptr_array_new();
+    GPtrArray *stack_copy = tagset_get_stack_copy(tagset);
+
+    wlr_list_cat(array, server.layer_visual_stack_overlay);
+    wlr_list_cat(array, server.layer_visual_stack_top);
+    wlr_list_cat(array, stack_copy);
+    wlr_list_cat(array, server.layer_visual_stack_bottom);
+    wlr_list_cat(array, server.layer_visual_stack_background);
+
+    g_ptr_array_free(stack_copy, FALSE);
+    return array;
+}
+
 void workspace_id_to_tag(BitSet *dest, int ws_id)
 {
     bitset_set(dest, ws_id);

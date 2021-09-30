@@ -88,6 +88,7 @@ GPtrArray *tagset_get_floating_list_copy(struct tagset *tagset);
 GPtrArray *tagset_get_visible_list_copy(struct tagset *tagset);
 GPtrArray *tagset_get_hidden_list_copy(struct tagset *tagset);
 GPtrArray *tagset_get_stack_copy(struct tagset *tagset);
+GPtrArray *tagset_get_complete_stack_copy(struct tagset *tagset);
 
 void workspace_id_to_tag(BitSet *dest, int ws_id);
 
