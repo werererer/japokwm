@@ -778,7 +778,6 @@ void add_container_to_layer_stack(struct workspace *ws, struct container *con)
             g_ptr_array_insert(server.layer_visual_stack_overlay, 0, con);
             break;
     }
-    debug_print("add new len: %i\n", length_of_composed_list(server.layer_visual_stack_overlay));
     return;
 }
 

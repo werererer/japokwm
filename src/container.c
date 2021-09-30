@@ -1028,6 +1028,18 @@ bool container_is_floating(struct container *con)
     return property->floating;
 }
 
+bool container_is_floating_and_visible(struct container *con)
+{
+    bool is_floating = container_is_floating(con);
+    if (!is_floating)
+        return false;
+    struct monitor *m = server_get_selected_monitor();
+    bool intersects = container_intersects_with_monitor(con, m);
+    if (!intersects)
+        return false;
+    return true;
+}
+
 bool container_is_floating_on_workspace(struct container *con, struct workspace *ws)
 {
     struct container_property *property = container_get_property_at_workspace(con, ws);
