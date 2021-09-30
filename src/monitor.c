@@ -170,16 +170,39 @@ static void handle_output_mode(struct wl_listener *listener, void *data)
 void destroy_monitor(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, destroy);
+    debug_print("destroy monitor: %p\n", m);
 
     wl_list_remove(&m->mode.link);
     wl_list_remove(&m->frame.link);
-    wl_list_remove(&m->damage_frame.link);
+    /* wl_list_remove(&m->damage_frame.link); */
     wl_list_remove(&m->destroy.link);
+
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    GPtrArray *stack_list = tagset_get_complete_stack_copy(tagset);
+    for (int i = 0; i < stack_list->len; i++) {
+        struct container *con = g_ptr_array_index(stack_list, i);
+        if (con->client->m == m) {
+            con->client->m = NULL;
+        }
+        // FIXME: this is here because of a bug in wlroots layershells are
+        // destroyed after the wlr_output
+        if (con->client->type == LAYER_SHELL) {
+            con->client->surface.layer->output = NULL;
+        }
+    }
+    g_ptr_array_free(stack_list, FALSE);
 
     for (int i = 0; i < server.workspaces->len; i++) {
         struct workspace *ws = g_ptr_array_index(server.workspaces, i);
         if (ws->prev_m == m) {
             ws->prev_m = NULL;
+        }
+    }
+
+    for (int i = 0; i < server.tagsets->len; i++) {
+        struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
+        if (tagset->m == m) {
+            tagset->m = NULL;
         }
     }
 
@@ -191,11 +214,14 @@ void destroy_monitor(struct wl_listener *listener, void *data)
 
     free(m);
 
-    if (server.mons->len <= 0)
+    if (server.mons->len <= 0) {
+        wl_display_terminate(server.wl_display);
         return;
+    }
 
     struct monitor *new_focused_monitor = g_ptr_array_index(server.mons, 0);
-    focus_monitor(new_focused_monitor);
+    server_set_selected_monitor(new_focused_monitor);
+    debug_print("destroy monitor end: %p\n", m);
 }
 
 void center_cursor_in_monitor(struct cursor *cursor, struct monitor *m)
