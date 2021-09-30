@@ -75,7 +75,7 @@ void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
     struct workspace *ws = tagset_get_workspace(tagset);
     bitset_assign_bitset(&ws->prev_workspaces, tagset->workspaces);
     arrange();
-    focus_most_recent_container(ws);
+    focus_most_recent_container();
 }
 
 
@@ -356,7 +356,7 @@ void focus_tagset(struct tagset *tagset)
 
     tagset_move_sticky_containers(tagset);
     arrange();
-    focus_most_recent_container(ws);
+    focus_most_recent_container();
     root_damage_whole(m->root);
 
     struct seat *seat = input_manager_get_default_seat();

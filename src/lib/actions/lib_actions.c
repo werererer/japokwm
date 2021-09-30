@@ -243,8 +243,7 @@ int lib_tag_view(lua_State *L)
 int lib_toggle_view(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    focus_most_recent_container(ws);
+    focus_most_recent_container();
     struct container *sel = get_focused_container(m);
     lift_container(sel);
     arrange(false);
@@ -313,7 +312,7 @@ int lib_zoom(lua_State *L)
 
     struct layout *lt = get_layout_in_monitor(m);
     if (lt->options.arrange_by_focus) {
-        focus_most_recent_container(ws);
+        focus_most_recent_container();
         arrange();
     }
     return 0;
@@ -500,8 +499,7 @@ int lib_swap_workspace(lua_State *L)
     struct tagset *tagset = monitor_get_active_tagset(m);
     tagset_reload(tagset);
     arrange();
-    struct workspace *ws = get_workspace(tagset->selected_ws_id);
-    focus_most_recent_container(ws);
+    focus_most_recent_container();
     root_damage_whole(m->root);
     return 0;
 }

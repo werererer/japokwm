@@ -186,7 +186,6 @@ int lib_is_keycombo(lua_State *L)
     const char *key_combo_name = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    debug_print("named keycombos len: %i\n", server.named_key_combos->len);
     guint pos = 0;
     bool found = g_ptr_array_find_with_equal_func(
             server.named_key_combos,
