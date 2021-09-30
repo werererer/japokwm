@@ -164,7 +164,7 @@ void container_move_sticky_containers(struct container *con, int ws_id)
                 if (bitset_test(con->client->sticky_workspaces, i)) {
                     container_set_just_workspace_id(con, i);
                     arrange();
-                    focus_most_recent_container(ws);
+                    focus_most_recent_container();
                     ipc_event_workspace();
                 }
             }

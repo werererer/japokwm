@@ -94,7 +94,7 @@ void map_request(struct wl_listener *listener, void *data)
     add_container_to_tile(con);
     arrange();
     if (ws) {
-        focus_most_recent_container(ws);
+        focus_most_recent_container();
     }
 }
 
@@ -108,9 +108,7 @@ void unmap_notify(struct wl_listener *listener, void *data)
     remove_container_from_tile(con);
 
     arrange();
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    focus_most_recent_container(ws);
+    focus_most_recent_container();
 }
 
 void createxdeco(struct wl_listener *listener, void *data)

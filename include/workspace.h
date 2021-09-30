@@ -96,7 +96,7 @@ bool workspace_is_active(struct workspace *ws);
 int get_workspace_container_count(struct workspace *ws);
 bool is_workspace_empty(struct workspace *ws);
 
-void focus_most_recent_container(struct workspace *ws);
+void focus_most_recent_container();
 struct container *get_container(struct workspace *ws, int i);
 struct container *get_container_in_stack(struct workspace *ws, int i);
 

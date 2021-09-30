@@ -113,11 +113,12 @@ void update_workspaces(GPtrArray *workspaces, GPtrArray *tag_names)
     }
 }
 
-void focus_most_recent_container(struct workspace *ws)
+void focus_most_recent_container()
 {
-    struct tagset *tagset = workspace_get_active_tagset(ws);
-    struct container *con = get_in_composed_list(tagset->visible_focus_set->focus_stack_lists, 0);
+    struct monitor *m = server_get_selected_monitor();
+    struct tagset *tagset = monitor_get_active_tagset(m);
 
+    struct container *con = get_focused_container(m);
     // TODO: this can be exported to an external function
     if (!con) {
         if (tagset->con_set->tiled_containers->len <= 0)

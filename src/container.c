@@ -377,11 +377,13 @@ void focus_container(struct container *con)
         return;
 
     struct container *sel = get_focused_container(m);
+    debug_print("sel: %p\n", sel);
 
     /* Put the new client atop the focus stack */
     workspace_repush_on_focus_stack(ws, con, 0);
 
     struct container *new_sel = get_focused_container(m);
+    debug_print("new sel: %p\n", new_sel);
 
     ipc_event_window();
 
@@ -973,9 +975,7 @@ void move_container_to_workspace(struct container *con, struct workspace *ws)
     container_damage_whole(con);
 
     arrange();
-    struct monitor *m = container_get_monitor(con);
-    struct workspace *selected_workspace = monitor_get_active_workspace(m);
-    focus_most_recent_container(selected_workspace);
+    focus_most_recent_container();
 
     ipc_event_workspace();
 }

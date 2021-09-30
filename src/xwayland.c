@@ -132,9 +132,7 @@ void unmap_notifyx11(struct wl_listener *listener, void *data)
     remove_container_from_tile(con);
 
     arrange();
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    focus_most_recent_container(ws);
+    focus_most_recent_container();
 }
 
 void maprequestx11(struct wl_listener *listener, void *data)

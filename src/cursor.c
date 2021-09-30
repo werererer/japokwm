@@ -325,8 +325,6 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
 
     pointer_focus(cursor->seat, final_focus_surface, sx, sy, time);
 
-    debug_print("is locked: %i\n", server.xy_container_is_locked);
-    debug_print("new focus con: %p\n", focus_con);
     if (!focus_con) {
         return;
     }
@@ -427,7 +425,6 @@ void handle_cursor_button(struct wl_listener *listener, void *data)
                         "left_ptr", cursor->wlr_cursor);
                 cursor->cursor_mode = CURSOR_NORMAL;
                 /* Drop the window off on its new monitor */
-                debug_print("handle_cursor_button\n");
                 struct monitor *m = xy_to_monitor(cursor->wlr_cursor->x,
                         cursor->wlr_cursor->y);
                 focus_monitor(m);

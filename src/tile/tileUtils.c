@@ -224,8 +224,7 @@ void arrange_monitor(struct monitor *m)
 
     wlr_output_damage_whole(m->wlr_output);
     update_reduced_focus_stack(tagset);
-    struct workspace *ws = tagset_get_workspace(tagset);
-    focus_most_recent_container(ws);
+    focus_most_recent_container();
 }
 
 void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,
