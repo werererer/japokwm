@@ -190,6 +190,8 @@ void destroy_cursor(struct cursor *cursor)
 
     wl_list_remove(&cursor->constraint_commit.link);
 
+    wlr_cursor_destroy(cursor->wlr_cursor);
+
     wlr_xcursor_manager_destroy(cursor->xcursor_mgr);
 
     free(cursor);
