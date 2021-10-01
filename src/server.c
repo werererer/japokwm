@@ -198,8 +198,11 @@ static void run(char *startup_cmd)
 
     /* Start the backend. This will enumerate outputs and inputs, become the DRM
      * master, etc */
-    if (!wlr_backend_start(server.backend))
-        printf("startup: backend_start");
+    if (!wlr_backend_start(server.backend)) {
+        printf("Failed to start backend");
+        wlr_backend_destroy(server.backend);
+        return;
+    }
 
     /* Now that outputs are initialized, choose initial selMon based on
      * cursor position, and set default cursor image */
@@ -345,7 +348,6 @@ int finalize(struct server *server)
 
 int stop_server()
 {
-    // TODO: fixme memoryleak
     wl_display_destroy_clients(server.wl_display);
 
     close_error_file();
