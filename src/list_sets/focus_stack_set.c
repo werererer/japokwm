@@ -52,6 +52,8 @@ void focus_set_destroy(struct focus_set *focus_set)
     g_ptr_array_unref(focus_set->focus_stack_lists);
     g_ptr_array_unref(focus_set->focus_stack_visible_lists);
     g_ptr_array_unref(focus_set->focus_stack_lists_with_layer_shell);
+
+    free(focus_set);
 }
 
 
