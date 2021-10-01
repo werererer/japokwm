@@ -179,19 +179,6 @@ struct cursor *create_cursor(struct seat *seat)
 
 void destroy_cursor(struct cursor *cursor)
 {
-    wl_list_remove(&cursor->axis.link);
-    wl_list_remove(&cursor->button.link);
-    wl_list_remove(&cursor->frame.link);
-    wl_list_remove(&cursor->motion.link);
-    wl_list_remove(&cursor->motion_absolute.link);
-
-    wl_list_remove(&cursor->request_set_cursor.link);
-    wl_list_remove(&cursor->image_surface_destroy.link);
-
-    wl_list_remove(&cursor->constraint_commit.link);
-
-    wlr_cursor_destroy(cursor->wlr_cursor);
-
     wlr_xcursor_manager_destroy(cursor->xcursor_mgr);
 
     free(cursor);

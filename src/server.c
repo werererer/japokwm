@@ -313,6 +313,7 @@ int setup(struct server *server)
      */
     server->input_manager = create_input_manager();
     struct seat *seat = create_seat("seat0");
+    g_ptr_array_add(server->input_manager->seats, seat);
 
 #ifdef JAPOKWM_HAS_XWAYLAND
     init_xwayland(server->wl_display, seat);
@@ -343,19 +344,14 @@ int stop_server()
     wlr_xwayland_destroy(server.xwayland.wlr_xwayland);
 #endif
     wl_display_destroy_clients(server.wl_display);
-    for (int i = 0; i < server.input_manager->seats->len; i++) {
-        struct seat *seat = g_ptr_array_steal_index(server.input_manager->seats, 0);
-        destroy_seat(seat);
-    }
 
     finalize(&server);
 
     close_error_file();
     wlr_output_layout_destroy(server.output_layout);
     wl_display_destroy(server.wl_display);
-
-    destroy_workspaces(server.workspaces);
     destroy_input_manager(server.input_manager);
+    destroy_workspaces(server.workspaces);
 
     finalize_lua_api(&server);
     return EXIT_SUCCESS;
