@@ -181,6 +181,8 @@ void destroy_cursor(struct cursor *cursor)
 {
     wlr_xcursor_manager_destroy(cursor->xcursor_mgr);
 
+    wlr_cursor_destroy(cursor->wlr_cursor);
+
     free(cursor);
 }
 
