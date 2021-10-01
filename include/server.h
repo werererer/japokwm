@@ -30,6 +30,8 @@ struct server {
 
     struct input_manager *input_manager;
 
+    struct event_handler *event_handler;
+
     struct wlr_virtual_pointer_manager_v1 *virtual_pointer_mgr;
     struct wlr_virtual_keyboard_manager_v1 *virtual_keyboard_mgr;
     struct wlr_relative_pointer_manager_v1 *relative_pointer_mgr;

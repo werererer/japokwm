@@ -13,9 +13,10 @@ int local_set_arrange_by_focus(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
+    struct layout *lt = workspace_get_layout(ws);
 
     // 1. argument
-    ws->layout->options->arrange_by_focus = lua_toboolean(L, -1);
+    lt->options->arrange_by_focus = lua_toboolean(L, -1);
     lua_pop(L, 1);
     return 0;
 }

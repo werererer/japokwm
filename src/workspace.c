@@ -56,9 +56,8 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     ws->id = id;
 
     ws->loaded_layouts = g_ptr_array_new();
-    // fill layout stack with reasonable values
-    push_layout(ws, lt);
-    push_layout(ws, lt);
+    ws->current_layout = lt->symbol;
+    ws->previous_layout = lt->symbol;
 
     ws->prev_workspaces = bitset_create(server.workspaces->len);
 
@@ -67,24 +66,6 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
 
     ws->consider_layer_shell = true;
     return ws;
-}
-
-void copy_layout_from_selected_workspace(GPtrArray *workspaces)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *src_lt = get_layout_in_monitor(m);
-
-    for (int i = 0; i < workspaces->len; i++) {
-        struct workspace *ws = g_ptr_array_index(workspaces, i);
-        struct layout *dest_lt = ws->layout;
-        struct layout *dest_prev_lt = ws->previous_layout;
-
-        if (dest_lt == src_lt)
-            continue;
-
-        copy_layout(dest_lt, src_lt);
-        copy_layout(dest_prev_lt, src_lt);
-    }
 }
 
 void update_workspaces(GPtrArray *workspaces, GPtrArray *tag_names)
@@ -370,7 +351,9 @@ struct layout *workspace_get_layout(struct workspace *ws)
 {
     if (!ws)
         return NULL;
-    return ws->layout;
+    if (ws->loaded_layouts->len <= 0)
+        return NULL;
+    return g_ptr_array_index(ws->loaded_layouts, 0);
 }
 
 struct root *workspace_get_root(struct workspace *ws)
@@ -417,16 +400,15 @@ struct monitor *workspace_get_monitor(struct workspace *ws)
     return NULL;
 }
 
-void push_layout(struct workspace *ws, struct layout *lt)
+void push_layout(struct workspace *ws, const char *layout_name)
 {
-    lt->ws_id = ws->id;
-    ws->previous_layout = ws->layout;
-    ws->layout = lt;
+    ws->previous_layout = ws->current_layout;
+    ws->current_layout = layout_name;
 }
 
-void load_default_layout(lua_State *L)
+void load_default_layout(struct workspace *ws)
 {
-    load_layout(L, server.default_layout->symbol);
+    push_layout(ws, server.default_layout->symbol);
 }
 
 static void load_layout_file(lua_State *L, const char *name)
@@ -452,10 +434,12 @@ cleanup:
     free(file);
 }
 
-void load_layout(lua_State *L, const char *name)
+void load_layout()
 {
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
+    const char *name = ws->current_layout;
+    assert(name != NULL);
 
     struct layout *lt = NULL;
     guint i;
@@ -463,15 +447,16 @@ void load_layout(lua_State *L, const char *name)
     if (found) {
         lt = g_ptr_array_steal_index(ws->loaded_layouts, i);
         g_ptr_array_insert(ws->loaded_layouts, 0, lt);
-        push_layout(ws, lt);
+        push_layout(ws, lt->symbol);
     } else {
         lt = create_layout(L);
+        lt->ws_id = ws->id;
         copy_layout_safe(lt, server.default_layout);
 
         lt->symbol = name;
 
         g_ptr_array_insert(ws->loaded_layouts, 0, lt);
-        push_layout(ws, lt);
+        push_layout(ws, lt->symbol);
 
         load_layout_file(L, name);
     }
@@ -481,10 +466,10 @@ void load_layout(lua_State *L, const char *name)
 
 void remove_loaded_layouts(GPtrArray *workspaces)
 {
-    /* for (int i = 0; i < workspaces->len; i++) { */
-    /*     struct workspace *ws = get_workspace(i); */
-    /*     list_clear(ws->loaded_layouts, (void (*)(void *))destroy_layout); */
-    /* } */
+    for (int i = 0; i < workspaces->len; i++) {
+        struct workspace *ws = get_workspace(i);
+        list_clear(ws->loaded_layouts, (void (*)(void *))destroy_layout);
+    }
 }
 
 void focus_next_unoccupied_workspace(struct monitor *m, GPtrArray *workspaces, struct workspace *ws)
@@ -498,6 +483,7 @@ void focus_next_unoccupied_workspace(struct monitor *m, GPtrArray *workspaces, s
     bitset_set(bitset, w->id);
 
     struct tagset *tagset = create_tagset(m, w->id, bitset);
+    bitset_destroy(bitset);
     push_tagset(tagset);
 }
 
@@ -814,7 +800,7 @@ bool workspace_sticky_contains_client(struct workspace *ws, struct client *clien
 }
 
 // TODO refactor this function
-void layout_set_set_layout(lua_State *L)
+void layout_set_set_layout(struct workspace *ws)
 {
     if (server.layout_set.layout_sets_ref <= 0) {
         return;
@@ -835,5 +821,5 @@ void layout_set_set_layout(lua_State *L)
 
     lua_pop(L, 1);
 
-    load_layout(L, layout_name);
+    push_layout(ws, layout_name);
 }

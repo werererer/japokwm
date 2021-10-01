@@ -327,7 +327,8 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
     struct monitor *m = server_get_selected_monitor();
     struct container *sel = get_focused_container(m);
     struct workspace *ws = monitor_get_active_workspace(m);
-    if (!ws->layout->options->sloppy_focus)
+    struct layout *lt = workspace_get_layout(ws);
+    if (!lt->options->sloppy_focus)
         return;
     if (popups_exist())
         return;

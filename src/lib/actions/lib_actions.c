@@ -80,7 +80,7 @@ int lib_resize_main(lua_State *L)
 
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
-    struct layout *lt = ws->layout;
+    struct layout *lt = workspace_get_layout(ws);
     int dir = lt->options->resize_dir;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_resize_function_ref);
@@ -353,7 +353,9 @@ int lib_load_next_layout_in_set(lua_State *L)
         server.layout_set.lua_layout_index = 1;
     }
 
-    layout_set_set_layout(L);
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    layout_set_set_layout(ws);
 
     arrange();
     return 0;
@@ -382,7 +384,9 @@ int lib_load_prev_layout_in_set(lua_State *L)
         server.layout_set.lua_layout_index = n_layouts;
     }
 
-    layout_set_set_layout(L);
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    layout_set_set_layout(ws);
 
     arrange();
     return 0;
@@ -405,7 +409,10 @@ int lib_load_layout_in_set(lua_State *L)
     lua_pop(L, 1);
 
     server.layout_set.key = layout_set_key;
-    layout_set_set_layout(L);
+
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    layout_set_set_layout(ws);
 
     arrange();
     return 0;
@@ -416,7 +423,9 @@ int lib_load_layout(lua_State *L)
     const char *layout_name = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    load_layout(L, layout_name);
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    push_layout(ws, layout_name);
 
     arrange();
     return 0;

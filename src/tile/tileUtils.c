@@ -29,6 +29,14 @@ static void arrange_container(struct container *con, struct monitor *m,
 
 void arrange()
 {
+    load_layout();
+
+    for (int i = 0; i < server.container_stack->len; i++) {
+        struct container *con = g_ptr_array_index(server.container_stack, i);
+        container_set_hidden(con, false);
+        container_update_size(con);
+    }
+
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
         arrange_monitor(m);
@@ -207,7 +215,7 @@ void arrange_monitor(struct monitor *m)
     container_surround_gaps(&active_geom, lt->options->outer_gap);
 
     update_layout_counters(tagset);
-    call_update_function(lt->options->event_handler, lt->n_area);
+    call_update_function(server.event_handler, lt->n_area);
 
     GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
 

@@ -107,7 +107,7 @@ int lib_get_previous_layout(lua_State *L)
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
 
-    struct layout *lt = ws->previous_layout;
+    struct layout *lt = workspace_get_layout(ws);
     lua_pushstring(L, lt->symbol);
     return 1;
 }
