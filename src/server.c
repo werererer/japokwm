@@ -348,7 +348,6 @@ int stop_server()
         destroy_seat(seat);
     }
 
-    finalize_lua_api(&server);
     finalize(&server);
 
     close_error_file();
@@ -358,6 +357,7 @@ int stop_server()
     destroy_workspaces(server.workspaces);
     destroy_input_manager(server.input_manager);
 
+    finalize_lua_api(&server);
     return EXIT_SUCCESS;
 }
 

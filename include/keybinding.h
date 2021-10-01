@@ -22,6 +22,8 @@ struct keybinding *create_keybinding(const char *binding, int lua_func_ref);
 void destroy_keybinding(struct keybinding *keybinding);
 void destroy_keybinding0(void *keybinding);
 
+void *copy_keybinding(const void *keybinding_ptr, void *user_data);
+
 bool handle_keybinding(int mod, int sym);
 
 bool key_state_has_modifiers(size_t mods);

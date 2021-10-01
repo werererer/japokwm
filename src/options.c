@@ -32,7 +32,7 @@ struct options *create_options()
     struct options *options = calloc(1, sizeof(*options));
 
     options->tag_names = create_tagnames();
-    options->keybindings = g_ptr_array_new();
+    options->keybindings = g_ptr_array_new_with_free_func(destroy_keybinding0);
     options->mon_rules = g_ptr_array_new();
     options->rules = g_ptr_array_new();
 
@@ -44,7 +44,9 @@ struct options *create_options()
 void destroy_options(struct options *options)
 {
     g_ptr_array_unref(options->tag_names);
+
     g_ptr_array_unref(options->keybindings);
+
     g_ptr_array_unref(options->mon_rules);
     g_ptr_array_unref(options->rules);
 
@@ -130,10 +132,13 @@ void load_default_keybindings()
     return;
 }
 
-static void assign_list(GPtrArray **dest_arr, GPtrArray *src_arr)
+static void assign_list(
+        GPtrArray **dest_arr,
+        GPtrArray *src_arr,
+        GCopyFunc copy_func)
 {
     g_ptr_array_unref(*dest_arr);
-    *dest_arr = g_ptr_array_copy(src_arr, NULL, NULL);
+    *dest_arr = g_ptr_array_copy(src_arr, copy_func, NULL);
 }
 
 void copy_options(struct options *dest_option, struct options *src_option)
@@ -162,10 +167,10 @@ void copy_options(struct options *dest_option, struct options *src_option)
     dest_option->smart_hidden_edges = src_option->smart_hidden_edges;
     dest_option->automatic_workspace_naming = src_option->automatic_workspace_naming;
 
-    assign_list(&dest_option->mon_rules, src_option->mon_rules);
-    assign_list(&dest_option->rules, src_option->rules);
-    assign_list(&dest_option->tag_names, src_option->tag_names);
-    assign_list(&dest_option->keybindings, src_option->keybindings);
+    assign_list(&dest_option->mon_rules, src_option->mon_rules, NULL);
+    assign_list(&dest_option->rules, src_option->rules, NULL);
+    assign_list(&dest_option->tag_names, src_option->tag_names, NULL);
+    assign_list(&dest_option->keybindings, src_option->keybindings, copy_keybinding);
 
     reset_floating_client_borders(dest_option->tile_border_px);
 }
