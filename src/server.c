@@ -129,7 +129,6 @@ static void finalize_event_handlers(struct server *server)
 void init_server()
 {
     server = (struct server) {
-        .xwayland = {},
     };
 
     server.registered_key_combos = g_ptr_array_new();
