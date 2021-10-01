@@ -129,6 +129,8 @@ void keypress(struct wl_listener *listener, void *data)
         wlr_seat_keyboard_notify_key(wlr_seat, event->time_msec,
             event->keycode, event->state);
     }
+
+    xkb_state_unref(state);
 }
 
 void keypressmod(struct wl_listener *listener, void *data)
