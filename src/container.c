@@ -329,6 +329,8 @@ void apply_bounds(struct container *con, struct wlr_box box)
 {
     /* set minimum possible */
     struct wlr_box *con_geom = container_get_current_geom(con);
+    if (!con_geom)
+        return;
     con_geom->width = MAX(MIN_CONTAINER_WIDTH, con_geom->width);
     con_geom->height = MAX(MIN_CONTAINER_HEIGHT, con_geom->height);
 
