@@ -80,8 +80,8 @@ fish_comp = dependency('fish', required: false)
 
 if get_option('zsh-completions')
     zsh_files = files(
-        'completions/zsh/_sway',
-        'completions/zsh/_swaymsg',
+        'completions/zsh/_japokwm',
+        'completions/zsh/_japokmsg',
     )
     zsh_install_dir = join_paths(datadir, 'zsh', 'site-functions')
 
@@ -90,8 +90,8 @@ endif
 
 if get_option('bash-completions')
     bash_files = files(
-        'completions/bash/sway',
-        'completions/bash/swaymsg',
+        'completions/bash/japokwm',
+        'completions/bash/japokmsg',
     )
 
     if bash_comp.found()
@@ -108,8 +108,8 @@ endif
 
 if get_option('fish-completions')
     fish_files = files(
-        'completions/fish/sway.fish',
-        'completions/fish/swaymsg.fish',
+        'completions/fish/japokwm.fish',
+        'completions/fish/japokmsg.fish',
     )
 
     if fish_comp.found()
