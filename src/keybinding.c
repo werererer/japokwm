@@ -244,7 +244,10 @@ static long millisec_to_nanosec(long milli_sec)
 
 static void reset_keycombo_timer(timer_t timer)
 {
-    long timeout = server.default_layout->options->key_combo_timeout;
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct layout *lt = workspace_get_layout(ws);
+    long timeout = lt->options->key_combo_timeout;
 
     int available_seconds = millisec_get_available_seconds(timeout);
     timeout -= (1000*available_seconds);
@@ -276,6 +279,15 @@ static bool sym_is_modifier(const char *sym)
     return false;
 }
 
+void *copy_keybinding(const void *keybinding_ptr, void *user_data)
+{
+    const struct keybinding *keybinding = keybinding_ptr;
+    lua_rawgeti(L, LUA_REGISTRYINDEX, keybinding->lua_func_ref);
+    int ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    struct keybinding *kb_dup = create_keybinding(keybinding->binding, ref);
+    return kb_dup;
+}
+
 bool handle_keybinding(int mods, int sym)
 {
     reset_keycombo_timer(server.combo_timer);
@@ -293,16 +305,19 @@ bool handle_keybinding(int mods, int sym)
         return true;
     }
 
-    if (!has_equal_keybind_element(bind, server.default_layout->options->keybindings)) {
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct layout *lt = workspace_get_layout(ws);
+    if (!has_equal_keybind_element(bind, lt->options->keybindings)) {
         list_clear(server.registered_key_combos, free);
 
         // try again with no registered key combos
-        if (!has_equal_keybind_element(bind, server.default_layout->options->keybindings)) {
+        if (!has_equal_keybind_element(bind, lt->options->keybindings)) {
             return false;
         }
     }
     g_ptr_array_add(server.registered_key_combos, strdup(bind));
-    process_binding(L, bind, server.default_layout->options->keybindings);
+    process_binding(L, bind, lt->options->keybindings);
     return true;
 }
 
