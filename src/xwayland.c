@@ -300,7 +300,6 @@ void init_xwayland(struct wl_display *display, struct seat *seat)
         LISTEN( &server.xwayland.wlr_xwayland->events.new_surface,
                 &server.new_xwayland_surface,
                 create_notifyx11);
-        /* wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, seat->wlr_seat); */
 
         setenv("DISPLAY", server.xwayland.wlr_xwayland->display_name, true);
     } else {
