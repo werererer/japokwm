@@ -142,17 +142,14 @@ static void assign_list(
 
 void copy_options(struct options *dest_option, struct options *src_option)
 {
-    dest_option->sloppy_focus = src_option->tile_border_px;
-    dest_option->tile_border_px = src_option->tile_border_px;
-
-    dest_option->resize_dir = src_option->resize_dir;
-    dest_option->layout_constraints = src_option->layout_constraints;
-    dest_option->master_constraints = src_option->master_constraints;
-
     memcpy(dest_option->root_color, src_option->root_color, sizeof(float)*4);
     memcpy(dest_option->focus_color, src_option->focus_color, sizeof(float)*4);
     memcpy(dest_option->border_color, src_option->border_color, sizeof(float)*4);
 
+    dest_option->resize_dir = src_option->resize_dir;
+    dest_option->layout_constraints = src_option->layout_constraints;
+    dest_option->master_constraints = src_option->master_constraints;
+    dest_option->sloppy_focus = src_option->sloppy_focus;
     dest_option->key_combo_timeout = src_option->key_combo_timeout;
     dest_option->repeat_rate = src_option->repeat_rate;
     dest_option->repeat_delay = src_option->repeat_delay;
@@ -171,7 +168,7 @@ void copy_options(struct options *dest_option, struct options *src_option)
     assign_list(&dest_option->tag_names, src_option->tag_names, NULL);
     assign_list(&dest_option->keybindings, src_option->keybindings, copy_keybinding);
 
-    reset_floating_client_borders(dest_option->tile_border_px);
+    reset_floating_client_borders(dest_option->float_border_px);
 }
 
 int workspace_get_new_position(struct workspace *ws)

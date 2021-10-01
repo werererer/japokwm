@@ -269,7 +269,7 @@ void update_reduced_focus_stack(struct tagset *tagset)
 bool is_local_focus_stack(struct workspace *ws, struct container *con)
 {
     struct monitor *m = workspace_get_monitor(ws);
-    if (!container_is_tiled_and_managed(con)) {
+    if (!container_is_managed(con)) {
         return false;
     }
     if (!exist_on(m, ws->prev_workspaces, con)) {

@@ -32,9 +32,6 @@ void move_to_scratchpad(struct container *con, int position)
         g_ptr_array_insert(server.scratchpad, new_position, con);
     }
 
-    /* remove_in_composed_list(tagset->list_set->container_lists, cmp_ptr, con); */
-    /* list_remove(tagset->list_set->focus_stack_normal, cmp_ptr, con); */
-    /* remove_in_composed_list(server.visual_stack_lists, cmp_ptr, con); */
     tagset_reload(tagset);
 
     container_damage_whole(con);

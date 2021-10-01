@@ -667,6 +667,10 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
         remove_container_from_scratchpad(con);
     }
     container_set_current_geom(con, &geom);
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct layout *lt = workspace_get_layout(ws);
+    container_set_border_width(con, lt->options->float_border_px);
     container_damage(con, true);
 }
 
@@ -848,6 +852,12 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
         remove_container_from_scratchpad(con);
     }
     container_set_current_geom(con, &geom);
+
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct layout *lt = workspace_get_layout(ws);
+    container_set_border_width(con, lt->options->float_border_px);
+
     container_damage(con, true);
 }
 
