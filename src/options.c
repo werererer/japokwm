@@ -143,6 +143,7 @@ static void assign_list(
 
 void copy_options(struct options *dest_option, struct options *src_option)
 {
+    dest_option->sloppy_focus = src_option->tile_border_px;
     dest_option->tile_border_px = src_option->tile_border_px;
 
     dest_option->resize_dir = src_option->resize_dir;

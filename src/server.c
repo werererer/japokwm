@@ -78,7 +78,7 @@ static void init_timers(struct server *server)
 
 static void finalize_timers(struct server *server)
 {
-    timer_delete(&server->combo_sig_event);
+    timer_delete(&server->combo_timer);
 }
 
 static int init_backend(struct server *server)
