@@ -215,7 +215,8 @@ void destroy_monitor(struct wl_listener *listener, void *data)
     free(m);
 
     if (server.mons->len <= 0) {
-        wl_display_terminate(server.wl_display);
+        debug_print("destroy monitor end alt: %p\n", m);
+        /* wl_display_terminate(server.wl_display); */
         return;
     }
 
