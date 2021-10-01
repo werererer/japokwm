@@ -156,8 +156,10 @@ bool is_same_keybind_completed(const char *bind, const char *bind2)
 {
     GPtrArray *bind2combos = split_string(bind2, " ");
     if (bind2combos->len == server.registered_key_combos->len) {
+        g_ptr_array_unref(bind2combos);
         return true;
     }
+    g_ptr_array_unref(bind2combos);
     return false;
 }
 
