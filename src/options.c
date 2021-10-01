@@ -47,6 +47,8 @@ void destroy_options(struct options *options)
     g_ptr_array_unref(options->keybindings);
     g_ptr_array_unref(options->mon_rules);
     g_ptr_array_unref(options->rules);
+
+    free(options);
 }
 
 void options_reset(struct options *options)

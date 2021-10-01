@@ -43,7 +43,6 @@ struct layout *create_layout(lua_State *L)
 
 void destroy_layout(struct layout *lt)
 {
-    debug_print("destroy layout: %p\n", lt);
     destroy_options(lt->options);
 
     free(lt);
