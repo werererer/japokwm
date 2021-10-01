@@ -148,6 +148,7 @@ void init_server()
 
     server.container_stack = g_ptr_array_new();
 
+    server.event_handler = create_event_handler();
 
     server.tagsets = g_ptr_array_new();
     server.previous_workspace = 0;
@@ -170,6 +171,8 @@ void finalize_server()
     g_ptr_array_unref(server.config_paths);
 
     g_ptr_array_unref(server.container_stack);
+
+    destroy_event_handler(server.event_handler);
 
     g_ptr_array_unref(server.tagsets);
 }

@@ -57,8 +57,8 @@ struct server;
  * */
 struct workspace {
     GPtrArray *loaded_layouts;
-    struct layout *previous_layout;
-    struct layout *layout;
+    const char *current_layout;
+    const char *previous_layout;
 
     size_t id;
     char *name;
@@ -117,12 +117,11 @@ struct monitor *workspace_get_selected_monitor(struct workspace *ws);
 struct monitor *workspace_get_monitor(struct workspace *ws); 
 
 void focus_next_unoccupied_workspace(struct monitor *m, GPtrArray *workspaces, struct workspace *ws);
-void copy_layout_from_selected_workspace(GPtrArray *workspaces);
 void destroy_workspaces(GPtrArray *workspaces);
-void layout_set_set_layout(lua_State *L);
-void push_layout(struct workspace *ws, struct layout *lt);
-void load_default_layout(lua_State *L);
-void load_layout(lua_State *L, const char *name);
+void layout_set_set_layout(struct workspace *ws);
+void push_layout(struct workspace *ws, const char *layout_name);
+void load_default_layout(struct workspace *ws);
+void load_layout();
 void remove_loaded_layouts(GPtrArray *workspaces);
 void workspace_rename(struct workspace *ws, const char *name);
 void workspace_update_names(struct server *server, GPtrArray *workspaces);

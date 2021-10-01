@@ -72,8 +72,7 @@ void add_container_to_tile(struct container *con)
 
     struct monitor *m = container_get_monitor(con);
     if (m) {
-        struct layout *lt = get_layout_in_monitor(m);
-        struct event_handler *ev = lt->options->event_handler;
+        struct event_handler *ev = server.event_handler;
         call_create_container_function(ev, get_position_in_container_focus_stack(con));
     }
 
@@ -384,9 +383,7 @@ void focus_container(struct container *con)
 
     ipc_event_window();
 
-    struct tagset *tagset = workspace_get_active_tagset(ws);
-    struct layout *lt = tagset_get_layout(tagset);
-    call_on_focus_function(lt->options->event_handler,
+    call_on_focus_function(server.event_handler,
             get_position_in_container_focus_stack(con));
 
     struct client *old_c = sel ? sel->client : NULL;

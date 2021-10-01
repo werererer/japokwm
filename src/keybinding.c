@@ -50,7 +50,7 @@ static char *resolve_keybind_element(const char *bind)
 {
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
-    struct layout *lt = ws->layout;
+    struct layout *lt = workspace_get_layout(ws);
 
     if (strcmp(bind, "mod") == 0) {
         char *resolved = strdup(modkeys[lt->options->modkey]);

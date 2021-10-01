@@ -21,7 +21,6 @@ int lib_set_layout(lua_State *L)
     struct layout *lt = workspace_get_layout(ws);
     if (ref > 0) {
         lt->lua_layout_copy_data_ref = ref;
-
     }
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
     lua_copy_table_safe(L, &lt->lua_layout_original_copy_data_ref);

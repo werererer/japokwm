@@ -185,8 +185,7 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *work
     tagset->con_set = create_container_set();
     tagset->visible_focus_set = focus_set_create();
 
-    tagset->workspaces = bitset_create(server.workspaces->len);
-    tagset_assign_workspaces(tagset, workspaces);
+    tagset->workspaces = bitset_copy(workspaces);
 
     g_ptr_array_add(server.tagsets, tagset);
     return tagset;

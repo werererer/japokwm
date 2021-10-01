@@ -59,8 +59,6 @@ struct options {
     bool arrange_by_focus;
     int resize_dir;
 
-    struct event_handler *event_handler;
-
     enum wlr_edges hidden_edges;
     bool smart_hidden_edges;
     bool automatic_workspace_naming;

@@ -90,16 +90,16 @@ void create_monitor(struct wl_listener *listener, void *data)
         server.previous_bitset = bitset_create(server.workspaces->len);
         bitset_set(server.previous_bitset, server.previous_workspace);
 
-        call_on_start_function(server.default_layout->options->event_handler);
+        call_on_start_function(server.event_handler);
     }
 
     apply_mon_rules(server.default_layout->options->mon_rules, m);
 
     focus_next_unoccupied_workspace(m, server.workspaces, get_workspace(0));
-    load_default_layout(L);
+
     struct workspace *ws = monitor_get_active_workspace(m);
-    copy_layout_from_selected_workspace(server.workspaces);
-    set_root_color(m->root, ws->layout->options->root_color);
+    struct layout *lt = workspace_get_layout(ws);
+    set_root_color(m->root, lt->options->root_color);
 
     if (!wlr_output_commit(output))
         return;
@@ -311,7 +311,9 @@ inline struct layout *get_layout_in_monitor(struct monitor *m)
 {
     if (!m)
         return NULL;
-    return monitor_get_active_workspace(m)->layout;
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct layout *lt = workspace_get_layout(ws);
+    return lt;
 }
 
 struct root *monitor_get_active_root(struct monitor *m)

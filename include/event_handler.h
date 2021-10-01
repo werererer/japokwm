@@ -13,7 +13,7 @@ struct event_handler {
 };
 
 struct event_handler *create_event_handler();
-
+void destroy_event_handler(struct event_handler *event_handler);
 
 GPtrArray *event_name_to_signal(struct event_handler *event_handler,
         const char *event);

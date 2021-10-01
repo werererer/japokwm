@@ -84,7 +84,6 @@ void options_reset(struct options *options)
     options->float_border_px = 3;
     options->inner_gap = 0;
     options->outer_gap = 0;
-    options->event_handler = create_event_handler();
     options->modkey = 0;
     options->arrange_by_focus = false;
     options->hidden_edges = WLR_EDGE_NONE;
@@ -161,7 +160,6 @@ void copy_options(struct options *dest_option, struct options *src_option)
     dest_option->float_border_px = src_option->float_border_px;
     dest_option->inner_gap = src_option->inner_gap;
     dest_option->outer_gap = src_option->outer_gap;
-    dest_option->event_handler = src_option->event_handler;
     dest_option->modkey = src_option->modkey;
     dest_option->arrange_by_focus = src_option->arrange_by_focus;
     dest_option->hidden_edges = src_option->hidden_edges;

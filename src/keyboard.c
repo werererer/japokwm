@@ -78,6 +78,9 @@ void destroy_keyboard(struct keyboard *kb)
     wl_list_remove(&kb->key.link);
     wl_list_remove(&kb->destroy.link);
     g_ptr_array_remove(server.keyboards, kb);
+
+/*     xkb_keymap_unref(kb->seat_device->input_device->wlr_device->keyboard->keymap); */
+
     free(kb);
 }
 
