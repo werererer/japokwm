@@ -73,13 +73,13 @@ void add_container_to_tile(struct container *con)
     struct monitor *m = container_get_monitor(con);
     if (m) {
         struct layout *lt = get_layout_in_monitor(m);
-        struct event_handler *ev = lt->options.event_handler;
+        struct event_handler *ev = lt->options->event_handler;
         call_create_container_function(ev, get_position_in_container_focus_stack(con));
     }
 
     con->is_on_tile = true;
 
-    apply_rules(server.default_layout->options.rules, con);
+    apply_rules(server.default_layout->options->rules, con);
 }
 
 void remove_container_from_tile(struct container *con)
@@ -386,7 +386,7 @@ void focus_container(struct container *con)
 
     struct tagset *tagset = workspace_get_active_tagset(ws);
     struct layout *lt = tagset_get_layout(tagset);
-    call_on_focus_function(lt->options.event_handler,
+    call_on_focus_function(lt->options->event_handler,
             get_position_in_container_focus_stack(con));
 
     struct client *old_c = sel ? sel->client : NULL;
@@ -520,7 +520,7 @@ void repush(int pos1, int pos2)
     arrange();
 
     struct layout *lt = get_layout_in_monitor(m);
-    if (lt->options.arrange_by_focus) {
+    if (lt->options->arrange_by_focus) {
         arrange();
     }
 }
@@ -694,7 +694,7 @@ void container_set_current_geom(struct container *con, struct wlr_box *geom)
 {
     struct tagset *tagset = container_get_tagset(con);
     struct layout *lt = tagset_get_layout(tagset);
-    if (container_is_tiled(con) || lt->options.arrange_by_focus) {
+    if (container_is_tiled(con) || lt->options->arrange_by_focus) {
         container_set_tiled_geom(con, geom);
     } else {
         container_set_floating_geom(con, geom);
@@ -795,7 +795,7 @@ struct wlr_box *container_get_current_geom(struct container *con)
     struct layout *lt = workspace_get_layout(ws);
     if (container_is_unmanaged(con)) {
         geom = container_get_floating_geom(con);
-    } else if (container_is_tiled(con) || lt->options.arrange_by_focus) {
+    } else if (container_is_tiled(con) || lt->options->arrange_by_focus) {
         geom = container_get_tiled_geom(con);
     } else {
         geom = container_get_floating_geom(con);

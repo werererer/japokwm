@@ -53,7 +53,7 @@ static char *resolve_keybind_element(const char *bind)
     struct layout *lt = ws->layout;
 
     if (strcmp(bind, "mod") == 0) {
-        char *resolved = strdup(modkeys[lt->options.modkey]);
+        char *resolved = strdup(modkeys[lt->options->modkey]);
         return resolved;
     }
     if (strcmp(bind, "M1") == 0) {
@@ -244,7 +244,7 @@ static long millisec_to_nanosec(long milli_sec)
 
 static void reset_keycombo_timer(timer_t timer)
 {
-    long timeout = server.default_layout->options.key_combo_timeout;
+    long timeout = server.default_layout->options->key_combo_timeout;
 
     int available_seconds = millisec_get_available_seconds(timeout);
     timeout -= (1000*available_seconds);
@@ -293,16 +293,16 @@ bool handle_keybinding(int mods, int sym)
         return true;
     }
 
-    if (!has_equal_keybind_element(bind, server.default_layout->options.keybindings)) {
+    if (!has_equal_keybind_element(bind, server.default_layout->options->keybindings)) {
         list_clear(server.registered_key_combos, free);
 
         // try again with no registered key combos
-        if (!has_equal_keybind_element(bind, server.default_layout->options.keybindings)) {
+        if (!has_equal_keybind_element(bind, server.default_layout->options->keybindings)) {
             return false;
         }
     }
     g_ptr_array_add(server.registered_key_combos, strdup(bind));
-    process_binding(L, bind, server.default_layout->options.keybindings);
+    process_binding(L, bind, server.default_layout->options->keybindings);
     return true;
 }
 

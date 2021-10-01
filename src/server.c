@@ -349,12 +349,14 @@ int stop_server()
     }
 
     finalize_lua_api(&server);
+    finalize(&server);
 
     close_error_file();
     wlr_output_layout_destroy(server.output_layout);
     wl_display_destroy(server.wl_display);
 
     destroy_workspaces(server.workspaces);
+    destroy_input_manager(server.input_manager);
 
     return EXIT_SUCCESS;
 }

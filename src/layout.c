@@ -19,8 +19,9 @@ struct layout *create_layout(lua_State *L)
         .symbol = "",
         .n_area = 1,
         .nmaster = 1,
-        .options = get_default_options(),
     };
+
+    lt->options = create_options();
 
     lua_get_default_master_layout_data(L);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_master_layout_data_ref);
@@ -42,6 +43,9 @@ struct layout *create_layout(lua_State *L)
 
 void destroy_layout(struct layout *lt)
 {
+    debug_print("destroy layout: %p\n", lt);
+    destroy_options(lt->options);
+
     free(lt);
 }
 
@@ -145,7 +149,7 @@ void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt)
         lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->lua_resize_function_ref);
     }
 
-    copy_options(&dest_lt->options, &src_lt->options);
+    copy_options(dest_lt->options, src_lt->options);
 
     return;
 }

@@ -153,7 +153,7 @@ int load_config(lua_State *L)
 
 void load_default_lua_config(lua_State *L)
 {
-    server.default_layout->options = get_default_options();
+    options_reset(server.default_layout->options);
     remove_loaded_layouts(server.workspaces);
     load_default_keybindings();
 }

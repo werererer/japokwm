@@ -71,7 +71,9 @@ struct options {
     int new_focus_position_func_ref;
 };
 
-struct options get_default_options();
+struct options *create_options();
+void destroy_options(struct options *options);
+void options_reset(struct options *options);
 void load_default_keybindings();
 GPtrArray *create_tagnames();
 void copy_options(struct options *dest_option, struct options *src_option);
