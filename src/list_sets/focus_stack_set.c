@@ -42,16 +42,16 @@ struct focus_set *focus_set_create()
 void focus_set_destroy(struct focus_set *focus_set)
 {
     g_ptr_array_free(focus_set->focus_stack_layer_background, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_layer_bottom, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_layer_top, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_layer_overlay, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_on_top, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_normal, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_not_focusable, FALSE);
+    g_ptr_array_unref(focus_set->focus_stack_layer_bottom);
+    g_ptr_array_unref(focus_set->focus_stack_layer_top);
+    g_ptr_array_unref(focus_set->focus_stack_layer_overlay);
+    g_ptr_array_unref(focus_set->focus_stack_on_top);
+    g_ptr_array_unref(focus_set->focus_stack_normal);
+    g_ptr_array_unref(focus_set->focus_stack_not_focusable);
 
-    g_ptr_array_free(focus_set->focus_stack_lists, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_visible_lists, FALSE);
-    g_ptr_array_free(focus_set->focus_stack_lists_with_layer_shell, FALSE);
+    g_ptr_array_unref(focus_set->focus_stack_lists);
+    g_ptr_array_unref(focus_set->focus_stack_visible_lists);
+    g_ptr_array_unref(focus_set->focus_stack_lists_with_layer_shell);
 }
 
 

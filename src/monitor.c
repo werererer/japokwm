@@ -190,7 +190,7 @@ void destroy_monitor(struct wl_listener *listener, void *data)
             con->client->surface.layer->output = NULL;
         }
     }
-    g_ptr_array_free(stack_list, FALSE);
+    g_ptr_array_unref(stack_list);
 
     for (int i = 0; i < server.workspaces->len; i++) {
         struct workspace *ws = g_ptr_array_index(server.workspaces, i);

@@ -17,10 +17,10 @@ struct event_handler *create_event_handler()
 
 void destroy_event_handler(struct event_handler *event_handler)
 {
-    g_ptr_array_free(event_handler->on_start_func_refs, TRUE);
-    g_ptr_array_free(event_handler->on_focus_func_refs, TRUE);
-    g_ptr_array_free(event_handler->on_update_func_refs, TRUE);
-    g_ptr_array_free(event_handler->on_create_container_func_refs, TRUE);
+    g_ptr_array_unref(event_handler->on_start_func_refs);
+    g_ptr_array_unref(event_handler->on_focus_func_refs);
+    g_ptr_array_unref(event_handler->on_update_func_refs);
+    g_ptr_array_unref(event_handler->on_create_container_func_refs);
 }
 
 GPtrArray *event_name_to_signal(struct event_handler *event_handler,

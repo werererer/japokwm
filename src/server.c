@@ -55,12 +55,12 @@ static void init_lists(struct server *server)
 
 static void finalize_lists(struct server *server)
 {
-    g_ptr_array_free(server->layer_visual_stack_background, FALSE);
-    g_ptr_array_free(server->layer_visual_stack_bottom, FALSE);
-    g_ptr_array_free(server->layer_visual_stack_top, FALSE);
-    g_ptr_array_free(server->layer_visual_stack_overlay, FALSE);
+    g_ptr_array_unref(server->layer_visual_stack_background);
+    g_ptr_array_unref(server->layer_visual_stack_bottom);
+    g_ptr_array_unref(server->layer_visual_stack_top);
+    g_ptr_array_unref(server->layer_visual_stack_overlay);
 
-    g_ptr_array_free(server->layer_visual_stack_lists, FALSE);
+    g_ptr_array_unref(server->layer_visual_stack_lists);
 }
 
 
@@ -156,23 +156,23 @@ void init_server()
 
 void finalize_server()
 {
-    g_ptr_array_free(server.registered_key_combos, TRUE);
-    g_ptr_array_free(server.named_key_combos, TRUE);
+    g_ptr_array_unref(server.registered_key_combos);
+    g_ptr_array_unref(server.named_key_combos);
 
     finalize_lists(&server);
     finalize_timers(&server);
 
-    g_ptr_array_free(server.mons, TRUE);
-    g_ptr_array_free(server.popups, FALSE);
-    g_ptr_array_free(server.xwayland_popups, FALSE);
+    g_ptr_array_unref(server.mons);
+    g_ptr_array_unref(server.popups);
+    g_ptr_array_unref(server.xwayland_popups);
 
-    g_ptr_array_free(server.scratchpad, TRUE);
-    g_ptr_array_free(server.keyboards, TRUE);
-    g_ptr_array_free(server.config_paths, FALSE);
+    g_ptr_array_unref(server.scratchpad);
+    g_ptr_array_unref(server.keyboards);
+    g_ptr_array_unref(server.config_paths);
 
-    g_ptr_array_free(server.container_stack, FALSE);
+    g_ptr_array_unref(server.container_stack);
 
-    g_ptr_array_free(server.tagsets, TRUE);
+    g_ptr_array_unref(server.tagsets);
 }
 
 static void run(char *startup_cmd)

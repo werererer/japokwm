@@ -266,7 +266,7 @@ void test_list_insert()
     g_assert_cmpstr(g_ptr_array_index(list, 1), ==, j);
     g_assert_cmpstr(g_ptr_array_index(list, 2), ==, k);
 
-    g_ptr_array_free(list, FALSE);
+    g_ptr_array_unref(list);
 }
 
 #define PREFIX "coreUtils"

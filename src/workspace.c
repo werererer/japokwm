@@ -46,7 +46,7 @@ GPtrArray *create_workspaces(GPtrArray *tag_names)
 
 void destroy_workspaces(GPtrArray *workspaces)
 {
-    g_ptr_array_free(workspaces, TRUE);
+    g_ptr_array_unref(workspaces);
 }
 
 struct workspace *create_workspace(const char *name, size_t id, struct layout *lt)
@@ -147,7 +147,7 @@ struct container *get_container_in_stack(struct workspace *ws, int i)
 
 void destroy_workspace(struct workspace *ws)
 {
-    g_ptr_array_free(ws->loaded_layouts, TRUE);
+    g_ptr_array_unref(ws->loaded_layouts);
 
     bitset_destroy(ws->prev_workspaces);
     focus_set_destroy(ws->focus_set);
@@ -800,7 +800,7 @@ void workspace_repush(struct workspace *ws, struct container *con, int new_pos)
     debug_print("tiled list len: %i\n", tiled_list);
     debug_print("actual tiled list len: %i\n", actual_tiled_list);
 
-    g_ptr_array_free(tiled_list, FALSE);
+    g_ptr_array_unref(tiled_list);
 
     tagset_write_to_workspaces(tagset);
 }

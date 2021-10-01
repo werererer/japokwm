@@ -87,7 +87,7 @@ static bool is_same_keybind_element(const char *bind, const char *bind2)
 
     bool ret_val = false;
     if (bind2arr->len == 0) {
-        g_ptr_array_free(bindarr, true);
+        g_ptr_array_unref(bindarr);
         goto exit_cleanup;
     }
     if (bindarr->len != bind2arr->len) {
@@ -119,8 +119,8 @@ static bool is_same_keybind_element(const char *bind, const char *bind2)
     ret_val = bind2arr->len == 0;
 
 exit_cleanup:
-    g_ptr_array_free(bindarr, true);
-    g_ptr_array_free(bind2arr, true);
+    g_ptr_array_unref(bindarr);
+    g_ptr_array_unref(bind2arr);
 
     return ret_val;
 }
@@ -148,7 +148,7 @@ bool is_old_combo_same(const char *bind)
     }
 
 exit_cleanup:
-    g_ptr_array_free(bind_combos, TRUE);
+    g_ptr_array_unref(bind_combos);
     return ret_val;
 }
 
@@ -171,12 +171,12 @@ bool has_equal_keybind_element(const char *bind, GPtrArray *keybindings)
         GPtrArray *bind2_combos = split_string(bind2, " ");
 
         if (bind2_combos->len-1 < current_combo_index) {
-            g_ptr_array_free(bind2_combos, true);
+            g_ptr_array_unref(bind2_combos);
             continue;
         }
 
         const char *_current_bind2_combo = g_ptr_array_index(bind2_combos, current_combo_index);
-        g_ptr_array_free(bind2_combos, true);
+        g_ptr_array_unref(bind2_combos);
 
         char *current_bind2_combo = resolve_keybind_element(_current_bind2_combo);
         bool is_equal = is_same_keybind_element(bind, current_bind2_combo);

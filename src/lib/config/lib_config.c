@@ -17,7 +17,7 @@ int lib_reload(lua_State *L)
     init_error_file();
 
     server.default_layout->options = get_default_options();
-    g_ptr_array_free(server.default_layout->options.keybindings, TRUE);
+    g_ptr_array_unref(server.default_layout->options.keybindings);
     server.default_layout->options.keybindings = g_ptr_array_new();
 
     remove_loaded_layouts(server.workspaces);
