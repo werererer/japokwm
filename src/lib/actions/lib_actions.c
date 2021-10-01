@@ -301,7 +301,7 @@ int lib_zoom(lua_State *L)
     } else {
         repush(position, 0);
     }
-    g_ptr_array_free(tiled_containers, FALSE);
+    g_ptr_array_unref(tiled_containers);
 
     arrange();
 
@@ -494,7 +494,7 @@ int lib_swap_workspace(lua_State *L)
         bitset_reset_all(con->client->sticky_workspaces);
         bitset_set(con->client->sticky_workspaces, con->client->ws_id);
     }
-    g_ptr_array_free(future_ws2_containers, FALSE);
+    g_ptr_array_unref(future_ws2_containers);
 
     struct tagset *tagset = monitor_get_active_tagset(m);
     tagset_reload(tagset);

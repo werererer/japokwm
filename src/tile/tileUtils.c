@@ -184,7 +184,7 @@ int get_floating_container_count(struct tagset *tagset)
             continue;
         n++;
     }
-    g_ptr_array_free(floating_containers, FALSE);
+    g_ptr_array_unref(floating_containers);
     return n;
 }
 
@@ -220,7 +220,7 @@ void arrange_monitor(struct monitor *m)
     update_hidden_status_of_containers(m, tiled_containers);
 
     arrange_containers(tagset, active_geom, tiled_containers);
-    g_ptr_array_free(tiled_containers, FALSE);
+    g_ptr_array_unref(tiled_containers);
 
     wlr_output_damage_whole(m->wlr_output);
     update_reduced_focus_stack(tagset);
@@ -350,6 +350,6 @@ int get_tiled_container_count(struct tagset *tagset)
     GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
 
     n = tiled_containers->len;
-    g_ptr_array_free(tiled_containers, FALSE);
+    g_ptr_array_unref(tiled_containers);
     return n;
 }

@@ -318,7 +318,7 @@ void tagset_move_sticky_containers(struct tagset *tagset)
         struct container *con = g_ptr_array_index(list, i);
         container_move_sticky_containers(con, ws->id);
     }
-    g_ptr_array_free(list, FALSE);
+    g_ptr_array_unref(list);
 }
 
 static void restore_floating_containers(struct tagset *tagset)
@@ -495,7 +495,7 @@ GPtrArray *tagset_get_global_floating_copy(struct tagset *tagset)
                 );
     }
 
-    g_ptr_array_free(conditions, FALSE);
+    g_ptr_array_unref(conditions);
 
     return visible_global_floating_list_copy;
 }
@@ -594,7 +594,7 @@ GPtrArray *tagset_get_stack_copy(struct tagset *tagset)
     GPtrArray *tiled_copy = tagset_get_tiled_list_copy(tagset);
     GPtrArray *floating_copy = list_create_filtered_sub_list(server.container_stack, container_is_floating);
     wlr_list_cat(floating_copy, tiled_copy);
-    g_ptr_array_free(tiled_copy, FALSE);
+    g_ptr_array_unref(tiled_copy);
     return floating_copy;
 }
 
@@ -609,7 +609,7 @@ GPtrArray *tagset_get_complete_stack_copy(struct tagset *tagset)
     wlr_list_cat(array, server.layer_visual_stack_bottom);
     wlr_list_cat(array, server.layer_visual_stack_background);
 
-    g_ptr_array_free(stack_copy, FALSE);
+    g_ptr_array_unref(stack_copy);
     return array;
 }
 

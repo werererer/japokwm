@@ -59,7 +59,7 @@ void destroy_seat(struct seat *seat)
 
     destroy_cursor(seat->cursor);
 
-    g_ptr_array_free(seat->devices, false);
+    g_ptr_array_unref(seat->devices);
 
     free(seat);
 }

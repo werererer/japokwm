@@ -61,7 +61,7 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 
 void destroy_container(struct container *con)
 {
-    g_ptr_array_free(con->properties, true);
+    g_ptr_array_unref(con->properties);
     free(con);
 }
 
@@ -213,11 +213,11 @@ struct container *xy_to_container(double x, double y)
         if (!wlr_box_contains_point(container_get_current_geom(con), x, y))
             continue;
 
-        g_ptr_array_free(stack_set, FALSE);
+        g_ptr_array_unref(stack_set);
         return con;
     }
 
-    g_ptr_array_free(stack_set, FALSE);
+    g_ptr_array_unref(stack_set);
     return NULL;
 }
 
@@ -417,7 +417,7 @@ void focus_on_stack(struct monitor *m, int i)
     g_ptr_array_find(visible_container_list, sel, &sel_index);
     struct container *con =
         get_relative_item_in_list(visible_container_list, sel_index, i);
-    g_ptr_array_free(visible_container_list, FALSE);
+    g_ptr_array_unref(visible_container_list);
 
     focus_container(con);
     lift_container(con);
@@ -473,14 +473,14 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     wlr_list_cat(result_list, visible_containers);
     wlr_list_cat(result_list, hidden_containers);
 
-    g_ptr_array_free(visible_containers, FALSE);
-    g_ptr_array_free(hidden_containers, FALSE);
+    g_ptr_array_unref(visible_containers);
+    g_ptr_array_unref(hidden_containers);
 
     GPtrArray *tiled_list = tagset_get_tiled_list(tagset);
     sub_list_write_to_parent_list1D(tiled_list, result_list);
     tagset_write_to_workspaces(tagset);
     tagset_write_to_focus_stacks(tagset);
-    g_ptr_array_free(result_list, FALSE);
+    g_ptr_array_unref(result_list);
 
     arrange();
     focus_container(con);
@@ -511,7 +511,7 @@ void repush(int pos1, int pos2)
         return;
 
     struct container *con = g_ptr_array_index(tiled_containers, pos1);
-    g_ptr_array_free(tiled_containers, FALSE);
+    g_ptr_array_unref(tiled_containers);
 
     // TODO: this doesn't work if tiled by focus
     struct workspace *ws = get_workspace(tagset->selected_ws_id);
@@ -567,7 +567,7 @@ void container_fix_position(struct container *con)
     }
     tagset_write_to_workspaces(tagset);
     tagset_write_to_focus_stacks(tagset);
-    g_ptr_array_free(tiled_containers, FALSE);
+    g_ptr_array_unref(tiled_containers);
 }
 
 void container_set_floating(struct container *con, void (*fix_position)(struct container *con), bool floating)

@@ -115,7 +115,7 @@ GPtrArray *list_create_filtered_sub_list_with_order(
         GPtrArray *visible_global_floating_list_copy = 
             list_create_filtered_sub_list(list, arg_is_condition); 
         wlr_list_cat(final_list, visible_global_floating_list_copy);
-        g_ptr_array_free(visible_global_floating_list_copy, FALSE);
+        g_ptr_array_unref(visible_global_floating_list_copy);
     }
 
     return final_list;
@@ -203,9 +203,9 @@ void sub_list_write_to_parent_list(GPtrArray2D *parent,
         set_in_composed_list(parent, prev_position, prev_con);
     }
 
-    g_ptr_array_free(parent_containers, false);
-    g_array_free(prev_positions, false);
-    g_array_free(positions, false);
+    g_ptr_array_unref(parent_containers);
+    g_array_unref(prev_positions);
+    g_array_unref(positions);
 }
 
 void sub_list_write_to_parent_list1D(GPtrArray *parent, GPtrArray *child)
@@ -225,9 +225,9 @@ void sub_list_write_to_parent_list1D(GPtrArray *parent, GPtrArray *child)
         g_ptr_array_index(parent, prev_position) = prev_con;
     }
 
-    g_ptr_array_free(parent_containers, false);
-    g_array_free(prev_positions, false);
-    g_array_free(positions, false);
+    g_ptr_array_unref(parent_containers);
+    g_array_unref(prev_positions);
+    g_array_unref(positions);
 }
 
 void lists_clear(GPtrArray2D *lists)

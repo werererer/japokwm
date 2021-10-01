@@ -65,7 +65,7 @@ int bitset_swap(BitSet* destination, BitSet* source) {
 }
 
 void bitset_destroy(BitSet* bitset) {
-    g_ptr_array_free(bitset->bits, true);
+    g_ptr_array_unref(bitset->bits);
     free(bitset);
 }
 

@@ -19,7 +19,7 @@ struct container_set *create_container_set()
 
 void destroy_container_set(struct container_set *con_set)
 {
-    g_ptr_array_free(con_set->tiled_containers, FALSE);
+    g_ptr_array_unref(con_set->tiled_containers);
     free(con_set);
 }
 

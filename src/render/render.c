@@ -323,7 +323,7 @@ static void render_stack(struct monitor *m, pixman_region32_t *output_damage)
         clock_gettime(CLOCK_MONOTONIC, &now);
         wlr_surface_send_frame_done(surface, &now);
     }
-    g_ptr_array_free(stack_list, FALSE);
+    g_ptr_array_unref(stack_list);
 }
 
 static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
