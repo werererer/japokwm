@@ -117,11 +117,18 @@ void focus_surface(struct seat *seat, struct wlr_surface *surface)
 
 void focus_client(struct seat *seat, struct client *old, struct client *c)
 {
-    struct wlr_surface *old_surface = get_base_wlrsurface(old);
     struct wlr_surface *new_surface = get_base_wlrsurface(c);
-    if (old_surface != new_surface) {
-        cursor_constrain(seat->cursor, NULL);
-        unfocus_client(old);
+
+    if (old) {
+        struct wlr_surface *old_surface = get_wlrsurface(old);
+        if (old_surface != new_surface) {
+            cursor_constrain(seat->cursor, NULL);
+            unfocus_client(old);
+            struct container *old_con = old->con;
+            struct wlr_box *geom = container_get_current_geom(old_con);
+            struct monitor *m = container_get_monitor(old_con);
+            container_damage_borders(old_con, m, geom);
+        }
     }
 
     /* Update wlroots'c keyboard focus */
@@ -132,6 +139,11 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
     }
     /* Update wlroots'c keyboard focus */
     focus_surface(seat, get_wlrsurface(c));
+
+    struct container *con = c->con;
+    struct monitor *m = container_get_monitor(con);
+    struct wlr_box *geom = container_get_current_geom(con);
+    container_damage_borders(con, m, geom);
 
     /* Activate the new client */
     switch (c->type) {
