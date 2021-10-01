@@ -614,37 +614,6 @@ void workspace_add_container_to_containers_locally(struct workspace *ws, int i, 
     }
 }
 
-void list_set_append_container_to_focus_stack(struct workspace *ws, struct container *con)
-{
-    if (con->client->type == LAYER_SHELL) {
-        switch (con->client->surface.layer->current.layer) {
-            case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
-                g_ptr_array_add(ws->focus_set->focus_stack_layer_background, con);
-                break;
-            case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
-                g_ptr_array_add(ws->focus_set->focus_stack_layer_bottom, con);
-                break;
-            case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
-                g_ptr_array_add(ws->focus_set->focus_stack_layer_top, con);
-                break;
-            case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
-                g_ptr_array_add(ws->focus_set->focus_stack_layer_overlay, con);
-                break;
-        }
-        return;
-    }
-    if (con->on_top) {
-        g_ptr_array_add(ws->focus_set->focus_stack_on_top, con);
-        return;
-    }
-    if (!con->focusable) {
-        g_ptr_array_add(ws->focus_set->focus_stack_not_focusable, con);
-        return;
-    }
-
-    g_ptr_array_add(ws->focus_set->focus_stack_normal, con);
-}
-
 void list_set_insert_container_to_focus_stack(struct focus_set *focus_set, int position, struct container *con)
 {
     if (con->client->type == LAYER_SHELL) {
