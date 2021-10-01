@@ -75,7 +75,7 @@ int lenient_strcmp(char *a, char *b) {
 }
 
 GPtrArray *split_string(const char *str, const char *delims) {
-    GPtrArray *res = g_ptr_array_new();
+    GPtrArray *res = g_ptr_array_new_with_free_func(free);
     char *copy = strdup(str);
 
     char *token = strtok(copy, delims);

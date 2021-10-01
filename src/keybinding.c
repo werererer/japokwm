@@ -176,11 +176,10 @@ bool has_equal_keybind_element(const char *bind, GPtrArray *keybindings)
         }
 
         const char *_current_bind2_combo = g_ptr_array_index(bind2_combos, current_combo_index);
-        g_ptr_array_unref(bind2_combos);
-
         char *current_bind2_combo = resolve_keybind_element(_current_bind2_combo);
         bool is_equal = is_same_keybind_element(bind, current_bind2_combo);
         free(current_bind2_combo);
+        g_ptr_array_unref(bind2_combos);
         if (is_equal) {
             return true;
         }
