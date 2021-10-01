@@ -40,7 +40,7 @@ struct layout {
 
     int ws_id;
 
-    struct options options;
+    struct options *options;
 };
 
 struct layout *create_layout(lua_State *L);

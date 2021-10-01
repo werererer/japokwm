@@ -147,6 +147,10 @@ struct container *get_container_in_stack(struct workspace *ws, int i)
 
 void destroy_workspace(struct workspace *ws)
 {
+    for (int i = 0; i < ws->loaded_layouts->len; i++) {
+        struct layout *lt = g_ptr_array_steal_index(ws->loaded_layouts, 0);
+        destroy_layout(lt);
+    }
     g_ptr_array_unref(ws->loaded_layouts);
 
     bitset_destroy(ws->prev_workspaces);
@@ -475,22 +479,12 @@ void load_layout(lua_State *L, const char *name)
     server.layout_set.lua_layout_index = layout_index;
 }
 
-void reset_loaded_layout(struct workspace *ws)
-{
-    int length = ws->loaded_layouts->len;
-    for (int i = 0; i < length; i++) {
-        struct layout *lt = g_ptr_array_index(ws->loaded_layouts, 0);
-        destroy_layout(lt);
-        g_ptr_array_remove_index(ws->loaded_layouts, 0);
-    }
-}
-
 void remove_loaded_layouts(GPtrArray *workspaces)
 {
-    for (int i = 0; i < workspaces->len; i++) {
-        struct workspace *ws = get_workspace(i);
-        list_clear(ws->loaded_layouts, (void (*)(void *))destroy_layout);
-    }
+    /* for (int i = 0; i < workspaces->len; i++) { */
+    /*     struct workspace *ws = get_workspace(i); */
+    /*     list_clear(ws->loaded_layouts, (void (*)(void *))destroy_layout); */
+    /* } */
 }
 
 void focus_next_unoccupied_workspace(struct monitor *m, GPtrArray *workspaces, struct workspace *ws)
@@ -518,13 +512,13 @@ void workspace_rename(struct workspace *ws, const char *name)
 void workspace_update_names(struct server *server, GPtrArray *workspaces)
 {
     struct layout *lt = server->default_layout;
-    if (!lt->options.automatic_workspace_naming)
+    if (!lt->options->automatic_workspace_naming)
         return;
     for (int i = 0; i < workspaces->len; i++) {
         struct workspace *ws = g_ptr_array_index(workspaces, i);
         const char *default_name;
-        if (i < lt->options.tag_names->len) {
-            default_name = g_ptr_array_index(lt->options.tag_names, i);
+        if (i < lt->options->tag_names->len) {
+            default_name = g_ptr_array_index(lt->options->tag_names, i);
         } else {
             default_name = ws->name;
         }
@@ -590,7 +584,7 @@ void workspace_remove_container_from_containers_locally(struct workspace *ws, st
 {
     struct tagset *tagset = workspace_get_active_tagset(ws);
     struct layout *lt = tagset_get_layout(tagset);
-    if (lt->options.arrange_by_focus) {
+    if (lt->options->arrange_by_focus) {
         remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
         remove_in_composed_list(tagset->visible_focus_set->focus_stack_lists, cmp_ptr, con);
     } else {
@@ -604,7 +598,7 @@ void workspace_add_container_to_containers_locally(struct workspace *ws, int i, 
 {
     struct tagset *tagset = workspace_get_active_tagset(ws);
     struct layout *lt = tagset_get_layout(tagset);
-    if (lt->options.arrange_by_focus) {
+    if (lt->options->arrange_by_focus) {
         list_set_insert_container_to_focus_stack(ws->focus_set, 0, con);
         update_reduced_focus_stack(tagset);
     } else {

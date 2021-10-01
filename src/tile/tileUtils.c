@@ -172,7 +172,7 @@ int get_floating_container_count(struct tagset *tagset)
     struct layout *lt = tagset_get_layout(tagset);
 
     // there are no floating windows when using arrange by focus
-    if (lt->options.arrange_by_focus)
+    if (lt->options->arrange_by_focus)
         return 0;
 
     int n = 0;
@@ -210,10 +210,10 @@ void arrange_monitor(struct monitor *m)
     struct tagset *tagset = monitor_get_active_tagset(m);
 
     struct layout *lt = tagset_get_layout(tagset);
-    container_surround_gaps(&active_geom, lt->options.outer_gap);
+    container_surround_gaps(&active_geom, lt->options->outer_gap);
 
     update_layout_counters(tagset);
-    call_update_function(lt->options.event_handler, lt->n_area);
+    call_update_function(lt->options->event_handler, lt->n_area);
 
     GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
 
@@ -235,21 +235,21 @@ void arrange_containers(struct tagset *tagset, struct wlr_box root_geom,
     /* each container will get an inner_gap. If two containers are adjacent the
      * inner_gap is applied twice. To counter this effect we divide the
      * inner_gap by 2 */
-    int actual_inner_gap = (int)lt->options.inner_gap/2;
+    int actual_inner_gap = (int)lt->options->inner_gap/2;
 
     /* the root_geom must be reduced by the inner_gap to ensure that the
      * outer_gap stays unchanged when each container is surrounded by the
      * inner_gap. */
     container_surround_gaps(&root_geom, -actual_inner_gap);
 
-    if (lt->options.smart_hidden_edges) {
+    if (lt->options->smart_hidden_edges) {
         if (tiled_containers->len <= 1) {
-            container_add_gaps(&root_geom, -lt->options.tile_border_px,
-                    lt->options.hidden_edges);
+            container_add_gaps(&root_geom, -lt->options->tile_border_px,
+                    lt->options->hidden_edges);
         }
     } else {
-        container_add_gaps(&root_geom, -lt->options.tile_border_px,
-                lt->options.hidden_edges);
+        container_add_gaps(&root_geom, -lt->options->tile_border_px,
+                lt->options->hidden_edges);
     }
 
     for (int i = 0; i < tiled_containers->len; i++) {
@@ -276,9 +276,9 @@ static void arrange_container(struct container *con, struct monitor *m,
     container_surround_gaps(&geom, inner_gap);
 
     if (container_is_floating(con)) {
-        container_set_border_width(con, lt->options.float_border_px);
+        container_set_border_width(con, lt->options->float_border_px);
     } else {
-        container_set_border_width(con, lt->options.tile_border_px);
+        container_set_border_width(con, lt->options->tile_border_px);
     }
 
     // since gaps are halfed we need to multiply it by 2

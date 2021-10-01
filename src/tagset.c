@@ -480,7 +480,7 @@ GPtrArray *tagset_get_global_floating_copy(struct tagset *tagset)
     g_ptr_array_add(conditions, container_is_floating_and_visible);
 
     GPtrArray *visible_global_floating_list_copy = NULL;
-    if (lt->options.arrange_by_focus) {
+    if (lt->options->arrange_by_focus) {
         // TODO: FIXME
         visible_global_floating_list_copy =
             list_create_filtered_sub_list_with_order(
@@ -505,7 +505,7 @@ GPtrArray *tagset_get_tiled_list_copy(struct tagset *tagset)
     struct layout *lt = tagset_get_layout(tagset);
 
     GPtrArray *tiled_list = NULL;
-    if (lt->options.arrange_by_focus) {
+    if (lt->options->arrange_by_focus) {
         tiled_list = g_ptr_array_new();
         struct workspace *ws = tagset_get_workspace(tagset);
         list_append_list_under_condition(
@@ -526,7 +526,7 @@ GPtrArray *tagset_get_tiled_list(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);
 
-    if (lt->options.arrange_by_focus) {
+    if (lt->options->arrange_by_focus) {
         return tagset->visible_focus_set->focus_stack_normal;
     } else {
         return tagset->con_set->tiled_containers;
@@ -541,7 +541,7 @@ GPtrArray *tagset_get_floating_list_copy(struct tagset *tagset)
         return NULL;
 
     GPtrArray *floating_containers = g_ptr_array_new();
-    if (lt->options.arrange_by_focus) {
+    if (lt->options->arrange_by_focus) {
         floating_containers =
             list_create_filtered_sub_list(
                     tagset->visible_focus_set->focus_stack_normal,
@@ -560,7 +560,7 @@ GPtrArray *tagset_get_visible_list_copy(struct tagset *tagset)
     struct layout *lt = tagset_get_layout(tagset);
 
     GPtrArray *hidden_list = NULL;
-    if (lt->options.arrange_by_focus) {
+    if (lt->options->arrange_by_focus) {
         hidden_list = list_create_filtered_sub_list(
                 tagset->visible_focus_set->focus_stack_normal,
                 container_is_visible);
@@ -576,7 +576,7 @@ GPtrArray *tagset_get_hidden_list_copy(struct tagset *tagset)
 {
     struct layout *lt = tagset_get_layout(tagset);
 
-    if (lt->options.arrange_by_focus) {
+    if (lt->options->arrange_by_focus) {
         GPtrArray *hidden_list = list_create_filtered_sub_list(
                 tagset->visible_focus_set->focus_stack_normal,
                 container_is_hidden);

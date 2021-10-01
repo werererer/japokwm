@@ -280,17 +280,17 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
     enum wlr_edges hidden_edges = WLR_EDGE_NONE;
     struct tagset *tagset = monitor_get_active_tagset(m);
     struct layout *lt = tagset_get_layout(tagset);
-    if (lt->options.smart_hidden_edges) {
+    if (lt->options->smart_hidden_edges) {
         if (tagset->con_set->tiled_containers->len <= 1) {
-            hidden_edges = get_hidden_edges(con, borders, lt->options.hidden_edges);
+            hidden_edges = get_hidden_edges(con, borders, lt->options->hidden_edges);
         }
     } else {
-        hidden_edges = get_hidden_edges(con, borders, lt->options.hidden_edges);
+        hidden_edges = get_hidden_edges(con, borders, lt->options->hidden_edges);
     }
 
     /* Draw window borders */
     struct container *sel = get_focused_container(m);
-    const float *color = (con == sel) ? lt->options.focus_color : lt->options.border_color;
+    const float *color = (con == sel) ? lt->options->focus_color : lt->options->border_color;
     for (int i = 0; i < 4; i++) {
         if ((hidden_edges & (1 << i)) == 0) {
             scale_box(&borders[i], m->wlr_output->scale);

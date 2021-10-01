@@ -59,6 +59,8 @@ void list_insert(GPtrArray *array, int i, void *item)
 
 void list_clear(GPtrArray *array, void (*destroy_func)(void *))
 {
+    if (array->len <= 0)
+        return;
     for (int i = array->len-1; i >= 0; i--) {
         void *item = g_ptr_array_index(array, i);
         if (destroy_func) {

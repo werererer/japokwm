@@ -56,8 +56,8 @@ void create_keyboard(struct seat *seat, struct seat_device *seat_device)
     xkb_keymap_unref(keymap);
     xkb_context_unref(context);
     wlr_keyboard_set_repeat_info(wlr_device->keyboard,
-            server.default_layout->options.repeat_rate,
-            server.default_layout->options.repeat_delay);
+            server.default_layout->options->repeat_rate,
+            server.default_layout->options->repeat_delay);
 
     /* Here we set up listeners for keyboard events. */
     LISTEN(&wlr_device->keyboard->events.modifiers, &kb->modifiers, keypressmod);

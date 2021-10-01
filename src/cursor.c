@@ -336,7 +336,7 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
     struct monitor *m = server_get_selected_monitor();
     struct container *sel = get_focused_container(m);
     struct workspace *ws = monitor_get_active_workspace(m);
-    if (!ws->layout->options.sloppy_focus)
+    if (!ws->layout->options->sloppy_focus)
         return;
     if (popups_exist())
         return;
@@ -463,7 +463,7 @@ void move_resize(struct cursor *cursor, int ui)
     struct layout *lt = get_layout_in_monitor(m);
     // all floating windows will be tiled. Thats why you can't make new windows
     // tiled
-    if (lt->options.arrange_by_focus)
+    if (lt->options->arrange_by_focus)
         return;
 
     /* Float the window and tell motion_notify to grab it */

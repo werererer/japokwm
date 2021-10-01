@@ -123,7 +123,6 @@ void layout_set_set_layout(lua_State *L);
 void push_layout(struct workspace *ws, struct layout *lt);
 void load_default_layout(lua_State *L);
 void load_layout(lua_State *L, const char *name);
-void reset_loaded_layout(struct workspace *ws);
 void remove_loaded_layouts(GPtrArray *workspaces);
 void workspace_rename(struct workspace *ws, const char *name);
 void workspace_update_names(struct server *server, GPtrArray *workspaces);

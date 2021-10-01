@@ -12,7 +12,7 @@ int lib_add_listener(lua_State *L)
     const char *event = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    struct event_handler *event_handler = server.default_layout->options.event_handler;
+    struct event_handler *event_handler = server.default_layout->options->event_handler;
     GPtrArray *signal = event_name_to_signal(event_handler, event);
     g_ptr_array_add(signal, func_ref);
     return 0;

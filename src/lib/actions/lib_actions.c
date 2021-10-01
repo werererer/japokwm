@@ -81,7 +81,7 @@ int lib_resize_main(lua_State *L)
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = ws->layout;
-    int dir = lt->options.resize_dir;
+    int dir = lt->options->resize_dir;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_resize_function_ref);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
@@ -311,7 +311,7 @@ int lib_zoom(lua_State *L)
     focus_container(con);
 
     struct layout *lt = get_layout_in_monitor(m);
-    if (lt->options.arrange_by_focus) {
+    if (lt->options->arrange_by_focus) {
         focus_most_recent_container();
         arrange();
     }
