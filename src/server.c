@@ -129,6 +129,7 @@ static void finalize_event_handlers(struct server *server)
 void init_server()
 {
     server = (struct server) {
+        .xwayland = {},
     };
 
     server.registered_key_combos = g_ptr_array_new();
@@ -339,8 +340,8 @@ int finalize(struct server *server)
 
 int stop_server()
 {
-#if HAVE_XWAYLAND
-    wlr_xwayland_destroy(server->xwayland.wlr_xwayland);
+#if JAPOKWM_HAS_XWAYLAND
+    wlr_xwayland_destroy(server.xwayland.wlr_xwayland);
 #endif
     wl_display_destroy_clients(server.wl_display);
     for (int i = 0; i < server.input_manager->seats->len; i++) {
