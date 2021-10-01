@@ -251,13 +251,6 @@ struct input_manager *create_input_manager()
 
 void destroy_input_manager(struct input_manager *input_manager)
 {
-    wl_list_remove(&input_manager->new_input.link);
-    wl_list_remove(&input_manager->inhibit_activate.link);
-    wl_list_remove(&input_manager->inhibit_deactivate.link);
-    wl_list_remove(&input_manager->keyboard_shortcuts_inhibit_new_inhibitor.link);
-    wl_list_remove(&input_manager->new_virtual_keyboard.link);
-    wl_list_remove(&input_manager->new_virtual_pointer.link);
-
     g_ptr_array_unref(input_manager->seats);
 
     free(input_manager);

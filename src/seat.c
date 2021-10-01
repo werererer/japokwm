@@ -34,8 +34,6 @@ struct seat *create_seat(const char *seat_name)
     seat->wlr_seat = wlr_seat_create(server.wl_display, seat_name);
     seat->wlr_seat->data = seat;
 
-    g_ptr_array_add(server.input_manager->seats, seat);
-
     seat->cursor = create_cursor(seat);
 
     LISTEN(&seat->wlr_seat->events.request_set_selection,
@@ -52,11 +50,6 @@ struct seat *create_seat(const char *seat_name)
 
 void destroy_seat(struct seat *seat)
 {
-    wl_list_remove(&seat->request_set_selection.link);
-    wl_list_remove(&seat->request_set_primary_selection.link);
-
-    g_ptr_array_remove(server.input_manager->seats, seat);
-
     destroy_cursor(seat->cursor);
 
     g_ptr_array_unref(seat->devices);
