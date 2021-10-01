@@ -362,7 +362,6 @@ void render_monitor(struct monitor *m, pixman_region32_t *damage)
 
     clear_frame(m, m->root->color, damage);
     render_stack(m, damage);
-
     render_popups(m, damage);
 
     /* Hardware cursors are rendered by the GPU on a separate plane, and can be
