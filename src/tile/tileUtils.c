@@ -35,6 +35,12 @@ void arrange()
         struct container *con = g_ptr_array_index(server.container_stack, i);
         container_set_hidden(con, false);
         container_update_size(con);
+        if (container_is_floating(con)) {
+            struct monitor *m = server_get_selected_monitor();
+            struct workspace *ws = monitor_get_active_workspace(m);
+            struct layout *lt = workspace_get_layout(ws);
+            container_set_border_width(con, lt->options->float_border_px);
+        }
     }
 
     for (int i = 0; i < server.mons->len; i++) {
@@ -294,7 +300,6 @@ void container_update_size(struct container *con)
 {
 
     con->client->resized = true;
-
 
     struct wlr_box *con_geom = container_get_current_geom(con);
     if (!con_geom)
