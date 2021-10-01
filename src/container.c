@@ -622,6 +622,8 @@ void container_set_hidden_at_workspace(struct container *con, bool b, struct wor
 {
     struct container_property *property =
         container_get_property_at_workspace(con, ws);
+    if (!property)
+        return;
     property->hidden = b;
 }
 
@@ -685,6 +687,8 @@ struct container_property *container_get_property_at_workspace(
         struct container *con,
         struct workspace *ws)
 {
+    if (!ws)
+        return NULL;
     struct container_property *property =
         g_ptr_array_index(con->properties, ws->id); 
     return property;
@@ -705,6 +709,9 @@ void container_set_tiled_geom(struct container *con, struct wlr_box *geom)
 {
     struct container_property *property =
         container_get_property(con);
+
+    if (!property)
+        return;
 
     struct wlr_box *con_geom = &property->geom;
 
@@ -740,6 +747,9 @@ void container_set_floating_geom(struct container *con, struct wlr_box *geom)
     struct container_property *property =
         container_get_property(con);
 
+    if (!property)
+        return;
+
     struct wlr_box *con_geom = &property->floating_geom;
     if (con->client->type == LAYER_SHELL) {
         con_geom = &con->global_geom;
@@ -754,9 +764,8 @@ struct wlr_box *container_get_tiled_geom(struct container *con)
 {
     struct tagset *tagset = container_get_tagset(con);
     struct workspace *ws = tagset_get_workspace(tagset);
-    if (!ws) {
+    if (!ws)
         return NULL;
-    }
 
     struct container_property *property =
         g_ptr_array_index(con->properties, ws->id); 
