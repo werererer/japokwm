@@ -294,12 +294,13 @@ void init_xwayland(struct wl_display *display, struct seat *seat)
     server.xwayland.wlr_xwayland = wlr_xwayland_create(server.wl_display,
             server.compositor, true);
     if (server.xwayland.wlr_xwayland) {
-        server.xwayland_ready.notify = handle_xwayland_ready;
-        wl_signal_add(&server.xwayland.wlr_xwayland->events.ready,
-                &server.xwayland_ready);
-        wl_signal_add(&server.xwayland.wlr_xwayland->events.new_surface,
-                &server.new_xwayland_surface);
-        wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, seat->wlr_seat);
+        LISTEN( &server.xwayland.wlr_xwayland->events.ready,
+                &server.xwayland_ready,
+                handle_xwayland_ready);
+        LISTEN( &server.xwayland.wlr_xwayland->events.new_surface,
+                &server.new_xwayland_surface,
+                create_notifyx11);
+        /* wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, seat->wlr_seat); */
 
         setenv("DISPLAY", server.xwayland.wlr_xwayland->display_name, true);
     } else {

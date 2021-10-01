@@ -100,10 +100,6 @@ static int init_backend(struct server *server)
     return EXIT_SUCCESS;
 }
 
-static void finalize_backend(struct server *server)
-{
-}
-
 static void init_event_handlers(struct server *server)
 {
     LISTEN(&server->backend->events.new_output, &server->new_output, create_monitor);
@@ -123,10 +119,6 @@ static void init_event_handlers(struct server *server)
 
     server->pointer_constraints = wlr_pointer_constraints_v1_create(server->wl_display);
     LISTEN(&server->pointer_constraints->events.new_constraint, &server->new_pointer_constraint, handle_new_pointer_constraint);
-
-#if JAPOKWM_HAS_XWAYLAND
-    server->new_xwayland_surface = (struct wl_listener){.notify = create_notifyx11};
-#endif
 }
 
 static void finalize_event_handlers(struct server *server)
@@ -342,24 +334,25 @@ int start_server(char *startup_cmd)
 int finalize(struct server *server)
 {
     destroy_layout(server->default_layout);
-    finalize_backend(server);
     return 0;
 }
 
 int stop_server()
 {
+#if HAVE_XWAYLAND
+    wlr_xwayland_destroy(server->xwayland.wlr_xwayland);
+#endif
+    wl_display_destroy_clients(server.wl_display);
     for (int i = 0; i < server.input_manager->seats->len; i++) {
         struct seat *seat = g_ptr_array_steal_index(server.input_manager->seats, 0);
         destroy_seat(seat);
     }
 
-    wl_display_destroy_clients(server.wl_display);
-    wl_display_destroy(server.wl_display);
-
     finalize_lua_api(&server);
 
     close_error_file();
     wlr_output_layout_destroy(server.output_layout);
+    wl_display_destroy(server.wl_display);
 
     destroy_workspaces(server.workspaces);
 
