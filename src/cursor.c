@@ -8,6 +8,7 @@
 #include "keybinding.h"
 #include "monitor.h"
 #include "popup.h"
+#include "render/render.h"
 #include "seat.h"
 #include "server.h"
 #include "tile/tileUtils.h"
@@ -188,6 +189,8 @@ void destroy_cursor(struct cursor *cursor)
     wl_list_remove(&cursor->image_surface_destroy.link);
 
     wl_list_remove(&cursor->constraint_commit.link);
+
+    wlr_xcursor_manager_destroy(cursor->xcursor_mgr);
 
     free(cursor);
 }
