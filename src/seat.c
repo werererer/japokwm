@@ -55,7 +55,6 @@ void destroy_seat(struct seat *seat)
     wl_list_remove(&seat->request_set_selection.link);
     wl_list_remove(&seat->request_set_primary_selection.link);
 
-    wlr_xcursor_manager_destroy(seat->cursor->xcursor_mgr);
     g_ptr_array_remove(server.input_manager->seats, seat);
 
     destroy_cursor(seat->cursor);

@@ -15,6 +15,7 @@
 #include <wlr/types/wlr_viewporter.h>
 #include <unistd.h>
 #include <wait.h>
+#include <wayland-client.h>
 
 #include "layer_shell.h"
 #include "monitor.h"
@@ -362,6 +363,7 @@ int stop_server()
 #if JAPOKWM_HAS_XWAYLAND
     wlr_xwayland_destroy(server.xwayland.wlr_xwayland);
 #endif
+    wl_display_destroy(server.wl_display);
     return EXIT_SUCCESS;
 }
 
