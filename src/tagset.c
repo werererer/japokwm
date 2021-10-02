@@ -407,11 +407,28 @@ static void handle_too_few_workspaces(uint32_t ws_id)
     char name[12];
     // TODO explain why +1
     sprintf(name, "%d:%d", server.workspaces->len, server.workspaces->len+1);
-    struct workspace *ws = create_workspace(name, server.workspaces->len, server.default_layout);
-    g_ptr_array_add(server.workspaces, ws);
+    while (ws_id >= server.workspaces->len)
+    {
+        struct workspace *new_ws = create_workspace(name, ws_id, server.default_layout);
+        g_ptr_array_add(server.workspaces, new_ws);
+        struct workspace *ws0 = get_workspace(0);
+        wlr_list_cat(new_ws->con_set->tiled_containers, ws0->con_set->tiled_containers);
+
+        wlr_list_cat(new_ws->focus_set->focus_stack_layer_background, ws0->focus_set->focus_stack_layer_background);
+        wlr_list_cat(new_ws->focus_set->focus_stack_layer_bottom, ws0->focus_set->focus_stack_layer_bottom);
+        wlr_list_cat(new_ws->focus_set->focus_stack_layer_top, ws0->focus_set->focus_stack_layer_top);
+        wlr_list_cat(new_ws->focus_set->focus_stack_layer_overlay, ws0->focus_set->focus_stack_layer_overlay);
+        wlr_list_cat(new_ws->focus_set->focus_stack_on_top, ws0->focus_set->focus_stack_on_top);
+        wlr_list_cat(new_ws->focus_set->focus_stack_normal, ws0->focus_set->focus_stack_normal);
+        wlr_list_cat(new_ws->focus_set->focus_stack_not_focusable, ws0->focus_set->focus_stack_not_focusable);
+    }
+
     for (int i = 0; i < server.tagsets->len; i++) {
         struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
-        bitset_push(tagset->workspaces, 0);
+        while (tagset->workspaces->size < server.workspaces->len)
+        {
+            bitset_push(tagset->workspaces, 0);
+        }
     }
 }
 

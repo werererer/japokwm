@@ -740,6 +740,10 @@ struct container_property *container_get_property(struct container *con)
     struct workspace *ws = tagset_get_workspace(tagset);
     if (!ws)
         return NULL;
+    while (ws->id >= con->properties->len) {
+        struct container_property *property = create_container_property();
+        g_ptr_array_add(con->properties, property);
+    }
 
     struct container_property *property =
         g_ptr_array_index(con->properties, ws->id); 

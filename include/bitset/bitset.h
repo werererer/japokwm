@@ -47,9 +47,9 @@ int byte_wise_operation(BitSet* destination,
                                                 const BitSet* source,
                                                 bit_operator_t byte_operation);
 
-int bitset_and(BitSet* destination, const BitSet* source);
-int bitset_or(BitSet* destination, const BitSet* source);
-int bitset_xor(BitSet* destination, const BitSet* source);
+int bitset_and(BitSet* destination, BitSet* source);
+int bitset_or(BitSet* destination, BitSet* source);
+int bitset_xor(BitSet* destination, BitSet* source);
 int bitset_flip(BitSet* bitset);
 
 /* Access */
@@ -58,8 +58,8 @@ int bitset_reset(BitSet* bitset, size_t index);
 int bitset_assign(BitSet* bitset, size_t index, bool value);
 int bitset_toggle(BitSet* bitset, size_t index);
 
-int bitset_test(const BitSet* bitset, size_t index);
-const uint8_t* byte_const_get(const BitSet* bitset, size_t index);
+int bitset_test(BitSet* bitset, size_t index);
+const uint8_t* byte_const_get(BitSet* bitset, size_t index);
 uint8_t* byte_get(BitSet* bitset, size_t index);
 
 int bitset_msb(BitSet* bitset);
