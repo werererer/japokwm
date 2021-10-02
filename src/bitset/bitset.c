@@ -94,7 +94,7 @@ int bitset_equals(BitSet* bitset1, BitSet* bitset2)
 }
 
 int bit_wise_operation(BitSet* destination,
-                                                const BitSet* source,
+                                                BitSet* source,
                                                 bit_operator_t bit_operator) {
     size_t smaller_size;
 
@@ -117,15 +117,15 @@ int bit_wise_operation(BitSet* destination,
     return BITSET_SUCCESS;
 }
 
-int bitset_and(BitSet* destination, const BitSet* source) {
+int bitset_and(BitSet* destination, BitSet* source) {
     return bit_wise_operation(destination, source, _bit_and);
 }
 
-int bitset_or(BitSet* destination, const BitSet* source) {
+int bitset_or(BitSet* destination, BitSet* source) {
     return bit_wise_operation(destination, source, _bit_or);
 }
 
-int bitset_xor(BitSet* destination, const BitSet* source) {
+int bitset_xor(BitSet* destination, BitSet* source) {
     return bit_wise_operation(destination, source, _bit_xor);
 }
 
@@ -186,7 +186,7 @@ int bitset_toggle(BitSet* bitset, size_t index) {
     return BITSET_SUCCESS;
 }
 
-int bitset_test(const BitSet* bitset, size_t index) {
+int bitset_test(BitSet* bitset, size_t index) {
     const uint8_t* byte;
     if ((byte = byte_const_get(bitset, index)) == NULL) {
         return BITSET_ERROR;
@@ -199,13 +199,23 @@ uint8_t* byte_get(BitSet* bitset, size_t index) {
     assert(bitset != NULL);
     if (bitset == NULL) return NULL;
 
-    return (uint8_t*)g_ptr_array_index(bitset->bits, _byte_index(index));
+    int byte_index = _byte_index(index);
+    while (byte_index < bitset->bits->len)
+    {
+        bitset_grow(bitset);
+    }
+    return (uint8_t*)g_ptr_array_index(bitset->bits, byte_index);
 }
 
-const uint8_t* byte_const_get(const BitSet* bitset, size_t index) {
+const uint8_t* byte_const_get(BitSet* bitset, size_t index) {
     assert(bitset != NULL);
     if (bitset == NULL) return NULL;
 
+    int byte_index = _byte_index(index);
+    while (byte_index < bitset->bits->len)
+    {
+        bitset_grow(bitset);
+    }
     return (const uint8_t*)g_ptr_array_index(bitset->bits, _byte_index(index));
 }
 
