@@ -167,8 +167,6 @@ void copy_options(struct options *dest_option, struct options *src_option)
     assign_list(&dest_option->rules, src_option->rules, NULL);
     assign_list(&dest_option->tag_names, src_option->tag_names, NULL);
     assign_list(&dest_option->keybindings, src_option->keybindings, copy_keybinding);
-
-    reset_floating_client_borders(dest_option->float_border_px);
 }
 
 int workspace_get_new_position(struct workspace *ws)

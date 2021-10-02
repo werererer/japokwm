@@ -213,6 +213,7 @@ static bool process_binding(lua_State *L, const char *bind, GPtrArray *keybindin
         list_clear(server.registered_key_combos, free);
         lua_rawgeti(L, LUA_REGISTRYINDEX, keybinding->lua_func_ref);
         lua_call_safe(L, 0, 0, 0);
+        server_allow_reloading_config();
     }
     g_ptr_array_unref(keybindings);
     return handled;

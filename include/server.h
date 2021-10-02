@@ -93,6 +93,9 @@ struct server {
     struct container *old_xy_container;
     bool xy_container_is_locked;
 
+    // this breaks the reload_config load_config loop
+    bool prohibit_reload_config;
+
 #if JAPOKWM_HAS_XWAYLAND
     struct xwayland xwayland;
     struct wl_listener xwayland_ready;
@@ -108,6 +111,10 @@ void finalize_server();
 
 int start_server(char *startup_cmd);
 int stop_server();
+
+void server_prohibit_reloading_config();
+void server_allow_reloading_config();
+bool server_is_config_reloading_prohibited();
 
 struct monitor *server_get_selected_monitor();
 void server_set_selected_monitor(struct monitor *m);

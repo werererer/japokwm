@@ -14,6 +14,7 @@
 #include <pthread.h>
 #include <fts.h>
 
+#include "tile/tileUtils.h"
 #include "options.h"
 #include "server.h"
 #include "utils/writeFile.h"
@@ -156,6 +157,7 @@ void load_default_lua_config(lua_State *L)
     options_reset(server.default_layout->options);
     remove_loaded_layouts(server.workspaces);
     load_default_keybindings();
+    arrange();
 }
 
 // returns 0 upon success and 1 upon failure
