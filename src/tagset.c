@@ -356,7 +356,7 @@ void focus_tagset(struct tagset *tagset)
     update_reduced_focus_stack(tagset);
     ipc_event_workspace();
 
-    tagset_move_sticky_containers(tagset);
+    /* tagset_move_sticky_containers(tagset); */
     arrange();
     focus_most_recent_container();
     root_damage_whole(m->root);
