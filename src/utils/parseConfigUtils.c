@@ -154,9 +154,32 @@ int load_config(lua_State *L)
 
 void load_default_lua_config(lua_State *L)
 {
+    destroy_workspaces(server.workspaces);
+
     options_reset(server.default_layout->options);
+    server.default_layout->options->tag_names = g_ptr_array_new();
+    GPtrArray *tagnames = server.default_layout->options->tag_names;
+    g_ptr_array_add(tagnames, "0:1");
+    g_ptr_array_add(tagnames, "0:2");
+    g_ptr_array_add(tagnames, "0:3");
+    g_ptr_array_add(tagnames, "0:4");
+    server.workspaces = create_workspaces(tagnames);
+    server.previous_bitset = bitset_create(server.workspaces->len);
+
     remove_loaded_layouts(server.workspaces);
     load_default_keybindings();
+
+    server.previous_bitset = bitset_create(server.workspaces->len);
+    bitset_set(server.previous_bitset, server.previous_workspace);
+
+
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws0 = get_workspace(0);
+    focus_next_unoccupied_workspace(m, server.workspaces, ws0);
+    for (int i = 0; i < server.workspaces->len; i++) {
+        struct workspace *ws = g_ptr_array_index(server.workspaces, i);
+        load_default_layout(ws);
+    }
     arrange();
 }
 

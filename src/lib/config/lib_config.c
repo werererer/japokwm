@@ -13,8 +13,6 @@
 
 int lib_reload(lua_State *L)
 {
-    close_error_file();
-    init_error_file();
     if (server_is_config_reloading_prohibited()) {
         luaL_where(L, 1);
         const char *where = luaL_checkstring(L, -1);
@@ -28,6 +26,9 @@ int lib_reload(lua_State *L)
         lua_error(L);
     }
     server_prohibit_reloading_config();
+
+    close_error_file();
+    init_error_file();
 
     options_reset(server.default_layout->options);
 
