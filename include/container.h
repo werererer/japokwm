@@ -68,6 +68,7 @@ void container_fix_position_to_begin(struct container *con);
 void container_fix_position(struct container *con);
 void focus_container(struct container *con);
 void focus_on_hidden_stack(struct monitor *m, int i);
+void swap_on_hidden_stack(struct monitor *m, int i);
 void focus_on_stack(struct monitor *m, int i);
 /* Find the topmost visible client (if any) at point (x, y), including
  * borders. This relies on stack being ordered from top to bottom. */

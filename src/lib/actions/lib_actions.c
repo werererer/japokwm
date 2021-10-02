@@ -329,6 +329,15 @@ int lib_repush(lua_State *L)
     return 0;
 }
 
+int lib_swap_on_hidden_stack(lua_State *L)
+{
+    int i = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    struct monitor *m = server_get_selected_monitor();
+    swap_on_hidden_stack(m, i);
+    return 0;
+}
+
 int lib_load_next_layout_in_set(lua_State *L)
 {
     const char *layout_set_key = luaL_checkstring(L, -1);

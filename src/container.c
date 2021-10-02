@@ -485,6 +485,66 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     focus_container(con);
 }
 
+void swap_on_hidden_stack(struct monitor *m, int i)
+{
+    struct container *sel = get_focused_container(m);
+
+    if (!sel)
+        return;
+    if (sel->client->type == LAYER_SHELL)
+        return;
+    if (container_is_unmanaged(sel))
+        return;
+
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    GPtrArray *hidden_containers = tagset_get_hidden_list_copy(tagset);
+    struct container *con = get_relative_item_in_list(hidden_containers, 0, i);
+
+    if (!con)
+        return;
+
+    GPtrArray *visible_containers = tagset_get_visible_list_copy(tagset);
+
+    if (container_is_floating(sel)) {
+        // TODO implement this
+        // it could be something like this but I don't know
+        container_set_floating(con, NULL, true);
+        container_set_floating(sel, NULL, false);
+
+        struct wlr_box *sel_geom = container_get_floating_geom(sel);
+        container_set_floating_geom(con, sel_geom);
+    }
+
+    guint sel_index;
+    if (!g_ptr_array_find(visible_containers, sel, &sel_index)) {
+        return;
+    }
+    guint hidden_index;
+    if (!g_ptr_array_find(hidden_containers, con, &hidden_index)) {
+        return;
+    }
+    struct container *tmp_con = g_ptr_array_index(visible_containers, sel_index);
+    g_ptr_array_index(visible_containers, sel_index) =
+        g_ptr_array_index(hidden_containers, hidden_index);
+    g_ptr_array_index(hidden_containers, hidden_index) = tmp_con;
+
+    GPtrArray *result_list = g_ptr_array_new();
+    wlr_list_cat(result_list, visible_containers);
+    wlr_list_cat(result_list, hidden_containers);
+
+    g_ptr_array_unref(visible_containers);
+    g_ptr_array_unref(hidden_containers);
+
+    GPtrArray *tiled_list = tagset_get_tiled_list(tagset);
+    sub_list_write_to_parent_list1D(tiled_list, result_list);
+    tagset_write_to_workspaces(tagset);
+    tagset_write_to_focus_stacks(tagset);
+    g_ptr_array_unref(result_list);
+
+    arrange();
+    focus_container(con);
+}
+
 void lift_container(struct container *con)
 {
     if (!con)
