@@ -212,11 +212,11 @@ const uint8_t* byte_const_get(BitSet* bitset, size_t index) {
     if (bitset == NULL) return NULL;
 
     int byte_index = _byte_index(index);
-    while (byte_index < bitset->bits->len)
+    while (byte_index >= bitset->bits->len)
     {
         bitset_grow(bitset);
     }
-    return (const uint8_t*)g_ptr_array_index(bitset->bits, _byte_index(index));
+    return (const uint8_t*)g_ptr_array_index(bitset->bits, byte_index);
 }
 
 int bitset_msb(BitSet* bitset) {
@@ -308,6 +308,7 @@ void bitset_grow(BitSet* bitset) {
 
     assert(bitset != NULL);
 
+    debug_print("grow\n");
     /* ERROR/SUCCESS flags are the same */
     uint8_t *empty = calloc(1, sizeof(*empty));
     g_ptr_array_add(bitset->bits, empty);
