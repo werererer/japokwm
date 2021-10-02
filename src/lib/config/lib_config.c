@@ -18,13 +18,14 @@ int lib_reload(lua_State *L)
 
     options_reset(server.default_layout->options);
 
+    debug_print("remove loaded layouts start\n");
     remove_loaded_layouts(server.workspaces);
+    debug_print("remove loaded layouts end\n");
     load_config(L);
     for (int i = 0; i < server.workspaces->len; i++) {
         struct workspace *ws = g_ptr_array_index(server.workspaces, i);
         load_default_layout(ws);
     }
-
 
     ipc_event_workspace();
 

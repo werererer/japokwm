@@ -189,11 +189,17 @@ bool has_equal_keybind_element(const char *bind, GPtrArray *keybindings)
     return false;
 }
 
-static bool process_binding(lua_State *L, const char *bind, GPtrArray *keybindings)
+// WARNING: This function will change the state of the windowmanager that means that
+// certain things will be freed so don't trust your local variables that were
+// assigned before calling this function anymore. Global variables should be
+// fine. They might contain a different value after calling this function thou.
+static bool process_binding(lua_State *L, const char *bind, GPtrArray *keybindings_ptr)
 {
-    /* for (int i = 0; i < server.registered_key_combos->len; i++) { */
-    /*     const char *comb = g_ptr_array_index(server.registered_key_combos, i); */
-    /* } */
+    // calling arbitrary lua functions will change the state of the
+    // windowmanager which may lead to the keybindings array to be freed by one
+    // of those pesky functions. To protect ourself from that we create a copy.
+    GPtrArray *keybindings = g_ptr_array_copy(keybindings_ptr, copy_keybinding, NULL);
+
     bool handled = false;
     for (int i = 0; i < keybindings->len; i++) {
         struct keybinding *keybinding = g_ptr_array_index(keybindings, i);
@@ -208,6 +214,7 @@ static bool process_binding(lua_State *L, const char *bind, GPtrArray *keybindin
         lua_rawgeti(L, LUA_REGISTRYINDEX, keybinding->lua_func_ref);
         lua_call_safe(L, 0, 0, 0);
     }
+    g_ptr_array_unref(keybindings);
     return handled;
 }
 
@@ -310,6 +317,8 @@ bool handle_keybinding(int mods, int sym)
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
+    debug_print("use layout for keypress: %p\n", lt);
+    debug_print("binding: %s\n", bind);
     if (!has_equal_keybind_element(bind, lt->options->keybindings)) {
         list_clear(server.registered_key_combos, free);
 
@@ -319,6 +328,7 @@ bool handle_keybinding(int mods, int sym)
         }
     }
     g_ptr_array_add(server.registered_key_combos, strdup(bind));
+
     process_binding(L, bind, lt->options->keybindings);
     return true;
 }
