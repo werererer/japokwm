@@ -15,6 +15,19 @@ int lib_reload(lua_State *L)
 {
     close_error_file();
     init_error_file();
+    if (server_is_config_reloading_prohibited()) {
+        luaL_where(L, 1);
+        const char *where = luaL_checkstring(L, -1);
+        lua_pop(L, 1);
+        char *res = g_strconcat(
+                where,
+                "action.reload() aborted: infinit recursion detected",
+                NULL);
+        debug_print("line: %s\n", res);
+        lua_pushstring(L, res);
+        lua_error(L);
+    }
+    server_prohibit_reloading_config();
 
     options_reset(server.default_layout->options);
 

@@ -259,7 +259,6 @@ int setup(struct server *server)
     ipc_init(server->wl_event_loop);
 
     server->default_layout = create_layout(L);
-    load_config(L);
 
     /* If we don't provide a renderer, autocreate makes a GLES2 renderer for us.
      * The renderer is responsible for defining the various pixel formats it
@@ -321,6 +320,7 @@ int setup(struct server *server)
 #ifdef JAPOKWM_HAS_XWAYLAND
     init_xwayland(server->wl_display, seat);
 #endif
+
     return 0;
 }
 
@@ -368,4 +368,19 @@ struct monitor *server_get_selected_monitor()
 void server_set_selected_monitor(struct monitor *m)
 {
     server.selected_monitor = m;
+}
+
+void server_prohibit_reloading_config()
+{
+    server.prohibit_reload_config = true;
+}
+
+void server_allow_reloading_config()
+{
+    server.prohibit_reload_config = false;
+}
+
+bool server_is_config_reloading_prohibited()
+{
+    return server.prohibit_reload_config;
 }
