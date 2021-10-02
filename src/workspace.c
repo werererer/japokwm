@@ -441,15 +441,14 @@ void load_layout()
     const char *name = ws->current_layout;
     assert(name != NULL);
 
-    struct layout *lt = NULL;
     guint i;
     bool found = g_ptr_array_find_with_equal_func(ws->loaded_layouts, name, cmp_layout_to_string, &i);
     if (found) {
-        lt = g_ptr_array_steal_index(ws->loaded_layouts, i);
+        struct layout *lt = g_ptr_array_steal_index(ws->loaded_layouts, i);
         g_ptr_array_insert(ws->loaded_layouts, 0, lt);
         push_layout(ws, lt->symbol);
     } else {
-        lt = create_layout(L);
+        struct layout *lt = create_layout(L);
         lt->ws_id = ws->id;
         copy_layout_safe(lt, server.default_layout);
 
@@ -464,11 +463,16 @@ void load_layout()
     server.layout_set.lua_layout_index = layout_index;
 }
 
+static void destroy_layout0(void *lt)
+{
+    destroy_layout(lt);
+}
+
 void remove_loaded_layouts(GPtrArray *workspaces)
 {
     for (int i = 0; i < workspaces->len; i++) {
         struct workspace *ws = get_workspace(i);
-        list_clear(ws->loaded_layouts, (void (*)(void *))destroy_layout);
+        list_clear(ws->loaded_layouts, destroy_layout0);
     }
 }
 

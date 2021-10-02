@@ -14,7 +14,6 @@
 struct layout *create_layout(lua_State *L)
 {
     struct layout *lt = calloc(1, sizeof(*lt));
-    lt->nmaster = 1;
     *lt = (struct layout) {
         .symbol = "",
         .n_area = 1,
@@ -38,11 +37,14 @@ struct layout *create_layout(lua_State *L)
     lua_get_default_resize_function(L);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_resize_function_ref);
 
+    debug_print("create layout: %p\n", lt);
+
     return lt;
 }
 
 void destroy_layout(struct layout *lt)
 {
+    debug_print("destroy layout: %p\n", lt);
     destroy_options(lt->options);
 
     free(lt);
