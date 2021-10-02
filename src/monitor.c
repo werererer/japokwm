@@ -82,6 +82,7 @@ void create_monitor(struct wl_listener *listener, void *data)
         server_set_selected_monitor(m);
 
         load_config(L);
+        server_allow_reloading_config();
 
         if (server.default_layout->options->tag_names->len <= 0) {
             handle_error("tag_names is empty, loading default tag_names");
