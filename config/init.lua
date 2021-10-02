@@ -8,7 +8,7 @@ config.set_automatic_workspace_naming(true)
 
 local termcmd = "/usr/bin/alacritty"
 
-config.reload()
+-- config.reload()
 
 local function on_start()
     -- execute programs or do what ever you want e.g.:
