@@ -1017,8 +1017,10 @@ void container_set_workspace_id(struct container *con, int ws_id)
     struct workspace *prev_ws = get_workspace(con->client->ws_id);
     struct tagset *prev_tagset = workspace_get_active_tagset(prev_ws);
     con->client->ws_id = ws_id;
+    bitset_reserve(con->client->sticky_workspaces, server.workspaces->len);
     bitset_reset_all(con->client->sticky_workspaces);
     bitset_set(con->client->sticky_workspaces, con->client->ws_id);
+    print_bitset(con->client->sticky_workspaces);
 
     tagset_reload(prev_tagset);
     struct workspace *ws = get_workspace(ws_id);

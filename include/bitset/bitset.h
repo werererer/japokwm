@@ -78,6 +78,8 @@ void bitset_pop(BitSet* bitset);
 
 /* Capacity Management */
 void bitset_reserve(BitSet* bitset, size_t minimum_number_of_bits);
+void bitset_grow_to_size(BitSet* bitset, size_t size);
+void bitset_shrink_to_size(BitSet* bitset, size_t size);
 void bitset_grow(BitSet* bitset);
 void bitset_shrink(BitSet* bitset);
 
