@@ -435,9 +435,10 @@ cleanup:
     free(file);
 }
 
-void load_layout()
+void load_layout(struct monitor *m)
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct monitor *sel_m = server_get_selected_monitor();
+    server_set_selected_monitor(m);
     struct workspace *ws = monitor_get_active_workspace(m);
     const char *name = ws->current_layout;
     assert(name != NULL);
@@ -462,6 +463,8 @@ void load_layout()
     }
     int layout_index = server.layout_set.lua_layout_index;
     server.layout_set.lua_layout_index = layout_index;
+
+    server_set_selected_monitor(sel_m);
 }
 
 static void destroy_layout0(void *lt)

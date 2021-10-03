@@ -199,11 +199,8 @@ uint8_t* byte_get(BitSet* bitset, size_t index) {
     assert(bitset != NULL);
     if (bitset == NULL) return NULL;
 
+    bitset_grow_to_size(bitset, index+1);
     int byte_index = _byte_index(index);
-    while (byte_index < bitset->bits->len)
-    {
-        bitset_grow(bitset);
-    }
     return (uint8_t*)g_ptr_array_index(bitset->bits, byte_index);
 }
 
@@ -211,11 +208,8 @@ const uint8_t* byte_const_get(BitSet* bitset, size_t index) {
     assert(bitset != NULL);
     if (bitset == NULL) return NULL;
 
+    bitset_grow_to_size(bitset, index+1);
     int byte_index = _byte_index(index);
-    while (byte_index >= bitset->bits->len)
-    {
-        bitset_grow(bitset);
-    }
     return (const uint8_t*)g_ptr_array_index(bitset->bits, byte_index);
 }
 
@@ -300,15 +294,32 @@ void bitset_pop(BitSet* bitset) {
 void bitset_reserve(BitSet* bitset, size_t minimum_number_of_bits) {
     assert(bitset != NULL);
 
-    /* ERROR/SUCCESS flags are the same */
-    g_ptr_array_set_size(bitset->bits, BITS_TO_BYTES(minimum_number_of_bits));
+    int number_of_bytes = BITS_TO_BYTES(minimum_number_of_bits);
+    while(bitset->bits->len < number_of_bytes) {
+        bitset_grow(bitset);
+    }
+    while(bitset->bits->len > number_of_bytes) {
+        bitset_shrink(bitset);
+    }
+    bitset->size = minimum_number_of_bits;
+}
+
+
+void bitset_grow_to_size(BitSet* bitset, size_t size)
+{
+    int number_of_bytes = BITS_TO_BYTES(size);
+    if (bitset->size < size) {
+        bitset->size = size;
+    }
+    while(bitset->bits->len < number_of_bytes) {
+        bitset_grow(bitset);
+    }
 }
 
 void bitset_grow(BitSet* bitset) {
 
     assert(bitset != NULL);
 
-    debug_print("grow\n");
     /* ERROR/SUCCESS flags are the same */
     uint8_t *empty = calloc(1, sizeof(*empty));
     g_ptr_array_add(bitset->bits, empty);

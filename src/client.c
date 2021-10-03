@@ -171,6 +171,7 @@ void container_move_sticky_containers(struct container *con, int ws_id)
 {
     // TODO: refactor this function
     struct workspace *ws = get_workspace(ws_id);
+    debug_print("sticky len: %i\n", con->client->sticky_workspaces->size);
     if (!bitset_test(con->client->sticky_workspaces, ws->id)) {
         if (bitset_any(con->client->sticky_workspaces)) {
             for (int i = 0; i < con->client->sticky_workspaces->size; i++) {
