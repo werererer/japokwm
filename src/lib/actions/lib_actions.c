@@ -467,6 +467,14 @@ int lib_toggle_layout(lua_State *L)
     return 0;
 }
 
+int lib_toggle_tags(lua_State *L)
+{
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    tagset_focus_tags(ws->id, ws->prev_workspaces);
+    return 0;
+}
+
 int lib_toggle_workspace(lua_State *L)
 {
     tagset_focus_tags(server.previous_workspace, server.previous_bitset);
