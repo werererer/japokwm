@@ -275,6 +275,9 @@ integers
 *toggle_layout()* ++
 	toggle previous layout
 
+*toggle_tags()* ++
+	toggle previous tags on current workspace
+
 *toggle_workspace()* ++
 	toggle previous workspace
 

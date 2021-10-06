@@ -58,7 +58,6 @@ struct server {
 
     GPtrArray *config_paths;
     char *config_file;
-    char *config_dir;
 
     int previous_workspace;
     BitSet *previous_bitset;
