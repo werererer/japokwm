@@ -62,6 +62,8 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     // TODO: findout which value must be used
     ws->workspaces = bitset_create(1);
     ws->prev_workspaces = bitset_create(1);
+    bitset_set(ws->workspaces, ws->id);
+    bitset_set(ws->prev_workspaces, ws->id);
 
     ws->focus_set = focus_set_create();
     ws->con_set = create_container_set();

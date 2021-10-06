@@ -29,6 +29,7 @@ int lib_repush(lua_State *L);
 int lib_resize_main(lua_State *L);
 int lib_set_floating(lua_State *L);
 int lib_set_nmaster(lua_State *L);
+int lib_set_tags(lua_State *L);
 int lib_show_scratchpad(lua_State *L);
 int lib_start_keycombo(lua_State *L);
 int lib_swap_on_hidden_stack(lua_State *L);

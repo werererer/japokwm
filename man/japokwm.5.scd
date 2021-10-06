@@ -188,6 +188,12 @@ integers
 <where> ++
 	i: integer - position on the stack
 
+*set_tags(i)*
+	set the current selected tags
+<where> ++
+	i: integer - an integer representing a binary number where each digit
+	represents a workspace that will be set
+
 *load_layout(l)* ++
 	load a layout ++
 <where> ++
@@ -290,6 +296,11 @@ integers
 	like dwm's zoom
 
 # CONTAINER
+*get_workspace(i, alpha)* ++
+	gets the workspace the container belongs to ++
+<return> ++
+	integer - workspace id of the container
+
 *container_set_alpha(i, alpha)* ++
 	set the opacity of the container ++
 <where> ++

@@ -27,6 +27,7 @@ static const struct luaL_Reg action[] =
     {"focus_on_stack", lib_focus_on_stack},
     {"increase_nmaster", lib_increase_nmaster},
     {"kill", lib_kill},
+    {"set_tags", lib_set_tags},
     {"load_layout", lib_load_layout},
     {"load_layout_in_set", lib_load_layout_in_set},
     {"load_next_layout_in_set", lib_load_next_layout_in_set},
@@ -47,8 +48,8 @@ static const struct luaL_Reg action[] =
     {"toggle_bars", lib_toggle_bars},
     {"toggle_floating", lib_toggle_floating},
     {"toggle_layout", lib_toggle_layout},
-    {"toggle_view", lib_toggle_view},
     {"toggle_tags", lib_toggle_tags},
+    {"toggle_view", lib_toggle_view},
     {"toggle_workspace", lib_toggle_workspace},
     {"view", lib_view},
     {"zoom", lib_zoom},
@@ -57,12 +58,13 @@ static const struct luaL_Reg action[] =
 
 static const struct luaL_Reg container[] =
 {
-    {"set_alpha", container_set_alpha},
-    {"set_ratio", container_set_ratio},
-    {"set_sticky", container_set_sticky},
-    {"set_sticky_restricted", container_set_sticky_restricted},
-    {"toggle_add_sticky", container_toggle_add_sticky},
-    {"toggle_add_sticky_restricted", container_toggle_add_sticky_restricted},
+    {"get_workspace", lib_container_get_workspace},
+    {"set_alpha", lib_container_set_alpha},
+    {"set_ratio", lib_container_set_ratio},
+    {"set_sticky", lib_container_set_sticky},
+    {"set_sticky_restricted", lib_container_set_sticky_restricted},
+    {"toggle_add_sticky", lib_container_toggle_add_sticky},
+    {"toggle_add_sticky_restricted", lib_container_toggle_add_sticky_restricted},
     {NULL, NULL},
 };
 

@@ -146,7 +146,7 @@ void tagset_workspaces_disconnect(struct tagset *tagset)
     struct workspace *sel_ws = get_workspace(tagset->selected_ws_id);
     tagset_workspace_disconnect(sel_ws->tagset, sel_ws);
 
-    for (size_t i = 0; i < tagset->workspaces->size; i++) {
+    for (size_t i = 0; i < server.workspaces->len; i++) {
         bool bit = bitset_test(tagset->workspaces, i);
 
         if (!bit)
@@ -175,7 +175,7 @@ void tagset_workspaces_connect(struct tagset *tagset)
     if (!tagset)
         return;
 
-    for (size_t i = 0; i < tagset->workspaces->size; i++) {
+    for (size_t i = 0; i < server.workspaces->len; i++) {
         bool bit = bitset_test(tagset->workspaces, i);
 
         if (!bit)
@@ -192,6 +192,8 @@ struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *work
     tagset->m = m;
 
     tagset->selected_ws_id = selected_ws_id;
+    struct workspace *ws = get_workspace(selected_ws_id);
+    ws->selected_tagset = tagset;
 
     tagset->con_set = create_container_set();
     tagset->visible_focus_set = focus_set_create();
@@ -452,9 +454,10 @@ void tagset_focus_workspace(int ws_id)
         handle_too_few_workspaces(ws_id);
     }
 
-    BitSet *bitset = bitset_create(server.workspaces->len);
-    bitset_set(bitset, ws_id);
-    tagset_focus_tags(ws_id, bitset);
+    struct workspace *ws = get_workspace(ws_id);
+    BitSet *workspaces = bitset_copy(ws->workspaces);
+    tagset_focus_tags(ws_id, workspaces);
+    bitset_destroy(workspaces);
 }
 
 void tagset_toggle_add(struct tagset *tagset, BitSet *bitset)
