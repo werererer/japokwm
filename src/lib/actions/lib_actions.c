@@ -471,7 +471,8 @@ int lib_toggle_tags(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
-    tagset_focus_tags(ws->id, ws->prev_workspaces);
+    struct tagset *tagset = monitor_get_active_tagset(m);
+    tagset_set_tags(tagset, ws->prev_workspaces);
     return 0;
 }
 
@@ -498,7 +499,7 @@ int lib_swap_workspace(lua_State *L)
     for (int i = 0; i < ws1->con_set->tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(ws1->con_set->tiled_containers, i);
         struct monitor *ws_m = workspace_get_monitor(ws1);
-        if (!exist_on(ws_m, ws1->prev_workspaces, con))
+        if (!exist_on(ws_m, ws1->workspaces, con))
             continue;
 
         g_ptr_array_add(future_ws2_containers, con);
@@ -507,7 +508,7 @@ int lib_swap_workspace(lua_State *L)
     for (int i = 0; i < ws2->con_set->tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(ws2->con_set->tiled_containers, i);
         struct monitor *ws_m = workspace_get_monitor(ws2);
-        if (!exist_on(ws_m, ws2->prev_workspaces, con))
+        if (!exist_on(ws_m, ws2->workspaces, con))
             continue;
         con->client->ws_id = ws1->id;
         bitset_reset_all(con->client->sticky_workspaces);

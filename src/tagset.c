@@ -25,7 +25,6 @@ static void tagset_unset_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_set_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_damage(struct tagset *tagset);
 static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces);
-static void tagset_set_tags(struct tagset *tagset, BitSet *workspaces);
 
 static bool tagset_is_damaged(struct tagset *tagset);
 
@@ -65,17 +64,26 @@ static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces)
     bitset_assign_bitset(&tagset->workspaces, workspaces);
 }
 
-void tagset_set_tags(struct tagset *tagset, BitSet *bitset)
+void tagset_set_tags(struct tagset *tagset, BitSet *workspaces)
 {
+    // we need to copy to not accidentially destroy the same thing we are
+    // working with which can happen through assign_bitset
+    BitSet *workspaces_copy = bitset_copy(workspaces);
+
+    struct workspace *ws = tagset_get_workspace(tagset);
+    bitset_assign_bitset(&ws->prev_workspaces, tagset->workspaces);
+
     tagset_workspaces_disconnect(tagset);
-    tagset_assign_workspaces(tagset, bitset);
+    tagset_assign_workspaces(tagset, workspaces_copy);
     tagset_workspaces_connect(tagset);
     tagset_load_workspaces(tagset, tagset->workspaces);
     update_reduced_focus_stack(tagset);
-    struct workspace *ws = tagset_get_workspace(tagset);
-    bitset_assign_bitset(&ws->prev_workspaces, tagset->workspaces);
+    bitset_assign_bitset(&ws->workspaces, tagset->workspaces);
     arrange();
     focus_most_recent_container();
+
+    bitset_destroy(workspaces_copy);
+    ipc_event_workspace();
 }
 
 
@@ -105,9 +113,11 @@ static void tagset_clean_destroyed_tagset(struct tagset *tagset)
     for (size_t i = 0; i < tagset->workspaces->size; i++) {
         struct workspace *ws = get_workspace(i);
         if (ws->tagset == tagset) {
+            debug_print("ws: %i = NULL\n", ws->id);
             ws->tagset = NULL;
         }
         if (ws->selected_tagset == tagset) {
+            debug_print("ws: selected tagst %i = NULL\n", ws->id);
             ws->selected_tagset = NULL;
         }
     }
@@ -154,6 +164,7 @@ static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws
     tagset_unset_workspace(ws->tagset, ws);
     ws->tagset = tagset;
     if (tagset->selected_ws_id == ws->id) {
+        debug_print("set selected tagset: %i\n", ws->id);
         ws->selected_tagset = tagset;
     }
     tagset_set_workspace(tagset, ws);
@@ -197,9 +208,11 @@ void destroy_tagset(struct tagset *tagset)
         return;
     struct workspace *selected_workspace = get_workspace(tagset->selected_ws_id);
     if (selected_workspace->tagset == tagset) {
+        debug_print("ws: selected tagst %i = NULL\n", selected_workspace->id);
         selected_workspace->tagset = NULL;
     }
     if (selected_workspace->selected_tagset == tagset) {
+        debug_print("ws: selected tagst %i = NULL\n", selected_workspace->id);
         selected_workspace->selected_tagset = NULL;
     }
 
@@ -232,7 +245,7 @@ bool is_reduced_focus_stack(struct workspace *ws, struct container *con)
 {
     struct monitor *m = workspace_get_monitor(ws);
     bool viewable = container_viewable_on_monitor(m, con);
-    bool visible = visible_on(m, ws->prev_workspaces, con);
+    bool visible = visible_on(m, ws->workspaces, con);
     if (viewable || visible) {
         return true;
     }
@@ -248,7 +261,7 @@ bool _is_reduced_focus_stack(
     struct workspace *ws = workspace_ptr;
     struct monitor *m = workspace_get_monitor(ws);
     bool viewable = container_viewable_on_monitor(m, con);
-    bool visible = exist_on(m, ws->prev_workspaces, con);
+    bool visible = exist_on(m, ws->workspaces, con);
     if (viewable || visible) {
         return true;
     }
@@ -272,7 +285,7 @@ bool is_local_focus_stack(struct workspace *ws, struct container *con)
     if (!container_is_managed(con)) {
         return false;
     }
-    if (!exist_on(m, ws->prev_workspaces, con)) {
+    if (!exist_on(m, ws->workspaces, con)) {
         return false;
     }
     return true;
@@ -352,7 +365,7 @@ void focus_tagset(struct tagset *tagset)
     m->tagset = tagset;
     restore_floating_containers(tagset);
     struct workspace *ws = tagset_get_workspace(tagset);
-    bitset_assign_bitset(&ws->prev_workspaces, tagset->workspaces);
+    bitset_assign_bitset(&ws->workspaces, tagset->workspaces);
     update_reduced_focus_stack(tagset);
     ipc_event_workspace();
 
@@ -386,6 +399,7 @@ static void _set_previous_tagset(struct tagset *tagset)
 {
     if (!tagset)
         return;
+
     bitset_assign_bitset(&server.previous_bitset, tagset->workspaces);
     server.previous_workspace = tagset->selected_ws_id;
 }
@@ -452,7 +466,8 @@ void tagset_toggle_add(struct tagset *tagset, BitSet *bitset)
     bitset_xor(new_bitset, tagset->workspaces);
 
     tagset_set_tags(tagset, new_bitset);
-    ipc_event_workspace();
+
+    bitset_destroy(new_bitset);
 }
 
 void tagset_focus_tags(int ws_id, struct BitSet *bitset)

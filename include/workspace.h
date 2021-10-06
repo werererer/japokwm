@@ -63,6 +63,7 @@ struct workspace {
     size_t id;
     char *name;
 
+    BitSet *workspaces;
     BitSet *prev_workspaces;
     // the last monitor the workspace was on
     struct monitor *prev_m;
