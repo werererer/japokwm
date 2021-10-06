@@ -7,7 +7,7 @@
 #include "bitset/bitset.h"
 #include "workspace.h"
 
-int container_set_ratio(lua_State *L)
+int lib_container_set_ratio(lua_State *L)
 {
     float ratio = luaL_checknumber(L, -1);
     lua_pop(L, 1);
@@ -25,7 +25,25 @@ int container_set_ratio(lua_State *L)
     return 0;
 }
 
-int container_set_alpha(lua_State *L)
+int lib_container_get_workspace(lua_State *L)
+{
+    int position = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct container *con = get_container(ws, position);
+
+    if (!con)
+        return 0;
+
+    struct workspace *container_workspace = container_get_workspace(con);
+    int ws_id = container_workspace->id;
+    lua_pushinteger(L, ws_id);
+    return 1;
+}
+
+int lib_container_set_alpha(lua_State *L)
 {
     float alpha = luaL_checknumber(L, -1);
     lua_pop(L, 1);
@@ -43,7 +61,7 @@ int container_set_alpha(lua_State *L)
     return 0;
 }
 
-int container_set_sticky(lua_State *L)
+int lib_container_set_sticky(lua_State *L)
 {
     // TODO fix this function
     /* bool sticky = lua_toboolean(L, -1); */
@@ -75,7 +93,7 @@ int container_set_sticky(lua_State *L)
     return 0;
 }
 
-int container_set_sticky_restricted(lua_State *L)
+int lib_container_set_sticky_restricted(lua_State *L)
 {
     // TODO fix this function
     /* bool sticky = lua_toboolean(L, -1); */
@@ -105,7 +123,7 @@ int container_set_sticky_restricted(lua_State *L)
     return 0;
 }
 
-int container_toggle_add_sticky(lua_State *L)
+int lib_container_toggle_add_sticky(lua_State *L)
 {
     // TODO fix this function
     /* bool sticky = lua_toboolean(L, -1); */
@@ -142,7 +160,7 @@ int container_toggle_add_sticky(lua_State *L)
     return 0;
 }
 
-int container_toggle_add_sticky_restricted(lua_State *L)
+int lib_container_toggle_add_sticky_restricted(lua_State *L)
 {
     // TODO fix this function
     /* bool sticky = lua_toboolean(L, -1); */
