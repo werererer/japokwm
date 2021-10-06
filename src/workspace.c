@@ -60,6 +60,7 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     ws->previous_layout = lt->symbol;
 
     // TODO: findout which value must be used
+    ws->workspaces = bitset_create(1);
     ws->prev_workspaces = bitset_create(1);
 
     ws->focus_set = focus_set_create();
@@ -135,6 +136,7 @@ void destroy_workspace(struct workspace *ws)
     }
     g_ptr_array_unref(ws->loaded_layouts);
 
+    bitset_destroy(ws->workspaces);
     bitset_destroy(ws->prev_workspaces);
     focus_set_destroy(ws->focus_set);
 
@@ -368,8 +370,7 @@ struct wlr_box workspace_get_active_geom(struct workspace *ws)
 {
     struct wlr_box geom;
     if (ws->consider_layer_shell) {
-        struct root *root = workspace_get_root(ws);
-        geom = root->geom;
+        struct root *root = workspace_get_root(ws); geom = root->geom;
     } else {
         struct monitor *m = workspace_get_monitor(ws);
         geom = m->geom;

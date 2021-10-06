@@ -271,7 +271,7 @@ void focus_monitor(struct monitor *m)
     // move floating containers over
     server_set_selected_monitor(m);
     struct workspace *ws = monitor_get_active_workspace(m);
-    tagset_focus_tags(ws->id, ws->prev_workspaces);
+    tagset_focus_tags(ws->id, ws->workspaces);
 }
 
 struct monitor *output_to_monitor(struct wlr_output *output)

@@ -48,6 +48,7 @@ static const struct luaL_Reg action[] =
     {"toggle_floating", lib_toggle_floating},
     {"toggle_layout", lib_toggle_layout},
     {"toggle_view", lib_toggle_view},
+    {"toggle_tags", lib_toggle_tags},
     {"toggle_workspace", lib_toggle_workspace},
     {"view", lib_view},
     {"zoom", lib_zoom},
