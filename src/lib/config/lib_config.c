@@ -49,7 +49,7 @@ int get(lua_State *L)
     return 1;
 }
 
-/* there are 3 values pushed to stack: lua table, key, string
+/* set a lua value
  * */
 int set(lua_State *L)
 {

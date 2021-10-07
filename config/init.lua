@@ -1,5 +1,6 @@
-print("load config")
-config.create_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
+config.workspaces = {"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"}
+
+let con = container.get_focused()
 
 -- focus follows mouse
 config.sloppy_focus = true
@@ -16,10 +17,6 @@ end
 event.add_listener("on_start", on_start)
 
 config.inner_gaps = 15
-config.outer_gaps = 22
-config.outer_gaps = 22
-config.outer_gaps = 22
-config.outer_gaps = 22
 print("metatable", getmetatable(config))
 print("outer gap: ", config.outer_gaps)
 

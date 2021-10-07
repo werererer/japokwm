@@ -57,7 +57,7 @@ static const struct luaL_Reg action[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg container[] =
+static const struct luaL_Reg container_f[] =
 {
     {"get_workspace", lib_container_get_workspace},
     {"set_alpha", lib_container_set_alpha},
@@ -68,6 +68,19 @@ static const struct luaL_Reg container[] =
     {"toggle_add_sticky_restricted", lib_container_toggle_add_sticky_restricted},
     {NULL, NULL},
 };
+
+static const struct luaL_Reg container_m[] =
+{
+    {"get_workspace", lib_container_get_workspace},
+    {"set_alpha", lib_container_set_alpha},
+    {"set_ratio", lib_container_set_ratio},
+    {"set_sticky", lib_container_set_sticky},
+    {"set_sticky_restricted", lib_container_set_sticky_restricted},
+    {"toggle_add_sticky", lib_container_toggle_add_sticky},
+    {"toggle_add_sticky_restricted", lib_container_toggle_add_sticky_restricted},
+    {NULL, NULL},
+};
+
 
 static const struct luaL_Reg event[] =
 {
@@ -107,11 +120,9 @@ static const struct luaL_Reg config[] =
     {"add_rule", lib_add_rule},
     {"bind_key", lib_bind_key},
     {"create_layout_set", lib_create_layout_set},
-    {"create_workspaces", lib_create_workspaces},
     {"reload", lib_reload},
     {"set_arrange_by_focus", lib_set_arrange_by_focus},
     {"set_automatic_workspace_naming", lib_set_automatic_workspace_naming},
-    {"set_border_color", lib_set_border_color},
     {"set_entry_position_function", lib_set_entry_position_function},
     {"set_entry_focus_position_function", lib_set_entry_focus_position_function},
     {"set_float_borderpx", lib_set_float_borderpx},
@@ -133,10 +144,35 @@ static const struct luaL_Reg config[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg localconfig[] =
+static const struct luaL_Reg config_setter[] =
+{
+    {"workspaces", lib_create_workspaces},
+    {"sloppy_focus", lib_set_sloppy_focus},
+    {"automatic_workspace_naming", lib_set_automatic_workspace_naming},
+    {"mod", lib_set_mod},
+    {"inner_gaps", lib_set_inner_gaps},
+    {"outer_gaps", lib_set_outer_gaps},
+    {"default_layout", lib_set_default_layout},
+    {"border_color", lib_set_border_color},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg config_getter[] =
+{
+    {"workspaces", lib_create_workspaces},
+    {"sloppy_focus", lib_lua_idenity_funcion},
+    {"automatic_workspace_naming", lib_lua_idenity_funcion},
+    {"mod", lib_lua_idenity_funcion},
+    {"inner_gaps", lib_lua_idenity_funcion},
+    {"outer_gaps", lib_lua_idenity_funcion},
+    {"default_layout", lib_lua_idenity_funcion},
+    {"border_color", lib_lua_idenity_funcion},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg local_config[] =
 {
     {"set_arrange_by_focus", local_set_arrange_by_focus},
-    {"set_border_color", local_set_border_color},
     {"set_float_borderpx", local_set_float_borderpx},
     {"set_focus_color", local_set_focus_color},
     {"set_hidden_edges", local_set_hidden_edges},
@@ -145,7 +181,6 @@ static const struct luaL_Reg localconfig[] =
     {"set_master_constraints", local_set_master_constraints},
     {"set_master_layout_data", local_set_master_layout_data},
     {"set_outer_gaps", local_set_outer_gaps},
-    {"set_resize_data", local_set_resize_data},
     {"set_resize_direction", local_set_resize_direction},
     {"set_resize_function", local_set_resize_function},
     {"set_sloppy_focus", local_set_sloppy_focus},
@@ -154,32 +189,20 @@ static const struct luaL_Reg localconfig[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg config_setter[] =
+static const struct luaL_Reg local_config_setter[] =
 {
-    {"sloppy_focus", lib_set_sloppy_focus},
-    {"automatic_workspace_naming", lib_set_automatic_workspace_naming},
-    {"mod", lib_set_mod},
-    {"inner_gaps", lib_set_inner_gaps},
-    {"outer_gaps", lib_set_outer_gaps},
-    {"default_layout", lib_set_default_layout},
+    {"border_color", local_set_border_color},
+    {"resize_data", local_set_resize_data},
     {NULL, NULL},
 };
 
-int lib_lua_idenity_funcion(lua_State *L)
+static const struct luaL_Reg local_config_getter[] =
 {
-    return 1;
-}
-
-static const struct luaL_Reg config_getter[] =
-{
-    {"sloppy_focus", lib_lua_idenity_funcion},
-    {"automatic_workspace_naming", lib_lua_idenity_funcion},
-    {"mod", lib_lua_idenity_funcion},
-    {"inner_gaps", lib_lua_idenity_funcion},
-    {"outer_gaps", lib_lua_idenity_funcion},
-    {"default_layout", lib_lua_idenity_funcion},
+    {"border_color", lib_lua_idenity_funcion},
+    {"resize_data", lib_lua_idenity_funcion},
     {NULL, NULL},
 };
+
 
 static const struct luaL_Reg layout[] =
 {
@@ -284,6 +307,7 @@ static void load_info(lua_State *L)
     lua_setglobal(L, "info");
 }
 
+// adds a lib table to the table ontop of the lua stack
 #define add_table(L, name, functions, idx)\
     do {\
         lua_pushstring(L, name);\
@@ -291,6 +315,7 @@ static void load_info(lua_State *L)
         lua_settable(L, idx-2);\
     } while(0)
 
+// adds a metatable to the table on top of the lua stack
 #define add_meta_table(functions, variable_setter, variable_getter, name)\
     do {\
         luaL_newmetatable(L, name); {\
@@ -303,9 +328,11 @@ static void load_info(lua_State *L)
 
 static void lua_load_config()
 {
-    luaL_newlib(L, config); {
-        add_meta_table(config, config_setter, config_getter, "config");
-    } lua_setglobal(L, "config");
+    luaL_newlib(L, config);
+
+    add_meta_table(config, config_setter, config_getter, "config");
+
+    lua_setglobal(L, "config");
 }
 
 void load_lua_api(lua_State *L)
@@ -315,7 +342,7 @@ void load_lua_api(lua_State *L)
     luaL_newlib(L, action);
     lua_setglobal(L, "action");
 
-    luaL_newlib(L, container);
+    luaL_newlib(L, container_f);
     lua_setglobal(L, "container");
 
     luaL_newlib(L, event);
@@ -325,7 +352,8 @@ void load_lua_api(lua_State *L)
     luaL_newlib(L, localevent);
     lua_setfield(L, -2, "event");
 
-    luaL_newlib(L, localconfig);
+    luaL_newlib(L, local_config);
+    add_meta_table(local_config, local_config_setter, local_config_getter, "config");
     lua_setfield(L, -2, "config");
     lua_setglobal(L, "l");
 
