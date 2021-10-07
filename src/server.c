@@ -374,13 +374,11 @@ void server_set_selected_monitor(struct monitor *m)
 
 void server_prohibit_reloading_config()
 {
-    debug_print("prohibit reloading\n");
     server.prohibit_reload_config = true;
 }
 
 void server_allow_reloading_config()
 {
-    debug_print("allow reloading\n");
     server.prohibit_reload_config = false;
 }
 

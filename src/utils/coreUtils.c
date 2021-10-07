@@ -540,3 +540,9 @@ int length_of_composed_list(GPtrArray *array)
     }
     return length;
 }
+
+int lib_lua_idenity_funcion(lua_State *L)
+{
+    /* NO-OP */
+    return 1;
+}
