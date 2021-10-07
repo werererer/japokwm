@@ -2,9 +2,11 @@ print("load config")
 config.create_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
 
 -- focus follows mouse
-config.set_sloppy_focus(true)
+-- config.set_sloppy_focus(true)
+config.sloppy_focus = true
 
-config.set_automatic_workspace_naming(true)
+-- config.set_automatic_workspace_naming(true)
+config.set_automatic_workspace_naming = true;
 
 local termcmd = "/usr/bin/alacritty"
 

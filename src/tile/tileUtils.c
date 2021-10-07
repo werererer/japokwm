@@ -36,14 +36,16 @@ void arrange()
 
     for (int i = 0; i < server.container_stack->len; i++) {
         struct container *con = g_ptr_array_index(server.container_stack, i);
-        container_set_hidden(con, false);
+
+        if (!container_is_floating(con))
+            continue;
+
+        struct monitor *m = server_get_selected_monitor();
+        struct workspace *ws = monitor_get_active_workspace(m);
+        struct layout *lt = workspace_get_layout(ws);
+        container_set_border_width(con, lt->options->float_border_px);
         container_update_size(con);
-        if (container_is_floating(con)) {
-            struct monitor *m = server_get_selected_monitor();
-            struct workspace *ws = monitor_get_active_workspace(m);
-            struct layout *lt = workspace_get_layout(ws);
-            container_set_border_width(con, lt->options->float_border_px);
-        }
+        container_set_hidden(con, false);
     }
 
     for (int i = 0; i < server.mons->len; i++) {
@@ -234,7 +236,7 @@ void arrange_monitor(struct monitor *m)
     arrange_containers(tagset, active_geom, tiled_containers);
     g_ptr_array_unref(tiled_containers);
 
-    wlr_output_damage_whole(m->wlr_output);
+    wlr_output_damage_add_whole(m->damage);
     update_reduced_focus_stack(tagset);
     focus_most_recent_container();
 }
