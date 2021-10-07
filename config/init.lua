@@ -2,15 +2,10 @@ print("load config")
 config.create_workspaces({"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"})
 
 -- focus follows mouse
--- config.set_sloppy_focus(true)
 config.sloppy_focus = true
-
--- config.set_automatic_workspace_naming(true)
-config.set_automatic_workspace_naming = true;
+config.automatic_workspace_naming = true;
 
 local termcmd = "/usr/bin/alacritty"
-
--- config.reload()
 
 local function on_start()
     -- execute programs or do what ever you want e.g.:
@@ -20,16 +15,24 @@ end
 -- executes function on_start when the 
 event.add_listener("on_start", on_start)
 
-config.set_inner_gaps(0)
+config.inner_gaps = 15
+config.outer_gaps = 22
+config.outer_gaps = 22
+config.outer_gaps = 22
+config.outer_gaps = 22
+config.outer_gaps = 22
+config.outer_gaps = 22
+print("metatable", getmetatable(config))
+print("outer gap: ", config.outer_gaps)
 
 local layouts = {"two_pane", "monocle", "tile"}
 
 config.create_layout_set("default", layouts)
 
-config.set_default_layout(layouts[1])
+config.default_layout = layouts[1]
 
 -- set it to 4 to use super instead
-config.set_mod(1)
+config.mod = 1
 
 local function exec_keycombo(i)
     if (info.is_keycombo("combo")) then

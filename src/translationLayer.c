@@ -15,6 +15,7 @@
 #include "lib/info/lib_info.h"
 #include "lib/event_handler/local_event_handler.h"
 #include "lib/monitor/lib_monitor.h"
+#include "utils/coreUtils.h"
 
 static const struct luaL_Reg action[] =
 {
@@ -111,18 +112,15 @@ static const struct luaL_Reg config[] =
     {"set_arrange_by_focus", lib_set_arrange_by_focus},
     {"set_automatic_workspace_naming", lib_set_automatic_workspace_naming},
     {"set_border_color", lib_set_border_color},
-    {"set_default_layout", lib_set_default_layout},
     {"set_entry_position_function", lib_set_entry_position_function},
     {"set_entry_focus_position_function", lib_set_entry_focus_position_function},
     {"set_float_borderpx", lib_set_float_borderpx},
     {"set_focus_color", lib_set_focus_color},
     {"set_hidden_edges", lib_set_hidden_edges},
-    {"set_inner_gaps", lib_set_inner_gaps},
     {"set_layout_constraints", lib_set_layout_constraints},
     {"set_master_constraints", lib_set_master_constraints},
     {"set_master_layout_data", lib_set_master_layout_data},
     {"set_mod", lib_set_mod},
-    {"set_outer_gaps", lib_set_outer_gaps},
     {"set_repeat_delay", lib_set_repeat_delay},
     {"set_repeat_rate", lib_set_repeat_rate},
     {"set_resize_data", lib_set_resize_data},
@@ -156,6 +154,33 @@ static const struct luaL_Reg localconfig[] =
     {NULL, NULL},
 };
 
+static const struct luaL_Reg config_setter[] =
+{
+    {"sloppy_focus", lib_set_sloppy_focus},
+    {"automatic_workspace_naming", lib_set_automatic_workspace_naming},
+    {"mod", lib_set_mod},
+    {"inner_gaps", lib_set_inner_gaps},
+    {"outer_gaps", lib_set_outer_gaps},
+    {"default_layout", lib_set_default_layout},
+    {NULL, NULL},
+};
+
+int lib_lua_idenity_funcion(lua_State *L)
+{
+    return 1;
+}
+
+static const struct luaL_Reg config_getter[] =
+{
+    {"sloppy_focus", lib_lua_idenity_funcion},
+    {"automatic_workspace_naming", lib_lua_idenity_funcion},
+    {"mod", lib_lua_idenity_funcion},
+    {"inner_gaps", lib_lua_idenity_funcion},
+    {"outer_gaps", lib_lua_idenity_funcion},
+    {"default_layout", lib_lua_idenity_funcion},
+    {NULL, NULL},
+};
+
 static const struct luaL_Reg layout[] =
 {
     {"set", lib_set_layout},
@@ -168,6 +193,19 @@ static const struct luaL_Reg monitor[] =
     {"set_transform", lib_set_transform},
     {NULL, NULL},
 };
+
+static const struct luaL_Reg meta[] = 
+{
+    {"__index", get},
+    {"__newindex", set},
+    {NULL, NULL},
+};
+
+static void lua_add_meta(lua_State *L)
+{
+    lua_createtable(L, 0, 0);
+
+}
 
 static void load_info(lua_State *L)
 {
@@ -246,6 +284,30 @@ static void load_info(lua_State *L)
     lua_setglobal(L, "info");
 }
 
+#define add_table(L, name, functions, idx)\
+    do {\
+        lua_pushstring(L, name);\
+        luaL_newlib(L, functions);\
+        lua_settable(L, idx-2);\
+    } while(0)
+
+#define add_meta_table(functions, variable_setter, variable_getter, name)\
+    do {\
+        luaL_newmetatable(L, name); {\
+            luaL_setfuncs(L, meta, 0);\
+            add_table(L, "setter", variable_setter, -1);\
+            add_table(L, "getter", variable_getter, -1);\
+        } lua_pop(L, 1);\
+        luaL_setmetatable(L, name);\
+    } while(0)
+
+static void lua_load_config()
+{
+    luaL_newlib(L, config); {
+        add_meta_table(config, config_setter, config_getter, "config");
+    } lua_setglobal(L, "config");
+}
+
 void load_lua_api(lua_State *L)
 {
     luaL_openlibs(L);
@@ -269,8 +331,7 @@ void load_lua_api(lua_State *L)
 
     load_info(L);
 
-    luaL_newlib(L, config);
-    lua_setglobal(L, "config");
+    lua_load_config();
 
     luaL_newlib(L, layout);
     lua_setglobal(L, "layout");
