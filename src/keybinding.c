@@ -318,8 +318,6 @@ bool handle_keybinding(int mods, int sym)
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
-    debug_print("use layout for keypress: %p\n", lt);
-    debug_print("binding: %s\n", bind);
     if (!has_equal_keybind_element(bind, lt->options->keybindings)) {
         list_clear(server.registered_key_combos, free);
 
