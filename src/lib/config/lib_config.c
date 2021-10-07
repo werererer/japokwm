@@ -11,58 +11,89 @@
 #include "rules/rule.h"
 #include "rules/mon_rule.h"
 
+/* this is very bad code I know... I returns the metatable after going through
+ * the getter function */
 int get(lua_State *L)
 {
+    // [table, key]
     const char *key = luaL_checkstring(L, -1);
-    printf("key: %s\n", key);
 
     lua_getmetatable(L, -2);
-    lua_insert(L, -2);
+    // [table, key, meta]
+
+    lua_pushstring(L, "getter");
+    // [table, key, meta, "getter"]
     lua_gettable(L, -2);
-    debug_print("type: %s\n", luaL_typename(L, -1));
+    // [table, key, meta, (table)meta."getter"]
+    lua_pushstring(L, key);
+    // [table, key, meta, (table)meta."getter", key]
+    debug_print("stack len: %i\n", lua_gettop(L));
+    lua_gettable(L, -2);
+    // [table, key, meta, (table)meta."getter", (cfunc)meta."getter".key]
+    lua_pushvalue(L, -3);
+    // [table, key, meta, (table)meta."getter", (cfunc)meta."getter".key, meta]
+    lua_pushstring(L, key);
+    // [table, key, meta, (table)meta."getter".key, (cfunc)meta."getter".key, meta, key]
+    lua_gettable(L, -2);
+    // [table, key, meta, (table)meta."getter".key, (cfunc)meta."getter".key, meta, table.key]
+    lua_insert(L, -2);
+    // [table, key, meta, (table)meta."getter".key, (cfunc)meta."getter".key, meta.key, table]
+    lua_pop(L, 1);
+    // [table, key, meta, (table)meta."getter".key, (cfunc)meta."getter".key, meta.key]
+    lua_pcall(L, 1, 1, 0);
+    // [table, key, meta, (table)meta."getter".key, retval]
+    lua_insert(L, -5);
+    // [retval, table, key, meta, (table)meta."getter".key]
+    lua_pop(L, 4);
+    // [retval]
     return 1;
-
-    /* lua_getmetatable(L, -2); */
-    /* lua_pushvalue(L, -1); */
-    /* lua_gettable(L, -2); */
-
-/*     lua_pushstring(L, "getter"); */
-/*     lua_gettable(L, -2); */
-/*     debug_print("type: %s\n", luaL_typename(L, -1)); */
-
-/*     lua_pushstring(L, key); */
-/*     lua_gettable(L, -2); */
-
-/*     lua_pushvalue(L, -2); */
-/*     debug_print("typefsdfsf: %s\n", luaL_typename(L, -1)); */
-/*     debug_print("typefsdfsf: %s\n", luaL_typename(L, -1)); */
-/*     debug_print("typefsdfsf: %s\n", luaL_typename(L, -1)); */
-/*     debug_print("typefsdfsf: %s\n", luaL_typename(L, -1)); */
-/*     debug_print("typefsdfsf: %s\n", luaL_typename(L, -1)); */
-
-/*     lua_pcall(L, 0, 1, 0); */
-    /* return 1; */
 }
 
+/* there are 3 values pushed to stack: lua table, key, string
+ * */
 int set(lua_State *L)
 {
+    // [table, key, value]
     const char *key = luaL_checkstring(L, -2);
 
-    lua_getmetatable(L, -3);
-    lua_pushstring(L, "setter");
-    lua_gettable(L, -2);
+    lua_getmetatable(L, -3); {
+        // [table, key, value, meta]
+        lua_pushstring(L, "setter");
+        // [table, key, value, meta, "setter"]
+        lua_gettable(L, -2); {
+            // [table, key, value, meta, (cfunction)meta."setter"]
+            lua_pushstring(L, key);
+            // [table, key, value, meta, (table)meta."setter", key]
+            lua_gettable(L, -2); {
 
-    lua_pushstring(L, key);
-    lua_gettable(L, -2);
-    lua_pushvalue(L, -4);
-    lua_pcall(L, 1, 0, 0);
+                // [table, key, value, meta, (table)meta."setter",
+                // (cfunction)meta."setter".key]
+                lua_pushvalue(L, -4);
+                // [table, key, value, meta, (table)meta."setter",
+                // (cfunction)meta."setter".key, value]
+                lua_pcall(L, 1, 0, 0);
+                // [table, key, value, meta, (table)meta."setter"]
 
-    lua_pushvalue(L, -2);
-    lua_insert(L, -3);
-    lua_settable(L, -3);
+            } lua_pop(L, 1);
+            // [table, key, value, meta]
+
+            lua_pushvalue(L, -3);
+            // [table, key, value, meta, key]
+            lua_pushvalue(L, -3);
+            // [table, key, value, meta, key, value]
+            lua_settable(L, -3);
+            // meta[key] = value
+            // [table, key, value, meta]
+            lua_pop(L, 1);
+            // [table, key, value]
+
+        } lua_pop(L, 1);
+        // [table, key]
+    } lua_pop(L, 1);
+    // [table]
+
     lua_pop(L, 1);
-
-    lua_pop(L, 1);
+    // []
 
     return 0;
 }

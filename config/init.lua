@@ -20,8 +20,6 @@ config.outer_gaps = 22
 config.outer_gaps = 22
 config.outer_gaps = 22
 config.outer_gaps = 22
-config.outer_gaps = 22
-config.outer_gaps = 22
 print("metatable", getmetatable(config))
 print("outer gap: ", config.outer_gaps)
 
