@@ -20,6 +20,7 @@
 
 const struct luaL_Reg meta[] = 
 {
+    {"__index", get},
     {"__newindex", set},
     {NULL, NULL},
 };
@@ -149,14 +150,14 @@ static const struct luaL_Reg config_setter[] =
 
 static const struct luaL_Reg config_getter[] =
 {
-    {"workspaces", lib_create_workspaces},
-    {"sloppy_focus", lib_lua_idenity_funcion},
-    {"automatic_workspace_naming", lib_lua_idenity_funcion},
-    {"mod", lib_lua_idenity_funcion},
-    {"inner_gaps", lib_lua_idenity_funcion},
-    {"outer_gaps", lib_lua_idenity_funcion},
-    {"default_layout", lib_lua_idenity_funcion},
-    {"border_color", lib_lua_idenity_funcion},
+    /* {"workspaces", lib_create_workspaces}, */
+    {"sloppy_focus", lib_get_sloppy_focus},
+    /* {"automatic_workspace_naming", lib_lua_idenity_funcion}, */
+    /* {"mod", lib_lua_idenity_funcion}, */
+    {"inner_gaps", lib_get_inner_gaps},
+    /* {"outer_gaps", lib_lua_idenity_funcion}, */
+    /* {"default_layout", lib_lua_idenity_funcion}, */
+    /* {"border_color", lib_lua_idenity_funcion}, */
     {NULL, NULL},
 };
 
@@ -320,10 +321,10 @@ static void load_info(lua_State *L)
 static void lib_options_new(struct options *options) {
     if (!options)
         return;
-    struct options **user_con = lua_newuserdata(L, sizeof(struct container *));
+    struct options **user_con = lua_newuserdata(L, sizeof(struct options*));
     *user_con = options;
 
-    luaL_setmetatable(L, "japokwm.container");
+    luaL_setmetatable(L, "japokwm.config");
 }
 
 static void lua_load_config()
