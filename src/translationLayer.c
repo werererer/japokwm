@@ -20,7 +20,6 @@
 
 const struct luaL_Reg meta[] = 
 {
-    {"__index", get},
     {"__newindex", set},
     {NULL, NULL},
 };
