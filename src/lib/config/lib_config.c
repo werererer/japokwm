@@ -11,35 +11,6 @@
 #include "rules/rule.h"
 #include "rules/mon_rule.h"
 
-/* this is very bad code I know... I returns the metatable after going through
- * the getter function */
-int get(lua_State *L)
-{
-    // [table, key]
-    const char *key = luaL_checkstring(L, -1);
-
-    lua_getmetatable(L, -2);
-    // [table, key, meta]
-
-    lua_pushstring(L, "getter");
-    // [table, key, meta, "getter"]
-    lua_gettable(L, -2);
-    // [table, key, meta, (table)meta."getter"]
-    lua_pushstring(L, key);
-    // [table, key, meta, (table)meta."getter", key]
-    lua_gettable(L, -2);
-    // [table, key, meta, (table)meta."getter", (cfunc)meta."getter".key]
-    lua_pushvalue(L, -5);
-    // [table, key, meta, (table)meta."getter", (cfunc)meta."getter".key, table]
-    lua_pcall(L, 1, 1, 0);
-    // [table, key, meta, (table)meta."getter".key, retval]
-    lua_insert(L, -5);
-    // [retval, table, key, meta, (table)meta."getter".key]
-    lua_pop(L, 4);
-    // [retval]
-    return 1;
-}
-
 /* set a lua value
  * */
 int set(lua_State *L)
@@ -52,23 +23,33 @@ int set(lua_State *L)
         lua_pushstring(L, "setter");
         // [table, key, value, meta, "setter"]
         lua_gettable(L, -2); {
-            // [table, key, value, meta, (cfunction)meta."setter"]
+            // [table, key, value, meta, (table)meta."setter"]
             lua_pushstring(L, key);
             // [table, key, value, meta, (table)meta."setter", key]
             lua_gettable(L, -2); {
+                printf("get top: %i\n", lua_gettop(L));
 
                 // [table, key, value, meta, (table)meta."setter",
                 // (cfunction)meta."setter".key]
-                lua_pushvalue(L, -6);
-                // [table, key, value, meta, (table)meta."setter",
-                // (cfunction)meta."setter".key, table]
                 lua_pushvalue(L, -4);
                 // [table, key, value, meta, (table)meta."setter",
-                // (cfunction)meta."setter".key, table, value]
-                lua_pcall(L, 2, 0, 0);
+                // (cfunction)meta."setter".key, value]
+                printf("get top: %i\n", lua_gettop(L));
+                lua_pcall(L, 1, 0, 0);
+                lua_pop(L, 1);
                 // [table, key, value, meta, (table)meta."setter"]
+                printf("get top: %i\n", lua_gettop(L));
 
             } lua_pop(L, 1);
+            // [table, key, value, meta]
+            printf("get top: %i\n", lua_gettop(L));
+
+            lua_pushstring(L, key);
+            // [table, key, value, meta, key]
+            lua_pushvalue(L, -3);
+            // [table, key, value, meta, key, value]
+            lua_settable(L, -3);
+            // meta[key] = value
             // [table, key, value, meta]
             lua_pop(L, 1);
             // [table, key, value]
@@ -80,6 +61,7 @@ int set(lua_State *L)
 
     lua_pop(L, 1);
     // []
+    printf("get top: %i\n", lua_gettop(L));
 
     return 0;
 }
