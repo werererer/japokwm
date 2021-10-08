@@ -15,6 +15,7 @@
 #include "lib/info/lib_info.h"
 #include "lib/event_handler/local_event_handler.h"
 #include "lib/monitor/lib_monitor.h"
+#include "server.h"
 #include "utils/coreUtils.h"
 
 const struct luaL_Reg meta[] = 
@@ -98,7 +99,7 @@ static const struct luaL_Reg info[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg config[] = 
+static const struct luaL_Reg config_f[] = 
 {
     {"add_mon_rule", lib_add_mon_rule},
     {"add_rule", lib_add_rule},
@@ -128,6 +129,12 @@ static const struct luaL_Reg config[] =
     {NULL, NULL},
 };
 
+static const struct luaL_Reg config_m[] =
+{
+    {NULL, NULL},
+};
+
+
 static const struct luaL_Reg config_setter[] =
 {
     {"workspaces", lib_create_workspaces},
@@ -154,7 +161,7 @@ static const struct luaL_Reg config_getter[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg local_config[] =
+static const struct luaL_Reg local_config_f[] =
 {
     {"set_arrange_by_focus", local_set_arrange_by_focus},
     {"set_float_borderpx", local_set_float_borderpx},
@@ -170,6 +177,11 @@ static const struct luaL_Reg local_config[] =
     {"set_sloppy_focus", local_set_sloppy_focus},
     {"set_smart_hidden_edges", local_set_smart_hidden_edges},
     {"set_tile_borderpx", local_set_tile_borderpx},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg local_config_m[] =
+{
     {NULL, NULL},
 };
 
@@ -306,29 +318,38 @@ static void load_info(lua_State *L)
     lua_setglobal(L, "info");
 }
 
+static void lib_options_new(struct options *options) {
+    if (!options)
+        return;
+    struct options **user_con = lua_newuserdata(L, sizeof(struct container *));
+    *user_con = options;
+
+    luaL_setmetatable(L, "japokwm.container");
+}
+
 static void lua_load_config()
 {
-    luaL_newlib(L, config);
+    create_class(config_f, config_m, config_setter, config_getter, "japokwm.config");
 
-    add_meta_table(config, config_setter, config_getter, "config");
-
+    lib_options_new(server.default_layout->options);
     lua_setglobal(L, "config");
+
+    luaL_newlib(L, config_f);
+    lua_setglobal(L, "Config");
 }
 
 static int luaopen_container(lua_State *L)
 {
-    create_class(container_m, container_setter, container_getter,
+    create_class(container_f, container_m, container_setter, container_getter,
             "japokwm.container");
 
     luaL_newlib(L, container_f);
-    lua_setglobal(L, "container");
+    lua_setglobal(L, "Container");
     return 0;
 }
 
 void load_lua_api(lua_State *L)
 {
-    luaL_openlibs(L);
-
     luaL_newlib(L, action);
     lua_setglobal(L, "action");
 
@@ -343,8 +364,13 @@ void load_lua_api(lua_State *L)
     luaL_newlib(L, localevent);
     lua_setfield(L, -2, "event");
 
-    luaL_newlib(L, local_config);
-    add_meta_table(local_config, local_config_setter, local_config_getter, "config");
+    create_class(local_config_f,
+            local_config_m,
+            local_config_setter,
+            local_config_getter,
+            "localconfig");
+
+    luaL_newlib(L, local_config_f);
     lua_setfield(L, -2, "config");
     lua_setglobal(L, "l");
 

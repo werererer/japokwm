@@ -237,7 +237,7 @@ static void run(char *startup_cmd)
 static void init_lua_api(struct server *server)
 {
     L = luaL_newstate();
-    load_lua_api(L);
+    luaL_openlibs(L);
 }
 
 static void finalize_lua_api(struct server *server)
@@ -254,13 +254,14 @@ int setup(struct server *server)
 
     init_utils(L);
 
+    server->default_layout = create_layout(L);
+
+    load_lua_api(L);
     if (init_backend(server) != EXIT_SUCCESS) {
         return EXIT_FAILURE;
     }
 
     ipc_init(server->wl_event_loop);
-
-    server->default_layout = create_layout(L);
 
     /* If we don't provide a renderer, autocreate makes a GLES2 renderer for us.
      * The renderer is responsible for defining the various pixel formats it
