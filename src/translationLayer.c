@@ -17,6 +17,14 @@
 #include "lib/monitor/lib_monitor.h"
 #include "utils/coreUtils.h"
 
+const struct luaL_Reg meta[] = 
+{
+    {"__index", get},
+    {"__newindex", set},
+    {NULL, NULL},
+};
+
+
 static const struct luaL_Reg action[] =
 {
     {"arrange", lib_arrange},
@@ -54,30 +62,6 @@ static const struct luaL_Reg action[] =
     {"toggle_workspace", lib_toggle_workspace},
     {"view", lib_view},
     {"zoom", lib_zoom},
-    {NULL, NULL},
-};
-
-static const struct luaL_Reg container_f[] =
-{
-    {"get_workspace", lib_container_get_workspace},
-    {"set_alpha", lib_container_set_alpha},
-    {"set_ratio", lib_container_set_ratio},
-    {"set_sticky", lib_container_set_sticky},
-    {"set_sticky_restricted", lib_container_set_sticky_restricted},
-    {"toggle_add_sticky", lib_container_toggle_add_sticky},
-    {"toggle_add_sticky_restricted", lib_container_toggle_add_sticky_restricted},
-    {NULL, NULL},
-};
-
-static const struct luaL_Reg container_m[] =
-{
-    {"get_workspace", lib_container_get_workspace},
-    {"set_alpha", lib_container_set_alpha},
-    {"set_ratio", lib_container_set_ratio},
-    {"set_sticky", lib_container_set_sticky},
-    {"set_sticky_restricted", lib_container_set_sticky_restricted},
-    {"toggle_add_sticky", lib_container_toggle_add_sticky},
-    {"toggle_add_sticky_restricted", lib_container_toggle_add_sticky_restricted},
     {NULL, NULL},
 };
 
@@ -217,18 +201,33 @@ static const struct luaL_Reg monitor[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg meta[] = 
+static const struct luaL_Reg container_f[] =
 {
-    {"__index", get},
-    {"__newindex", set},
+    {"get_focused", lib_container_get_focused},
     {NULL, NULL},
 };
 
-static void lua_add_meta(lua_State *L)
-{
-    lua_createtable(L, 0, 0);
+static const struct luaL_Reg container_m[] = {
+    {"toggle_add_sticky", lib_container_toggle_add_sticky},
+    {"toggle_add_sticky_restricted",
+     lib_container_toggle_add_sticky_restricted},
+    {NULL, NULL},
+};
 
-}
+static const struct luaL_Reg container_getter[] = {
+    // TODO: implement getters
+    {"alpha", lib_container_get_alpha},
+    {"workspace", lib_container_get_workspace},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg container_setter[] = {
+    {"alpha", lib_container_set_alpha},
+    {"ratio", lib_container_set_ratio},
+    {"sticky", lib_container_set_sticky},
+    {"sticky_restricted", lib_container_set_sticky_restricted},
+    {NULL, NULL},
+};
 
 static void load_info(lua_State *L)
 {
@@ -307,25 +306,6 @@ static void load_info(lua_State *L)
     lua_setglobal(L, "info");
 }
 
-// adds a lib table to the table ontop of the lua stack
-#define add_table(L, name, functions, idx)\
-    do {\
-        lua_pushstring(L, name);\
-        luaL_newlib(L, functions);\
-        lua_settable(L, idx-2);\
-    } while(0)
-
-// adds a metatable to the table on top of the lua stack
-#define add_meta_table(functions, variable_setter, variable_getter, name)\
-    do {\
-        luaL_newmetatable(L, name); {\
-            luaL_setfuncs(L, meta, 0);\
-            add_table(L, "setter", variable_setter, -1);\
-            add_table(L, "getter", variable_getter, -1);\
-        } lua_pop(L, 1);\
-        luaL_setmetatable(L, name);\
-    } while(0)
-
 static void lua_load_config()
 {
     luaL_newlib(L, config);
@@ -335,6 +315,16 @@ static void lua_load_config()
     lua_setglobal(L, "config");
 }
 
+static int luaopen_container(lua_State *L)
+{
+    create_class(container_m, container_setter, container_getter,
+            "japokwm.container");
+
+    luaL_newlib(L, container_f);
+    lua_setglobal(L, "container");
+    return 0;
+}
+
 void load_lua_api(lua_State *L)
 {
     luaL_openlibs(L);
@@ -342,8 +332,9 @@ void load_lua_api(lua_State *L)
     luaL_newlib(L, action);
     lua_setglobal(L, "action");
 
-    luaL_newlib(L, container_f);
-    lua_setglobal(L, "container");
+    luaL_openlibs(L);
+
+    luaopen_container(L);
 
     luaL_newlib(L, event);
     lua_setglobal(L, "event");

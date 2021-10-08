@@ -1,6 +1,11 @@
 config.workspaces = {"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"}
 
-let con = container.get_focused()
+-- local con = container.get_focused()
+-- print("con:")
+-- local m_con = getmetatable(con);
+-- print("con:", m_con)
+-- print("con:", con:toggle_add_sticky(4))
+-- print(con.alpha)
 
 -- focus follows mouse
 config.sloppy_focus = true
