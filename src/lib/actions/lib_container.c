@@ -68,12 +68,7 @@ int lib_container_get_workspace(lua_State *L) {
 int lib_container_set_alpha(lua_State *L) {
     float alpha = luaL_checknumber(L, -1);
     lua_pop(L, 1);
-    int position = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct container *con = get_container(ws, position);
+    struct container *con = check_container(L);
 
     if (!con)
         return 0;
@@ -217,7 +212,8 @@ int lib_container_toggle_add_sticky_restricted(lua_State *L) {
 // getter
 int lib_container_get_alpha(lua_State *L) {
     struct container *con = check_container(L);
+    lua_pop(L, 1);
 
-    lua_pushinteger(L, con->alpha);
+    lua_pushnumber(L, con->alpha);
     return 1;
 }

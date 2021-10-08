@@ -41,4 +41,7 @@ int lib_set_sloppy_focus(lua_State *L);
 int lib_set_smart_hidden_edges(lua_State *L);
 int lib_set_tile_borderpx(lua_State *L);
 
+int lib_get_sloppy_focus(lua_State *L);
+int lib_get_inner_gaps(lua_State *L);
+
 #endif /* LIB_CONFIG_H */
