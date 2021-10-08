@@ -11,14 +11,11 @@
         lua_settable(L, idx-2);\
     } while(0)
 
-// adds a metatable to the table on top of the lua stack
-#define add_meta_table(methods, variable_setter, variable_getter, name)\
-    do {\
-        create_class(methods, variable_setter, variable_getter, name);\
-        luaL_setmetatable(L, name);\
-    } while(0)
+#define set_instance_of(L, name, functions)\
+    luaL_newlib(L, functions);\
+    luaL_setmetatable(L, name);
 
-#define create_class(methods, variable_setter, variable_getter, name)\
+#define create_class(functions, methods, variable_setter, variable_getter, name)\
     do {\
         luaL_newmetatable(L, name); {\
             luaL_setfuncs(L, meta, 0);\
@@ -26,10 +23,7 @@
             add_table(L, "getter", variable_getter, -1);\
             \
             luaL_setfuncs(L, methods, 0);\
-            \
-            lua_pushstring(L, "__index");\
-            lua_pushvalue(L, -2);  /* pushes the metatable */\
-            lua_settable(L, -3);  /* metatable.__index = metatable */\
+            luaL_setfuncs(L, functions, 0);\
         } lua_pop(L, 1);\
     } while(0)
 

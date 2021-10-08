@@ -27,19 +27,10 @@ int get(lua_State *L)
     // [table, key, meta, (table)meta."getter"]
     lua_pushstring(L, key);
     // [table, key, meta, (table)meta."getter", key]
-    debug_print("stack len: %i\n", lua_gettop(L));
     lua_gettable(L, -2);
     // [table, key, meta, (table)meta."getter", (cfunc)meta."getter".key]
-    lua_pushvalue(L, -3);
-    // [table, key, meta, (table)meta."getter", (cfunc)meta."getter".key, meta]
-    lua_pushstring(L, key);
-    // [table, key, meta, (table)meta."getter".key, (cfunc)meta."getter".key, meta, key]
-    lua_gettable(L, -2);
-    // [table, key, meta, (table)meta."getter".key, (cfunc)meta."getter".key, meta, table.key]
-    lua_insert(L, -2);
-    // [table, key, meta, (table)meta."getter".key, (cfunc)meta."getter".key, meta.key, table]
-    lua_pop(L, 1);
-    // [table, key, meta, (table)meta."getter".key, (cfunc)meta."getter".key, meta.key]
+    lua_pushvalue(L, -5);
+    // [table, key, meta, (table)meta."getter", (cfunc)meta."getter".key, table]
     lua_pcall(L, 1, 1, 0);
     // [table, key, meta, (table)meta."getter".key, retval]
     lua_insert(L, -5);
@@ -68,21 +59,16 @@ int set(lua_State *L)
 
                 // [table, key, value, meta, (table)meta."setter",
                 // (cfunction)meta."setter".key]
+                lua_pushvalue(L, -6);
+                // [table, key, value, meta, (table)meta."setter",
+                // (cfunction)meta."setter".key, table]
                 lua_pushvalue(L, -4);
                 // [table, key, value, meta, (table)meta."setter",
-                // (cfunction)meta."setter".key, value]
-                lua_pcall(L, 1, 0, 0);
+                // (cfunction)meta."setter".key, table, value]
+                lua_pcall(L, 2, 0, 0);
                 // [table, key, value, meta, (table)meta."setter"]
 
             } lua_pop(L, 1);
-            // [table, key, value, meta]
-
-            lua_pushvalue(L, -3);
-            // [table, key, value, meta, key]
-            lua_pushvalue(L, -3);
-            // [table, key, value, meta, key, value]
-            lua_settable(L, -3);
-            // meta[key] = value
             // [table, key, value, meta]
             lua_pop(L, 1);
             // [table, key, value]

@@ -1,12 +1,6 @@
 config.workspaces = {"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"}
 
--- local con = container.get_focused()
--- print("con:")
--- local m_con = getmetatable(con);
--- print("con:", m_con)
--- print("con:", con:toggle_add_sticky(4))
--- print(con.alpha)
-
+print("works")
 -- focus follows mouse
 config.sloppy_focus = true
 config.automatic_workspace_naming = true;
@@ -21,9 +15,10 @@ end
 -- executes function on_start when the 
 event.add_listener("on_start", on_start)
 
+print("outer gap: ", config.inner_gaps)
 config.inner_gaps = 15
 print("metatable", getmetatable(config))
-print("outer gap: ", config.outer_gaps)
+print("outer gap: ", config.inner_gaps)
 
 local layouts = {"two_pane", "monocle", "tile"}
 
@@ -74,7 +69,19 @@ config.bind_key("mod-p",         function() action.exec("rofi -show run") end)
 config.bind_key("mod-e",         function() action.view(info.get_next_empty_workspace(info.get_workspace(), info.direction.left)) end)
 config.bind_key("mod-period",    function() action.toggle_workspace() end)
 config.bind_key("mod-S-period",  function() action.toggle_layout() end)
-config.bind_key("mod-comma",     function() action.toggle_tags() end)
+config.bind_key("mod-comma",     function() 
+    local con = container.get_focused()
+    print("con:")
+    local m_con = getmetatable(con);
+    print("con:", m_con)
+    print("con:", con)
+    print("con:", con.getter)
+    print("con:", con.alpha)
+    con.alpha = 0.2
+    print("con:", con:toggle_add_sticky(4))
+    print(con.alpha)
+
+ end)
 config.bind_key("mod-S-Return",  function() action.exec(termcmd) end)
 config.bind_key("mod-a",         function() action.increase_nmaster() end)
 config.bind_key("mod-x",         function() action.decrease_nmaster() end)
