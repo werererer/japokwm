@@ -121,7 +121,7 @@ void focus_next_unoccupied_workspace(struct monitor *m, GPtrArray *workspaces, s
 void destroy_workspaces(GPtrArray *workspaces);
 void layout_set_set_layout(struct workspace *ws);
 void push_layout(struct workspace *ws, const char *layout_name);
-void load_default_layout(struct workspace *ws);
+void set_default_layout(struct workspace *ws);
 void load_layout(struct monitor *m);
 void remove_loaded_layouts(GPtrArray *workspaces);
 void workspace_rename(struct workspace *ws, const char *name);

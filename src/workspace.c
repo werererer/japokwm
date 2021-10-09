@@ -411,7 +411,7 @@ void push_layout(struct workspace *ws, const char *layout_name)
     ws->current_layout = layout_name;
 }
 
-void load_default_layout(struct workspace *ws)
+void set_default_layout(struct workspace *ws)
 {
     push_layout(ws, server.default_layout->symbol);
 }

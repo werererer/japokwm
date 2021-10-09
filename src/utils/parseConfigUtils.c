@@ -181,7 +181,7 @@ void load_default_lua_config(lua_State *L)
     focus_next_unoccupied_workspace(m, server.workspaces, ws0);
     for (int i = 0; i < server.workspaces->len; i++) {
         struct workspace *ws = g_ptr_array_index(server.workspaces, i);
-        load_default_layout(ws);
+        set_default_layout(ws);
     }
     arrange();
 }
