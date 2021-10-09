@@ -4,6 +4,51 @@
 
 #include "utils/coreUtils.h"
 #include "server.h"
+#include "translationLayer.h"
+
+static const struct luaL_Reg event_f[] =
+{
+    {"add_listener", lib_add_listener},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg event_m[] =
+{
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg event_getter[] =
+{
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg event_setter[] =
+{
+    {NULL, NULL},
+};
+
+void create_lua_event_handler(struct event_handler *event_handler) {
+    if (!event_handler)
+        return;
+    struct event_handler **user_con = lua_newuserdata(L, sizeof(struct event_handler*));
+    *user_con = event_handler;
+
+    luaL_setmetatable(L, CONFIG_EVENT);
+}
+
+void lua_load_events()
+{
+    create_class(event_f, event_m, event_setter, event_getter, CONFIG_EVENT);
+
+    luaL_newlib(L, event_f);
+    lua_setglobal(L, "Event");
+}
+
+void lua_init_events(struct event_handler *event_handler)
+{
+    create_lua_event_handler(event_handler);
+    lua_setglobal(L, "event");
+}
 
 int lib_add_listener(lua_State *L)
 {

@@ -19,6 +19,7 @@
 #include "lib/server/lib_server.h"
 #include "server.h"
 #include "utils/coreUtils.h"
+#include "workspace.h"
 
 const struct luaL_Reg meta[] = 
 {
@@ -64,19 +65,6 @@ static const struct luaL_Reg action[] =
     {"toggle_workspace", lib_toggle_workspace},
     {"view", lib_view},
     {"zoom", lib_zoom},
-    {NULL, NULL},
-};
-
-
-static const struct luaL_Reg event[] =
-{
-    {"add_listener", lib_add_listener},
-    {NULL, NULL},
-};
-
-static const struct luaL_Reg localevent[] =
-{
-    {"add_listener", local_add_listener},
     {NULL, NULL},
 };
 
@@ -329,15 +317,9 @@ void load_lua_api(lua_State *L)
 
     luaopen_container(L);
 
-    luaL_newlib(L, event);
-    lua_setglobal(L, "event");
-
-    lua_createtable(L, 0, 0);
-    luaL_newlib(L, localevent);
-    lua_setfield(L, -2, "event");
-
     load_info(L);
 
+    lua_load_events();
     lua_load_workspace();
     lua_load_server();
     lua_load_options();
@@ -347,4 +329,19 @@ void load_lua_api(lua_State *L)
 
     luaL_newlib(L, monitor);
     lua_setglobal(L, "monitor");
+}
+
+void init_global_config_variables(lua_State *L)
+{
+    lua_init_events(server.event_handler);
+    lua_init_options(server.default_layout->options);
+}
+
+void init_local_config_variables(lua_State *L)
+{
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct layout *lt = workspace_get_layout(ws);
+    lua_init_events(server.event_handler);
+    lua_init_options(lt->options);
 }

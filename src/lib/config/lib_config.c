@@ -87,15 +87,15 @@ void create_lua_options(struct options *options) {
 void lua_load_options()
 {
     create_class(options_f, options_m, options_setter, options_getter, CONFIG_OPTIONS);
-}
-
-void lua_init_option(struct options *options)
-{
-    create_lua_options(options);
-    lua_setglobal(L, "opt");
 
     luaL_newlib(L, options_f);
     lua_setglobal(L, "Options");
+}
+
+void lua_init_options(struct options *options)
+{
+    create_lua_options(options);
+    lua_setglobal(L, "opt");
 }
 
 int lib_reload(lua_State *L)
