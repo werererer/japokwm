@@ -8,18 +8,62 @@
 #include "translationLayer.h"
 #include "workspace.h"
 
-static void lib_container_new(struct container *con) {
+static const struct luaL_Reg container_f[] =
+{
+    {"get_focused", lib_container_get_focused},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg container_m[] = {
+    {"toggle_add_sticky", lib_container_toggle_add_sticky},
+    {"toggle_add_sticky_restricted",
+     lib_container_toggle_add_sticky_restricted},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg container_getter[] = {
+    // TODO: implement getters
+    {"alpha", lib_container_get_alpha},
+    {"workspace", lib_container_get_workspace},
+    {"sticky", lib_container_set_sticky},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg container_setter[] = {
+    {"alpha", lib_container_set_alpha},
+    {"ratio", lib_container_set_ratio},
+    {"sticky", lib_container_set_sticky},
+    {"sticky_restricted", lib_container_set_sticky_restricted},
+    {NULL, NULL},
+};
+
+void create_lua_container(struct container *con)
+{
     if (!con)
         return;
-    struct container **user_con = lua_newuserdata(L, sizeof(struct container *));
+    struct container **user_con = lua_newuserdata(L, sizeof(struct container*));
     *user_con = con;
 
     luaL_setmetatable(L, CONFIG_CONTAINER);
 }
 
-static struct container *check_container(lua_State *L) {
-    void **ud = luaL_checkudata(L, 1, CONFIG_CONTAINER);
-    luaL_argcheck(L, ud != NULL, 1, "`container' expected");
+void lua_load_container()
+{
+    create_class(
+            container_f,
+            container_m,
+            container_setter,
+            container_getter,
+            CONFIG_CONTAINER);
+
+    luaL_newlib(L, container_f);
+    lua_setglobal(L, "Container");
+}
+
+static struct container *check_container(lua_State *L, int argn)
+{
+    void **ud = luaL_checkudata(L, argn, CONFIG_CONTAINER);
+    luaL_argcheck(L, ud != NULL, argn, "`container' expected");
     return (struct container *)*ud;
 }
 
@@ -44,7 +88,7 @@ int lib_container_get_focused(lua_State *L) {
     struct monitor *m = server_get_selected_monitor();
     struct container *con = get_focused_container(m);
 
-    lib_container_new(con);
+    create_lua_container(con);
     return 1;
 }
 
@@ -68,7 +112,9 @@ int lib_container_get_workspace(lua_State *L) {
 int lib_container_set_alpha(lua_State *L) {
     float alpha = luaL_checknumber(L, -1);
     lua_pop(L, 1);
-    struct container *con = check_container(L);
+
+    struct container *con = check_container(L, 1);
+    lua_pop(L, 1);
 
     if (!con)
         return 0;
@@ -82,7 +128,8 @@ int lib_container_set_sticky(lua_State *L) {
     /* bool sticky = lua_toboolean(L, -1); */
     uint64_t tags_dec = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    struct container *con = check_container(L);
+    struct container *con = check_container(L, 1);
+    lua_pop(L, 1);
 
     BitSet *tmp_bitset = bitset_from_value(tags_dec);
     BitSet *bitset = bitset_create(server.workspaces->len);
@@ -134,7 +181,7 @@ int lib_container_toggle_add_sticky(lua_State *L) {
     /* bool sticky = lua_toboolean(L, -1); */
     uint64_t tags_dec = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    struct container *con = check_container(L);
+    struct container *con = check_container(L, 1);
     lua_pop(L, 1);
 
     BitSet *tmp_bitset = bitset_from_value(tags_dec);
@@ -203,7 +250,7 @@ int lib_container_toggle_add_sticky_restricted(lua_State *L) {
 // getter
 int lib_container_get_alpha(lua_State *L)
 {
-    struct container *con = check_container(L);
+    struct container *con = check_container(L, 1);
     lua_pop(L, 1);
 
     lua_pushnumber(L, con->alpha);

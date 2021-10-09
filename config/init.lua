@@ -15,6 +15,8 @@ end
 event:add_listener("on_start", on_start)
 
 opt.inner_gaps = 15
+opt.border_color = Color.new(0.0, 0.0, 1.0, 1.0)
+opt.focus_color = Color.new(1.0, 0.0, 0.0, 1.0)
 
 local layouts = {"two_pane", "monocle", "tile"}
 
@@ -62,7 +64,7 @@ opt.entry_focus_position_function = get_focus_entry_position
 
 opt:bind_key("mod-S-p",       function() container.set_sticky(info.this_container_position(), 255) end)
 opt:bind_key("mod-p",         function() action.exec("rofi -show run") end)
-opt:bind_key("mod-e",         function() action.view(info.get_next_empty_workspace(info.get_workspace(), info.direction.left)) end)
+opt:bind_key("mod-e",         function() Workspace.view(info.get_next_empty_workspace(info.get_workspace(), info.direction.left)) end)
 opt:bind_key("mod-period",    function() action.toggle_workspace() end)
 opt:bind_key("mod-S-period",  function() action.toggle_layout() end)
 opt:bind_key("mod-comma",     function() 
