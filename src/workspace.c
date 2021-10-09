@@ -19,7 +19,7 @@
 #include "list_sets/focus_stack_set.h"
 #include "tagset.h"
 #include "root.h"
-#include "lib/config/lib_config.h"
+#include "translationLayer.h"
 
 static void update_workspaces_id(GPtrArray *workspaces)
 {
@@ -418,6 +418,8 @@ void load_default_layout(struct workspace *ws)
 
 static void load_layout_file(lua_State *L, const char *name)
 {
+    init_local_config_variables(L);
+
     char *config_path = get_config_file("layouts");
     char *file = strdup("");
     join_path(&file, config_path);
@@ -455,7 +457,6 @@ void load_layout(struct monitor *m)
         push_layout(ws, lt->symbol);
     } else {
         struct layout *lt = create_layout(L);
-        lua_init_option(lt->options);
 
         lt->ws_id = ws->id;
         copy_layout_safe(lt, server.default_layout);

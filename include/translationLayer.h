@@ -28,14 +28,18 @@
     } while(0)
 
 // lua custom typenames
+#define CONFIG_COLOR "japokwm.color"
+#define CONFIG_CONTAINER "japokwm.container"
+#define CONFIG_EVENT "japokwm.event"
 #define CONFIG_LOCAL_OPTIONS "japokwm.local.options"
 #define CONFIG_OPTIONS "japokwm.config"
-#define CONFIG_CONTAINER "japokwm.container"
 #define CONFIG_SERVER "japokwm.server"
 #define CONFIG_WORKSPACE "japokwm.workspace"
-#define CONFIG_COLOR "japokwm.color"
 
 void load_lua_api(lua_State *L);
+
+void init_global_config_variables(lua_State *L);
+void init_local_config_variables(lua_State *L);
 
 extern const struct luaL_Reg meta[];
 
