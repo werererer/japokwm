@@ -11,7 +11,6 @@ int lib_get_nmaster(lua_State *L);
 int lib_get_previous_layout(lua_State *L);
 int lib_get_root_area(lua_State *L);
 int lib_get_this_container_count(lua_State *L);
-int lib_get_workspace(lua_State *L);
 int lib_get_workspace_count(lua_State *L);
 int lib_is_container_not_in_limit(lua_State *L);
 int lib_is_container_not_in_master_limit(lua_State *L);

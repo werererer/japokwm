@@ -1,4 +1,4 @@
-#include "lib/actions/lib_container.h"
+#include "lib/lib_container.h"
 #include "bitset/bitset.h"
 #include "client.h"
 #include "container.h"
@@ -24,8 +24,8 @@ static const struct luaL_Reg container_m[] = {
 static const struct luaL_Reg container_getter[] = {
     // TODO: implement getters
     {"alpha", lib_container_get_alpha},
-    {"workspace", lib_container_get_workspace},
     {"sticky", lib_container_set_sticky},
+    {"workspace", lib_container_get_workspace},
     {NULL, NULL},
 };
 
@@ -93,18 +93,14 @@ int lib_container_get_focused(lua_State *L) {
 }
 
 int lib_container_get_workspace(lua_State *L) {
-    int position = luaL_checkinteger(L, -1);
+    struct container *con = check_container(L, 1);
     lua_pop(L, 1);
-
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct container *con = get_container(ws, position);
 
     if (!con)
         return 0;
 
-    struct workspace *container_workspace = container_get_workspace(con);
-    int ws_id = container_workspace->id;
+    struct workspace *ws = container_get_workspace(con);
+    int ws_id = ws->id;
     lua_pushinteger(L, ws_id);
     return 1;
 }

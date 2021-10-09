@@ -1,4 +1,4 @@
-#include "lib/event_handler/local_event_handler.h"
+#include "lib/local_event_handler.h"
 
 #include "monitor.h"
 #include "utils/coreUtils.h"
