@@ -12,7 +12,7 @@ local function on_start()
     -- action.exec("xsetroot -cursor_name left_ptr")
 end
 -- executes function on_start when the 
-event.add_listener("on_start", on_start)
+event:add_listener("on_start", on_start)
 
 opt.inner_gaps = 15
 
