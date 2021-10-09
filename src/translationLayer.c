@@ -38,7 +38,7 @@ static const struct luaL_Reg action[] =
     {"focus_on_hidden_stack", lib_focus_on_hidden_stack},
     {"focus_on_stack", lib_focus_on_stack},
     {"increase_nmaster", lib_increase_nmaster},
-    {"set_tags", lib_set_tags},
+    {"kill", lib_kill},
     {"load_layout", lib_load_layout},
     {"load_layout_in_set", lib_load_layout_in_set},
     {"load_next_layout_in_set", lib_load_next_layout_in_set},
@@ -50,6 +50,7 @@ static const struct luaL_Reg action[] =
     {"resize_main", lib_resize_main},
     {"set_floating", lib_set_floating},
     {"set_nmaster", lib_set_nmaster},
+    {"set_tags", lib_set_tags},
     {"show_scratchpad", lib_show_scratchpad},
     {"start_keycombo", lib_start_keycombo},
     {"swap_on_hidden_stack", lib_swap_on_hidden_stack},
@@ -98,45 +99,6 @@ static const struct luaL_Reg info[] =
     {"this_container_position", lib_this_container_position},
     {NULL, NULL},
 };
-
-static const struct luaL_Reg local_config_f[] =
-{
-    {"set_arrange_by_focus", local_set_arrange_by_focus},
-    {"set_float_borderpx", local_set_float_borderpx},
-    {"set_focus_color", local_set_focus_color},
-    {"set_hidden_edges", local_set_hidden_edges},
-    {"set_inner_gaps", local_set_inner_gaps},
-    {"set_layout_constraints", local_set_layout_constraints},
-    {"set_master_constraints", local_set_master_constraints},
-    {"set_master_layout_data", local_set_master_layout_data},
-    {"set_outer_gaps", local_set_outer_gaps},
-    {"set_resize_direction", local_set_resize_direction},
-    {"set_resize_function", local_set_resize_function},
-    {"set_sloppy_focus", local_set_sloppy_focus},
-    {"set_smart_hidden_edges", local_set_smart_hidden_edges},
-    {"set_tile_borderpx", local_set_tile_borderpx},
-    {NULL, NULL},
-};
-
-static const struct luaL_Reg local_config_m[] =
-{
-    {NULL, NULL},
-};
-
-static const struct luaL_Reg local_config_setter[] =
-{
-    {"border_color", local_set_border_color},
-    {"resize_data", local_set_resize_data},
-    {NULL, NULL},
-};
-
-static const struct luaL_Reg local_config_getter[] =
-{
-    {"border_color", lib_lua_idenity_funcion},
-    {"resize_data", lib_lua_idenity_funcion},
-    {NULL, NULL},
-};
-
 
 static const struct luaL_Reg layout[] =
 {
@@ -267,6 +229,97 @@ static int luaopen_container(lua_State *L)
     return 0;
 }
 
+/* set a lua value
+ * */
+int set(lua_State *L)
+{
+    // [table, key, value]
+    const char *key = luaL_checkstring(L, -2);
+
+    lua_getmetatable(L, -3); {
+        // [table, key, value, meta]
+        lua_pushstring(L, "setter");
+        // [table, key, value, meta, "setter"]
+        lua_gettable(L, -2); {
+            // [table, key, value, meta, (table)meta."setter"]
+            lua_pushstring(L, key);
+            // [table, key, value, meta, (table)meta."setter", key]
+            lua_gettable(L, -2); {
+
+                // [table, key, value, meta, (table)meta."setter",
+                // (cfunction)meta."setter".key]
+                lua_pushvalue(L, -6);
+                // [table, key, value, meta, (table)meta."setter",
+                // (cfunction)meta."setter".key, table]
+                lua_pushvalue(L, -5);
+                // [table, key, value, meta, (table)meta."setter",
+                // (cfunction)meta."setter".key, table, value]
+                lua_pcall(L, 2, 0, 0);
+                // [table, key, value, meta, (table)meta."setter"]
+
+            } lua_pop(L, 1);
+            // [table, key, value, meta]
+
+            lua_pop(L, 1);
+            // [table, key, value]
+
+        } lua_pop(L, 1);
+        // [table, key]
+    } lua_pop(L, 1);
+    // [table]
+
+    lua_pop(L, 1);
+    // []
+
+    return 0;
+}
+
+/* this is very bad code I know... I returns the metatable after going through
+ * the getter function */
+int get(lua_State *L)
+{
+    // [table, key]
+    const char *key = luaL_checkstring(L, -1);
+
+    // call functions if available
+    lua_getmetatable(L, -2);
+    // [table, key, meta]
+    lua_pushstring(L, key);
+    // [table, key, meta, key]
+    lua_gettable(L, -2);
+    // [table, key, meta, (cfunction|NULL)meta.key]
+    if (!lua_isnil(L, -1)) {
+        lua_insert(L, -3);
+        // [(cfunction|NULL)meta.key, table, key]
+        lua_pop(L, 2);
+        // [(cfunction|NULL)meta.key]
+        return 1;
+    }
+    lua_pop(L, 2);
+    // [table, key]
+
+    lua_getmetatable(L, -2);
+    // [table, key, meta]
+
+    lua_pushstring(L, "getter");
+    // [table, key, meta, "getter"]
+    lua_gettable(L, -2);
+    // [table, key, meta, (table)meta."getter"]
+    lua_pushstring(L, key);
+    // [table, key, meta, (table)meta."getter", key]
+    lua_gettable(L, -2);
+    // [table, key, meta, (table)meta."getter", (cfunc)meta."getter".key]
+    lua_pushvalue(L, -5);
+    // [table, key, meta, (table)meta."getter", (cfunc)meta."getter".key, table]
+    lua_pcall(L, 1, 1, 0);
+    // [table, key, meta, (table)meta."getter", retval]
+    lua_insert(L, -5);
+    // [retval, table, key, meta, (table)meta."getter".key]
+    lua_pop(L, 4);
+    // [retval]
+    return 1;
+}
+
 void load_lua_api(lua_State *L)
 {
     luaL_newlib(L, action);
@@ -282,16 +335,6 @@ void load_lua_api(lua_State *L)
     lua_createtable(L, 0, 0);
     luaL_newlib(L, localevent);
     lua_setfield(L, -2, "event");
-
-    create_class(local_config_f,
-            local_config_m,
-            local_config_setter,
-            local_config_getter,
-            "localconfig");
-
-    luaL_newlib(L, local_config_f);
-    lua_setfield(L, -2, "config");
-    lua_setglobal(L, "l");
 
     load_info(L);
 

@@ -73,7 +73,7 @@ local resize_data = {
 }
 
 layout.set(layout_data)
-l.config.set_resize_data(resize_data)
-l.config.set_resize_direction(info.direction.right + info.direction.top + info.direction.bottom + info.direction.left)
-l.config.set_layout_constraints({min_width = 0.1, max_width = 1, min_height = 0.1, max_height = 1})
-l.config.set_master_constraints({min_width = 0.2, max_width = 1, min_height = 0.2, max_height = 1})
+opt:set_resize_data(resize_data)
+opt.resize_direction = info.direction.right + info.direction.top + info.direction.bottom + info.direction.left
+opt:set_layout_constraints({min_width = 0.1, max_width = 1, min_height = 0.1, max_height = 1})
+opt:set_master_constraints({min_width = 0.2, max_width = 1, min_height = 0.2, max_height = 1})

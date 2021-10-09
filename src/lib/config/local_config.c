@@ -1,178 +1,84 @@
 #include "lib/config/local_config.h"
 
-#include "client.h"
-#include "layout.h"
-#include "monitor.h"
-#include "utils/gapUtils.h"
-#include "utils/coreUtils.h"
-#include "workspace.h"
 #include "server.h"
-#include "tile/tileUtils.h"
+#include "lib/config/lib_config.h"
+#include "translationLayer.h"
 
-int local_set_arrange_by_focus(lua_State *L)
+static const struct luaL_Reg local_options_f[] = 
 {
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct layout *lt = workspace_get_layout(ws);
+    {"reload", lib_reload},
+    {NULL, NULL},
+};
 
-    // 1. argument
-    lt->options->arrange_by_focus = lua_toboolean(L, -1);
-    lua_pop(L, 1);
-    return 0;
+static const struct luaL_Reg local_options_m[] =
+{
+    {"add_mon_rule", lib_add_mon_rule},
+    {"add_rule", lib_add_rule},
+    {"bind_key", lib_bind_key},
+    {"create_layout_set", lib_create_layout_set},
+    {"set_layout_constraints", lib_set_layout_constraints},
+    {"set_master_constraints", lib_set_master_constraints},
+    {"set_master_layout_data", lib_set_master_layout_data},
+    {"set_mod", lib_set_mod},
+    {"set_repeat_delay", lib_set_repeat_delay},
+    {"set_repeat_rate", lib_set_repeat_rate},
+    {"set_resize_data", lib_set_resize_data},
+    {"set_resize_direction", lib_set_resize_direction},
+    {"set_resize_function", lib_set_resize_function},
+    {"set_root_color", lib_set_root_color},
+    {"set_sloppy_focus", lib_set_sloppy_focus},
+    {"set_smart_hidden_edges", lib_set_smart_hidden_edges},
+    {"set_tile_borderpx", lib_set_tile_borderpx},
+    {NULL, NULL},
+};
+
+
+static const struct luaL_Reg local_options_setter[] =
+{
+    {"workspaces", lib_create_workspaces},
+    {"sloppy_focus", lib_set_sloppy_focus},
+    {"automatic_workspace_naming", lib_set_automatic_workspace_naming},
+    {"mod", lib_set_mod},
+    {"inner_gaps", lib_set_inner_gaps},
+    {"outer_gaps", lib_set_outer_gaps},
+    {"default_layout", lib_set_default_layout},
+    {"border_color", lib_set_border_color},
+
+    {"arrange_by_focus", lib_set_arrange_by_focus},
+    {"entry_focus_position_function", lib_set_entry_focus_position_function},
+    {"entry_position_function", lib_set_entry_position_function},
+    {"float_borderpx", lib_set_float_borderpx},
+    {"focus_color", lib_set_focus_color},
+    {"hidden_edges", lib_set_hidden_edges},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg local_options_getter[] =
+{
+    /* {"workspaces", lib_create_workspaces}, */
+    {"sloppy_focus", lib_get_sloppy_focus},
+    /* {"automatic_workspace_naming", lib_lua_idenity_funcion}, */
+    /* {"mod", lib_lua_idenity_funcion}, */
+    {"inner_gaps", lib_get_inner_gaps},
+    /* {"outer_gaps", lib_lua_idenity_funcion}, */
+    /* {"default_layout", lib_lua_idenity_funcion}, */
+    /* {"border_color", lib_lua_idenity_funcion}, */
+    {NULL, NULL},
+};
+
+void lua_load_local_options(struct options *options)
+{
+    create_class(
+            local_options_f,
+            local_options_m,
+            local_options_setter,
+            local_options_getter,
+            CONFIG_LOCAL_OPTIONS);
+
+    create_lua_options(server.default_layout->options);
+    lua_setglobal(L, "opt");
+
+    luaL_newlib(L, local_options_f);
+    lua_setglobal(L, "Options");
 }
 
-int local_set_inner_gaps(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-
-    lt->options->inner_gap = luaL_checkinteger(L ,-1);
-    lua_pop(L, 1);
-
-    configure_gaps(&lt->options->inner_gap, &lt->options->outer_gap);
-    return 0;
-}
-
-int local_set_outer_gaps(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-
-    lt->options->outer_gap = luaL_checkinteger(L ,-1);
-    lua_pop(L, 1);
-
-    configure_gaps(&lt->options->inner_gap, &lt->options->outer_gap);
-    return 0;
-}
-
-int local_set_tile_borderpx(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-    lt->options->tile_border_px = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-
-    arrange();
-    return 0;
-}
-
-int local_set_float_borderpx(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-    lt->options->float_border_px = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-
-    reset_floating_client_borders(lt->options->float_border_px);
-    return 0;
-}
-
-int local_set_sloppy_focus(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-    lt->options->sloppy_focus = lua_toboolean(L, -1);
-    lua_pop(L, 1);
-    return 0;
-}
-
-int local_set_focus_color(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-    lua_tocolor(lt->options->focus_color);
-    lua_pop(L, 1);
-    return 0;
-}
-
-int local_set_border_color(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-    lua_tocolor(lt->options->focus_color);
-    lua_pop(L, 1);
-    return 0;
-}
-
-int local_set_layout_constraints(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-
-    lt->options->layout_constraints = lua_toresize_constrains(L);
-    lua_pop(L, 1);
-    return 0;
-}
-
-int local_set_hidden_edges(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-
-    lt->options->hidden_edges = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-    return 0;
-}
-
-int local_set_smart_hidden_edges(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-
-    lt->options->smart_hidden_edges = lua_toboolean(L, -1);
-    lua_pop(L, 1);
-    return 0;
-}
-
-int local_set_master_constraints(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-
-    lt->options->master_constraints = lua_toresize_constrains(L);
-    lua_pop(L, 1);
-    return 0;
-}
-
-int local_set_resize_direction(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-
-    lt->options->resize_dir = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-    return 0;
-}
-
-int local_set_resize_function(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_resize_function_ref);
-    return 0;
-}
-
-int local_set_master_layout_data(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-
-    if (lua_is_layout_data(L, "master_layout_data"))
-        lua_copy_table_safe(L, &lt->lua_master_layout_data_ref);
-    else
-        lua_pop(L, 1);
-    return 0;
-}
-
-int local_set_resize_data(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-
-    if (lua_istable(L, -1)) {
-        lua_copy_table_safe(L, &lt->lua_resize_data_ref);
-    } else {
-        lua_pop(L, 1);
-    }
-    return 0;
-}

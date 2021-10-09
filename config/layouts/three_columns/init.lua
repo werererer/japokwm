@@ -44,5 +44,6 @@ local layout_data = {
 }
 
 layout.set(layout_data)
-l.config.set_resize_direction(info.direction.right)
-l.config.set_hidden_edges(info.direction.all)
+opt.resize_direction = info.direction.right
+opt.hidden_edges = info.direction.all
+opt.float_borderpx = 14

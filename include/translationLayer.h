@@ -28,6 +28,7 @@
     } while(0)
 
 // lua custom typenames
+#define CONFIG_LOCAL_OPTIONS "japokwm.local.options"
 #define CONFIG_OPTIONS "japokwm.config"
 #define CONFIG_CONTAINER "japokwm.container"
 #define CONFIG_SERVER "japokwm.server"
@@ -37,5 +38,8 @@
 void load_lua_api(lua_State *L);
 
 extern const struct luaL_Reg meta[];
+
+int get(lua_State *L);
+int set(lua_State *L);
 
 #endif /* TRANSLATION_LAYER_H */

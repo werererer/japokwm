@@ -33,7 +33,7 @@ static void render_texture(struct wlr_output *wlr_output,
 /* _box.x and .y are expected to be layout-local
    _box.width and .height are expected to be output-buffer-local */
 void render_rect(struct monitor *m, pixman_region32_t *output_damage,
-        const struct wlr_box *_box, const float color[static 4]) {
+        const struct wlr_box *_box, const struct color color) {
     struct wlr_output *wlr_output = m->wlr_output;
     struct wlr_renderer *renderer =
         wlr_backend_get_renderer(wlr_output->backend);
@@ -56,7 +56,9 @@ void render_rect(struct monitor *m, pixman_region32_t *output_damage,
     pixman_box32_t *rects = pixman_region32_rectangles(&damage, &nrects);
     for (int i = 0; i < nrects; ++i) {
         scissor_output(wlr_output, &rects[i]);
-        wlr_render_rect(renderer, &box, color,
+        float wlr_color[4];
+        color_to_wlr_color(wlr_color, color);
+        wlr_render_rect(renderer, &box, wlr_color,
             wlr_output->transform_matrix);
     }
 }
@@ -290,7 +292,7 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
 
     /* Draw window borders */
     struct container *sel = get_focused_container(m);
-    const float *color = (con == sel) ? lt->options->focus_color : lt->options->border_color;
+    const struct color color = (con == sel) ? lt->options->focus_color : lt->options->border_color;
     for (int i = 0; i < 4; i++) {
         if ((hidden_edges & (1 << i)) == 0) {
             scale_box(&borders[i], m->wlr_output->scale);
@@ -339,7 +341,10 @@ static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
     }
 }
 
-static void clear_frame(struct monitor *m, float color[4], pixman_region32_t *damage)
+static void clear_frame(
+        struct monitor *m,
+        struct color color,
+        pixman_region32_t *damage)
 {
     struct wlr_renderer *renderer = wlr_backend_get_renderer(server.backend);
 
@@ -347,11 +352,13 @@ static void clear_frame(struct monitor *m, float color[4], pixman_region32_t *da
     /* float color2[4] = {0.4f, 0.1f, 0.0f, 1.0f}; */
     /* wlr_renderer_clear(renderer, color2); */
 
+    float wlr_color[4];
+    color_to_wlr_color(wlr_color, color);
     int nrects;
     pixman_box32_t *rects = pixman_region32_rectangles(damage, &nrects);
     for (int i = 0; i < nrects; i++) {
         scissor_output(m->wlr_output, &rects[i]);
-        wlr_renderer_clear(renderer, color);
+        wlr_renderer_clear(renderer, wlr_color);
     }
 }
 

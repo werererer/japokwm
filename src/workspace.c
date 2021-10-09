@@ -19,6 +19,7 @@
 #include "list_sets/focus_stack_set.h"
 #include "tagset.h"
 #include "root.h"
+#include "lib/config/lib_config.h"
 
 static void update_workspaces_id(GPtrArray *workspaces)
 {
@@ -454,6 +455,8 @@ void load_layout(struct monitor *m)
         push_layout(ws, lt->symbol);
     } else {
         struct layout *lt = create_layout(L);
+        lua_init_option(lt->options);
+
         lt->ws_id = ws->id;
         copy_layout_safe(lt, server.default_layout);
 
