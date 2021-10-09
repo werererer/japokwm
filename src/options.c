@@ -11,6 +11,7 @@
 #include "layout.h"
 #include "keybinding.h"
 #include "workspace.h"
+#include "color.h"
 
 GPtrArray *create_tagnames()
 {

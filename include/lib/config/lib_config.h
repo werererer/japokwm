@@ -8,6 +8,10 @@
 int get(lua_State *L);
 int set(lua_State *L);
 
+// init
+void lua_load_options();
+struct options *lua_check_options(lua_State *L, int narg) {;
+
 int lib_add_mon_rule(lua_State *L);
 int lib_add_rule(lua_State *L);
 int lib_bind_key(lua_State *L);

@@ -27,6 +27,12 @@
         } lua_pop(L, 1);\
     } while(0)
 
+// lua custom typenames
+#define CONFIG_OPTIONS "japokwm.config"
+#define CONFIG_CONTAINER "japokwm.container"
+#define CONFIG_SERVER "japokwm.server"
+#define CONFIG_WORKSPACE "japokwm.workspace"
+#define CONFIG_COLOR "japokwm.color"
 
 void load_lua_api(lua_State *L);
 

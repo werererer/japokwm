@@ -123,9 +123,9 @@ static struct wlr_box fit_root_area(struct root *root, struct wlr_box geom)
     return box;
 }
 
-void set_root_color(struct root *root, float color[static 4])
+void set_root_color(struct root *root, struct color color)
 {
-    memcpy(root->color, color, sizeof(float)*4);
+    root->color = color;
 }
 
 void set_root_geom(struct root *root, struct wlr_box geom)

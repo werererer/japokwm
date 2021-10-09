@@ -13,8 +13,10 @@
 #include "lib/event_handler/lib_event_handler.h"
 #include "lib/layout/lib_layout.h"
 #include "lib/info/lib_info.h"
+#include "lib/workspace/lib_workspace.h"
 #include "lib/event_handler/local_event_handler.h"
 #include "lib/monitor/lib_monitor.h"
+#include "lib/server/lib_server.h"
 #include "server.h"
 #include "utils/coreUtils.h"
 
@@ -36,7 +38,6 @@ static const struct luaL_Reg action[] =
     {"focus_on_hidden_stack", lib_focus_on_hidden_stack},
     {"focus_on_stack", lib_focus_on_stack},
     {"increase_nmaster", lib_increase_nmaster},
-    {"kill", lib_kill},
     {"set_tags", lib_set_tags},
     {"load_layout", lib_load_layout},
     {"load_layout_in_set", lib_load_layout_in_set},
@@ -45,7 +46,6 @@ static const struct luaL_Reg action[] =
     {"move_container_to_workspace", lib_move_container_to_workspace},
     {"move_resize", lib_move_resize},
     {"move_to_scratchpad", lib_move_to_scratchpad},
-    {"quit", lib_quit},
     {"repush", lib_repush},
     {"resize_main", lib_resize_main},
     {"set_floating", lib_set_floating},
@@ -96,68 +96,6 @@ static const struct luaL_Reg info[] =
     {"is_keycombo", lib_is_keycombo},
     {"stack_position_to_position", lib_stack_position_to_position},
     {"this_container_position", lib_this_container_position},
-    {NULL, NULL},
-};
-
-static const struct luaL_Reg config_f[] = 
-{
-    {"add_mon_rule", lib_add_mon_rule},
-    {"add_rule", lib_add_rule},
-    {"bind_key", lib_bind_key},
-    {"create_layout_set", lib_create_layout_set},
-    {"reload", lib_reload},
-    {"set_arrange_by_focus", lib_set_arrange_by_focus},
-    {"set_automatic_workspace_naming", lib_set_automatic_workspace_naming},
-    {"set_entry_position_function", lib_set_entry_position_function},
-    {"set_entry_focus_position_function", lib_set_entry_focus_position_function},
-    {"set_float_borderpx", lib_set_float_borderpx},
-    {"set_focus_color", lib_set_focus_color},
-    {"set_hidden_edges", lib_set_hidden_edges},
-    {"set_layout_constraints", lib_set_layout_constraints},
-    {"set_master_constraints", lib_set_master_constraints},
-    {"set_master_layout_data", lib_set_master_layout_data},
-    {"set_mod", lib_set_mod},
-    {"set_repeat_delay", lib_set_repeat_delay},
-    {"set_repeat_rate", lib_set_repeat_rate},
-    {"set_resize_data", lib_set_resize_data},
-    {"set_resize_direction", lib_set_resize_direction},
-    {"set_resize_function", lib_set_resize_function},
-    {"set_root_color", lib_set_root_color},
-    {"set_sloppy_focus", lib_set_sloppy_focus},
-    {"set_smart_hidden_edges", lib_set_smart_hidden_edges},
-    {"set_tile_borderpx", lib_set_tile_borderpx},
-    {NULL, NULL},
-};
-
-static const struct luaL_Reg config_m[] =
-{
-    {NULL, NULL},
-};
-
-
-static const struct luaL_Reg config_setter[] =
-{
-    {"workspaces", lib_create_workspaces},
-    {"sloppy_focus", lib_set_sloppy_focus},
-    {"automatic_workspace_naming", lib_set_automatic_workspace_naming},
-    {"mod", lib_set_mod},
-    {"inner_gaps", lib_set_inner_gaps},
-    {"outer_gaps", lib_set_outer_gaps},
-    {"default_layout", lib_set_default_layout},
-    {"border_color", lib_set_border_color},
-    {NULL, NULL},
-};
-
-static const struct luaL_Reg config_getter[] =
-{
-    /* {"workspaces", lib_create_workspaces}, */
-    {"sloppy_focus", lib_get_sloppy_focus},
-    /* {"automatic_workspace_naming", lib_lua_idenity_funcion}, */
-    /* {"mod", lib_lua_idenity_funcion}, */
-    {"inner_gaps", lib_get_inner_gaps},
-    /* {"outer_gaps", lib_lua_idenity_funcion}, */
-    /* {"default_layout", lib_lua_idenity_funcion}, */
-    /* {"border_color", lib_lua_idenity_funcion}, */
     {NULL, NULL},
 };
 
@@ -230,6 +168,7 @@ static const struct luaL_Reg container_getter[] = {
     // TODO: implement getters
     {"alpha", lib_container_get_alpha},
     {"workspace", lib_container_get_workspace},
+    {"sticky", lib_container_set_sticky},
     {NULL, NULL},
 };
 
@@ -318,30 +257,10 @@ static void load_info(lua_State *L)
     lua_setglobal(L, "info");
 }
 
-static void lib_options_new(struct options *options) {
-    if (!options)
-        return;
-    struct options **user_con = lua_newuserdata(L, sizeof(struct options*));
-    *user_con = options;
-
-    luaL_setmetatable(L, "japokwm.config");
-}
-
-static void lua_load_config()
-{
-    create_class(config_f, config_m, config_setter, config_getter, "japokwm.config");
-
-    lib_options_new(server.default_layout->options);
-    lua_setglobal(L, "config");
-
-    luaL_newlib(L, config_f);
-    lua_setglobal(L, "Config");
-}
-
 static int luaopen_container(lua_State *L)
 {
     create_class(container_f, container_m, container_setter, container_getter,
-            "japokwm.container");
+            CONFIG_CONTAINER);
 
     luaL_newlib(L, container_f);
     lua_setglobal(L, "Container");
@@ -376,7 +295,9 @@ void load_lua_api(lua_State *L)
 
     load_info(L);
 
-    lua_load_config();
+    lua_load_workspace();
+    lua_load_server();
+    lua_load_options();
 
     luaL_newlib(L, layout);
     lua_setglobal(L, "layout");

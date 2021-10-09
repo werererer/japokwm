@@ -295,12 +295,6 @@ int lib_move_container_to_workspace(lua_State *L)
     return 0;
 }
 
-int lib_quit(lua_State *L)
-{
-    wl_display_terminate(server.wl_display);
-    return 0;
-}
-
 int lib_zoom(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
@@ -503,51 +497,3 @@ int lib_toggle_workspace(lua_State *L)
     return 0;
 }
 
-int lib_swap_workspace(lua_State *L)
-{
-    int ws_id1 = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-
-    int ws_id2 = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-
-    struct monitor *m = server_get_selected_monitor();
-
-    struct workspace *ws1 = get_workspace(ws_id1);
-    struct workspace *ws2 = get_workspace(ws_id2);
-
-    GPtrArray *future_ws2_containers = g_ptr_array_new();
-    for (int i = 0; i < ws1->con_set->tiled_containers->len; i++) {
-        struct container *con = g_ptr_array_index(ws1->con_set->tiled_containers, i);
-        struct monitor *ws_m = workspace_get_monitor(ws1);
-        if (!exist_on(ws_m, ws1->workspaces, con))
-            continue;
-
-        g_ptr_array_add(future_ws2_containers, con);
-    }
-
-    for (int i = 0; i < ws2->con_set->tiled_containers->len; i++) {
-        struct container *con = g_ptr_array_index(ws2->con_set->tiled_containers, i);
-        struct monitor *ws_m = workspace_get_monitor(ws2);
-        if (!exist_on(ws_m, ws2->workspaces, con))
-            continue;
-        con->client->ws_id = ws1->id;
-        bitset_reset_all(con->client->sticky_workspaces);
-        bitset_set(con->client->sticky_workspaces, con->client->ws_id);
-    }
-
-    for (int i = 0; i < future_ws2_containers->len; i++) {
-        struct container *con = g_ptr_array_index(future_ws2_containers, i);
-        con->client->ws_id = ws2->id;
-        bitset_reset_all(con->client->sticky_workspaces);
-        bitset_set(con->client->sticky_workspaces, con->client->ws_id);
-    }
-    g_ptr_array_unref(future_ws2_containers);
-
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    tagset_reload(tagset);
-    arrange();
-    focus_most_recent_container();
-    root_damage_whole(m->root);
-    return 0;
-}

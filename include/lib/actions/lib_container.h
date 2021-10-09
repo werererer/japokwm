@@ -19,8 +19,10 @@ int lib_container_toggle_add_sticky_restricted(lua_State *L);
 
 // getter
 int lib_container_get_alpha(lua_State *L);
+int lib_container_get_sticky(lua_State *L);
 
 // setter
 int lib_container_set_alpha(lua_State *L);
+int lib_container_set_sticky(lua_State *L);
 
 #endif /* LIB_CONTAINER_H */

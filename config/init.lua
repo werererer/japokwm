@@ -2,8 +2,9 @@ config.workspaces = {"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"}
 config.sloppy_focus = true
 
 -- focus follows mouse
-config.sloppy_focus = true
 config.automatic_workspace_naming = true;
+
+config.border_color
 
 local termcmd = "/usr/bin/alacritty"
 
@@ -69,6 +70,9 @@ config.bind_key("mod-S-period",  function() action.toggle_layout() end)
 config.bind_key("mod-comma",     function() 
     local con = Container.get_focused()
     con.alpha = 0.4
+    local workspace = server:get_workspace(0)
+    print(workspace)
+    server:get_focused_workspace():swap(server:get_workspace(3))
  end)
 config.bind_key("mod-S-Return",  function() action.exec(termcmd) end)
 config.bind_key("mod-a",         function() action.increase_nmaster() end)
@@ -80,7 +84,7 @@ config.bind_key("mod-S-k",       function() action.focus_on_hidden_stack(-1) end
 config.bind_key("mod-tab",       function() action.swap_on_hidden_stack(0) end)
 config.bind_key("mod-S-tab",     function() action.swap_on_hidden_stack(-1) end)
 config.bind_key("mod-S-c",       function() action.kill(info.this_container_position()) end)
-config.bind_key("mod-S-q",       function() action.quit() end)
+config.bind_key("mod-S-q",       function() server:quit() end)
 config.bind_key("mod-space",     function() action.load_next_layout_in_set("default") end)
 config.bind_key("mod-minus",     function() action.move_to_scratchpad(info.this_container_position()) end)
 config.bind_key("mod-S-minus",   function() action.show_scratchpad() end)
@@ -132,14 +136,14 @@ config.bind_key("mod-C-S-6",     function() container.toggle_add_sticky(info.thi
 config.bind_key("mod-C-S-7",     function() container.toggle_add_sticky(info.this_container_position(), 1 << 6) end)
 config.bind_key("mod-C-S-8",     function() container.toggle_add_sticky(info.this_container_position(), 1 << 7) end)
 config.bind_key("mod-C-S-9",     function() container.set_sticky_restricted(info.this_container_position(), 255) end)
-config.bind_key("mod-s 1",       function() action.swap_workspace(info.get_workspace(), 0) end)
-config.bind_key("mod-s 2",       function() action.swap_workspace(info.get_workspace(), 1) end)
-config.bind_key("mod-s 3",       function() action.swap_workspace(info.get_workspace(), 2) end)
-config.bind_key("mod-s 4",       function() action.swap_workspace(info.get_workspace(), 3) end)
-config.bind_key("mod-s 5",       function() action.swap_workspace(info.get_workspace(), 4) end)
-config.bind_key("mod-s 6",       function() action.swap_workspace(info.get_workspace(), 5) end)
-config.bind_key("mod-s 7",       function() action.swap_workspace(info.get_workspace(), 6) end)
-config.bind_key("mod-s 8",       function() action.swap_workspace(info.get_workspace(), 7) end)
+config.bind_key("mod-s 1",       function() server:get_focused_workspace():swap(server:get_workspace(0)) end)
+config.bind_key("mod-s 2",       function() server:get_focused_workspace():swap(server:get_workspace(1)) end)
+config.bind_key("mod-s 3",       function() server:get_focused_workspace():swap(server:get_workspace(2)) end)
+config.bind_key("mod-s 4",       function() server:get_focused_workspace():swap(server:get_workspace(3)) end)
+config.bind_key("mod-s 5",       function() server:get_focused_workspace():swap(server:get_workspace(4)) end)
+config.bind_key("mod-s 6",       function() server:get_focused_workspace():swap(server:get_workspace(5)) end)
+config.bind_key("mod-s 7",       function() server:get_focused_workspace():swap(server:get_workspace(6)) end)
+config.bind_key("mod-s 8",       function() server:get_focused_workspace():swap(server:get_workspace(7)) end)
 config.bind_key("mod-r",         function() config.reload() end)
 config.bind_key("mod-t",         function() action.set_floating(false)    end)
 config.bind_key("mod-M1",  function() action.move_resize(info.cursor.mode.move) end)

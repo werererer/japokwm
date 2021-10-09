@@ -10,6 +10,72 @@
 #include "keybinding.h"
 #include "rules/rule.h"
 #include "rules/mon_rule.h"
+#include "translationLayer.h"
+#include "lib/lib_color.h"
+#include "color.h"
+
+static const struct luaL_Reg options_f[] = 
+{
+    {"add_mon_rule", lib_add_mon_rule},
+    {"add_rule", lib_add_rule},
+    {"bind_key", lib_bind_key},
+    {"create_layout_set", lib_create_layout_set},
+    {"reload", lib_reload},
+    {"set_arrange_by_focus", lib_set_arrange_by_focus},
+    {"set_automatic_workspace_naming", lib_set_automatic_workspace_naming},
+    {"set_entry_position_function", lib_set_entry_position_function},
+    {"set_entry_focus_position_function", lib_set_entry_focus_position_function},
+    {"set_float_borderpx", lib_set_float_borderpx},
+    {"set_focus_color", lib_set_focus_color},
+    {"set_hidden_edges", lib_set_hidden_edges},
+    {"set_layout_constraints", lib_set_layout_constraints},
+    {"set_master_constraints", lib_set_master_constraints},
+    {"set_master_layout_data", lib_set_master_layout_data},
+    {"set_mod", lib_set_mod},
+    {"set_repeat_delay", lib_set_repeat_delay},
+    {"set_repeat_rate", lib_set_repeat_rate},
+    {"set_resize_data", lib_set_resize_data},
+    {"set_resize_direction", lib_set_resize_direction},
+    {"set_resize_function", lib_set_resize_function},
+    {"set_root_color", lib_set_root_color},
+    {"set_sloppy_focus", lib_set_sloppy_focus},
+    {"set_smart_hidden_edges", lib_set_smart_hidden_edges},
+    {"set_tile_borderpx", lib_set_tile_borderpx},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg options_m[] =
+{
+    {NULL, NULL},
+};
+
+
+static const struct luaL_Reg options_setter[] =
+{
+    {"workspaces", lib_create_workspaces},
+    {"sloppy_focus", lib_set_sloppy_focus},
+    {"automatic_workspace_naming", lib_set_automatic_workspace_naming},
+    {"mod", lib_set_mod},
+    {"inner_gaps", lib_set_inner_gaps},
+    {"outer_gaps", lib_set_outer_gaps},
+    {"default_layout", lib_set_default_layout},
+    {"border_color", lib_set_border_color},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg options_getter[] =
+{
+    /* {"workspaces", lib_create_workspaces}, */
+    {"sloppy_focus", lib_get_sloppy_focus},
+    /* {"automatic_workspace_naming", lib_lua_idenity_funcion}, */
+    /* {"mod", lib_lua_idenity_funcion}, */
+    {"inner_gaps", lib_get_inner_gaps},
+    /* {"outer_gaps", lib_lua_idenity_funcion}, */
+    /* {"default_layout", lib_lua_idenity_funcion}, */
+    /* {"border_color", lib_lua_idenity_funcion}, */
+    {NULL, NULL},
+};
+
 
 /* this is very bad code I know... I returns the metatable after going through
  * the getter function */
@@ -55,6 +121,26 @@ int get(lua_State *L)
     lua_pop(L, 4);
     // [retval]
     return 1;
+}
+
+static void create_lua_options(struct options *options) {
+    if (!options)
+        return;
+    struct options **user_con = lua_newuserdata(L, sizeof(struct options*));
+    *user_con = options;
+
+    luaL_setmetatable(L, CONFIG_OPTIONS);
+}
+
+void lua_load_options()
+{
+    create_class(options_f, options_m, options_setter, options_getter, CONFIG_OPTIONS);
+
+    create_lua_options(server.default_layout->options);
+    lua_setglobal(L, "opt");
+
+    luaL_newlib(L, options_f);
+    lua_setglobal(L, "Options");
 }
 
 /* set a lua value
@@ -189,10 +275,20 @@ int lib_set_float_borderpx(lua_State *L)
     return 0;
 }
 
+struct options *lua_check_options(lua_State *L, int narg) {
+    void **ud = luaL_checkudata(L, narg, CONFIG_OPTIONS);
+    luaL_argcheck(L, ud != NULL, 1, "`options' expected");
+    return *(struct options *)ud;
+}
+
 int lib_set_focus_color(lua_State *L)
 {
-    lua_tocolor(server.default_layout->options->focus_color);
+    struct color color = check_color(L, 2);
     lua_pop(L, 1);
+    struct options *options = check_options(L, 1);
+    lua_pop(L, 1);
+
+    options->focus_color = color;
     return 0;
 }
 
@@ -216,6 +312,10 @@ int lib_set_mod(lua_State *L)
 
 int lib_set_border_color(lua_State *L)
 {
+    struct color color = check_color(L, 2);
+    lua_pop(L, 1);
+    struct options *options = check_options(L, 1);
+    lua_pop(L, 1);
     lua_tocolor(server.default_layout->options->border_color);
     lua_pop(L, 1);
     return 0;
@@ -395,7 +495,7 @@ int lib_set_resize_data(lua_State *L)
 }
 
 static struct options *check_options(lua_State *L) {
-    void **ud = luaL_checkudata(L, 1, "japokwm.config");
+    void **ud = luaL_checkudata(L, 1, CONFIG_CONFIG);
     luaL_argcheck(L, ud != NULL, 1, "`option' expected");
     return (struct options *)*ud;
 }

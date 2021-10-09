@@ -394,15 +394,6 @@ void lua_get_default_resize_data(lua_State *L)
     }
 }
 
-void lua_tocolor(float dest_color[static 4])
-{
-    for (int i = 0; i < 4; i++) {
-        lua_rawgeti(L, -1, i+1);
-        dest_color[i] = luaL_checknumber(L, -1);
-        lua_pop(L, 1);
-    }
-}
-
 int exec(const char *cmd)
 {
     int ret_val = 0;

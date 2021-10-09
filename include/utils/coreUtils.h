@@ -117,7 +117,6 @@ int cmp_int(const void *ptr1, const void *ptr2);
 int cmp_ptr(const void *ptr1, const void *ptr2);
 int cmp_str(const void *s1, const void *s2);
 
-void lua_tocolor(float dest_color[static 4]);
 // like lua_ref but override the old value if *ref > 0
 void lua_ref_safe(lua_State *L, int t, int *ref);
 
