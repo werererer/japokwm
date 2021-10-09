@@ -1,4 +1,4 @@
-#include "lib/info/lib_info.h"
+#include "lib/lib_info.h"
 
 #include <lauxlib.h>
 
@@ -109,13 +109,6 @@ int lib_get_previous_layout(lua_State *L)
 
     struct layout *lt = workspace_get_layout(ws);
     lua_pushstring(L, lt->symbol);
-    return 1;
-}
-
-int lib_get_workspace(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    lua_pushinteger(L, m->tagset->selected_ws_id);
     return 1;
 }
 

@@ -32,7 +32,7 @@ int lib_set_tags(lua_State *L);
 int lib_show_scratchpad(lua_State *L);
 int lib_start_keycombo(lua_State *L);
 int lib_swap_on_hidden_stack(lua_State *L);
-int lib_swap_workspace(lua_State *L);
+int lib_workspace_swap_workspace(lua_State *L);
 int lib_tag_view(lua_State *L);
 int lib_toggle_bars(lua_State *L);
 int lib_toggle_floating(lua_State *L);

@@ -1,4 +1,4 @@
-#include "lib/actions/lib_actions.h"
+#include "lib/lib_actions.h"
 
 #include <inttypes.h>
 #include <lua.h>

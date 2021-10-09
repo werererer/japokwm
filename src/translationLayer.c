@@ -6,17 +6,17 @@
 #include <wlr/types/wlr_output_layout.h>
 
 #include "cursor.h"
-#include "lib/actions/lib_actions.h"
-#include "lib/actions/lib_container.h"
-#include "lib/options/lib_options.h"
-#include "lib/options/local_options.h"
-#include "lib/event_handler/lib_event_handler.h"
-#include "lib/layout/lib_layout.h"
-#include "lib/info/lib_info.h"
-#include "lib/workspace/lib_workspace.h"
-#include "lib/event_handler/local_event_handler.h"
-#include "lib/monitor/lib_monitor.h"
-#include "lib/server/lib_server.h"
+#include "lib/lib_actions.h"
+#include "lib/lib_container.h"
+#include "lib/lib_options.h"
+#include "lib/local_options.h"
+#include "lib/lib_event_handler.h"
+#include "lib/lib_layout.h"
+#include "lib/lib_info.h"
+#include "lib/lib_workspace.h"
+#include "lib/local_event_handler.h"
+#include "lib/lib_monitor.h"
+#include "lib/lib_server.h"
 #include "lib/lib_color.h"
 #include "server.h"
 #include "utils/coreUtils.h"
@@ -56,7 +56,6 @@ static const struct luaL_Reg action[] =
     {"show_scratchpad", lib_show_scratchpad},
     {"start_keycombo", lib_start_keycombo},
     {"swap_on_hidden_stack", lib_swap_on_hidden_stack},
-    {"swap_workspace", lib_swap_workspace},
     {"tag_view", lib_tag_view},
     {"toggle_bars", lib_toggle_bars},
     {"toggle_floating", lib_toggle_floating},
@@ -79,7 +78,6 @@ static const struct luaL_Reg info[] =
     {"get_previous_layout", lib_get_previous_layout},
     {"get_root_area", lib_get_root_area},
     {"get_this_container_count", lib_get_this_container_count},
-    {"get_workspace", lib_get_workspace},
     {"get_workspace_count", lib_get_workspace_count},
     {"is_container_not_in_limit", lib_is_container_not_in_limit},
     {"is_container_not_in_master_limit", lib_is_container_not_in_master_limit},
