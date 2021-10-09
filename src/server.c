@@ -1,5 +1,8 @@
 #include "server.h"
 
+#include "workspace.h"
+#include "monitor.h"
+
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_server_decoration.h>
@@ -371,6 +374,13 @@ struct monitor *server_get_selected_monitor()
 void server_set_selected_monitor(struct monitor *m)
 {
     server.selected_monitor = m;
+}
+
+struct workspace *server_get_selected_workspace()
+{
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    return ws;
 }
 
 void server_prohibit_reloading_config()

@@ -117,4 +117,6 @@ bool server_is_config_reloading_prohibited();
 
 struct monitor *server_get_selected_monitor();
 void server_set_selected_monitor(struct monitor *m);
+
+struct workspace *server_get_selected_workspace();
 #endif /* SERVER_H */

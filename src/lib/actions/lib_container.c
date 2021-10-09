@@ -14,11 +14,11 @@ static void lib_container_new(struct container *con) {
     struct container **user_con = lua_newuserdata(L, sizeof(struct container *));
     *user_con = con;
 
-    luaL_setmetatable(L, "japokwm.container");
+    luaL_setmetatable(L, CONFIG_CONTAINER);
 }
 
 static struct container *check_container(lua_State *L) {
-    void **ud = luaL_checkudata(L, 1, "japokwm.container");
+    void **ud = luaL_checkudata(L, 1, CONFIG_CONTAINER);
     luaL_argcheck(L, ud != NULL, 1, "`container' expected");
     return (struct container *)*ud;
 }
@@ -82,8 +82,7 @@ int lib_container_set_sticky(lua_State *L) {
     /* bool sticky = lua_toboolean(L, -1); */
     uint64_t tags_dec = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    int i = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
+    struct container *con = check_container(L);
 
     BitSet *tmp_bitset = bitset_from_value(tags_dec);
     BitSet *bitset = bitset_create(server.workspaces->len);
@@ -92,14 +91,6 @@ int lib_container_set_sticky(lua_State *L) {
         bitset_assign(bitset, i, bitset_test(tmp_bitset, last_bit_id - i));
     }
     bitset_destroy(tmp_bitset);
-
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct container *con = get_container(ws, i);
-    debug_print("container set sticky: %p\n", con);
-    for (int i = 0; i < bitset->size; i++) {
-        debug_print("bit: %i\n", bitset_test(bitset, i));
-    }
 
     if (!con)
         return 0;
@@ -210,10 +201,21 @@ int lib_container_toggle_add_sticky_restricted(lua_State *L) {
 }
 
 // getter
-int lib_container_get_alpha(lua_State *L) {
+int lib_container_get_alpha(lua_State *L)
+{
     struct container *con = check_container(L);
     lua_pop(L, 1);
 
     lua_pushnumber(L, con->alpha);
+    return 1;
+}
+
+int lib_container_get_sticky(lua_State *L)
+{
+    // TODO implement me
+    /* struct container *con = check_container(L); */
+    /* lua_pop(L, 1); */
+
+    /* lua_pushinteger(L, con->client->sticky_workspaces); */
     return 1;
 }

@@ -24,7 +24,6 @@ int lib_move_container_to_workspace(lua_State *L);
 int lib_move_resize(lua_State *L);
 int lib_move_to_scratchpad(lua_State *L);
 int lib_move_workspace_to(lua_State *L);
-int lib_quit(lua_State *L);
 int lib_repush(lua_State *L);
 int lib_resize_main(lua_State *L);
 int lib_set_floating(lua_State *L);

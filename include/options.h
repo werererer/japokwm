@@ -7,11 +7,9 @@
 #include <glib.h>
 #include "event_handler.h"
 
-#define BLACK {0.0f, 0.0f, 0.0f, 1.0f}
-#define WHITE {1.0f, 1.0f, 1.0f, 1.0f}
-#define RED {1.0f, 0.0f, 0.0f, 1.0f}
-#define GREEN {0.0f, 1.0f, 0.0f, 1.0f}
-#define BLUE {0.0f, 0.0f, 1.0f, 1.0f}
+#include "color.h"
+
+struct workspace;
 
 enum hidden_edge_borders {
     NONE,
@@ -20,8 +18,6 @@ enum hidden_edge_borders {
     BOTH,
     SMART
 };
-
-struct workspace;
 
 struct resize_constraints {
     float min_width;
@@ -35,12 +31,12 @@ struct options {
     int tile_border_px;
     int float_border_px;
     int modkey;
-    float root_color[4];
-    float border_color[4];
-    float focus_color[4];
-    float text_color[4];
-    float sel_overlay_color[4];
-    float sel_text_color[4];
+    struct color root_color;
+    struct color border_color;
+    struct color focus_color;
+    struct color text_color;
+    struct color sel_overlay_color;
+    struct color sel_text_color;
 
     struct resize_constraints layout_constraints;
     struct resize_constraints master_constraints;

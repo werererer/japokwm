@@ -65,6 +65,10 @@ srcs = files(
     'workspace.c',
     'xdg_shell.c',
     'xwayland.c',
+    'lib/workspace/lib_workspace.c',
+    'lib/server/lib_server.c',
+    'lib/lib_color.c',
+    'color.c'
   )
 
 libName = 'japokwm_lib'
