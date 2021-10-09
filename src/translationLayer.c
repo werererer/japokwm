@@ -342,6 +342,7 @@ void init_local_config_variables(lua_State *L)
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
+
     lua_init_events(server.event_handler);
     lua_init_options(lt->options);
 }
