@@ -70,13 +70,18 @@ void options_reset(struct options *options)
         .max_height = 1.0f
     };
 
-    float root_color[4] = {0.3f, 0.3f, 0.3f, 1.0f};
-    float focus_color[4] = {1.0f, 0.0f, 0.0f, 1.0f};
-    float border_color[4] = {0.0f, 0.0f, 1.0f, 1.0f};
+    struct color root_color = (struct color) {
+        .red = 0.3f,
+        .green = 0.3f,
+        .blue = 0.3f,
+        .alpha = 1.0f,
+    };
+    struct color focus_color = RED;
+    struct color border_color = BLUE;
 
-    memcpy(options->root_color, root_color, sizeof(float)*4);
-    memcpy(options->focus_color, focus_color, sizeof(float)*4);
-    memcpy(options->border_color, border_color, sizeof(float)*4);
+    options->root_color = root_color;
+    options->focus_color = focus_color;
+    options->border_color = border_color;
 
     options->key_combo_timeout = 1000;
     options->repeat_rate = 25;
@@ -143,9 +148,9 @@ static void assign_list(
 
 void copy_options(struct options *dest_option, struct options *src_option)
 {
-    memcpy(dest_option->root_color, src_option->root_color, sizeof(float)*4);
-    memcpy(dest_option->focus_color, src_option->focus_color, sizeof(float)*4);
-    memcpy(dest_option->border_color, src_option->border_color, sizeof(float)*4);
+    dest_option->root_color = src_option->root_color;
+    dest_option->focus_color = src_option->focus_color;
+    dest_option->border_color = src_option->border_color;
 
     dest_option->resize_dir = src_option->resize_dir;
     dest_option->layout_constraints = src_option->layout_constraints;

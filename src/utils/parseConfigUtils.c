@@ -23,6 +23,7 @@
 #include "rules/mon_rule.h"
 #include "workspace.h"
 #include "rules/rule.h"
+#include "lib/config/lib_config.h"
 
 static const char *plugin_relative_paths[] = {
     "autoload",
@@ -142,6 +143,7 @@ static int load_default_config(lua_State *L)
 int load_config(lua_State *L)
 {
     int success = 0;
+    lua_init_option(server.default_layout->options);
     if (server.config_file != NULL && strcmp(server.config_file, "") != 0) {
         debug_print("load file\n");
         success = load_file(L, server.config_file);
