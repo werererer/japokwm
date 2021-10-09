@@ -43,22 +43,22 @@ static const struct luaL_Reg options_m[] =
 
 static const struct luaL_Reg options_setter[] =
 {
-    {"workspaces", lib_create_workspaces},
-    {"sloppy_focus", lib_set_sloppy_focus},
-    {"automatic_workspace_naming", lib_set_automatic_workspace_naming},
-    {"mod", lib_set_mod},
-    {"inner_gaps", lib_set_inner_gaps},
-    {"outer_gaps", lib_set_outer_gaps},
-    {"default_layout", lib_set_default_layout},
-    {"border_color", lib_set_border_color},
-    {"resize_direction", lib_set_resize_direction},
 
     {"arrange_by_focus", lib_set_arrange_by_focus},
+    {"automatic_workspace_naming", lib_set_automatic_workspace_naming},
+    {"border_color", lib_set_border_color},
+    {"default_layout", lib_set_default_layout},
     {"entry_focus_position_function", lib_set_entry_focus_position_function},
     {"entry_position_function", lib_set_entry_position_function},
     {"float_borderpx", lib_set_float_borderpx},
     {"focus_color", lib_set_focus_color},
     {"hidden_edges", lib_set_hidden_edges},
+    {"inner_gaps", lib_set_inner_gaps},
+    {"mod", lib_set_mod},
+    {"outer_gaps", lib_set_outer_gaps},
+    {"resize_direction", lib_set_resize_direction},
+    {"sloppy_focus", lib_set_sloppy_focus},
+    {"workspaces", lib_create_workspaces},
     {NULL, NULL},
 };
 

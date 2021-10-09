@@ -6,8 +6,11 @@
 #include <lualib.h>
 #include <stdbool.h>
 
+struct container;
 
-// TODO fix later
+void create_lua_container(struct container *con);
+void lua_load_container();
+
 // methods
 int lib_container_get_focused(lua_State *L);
 int lib_container_get_workspace(lua_State *L);

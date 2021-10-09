@@ -17,6 +17,7 @@
 #include "lib/event_handler/local_event_handler.h"
 #include "lib/monitor/lib_monitor.h"
 #include "lib/server/lib_server.h"
+#include "lib/lib_color.h"
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "workspace.h"
@@ -101,35 +102,6 @@ static const struct luaL_Reg monitor[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg container_f[] =
-{
-    {"get_focused", lib_container_get_focused},
-    {NULL, NULL},
-};
-
-static const struct luaL_Reg container_m[] = {
-    {"toggle_add_sticky", lib_container_toggle_add_sticky},
-    {"toggle_add_sticky_restricted",
-     lib_container_toggle_add_sticky_restricted},
-    {NULL, NULL},
-};
-
-static const struct luaL_Reg container_getter[] = {
-    // TODO: implement getters
-    {"alpha", lib_container_get_alpha},
-    {"workspace", lib_container_get_workspace},
-    {"sticky", lib_container_set_sticky},
-    {NULL, NULL},
-};
-
-static const struct luaL_Reg container_setter[] = {
-    {"alpha", lib_container_set_alpha},
-    {"ratio", lib_container_set_ratio},
-    {"sticky", lib_container_set_sticky},
-    {"sticky_restricted", lib_container_set_sticky_restricted},
-    {NULL, NULL},
-};
-
 static void load_info(lua_State *L)
 {
     luaL_newlib(L, info);
@@ -205,16 +177,6 @@ static void load_info(lua_State *L)
     lua_setfield(L, -2, "direction");
 
     lua_setglobal(L, "info");
-}
-
-static int luaopen_container(lua_State *L)
-{
-    create_class(container_f, container_m, container_setter, container_getter,
-            CONFIG_CONTAINER);
-
-    luaL_newlib(L, container_f);
-    lua_setglobal(L, "Container");
-    return 0;
 }
 
 /* set a lua value
@@ -315,14 +277,14 @@ void load_lua_api(lua_State *L)
 
     luaL_openlibs(L);
 
-    luaopen_container(L);
-
     load_info(L);
 
+    lua_load_color();
+    lua_load_container();
     lua_load_events();
-    lua_load_workspace();
-    lua_load_server();
     lua_load_options();
+    lua_load_server();
+    lua_load_workspace();
 
     luaL_newlib(L, layout);
     lua_setglobal(L, "layout");
