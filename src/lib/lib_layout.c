@@ -14,7 +14,7 @@ static const struct luaL_Reg layout_f[] =
 
 static const struct luaL_Reg layout_m[] = {
     {"set", lib_set_layout},
-    {"set_default_layout", lib_set_default_layout},
+    {"set_master_layout_data", lib_set_master_layout_data},
     {"set_resize_function", lib_set_resize_function},
     {NULL, NULL},
 };
@@ -24,6 +24,7 @@ static const struct luaL_Reg layout_getter[] = {
 };
 
 static const struct luaL_Reg layout_setter[] = {
+    {"default_layout", lib_set_default_layout},
     {NULL, NULL},
 };
 
@@ -63,15 +64,6 @@ struct layout *check_layout(lua_State *L, int argn)
     return (struct layout *)*ud;
 }
 
-int lib_set_default_layout(lua_State *L)
-{
-    const char *symbol = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-
-    server.default_layout->symbol = symbol;
-    return 0;
-}
-
 // functions
 // methods
 int lib_set_layout(lua_State *L)
@@ -98,10 +90,17 @@ int lib_set_layout(lua_State *L)
 
 int lib_set_master_layout_data(lua_State *L)
 {
-    if (lua_is_layout_data(L, "master_layout_data"))
-        lua_copy_table_safe(L, &server.default_layout->lua_master_layout_data_ref);
-    else
+    // stack: [layout, master_layout_data]
+    lua_insert(L, -2);
+    // stack: [master_layout_data, layout]
+    struct layout *lt = check_layout(L, 2);
+    lua_pop(L, 1);
+
+    if (lua_is_layout_data(L, "master_layout_data")) {
+        lua_copy_table_safe(L, &lt->lua_master_layout_data_ref);
+    } else {
         lua_pop(L, 1);
+    }
     return 0;
 }
 
@@ -118,4 +117,16 @@ int lib_set_resize_function(lua_State *L)
 }
 
 // setter
+int lib_set_default_layout(lua_State *L)
+{
+    const char *symbol = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+
+    struct layout *lt = check_layout(L, 1);
+    lua_pop(L, 1);
+
+    lt->symbol = symbol;
+    return 0;
+}
+
 // getter
