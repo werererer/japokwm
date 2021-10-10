@@ -8,6 +8,7 @@
 
 GPtrArray *create_default_config_paths();
 
+int load_file(lua_State *L, const char *file);
 /* returns 0 if loading file was successful else return 1
  * the error_file argument gets malloced so it has to be freed */
 int load_config(lua_State *L);
@@ -15,6 +16,7 @@ void load_default_lua_config(lua_State *L);
 int init_utils(lua_State *L);
 void init_error_file();
 void close_error_file();
+
 
 // utils
 char *get_config_file(const char *file);

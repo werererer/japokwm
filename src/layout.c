@@ -29,6 +29,9 @@ struct layout *create_layout(lua_State *L)
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_resize_data_ref);
 
     lua_get_default_layout_data(L);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_original_copy_data_ref);
+
+    lua_get_default_layout_data(L);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_copy_data_ref);
 
     lua_createtable(L, 0, 0);
@@ -37,14 +40,11 @@ struct layout *create_layout(lua_State *L)
     lua_get_default_resize_function(L);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_resize_function_ref);
 
-    debug_print("create layout: %p\n", lt);
-
     return lt;
 }
 
 void destroy_layout(struct layout *lt)
 {
-    debug_print("destroy layout: %p\n", lt);
     destroy_options(lt->options);
 
     free(lt);

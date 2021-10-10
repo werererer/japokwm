@@ -29,25 +29,18 @@ static const struct luaL_Reg options_m[] =
     {"create_layout_set", lib_create_layout_set},
     {"set_layout_constraints", lib_set_layout_constraints},
     {"set_master_constraints", lib_set_master_constraints},
-    {"set_master_layout_data", lib_set_master_layout_data},
     {"set_mod", lib_set_mod},
     {"set_repeat_delay", lib_set_repeat_delay},
     {"set_repeat_rate", lib_set_repeat_rate},
     {"set_resize_data", lib_set_resize_data},
-    {"set_resize_function", lib_set_resize_function},
-    {"set_root_color", lib_set_root_color},
-    {"set_smart_hidden_edges", lib_set_smart_hidden_edges},
-    {"set_tile_borderpx", lib_set_tile_borderpx},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg options_setter[] =
 {
-
     {"arrange_by_focus", lib_set_arrange_by_focus},
     {"automatic_workspace_naming", lib_set_automatic_workspace_naming},
     {"border_color", lib_set_border_color},
-    {"default_layout", lib_set_default_layout},
     {"entry_focus_position_function", lib_set_entry_focus_position_function},
     {"entry_position_function", lib_set_entry_position_function},
     {"float_borderpx", lib_set_float_borderpx},
@@ -57,7 +50,10 @@ static const struct luaL_Reg options_setter[] =
     {"mod", lib_set_mod},
     {"outer_gaps", lib_set_outer_gaps},
     {"resize_direction", lib_set_resize_direction},
+    {"root_color", lib_set_root_color},
     {"sloppy_focus", lib_set_sloppy_focus},
+    {"smart_hidden_edges", lib_set_smart_hidden_edges},
+    {"tile_borderpx", lib_set_tile_borderpx},
     {"workspaces", lib_create_workspaces},
     {NULL, NULL},
 };
@@ -136,21 +132,26 @@ int lib_reload(lua_State *L)
 
 int lib_set_arrange_by_focus(lua_State *L)
 {
-    struct layout *lt = server.default_layout;
-
-    // 1. argument
-    lt->options->arrange_by_focus = lua_toboolean(L, -1);
+    bool arrange_by_focus = lua_toboolean(L, -1);
     lua_pop(L, 1);
+
+    struct options *options = check_options(L, 1);
+    lua_pop(L, 1);
+
+    options->arrange_by_focus = arrange_by_focus;
     return 0;
 }
 
 int lib_set_automatic_workspace_naming(lua_State *L)
 {
-    struct layout *lt = server.default_layout;
+    bool automatic_workspace_naming = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+
+    struct options *options = check_options(L, 1);
+    lua_pop(L, 1);
 
     // 1. argument
-    lt->options->automatic_workspace_naming = lua_toboolean(L, -1);
-    lua_pop(L, 1);
+    options->automatic_workspace_naming = automatic_workspace_naming;
     ipc_event_workspace();
     return 0;
 }
@@ -303,15 +304,6 @@ int lib_set_repeat_delay(lua_State *L)
     return 0;
 }
 
-int lib_set_default_layout(lua_State *L)
-{
-    const char *symbol = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-
-    server.default_layout->symbol = symbol;
-    return 0;
-}
-
 int lib_set_entry_position_function(lua_State *L)
 {
     int lua_func_ref = 0;
@@ -453,21 +445,6 @@ int lib_set_resize_direction(lua_State *L)
 
     options->resize_dir = resize_dir;
 
-    return 0;
-}
-
-int lib_set_resize_function(lua_State *L)
-{
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &server.default_layout->lua_resize_function_ref);
-    return 0;
-}
-
-int lib_set_master_layout_data(lua_State *L)
-{
-    if (lua_is_layout_data(L, "master_layout_data"))
-        lua_copy_table_safe(L, &server.default_layout->lua_master_layout_data_ref);
-    else
-        lua_pop(L, 1);
     return 0;
 }
 
