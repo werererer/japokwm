@@ -30,9 +30,12 @@ static bool is_container_valid_to_append(
         )
 {
     struct tagset *tagset = tagset_ptr;
+    printf("tagset: %i\n", tagset->selected_ws_id);
     if (tagset_exist_on(tagset, src_con)) {
+        debug_print("add\n");
         return true;
     }
+    debug_print("don't add\n");
     return false;
 }
 

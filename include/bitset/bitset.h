@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "glib.h"
+#include <glib.h>
 
 /****************** DEFINTIIONS ******************/
 
@@ -78,6 +78,7 @@ void bitset_pop(BitSet* bitset);
 
 /* Capacity Management */
 void bitset_reserve(BitSet* bitset, size_t minimum_number_of_bits);
+void bitset_equalize_size(BitSet* bitset1, BitSet *bitset2);
 void bitset_grow_to_size(BitSet* bitset, size_t size);
 void bitset_shrink_to_size(BitSet* bitset, size_t size);
 void bitset_grow(BitSet* bitset);
