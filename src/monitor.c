@@ -186,11 +186,9 @@ static void monitor_get_initial_workspace(struct monitor *m, GPtrArray *workspac
 void destroy_monitor(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, destroy);
-    debug_print("destroy monitor: %p\n", m);
 
     wl_list_remove(&m->mode.link);
     wl_list_remove(&m->frame.link);
-    /* wl_list_remove(&m->damage_frame.link); */
     wl_list_remove(&m->destroy.link);
 
     struct tagset *tagset = monitor_get_active_tagset(m);
@@ -199,11 +197,6 @@ void destroy_monitor(struct wl_listener *listener, void *data)
         struct container *con = g_ptr_array_index(stack_list, i);
         if (con->client->m == m) {
             con->client->m = NULL;
-        }
-        // FIXME: this is here because of a bug in wlroots layershells are
-        // destroyed after the wlr_output
-        if (con->client->type == LAYER_SHELL) {
-            con->client->surface.layer->output = NULL;
         }
     }
     g_ptr_array_unref(stack_list);
