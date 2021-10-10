@@ -10,6 +10,7 @@ struct container;
 
 void create_lua_container(struct container *con);
 void lua_load_container();
+struct container *check_container(lua_State *L, int argn);
 
 // methods
 int lib_container_get_focused(lua_State *L);

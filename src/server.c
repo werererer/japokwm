@@ -147,7 +147,7 @@ void init_server()
     server.scratchpad = g_ptr_array_new();
     server.keyboards = g_ptr_array_new();
     server.config_paths = create_default_config_paths();
-    server.workspaces = g_ptr_array_new();
+    server.workspaces = create_workspaces();
 
     server.container_stack = g_ptr_array_new();
 
@@ -364,6 +364,11 @@ int stop_server()
 
     finalize_lua_api(&server);
     return EXIT_SUCCESS;
+}
+
+int server_get_workspace_count()
+{
+    return server.workspaces->len;
 }
 
 struct monitor *server_get_selected_monitor()

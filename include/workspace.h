@@ -26,6 +26,8 @@ struct server;
         do {\
             struct monitor *m = container_get_monitor(con);\
             struct tagset *_tagset = monitor_get_active_tagset(m);\
+            if (!_tagset)\
+                continue;\
             struct container_set *con_set = _tagset->con_set;\
             action\
         } while (0);\
@@ -45,6 +47,8 @@ struct server;
         do {\
             struct monitor *m = container_get_monitor(con);\
             struct tagset *_tagset = monitor_get_active_tagset(m);\
+            if (!_tagset)\
+                continue;\
             struct container_set *con_set = _tagset->con_set;\
             action\
         } while (0);\
@@ -79,8 +83,10 @@ struct workspace {
     bool consider_layer_shell;
 };
 
-GPtrArray *create_workspaces(GPtrArray *tag_names);
+GPtrArray *create_workspaces();
 void destroy_workspaces(GPtrArray *workspaces);
+
+void load_workspaces(GPtrArray *workspaces, GPtrArray *tag_names);
 
 struct workspace *create_workspace(const char *name, size_t id, struct layout *lt);
 void destroy_workspace(struct workspace *ws);
@@ -117,13 +123,13 @@ struct wlr_box workspace_get_active_geom(struct workspace *ws);
 struct monitor *workspace_get_selected_monitor(struct workspace *ws);
 struct monitor *workspace_get_monitor(struct workspace *ws); 
 
-void focus_next_unoccupied_workspace(struct monitor *m, GPtrArray *workspaces, struct workspace *ws);
 void destroy_workspaces(GPtrArray *workspaces);
 void layout_set_set_layout(struct workspace *ws);
 void push_layout(struct workspace *ws, const char *layout_name);
 void set_default_layout(struct workspace *ws);
 void load_layout(struct monitor *m);
-void remove_loaded_layouts(GPtrArray *workspaces);
+void workspace_remove_loaded_layouts(struct workspace *ws);
+void workspaces_remove_loaded_layouts(GPtrArray *workspaces);
 void workspace_rename(struct workspace *ws, const char *name);
 void workspace_update_names(struct server *server, GPtrArray *workspaces);
 struct container *workspace_get_focused_container(struct workspace *ws);

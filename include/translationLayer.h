@@ -3,6 +3,8 @@
 #include <lua.h>
 #include <lauxlib.h>
 
+struct monitor;
+
 // adds a lib table to the table ontop of the lua stack
 #define add_table(L, name, functions, idx)\
     do {\
@@ -31,15 +33,16 @@
 #define CONFIG_COLOR "japokwm.color"
 #define CONFIG_CONTAINER "japokwm.container"
 #define CONFIG_EVENT "japokwm.event"
+#define CONFIG_LAYOUT "japokwm.layout"
 #define CONFIG_LOCAL_OPTIONS "japokwm.local.options"
-#define CONFIG_OPTIONS "japokwm.config"
+#define CONFIG_OPTIONS "japokwm.options"
 #define CONFIG_SERVER "japokwm.server"
 #define CONFIG_WORKSPACE "japokwm.workspace"
 
 void load_lua_api(lua_State *L);
 
 void init_global_config_variables(lua_State *L);
-void init_local_config_variables(lua_State *L);
+void init_local_config_variables(lua_State *L, struct monitor *m);
 
 extern const struct luaL_Reg meta[];
 

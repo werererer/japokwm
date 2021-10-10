@@ -16,15 +16,6 @@
 GPtrArray *create_tagnames()
 {
     GPtrArray *tag_names = g_ptr_array_new();
-    g_ptr_array_add(tag_names, "1:1");
-    g_ptr_array_add(tag_names, "2:2");
-    g_ptr_array_add(tag_names, "3:3");
-    g_ptr_array_add(tag_names, "4:4");
-    g_ptr_array_add(tag_names, "5:5");
-    g_ptr_array_add(tag_names, "6:6");
-    g_ptr_array_add(tag_names, "7:7");
-    g_ptr_array_add(tag_names, "8:8");
-    g_ptr_array_add(tag_names, "9:9");
     return tag_names;
 }
 
@@ -123,17 +114,19 @@ void load_default_keybindings()
 {
     struct layout *lt = server.default_layout;
     struct options *options = lt->options;
+    list_clear(options->keybindings, NULL);
     GPtrArray *keybindings = options->keybindings;
 
-    add_keybind(keybindings, "mod-S-q", "action.quit()");
-    add_keybind(keybindings, "mod-r", "config.reload()");
-    add_keybind(keybindings, "mod-S-c", "action.kill(info.this_container_position())");
+    add_keybind(keybindings, "mod-S-q", "server:quit()");
+    add_keybind(keybindings, "mod-r", "opt.reload()");
+    add_keybind(keybindings, "mod-S-c", "action.kill(Container.get_focused())");
     add_keybind(keybindings, "mod-S-Return", "action.exec(\"/usr/bin/alacritty\")");
     add_keybind(keybindings, "mod-j", "action.focus_on_stack(1)");
     add_keybind(keybindings, "mod-k", "action.focus_on_stack(-1)");
     add_keybind(keybindings, "mod-Return", "action.zoom()");
     add_keybind(keybindings, "mod-S-h", "action.resize_main(-1/10)");
     add_keybind(keybindings, "mod-S-l", "action.resize_main(1/10)");
+    add_keybind(keybindings, "mod-p", "action.exec(\"rofi -show run\")");
     return;
 }
 

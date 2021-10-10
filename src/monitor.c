@@ -22,10 +22,12 @@
 #include "list_sets/container_stack_set.h"
 #include "client.h"
 #include "container.h"
+#include "workspace.h"
 
 static void handle_output_damage_frame(struct wl_listener *listener, void *data);
 static void handle_output_frame(struct wl_listener *listener, void *data);
 static void handle_output_mode(struct wl_listener *listener, void *data);
+static void monitor_get_initial_workspace(struct monitor *m, GPtrArray *workspaces);
 
 void create_monitor(struct wl_listener *listener, void *data)
 {
@@ -80,25 +82,22 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     if (is_first_monitor) {
         server_set_selected_monitor(m);
+    }
+    monitor_get_initial_workspace(m, server.workspaces);
 
+    if (is_first_monitor) {
         load_config(L);
+        load_workspaces(server.workspaces, server.default_layout->options->tag_names);
         server_allow_reloading_config();
 
-        if (server.default_layout->options->tag_names->len <= 0) {
-            handle_error("tag_names is empty, loading default tag_names");
-            create_tagnames(&server.default_layout->options->tag_names);
-        }
-
-        server.workspaces = create_workspaces(server.default_layout->options->tag_names);
-        server.previous_bitset = bitset_create(server.workspaces->len);
+        server.previous_bitset = bitset_create();
         bitset_set(server.previous_bitset, server.previous_workspace);
 
         call_on_start_function(server.event_handler);
     }
 
     apply_mon_rules(server.default_layout->options->mon_rules, m);
-
-    focus_next_unoccupied_workspace(m, server.workspaces, get_workspace(0));
+    focus_tagset(monitor_get_active_tagset(m));
 
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
@@ -168,6 +167,20 @@ static void handle_output_mode(struct wl_listener *listener, void *data)
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     arrange_monitor(m);
     arrange_layers(m);
+}
+
+static void monitor_get_initial_workspace(struct monitor *m, GPtrArray *workspaces)
+{
+    struct workspace *ws = find_next_unoccupied_workspace(workspaces, get_workspace(0));
+
+    assert(ws != NULL);
+
+    int ws_id = ws->id;
+    BitSet *bitset = bitset_create();
+    bitset_set(bitset, ws_id);
+
+    struct tagset *tagset = create_tagset(m, ws_id, bitset);
+    push_tagset(tagset);
 }
 
 void destroy_monitor(struct wl_listener *listener, void *data)
@@ -269,9 +282,9 @@ void focus_monitor(struct monitor *m)
     /* wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, m->wlr_output.) */
 
     // move floating containers over
-    server_set_selected_monitor(m);
     struct workspace *ws = monitor_get_active_workspace(m);
     tagset_focus_tags(ws->id, ws->workspaces);
+    server_set_selected_monitor(m);
 }
 
 struct monitor *output_to_monitor(struct wlr_output *output)

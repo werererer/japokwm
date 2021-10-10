@@ -15,7 +15,7 @@ void tagset_connect_workspace_test()
 /*     ws[0].tagset = NULL; */
 /*     ws[0].selected_tagset = NULL; */
 
-    tagset1.workspaces = bitset_create(WORKSPACE_COUNT);
+    tagset1.workspaces = bitset_create();
 
     bitset_set(tagset1.workspaces, 0);
 

@@ -60,7 +60,7 @@ void lua_load_container()
     lua_setglobal(L, "Container");
 }
 
-static struct container *check_container(lua_State *L, int argn)
+struct container *check_container(lua_State *L, int argn)
 {
     void **ud = luaL_checkudata(L, argn, CONFIG_CONTAINER);
     luaL_argcheck(L, ud != NULL, argn, "`container' expected");
@@ -128,7 +128,7 @@ int lib_container_set_sticky(lua_State *L) {
     lua_pop(L, 1);
 
     BitSet *tmp_bitset = bitset_from_value(tags_dec);
-    BitSet *bitset = bitset_create(server.workspaces->len);
+    BitSet *bitset = bitset_create();
     for (int i = 0; i < bitset->size; i++) {
         int last_bit_id = tmp_bitset->size - 1;
         bitset_assign(bitset, i, bitset_test(tmp_bitset, last_bit_id - i));
@@ -151,7 +151,7 @@ int lib_container_set_sticky_restricted(lua_State *L) {
     lua_pop(L, 1);
 
     BitSet *tmp_bitset = bitset_from_value(tags_dec);
-    BitSet *bitset = bitset_create(server.workspaces->len);
+    BitSet *bitset = bitset_create();
     for (int i = 0; i < bitset->size; i++) {
         int last_bit_id = tmp_bitset->size - 1;
         bitset_assign(bitset, i, bitset_test(tmp_bitset, last_bit_id - i));
@@ -181,7 +181,7 @@ int lib_container_toggle_add_sticky(lua_State *L) {
     lua_pop(L, 1);
 
     BitSet *tmp_bitset = bitset_from_value(tags_dec);
-    BitSet *bitset = bitset_create(server.workspaces->len);
+    BitSet *bitset = bitset_create();
     for (int i = 0; i < bitset->size; i++) {
         int last_bit_id = tmp_bitset->size - 1;
         bitset_assign(bitset, i, bitset_test(tmp_bitset, last_bit_id - i));
@@ -214,7 +214,7 @@ int lib_container_toggle_add_sticky_restricted(lua_State *L) {
     lua_pop(L, 1);
 
     BitSet *tmp_bitset = bitset_from_value(tags_dec);
-    BitSet *bitset = bitset_create(server.workspaces->len);
+    BitSet *bitset = bitset_create();
     for (int i = 0; i < bitset->size; i++) {
         int last_bit_id = tmp_bitset->size - 1;
         bitset_assign(bitset, i, bitset_test(tmp_bitset, last_bit_id - i));

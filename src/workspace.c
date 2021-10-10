@@ -21,6 +21,31 @@
 #include "root.h"
 #include "translationLayer.h"
 
+static void handle_too_few_workspaces(uint32_t ws_id);
+
+static void handle_too_few_workspaces(uint32_t ws_id)
+{
+    // no number has more than 11 digits when int is 32 bit long
+    char name[12];
+    // TODO explain why +1
+    sprintf(name, "%d:%d", server.workspaces->len, server.workspaces->len+1);
+    while (ws_id >= server.workspaces->len)
+    {
+        struct workspace *new_ws = create_workspace(name, server.workspaces->len, server.default_layout);
+        g_ptr_array_add(server.workspaces, new_ws);
+        struct workspace *ws0 = get_workspace(0);
+        wlr_list_cat(new_ws->con_set->tiled_containers, ws0->con_set->tiled_containers);
+
+        wlr_list_cat(new_ws->focus_set->focus_stack_layer_background, ws0->focus_set->focus_stack_layer_background);
+        wlr_list_cat(new_ws->focus_set->focus_stack_layer_bottom, ws0->focus_set->focus_stack_layer_bottom);
+        wlr_list_cat(new_ws->focus_set->focus_stack_layer_top, ws0->focus_set->focus_stack_layer_top);
+        wlr_list_cat(new_ws->focus_set->focus_stack_layer_overlay, ws0->focus_set->focus_stack_layer_overlay);
+        wlr_list_cat(new_ws->focus_set->focus_stack_on_top, ws0->focus_set->focus_stack_on_top);
+        wlr_list_cat(new_ws->focus_set->focus_stack_normal, ws0->focus_set->focus_stack_normal);
+        wlr_list_cat(new_ws->focus_set->focus_stack_not_focusable, ws0->focus_set->focus_stack_not_focusable);
+    }
+}
+
 static void update_workspaces_id(GPtrArray *workspaces)
 {
     for (int id = 0; id < workspaces->len; id++) {
@@ -29,25 +54,40 @@ static void update_workspaces_id(GPtrArray *workspaces)
     }
 }
 
+
+
 static void _destroy_workspace(void *ws)
 {
     destroy_workspace(ws);
 }
 
-GPtrArray *create_workspaces(GPtrArray *tag_names)
+void load_workspaces(GPtrArray *workspaces, GPtrArray *tag_names)
 {
-    GPtrArray *workspaces = g_ptr_array_new_with_free_func(_destroy_workspace);
-    for (int i = 0; i < tag_names->len; i++) {
-        const char *name = g_ptr_array_index(tag_names, i);
-        struct workspace *ws = create_workspace(name, i, server.default_layout);
-        g_ptr_array_add(workspaces, ws);
+    while (server.workspaces->len > tag_names->len) {
+        struct workspace *ws = g_ptr_array_steal_index(
+                server.workspaces,
+                server.workspaces->len-1);
+        destroy_workspace(ws);
     }
-    return workspaces;
+    for (int i = 0; i < tag_names->len; i++) {
+        struct workspace *ws = get_workspace(i);
+        const char *name = g_ptr_array_index(tag_names, i);
+        ws->current_layout = server.default_layout->symbol;
+        ws->previous_layout = server.default_layout->symbol;
+        workspace_remove_loaded_layouts(ws);
+        workspace_rename(ws, name);
+    }
 }
 
 void destroy_workspaces(GPtrArray *workspaces)
 {
     g_ptr_array_unref(workspaces);
+}
+
+GPtrArray *create_workspaces()
+{
+    GPtrArray *workspaces = g_ptr_array_new_with_free_func(_destroy_workspace);
+    return workspaces;
 }
 
 struct workspace *create_workspace(const char *name, size_t id, struct layout *lt)
@@ -61,8 +101,8 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     ws->previous_layout = lt->symbol;
 
     // TODO: findout which value must be used
-    ws->workspaces = bitset_create(1);
-    ws->prev_workspaces = bitset_create(1);
+    ws->workspaces = bitset_create();
+    ws->prev_workspaces = bitset_create();
     bitset_set(ws->workspaces, ws->id);
     bitset_set(ws->prev_workspaces, ws->id);
 
@@ -139,6 +179,8 @@ void destroy_workspace(struct workspace *ws)
     }
     g_ptr_array_unref(ws->loaded_layouts);
 
+    workspace_remove_loaded_layouts(ws);
+
     bitset_destroy(ws->workspaces);
     bitset_destroy(ws->prev_workspaces);
     focus_set_destroy(ws->focus_set);
@@ -146,6 +188,10 @@ void destroy_workspace(struct workspace *ws)
     for (int i = 0; i < ws->con_set->tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(ws->con_set->tiled_containers, i);
         struct client *c = con->client;
+
+        if (c->ws_id != ws->id)
+            continue;
+
         kill_client(c);
     }
     destroy_container_set(ws->con_set);
@@ -245,15 +291,17 @@ struct workspace *find_next_unoccupied_workspace(GPtrArray *workspaces, struct w
         if (!is_workspace_occupied(w))
             return w;
     }
-    return NULL;
+    struct workspace *w = get_workspace(server_get_workspace_count());
+    return w;
 }
 
 struct workspace *get_workspace(int id)
 {
     if (id < 0)
         return NULL;
-    if (id >= server.workspaces->len)
-        return NULL;
+    if (id >= server.workspaces->len) {
+        handle_too_few_workspaces(id);
+    }
 
     return g_ptr_array_index(server.workspaces, id);
 }
@@ -416,9 +464,12 @@ void set_default_layout(struct workspace *ws)
     push_layout(ws, server.default_layout->symbol);
 }
 
-static void load_layout_file(lua_State *L, const char *name)
+static void load_layout_file(lua_State *L, struct layout *lt)
 {
-    init_local_config_variables(L);
+    struct workspace *ws = get_workspace(lt->ws_id);
+    struct monitor *m = workspace_get_monitor(ws);
+    init_local_config_variables(L, m);
+    const char *name = lt->symbol;
 
     char *config_path = get_config_file("layouts");
     char *file = strdup("");
@@ -443,8 +494,6 @@ cleanup:
 
 void load_layout(struct monitor *m)
 {
-    struct monitor *sel_m = server_get_selected_monitor();
-    server_set_selected_monitor(m);
     struct workspace *ws = monitor_get_active_workspace(m);
     const char *name = ws->current_layout;
     assert(name != NULL);
@@ -466,12 +515,10 @@ void load_layout(struct monitor *m)
         g_ptr_array_insert(ws->loaded_layouts, 0, lt);
         push_layout(ws, lt->symbol);
 
-        load_layout_file(L, name);
+        load_layout_file(L, lt);
     }
     int layout_index = server.layout_set.lua_layout_index;
     server.layout_set.lua_layout_index = layout_index;
-
-    server_set_selected_monitor(sel_m);
 }
 
 static void destroy_layout0(void *lt)
@@ -479,27 +526,17 @@ static void destroy_layout0(void *lt)
     destroy_layout(lt);
 }
 
-void remove_loaded_layouts(GPtrArray *workspaces)
+void workspace_remove_loaded_layouts(struct workspace *ws)
+{
+    list_clear(ws->loaded_layouts, destroy_layout0);
+}
+
+void workspaces_remove_loaded_layouts(GPtrArray *workspaces)
 {
     for (int i = 0; i < workspaces->len; i++) {
         struct workspace *ws = get_workspace(i);
-        list_clear(ws->loaded_layouts, destroy_layout0);
+        workspace_remove_loaded_layouts(ws);
     }
-}
-
-void focus_next_unoccupied_workspace(struct monitor *m, GPtrArray *workspaces, struct workspace *ws)
-{
-    struct workspace *w = find_next_unoccupied_workspace(workspaces, ws);
-
-    if (!w)
-        return;
-
-    BitSet *bitset = bitset_create(server.workspaces->len);
-    bitset_set(bitset, w->id);
-
-    struct tagset *tagset = create_tagset(m, w->id, bitset);
-    bitset_destroy(bitset);
-    push_tagset(tagset);
 }
 
 void workspace_rename(struct workspace *ws, const char *name)
