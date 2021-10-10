@@ -165,7 +165,6 @@ int lib_set_inner_gaps(lua_State *L)
     lua_pop(L, 1);
 
     options->inner_gap = inner_gap;
-    lua_pop(L, 1);
     return 0;
 }
 
@@ -463,7 +462,7 @@ int lib_set_hidden_edges(lua_State *L)
 
 int lib_set_smart_hidden_edges(lua_State *L)
 {
-    int smart_hidden_edges = lua_toboolean(L, -1);
+    bool smart_hidden_edges = lua_toboolean(L, -1);
     lua_pop(L, 1);
 
     struct options *options = check_options(L, 1);

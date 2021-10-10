@@ -50,16 +50,16 @@ static void create_lua_color(struct color color) {
 // functions
 int lib_color_new(lua_State *L)
 {
-    float alpha = luaL_checkinteger(L, -1);
+    float alpha = luaL_checknumber(L, -1);
     lua_pop(L, 1);
 
-    float blue = luaL_checkinteger(L, -1);
+    float blue = luaL_checknumber(L, -1);
     lua_pop(L, 1);
 
-    float green = luaL_checkinteger(L, -1);
+    float green = luaL_checknumber(L, -1);
     lua_pop(L, 1);
 
-    float red = luaL_checkinteger(L, -1);
+    float red = luaL_checknumber(L, -1);
     lua_pop(L, 1);
 
     struct color color = {
