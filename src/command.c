@@ -4,6 +4,7 @@
 
 #include "utils/parseConfigUtils.h"
 #include "server.h"
+#include "tile/tileUtils.h"
 
 struct cmd_results *cmd_results_new(enum cmd_status status,
         const char *format, ...) {
@@ -62,6 +63,7 @@ struct cmd_results *cmd_eval(const char *cmd)
 struct cmd_results *execute_command(char *cmd, struct wlr_seat *seat,
         struct container *con) {
     struct cmd_results *res = cmd_eval(cmd);
+    arrange();
     return res;
 }
 
