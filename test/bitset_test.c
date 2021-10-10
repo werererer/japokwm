@@ -10,13 +10,25 @@ void test_bitset()
     g_assert_cmpint(bit, ==, 0);
 }
 
-void test_move_bitset()
+void test_bitset_and()
 {
-    /* BitSet *bitset1 = bitset_create(8); */
-    /* BitSet *bitset2 = bitset_create(8); */
-    /* bitset_move(bitset1, bitset2); */
-    /* int bit = bitset_test(bitset1, 0); */
-    /* g_assert_cmpint(bit, ==, 0); */
+    BitSet *bitset1 = bitset_create();
+    BitSet *bitset2 = bitset_create();
+    bitset_set(bitset1, 1);
+    bitset_set(bitset2, 1);
+
+    bitset_and(bitset1, bitset2);
+
+    g_assert_cmpint(bitset_any(bitset1), ==, true);
+
+    bitset_reset_all(bitset1);
+    bitset_reset_all(bitset2);
+
+    bitset_set(bitset1, 1);
+    bitset_set(bitset2, 2);
+
+    bitset_and(bitset1, bitset2);
+    g_assert_cmpint(bitset_any(bitset1), ==, false);
 }
 
 void test_copy_bitset()
@@ -54,7 +66,7 @@ int main(int argc, char** argv)
     g_test_init(&argc, &argv, NULL);
 
     add_test(test_bitset);
-    add_test(test_move_bitset);
+    add_test(test_bitset_and);
     add_test(test_copy_bitset);
     add_test(test_bitset_assign);
     /* add_test(test_from_value); */

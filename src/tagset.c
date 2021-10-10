@@ -1,3 +1,5 @@
+#include "tagset.h"
+
 #include <assert.h>
 
 #include "bitset/bitset.h"
@@ -16,7 +18,6 @@
 #include "list_sets/focus_stack_set.h"
 #include "list_sets/container_stack_set.h"
 #include "workspace.h"
-#include "tagset.h"
 #include "workspace.h"
 #include "root.h"
 
@@ -92,6 +93,7 @@ void tagset_load_workspaces()
     for (int i = 0; i < server.tagsets->len; i++) {
         struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
 
+        debug_print("tagset: %p\n", tagset);
         if (!tagset_is_damaged(tagset))
             return;
 
@@ -101,6 +103,7 @@ void tagset_load_workspaces()
 
         container_set_clear(dest);
         container_set_append(tagset, dest, src);
+        debug_print("new container set len: %i\n", tagset->con_set->tiled_containers->len);
     }
 }
 
@@ -649,9 +652,15 @@ bool tagset_contains_sticky_client(BitSet *tagset_workspaces, struct client *c)
 
 bool tagset_contains_client(BitSet *workspaces, struct client *c)
 {
-    if (tagset_contains_sticky_client(workspaces, c))
+    debug_print("tagset_contains_client\n");
+    debug_print("c: %i\n", c->ws_id);
+    if (tagset_contains_sticky_client(workspaces, c)) {
+        debug_print("true\n");
         return true;
+    }
+    debug_print("that is false\n");
 
+    debug_print("c: %i\n", c->ws_id);
     BitSet *bitset = bitset_create();
     workspace_id_to_tag(bitset, c->ws_id);
     bitset_and(bitset, workspaces);
@@ -729,6 +738,7 @@ bool exist_on(struct monitor *m, BitSet *workspaces, struct container *con)
     if (!workspaces)
         return false;
     struct monitor *con_m = container_get_monitor(con);
+    printf("container monitor: %p\n", con_m);
     if (!con_m) {
         return false;
     }

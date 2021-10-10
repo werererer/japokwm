@@ -1038,7 +1038,6 @@ void container_set_workspace(struct container *con, struct workspace *ws)
     // TODO: cleanup code:
     container_set_workspace_id(con, ws->id);
     ws->prev_m = m;
-
     tagset_reload(tagset);
 }
 

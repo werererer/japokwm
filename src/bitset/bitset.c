@@ -97,17 +97,16 @@ int bitset_equals(BitSet* bitset1, BitSet* bitset2)
 int bit_wise_operation(BitSet* destination,
                                                 BitSet* source,
                                                 bit_operator_t bit_operator) {
-    size_t smaller_size;
-
     assert(destination != NULL);
     assert(source != NULL);
 
     if (destination == NULL) return BITSET_ERROR;
     if (source == NULL) return BITSET_ERROR;
 
-    smaller_size = MIN(destination->size, source->size);
+    // TODO: export as func
+    bitset_equalize_size(destination, source);
 
-    for (size_t bit = 0; bit < smaller_size; bit++) {
+    for (size_t bit = 0; bit < destination->size; bit++) {
         bool first = bitset_test(destination, bit);
         const bool second = bitset_test(source, bit);
 
@@ -305,6 +304,13 @@ void bitset_reserve(BitSet* bitset, size_t minimum_number_of_bits) {
     bitset->size = minimum_number_of_bits;
 }
 
+void bitset_equalize_size(BitSet* bitset1, BitSet *bitset2)
+{
+    bitset_grow_to_size(bitset1, bitset2->size);
+    bitset_grow_to_size(bitset2, bitset1->size);
+
+    assert(bitset1->size == bitset2->size);
+}
 
 void bitset_grow_to_size(BitSet* bitset, size_t size)
 {
