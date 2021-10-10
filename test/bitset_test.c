@@ -5,7 +5,7 @@
 
 void test_bitset()
 {
-    BitSet *bitset = bitset_create(8);
+    BitSet *bitset = bitset_create();
     int bit = bitset_test(bitset, 0);
     g_assert_cmpint(bit, ==, 0);
 }
@@ -21,7 +21,7 @@ void test_move_bitset()
 
 void test_copy_bitset()
 {
-    BitSet *bitset1 = bitset_create(8);
+    BitSet *bitset1 = bitset_create();
     BitSet *bitset2 = bitset_copy(bitset1);
     int bit = bitset_test(bitset2, 0);
     g_assert_cmpint(bit, ==, 0);
@@ -29,7 +29,7 @@ void test_copy_bitset()
 
 void test_bitset_assign()
 {
-    BitSet *bitset1 = bitset_create(8);
+    BitSet *bitset1 = bitset_create();
     bitset_assign(bitset1, 0, 1);
     g_assert_cmpint(bitset_test(bitset1, 0), ==, 1);
 }

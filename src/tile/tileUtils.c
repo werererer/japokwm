@@ -50,7 +50,6 @@ void arrange()
 
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
-        server_set_selected_monitor(m);
         arrange_monitor(m);
     }
 }

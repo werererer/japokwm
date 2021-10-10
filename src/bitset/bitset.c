@@ -6,13 +6,14 @@
 
 /****************** INTERFACE ******************/
 
-BitSet *bitset_create(size_t minimum_number_of_bits) {
+BitSet *bitset_create()
+{
     BitSet *bitset = calloc(1, sizeof(*bitset));
-    size_t number_of_bytes = BITS_TO_BYTES(minimum_number_of_bits);
+    size_t number_of_bytes = DEFAULT_ALLOCATED_BYTES;
 
-    bitset->bits = g_ptr_array_sized_new(number_of_bytes);
+    bitset->bytes = g_ptr_array_sized_new(number_of_bytes);
 
-    bitset->size = minimum_number_of_bits;
+    bitset->size = DEFAULT_NUMBER_OF_BITS;
     for (size_t byte = 0; byte < number_of_bytes; ++byte) {
         bitset_grow(bitset);
     }
@@ -32,7 +33,7 @@ BitSet* bitset_copy(BitSet* source) {
     assert(source != NULL);
 
     BitSet *destination = malloc(sizeof(BitSet));
-    destination->bits = g_ptr_array_copy(source->bits, copy_int, NULL);
+    destination->bytes = g_ptr_array_copy(source->bytes, copy_int, NULL);
     destination->size = source->size;
 
     return destination;
@@ -65,12 +66,12 @@ int bitset_swap(BitSet* destination, BitSet* source) {
 }
 
 void bitset_destroy(BitSet* bitset) {
-    g_ptr_array_unref(bitset->bits);
+    g_ptr_array_unref(bitset->bytes);
     free(bitset);
 }
 
 BitSet *bitset_from_value(uint64_t value) {
-    BitSet *bitset = bitset_create(64);
+    BitSet *bitset = bitset_create();
     for (size_t bit = 0; bit < 64; ++bit) {
         bitset_assign(bitset, bit, LAST_BIT(value));
         value <<= 1;
@@ -133,8 +134,8 @@ int bitset_flip(BitSet* bitset) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    for (int byte_idx = 0; byte_idx < bitset->bits->len; byte_idx++) {
-        uint8_t* byte = g_ptr_array_index(bitset->bits, byte_idx);
+    for (int byte_idx = 0; byte_idx < bitset->bytes->len; byte_idx++) {
+        uint8_t* byte = g_ptr_array_index(bitset->bytes, byte_idx);
         *byte = ~(*byte);
     }
 
@@ -201,7 +202,7 @@ uint8_t* byte_get(BitSet* bitset, size_t index) {
 
     bitset_grow_to_size(bitset, index+1);
     int byte_index = _byte_index(index);
-    return (uint8_t*)g_ptr_array_index(bitset->bits, byte_index);
+    return (uint8_t*)g_ptr_array_index(bitset->bytes, byte_index);
 }
 
 const uint8_t* byte_const_get(BitSet* bitset, size_t index) {
@@ -210,7 +211,7 @@ const uint8_t* byte_const_get(BitSet* bitset, size_t index) {
 
     bitset_grow_to_size(bitset, index+1);
     int byte_index = _byte_index(index);
-    return (const uint8_t*)g_ptr_array_index(bitset->bits, byte_index);
+    return (const uint8_t*)g_ptr_array_index(bitset->bytes, byte_index);
 }
 
 int bitset_msb(BitSet* bitset) {
@@ -236,8 +237,8 @@ int bitset_set_all_to_mask(BitSet* bitset, uint8_t mask) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    for (int byte_idx = 0; byte_idx < bitset->bits->len; byte_idx++) {
-        uint8_t *byte = g_ptr_array_index(bitset->bits, byte_idx);
+    for (int byte_idx = 0; byte_idx < bitset->bytes->len; byte_idx++) {
+        uint8_t *byte = g_ptr_array_index(bitset->bytes, byte_idx);
         *byte = mask;
     }
 
@@ -248,7 +249,7 @@ void bitset_clear(BitSet* bitset) {
     assert(bitset != NULL);
     bitset->size = 0;
 
-    list_clear(bitset->bits, free);
+    list_clear(bitset->bytes, free);
 }
 
 /* Size Management */
@@ -295,10 +296,10 @@ void bitset_reserve(BitSet* bitset, size_t minimum_number_of_bits) {
     assert(bitset != NULL);
 
     int number_of_bytes = BITS_TO_BYTES(minimum_number_of_bits);
-    while(bitset->bits->len < number_of_bytes) {
+    while(bitset->bytes->len < number_of_bytes) {
         bitset_grow(bitset);
     }
-    while(bitset->bits->len > number_of_bytes) {
+    while(bitset->bytes->len > number_of_bytes) {
         bitset_shrink(bitset);
     }
     bitset->size = minimum_number_of_bits;
@@ -311,7 +312,7 @@ void bitset_grow_to_size(BitSet* bitset, size_t size)
     if (bitset->size < size) {
         bitset->size = size;
     }
-    while(bitset->bits->len < number_of_bytes) {
+    while(bitset->bytes->len < number_of_bytes) {
         bitset_grow(bitset);
     }
 }
@@ -322,20 +323,20 @@ void bitset_grow(BitSet* bitset) {
 
     /* ERROR/SUCCESS flags are the same */
     uint8_t *empty = calloc(1, sizeof(*empty));
-    g_ptr_array_add(bitset->bits, empty);
+    g_ptr_array_add(bitset->bytes, empty);
 }
 
 void bitset_shrink(BitSet* bitset) {
     assert(bitset != NULL);
 
-    uint8_t *byte = g_ptr_array_steal_index(bitset->bits, bitset->size-1);
+    uint8_t *byte = g_ptr_array_steal_index(bitset->bytes, bitset->size-1);
     free(byte);
 }
 
 /* Information */
 size_t bitset_capacity(const BitSet* bitset) {
     assert(bitset != NULL);
-    return bitset->bits->len * 8;
+    return bitset->bytes->len * 8;
 }
 
 size_t bitset_size_in_bytes(const BitSet* bitset) {
@@ -351,8 +352,8 @@ int bitset_count(BitSet* bitset) {
     if (bitset == NULL) return BITSET_ERROR;
 
     count = 0;
-    for (int byte_idx = 0; byte_idx < bitset->bits->len; byte_idx++) {
-        uint8_t *byte = g_ptr_array_index(bitset->bits, byte_idx);
+    for (int byte_idx = 0; byte_idx < bitset->bytes->len; byte_idx++) {
+        uint8_t *byte = g_ptr_array_index(bitset->bytes, byte_idx);
         count += _byte_popcount(*byte);
     }
 
@@ -363,8 +364,8 @@ int bitset_all(BitSet* bitset) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    for (int byte_idx = 0; byte_idx < bitset->bits->len; byte_idx++) {
-        uint8_t *byte = g_ptr_array_index(bitset->bits, byte_idx);
+    for (int byte_idx = 0; byte_idx < bitset->bytes->len; byte_idx++) {
+        uint8_t *byte = g_ptr_array_index(bitset->bytes, byte_idx);
         if (*byte != 0xff) {
             return false;
         }
@@ -377,8 +378,8 @@ int bitset_any(BitSet* bitset) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    for (int byte_idx = 0; byte_idx < bitset->bits->len; byte_idx++) {
-        uint8_t *byte = g_ptr_array_index(bitset->bits, byte_idx);
+    for (int byte_idx = 0; byte_idx < bitset->bytes->len; byte_idx++) {
+        uint8_t *byte = g_ptr_array_index(bitset->bytes, byte_idx);
         if (*byte != 0) {
             return true;
         }
@@ -419,7 +420,7 @@ int _bitset_increment_size(BitSet* bitset) {
 
     if (bitset->size++ % 8 == 0) {
         uint8_t *empty = calloc(1, sizeof(*empty));
-        g_ptr_array_add(bitset->bits, empty);
+        g_ptr_array_add(bitset->bytes, empty);
     }
 
     return BITSET_SUCCESS;

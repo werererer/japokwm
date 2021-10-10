@@ -111,6 +111,8 @@ void finalize_server();
 int start_server(char *startup_cmd);
 int stop_server();
 
+int server_get_workspace_count();
+
 void server_prohibit_reloading_config();
 void server_allow_reloading_config();
 bool server_is_config_reloading_prohibited();

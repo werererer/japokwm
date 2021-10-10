@@ -23,14 +23,14 @@ typedef void (*bit_operator_t)(bool*, const bool*);
 /****************** STRUCTURES ******************/
 
 typedef struct BitSet {
-    GPtrArray *bits;
+    GPtrArray *bytes;
     size_t size;
 } BitSet;
 
 /****************** INTERFACE ******************/
 
 /* Setup */
-BitSet *bitset_create(size_t minimum_number_of_bits);
+BitSet *bitset_create();
 
 BitSet* bitset_copy(BitSet* source);
 // both dest and source must be initialized
@@ -104,6 +104,8 @@ void print_bitset(BitSet *bitset);
 
 #define CEIL(x) ((x == ((int)(x))) ? x : ((int)(x)) + 1)
 #define BITS_TO_BYTES(bits) CEIL((bits) / 8.0)
+#define DEFAULT_ALLOCATED_BYTES 1
+#define DEFAULT_NUMBER_OF_BITS 8
 
 /* Popcount Masks */
 #define POPCOUNT_MASK1 0x55

@@ -86,7 +86,6 @@ void tagset_set_tags(struct tagset *tagset, BitSet *workspaces)
     ipc_event_workspace();
 }
 
-
 // you should use tagset_write_to_workspaces to unload workspaces first else
 void tagset_load_workspaces()
 {
@@ -110,14 +109,12 @@ static void tagset_clean_destroyed_tagset(struct tagset *tagset)
     if (!tagset)
         return;
 
-    for (size_t i = 0; i < tagset->workspaces->size; i++) {
+    for (size_t i = 0; i < server_get_workspace_count(); i++) {
         struct workspace *ws = get_workspace(i);
         if (ws->tagset == tagset) {
-            debug_print("ws: %i = NULL\n", ws->id);
             ws->tagset = NULL;
         }
         if (ws->selected_tagset == tagset) {
-            debug_print("ws: selected tagst %i = NULL\n", ws->id);
             ws->selected_tagset = NULL;
         }
     }
@@ -164,7 +161,6 @@ static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws
     tagset_unset_workspace(ws->tagset, ws);
     ws->tagset = tagset;
     if (tagset->selected_ws_id == ws->id) {
-        debug_print("set selected tagset: %i\n", ws->id);
         ws->selected_tagset = tagset;
     }
     tagset_set_workspace(tagset, ws);
@@ -188,6 +184,9 @@ void tagset_workspaces_connect(struct tagset *tagset)
 
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *workspaces)
 {
+    assert(m != NULL);
+    assert(workspaces != NULL);
+
     struct tagset *tagset = calloc(1, sizeof(*tagset));
     tagset->m = m;
 
@@ -210,11 +209,9 @@ void destroy_tagset(struct tagset *tagset)
         return;
     struct workspace *selected_workspace = get_workspace(tagset->selected_ws_id);
     if (selected_workspace->tagset == tagset) {
-        debug_print("ws: selected tagst %i = NULL\n", selected_workspace->id);
         selected_workspace->tagset = NULL;
     }
     if (selected_workspace->selected_tagset == tagset) {
-        debug_print("ws: selected tagst %i = NULL\n", selected_workspace->id);
         selected_workspace->selected_tagset = NULL;
     }
 
@@ -438,22 +435,10 @@ static void handle_too_few_workspaces(uint32_t ws_id)
         wlr_list_cat(new_ws->focus_set->focus_stack_normal, ws0->focus_set->focus_stack_normal);
         wlr_list_cat(new_ws->focus_set->focus_stack_not_focusable, ws0->focus_set->focus_stack_not_focusable);
     }
-
-    for (int i = 0; i < server.tagsets->len; i++) {
-        struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
-        while (tagset->workspaces->size < server.workspaces->len)
-        {
-            bitset_push(tagset->workspaces, 0);
-        }
-    }
 }
 
 void tagset_focus_workspace(int ws_id)
 {
-    if (ws_id >= server.workspaces->len) {
-        handle_too_few_workspaces(ws_id);
-    }
-
     struct workspace *ws = get_workspace(ws_id);
     BitSet *workspaces = bitset_copy(ws->workspaces);
     tagset_focus_tags(ws_id, workspaces);
@@ -487,6 +472,7 @@ void tagset_reload(struct tagset *tagset)
 {
     if (!tagset)
         return;
+    tagset_damage(tagset);
     tagset_load_workspaces();
     /* update_sub_focus_stack(tagset); */
     /* update_visual_visible_stack(tagset); */
@@ -666,7 +652,7 @@ bool tagset_contains_client(BitSet *workspaces, struct client *c)
     if (tagset_contains_sticky_client(workspaces, c))
         return true;
 
-    BitSet *bitset = bitset_create(server.workspaces->len);
+    BitSet *bitset = bitset_create();
     workspace_id_to_tag(bitset, c->ws_id);
     bitset_and(bitset, workspaces);
     bool contains = bitset_any(bitset);

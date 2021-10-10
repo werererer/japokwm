@@ -120,7 +120,7 @@ int lib_reload(lua_State *L)
     options_reset(server.default_layout->options);
 
     debug_print("remove loaded layouts start\n");
-    remove_loaded_layouts(server.workspaces);
+    workspaces_remove_loaded_layouts(server.workspaces);
     debug_print("remove loaded layouts end\n");
     load_config(L);
     for (int i = 0; i < server.workspaces->len; i++) {
@@ -353,6 +353,8 @@ int lib_create_workspaces(lua_State *L)
 
     list_clear(options->tag_names, NULL);
     wlr_list_cat(options->tag_names, tag_names);
+
+    load_workspaces(server.workspaces, options->tag_names);
 
     g_ptr_array_unref(tag_names);
 

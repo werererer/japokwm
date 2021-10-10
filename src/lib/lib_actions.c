@@ -26,6 +26,7 @@
 #include "xdg-shell-protocol.h"
 #include "scratchpad.h"
 #include "tagset.h"
+#include "lib/lib_container.h"
 
 int lib_arrange(lua_State *L)
 {
@@ -146,7 +147,7 @@ int lib_set_tags(lua_State *L)
     struct monitor *m = server_get_selected_monitor();
 
     BitSet *tmp_bitset = bitset_from_value(tags_dec);
-    BitSet *bitset = bitset_create(server.workspaces->len);
+    BitSet *bitset = bitset_create();
     for (int i = 0; i < bitset->size; i++) {
         int last_bit_id = tmp_bitset->size - 1;
         bitset_assign(bitset, i, bitset_test(tmp_bitset, last_bit_id - i));
@@ -231,13 +232,8 @@ int lib_view(lua_State *L)
     unsigned int ws_id = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct monitor *m = server_get_selected_monitor();
-    if (!m)
-        return 0;
-
     struct workspace *ws = get_workspace(ws_id);
-    tagset_focus_tags(ws_id, bitset_copy(ws->workspaces));
-    arrange();
+    tagset_focus_tags(ws_id, ws->workspaces);
     return 0;
 }
 
@@ -250,7 +246,7 @@ int lib_tag_view(lua_State *L)
     struct monitor *m = server_get_selected_monitor();
 
     BitSet *tmp_bitset = bitset_from_value(tags_dec);
-    BitSet *bitset = bitset_create(server.workspaces->len);
+    BitSet *bitset = bitset_create();
     for (int i = 0; i < bitset->size; i++) {
         int last_bit_id = tmp_bitset->size - 1;
         bitset_assign(bitset, i, bitset_test(tmp_bitset, last_bit_id - i));
@@ -290,8 +286,8 @@ int lib_move_container_to_workspace(lua_State *L)
     struct monitor *m = server_get_selected_monitor();
     struct container *con = get_focused_container(m);
 
-    move_container_to_workspace(con, get_workspace(ws_id));
-
+    struct workspace *ws = get_workspace(ws_id);
+    move_container_to_workspace(con, ws);
     return 0;
 }
 
@@ -457,13 +453,8 @@ int lib_load_layout(lua_State *L)
 
 int lib_kill(lua_State *L)
 {
-    struct monitor *m = server_get_selected_monitor();
-
-    int i = luaL_checkinteger(L, -1);
+    struct container *con = check_container(L, 1);
     lua_pop(L, 1);
-
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct container *con = get_container(ws, i);
 
     if (!con)
         return 0;

@@ -87,12 +87,6 @@ static const struct luaL_Reg info[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg layout[] =
-{
-    {"set", lib_set_layout},
-    {NULL, NULL},
-};
-
 static const struct luaL_Reg monitor[] = 
 {
     {"set_scale", lib_set_scale},
@@ -283,9 +277,7 @@ void load_lua_api(lua_State *L)
     lua_load_options();
     lua_load_server();
     lua_load_workspace();
-
-    luaL_newlib(L, layout);
-    lua_setglobal(L, "layout");
+    lua_load_layout();
 
     luaL_newlib(L, monitor);
     lua_setglobal(L, "monitor");
@@ -297,12 +289,12 @@ void init_global_config_variables(lua_State *L)
     lua_init_options(server.default_layout->options);
 }
 
-void init_local_config_variables(lua_State *L)
+void init_local_config_variables(lua_State *L, struct monitor *m)
 {
-    struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
 
     lua_init_events(server.event_handler);
     lua_init_options(lt->options);
+    lua_init_layout(lt);
 }
