@@ -1035,10 +1035,8 @@ void container_set_workspace(struct container *con, struct workspace *ws)
     if (tagset->selected_ws_id == ws->id)
         return;
 
-    // TODO: cleanup code:
-    container_set_workspace_id(con, ws->id);
     ws->prev_m = m;
-    tagset_reload(tagset);
+    container_set_workspace_id(con, ws->id);
 }
 
 void move_container_to_workspace(struct container *con, struct workspace *ws)
