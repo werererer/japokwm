@@ -22,7 +22,7 @@ local layouts = {"two_pane", "monocle", "tile"}
 
 opt.create_layout_set("default", layouts)
 
-opt.default_layout = layouts[1]
+layout.default_layout = layouts[1]
 
 -- set it to 4 to use super instead
 opt.mod = 1

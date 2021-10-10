@@ -287,6 +287,7 @@ void init_global_config_variables(lua_State *L)
 {
     lua_init_events(server.event_handler);
     lua_init_options(server.default_layout->options);
+    lua_init_layout(server.default_layout);
 }
 
 void init_local_config_variables(lua_State *L, struct monitor *m)
