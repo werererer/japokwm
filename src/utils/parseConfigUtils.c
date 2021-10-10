@@ -35,10 +35,8 @@ static const char *config_file = "init.lua";
 static const char *error_file = "init.err";
 static int error_fd = -1;
 
-static int load_file(lua_State *L, const char *file);
-
 // returns 0 upon success and 1 upon failure
-static int load_file(lua_State *L, const char *file)
+int load_file(lua_State *L, const char *file)
 {
     printf("load file: %s\n", file);
     if (!file_exists(file)) {

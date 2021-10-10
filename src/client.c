@@ -30,7 +30,6 @@ struct client *create_client(enum shell shell_type, union surface_t surface)
 
 void destroy_client(struct client *c)
 {
-    debug_print("destroy client: %p\n", c);
     bitset_destroy(c->sticky_workspaces);
     free(c);
 }

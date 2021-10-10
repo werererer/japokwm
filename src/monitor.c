@@ -224,14 +224,12 @@ void destroy_monitor(struct wl_listener *listener, void *data)
     free(m);
 
     if (server.mons->len <= 0) {
-        debug_print("destroy monitor end alt: %p\n", m);
         /* wl_display_terminate(server.wl_display); */
         return;
     }
 
     struct monitor *new_focused_monitor = g_ptr_array_index(server.mons, 0);
     server_set_selected_monitor(new_focused_monitor);
-    debug_print("destroy monitor end: %p\n", m);
 }
 
 void center_cursor_in_monitor(struct cursor *cursor, struct monitor *m)

@@ -4,6 +4,11 @@
 
 #include "utils/parseConfigUtils.h"
 #include "utils/coreUtils.h"
+#include "lib/lib_layout.h"
+#include "layout.h"
+#include "monitor.h"
+#include "server.h"
+#include "workspace.h"
 
 struct event_handler *create_event_handler()
 {
@@ -41,41 +46,45 @@ GPtrArray *event_name_to_signal(struct event_handler *event_handler,
     return NULL;
 }
 
-static void emit_signal(GPtrArray *func_refs)
+static void emit_signal(GPtrArray *func_refs, int narg)
 {
+    // [..., arg1, arg2, ..., argn]
     for (int i = 0; i < func_refs->len; i++) {
         int *ref = g_ptr_array_index(func_refs, i);
         lua_rawgeti(L, LUA_REGISTRYINDEX, *ref);
-        lua_call_safe(L, 0, 0, 0);
-    }
-}
+        // [..., arg1, arg2, ..., argn, func]
 
-static void emit_signal_to_one_int_argument_functions(GPtrArray *func_refs, int n)
-{
-    for (int i = 0; i < func_refs->len; i++) {
-        int *ref = g_ptr_array_index(func_refs, i);
-        lua_rawgeti(L, LUA_REGISTRYINDEX, *ref);
-        lua_pushinteger(L, n);
-        lua_call_safe(L, 1, 0, 0);
+        for (int i = 0; i < narg; i++) {
+            lua_pushvalue(L, -narg-1);
+        }
+        // [..., func, arg1, arg2, ..., argn]
+        lua_call_safe(L, narg, 0, 0);
     }
 }
 
 void call_update_function(struct event_handler *ev, int n)
 {
-    emit_signal_to_one_int_argument_functions(ev->on_update_func_refs, n);
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct layout *lt = workspace_get_layout(ws);
+
+    create_lua_layout(lt);
+    emit_signal(ev->on_update_func_refs, 1);
 }
 
 void call_create_container_function(struct event_handler *ev, int n)
 {
-    emit_signal_to_one_int_argument_functions(ev->on_create_container_func_refs, n);
+    lua_pushinteger(L, n);
+    emit_signal(ev->on_create_container_func_refs, 1);
 }
 
 void call_on_focus_function(struct event_handler *ev, int n)
 {
-    emit_signal_to_one_int_argument_functions(ev->on_focus_func_refs, n);
+    lua_pushinteger(L, n);
+    emit_signal(ev->on_focus_func_refs, 1);
 }
 
 void call_on_start_function(struct event_handler *ev)
 {
-    emit_signal(ev->on_start_func_refs);
+    emit_signal(ev->on_start_func_refs, 0);
 }

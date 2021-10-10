@@ -11,6 +11,7 @@
 #include "list_sets/container_stack_set.h"
 #include "monitor.h"
 #include "server.h"
+#include "utils/parseConfigUtils.h"
 #include "tile/tileUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "container.h"
@@ -482,11 +483,10 @@ static void load_layout_file(lua_State *L, struct layout *lt)
     if (!file_exists(file))
         goto cleanup;
 
-    if (luaL_loadfile(L, file)) {
+    if (load_file(L, file) != EXIT_SUCCESS) {
         lua_pop(L, 1);
         goto cleanup;
     }
-    lua_call_safe(L, 0, 0, 0);
 
 cleanup:
     free(file);
