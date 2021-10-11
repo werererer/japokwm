@@ -40,8 +40,10 @@ static const struct luaL_Reg container_setter[] = {
 
 void create_lua_container(struct container *con)
 {
-    if (!con)
+    if (!con) {
+        lua_pushnil(L);
         return;
+    }
     struct container **user_con = lua_newuserdata(L, sizeof(struct container*));
     *user_con = con;
 

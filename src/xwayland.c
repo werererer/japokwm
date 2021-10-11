@@ -207,7 +207,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
                     focus_container(con);
                 }
 
-                debug_print("len of composed %i\n", length_of_composed_list(ws->focus_set->focus_stack_lists));
                 con->has_border = false;
                 lift_container(con);
                 container_set_floating(con, NULL, true);

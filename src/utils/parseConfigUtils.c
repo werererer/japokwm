@@ -11,7 +11,6 @@
 #include <execinfo.h>
 #include <sys/stat.h>
 #include <libnotify/notify.h>
-#include <pthread.h>
 #include <fts.h>
 
 #include "tile/tileUtils.h"
@@ -231,8 +230,8 @@ int lua_call_safe(lua_State *L, int nargs, int nresults, int msgh)
     int lua_status = lua_pcall(L, nargs, nresults, msgh);
     if (lua_status != LUA_OK) {
         const char *errmsg = luaL_checkstring(L, -1);
-        lua_pop(L, 1);
         handle_error(errmsg);
+        lua_pop(L, 1);
     }
     return lua_status;
 }
@@ -268,9 +267,11 @@ static void *_notify_msg(void *arg)
 
 void notify_msg(const char *msg)
 {
-    pthread_t thread;
-    pthread_create(&thread, NULL, _notify_msg, (char *)msg);
-    pthread_detach(thread);
+    // TODO: do we need pthreads here?
+    /* pthread_t thread; */
+    _notify_msg((char *)msg);
+    /* pthread_create(&thread, NULL, _notify_msg, (char *)msg); */
+    /* pthread_detach(thread); */
 }
 
 void handle_error(const char *msg)
