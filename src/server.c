@@ -168,7 +168,6 @@ void finalize_server()
     g_ptr_array_unref(server.named_key_combos);
 
     finalize_lists(&server);
-    finalize_timers(&server);
 
     g_ptr_array_unref(server.mons);
     g_ptr_array_unref(server.popups);
@@ -346,6 +345,7 @@ int start_server(char *startup_cmd)
 
 int finalize(struct server *server)
 {
+    finalize_timers(server);
     destroy_layout(server->default_layout);
     return 0;
 }

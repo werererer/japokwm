@@ -172,9 +172,9 @@ void destroy_workspace(struct workspace *ws)
         struct layout *lt = g_ptr_array_steal_index(ws->loaded_layouts, 0);
         destroy_layout(lt);
     }
-    g_ptr_array_unref(ws->loaded_layouts);
 
     workspace_remove_loaded_layouts(ws);
+    g_ptr_array_unref(ws->loaded_layouts);
 
     bitset_destroy(ws->workspaces);
     bitset_destroy(ws->prev_workspaces);
