@@ -49,7 +49,6 @@ GPtrArray *event_name_to_signal(struct event_handler *event_handler,
 // this seems to be the culprit
 static void emit_signal(GPtrArray *func_refs, int narg)
 {
-    debug_print("emit sig start: %i\n", lua_gettop(L));
     // [..., arg1, arg2, ..., argn]
     for (int i = 0; i < func_refs->len; i++) {
         int *ref = g_ptr_array_index(func_refs, i);
@@ -63,7 +62,6 @@ static void emit_signal(GPtrArray *func_refs, int narg)
         lua_call_safe(L, narg, 0, 0);
     }
     lua_pop(L, narg);
-    debug_print("emit sig end: %i\n", lua_gettop(L));
 }
 
 void call_update_function(struct event_handler *ev, int n)
