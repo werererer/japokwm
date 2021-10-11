@@ -72,7 +72,7 @@ local resize_data = {
     {6, 7, 8, 9},
 }
 
-layout.set(layout_data)
+layout:set(layout_data)
 opt:set_resize_data(resize_data)
 opt.resize_direction = info.direction.right + info.direction.top + info.direction.bottom + info.direction.left
 opt:set_layout_constraints({min_width = 0.1, max_width = 1, min_height = 0.1, max_height = 1})

@@ -65,10 +65,7 @@ static void _destroy_workspace(void *ws)
 void load_workspaces(GPtrArray *workspaces, GPtrArray *tag_names)
 {
     while (server.workspaces->len > tag_names->len) {
-        struct workspace *ws = g_ptr_array_steal_index(
-                server.workspaces,
-                server.workspaces->len-1);
-        destroy_workspace(ws);
+        g_ptr_array_steal_index(server.workspaces, server.workspaces->len-1);
     }
     for (int i = 0; i < tag_names->len; i++) {
         struct workspace *ws = get_workspace(i);
@@ -126,10 +123,7 @@ void update_workspaces(GPtrArray *workspaces, GPtrArray *tag_names)
     } else {
         int tile_containers_length = server.workspaces->len;
         for (int i = tag_names->len; i < tile_containers_length; i++) {
-            struct workspace *ws = g_ptr_array_steal_index(
-                    server.workspaces,
-                    server.workspaces->len);
-            destroy_workspace(ws);
+            g_ptr_array_steal_index(server.workspaces, server.workspaces->len);
         }
     }
 

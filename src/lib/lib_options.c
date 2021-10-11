@@ -355,7 +355,6 @@ int lib_create_workspaces(lua_State *L)
 int lib_add_rule(lua_State *L)
 {
     struct rule *rule = get_config_rule(L);
-    lua_pop(L, 1);
 
     struct options *options = check_options(L, 1);
     lua_pop(L, 1);

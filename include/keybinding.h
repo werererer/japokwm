@@ -24,12 +24,13 @@ void destroy_keybinding0(void *keybinding);
 
 void *copy_keybinding(const void *keybinding_ptr, void *user_data);
 
+char *mod_to_keybinding(int mods, int sym);
 // WARNING: This function will change the state of the windowmanager that means
 // that certain things will be freed so don't trust your local variables that
 // were assigned before calling this function anymore. Global variables should
 // be fine. They might contain a different value after calling this function
 // thou.
-bool handle_keybinding(int mod, int sym);
+bool handle_keyboard_key(const char *bind);
 
 bool key_state_has_modifiers(size_t mods);
 #endif /* KEYBINDING_H */

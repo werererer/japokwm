@@ -26,7 +26,7 @@ local layout_data = {
     },
 }
 
-layout.set(layout_data)
+layout:set(layout_data)
 opt.hidden_edges = info.direction.all
 opt.set_smart_hidden_edges = false
 opt.resize_direction = info.direction.right

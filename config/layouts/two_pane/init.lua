@@ -8,17 +8,12 @@ local layout_data = {
     },
 }
 
-local function update(n)
-    if n <= 1 then
-        l.config.set_tile_borderpx(0)
-    else
-        l.config.set_tile_borderpx(2)
-    end
+local function update(layout)
 end
 
-layout.set(layout_data)
--- l.event.add_listener("on_update", update)
-opt.set_master_layout_data(
+layout:set(layout_data)
+event:add_listener("on_update", update)
+layout:set_master_layout_data(
 {{{0, 0, 1, 1}}, {{0, 0, 0.5, 1}, {0.5, 0, 0.5, 1}}}
 )
 opt.hidden_edges = info.direction.all

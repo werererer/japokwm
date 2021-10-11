@@ -32,6 +32,27 @@ static bool handle_VT_keys(struct keyboard *kb, uint32_t keycode)
     return handled;
 }
 
+static int handle_keyboard_repeat(void *data)
+{
+    debug_print("repeat\n");
+    struct keyboard *keyboard = (struct keyboard *)data;
+    struct wlr_keyboard *wlr_device =
+            keyboard->seat_device->input_device->wlr_device->keyboard;
+    if (keyboard->repeat_binding) {
+        if (wlr_device->repeat_info.rate > 0) {
+            // We queue the next event first, as the command might cancel it
+            if (wl_event_source_timer_update(keyboard->key_repeat_source,
+                    1000 / wlr_device->repeat_info.rate) < 0) {
+                printf("failed to update key repeat timer\n");
+            }
+        }
+
+        debug_print("repeat_binding: %s\n", keyboard->repeat_binding);
+        handle_keyboard_key(keyboard->repeat_binding);
+    }
+    return 0;
+}
+
 void cleanupkeyboard(struct wl_listener *listener, void *data)
 {
     struct wlr_input_device *device = data;
@@ -59,9 +80,16 @@ void create_keyboard(struct seat *seat, struct seat_device *seat_device)
             server.default_layout->options->repeat_rate,
             server.default_layout->options->repeat_delay);
 
+    kb->key_repeat_source = wl_event_loop_add_timer(
+            server.wl_event_loop,
+            handle_keyboard_repeat
+            , kb);
+
+    kb->repeat_binding = "";
+
     /* Here we set up listeners for keyboard events. */
     LISTEN(&wlr_device->keyboard->events.modifiers, &kb->modifiers, keypressmod);
-    LISTEN(&wlr_device->keyboard->events.key, &kb->key, keypress);
+    LISTEN(&wlr_device->keyboard->events.key, &kb->key, handle_key_event);
     LISTEN(&wlr_device->events.destroy, &kb->destroy, cleanupkeyboard);
 
     wlr_seat_set_keyboard(seat->wlr_seat, wlr_device);
@@ -81,20 +109,33 @@ void destroy_keyboard(struct keyboard *kb)
 
 /*     xkb_keymap_unref(kb->seat_device->input_device->wlr_device->keyboard->keymap); */
 
+    wl_event_source_remove(kb->key_repeat_source);
+
     free(kb);
 }
 
-void keypress(struct wl_listener *listener, void *data)
+void keyboard_disarm_key_repeat(struct keyboard *kb) {
+    if (!kb) {
+        return;
+    }
+    free(kb->repeat_binding);
+    if (wl_event_source_timer_update(kb->key_repeat_source, 0) < 0) {
+        printf("failed to disarm key repeat timer \n");
+    }
+}
+
+
+void handle_key_event(struct wl_listener *listener, void *data)
 {
     /* This event is raised when a key is pressed or released. */
-    struct keyboard *kb = wl_container_of(listener, kb, key);
     struct wlr_event_keyboard_key *event = data;
-    int i;
+
+    struct keyboard *kb = wl_container_of(listener, kb, key);
+    /* Get a list of keysyms based on the keymap for this keyboard */
+    struct wlr_input_device *wlr_device = kb->seat_device->input_device->wlr_device;
 
     /* Translate libinput keycode -> xkbcommon */
     uint32_t keycode = event->keycode + 8;
-    /* Get a list of keysyms based on the keymap for this keyboard */
-    struct wlr_input_device *wlr_device = kb->seat_device->input_device->wlr_device;
     xkb_state_key_get_one_sym(wlr_device->keyboard->xkb_state, keycode);
 
     /* create new state to clear the shift modifier to get a instead of A */
@@ -109,14 +150,16 @@ void keypress(struct wl_listener *listener, void *data)
     if (handle_VT_keys(kb, keycode))
         return;
 
+    char *bind = mod_to_keybinding(mods, syms[nsyms-1]);
+
     switch (event->state) {
         case WL_KEYBOARD_KEY_STATE_PRESSED:
-            for (i = 0; i < nsyms; i++) {
-                handled = handle_keybinding(mods, syms[i]);
-            }
+            debug_print("pressed\n");
+            handled = handle_keyboard_key(bind);
             server.prev_mods = mods;
             break;
         case WL_KEYBOARD_KEY_STATE_RELEASED:
+            debug_print("released\n");
             // TODO: we can optimize this ;). It is called multiple times
             // because multiple keys are released. good luck!
             if (server.registered_key_combos->len <= 0) {
@@ -133,6 +176,20 @@ void keypress(struct wl_listener *listener, void *data)
             event->keycode, event->state);
     }
 
+    // Set up (or clear) keyboard repeat for a pressed binding. Since the
+    // binding may remove the keyboard, the timer needs to be updated first
+    if (bind && nsyms > 0 && wlr_device->keyboard->repeat_info.delay > 0) {
+        kb->repeat_binding = strdup(bind);
+        if (wl_event_source_timer_update(kb->key_repeat_source,
+                wlr_device->keyboard->repeat_info.delay) < 0) {
+            printf("failed to set key repeat timer\n");
+        }
+    } else if (kb->repeat_binding) {
+        printf("keyboard disarm\n");
+        keyboard_disarm_key_repeat(kb);
+    }
+
+    free(bind);
     xkb_state_unref(state);
 }
 

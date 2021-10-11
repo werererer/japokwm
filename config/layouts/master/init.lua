@@ -72,7 +72,7 @@ local resize_data = {
     {6, 7, 8, 9},
 }
 
-layout.set(layout_data)
+layout:set(layout_data)
 l.config:set_resize_data(resize_data)
 l.config:set_master_layout_data(
 {{{0, 0, 1, 1}}, {{0, 0, 0.5, 1}, {0.5, 0, 0.5, 1}}}
