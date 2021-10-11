@@ -46,8 +46,7 @@ struct server {
     int prev_mods;
 
     GPtrArray *registered_key_combos;
-    timer_t combo_timer;
-    struct sigevent combo_sig_event;
+    struct wl_event_source *combo_timer_source;
 
     // TODO: rename
     GPtrArray *named_key_combos;

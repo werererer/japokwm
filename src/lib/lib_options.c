@@ -32,7 +32,6 @@ static const struct luaL_Reg options_m[] =
     {"set_mod", lib_set_mod},
     {"set_repeat_delay", lib_set_repeat_delay},
     {"set_repeat_rate", lib_set_repeat_rate},
-    {"set_resize_data", lib_set_resize_data},
     {NULL, NULL},
 };
 
@@ -469,17 +468,6 @@ int lib_set_smart_hidden_edges(lua_State *L)
 
     options->smart_hidden_edges = smart_hidden_edges;
 
-    return 0;
-}
-
-int lib_set_resize_data(lua_State *L)
-{
-    // TODO: this function is broken. you cant set resize data in layouts...
-
-    if (lua_istable(L, -1))
-        lua_copy_table_safe(L, &server.default_layout->lua_resize_data_ref);
-    else
-        lua_pop(L, 1);
     return 0;
 }
 

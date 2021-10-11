@@ -259,23 +259,9 @@ static void reset_keycombo_timer(timer_t timer)
     struct layout *lt = workspace_get_layout(ws);
     long timeout = lt->options->key_combo_timeout;
 
-    int available_seconds = millisec_get_available_seconds(timeout);
-    timeout -= (1000*available_seconds);
-
-    long nano_timeout = millisec_to_nanosec(timeout);
-
-    struct itimerspec value = {
-        .it_value = (struct timespec) {
-            .tv_sec = available_seconds,
-            .tv_nsec = nano_timeout,
-        },
-        .it_interval = (struct timespec) {
-            .tv_sec = 0,
-            .tv_nsec = 0,
-        },
-    };
-
-    timer_settime(timer, 0, &value, NULL);
+    if (wl_event_source_timer_update(server.combo_timer_source, timeout) < 0) {
+        printf("failed to disarm key repeat timer \n");
+    }
 }
 
 static bool sym_is_modifier(const char *sym)
@@ -314,7 +300,7 @@ char *mod_to_keybinding(int mods, int sym)
 
 bool handle_keyboard_key(const char *bind)
 {
-    reset_keycombo_timer(server.combo_timer);
+    reset_keycombo_timer(server.combo_timer_source);
 
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);

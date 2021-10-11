@@ -34,7 +34,6 @@ int lib_set_mod(lua_State *L);
 int lib_set_outer_gaps(lua_State *L);
 int lib_set_repeat_delay(lua_State *L);
 int lib_set_repeat_rate(lua_State *L);
-int lib_set_resize_data(lua_State *L);
 int lib_set_resize_direction(lua_State *L);
 int lib_set_root_color(lua_State *L);
 int lib_set_sloppy_focus(lua_State *L);
