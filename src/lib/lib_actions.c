@@ -92,7 +92,6 @@ int lib_resize_main(lua_State *L)
     lua_pushinteger(L, dir);
 
     lua_call_safe(L, 5, 1, 0);
-    debug_print("typename: %s\n", luaL_typename(L, -1));
 
     lua_copy_table_safe(L, &lt->lua_layout_copy_data_ref);
     arrange();

@@ -24,25 +24,25 @@ inline static unsigned int mod_to_mask(unsigned int x)
     return 1 << x;
 }
 
-static void mod_to_string(char *dest, unsigned int mod)
+static void mod_to_string(char **dest, unsigned int mod)
 {
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < LENGTH(mods); i++) {
         modifiers = mod;
         if ((mod & mod_to_mask(i)) != 0) {
-            strcat(dest, mods[i]);
-            strcat(dest, "-");
+            append_string(dest, mods[i]);
+            append_string(dest, "-");
         }
     }
 }
 
-static void mod_to_binding(char *dest, int mods)
+static void mod_to_binding(char **dest, int mods)
 {
     mod_to_string(dest, mods);
 }
 
-static void sym_to_binding(char *dest, int sym)
+static void sym_to_binding(char **dest, int sym)
 {
-    strcpy(dest, XKeysymToString(sym));
+    append_string(dest, XKeysymToString(sym));
 }
 
 // this function converts a string to a xkeysym string element
@@ -286,14 +286,15 @@ void *copy_keybinding(const void *keybinding_ptr, void *user_data)
 
 char *mod_to_keybinding(int mods, int sym)
 {
-    char *bind = calloc(256, sizeof(char *));
-    char mod_bind[128] = "";
-    mod_to_binding(mod_bind, mods);
-    char sym_bind[128] = "";
-    sym_to_binding(sym_bind, sym);
+    char *mod_bind = strdup("");
+    mod_to_binding(&mod_bind, mods);
+    char *sym_bind = strdup("");
+    sym_to_binding(&sym_bind, sym);
 
-    strcpy(bind, mod_bind);
-    strcat(bind, sym_bind);
+    char *bind = g_strconcat(mod_bind, sym_bind, NULL);
+
+    free(mod_bind);
+    free(sym_bind);
 
     return bind;
 }
