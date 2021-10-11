@@ -21,7 +21,6 @@ static const struct luaL_Reg local_options_m[] =
     {"set_mod", lib_set_mod},
     {"set_repeat_delay", lib_set_repeat_delay},
     {"set_repeat_rate", lib_set_repeat_rate},
-    {"set_resize_data", lib_set_resize_data},
     {"set_resize_direction", lib_set_resize_direction},
     {"set_root_color", lib_set_root_color},
     {"set_sloppy_focus", lib_set_sloppy_focus},

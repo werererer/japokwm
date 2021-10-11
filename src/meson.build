@@ -41,7 +41,6 @@ srcs = files(
     'translationLayer.c',
     'wlr_signal.c',
     'workspace.c',
-    'xdg-shell-protocol.c',
     'xdg_shell.c',
     'xwayland.c',
     'bitset/bitset.c',

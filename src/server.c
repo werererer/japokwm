@@ -67,21 +67,23 @@ static void finalize_lists(struct server *server)
 }
 
 
-static void clear_key_combo_timer_callback(union sigval sev) {
+static int clear_key_combo_timer_callback(void *data) {
     list_clear(server.registered_key_combos, free);
+    return 0;
 }
 
 static void init_timers(struct server *server)
 {
-    server->combo_sig_event.sigev_notify = SIGEV_THREAD;
-    server->combo_sig_event.sigev_notify_function = &clear_key_combo_timer_callback;
-
-    timer_create(CLOCK_REALTIME, &server->combo_sig_event, &server->combo_timer);
+    server->combo_timer_source = wl_event_loop_add_timer(
+            server->wl_event_loop,
+            clear_key_combo_timer_callback,
+            server->registered_key_combos
+            );
 }
 
 static void finalize_timers(struct server *server)
 {
-    timer_delete(server->combo_timer);
+    wl_event_source_remove(server->combo_timer_source);
 }
 
 static int init_backend(struct server *server)
@@ -90,6 +92,8 @@ static int init_backend(struct server *server)
      * clients from the Unix socket, manging Wayland globals, and so on. */
     server->wl_display = wl_display_create();
     server->wl_event_loop = wl_display_get_event_loop(server->wl_display);
+
+    init_timers(server);
 
     /* The backend is a wlroots feature which abstracts the underlying input and
      * output hardware. The autocreate option will choose the most suitable
@@ -138,7 +142,6 @@ void init_server()
     server.named_key_combos = g_ptr_array_new();
 
     init_lists(&server);
-    init_timers(&server);
 
     server.mons = g_ptr_array_new();
     server.popups = g_ptr_array_new();
