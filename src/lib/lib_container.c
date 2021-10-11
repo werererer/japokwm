@@ -7,6 +7,7 @@
 #include "tile/tileUtils.h"
 #include "translationLayer.h"
 #include "workspace.h"
+#include "lib/lib_workspace.h"
 
 static const struct luaL_Reg container_f[] =
 {
@@ -100,8 +101,7 @@ int lib_container_get_workspace(lua_State *L) {
         return 0;
 
     struct workspace *ws = container_get_workspace(con);
-    int ws_id = ws->id;
-    lua_pushinteger(L, ws_id);
+    create_lua_workspace(ws);
     return 1;
 }
 
