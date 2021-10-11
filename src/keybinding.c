@@ -298,11 +298,9 @@ void *copy_keybinding(const void *keybinding_ptr, void *user_data)
     return kb_dup;
 }
 
-bool handle_keybinding(int mods, int sym)
+char *mod_to_keybinding(int mods, int sym)
 {
-    reset_keycombo_timer(server.combo_timer);
-
-    char bind[256] = "";
+    char *bind = calloc(256, sizeof(char *));
     char mod_bind[128] = "";
     mod_to_binding(mod_bind, mods);
     char sym_bind[128] = "";
@@ -311,9 +309,12 @@ bool handle_keybinding(int mods, int sym)
     strcpy(bind, mod_bind);
     strcat(bind, sym_bind);
 
-    if (sym_is_modifier(sym_bind)) {
-        return true;
-    }
+    return bind;
+}
+
+bool handle_keyboard_key(const char *bind)
+{
+    reset_keycombo_timer(server.combo_timer);
 
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);

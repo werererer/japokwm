@@ -408,7 +408,9 @@ void handle_cursor_button(struct wl_listener *listener, void *data)
                 struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat->wlr_seat);
                 int mods = wlr_keyboard_get_modifiers(kb);
 
-                handle_keybinding(mods, sym);
+                char *bind = mod_to_keybinding(mods, sym);
+                handle_keyboard_key(bind);
+                free(bind);
                 break;
             }
         case WLR_BUTTON_RELEASED:

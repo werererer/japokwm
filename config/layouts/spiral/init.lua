@@ -34,5 +34,5 @@ local layout_data = {
     }
 }
 
-layout.set(layout_data)
+layout:set(layout_data)
 opt.resize_direction = info.direction.right
