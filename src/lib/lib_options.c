@@ -124,16 +124,10 @@ int lib_reload(lua_State *L)
         set_default_layout(ws);
     }
 
-    // for (int i = 0; i < server.mons->len; i++) {
-    //     struct monitor *m = g_ptr_array_index(server.mons, i);
-    //     // struct tagset *tagset = monitor_get_active_tagset(m);
-    //     // tagset_reload(tagset);
-    //     struct tagset *tagset = create_tagset(m, tagset->selected_ws_id, tagset->workspaces);
-    //     push_tagset(tagset);
-    //     // focus_tagset(tagset);
-    // }
-    // // focus_most_recent_container()
-    //
+    for (int i = 0; i < server.mons->len; i++) {
+        struct monitor *m = g_ptr_array_index(server.mons, i);
+        tagset_workspaces_reconnect(m->tagset);
+    }
     arrange();
     return 0;
 }
