@@ -65,7 +65,7 @@ static void _destroy_workspace(void *ws)
 void load_workspaces(GPtrArray *workspaces, GPtrArray *tag_names)
 {
     while (server.workspaces->len > tag_names->len) {
-        g_ptr_array_steal_index(server.workspaces, server.workspaces->len-1);
+        g_ptr_array_remove_index(server.workspaces, server.workspaces->len-1);
     }
     for (int i = 0; i < tag_names->len; i++) {
         struct workspace *ws = get_workspace(i);
@@ -445,7 +445,7 @@ struct monitor *workspace_get_monitor(struct workspace *ws)
     if (ws->prev_m && !is_workspace_empty(ws)) {
         return ws->prev_m;
     }
-    return NULL;
+    return server_get_selected_monitor();
 }
 
 void push_layout(struct workspace *ws, const char *layout_name)

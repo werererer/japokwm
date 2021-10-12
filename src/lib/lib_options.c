@@ -1,19 +1,20 @@
 #include "lib/lib_options.h"
 
-#include "utils/gapUtils.h"
-#include "utils/coreUtils.h"
-#include "utils/parseConfigUtils.h"
-#include "server.h"
-#include "tile/tileUtils.h"
-#include "ipc-server.h"
-#include "monitor.h"
-#include "workspace.h"
-#include "keybinding.h"
-#include "rules/rule.h"
-#include "rules/mon_rule.h"
-#include "translationLayer.h"
-#include "lib/lib_color.h"
 #include "color.h"
+#include "ipc-server.h"
+#include "keybinding.h"
+#include "lib/lib_color.h"
+#include "monitor.h"
+#include "rules/mon_rule.h"
+#include "rules/rule.h"
+#include "server.h"
+#include "tagset.h"
+#include "tile/tileUtils.h"
+#include "translationLayer.h"
+#include "utils/coreUtils.h"
+#include "utils/gapUtils.h"
+#include "utils/parseConfigUtils.h"
+#include "workspace.h"
 
 static const struct luaL_Reg options_f[] = 
 {
@@ -123,8 +124,16 @@ int lib_reload(lua_State *L)
         set_default_layout(ws);
     }
 
-    ipc_event_workspace();
-
+    // for (int i = 0; i < server.mons->len; i++) {
+    //     struct monitor *m = g_ptr_array_index(server.mons, i);
+    //     // struct tagset *tagset = monitor_get_active_tagset(m);
+    //     // tagset_reload(tagset);
+    //     struct tagset *tagset = create_tagset(m, tagset->selected_ws_id, tagset->workspaces);
+    //     push_tagset(tagset);
+    //     // focus_tagset(tagset);
+    // }
+    // // focus_most_recent_container()
+    //
     arrange();
     return 0;
 }
