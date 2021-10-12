@@ -445,7 +445,7 @@ struct monitor *workspace_get_monitor(struct workspace *ws)
     if (ws->prev_m && !is_workspace_empty(ws)) {
         return ws->prev_m;
     }
-    return server_get_selected_monitor();
+    return NULL;
 }
 
 void push_layout(struct workspace *ws, const char *layout_name)

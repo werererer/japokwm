@@ -136,6 +136,12 @@ static void tagset_workspace_disconnect(struct tagset *tagset, struct workspace 
     }
 }
 
+void tagset_workspaces_reconnect(struct tagset *tagset)
+{
+    tagset_load_workspaces();
+    tagset_workspaces_connect(tagset);
+}
+
 void tagset_workspaces_disconnect(struct tagset *tagset)
 {
     if (!tagset)
@@ -144,7 +150,7 @@ void tagset_workspaces_disconnect(struct tagset *tagset)
     struct workspace *sel_ws = get_workspace(tagset->selected_ws_id);
     tagset_workspace_disconnect(sel_ws->tagset, sel_ws);
 
-    for (size_t i = 0; i < server.workspaces->len; i++) {
+    for (size_t i = 0; i < tagset->workspaces->size; i++) {
         bool bit = bitset_test(tagset->workspaces, i);
 
         if (!bit)
@@ -173,7 +179,7 @@ void tagset_workspaces_connect(struct tagset *tagset)
     if (!tagset)
         return;
 
-    for (size_t i = 0; i < server.workspaces->len; i++) {
+    for (size_t i = 0; i < tagset->workspaces->size; i++) {
         bool bit = bitset_test(tagset->workspaces, i);
 
         if (!bit)

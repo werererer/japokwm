@@ -24,6 +24,7 @@
 #include "rules/rule.h"
 #include "translationLayer.h"
 #include "ipc-server.h"
+#include "tagset.h"
 
 static const char *plugin_relative_paths[] = {
     "autoload",
@@ -170,6 +171,13 @@ void load_default_lua_config(lua_State *L)
     bitset_set(server.previous_bitset, server.previous_workspace);
 
     workspaces_remove_loaded_layouts(server.workspaces);
+
+    // FIXME: you have to reconnect your workspaces because workspaces may have
+    // been destroyed that belong to the tagset this may lead to segfaults
+    for (int i = 0; i < server.mons->len; i++) {
+        struct monitor *m = g_ptr_array_index(server.mons, i);
+        tagset_workspaces_reconnect(m->tagset);
+    }
 
     for (int i = 0; i < server.workspaces->len; i++) {
         struct workspace *ws = g_ptr_array_index(server.workspaces, i);
