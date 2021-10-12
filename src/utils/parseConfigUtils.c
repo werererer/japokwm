@@ -37,7 +37,6 @@ static int error_fd = -1;
 // returns 0 upon success and 1 upon failure
 int load_file(lua_State *L, const char *file)
 {
-    printf("load file: %s\n", file);
     if (!file_exists(file)) {
         return EXIT_FAILURE;
     }
