@@ -1,6 +1,9 @@
 #ifndef BITSET_H
 #define BITSET_H
 
+/* this data struct acts as an infinite list like you may know from haskell. We
+ * need this data struct so that the user can create new workspaces lazily.*/
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
