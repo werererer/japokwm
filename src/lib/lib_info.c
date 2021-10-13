@@ -45,7 +45,7 @@ int lib_get_n_tiled(lua_State *L)
 int lib_this_container_position(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct container *sel = get_focused_container(m);
+    struct container *sel = monitor_get_focused_container(m);
 
     int position = get_position_in_container_focus_stack(sel);
     lua_pushinteger(L, position);

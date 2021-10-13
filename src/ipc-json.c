@@ -238,7 +238,7 @@ json_object *ipc_json_describe_selected_container(struct monitor *m)
     json_object *workspace_children;
     json_object_object_get_ex(monitor_object, "nodes", &workspace_children);
 
-    struct container *sel = get_focused_container(m);
+    struct container *sel = monitor_get_focused_container(m);
     json_object *obj = ipc_json_describe_container(sel);
     json_object_array_add(workspace_children, obj);
 

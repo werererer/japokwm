@@ -48,7 +48,7 @@ void remove_container_from_scratchpad(struct container *con)
 static void hide_container(struct container *con)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct container *sel = get_focused_container(m);
+    struct container *sel = monitor_get_focused_container(m);
 
     if (!sel->on_scratchpad) {
         focus_container(con);

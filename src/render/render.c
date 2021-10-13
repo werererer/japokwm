@@ -291,7 +291,7 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
     }
 
     /* Draw window borders */
-    struct container *sel = get_focused_container(m);
+    struct container *sel = monitor_get_focused_container(m);
     const struct color color = (con == sel) ? lt->options->focus_color : lt->options->border_color;
     for (int i = 0; i < 4; i++) {
         if ((hidden_edges & (1 << i)) == 0) {

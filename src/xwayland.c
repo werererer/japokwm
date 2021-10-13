@@ -218,7 +218,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     }
 
     arrange();
-    struct container *sel = get_focused_container(m);
+    struct container *sel = monitor_get_focused_container(m);
     focus_container(sel);
     struct seat *seat = input_manager_get_default_seat();
     wlr_xcursor_manager_set_cursor_image(seat->cursor->xcursor_mgr,

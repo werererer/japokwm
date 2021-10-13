@@ -49,7 +49,7 @@ void destroy_container(struct container *con);
 void add_container_to_tile(struct container *con);
 void remove_container_from_tile(struct container *con);
 
-struct container *get_focused_container(struct monitor *m);
+struct container *monitor_get_focused_container(struct monitor *m);
 struct container *xy_to_container(double x, double y);
 struct container *get_container_on_focus_stack(int ws_id, int position);
 

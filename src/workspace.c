@@ -145,7 +145,7 @@ void focus_most_recent_container()
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
 
-    struct container *con = get_focused_container(m);
+    struct container *con = monitor_get_focused_container(m);
     // TODO: this can be exported to an external function
     if (!con) {
         if (ws->visible_con_set->tiled_containers->len <= 0)
@@ -592,11 +592,12 @@ void workspace_update_names(struct server *server, GPtrArray *workspaces)
 
 struct container *workspace_get_focused_container(struct workspace *ws)
 {
-    for (int i = 0; i < length_of_composed_list(ws->focus_set->focus_stack_lists); i++) {
-        struct container *con = get_in_composed_list(ws->focus_set->focus_stack_lists, i);
-        if (con->client->ws_id == ws->id) {
-            return con;
-        }
+    if (!ws)
+        return NULL;
+
+    for (int i = 0; i < length_of_composed_list(ws->visible_focus_set->focus_stack_lists); i++) {
+        struct container *con = get_in_composed_list(ws->visible_focus_set->focus_stack_lists, i);
+        return con;
     }
     return NULL;
 }
