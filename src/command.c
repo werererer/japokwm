@@ -5,6 +5,7 @@
 #include "utils/parseConfigUtils.h"
 #include "server.h"
 #include "tile/tileUtils.h"
+#include "translationLayer.h"
 
 struct cmd_results *cmd_results_new(enum cmd_status status,
         const char *format, ...) {
@@ -38,6 +39,8 @@ void free_cmd_results(struct cmd_results *results) {
 
 struct cmd_results *cmd_eval(const char *cmd)
 {
+    init_local_config_variables(L, server_get_selected_monitor());
+
     // load is the equivalent to eval and was introduced in lua 5.2
     lua_getglobal_safe(L, "load");
     lua_pushstring(L, cmd);
