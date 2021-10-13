@@ -42,10 +42,6 @@ struct tagset {
     int selected_ws_id;
     BitSet *workspaces;
 
-    struct container_set *con_set;
-    struct focus_set *visible_focus_set;
-    struct visual_set *visible_visual_set;
-
     // whether the tagset needs to be reloaded
     bool damaged;
 };
