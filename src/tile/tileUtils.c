@@ -235,7 +235,8 @@ void arrange_monitor(struct monitor *m)
     g_ptr_array_unref(tiled_containers);
 
     wlr_output_damage_add_whole(m->damage);
-    update_reduced_focus_stack(tagset);
+    struct workspace *ws = tagset_get_workspace(tagset);
+    update_reduced_focus_stack(ws);
     focus_most_recent_container();
 }
 

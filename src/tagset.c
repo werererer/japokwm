@@ -79,7 +79,7 @@ void tagset_set_tags(struct tagset *tagset, BitSet *workspaces)
     tagset_assign_workspaces(tagset, workspaces_copy);
     tagset_workspaces_connect(tagset);
     tagset_load_workspaces(tagset, tagset->workspaces);
-    update_reduced_focus_stack(tagset);
+    update_reduced_focus_stack(ws);
     bitset_assign_bitset(&ws->workspaces, tagset->workspaces);
     arrange();
     focus_most_recent_container();
@@ -237,13 +237,6 @@ void tagset_write_to_focus_stacks(struct tagset *tagset)
     focus_set_write_to_parent(ws->focus_set, ws->visible_focus_set);
 }
 
-void update_sub_focus_stack(struct tagset *tagset)
-{
-    if (!tagset)
-        return;
-    update_reduced_focus_stack(tagset);
-}
-
 bool is_reduced_focus_stack(struct workspace *ws, struct container *con)
 {
     struct monitor *m = workspace_get_monitor(ws);
@@ -271,9 +264,8 @@ bool _is_reduced_focus_stack(
     return false;
 }
 
-void update_reduced_focus_stack(struct tagset *tagset)
+void update_reduced_focus_stack(struct workspace *ws)
 {
-    struct workspace *ws = tagset_get_workspace(tagset);
     lists_clear(ws->visible_focus_set->focus_stack_lists);
     lists_append_list_under_condition(
             ws->visible_focus_set->focus_stack_lists,
@@ -369,7 +361,7 @@ void focus_tagset(struct tagset *tagset)
     restore_floating_containers(tagset);
     struct workspace *ws = tagset_get_workspace(tagset);
     bitset_assign_bitset(&ws->workspaces, tagset->workspaces);
-    update_reduced_focus_stack(tagset);
+    update_reduced_focus_stack(ws);
     ipc_event_workspace();
 
     tagset_move_sticky_containers(tagset);

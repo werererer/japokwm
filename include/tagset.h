@@ -65,7 +65,7 @@ bool _is_reduced_focus_stack(
         GPtrArray *src_list,
         struct container *con
         );
-void update_reduced_focus_stack(struct tagset *tagset);
+void update_reduced_focus_stack(struct workspace *ws);
 bool is_local_focus_stack(struct workspace *ws, struct container *con);
 bool _is_local_focus_stack(
         void *workspace_ptr,
