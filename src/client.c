@@ -121,15 +121,10 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
     struct wlr_surface *new_surface = get_base_wlrsurface(c);
 
     if (old) {
-        // we have to always unfocus the old client because when switching
-        // between popups and the client we have to notify reentering which cant
-        // be done with just entering. If we don't do this the cursor may stop
-        // to update
-        unfocus_client(old);
-
         struct wlr_surface *old_surface = get_wlrsurface(old);
         if (old_surface != new_surface) {
             cursor_constrain(seat->cursor, NULL);
+            unfocus_client(old);
             struct container *old_con = old->con;
             struct wlr_box *geom = container_get_current_geom(old_con);
             struct monitor *m = container_get_monitor(old_con);
