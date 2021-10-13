@@ -320,14 +320,14 @@ int lib_move_container_to_workspace(lua_State *L)
 int lib_zoom(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct tagset *tagset = monitor_get_active_tagset(m);
 
     struct container *sel = monitor_get_focused_container(m);
 
     if (!sel)
         return 0;
 
-    GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    GPtrArray *tiled_containers = workspace_get_tiled_list_copy(ws);
     guint position;
     bool found = g_ptr_array_find(tiled_containers, sel, &position);
     if (!found)
@@ -343,7 +343,6 @@ int lib_zoom(lua_State *L)
     arrange();
 
     // focus new master window
-    struct workspace *ws = get_workspace(tagset->selected_ws_id);
     struct container *con = get_container(ws, 0);
     focus_container(con);
 

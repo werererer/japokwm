@@ -809,21 +809,16 @@ GArray *container_array_get_positions_array(GPtrArray *containers)
 
 void workspace_repush(struct workspace *ws, struct container *con, int new_pos)
 {
-    struct tagset *tagset = workspace_get_active_tagset(ws);
-
-    GPtrArray *tiled_list = tagset_get_tiled_list_copy(tagset);
+    GPtrArray *tiled_list = workspace_get_tiled_list_copy(ws);
     g_ptr_array_remove(tiled_list, con);
     g_ptr_array_insert(tiled_list, new_pos, con);
 
-    GPtrArray *actual_tiled_list = tagset_get_tiled_list(tagset);
+    GPtrArray *actual_tiled_list = workspace_get_tiled_list(ws);
     sub_list_write_to_parent_list1D(actual_tiled_list, tiled_list);
-    debug_print("new_pos: %i\n", new_pos);
-    debug_print("tiled list len: %i\n", tiled_list);
-    debug_print("actual tiled list len: %i\n", actual_tiled_list);
 
     g_ptr_array_unref(tiled_list);
 
-    tagset_write_to_workspaces(tagset);
+    workspace_write_to_workspaces(ws);
 }
 
 void workspace_repush_on_focus_stack(struct workspace *ws, struct container *con, int new_pos)

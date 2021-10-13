@@ -49,8 +49,9 @@ struct tagset {
 struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *workspaces);
 void destroy_tagset(struct tagset *tagset);
 
+void workspace_write_to_workspaces(struct workspace *ws);
+
 void focus_tagset(struct tagset *tagset);
-void tagset_write_to_workspaces(struct tagset *tagset);
 void tagset_focus_workspace(int ws_id);
 void tagset_toggle_add(struct tagset *tagset, BitSet *bitset);
 void tagset_set_tags(struct tagset *tagset, BitSet *bitset);
@@ -58,7 +59,7 @@ void tagset_focus_tags(int ws_id, struct BitSet *bitset);
 void tagset_reload(struct tagset *tagset);
 void tagset_move_sticky_containers(struct tagset *tagset);
 
-void tagset_write_to_focus_stacks(struct tagset *tagset);
+void workspace_write_to_focus_stacks(struct workspace *ws);
 bool is_reduced_focus_stack(struct workspace *ws, struct container *con);
 bool _is_reduced_focus_stack(
         void *workspace_ptr,
@@ -77,15 +78,16 @@ bool is_visual_visible_stack(struct workspace *ws, struct container *con);
 
 bool container_intersects_with_monitor(struct container *con, struct monitor *m);
 
+GPtrArray *tagset_get_floating_list_copy(struct workspace *ws);
+GPtrArray *workspace_get_complete_stack_copy(struct workspace *ws);
+GPtrArray *workspace_get_stack_copy(struct workspace *ws);
+GPtrArray *workspace_get_tiled_list(struct workspace *ws);
+GPtrArray *workspace_get_tiled_list_copy(struct workspace *ws);
+
 // get with server floating containers instead
 GPtrArray *tagset_get_global_floating_copy(struct tagset *tagset);
-GPtrArray *tagset_get_tiled_list_copy(struct tagset *tagset);
-GPtrArray *tagset_get_tiled_list(struct tagset *tagset);
-GPtrArray *tagset_get_floating_list_copy(struct tagset *tagset);
 GPtrArray *tagset_get_visible_list_copy(struct tagset *tagset);
 GPtrArray *tagset_get_hidden_list_copy(struct tagset *tagset);
-GPtrArray *tagset_get_stack_copy(struct tagset *tagset);
-GPtrArray *tagset_get_complete_stack_copy(struct tagset *tagset);
 
 void workspace_id_to_tag(BitSet *dest, int ws_id);
 
