@@ -35,6 +35,29 @@ int lib_arrange(lua_State *L)
     return 0;
 }
 
+static void *_call(void *arg)
+{
+    lua_State *thread = lua_newthread(L);
+    int *ref = arg;
+
+    lua_rawgeti(thread, LUA_REGISTRYINDEX, *ref);
+    lua_call_safe(thread, 0, 0, 0);
+
+    luaL_unref(thread, LUA_REGISTRYINDEX, *ref);
+    free(ref);
+    return NULL;
+}
+
+int lib_async_execute(lua_State *L)
+{
+    pthread_t thread;
+    int *func_ref = calloc(1, sizeof(int));
+    *func_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    pthread_create(&thread, NULL, _call, func_ref);
+    pthread_detach(thread);
+    return 0;
+}
+
 int lib_create_output(lua_State *L)
 {
     if (!wlr_backend_is_multi(server.backend)) {

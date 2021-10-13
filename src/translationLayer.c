@@ -33,6 +33,7 @@ const struct luaL_Reg meta[] =
 static const struct luaL_Reg action[] =
 {
     {"arrange", lib_arrange},
+    {"async_execute", lib_async_execute},
     {"create_output", lib_create_output},
     {"decrease_nmaster", lib_decrease_nmaster},
     {"exec", lib_exec},

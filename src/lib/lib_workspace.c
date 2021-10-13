@@ -10,6 +10,8 @@
 #include "tile/tileUtils.h"
 #include "translationLayer.h"
 #include "workspace.h"
+#include "list_sets/focus_stack_set.h"
+#include "lib/lib_container.h"
 
 static const struct luaL_Reg workspace_f[] =
 {
@@ -19,6 +21,7 @@ static const struct luaL_Reg workspace_f[] =
 
 static const struct luaL_Reg workspace_m[] =
 {
+    {"get_focus_stack", lib_workspace_get_focus_stack},
     {"get_id", lib_workspace_get_id},
     {"swap", lib_workspace_swap},
     {NULL, NULL},
@@ -34,7 +37,7 @@ static const struct luaL_Reg workspace_getter[] =
     {NULL, NULL},
 };
 
-void create_lua_workspace(struct workspace *ws)
+void create_lua_workspace(lua_State *L, struct workspace *ws)
 {
     if (!ws)
         return;
@@ -68,7 +71,7 @@ int lib_workspace_get_focused(lua_State *L)
 {
     struct workspace *ws = server_get_selected_workspace();
 
-    create_lua_workspace(ws);
+    create_lua_workspace(L, ws);
     return 1;
 }
 
@@ -116,6 +119,21 @@ int lib_workspace_swap(lua_State *L)
     focus_most_recent_container();
     root_damage_whole(m->root);
     return 0;
+}
+
+int lib_workspace_get_focus_stack(lua_State *L)
+{
+    struct workspace *ws = check_workspace(L, 1);
+    lua_pop(L, 1);
+
+    int len = length_of_composed_list(ws->focus_set->focus_stack_lists);
+    lua_createtable(L, len, 0);
+    for (int i = 0; i < len; i++) {
+        struct container *con = get_in_composed_list(ws->focus_set->focus_stack_lists, i);
+        create_lua_container(L, con);
+        lua_rawseti (L, -2, i+1); /* In lua indices start at 1 */
+    }
+    return 1;
 }
 
 int lib_workspace_get_id(lua_State *L)
