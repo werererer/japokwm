@@ -40,7 +40,7 @@ local function toggle_all_bars()
     for i = 1,info.get_workspace_count() do
         local ws_id = i-1
         local ws = server:get_workspace(ws_id)
-        action.toggle_bars(ws, info.direction.all)
+        action.toggle_bars(ws, info.direction.left)
     end
 end
 

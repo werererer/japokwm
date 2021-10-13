@@ -94,58 +94,49 @@ void root_damage_whole(struct root *root)
     wlr_output_damage_add_box(m->damage, &geom);
 }
 
-static bool is_bar_at_direction(struct container *con, enum wlr_direction direction)
+static enum wlr_edges bar_get_direction(struct container *con)
 {
     struct wlr_layer_surface_v1 *wlr_layer_surface = con->client->surface.layer;
     struct wlr_layer_surface_v1_state *state = &wlr_layer_surface->current;
+    enum wlr_edges anchor = state->anchor;
 
-    if (direction & WLR_DIRECTION_UP) {
-        if (equals_anchor(&anchors.top, state->anchor)) {
-            return true;
-        }
+    if (equals_anchor(&anchors.top, anchor)) {
+        return WLR_EDGE_TOP;
     }
-    if (direction & WLR_DIRECTION_DOWN) {
-        if (equals_anchor(&anchors.bottom, state->anchor)) {
-            return true;
-        }
+    if (equals_anchor(&anchors.bottom, anchor)) {
+        return true;
+        return WLR_EDGE_BOTTOM;
     }
-    if (direction & WLR_DIRECTION_LEFT) {
-        if (equals_anchor(&anchors.left, state->anchor)) {
-            return true;
-        }
+    if (equals_anchor(&anchors.left, anchor)) {
+        return WLR_EDGE_LEFT;
     }
-    if (direction & WLR_DIRECTION_RIGHT) {
-        if (equals_anchor(&anchors.right, state->anchor)) {
-            return true;
-        }
+    if (equals_anchor(&anchors.right, anchor)) {
+        return WLR_EDGE_RIGHT;
     }
-    return false;
+    return WLR_EDGE_NONE;
 }
 
-void set_bars_visible(struct workspace *ws, bool visible, enum wlr_direction direction)
+void bars_update_visiblitiy(struct workspace *ws)
 {
-    ws->consider_layer_shell = visible;
+    enum wlr_edges visible_edges = ws->visible_edges;
     for (int i = 0; i < length_of_composed_list(server.layer_visual_stack_lists); i++) {
         struct container *con = get_in_composed_list(server.layer_visual_stack_lists, i);
 
         if (!container_is_bar(con))
             continue;
-        if (!is_bar_at_direction(con, direction))
-            continue;
 
-        container_set_hidden_at_workspace(con, !visible, ws);
+        enum wlr_edges bar_dir = bar_get_direction(con);
+        bool is_visible = visible_edges & bar_dir;
+
+        container_set_hidden_at_workspace(con, !is_visible, ws);
     }
 
     struct monitor *m = workspace_get_monitor(ws);
     arrange_layers(m);
 }
 
-bool get_bars_visible(struct workspace *ws)
+void toggle_bars_visible(struct workspace *ws, enum wlr_edges direction)
 {
-    return ws->consider_layer_shell;
-}
-
-void toggle_bars_visible(struct workspace *ws, enum wlr_direction direction)
-{
-    set_bars_visible(ws, !get_bars_visible(ws), direction);
+    ws->visible_edges ^= direction;
+    bars_update_visiblitiy(ws);
 }
