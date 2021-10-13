@@ -59,7 +59,7 @@ local function get_focus_entry_position(ws_id, is_focused)
     end
 end
 
-opt.entry_position_funciton = get_entry_position
+opt.entry_position_function = get_entry_position
 opt.entry_focus_position_function = get_focus_entry_position
 
 opt:bind_key("mod-S-p",       function() container.set_sticky(info.this_container_position(), 255) end)

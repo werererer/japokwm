@@ -53,7 +53,7 @@ static const struct luaL_Reg options_setter[] =
     {"root_color", lib_set_root_color},
     {"sloppy_focus", lib_set_sloppy_focus},
     {"smart_hidden_edges", lib_set_smart_hidden_edges},
-    {"tile_border_width", lib_set_tile_border_width},
+    {"border_width", lib_set_tile_border_width},
     {"workspaces", lib_create_workspaces},
     {NULL, NULL},
 };
