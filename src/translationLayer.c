@@ -201,7 +201,6 @@ int set_lua_value(lua_State *L)
             // from here on using the variable that was on the stack may
             // lead to segfaults because lua may garbage collect them
             lua_pop(L, 1);
-            debug_print("line: %s\n", res);
             lua_pushstring(L, res);
             lua_warning(L, res, false);
             free(res);
