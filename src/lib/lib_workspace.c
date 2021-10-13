@@ -57,7 +57,7 @@ void lua_load_workspace()
     lua_setglobal(L, "Workspace");
 }
 
-static struct workspace *check_workspace(lua_State *L, int narg) {
+struct workspace *check_workspace(lua_State *L, int narg) {
     void **ud = luaL_checkudata(L, narg, CONFIG_WORKSPACE);
     luaL_argcheck(L, ud != NULL, 1, "`container' expected");
     return (struct workspace *)*ud;

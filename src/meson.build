@@ -44,6 +44,7 @@ srcs = files(
     'xdg_shell.c',
     'xwayland.c',
     'bitset/bitset.c',
+    'lib/lib_direction.c',
     'command/commands.c',
     'lib/lib_actions.c',
     'lib/lib_color.c',
