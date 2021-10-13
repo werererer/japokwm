@@ -31,6 +31,7 @@ int lua_call_safe(lua_State *L, int nargs, int nresults, int msgh);
 int lua_getglobal_safe(lua_State *L, const char *name);
 void notify_msg(const char *msg);
 void handle_error(const char *msg);
+void handle_warning(void *user_data, const char *msg, int i);
 
 struct rule *get_config_rule(lua_State *L);
 const char *get_config_str(lua_State *L, int idx);

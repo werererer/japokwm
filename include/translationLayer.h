@@ -46,7 +46,7 @@ void init_local_config_variables(lua_State *L, struct monitor *m);
 
 extern const struct luaL_Reg meta[];
 
-int get(lua_State *L);
-int set(lua_State *L);
+int get_lua_value(lua_State *L);
+int set_lua_value(lua_State *L);
 
 #endif /* TRANSLATION_LAYER_H */

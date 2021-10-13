@@ -25,7 +25,6 @@ static const struct luaL_Reg local_options_m[] =
     {"set_root_color", lib_set_root_color},
     {"set_sloppy_focus", lib_set_sloppy_focus},
     {"set_smart_hidden_edges", lib_set_smart_hidden_edges},
-    {"set_tile_borderpx", lib_set_tile_borderpx},
     {NULL, NULL},
 };
 
@@ -43,7 +42,8 @@ static const struct luaL_Reg local_options_setter[] =
     {"arrange_by_focus", lib_set_arrange_by_focus},
     {"entry_focus_position_function", lib_set_entry_focus_position_function},
     {"entry_position_function", lib_set_entry_position_function},
-    {"float_borderpx", lib_set_float_borderpx},
+    {"border_width", lib_set_tile_border_width},
+    {"float_border_width", lib_set_float_border_width},
     {"focus_color", lib_set_focus_color},
     {"hidden_edges", lib_set_hidden_edges},
     {NULL, NULL},
