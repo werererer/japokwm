@@ -8,6 +8,7 @@
 #include "client.h"
 
 int lib_arrange(lua_State *L);
+int lib_async_execute(lua_State *L);
 int lib_create_output(lua_State *L);
 int lib_decrease_nmaster(lua_State *L);
 int lib_exec(lua_State *L);

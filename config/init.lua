@@ -68,11 +68,23 @@ opt:bind_key("mod-p",         function() action.exec("rofi -show run") end)
 opt:bind_key("mod-e",         function() Workspace.view(info.get_next_empty_workspace(info.get_workspace(), info.direction.left)) end)
 opt:bind_key("mod-period",    function() action.toggle_workspace() end)
 opt:bind_key("mod-S-period",  function() action.toggle_layout() end)
-opt:bind_key("mod-comma",     function() 
-   local con = Container.get_focused()
-   con.alpha = 0.4
-   local workspace = server:get_workspace(0)
-   server:get_focused_workspace():swap(server:get_workspace(3))
+opt:bind_key("mod-comma",     function()
+    action.async_execute(function()
+        local ws = Workspace.get_focused()
+        print(type(Workspace.get_focused()))
+        local focus_stack = ws:get_focus_stack()
+        local str = ""
+        for i,con in ipairs(focus_stack) do
+            str = str .. con.app_id .. "\n"
+        end
+        local dmenu = "rofi -dmenu"
+        local echo = 'echo "' .. str .. '"'
+        local pipe = "|"
+        local cmd = echo .. pipe .. dmenu
+        print(cmd)
+        local res = action.exec(cmd)
+        print("res", res)
+        end)
  end)
 opt:bind_key("mod-S-Return",  function() action.exec(termcmd) end)
 opt:bind_key("mod-a",         function() action.increase_nmaster() end)

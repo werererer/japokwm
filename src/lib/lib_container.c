@@ -25,6 +25,7 @@ static const struct luaL_Reg container_m[] = {
 static const struct luaL_Reg container_getter[] = {
     // TODO: implement getters
     {"alpha", lib_container_get_alpha},
+    {"app_id", lib_container_get_app_id},
     {"sticky", lib_container_set_sticky},
     {"workspace", lib_container_get_workspace},
     {NULL, NULL},
@@ -38,7 +39,7 @@ static const struct luaL_Reg container_setter[] = {
     {NULL, NULL},
 };
 
-void create_lua_container(struct container *con)
+void create_lua_container(lua_State *L, struct container *con)
 {
     if (!con) {
         lua_pushnil(L);
@@ -91,19 +92,7 @@ int lib_container_get_focused(lua_State *L) {
     struct monitor *m = server_get_selected_monitor();
     struct container *con = get_focused_container(m);
 
-    create_lua_container(con);
-    return 1;
-}
-
-int lib_container_get_workspace(lua_State *L) {
-    struct container *con = check_container(L, 1);
-    lua_pop(L, 1);
-
-    if (!con)
-        return 0;
-
-    struct workspace *ws = container_get_workspace(con);
-    create_lua_workspace(ws);
+    create_lua_container(L, con);
     return 1;
 }
 
@@ -255,6 +244,16 @@ int lib_container_get_alpha(lua_State *L)
     return 1;
 }
 
+int lib_container_get_app_id(lua_State *L)
+{
+    struct container *con = check_container(L, 1);
+    lua_pop(L, 1);
+
+    const char *app_id = container_get_app_id(con);
+    lua_pushstring(L, app_id);
+    return 1;
+}
+
 int lib_container_get_sticky(lua_State *L)
 {
     // TODO implement me
@@ -262,5 +261,17 @@ int lib_container_get_sticky(lua_State *L)
     /* lua_pop(L, 1); */
 
     /* lua_pushinteger(L, con->client->sticky_workspaces); */
+    return 1;
+}
+
+int lib_container_get_workspace(lua_State *L) {
+    struct container *con = check_container(L, 1);
+    lua_pop(L, 1);
+
+    if (!con)
+        return 0;
+
+    struct workspace *ws = container_get_workspace(con);
+    create_lua_workspace(L, ws);
     return 1;
 }
