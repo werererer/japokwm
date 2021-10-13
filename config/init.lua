@@ -82,8 +82,27 @@ opt:bind_key("mod-comma",     function()
         local pipe = "|"
         local cmd = echo .. pipe .. dmenu
         print(cmd)
-        local res = action.exec(cmd)
-        print("res", res)
+        local handle = io.popen(cmd)
+        local result = handle:read("*a")
+        handle:close()
+
+        local s_con = nil
+        for i,con in ipairs(focus_stack) do
+            local res = result:gsub("%s+", "")
+            local app_id = con.app_id:gsub("%s+", "")
+            print("result: ", res)
+            print("app_id: ", app_id)
+            print("equ: ", res == app_id)
+            if res == app_id then
+                s_con = con
+                break;
+            end
+        end
+
+        if s_con then
+            local ws = s_con.workspace
+            action.view(ws:get_id())
+        end
         end)
  end)
 opt:bind_key("mod-S-Return",  function() action.exec(termcmd) end)
