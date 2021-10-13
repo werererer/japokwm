@@ -2,7 +2,7 @@ opt.workspaces = {"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"}
 opt.sloppy_focus = true
 
 -- focus follows mouse
-opt.automatic_workspace_naming = true;
+opt.atomatic_workspace_naming = true;
 
 local termcmd = "/usr/bin/alacritty"
 

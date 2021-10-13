@@ -44,8 +44,8 @@ int load_file(lua_State *L, const char *file)
 
     if (luaL_loadfile(L, file)) {
         const char *errmsg = luaL_checkstring(L, -1);
-        lua_pop(L, 1);
         handle_error(errmsg);
+        lua_pop(L, 1);
         return EXIT_FAILURE;
     }
 
@@ -269,16 +269,15 @@ static void *_notify_msg(void *arg)
     {
         printf("showing notification failed!\n");
     }
+    free(msg);
     return NULL;
 }
 
 void notify_msg(const char *msg)
 {
-    // TODO: do we need pthreads here?
-    /* pthread_t thread; */
-    _notify_msg((char *)msg);
-    /* pthread_create(&thread, NULL, _notify_msg, (char *)msg); */
-    /* pthread_detach(thread); */
+    pthread_t thread;
+    pthread_create(&thread, NULL, _notify_msg, strdup(msg));
+    pthread_detach(thread);
 }
 
 void handle_error(const char *msg)
