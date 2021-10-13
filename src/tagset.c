@@ -163,7 +163,6 @@ void tagset_workspaces_disconnect(struct tagset *tagset)
 
 static void tagset_workspace_connect(struct tagset *tagset, struct workspace *ws)
 {
-    debug_print("set workspace monitor: %i %p\n", ws->id, tagset->m);
     ws->prev_m = tagset->m;
 
     tagset_unset_workspace(ws->tagset, ws);

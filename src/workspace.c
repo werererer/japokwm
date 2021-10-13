@@ -415,12 +415,8 @@ struct root *workspace_get_root(struct workspace *ws)
 struct wlr_box workspace_get_active_geom(struct workspace *ws)
 {
     struct wlr_box geom;
-    if (ws->consider_layer_shell) {
-        struct root *root = workspace_get_root(ws); geom = root->geom;
-    } else {
-        struct monitor *m = workspace_get_monitor(ws);
-        geom = m->geom;
-    }
+    struct root *root = workspace_get_root(ws);
+    geom = root->geom;
     return geom;
 }
 

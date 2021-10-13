@@ -67,9 +67,11 @@ int lib_focus_container(lua_State *L)
 
 int lib_toggle_bars(lua_State *L)
 {
+    int direction = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
     int ws_id = luaL_checkinteger(L, -1);
     struct workspace *ws = get_workspace(ws_id);
-    toggle_bars_visible(ws);
+    toggle_bars_visible(ws, direction);
     arrange();
     return 0;
 }

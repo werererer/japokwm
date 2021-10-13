@@ -169,10 +169,8 @@ void arrange_layers(struct monitor *m)
     arrangelayer(m, server.layer_visual_stack_bottom, &usable_area, true);
     arrangelayer(m, server.layer_visual_stack_background, &usable_area, true);
 
-    if (memcmp(&usable_area, &m->root->geom, sizeof(struct wlr_box))) {
-        m->root->geom = usable_area;
-        arrange(m);
-    }
+    set_root_geom(m->root, usable_area);
+    arrange(m);
 
     // Arrange non-exlusive surfaces from top->bottom
     arrangelayer(m, server.layer_visual_stack_overlay, &usable_area, false);
@@ -191,7 +189,7 @@ void arrange_layers(struct monitor *m)
             struct wlr_layer_surface_v1 *layer_surface = c->surface.layer;
             if (layer_surface->current.keyboard_interactive && layer_surface->mapped) {
                 // Deactivate the focused client.
-                // TODO fix this
+                // TODO fix this NULL is not supported in focus_container
                 focus_container(NULL);
                 wlr_seat_keyboard_notify_enter(seat->wlr_seat,
                         get_wlrsurface(c),
