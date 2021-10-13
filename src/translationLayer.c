@@ -154,17 +154,20 @@ static void load_info(lua_State *L)
             WLR_DIRECTION_LEFT | WLR_DIRECTION_RIGHT);
     lua_setfield(L, -2, "all");
 
-    lua_pushinteger(L, WLR_DIRECTION_DOWN);
+    lua_pushinteger(L, WLR_EDGE_BOTTOM);
     lua_setfield(L, -2, "bottom");
 
-    lua_pushinteger(L, WLR_DIRECTION_UP);
+    lua_pushinteger(L, WLR_EDGE_TOP);
     lua_setfield(L, -2, "top");
 
-    lua_pushinteger(L, WLR_DIRECTION_LEFT);
+    lua_pushinteger(L, WLR_EDGE_LEFT);
     lua_setfield(L, -2, "left");
 
-    lua_pushinteger(L, WLR_DIRECTION_RIGHT);
+    lua_pushinteger(L, WLR_EDGE_RIGHT);
     lua_setfield(L, -2, "right");
+
+    lua_pushinteger(L, WLR_EDGE_NONE);
+    lua_setfield(L, -2, "none");
 
     lua_setfield(L, -2, "direction");
 

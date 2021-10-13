@@ -27,6 +27,7 @@
 #include "scratchpad.h"
 #include "tagset.h"
 #include "lib/lib_container.h"
+#include "lib/lib_workspace.h"
 
 int lib_arrange(lua_State *L)
 {
@@ -69,8 +70,9 @@ int lib_toggle_bars(lua_State *L)
 {
     int direction = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    int ws_id = luaL_checkinteger(L, -1);
-    struct workspace *ws = get_workspace(ws_id);
+    struct workspace *ws = check_workspace(L, 1);
+    lua_pop(L, 1);
+
     toggle_bars_visible(ws, direction);
     arrange();
     return 0;

@@ -32,6 +32,7 @@ struct monitor;
 // lua custom typenames
 #define CONFIG_COLOR "japokwm.color"
 #define CONFIG_CONTAINER "japokwm.container"
+#define CONFIG_DIRECTION "japokwm.direction"
 #define CONFIG_EVENT "japokwm.event"
 #define CONFIG_LAYOUT "japokwm.layout"
 #define CONFIG_LOCAL_OPTIONS "japokwm.local.options"
