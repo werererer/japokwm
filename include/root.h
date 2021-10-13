@@ -2,7 +2,7 @@
 #define ROOT_H
 
 #include <wlr/types/wlr_box.h>
-#include <wlr/types/wlr_output_layout.h>
+#include <wlr/util/edges.h>
 #include "color.h"
 
 struct workspace;
@@ -22,8 +22,8 @@ void destroy_root(struct root *root);
 void set_root_color(struct root *root, struct color color);
 void set_root_geom(struct root *root, struct wlr_box geom);
 void root_damage_whole(struct root *root);
-void set_bars_visible(struct workspace *ws, bool visible, enum wlr_direction direction);
-bool get_bars_visible(struct workspace *ws);
-void toggle_bars_visible(struct workspace *ws, enum wlr_direction direction);
+void bars_update_visiblitiy(struct workspace *ws);
+enum wlr_edges get_bars_visible(struct workspace *ws);
+void toggle_bars_visible(struct workspace *ws, enum wlr_edges direction);
 
 #endif /* ROOT_H */

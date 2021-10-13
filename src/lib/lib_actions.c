@@ -74,7 +74,6 @@ int lib_toggle_bars(lua_State *L)
     lua_pop(L, 1);
 
     toggle_bars_visible(ws, direction);
-    arrange();
     return 0;
 }
 

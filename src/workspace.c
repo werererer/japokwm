@@ -107,7 +107,10 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     ws->focus_set = focus_set_create();
     ws->con_set = create_container_set();
 
-    ws->consider_layer_shell = true;
+    ws->visible_edges = WLR_EDGE_BOTTOM
+        | WLR_EDGE_TOP
+        | WLR_EDGE_LEFT
+        | WLR_EDGE_RIGHT;
     return ws;
 }
 

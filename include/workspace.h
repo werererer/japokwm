@@ -80,7 +80,7 @@ struct workspace {
     struct focus_set *focus_set;
 
     /* should anchored layershell programs be taken into consideration */
-    bool consider_layer_shell;
+    enum wlr_edges visible_edges;
 };
 
 GPtrArray *create_workspaces();
