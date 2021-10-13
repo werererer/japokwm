@@ -104,8 +104,11 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     bitset_set(ws->workspaces, ws->id);
     bitset_set(ws->prev_workspaces, ws->id);
 
-    ws->focus_set = focus_set_create();
     ws->con_set = create_container_set();
+    ws->visible_con_set = create_container_set();
+
+    ws->focus_set = focus_set_create();
+    ws->visible_focus_set = focus_set_create();
 
     ws->visible_edges = WLR_EDGE_BOTTOM
         | WLR_EDGE_TOP
@@ -140,14 +143,14 @@ void update_workspaces(GPtrArray *workspaces, GPtrArray *tag_names)
 void focus_most_recent_container()
 {
     struct monitor *m = server_get_selected_monitor();
-    struct tagset *tagset = monitor_get_active_tagset(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
 
     struct container *con = get_focused_container(m);
     // TODO: this can be exported to an external function
     if (!con) {
-        if (tagset->con_set->tiled_containers->len <= 0)
+        if (ws->visible_con_set->tiled_containers->len <= 0)
             return;
-        struct container *con = g_ptr_array_index(tagset->con_set->tiled_containers, 0);
+        struct container *con = g_ptr_array_index(ws->visible_con_set->tiled_containers, 0);
         if (!con)
             return;
     }
@@ -157,8 +160,7 @@ void focus_most_recent_container()
 
 struct container *get_container(struct workspace *ws, int i)
 {
-    struct tagset *tagset = workspace_get_active_tagset(ws);
-    return get_in_composed_list(tagset->visible_focus_set->focus_stack_visible_lists, i);
+    return get_in_composed_list(ws->visible_focus_set->focus_stack_visible_lists, i);
 }
 
 struct container *get_container_in_stack(struct workspace *ws, int i)
@@ -182,6 +184,7 @@ void destroy_workspace(struct workspace *ws)
     bitset_destroy(ws->workspaces);
     bitset_destroy(ws->prev_workspaces);
     focus_set_destroy(ws->focus_set);
+    focus_set_destroy(ws->visible_focus_set);
 
     for (int i = 0; i < ws->con_set->tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(ws->con_set->tiled_containers, i);
@@ -193,6 +196,7 @@ void destroy_workspace(struct workspace *ws)
         kill_client(c);
     }
     destroy_container_set(ws->con_set);
+    destroy_container_set(ws->visible_con_set);
     free(ws->name);
     free(ws);
 }
@@ -617,7 +621,7 @@ void workspace_remove_container_from_containers_locally(struct workspace *ws, st
     struct layout *lt = tagset_get_layout(tagset);
     if (lt->options->arrange_by_focus) {
         remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
-        remove_in_composed_list(tagset->visible_focus_set->focus_stack_lists, cmp_ptr, con);
+        remove_in_composed_list(ws->visible_focus_set->focus_stack_lists, cmp_ptr, con);
     } else {
         DO_ACTION_LOCALLY(ws,
             g_ptr_array_remove(con_set->tiled_containers, con);
@@ -768,11 +772,7 @@ void workspace_remove_container_from_focus_stack(struct workspace *ws, struct co
     for (int i = 0; i < server.workspaces->len; i++) {
         struct workspace *ws = g_ptr_array_index(server.workspaces, i);
         remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
-    }
-
-    for (int i = 0; i < server.tagsets->len; i++) {
-        struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
-        remove_in_composed_list(tagset->visible_focus_set->focus_stack_lists, cmp_ptr, con);
+        remove_in_composed_list(ws->visible_focus_set->focus_stack_lists, cmp_ptr, con);
     }
 }
 
@@ -832,11 +832,9 @@ void workspace_repush(struct workspace *ws, struct container *con, int new_pos)
 
 void workspace_repush_on_focus_stack(struct workspace *ws, struct container *con, int new_pos)
 {
-    struct tagset *tagset = workspace_get_active_tagset(ws);
-
-    remove_in_composed_list(tagset->visible_focus_set->focus_stack_lists, cmp_ptr, con);
-    list_set_insert_container_to_focus_stack(tagset->visible_focus_set, new_pos, con);
-    focus_set_write_to_parent(ws->focus_set, tagset->visible_focus_set);
+    remove_in_composed_list(ws->visible_focus_set->focus_stack_lists, cmp_ptr, con);
+    list_set_insert_container_to_focus_stack(ws->visible_focus_set, new_pos, con);
+    focus_set_write_to_parent(ws->focus_set, ws->visible_focus_set);
 }
 
 bool workspace_sticky_contains_client(struct workspace *ws, struct client *client)

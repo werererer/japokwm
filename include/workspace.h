@@ -16,19 +16,19 @@ struct server;
 /* when an action should change the workspace and the tagsets associated with it
  * you should use this macro.
  * NOTE: use to jump to the end of the current action*/
-#define DO_ACTION_LOCALLY(workspace, action) \
+#define DO_ACTION_LOCALLY(_ws, action) \
     do {\
-        struct container_set *con_set = workspace->con_set;\
+        struct container_set *con_set = _ws->con_set;\
         do {\
             action\
         } while (0);\
         \
         do {\
             struct monitor *m = container_get_monitor(con);\
-            struct tagset *_tagset = monitor_get_active_tagset(m);\
-            if (!_tagset)\
+            struct workspace *_ws = monitor_get_active_workspace(m);\
+            if (!_ws)\
                 continue;\
-            struct container_set *con_set = _tagset->con_set;\
+            struct container_set *con_set = _ws->visible_con_set;\
             action\
         } while (0);\
     } while (0)
@@ -46,10 +46,10 @@ struct server;
         }\
         do {\
             struct monitor *m = container_get_monitor(con);\
-            struct tagset *_tagset = monitor_get_active_tagset(m);\
-            if (!_tagset)\
+            struct workspace *_ws = monitor_get_active_workspace(m);\
+            if (!_ws)\
                 continue;\
-            struct container_set *con_set = _tagset->con_set;\
+            struct container_set *con_set = _ws->visible_con_set;\
             action\
         } while (0);\
     } while (0)
@@ -78,6 +78,13 @@ struct workspace {
 
     struct container_set *con_set;
     struct focus_set *focus_set;
+
+    struct container_set *visible_con_set;
+    struct focus_set *visible_focus_set;
+    struct visual_set *visible_visual_set;
+
+    // whether the tagset needs to be reloaded
+    bool damaged;
 
     /* should anchored layershell programs be taken into consideration */
     enum wlr_edges visible_edges;

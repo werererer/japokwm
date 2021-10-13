@@ -354,7 +354,8 @@ void update_hidden_status_of_containers(struct monitor *m, GPtrArray *tiled_cont
 
 int get_container_count(struct tagset *tagset)
 {
-    return tagset->con_set->tiled_containers->len;
+    struct workspace *ws = tagset_get_workspace(tagset);
+    return ws->visible_con_set->tiled_containers->len;
 }
 
 int get_tiled_container_count(struct tagset *tagset)
