@@ -305,8 +305,8 @@ static void render_stack(struct monitor *m, pixman_region32_t *output_damage)
 {
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    GPtrArray *stack_list = tagset_get_complete_stack_copy(tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    GPtrArray *stack_list = workspace_get_complete_stack_copy(ws);
     for (int i = stack_list->len-1; i >= 0; i--) {
         struct container *con = g_ptr_array_index(stack_list, i);
         if (!container_viewable_on_monitor(m, con))

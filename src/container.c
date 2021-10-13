@@ -194,9 +194,9 @@ struct container *xy_to_container(double x, double y)
     struct monitor *m = xy_to_monitor(x, y);
     if (!m)
         return NULL;
-    struct tagset *tagset = monitor_get_active_tagset(m);
 
-    GPtrArray *stack_set = tagset_get_complete_stack_copy(tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    GPtrArray *stack_set = workspace_get_complete_stack_copy(ws);
     for (int i = 0; i < stack_set->len; i++) {
         struct container *con = g_ptr_array_index(stack_set, i);
         if (!con->focusable)
@@ -469,10 +469,11 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     g_ptr_array_unref(visible_containers);
     g_ptr_array_unref(hidden_containers);
 
-    GPtrArray *tiled_list = tagset_get_tiled_list(tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    GPtrArray *tiled_list = workspace_get_tiled_list(ws);
     sub_list_write_to_parent_list1D(tiled_list, result_list);
-    tagset_write_to_workspaces(tagset);
-    tagset_write_to_focus_stacks(tagset);
+    workspace_write_to_workspaces(ws);
+    workspace_write_to_focus_stacks(ws);
     g_ptr_array_unref(result_list);
 
     arrange();
@@ -529,10 +530,11 @@ void swap_on_hidden_stack(struct monitor *m, int i)
     g_ptr_array_unref(visible_containers);
     g_ptr_array_unref(hidden_containers);
 
-    GPtrArray *tiled_list = tagset_get_tiled_list(tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    GPtrArray *tiled_list = workspace_get_tiled_list(ws);
     sub_list_write_to_parent_list1D(tiled_list, result_list);
-    tagset_write_to_workspaces(tagset);
-    tagset_write_to_focus_stacks(tagset);
+    workspace_write_to_workspaces(ws);
+    workspace_write_to_focus_stacks(ws);
     g_ptr_array_unref(result_list);
 
     arrange();
@@ -555,8 +557,8 @@ void lift_container(struct container *con)
 void repush(int pos1, int pos2)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    GPtrArray *tiled_containers = workspace_get_tiled_list_copy(ws);
 
     if (pos1 >= tiled_containers->len)
         return;
@@ -567,7 +569,6 @@ void repush(int pos1, int pos2)
     g_ptr_array_unref(tiled_containers);
 
     // TODO: this doesn't work if tiled by focus
-    struct workspace *ws = get_workspace(tagset->selected_ws_id);
     workspace_repush(ws, con, pos2);
 
     arrange();
@@ -608,18 +609,17 @@ void container_fix_position(struct container *con)
     if (!m)
         return;
 
-    struct tagset *tagset = monitor_get_active_tagset(m);
-
-    GPtrArray *tiled_containers = tagset_get_tiled_list_copy(tagset);
-    struct layout *lt = tagset_get_layout(tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    GPtrArray *tiled_containers = workspace_get_tiled_list_copy(ws);
+    struct layout *lt = workspace_get_layout(ws);
 
     if (!container_is_floating(con)) {
         g_ptr_array_remove(tiled_containers, con);
         int last_pos = lt->n_tiled;
         g_ptr_array_insert(tiled_containers, last_pos, con);
     }
-    tagset_write_to_workspaces(tagset);
-    tagset_write_to_focus_stacks(tagset);
+    workspace_write_to_workspaces(ws);
+    workspace_write_to_focus_stacks(ws);
     g_ptr_array_unref(tiled_containers);
 }
 

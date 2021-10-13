@@ -228,12 +228,11 @@ void destroy_tagset(struct tagset *tagset)
     free(tagset);
 }
 
-void tagset_write_to_focus_stacks(struct tagset *tagset)
+void workspace_write_to_focus_stacks(struct workspace *ws)
 {
-    if (!tagset)
+    if (!ws)
         return;
 
-    struct workspace *ws = tagset_get_workspace(tagset);
     focus_set_write_to_parent(ws->focus_set, ws->visible_focus_set);
 }
 
@@ -328,9 +327,9 @@ void tagset_move_sticky_containers(struct tagset *tagset)
     g_ptr_array_unref(list);
 }
 
-static void restore_floating_containers(struct tagset *tagset)
+static void restore_floating_containers(struct workspace *ws)
 {
-    GPtrArray *floating_list = tagset_get_floating_list_copy(tagset);
+    GPtrArray *floating_list = tagset_get_floating_list_copy(ws);
     if (!floating_list)
         return;
     for (int i = 0; i < floating_list->len; i++) {
@@ -358,8 +357,8 @@ void focus_tagset(struct tagset *tagset)
     tagset_workspaces_connect(tagset);
     tagset_load_workspaces();
     m->tagset = tagset;
-    restore_floating_containers(tagset);
     struct workspace *ws = tagset_get_workspace(tagset);
+    restore_floating_containers(ws);
     bitset_assign_bitset(&ws->workspaces, tagset->workspaces);
     update_reduced_focus_stack(ws);
     ipc_event_workspace();
@@ -373,12 +372,11 @@ void focus_tagset(struct tagset *tagset)
     cursor_rebase(seat->cursor);
 }
 
-void tagset_write_to_workspaces(struct tagset *tagset)
+void workspace_write_to_workspaces(struct workspace *ws)
 {
-    if (!tagset)
+    if (!ws)
         return;
 
-    struct workspace *ws = tagset_get_workspace(tagset);
     container_set_write_to_parent(ws->con_set, ws->visible_con_set);
 }
 
@@ -515,12 +513,11 @@ GPtrArray *tagset_get_global_floating_copy(struct tagset *tagset)
     return visible_global_floating_list_copy;
 }
 
-GPtrArray *tagset_get_tiled_list_copy(struct tagset *tagset)
+GPtrArray *workspace_get_tiled_list_copy(struct workspace *ws)
 {
-    struct layout *lt = tagset_get_layout(tagset);
+    struct layout *lt = workspace_get_layout(ws);
 
     GPtrArray *tiled_list = NULL;
-    struct workspace *ws = tagset_get_workspace(tagset);
     if (lt->options->arrange_by_focus) {
         tiled_list = g_ptr_array_new();
         list_append_list_under_condition(
@@ -537,11 +534,9 @@ GPtrArray *tagset_get_tiled_list_copy(struct tagset *tagset)
     }
 }
 
-GPtrArray *tagset_get_tiled_list(struct tagset *tagset)
+GPtrArray *workspace_get_tiled_list(struct workspace *ws)
 {
-    struct layout *lt = tagset_get_layout(tagset);
-
-    struct workspace *ws = tagset_get_workspace(tagset);
+    struct layout *lt = workspace_get_layout(ws);
     if (lt->options->arrange_by_focus) {
         return ws->visible_focus_set->focus_stack_normal;
     } else {
@@ -549,14 +544,13 @@ GPtrArray *tagset_get_tiled_list(struct tagset *tagset)
     }
 }
 
-GPtrArray *tagset_get_floating_list_copy(struct tagset *tagset)
+GPtrArray *tagset_get_floating_list_copy(struct workspace *ws)
 {
-    struct layout *lt = tagset_get_layout(tagset);
+    struct layout *lt = workspace_get_layout(ws);
 
     if (!lt)
         return NULL;
 
-    struct workspace *ws = tagset_get_workspace(tagset);
     GPtrArray *floating_containers = g_ptr_array_new();
     if (lt->options->arrange_by_focus) {
         floating_containers =
@@ -608,19 +602,19 @@ GPtrArray *tagset_get_hidden_list_copy(struct tagset *tagset)
     }
 }
 
-GPtrArray *tagset_get_stack_copy(struct tagset *tagset)
+GPtrArray *workspace_get_stack_copy(struct workspace *ws)
 {
-    GPtrArray *tiled_copy = tagset_get_tiled_list_copy(tagset);
+    GPtrArray *tiled_copy = workspace_get_tiled_list_copy(ws);
     GPtrArray *floating_copy = list_create_filtered_sub_list(server.container_stack, container_is_floating);
     wlr_list_cat(floating_copy, tiled_copy);
     g_ptr_array_unref(tiled_copy);
     return floating_copy;
 }
 
-GPtrArray *tagset_get_complete_stack_copy(struct tagset *tagset)
+GPtrArray *workspace_get_complete_stack_copy(struct workspace *ws)
 {
     GPtrArray *array = g_ptr_array_new();
-    GPtrArray *stack_copy = tagset_get_stack_copy(tagset);
+    GPtrArray *stack_copy = workspace_get_stack_copy(ws);
 
     wlr_list_cat(array, server.layer_visual_stack_overlay);
     wlr_list_cat(array, server.layer_visual_stack_top);

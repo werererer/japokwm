@@ -25,9 +25,9 @@ int lib_get_active_layout(lua_State *L)
 int lib_get_this_container_count(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct tagset *tagset = monitor_get_active_tagset(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
 
-    int i = get_slave_container_count(tagset) + 1;
+    int i = get_slave_container_count(ws) + 1;
     lua_pushinteger(L, i);
     return 1;
 }
@@ -35,8 +35,8 @@ int lib_get_this_container_count(lua_State *L)
 int lib_get_n_tiled(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    struct layout *lt = tagset_get_layout(tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct layout *lt = workspace_get_layout(ws);
     int i = lt->n_tiled;
     lua_pushinteger(L, i);
     return 1;

@@ -191,8 +191,8 @@ void destroy_monitor(struct wl_listener *listener, void *data)
     wl_list_remove(&m->frame.link);
     wl_list_remove(&m->destroy.link);
 
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    GPtrArray *stack_list = tagset_get_complete_stack_copy(tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    GPtrArray *stack_list = workspace_get_complete_stack_copy(ws);
     for (int i = 0; i < stack_list->len; i++) {
         struct container *con = g_ptr_array_index(stack_list, i);
         if (con->client->m == m) {
