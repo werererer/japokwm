@@ -129,7 +129,7 @@ int lib_set_floating(lua_State *L)
     bool floating = lua_toboolean(L, -1);
     lua_pop(L, 1);
     struct monitor *m = server_get_selected_monitor();
-    struct container *sel = get_focused_container(m);
+    struct container *sel = monitor_get_focused_container(m);
     if (!sel)
         return 0;
 
@@ -287,7 +287,7 @@ int lib_toggle_view(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
     focus_most_recent_container();
-    struct container *sel = get_focused_container(m);
+    struct container *sel = monitor_get_focused_container(m);
     lift_container(sel);
     arrange(false);
     return 0;
@@ -296,7 +296,7 @@ int lib_toggle_view(lua_State *L)
 int lib_toggle_floating(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct container *sel = get_focused_container(m);
+    struct container *sel = monitor_get_focused_container(m);
     if (!sel)
         return 0;
     container_set_floating(sel, container_fix_position, !container_is_floating(sel));
@@ -310,7 +310,7 @@ int lib_move_container_to_workspace(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = server_get_selected_monitor();
-    struct container *con = get_focused_container(m);
+    struct container *con = monitor_get_focused_container(m);
 
     struct workspace *ws = get_workspace(ws_id);
     move_container_to_workspace(con, ws);
@@ -322,7 +322,7 @@ int lib_zoom(lua_State *L)
     struct monitor *m = server_get_selected_monitor();
     struct tagset *tagset = monitor_get_active_tagset(m);
 
-    struct container *sel = get_focused_container(m);
+    struct container *sel = monitor_get_focused_container(m);
 
     if (!sel)
         return 0;

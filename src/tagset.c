@@ -479,8 +479,6 @@ void tagset_reload(struct tagset *tagset)
     struct workspace *sel_ws = tagset_get_workspace(tagset);
     workspace_damage(sel_ws);
     tagset_load_workspaces();
-    /* update_sub_focus_stack(tagset); */
-    /* update_visual_visible_stack(tagset); */
 }
 
 bool container_intersects_with_monitor(struct container *con, struct monitor *m)

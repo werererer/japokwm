@@ -154,7 +154,6 @@ int lib_set_automatic_workspace_naming(lua_State *L)
     struct options *options = check_options(L, 1);
     lua_pop(L, 1);
 
-    // 1. argument
     options->automatic_workspace_naming = automatic_workspace_naming;
     ipc_event_workspace();
     return 0;

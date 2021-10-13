@@ -90,7 +90,7 @@ int lib_container_set_ratio(lua_State *L) {
 
 int lib_container_get_focused(lua_State *L) {
     struct monitor *m = server_get_selected_monitor();
-    struct container *con = get_focused_container(m);
+    struct container *con = monitor_get_focused_container(m);
 
     create_lua_container(L, con);
     return 1;

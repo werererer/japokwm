@@ -81,7 +81,6 @@ struct workspace {
 
     struct container_set *visible_con_set;
     struct focus_set *visible_focus_set;
-    struct visual_set *visible_visual_set;
 
     // whether the workspace needs to be reloaded
     bool damaged;

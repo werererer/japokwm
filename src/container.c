@@ -179,19 +179,13 @@ void container_damage_whole(struct container *con)
     container_damage(con, true);
 }
 
-struct container *get_focused_container(struct monitor *m)
+struct container *monitor_get_focused_container(struct monitor *m)
 {
-    if (!m) {
+    if (!m)
         return NULL;
-    }
 
     struct workspace *ws = monitor_get_active_workspace(m);
-
-    if (!ws) {
-        return NULL;
-    }
-
-    struct container *con = get_in_composed_list(ws->visible_focus_set->focus_stack_visible_lists, 0);
+    struct container *con = workspace_get_focused_container(ws);
     return con;
 }
 
@@ -376,12 +370,12 @@ void focus_container(struct container *con)
     if (!container_viewable_on_monitor(m, con))
         return;
 
-    struct container *sel = get_focused_container(m);
+    struct container *sel = monitor_get_focused_container(m);
 
     /* Put the new client atop the focus stack */
     workspace_repush_on_focus_stack(ws, con, 0);
 
-    struct container *new_sel = get_focused_container(m);
+    struct container *new_sel = monitor_get_focused_container(m);
 
     ipc_event_window();
 
@@ -397,7 +391,7 @@ void focus_container(struct container *con)
 
 void focus_on_stack(struct monitor *m, int i)
 {
-    struct container *sel = get_focused_container(m);
+    struct container *sel = monitor_get_focused_container(m);
 
     if (!sel)
         return;
@@ -426,7 +420,7 @@ void focus_on_stack(struct monitor *m, int i)
 // TODO refactor
 void focus_on_hidden_stack(struct monitor *m, int i)
 {
-    struct container *sel = get_focused_container(m);
+    struct container *sel = monitor_get_focused_container(m);
 
     if (!sel)
         return;
@@ -487,7 +481,7 @@ void focus_on_hidden_stack(struct monitor *m, int i)
 
 void swap_on_hidden_stack(struct monitor *m, int i)
 {
-    struct container *sel = get_focused_container(m);
+    struct container *sel = monitor_get_focused_container(m);
 
     if (!sel)
         return;
