@@ -1058,7 +1058,6 @@ void move_container_to_workspace(struct container *con, struct workspace *ws)
     ipc_event_workspace();
 }
 
-
 bool container_is_bar(struct container *con)
 {
     switch (con->client->type) {

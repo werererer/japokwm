@@ -217,7 +217,6 @@ int get_container_area_count(struct tagset *ts)
 void arrange_monitor(struct monitor *m)
 {
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
-    set_root_geom(m->root, m->geom);
     struct wlr_box active_geom = monitor_get_active_geom(m);
 
     struct tagset *tagset = monitor_get_active_tagset(m);

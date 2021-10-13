@@ -54,6 +54,7 @@ static const struct anchors anchors = {
     },
 };
 
+
 struct root *create_root(struct monitor *m, struct wlr_box geom)
 {
     struct root *root = calloc(1, sizeof(*root));
@@ -74,55 +75,6 @@ static bool equals_anchor(const struct anchor *anchor, uint32_t anchor_value)
     return is_anchor_triplet || is_singular_anchor;
 }
 
-static struct wlr_box fit_root_area(struct root *root, struct wlr_box geom)
-{
-    struct wlr_box d_box = geom;
-    struct wlr_box box = d_box;
-
-    struct workspace *ws = monitor_get_active_workspace(root->m);
-    if (!ws) {
-        return d_box;
-    }
-
-    for (int i = 0; i < length_of_composed_list(server.layer_visual_stack_lists); i++) {
-        struct container *con = get_in_composed_list(server.layer_visual_stack_lists, i);
-
-        /* struct tagset *tagset = monitor_get_active_tagset(root->m); */
-        /* if (!exist_on(tagset, con)) */
-        /*     continue; */
-
-        struct wlr_layer_surface_v1_state *current = &con->client->surface.layer->current;
-        int anchor = current->anchor;
-
-        // desired_width and desired_height are == 0 if nothing is desired
-        int desired_width = current->desired_width;
-        int desired_height = current->desired_height;
-
-        // resize the root area
-        if (equals_anchor(&anchors.top, anchor)) {
-            box.x = d_box.x;
-            int diff_height = d_box.y - (d_box.y - box.y);
-            box.y = MAX(diff_height, desired_height);
-            box.height = d_box.height - box.y;
-        }
-        if (equals_anchor(&anchors.bottom, anchor)) {
-            int diff_height = (d_box.y + d_box.height) - (box.y + box.height);
-            box.height = d_box.height - MAX(diff_height, desired_height);
-        }
-        if (equals_anchor(&anchors.left, anchor)) {
-            int diff_width = box.x - d_box.x;
-            box.x = MAX(diff_width, desired_width);
-            box.width = d_box.width - box.x;
-        }
-        if (equals_anchor(&anchors.right, anchor)) {
-            int diff_width = (d_box.x + d_box.width) - (box.x + box.width);
-            box.width = d_box.width - MAX(diff_width, desired_width);
-        }
-    }
-
-    return box;
-}
-
 void set_root_color(struct root *root, struct color color)
 {
     root->color = color;
@@ -130,7 +82,7 @@ void set_root_color(struct root *root, struct color color)
 
 void set_root_geom(struct root *root, struct wlr_box geom)
 {
-    root->geom = fit_root_area(root, geom);
+    root->geom = geom;
 }
 
 void root_damage_whole(struct root *root)
@@ -142,7 +94,35 @@ void root_damage_whole(struct root *root)
     wlr_output_damage_add_box(m->damage, &geom);
 }
 
-void set_bars_visible(struct workspace *ws, bool visible)
+static bool is_bar_at_direction(struct container *con, enum wlr_direction direction)
+{
+    struct wlr_layer_surface_v1 *wlr_layer_surface = con->client->surface.layer;
+    struct wlr_layer_surface_v1_state *state = &wlr_layer_surface->current;
+
+    if (direction & WLR_DIRECTION_UP) {
+        if (equals_anchor(&anchors.top, state->anchor)) {
+            return true;
+        }
+    }
+    if (direction & WLR_DIRECTION_DOWN) {
+        if (equals_anchor(&anchors.bottom, state->anchor)) {
+            return true;
+        }
+    }
+    if (direction & WLR_DIRECTION_LEFT) {
+        if (equals_anchor(&anchors.left, state->anchor)) {
+            return true;
+        }
+    }
+    if (direction & WLR_DIRECTION_RIGHT) {
+        if (equals_anchor(&anchors.right, state->anchor)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void set_bars_visible(struct workspace *ws, bool visible, enum wlr_direction direction)
 {
     ws->consider_layer_shell = visible;
     for (int i = 0; i < length_of_composed_list(server.layer_visual_stack_lists); i++) {
@@ -150,9 +130,14 @@ void set_bars_visible(struct workspace *ws, bool visible)
 
         if (!container_is_bar(con))
             continue;
+        if (!is_bar_at_direction(con, direction))
+            continue;
 
         container_set_hidden_at_workspace(con, !visible, ws);
     }
+
+    struct monitor *m = workspace_get_monitor(ws);
+    arrange_layers(m);
 }
 
 bool get_bars_visible(struct workspace *ws)
@@ -160,7 +145,7 @@ bool get_bars_visible(struct workspace *ws)
     return ws->consider_layer_shell;
 }
 
-void toggle_bars_visible(struct workspace *ws)
+void toggle_bars_visible(struct workspace *ws, enum wlr_direction direction)
 {
-    set_bars_visible(ws, !get_bars_visible(ws));
+    set_bars_visible(ws, !get_bars_visible(ws), direction);
 }
