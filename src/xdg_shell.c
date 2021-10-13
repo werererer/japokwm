@@ -61,7 +61,7 @@ void create_notify_xdg(struct wl_listener *listener, void *data)
     LISTEN(&xdg_surface->toplevel->events.set_title, &c->set_title, client_handle_set_title);
     LISTEN(&xdg_surface->toplevel->events.set_app_id, &c->set_app_id, client_handle_set_app_id);
 
-    LISTEN(&xdg_surface->events.new_popup, &c->new_popup, popup_handle_new_popup);
+    LISTEN(&xdg_surface->events.new_popup, &c->new_popup, client_handle_new_popup);
 
     create_container(c, server_get_selected_monitor(), true);
 }

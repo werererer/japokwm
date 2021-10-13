@@ -235,6 +235,16 @@ void kill_client(struct client *c)
     }
 }
 
+void client_handle_new_popup(struct wl_listener *listener, void *data)
+{
+    struct client *client = wl_container_of(listener, client, new_popup);
+    struct wlr_xdg_popup *xdg_popup = data;
+
+    struct container *con = client->con;
+    struct monitor *m = container_get_monitor(con);
+    create_popup(m, xdg_popup, container_get_current_geom(con), con);
+}
+
 void client_handle_set_title(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, set_title);

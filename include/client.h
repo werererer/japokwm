@@ -56,6 +56,7 @@ void kill_client(struct client *c);
 
 float calc_ratio(float width, float height);
 
+void client_handle_new_popup(struct wl_listener *listener, void *data);
 void client_handle_set_title(struct wl_listener *listener, void *data);
 void client_handle_set_app_id(struct wl_listener *listener, void *data);
 
