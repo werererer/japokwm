@@ -146,8 +146,8 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
          * part of the puzzle, dwl does not fully support HiDPI. */
         .x = ox,
         .y = oy,
-        .width = surface->current.width,
-        .height = surface->current.height,
+        .width = box.width,
+        .height = box.height
     };
 
     render_texture(wlr_output, output_damage, texture, &obox, alpha);
@@ -319,7 +319,8 @@ static void render_stack(struct monitor *m, pixman_region32_t *output_damage)
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
         struct wlr_box *con_geom = container_get_current_geom(con);
-        render_surface_iterator(m, surface, *con_geom, output_damage, con->alpha);
+        struct wlr_box obox = *con_geom;
+        render_surface_iterator(m, surface, obox, output_damage, con->alpha);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -333,7 +334,13 @@ static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
     for (int i = 0; i < server.popups->len; i++) {
         struct xdg_popup *popup = g_ptr_array_index(server.popups, i);
         struct wlr_surface *surface = popup->xdg->base->surface;
-        render_surface_iterator(m, surface, popup->geom, output_damage, 1.0f);
+
+        struct wlr_box obox = popup->geom;
+        // popups are weird and require to use the dimensions of the surface
+        // instead
+        obox.width = surface->current.width;
+        obox.height = surface->current.height;
+        render_surface_iterator(m, surface, obox, output_damage, 1.0f);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
