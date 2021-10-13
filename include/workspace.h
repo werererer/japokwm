@@ -83,7 +83,7 @@ struct workspace {
     struct focus_set *visible_focus_set;
     struct visual_set *visible_visual_set;
 
-    // whether the tagset needs to be reloaded
+    // whether the workspace needs to be reloaded
     bool damaged;
 
     /* should anchored layershell programs be taken into consideration */

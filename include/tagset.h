@@ -41,9 +41,6 @@ struct tagset {
     struct monitor *m;
     int selected_ws_id;
     BitSet *workspaces;
-
-    // whether the tagset needs to be reloaded
-    bool damaged;
 };
 
 /* this creates a tagset with reference count of 1. Calling focus_tagset

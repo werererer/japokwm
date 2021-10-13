@@ -55,6 +55,7 @@ void container_set_append(
             src->tiled_containers,
             is_container_valid_to_append,
             tagset);
+    debug_print("end len: %i\n", dest->tiled_containers->len);
 }
 
 void container_set_clear(struct container_set *list_set)
