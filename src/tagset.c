@@ -24,7 +24,7 @@
 static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws, bool active);
 static void tagset_unset_workspace(struct tagset *tagset, struct workspace *ws);
 static void tagset_set_workspace(struct tagset *tagset, struct workspace *ws);
-static void tagset_damage(struct tagset *tagset);
+static void workspace_damage(struct workspace *ws);
 static void tagset_assign_workspaces(struct tagset *tagset, BitSet *workspaces);
 
 static bool workspace_is_damaged(struct workspace *ws);
@@ -37,7 +37,8 @@ static void tagset_assign_workspace(struct tagset *tagset, struct workspace *ws,
         return;
     int ws_id = ws->id;
     bitset_assign(tagset->workspaces, ws_id, active);
-    tagset_damage(tagset);
+    struct workspace *sel_ws = tagset_get_workspace(tagset);
+    workspace_damage(sel_ws);
 }
 
 static void tagset_unset_workspace(struct tagset *tagset, struct workspace *ws)
@@ -50,9 +51,9 @@ static void tagset_set_workspace(struct tagset *tagset, struct workspace *ws)
     tagset_assign_workspace(tagset, ws, true);
 }
 
-static void tagset_damage(struct tagset *tagset)
+static void workspace_damage(struct workspace *ws)
 {
-    tagset->damaged = true;
+    ws->damaged = true;
 }
 
 static bool workspace_is_damaged(struct workspace *ws)
@@ -90,18 +91,17 @@ void tagset_set_tags(struct tagset *tagset, BitSet *workspaces)
 // you should use tagset_write_to_workspaces to unload workspaces first else
 void tagset_load_workspaces()
 {
-    for (int i = 0; i < server.mons->len; i++) {
-        struct monitor *m = g_ptr_array_index(server.mons, i);
+    for (int i = 0; i < server.tagsets->len; i++) {
+        struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
 
-        struct workspace *sel_ws = monitor_get_active_workspace(m);
+        struct workspace *sel_ws = tagset_get_workspace(tagset);
 
         if (!workspace_is_damaged(sel_ws))
             return;
 
         struct container_set *dest = sel_ws->visible_con_set;
-        struct container_set *src = ws->con_set;
+        struct container_set *src = sel_ws->con_set;
 
-        struct tagset *tagset = workspace_get_tagset(ws);
         container_set_clear(dest);
         container_set_append(tagset, dest, src);
     }
@@ -476,7 +476,8 @@ void tagset_reload(struct tagset *tagset)
 {
     if (!tagset)
         return;
-    tagset_damage(tagset);
+    struct workspace *sel_ws = tagset_get_workspace(tagset);
+    workspace_damage(sel_ws);
     tagset_load_workspaces();
     /* update_sub_focus_stack(tagset); */
     /* update_visual_visible_stack(tagset); */
