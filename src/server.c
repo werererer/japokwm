@@ -243,6 +243,7 @@ static void init_lua_api(struct server *server)
 {
     L = luaL_newstate();
     luaL_openlibs(L);
+    lua_setwarnf(L, handle_warning, NULL);
 }
 
 static void finalize_lua_api(struct server *server)

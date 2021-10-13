@@ -24,8 +24,8 @@
 
 const struct luaL_Reg meta[] = 
 {
-    {"__index", get},
-    {"__newindex", set},
+    {"__index", get_lua_value},
+    {"__newindex", set_lua_value},
     {NULL, NULL},
 };
 
@@ -173,12 +173,42 @@ static void load_info(lua_State *L)
 
 /* set a lua value
  * */
-int set(lua_State *L)
+int set_lua_value(lua_State *L)
 {
     // [table, key, value]
     const char *key = luaL_checkstring(L, -2);
 
     lua_getmetatable(L, -3); {
+        // [table, key, value, meta]
+        lua_pushstring(L, "setter");
+        // [table, key, value, meta, "setter"]
+        lua_gettable(L, -2);
+        // [table, key, value, meta, (table)meta."setter"]
+        lua_pushstring(L, key);
+        // [table, key, value, meta, (table)meta."setter", key]
+        lua_gettable(L, -2);
+        // [table, key, value, meta, (table)meta."setter", (value)meta."setter".key]
+        if (lua_isnil(L, -1)) {
+            lua_pop(L, 6);
+
+            luaL_where(L, 1);
+            const char *where = luaL_checkstring(L, -1);
+            char *res = g_strconcat(
+                    where,
+                    key,
+                    " can't be set. Adding new values to lib tables is illegal",
+                    NULL);
+            // from here on using the variable that was on the stack may
+            // lead to segfaults because lua may garbage collect them
+            lua_pop(L, 1);
+            debug_print("line: %s\n", res);
+            lua_pushstring(L, res);
+            lua_warning(L, res, false);
+            free(res);
+            // lua_error(L);
+            return 0;
+        }
+        lua_pop(L, 2);
         // [table, key, value, meta]
         lua_pushstring(L, "setter");
         // [table, key, value, meta, "setter"]
@@ -218,7 +248,7 @@ int set(lua_State *L)
 
 /* this is very bad code I know... I returns the metatable after going through
  * the getter function */
-int get(lua_State *L)
+int get_lua_value(lua_State *L)
 {
     // [table, key]
     const char *key = luaL_checkstring(L, -1);

@@ -43,7 +43,7 @@ static const struct luaL_Reg options_setter[] =
     {"border_color", lib_set_border_color},
     {"entry_focus_position_function", lib_set_entry_focus_position_function},
     {"entry_position_function", lib_set_entry_position_function},
-    {"float_borderpx", lib_set_float_borderpx},
+    {"float_border_width", lib_set_float_border_width},
     {"focus_color", lib_set_focus_color},
     {"hidden_edges", lib_set_hidden_edges},
     {"inner_gaps", lib_set_inner_gaps},
@@ -53,7 +53,7 @@ static const struct luaL_Reg options_setter[] =
     {"root_color", lib_set_root_color},
     {"sloppy_focus", lib_set_sloppy_focus},
     {"smart_hidden_edges", lib_set_smart_hidden_edges},
-    {"tile_borderpx", lib_set_tile_borderpx},
+    {"tile_border_width", lib_set_tile_border_width},
     {"workspaces", lib_create_workspaces},
     {NULL, NULL},
 };
@@ -99,11 +99,13 @@ int lib_reload(lua_State *L)
     if (server_is_config_reloading_prohibited()) {
         luaL_where(L, 1);
         const char *where = luaL_checkstring(L, -1);
-        lua_pop(L, 1);
         char *res = g_strconcat(
                 where,
                 "action.reload() aborted: infinit recursion detected",
                 NULL);
+        // from here on using the variable that was on the stack may
+        // lead to segfaults because lua may garbage collect them
+        lua_pop(L, 1);
         debug_print("line: %s\n", res);
         lua_pushstring(L, res);
         lua_error(L);
@@ -182,27 +184,27 @@ int lib_set_outer_gaps(lua_State *L)
     return 0;
 }
 
-int lib_set_tile_borderpx(lua_State *L)
+int lib_set_tile_border_width(lua_State *L)
 {
-    int tile_border_px = luaL_checkinteger(L, -1);
+    int tile_border_width = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
     struct options *options = check_options(L, 1);
     lua_pop(L, 1);
 
-    options->tile_border_px = tile_border_px;
+    options->tile_border_px = tile_border_width;
     return 0;
 }
 
-int lib_set_float_borderpx(lua_State *L)
+int lib_set_float_border_width(lua_State *L)
 {
-    int float_border_px = luaL_checkinteger(L, -1);
+    int float_border_width = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
     struct options *options = check_options(L, 1);
     lua_pop(L, 1);
 
-    options->float_border_px = float_border_px;
+    options->float_border_px = float_border_width;
     return 0;
 }
 
