@@ -228,7 +228,7 @@ bool workspace_is_visible(struct workspace *ws, struct monitor *m)
     if (bitset_test(sel_ws->workspaces, ws->id)) {
         return true;
     }
-    if (ws->prev_m && !is_workspace_empty(ws)) {
+    if (ws->current_m && !is_workspace_empty(ws)) {
         return true;
     }
     return false;
@@ -236,17 +236,23 @@ bool workspace_is_visible(struct workspace *ws, struct monitor *m)
 
 bool is_workspace_extern(struct workspace *ws)
 {
-    struct monitor *ws_m = workspace_get_monitor(ws);
-    struct workspace *sel_ws = monitor_get_active_workspace(ws_m);
-    if (sel_ws == ws) {
+    struct monitor *ws_m = workspace_get_selected_monitor(ws);
+    if (!ws_m) {
         return false;
     }
-    return true;
+
+    struct monitor *sel_m = server_get_selected_monitor();
+    struct workspace *sel_ws = monitor_get_active_workspace(sel_m);
+    if (bitset_test(sel_ws->workspaces, ws->id) && sel_m != ws_m) {
+        return true;
+    }
+    return false;
 }
 
 bool is_workspace_the_selected_one(struct workspace *ws)
 {
-    struct workspace *sel_ws = server_get_selected_workspace();
+    struct monitor *m = workspace_get_monitor(ws);
+    struct workspace *sel_ws = monitor_get_active_workspace(m);
     return sel_ws->id == ws->id && !is_workspace_extern(ws);
 }
 
@@ -402,15 +408,18 @@ struct wlr_box workspace_get_active_geom(struct workspace *ws)
 struct monitor *workspace_get_selected_monitor(struct workspace *ws)
 {
     assert(ws != NULL);
-    return ws->prev_m;
+    return ws->m;
 }
 
 struct monitor *workspace_get_monitor(struct workspace *ws)
 {
     assert(ws != NULL);
 
-    if (ws->prev_m) {
-        return ws->prev_m;
+    if (ws->current_m) {
+        return ws->current_m;
+    }
+    if (ws->m) {
+        return ws->m;
     }
     return NULL;
 }

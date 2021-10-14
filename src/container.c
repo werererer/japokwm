@@ -986,7 +986,6 @@ void container_set_just_workspace_id(struct container *con, int ws_id)
 
     tagset_reload(prev_ws);
     struct workspace *ws = get_workspace(ws_id);
-    ws->prev_m = server_get_selected_monitor();
     tagset_reload(ws);
 }
 
@@ -1012,7 +1011,7 @@ void container_set_workspace(struct container *con, struct workspace *ws)
     if (m->ws_id == ws->id)
         return;
 
-    ws->prev_m = m;
+    ws->current_m = m;
     container_set_workspace_id(con, ws->id);
 }
 

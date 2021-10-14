@@ -180,7 +180,8 @@ int lib_set_tags(lua_State *L)
     }
     bitset_destroy(tmp_bitset);
 
-    tagset_set_tags(m, bitset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    tagset_set_tags(ws, bitset);
     return 0;
 }
 
@@ -502,7 +503,7 @@ int lib_toggle_tags(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
-    tagset_set_tags(m, ws->prev_workspaces);
+    tagset_set_tags(ws, ws->prev_workspaces);
     return 0;
 }
 

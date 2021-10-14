@@ -48,7 +48,7 @@ void workspace_write_to_workspaces(struct workspace *ws);
 
 void tagset_focus_workspace(struct monitor *m, struct workspace *ws);
 void tagset_toggle_add(struct monitor *m, BitSet *bitset);
-void tagset_set_tags(struct monitor *m, BitSet *workspaces);
+void tagset_set_tags(struct workspace *sel_ws, BitSet *workspaces);
 void tagset_focus_tags(struct workspace *ws, struct BitSet *bitset);
 void tagset_reload(struct workspace *sel_ws);
 void tagset_move_sticky_containers(struct workspace *ws);
