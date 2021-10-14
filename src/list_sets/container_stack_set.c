@@ -24,13 +24,14 @@ void destroy_container_set(struct container_set *con_set)
 }
 
 static bool is_container_valid_to_append(
-        void *tagset_ptr,
+        void *monitor_ptr,
         GPtrArray *src_list,
         struct container *src_con
         )
 {
-    struct tagset *tagset = tagset_ptr;
-    if (tagset_exist_on(tagset, src_con)) {
+    struct monitor *m = monitor_ptr;
+    debug_print("monitor: %p\n", m);
+    if (tagset_exist_on(m, src_con)) {
         return true;
     }
     return false;
@@ -46,7 +47,7 @@ void container_set_write_to_parent(
 }
 
 void container_set_append(
-        struct tagset *tagset,
+        struct monitor *m,
         struct container_set *dest,
         struct container_set *src)
 {
@@ -54,7 +55,7 @@ void container_set_append(
             dest->tiled_containers,
             src->tiled_containers,
             is_container_valid_to_append,
-            tagset);
+            m);
     debug_print("end len: %i\n", dest->tiled_containers->len);
 }
 

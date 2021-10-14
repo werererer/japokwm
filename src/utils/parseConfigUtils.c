@@ -167,7 +167,6 @@ void load_default_lua_config(lua_State *L)
     server.default_layout->symbol = "";
     load_workspaces(server.workspaces, tagnames);
 
-    server.previous_bitset = bitset_create();
     bitset_set(server.previous_bitset, server.previous_workspace);
 
     workspaces_remove_loaded_layouts(server.workspaces);
@@ -176,7 +175,8 @@ void load_default_lua_config(lua_State *L)
     // been destroyed that belong to the tagset this may lead to segfaults
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
-        tagset_workspaces_reconnect(m->tagset);
+        struct workspace *ws = monitor_get_active_workspace(m);
+        tagset_workspaces_reconnect(ws);
     }
 
     for (int i = 0; i < server.workspaces->len; i++) {

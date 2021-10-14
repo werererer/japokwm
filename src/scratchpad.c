@@ -17,7 +17,6 @@ void move_to_scratchpad(struct container *con, int position)
     }
 
     struct monitor *m = container_get_monitor(con);
-    struct tagset *tagset = monitor_get_active_tagset(m);
     // TODO: try to remove this
     container_set_floating(con, container_fix_position, false);
 
@@ -32,7 +31,8 @@ void move_to_scratchpad(struct container *con, int position)
         g_ptr_array_insert(server.scratchpad, new_position, con);
     }
 
-    tagset_reload(tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    tagset_reload(ws);
 
     container_damage_whole(con);
     arrange();

@@ -20,7 +20,8 @@ struct monitor {
     struct wlr_box geom;
     struct root *root;
     float scale;
-    struct tagset *tagset;
+
+    int ws_id;
 };
 
 struct monrule {
@@ -38,9 +39,10 @@ void focus_tags(struct BitSet bitset);
 void transform_monitor(struct monitor *m, enum wl_output_transform transform);
 void update_monitor_geometries();
 
+BitSet *monitor_get_workspaces(struct monitor *m);
+
 struct monitor *output_to_monitor(struct wlr_output *output);
 struct monitor *xy_to_monitor(double x, double y);
-struct tagset *monitor_get_active_tagset(struct monitor *m);
 struct workspace *monitor_get_active_workspace(struct monitor *m);
 struct layout *get_layout_in_monitor(struct monitor *m);
 struct root *monitor_get_active_root(struct monitor *m);

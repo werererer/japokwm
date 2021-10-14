@@ -9,6 +9,7 @@
 struct client;
 struct container;
 struct workspace;
+struct monitor;
 
 /* A tagset consists of a list_set, a struct to hold all relevant containers,
  * information on which monitor it belongs to and the list of workspaces it
@@ -37,27 +38,20 @@ struct workspace;
  * CREATING TAGSET:
  * All 
  * */
-struct tagset {
-    struct monitor *m;
-    int selected_ws_id;
-    BitSet *workspaces;
-};
 
 /* this creates a tagset with reference count of 1. Calling focus_tagset
  * afterwards also adds a ref counter of 1 therefore use focus_tagset_no_ref
  * instead.  */
-struct tagset *create_tagset(struct monitor *m, int selected_ws_id, BitSet *workspaces);
-void destroy_tagset(struct tagset *tagset);
+void monitor_focus_tags(struct monitor *m, struct workspace *ws, BitSet *workspaces);
 
 void workspace_write_to_workspaces(struct workspace *ws);
 
-void focus_tagset(struct tagset *tagset);
-void tagset_focus_workspace(int ws_id);
-void tagset_toggle_add(struct tagset *tagset, BitSet *bitset);
-void tagset_set_tags(struct tagset *tagset, BitSet *bitset);
-void tagset_focus_tags(int ws_id, struct BitSet *bitset);
-void tagset_reload(struct tagset *tagset);
-void tagset_move_sticky_containers(struct tagset *tagset);
+void tagset_focus_workspace(struct monitor *m, struct workspace *ws);
+void tagset_toggle_add(struct monitor *m, BitSet *bitset);
+void tagset_set_tags(struct monitor *m, BitSet *workspaces);
+void tagset_focus_tags(struct workspace *ws, struct BitSet *bitset);
+void tagset_reload(struct workspace *sel_ws);
+void tagset_move_sticky_containers(struct workspace *ws);
 
 void workspace_write_to_focus_stacks(struct workspace *ws);
 bool is_reduced_focus_stack(struct workspace *ws, struct container *con);
@@ -85,9 +79,9 @@ GPtrArray *workspace_get_tiled_list(struct workspace *ws);
 GPtrArray *workspace_get_tiled_list_copy(struct workspace *ws);
 
 // get with server floating containers instead
-GPtrArray *tagset_get_global_floating_copy(struct tagset *tagset);
-GPtrArray *tagset_get_visible_list_copy(struct tagset *tagset);
-GPtrArray *tagset_get_hidden_list_copy(struct tagset *tagset);
+GPtrArray *tagset_get_global_floating_copy(struct workspace *ws);
+GPtrArray *tagset_get_visible_list_copy(struct workspace *ws);
+GPtrArray *tagset_get_hidden_list_copy(struct workspace *ws);
 
 void workspace_id_to_tag(BitSet *dest, int ws_id);
 
@@ -98,21 +92,17 @@ bool container_potentially_viewable_on_monitor(struct monitor *m,
 bool exist_on(struct monitor *m, BitSet *workspaces, struct container *con);
 bool tagset_contains_client(BitSet *workspaces, struct client *c);
 bool visible_on(struct monitor *m, BitSet *workspaces, struct container *con);
-bool tagset_is_visible(struct tagset *tagset);
 
-bool tagset_exist_on(struct tagset *tagset, struct container *con);
-bool tagset_visible_on(struct tagset *tagset, struct container *con);
+bool tagset_exist_on(struct monitor *m, struct container *con);
+bool tagset_visible_on(struct monitor *m, struct container *con);
 
-void focus_tagset(struct tagset *tagset);
-void push_tagset(struct tagset *tagset);
+void focus_tagset(struct workspace *ws);
+void push_tagset(struct workspace *ws);
 
-void tagset_workspaces_reconnect(struct tagset *tagset);
-void tagset_workspaces_disconnect(struct tagset *tagset);
-void tagset_workspaces_connect(struct tagset *tagset);
+void tagset_workspaces_reconnect(struct workspace *ws);
+void tagset_workspaces_disconnect(struct workspace *ws);
+void tagset_workspaces_connect(struct workspace *ws);
 
 void tagset_load_workspaces();
-
-struct layout *tagset_get_layout(struct tagset *tagset);
-struct workspace *tagset_get_workspace(struct tagset *tagset);
 
 #endif /* TAGSET_H */

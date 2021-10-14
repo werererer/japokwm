@@ -165,8 +165,7 @@ struct container *get_container(struct workspace *ws, int i)
 
 struct container *get_container_in_stack(struct workspace *ws, int i)
 {
-    struct tagset *tagset = workspace_get_active_tagset(ws);
-    GPtrArray *visible_list = tagset_get_visible_list_copy(tagset);
+    GPtrArray *visible_list = tagset_get_visible_list_copy(ws);
     struct container *con = g_ptr_array_index(visible_list, i);
     return con;
 }
@@ -214,54 +213,51 @@ bool is_workspace_occupied(struct workspace *ws)
     assert(ws);
 
     struct monitor *m = workspace_get_monitor(ws);
-    bool is_occupied = (m != NULL) && workspace_is_visible(ws);
+    bool is_occupied = (m != NULL) && workspace_is_visible(ws, m);
     return is_occupied;
 }
 
-bool workspace_is_visible(struct workspace *ws)
+bool workspace_is_visible(struct workspace *ws, struct monitor *m)
 {
     assert(ws != NULL);
 
-    if (ws->prev_m && !is_workspace_empty(ws)) {
+    struct workspace *sel_ws = monitor_get_active_workspace(m);
+    if (ws == sel_ws) {
         return true;
     }
-    if (ws->tagset) {
-        return tagset_is_visible(ws->tagset);
+    if (bitset_test(sel_ws->workspaces, ws->id)) {
+        return true;
     }
-    if (ws->selected_tagset) {
-        return tagset_is_visible(ws->selected_tagset);
+    if (ws->prev_m && !is_workspace_empty(ws)) {
+        return true;
     }
     return false;
 }
 
 bool is_workspace_extern(struct workspace *ws)
 {
-    if (!ws->selected_tagset)
+    struct monitor *ws_m = workspace_get_monitor(ws);
+    struct workspace *sel_ws = monitor_get_active_workspace(ws_m);
+    if (sel_ws == ws) {
         return false;
-    if (!ws->tagset)
-        return false;
-    bool is_extern = ws->tagset->m != ws->selected_tagset->m;
-    return is_extern;
+    }
+    return true;
 }
 
 bool is_workspace_the_selected_one(struct workspace *ws)
 {
-    if (!ws->selected_tagset)
-        return false;
-    return ws->selected_tagset->selected_ws_id == ws->id
-        && tagset_is_visible(ws->selected_tagset)
-        && !is_workspace_extern(ws);
+    struct workspace *sel_ws = server_get_selected_workspace();
+    return sel_ws->id == ws->id && !is_workspace_extern(ws);
 }
 
 bool workspace_is_active(struct workspace *ws)
 {
     struct monitor *m = workspace_get_monitor(ws);
-
     if (!m)
         return false;
+    struct workspace *sel_ws = monitor_get_active_workspace(m);
 
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    return bitset_test(tagset->workspaces, ws->id);
+    return bitset_test(sel_ws->workspaces, ws->id);
 }
 
 int get_workspace_container_count(struct workspace *ws)
@@ -379,30 +375,6 @@ struct workspace *get_prev_empty_workspace(GPtrArray *workspaces, size_t ws_id)
     return NULL;
 }
 
-struct tagset *workspace_get_selected_tagset(struct workspace *ws)
-{
-    struct tagset *tagset = ws->selected_tagset;
-    return tagset;
-}
-
-struct tagset *workspace_get_tagset(struct workspace *ws)
-{
-    return ws->tagset;
-}
-
-struct tagset *workspace_get_active_tagset(struct workspace *ws)
-{
-    if (!ws)
-        return NULL;
-    struct tagset *tagset = ws->tagset;
-    if (!tagset) {
-        tagset = ws->selected_tagset;
-        if (!tagset)
-            return NULL;
-    }
-    return tagset;
-}
-
 struct layout *workspace_get_layout(struct workspace *ws)
 {
     if (!ws)
@@ -430,22 +402,14 @@ struct wlr_box workspace_get_active_geom(struct workspace *ws)
 struct monitor *workspace_get_selected_monitor(struct workspace *ws)
 {
     assert(ws != NULL);
-    if (!ws->selected_tagset)
-        return NULL;
-    return ws->selected_tagset->m;
+    return ws->prev_m;
 }
 
 struct monitor *workspace_get_monitor(struct workspace *ws)
 {
     assert(ws != NULL);
 
-    if (ws->tagset) {
-        return ws->tagset->m;
-    }
-    if (ws->selected_tagset) {
-        return ws->selected_tagset->m;
-    }
-    if (ws->prev_m && !is_workspace_empty(ws)) {
+    if (ws->prev_m) {
         return ws->prev_m;
     }
     return NULL;
@@ -618,8 +582,7 @@ void workspace_add_container_to_containers(struct workspace *ws, int i, struct c
 
 void workspace_remove_container_from_containers_locally(struct workspace *ws, struct container *con)
 {
-    struct tagset *tagset = workspace_get_active_tagset(ws);
-    struct layout *lt = tagset_get_layout(tagset);
+    struct layout *lt = workspace_get_layout(ws);
     if (lt->options->arrange_by_focus) {
         remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
         remove_in_composed_list(ws->visible_focus_set->focus_stack_lists, cmp_ptr, con);
@@ -632,8 +595,7 @@ void workspace_remove_container_from_containers_locally(struct workspace *ws, st
 
 void workspace_add_container_to_containers_locally(struct workspace *ws, int i, struct container *con)
 {
-    struct tagset *tagset = workspace_get_active_tagset(ws);
-    struct layout *lt = tagset_get_layout(tagset);
+    struct layout *lt = workspace_get_layout(ws);
     if (lt->options->arrange_by_focus) {
         list_set_insert_container_to_focus_stack(ws->focus_set, 0, con);
         update_reduced_focus_stack(ws);

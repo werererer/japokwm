@@ -113,8 +113,8 @@ int lib_workspace_swap(lua_State *L)
     g_ptr_array_unref(future_ws2_containers);
 
     struct monitor *m = server_get_selected_monitor();
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    tagset_reload(tagset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    tagset_reload(ws);
     arrange();
     focus_most_recent_container();
     root_damage_whole(m->root);

@@ -180,7 +180,7 @@ int lib_set_tags(lua_State *L)
     }
     bitset_destroy(tmp_bitset);
 
-    tagset_set_tags(m->tagset, bitset);
+    tagset_set_tags(m, bitset);
     return 0;
 }
 
@@ -259,7 +259,7 @@ int lib_view(lua_State *L)
     lua_pop(L, 1);
 
     struct workspace *ws = get_workspace(ws_id);
-    tagset_focus_tags(ws_id, ws->workspaces);
+    tagset_focus_tags(ws, ws->workspaces);
     return 0;
 }
 
@@ -279,7 +279,7 @@ int lib_tag_view(lua_State *L)
     }
     bitset_destroy(tmp_bitset);
 
-    tagset_toggle_add(m->tagset, bitset);
+    tagset_toggle_add(m, bitset);
     return 0;
 }
 
@@ -502,14 +502,15 @@ int lib_toggle_tags(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    tagset_set_tags(tagset, ws->prev_workspaces);
+    tagset_set_tags(m, ws->prev_workspaces);
     return 0;
 }
 
 int lib_toggle_workspace(lua_State *L)
 {
-    tagset_focus_workspace(server.previous_workspace);
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *prev_ws = get_workspace(server.previous_workspace);
+    tagset_focus_workspace(m, prev_ws);
     return 0;
 }
 

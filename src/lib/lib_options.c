@@ -128,7 +128,8 @@ int lib_reload(lua_State *L)
 
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
-        tagset_workspaces_reconnect(m->tagset);
+        struct workspace *sel_ws = monitor_get_active_workspace(m);
+        tagset_workspaces_reconnect(sel_ws);
     }
     arrange();
     return 0;
