@@ -31,6 +31,8 @@
 
 struct server server;
 
+pthread_mutex_t lock_rendering_action = PTHREAD_MUTEX_INITIALIZER;
+
 static void init_event_handlers(struct server *server);
 static void init_lists(struct server *server);
 static void init_timers(struct server *server);
@@ -182,6 +184,7 @@ void finalize_server()
     g_ptr_array_unref(server.container_stack);
 
     destroy_event_handler(server.event_handler);
+    pthread_mutex_destroy(&lock_rendering_action);
 }
 
 static void run(char *startup_cmd)

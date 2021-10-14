@@ -175,10 +175,11 @@ static void monitor_get_initial_workspace(struct monitor *m, GPtrArray *workspac
     assert(ws != NULL);
 
     int ws_id = ws->id;
+    ws->m = m;
     BitSet *bitset = bitset_create();
     bitset_set(bitset, ws_id);
 
-    monitor_focus_tags(m, ws, bitset);
+    monitor_focus_tags(ws, bitset);
 }
 
 void destroy_monitor(struct wl_listener *listener, void *data)

@@ -9,6 +9,7 @@
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/types/wlr_relative_pointer_v1.h>
 #include <glib.h>
+#include <pthread.h>
 
 #include "cursor.h"
 #include "layout.h"
@@ -101,6 +102,7 @@ struct server {
 };
 
 extern struct server server;
+extern pthread_mutex_t lock_rendering_action;
 
 void init_server();
 void finalize_server();

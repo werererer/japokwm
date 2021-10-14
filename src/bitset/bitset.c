@@ -44,9 +44,11 @@ void bitset_assign_bitset(BitSet** dest, BitSet* source)
     if (*dest == source) {
         return;
     }
-    // TODO: this can be optimized
-    bitset_destroy(*dest);
-    *dest = bitset_copy(source);
+    bitset_equalize_size(*dest, source);
+    for (int i = 0; i < source->size; i++) {
+        bool bit = bitset_test(source, i);
+        bitset_assign(*dest, i, bit);
+    }
 }
 
 int bitset_swap(BitSet* destination, BitSet* source) {

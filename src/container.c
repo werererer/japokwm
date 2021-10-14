@@ -134,10 +134,12 @@ void container_damage_borders(struct container *con, struct monitor *m, struct w
             {ox, oy + border_width + h, w + 2 * border_width, border_width}, /* bottom */
     };
 
+    pthread_mutex_lock(&lock_rendering_action);
     for (int i = 0; i < 4; i++) {
         scale_box(&borders[i], m->wlr_output->scale);
         wlr_output_damage_add_box(m->damage, &borders[i]);
     }
+    pthread_mutex_unlock(&lock_rendering_action);
 }
 
 static void damage_container_area(struct container *con, struct wlr_box *geom,
