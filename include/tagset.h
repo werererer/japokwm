@@ -42,7 +42,7 @@ struct monitor;
 /* this creates a tagset with reference count of 1. Calling focus_tagset
  * afterwards also adds a ref counter of 1 therefore use focus_tagset_no_ref
  * instead.  */
-void monitor_focus_tags(struct monitor *m, struct workspace *ws, BitSet *workspaces);
+void monitor_focus_tags(struct workspace *ws, BitSet *workspaces);
 
 void workspace_write_to_workspaces(struct workspace *ws);
 

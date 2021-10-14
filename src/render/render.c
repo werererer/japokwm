@@ -371,6 +371,7 @@ static void clear_frame(
 
 void render_monitor(struct monitor *m, pixman_region32_t *damage)
 {
+    pthread_mutex_lock(&lock_rendering_action);
     /* Begin the renderer (calls glViewport and some other GL sanity checks) */
     wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
 
@@ -393,6 +394,7 @@ void render_monitor(struct monitor *m, pixman_region32_t *damage)
     wlr_renderer_end(drw);
 
     wlr_output_commit(m->wlr_output);
+    pthread_mutex_unlock(&lock_rendering_action);
 }
 
 void scale_box(struct wlr_box *box, float scale)

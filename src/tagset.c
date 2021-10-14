@@ -76,6 +76,7 @@ void tagset_set_tags(struct workspace *sel_ws, BitSet *workspaces)
     tagset_workspaces_disconnect(sel_ws);
     tagset_assign_workspaces(sel_ws, workspaces_copy);
     tagset_workspaces_connect(sel_ws);
+    workspace_damage(sel_ws);
     tagset_load_workspaces(sel_ws, sel_ws->workspaces);
     update_reduced_focus_stack(sel_ws);
     bitset_assign_bitset(&sel_ws->workspaces, sel_ws->workspaces);
@@ -111,10 +112,10 @@ static void tagset_workspace_disconnect(struct workspace *sel_ws, struct workspa
 {
     if (!sel_ws)
         return;
-    // tagset_unset_workspace(sel_ws, ws);
-    ws->current_m = NULL;
+    // ws->current_m = NULL;
 
-    if (ws->m && workspace_get_selected_monitor(ws) != server_get_selected_monitor()) {
+    struct monitor *ws_m = workspace_get_selected_monitor(ws);
+    if (ws_m && ws_m != server_get_selected_monitor()) {
         ws->current_m = ws->m;
         // move the workspace back
         tagset_set_workspace(sel_ws, ws);
@@ -150,7 +151,7 @@ static void tagset_workspace_connect(struct workspace *sel_ws, struct workspace 
     ws->current_m = workspace_get_monitor(sel_ws);
 
     if (sel_ws->id == ws->id) {
-        ws->m = workspace_get_monitor(sel_ws);
+        // ws->m = workspace_get_monitor(sel_ws);
     }
 }
 
@@ -167,15 +168,12 @@ void tagset_workspaces_connect(struct workspace *sel_ws)
     }
 }
 
-void monitor_focus_tags(struct monitor *m, struct workspace *ws, BitSet *workspaces)
+void monitor_focus_tags(struct workspace *ws, BitSet *workspaces)
 {
-    assert(m != NULL);
     assert(workspaces != NULL);
 
-    m->ws_id = ws->id;
-    ws->m = m;
-    tagset_workspaces_disconnect(ws);
-    tagset_set_tags(ws, workspaces);
+    // ws->m = m;
+    tagset_assign_workspaces(ws, workspaces);
 
     push_tagset(ws);
 }
@@ -295,19 +293,21 @@ void focus_tagset(struct workspace *ws)
     if(!ws)
         return;
 
-    struct monitor *m = workspace_get_selected_monitor(ws);
-    // struct workspace *prev_ws = monitor_get_active_workspace(m);
-    if (!m) {
-        m = server_get_selected_monitor();
-    }
-    // struct monitor *prev_m = server_get_selected_monitor();
+    struct monitor *prev_m = server_get_selected_monitor();
+    struct workspace *prev_ws = monitor_get_active_workspace(prev_m);
 
+    struct monitor *ws_m = workspace_get_selected_monitor(ws);
+    struct monitor *m = ws_m ? ws_m : server_get_selected_monitor();
+    m->ws_id = ws->id;
+    ws->m = m;
+    ws->current_m = m;
     server_set_selected_monitor(m);
 
-    // if (prev_m == m) {
-    //     tagset_workspaces_disconnect(prev_ws);
-    // }
+    if (prev_m == m && prev_ws != ws) {
+        tagset_workspaces_disconnect(prev_ws);
+    }
     tagset_workspaces_connect(ws);
+    workspace_damage(ws);
     tagset_load_workspaces();
     restore_floating_containers(ws);
     bitset_assign_bitset(&ws->workspaces, ws->workspaces);
@@ -342,10 +342,12 @@ static void _set_previous_tagset(struct workspace *sel_ws)
 
 void push_tagset(struct workspace *sel_ws)
 {
-    struct monitor *m = server_get_selected_monitor();
-    if (m != workspace_get_selected_monitor(sel_ws)) {
-        _set_previous_tagset(sel_ws);
-    }
+    // struct monitor *ws_m = workspace_get_selected_monitor(sel_ws);
+    // struct monitor *m = ws_m ? ws_m : server_get_selected_monitor();
+    struct workspace *ws = server_get_selected_workspace();
+    // if (ws != sel_ws) {
+    _set_previous_tagset(ws);
+    // }
 
     focus_tagset(sel_ws);
 }
@@ -375,7 +377,6 @@ static void handle_too_few_workspaces(uint32_t ws_id)
 
 void tagset_focus_workspace(struct monitor *m, struct workspace *ws)
 {
-    m->ws_id = ws->id;
     BitSet *workspaces = bitset_copy(ws->workspaces);
     tagset_focus_tags(ws, workspaces);
     bitset_destroy(workspaces);
@@ -397,10 +398,7 @@ void tagset_toggle_add(struct monitor *m, BitSet *bitset)
 
 void tagset_focus_tags(struct workspace *ws, struct BitSet *bitset)
 {
-    struct monitor *ws_m = workspace_get_monitor(ws);
-    struct monitor *m = ws_m ? ws_m : server_get_selected_monitor();
-
-    monitor_focus_tags(m, ws, bitset);
+    monitor_focus_tags(ws, bitset);
 }
 
 void tagset_reload(struct workspace *sel_ws)
