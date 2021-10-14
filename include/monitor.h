@@ -32,7 +32,7 @@ struct monrule {
 void center_cursor_in_monitor(struct cursor *cursor, struct monitor *m);
 void create_monitor(struct wl_listener *listener, void *data);
 void create_output(struct wlr_backend *backend, void *data);
-void destroy_monitor(struct wl_listener *listener, void *data);
+void handle_destroy_monitor(struct wl_listener *listener, void *data);
 void scale_monitor(struct monitor *m, float scale);
 void focus_monitor(struct monitor *m);
 void focus_tags(struct BitSet bitset);

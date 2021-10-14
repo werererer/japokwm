@@ -69,6 +69,7 @@ void unmap_layer_surface_notify(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, unmap);
     unmap_layer_surface(c);
     container_damage_whole(c->con);
+
 }
 
 void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
@@ -79,11 +80,11 @@ void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
         unmap_layer_surface(c);
     remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, c->con);
 
-    wl_list_remove(&c->commit.link);
+    wl_list_remove(&c->destroy.link);
     wl_list_remove(&c->map.link);
     wl_list_remove(&c->unmap.link);
-    wl_list_remove(&c->destroy.link);
     wl_list_remove(&c->new_popup.link);
+    wl_list_remove(&c->commit.link);
 
     if (c->surface.layer->output) {
         struct monitor *m = c->surface.layer->output->data;
