@@ -71,10 +71,6 @@ struct workspace {
     BitSet *prev_workspaces;
     // the last monitor the workspace was on
     struct monitor *prev_m;
-    // the latest tagset
-    struct tagset *tagset;
-    // the tagset that currently has this workspace selected
-    struct tagset *selected_tagset;
 
     struct container_set *con_set;
     struct focus_set *focus_set;
@@ -101,7 +97,7 @@ void update_workspaces(GPtrArray *workspaces, GPtrArray *tag_names);
 void update_workspace_ids(GPtrArray *workspaces);
 
 bool is_workspace_occupied(struct workspace *ws);
-bool workspace_is_visible(struct workspace *ws);
+bool workspace_is_visible(struct workspace *ws, struct monitor *m);
 bool is_workspace_the_selected_one(struct workspace *ws);
 bool is_workspace_extern(struct workspace *ws);
 bool workspace_is_active(struct workspace *ws);
@@ -119,9 +115,6 @@ struct workspace *get_next_empty_workspace(GPtrArray *workspaces, size_t i);
 struct workspace *get_prev_empty_workspace(GPtrArray *workspaces, size_t i);
 struct workspace *get_nearest_empty_workspace(GPtrArray *workspaces, int ws_id);
 
-struct tagset *workspace_get_selected_tagset(struct workspace *ws);
-struct tagset *workspace_get_tagset(struct workspace *ws);
-struct tagset *workspace_get_active_tagset(struct workspace *ws);
 struct layout *workspace_get_layout(struct workspace *ws);
 struct root *workspace_get_root(struct workspace *ws);
 struct wlr_box workspace_get_active_geom(struct workspace *ws);

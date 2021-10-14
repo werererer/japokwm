@@ -68,8 +68,6 @@ struct server {
     // X11 popups are handled as containers
     GPtrArray *xwayland_popups;
 
-    GPtrArray *tagsets;
-
     GPtrArray2D *layer_visual_stack_lists;
 
     GPtrArray *layer_visual_stack_background;

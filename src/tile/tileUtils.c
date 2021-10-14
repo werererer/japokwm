@@ -264,14 +264,14 @@ void arrange_containers(struct workspace *ws, struct wlr_box root_geom,
                 lt->options->hidden_edges);
     }
 
+    // debug_print("tiled containers len: %i\n", tiled_containers->len);
     for (int i = 0; i < tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(tiled_containers, i);
 
-        /* // the monitor must be on the same monitor as it is tiled on else it is */
-        /* // a bug */
-        /* printf("con: %i ws: %i monitor: %p\n", i, con->client->ws_id, container_get_monitor(con)); */
-        /* printf("tagset: %p ->ws: %i ->m: %p\n", tagset, tagset->selected_ws_id, tagset->m); */
-        /* assert(container_get_monitor(con) == tagset->m); */
+        // // the monitor must be on the same monitor as it is tiled on else it is
+        // // a bug
+        // printf("con: %i ws: %i monitor: %p\n", i, con->client->ws_id, container_get_monitor(con));
+        // assert(container_get_monitor(con) == server_get_selected_monitor());
 
         struct monitor *m = workspace_get_monitor(ws);
         arrange_container(con, m, i, root_geom, actual_inner_gap);

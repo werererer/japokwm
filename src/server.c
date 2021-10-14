@@ -156,8 +156,8 @@ void init_server()
 
     server.event_handler = create_event_handler();
 
-    server.tagsets = g_ptr_array_new();
     server.previous_workspace = 0;
+    server.previous_bitset = bitset_create();
 
     server_prohibit_reloading_config();
 }
@@ -168,6 +168,8 @@ void finalize_server()
     g_ptr_array_unref(server.named_key_combos);
 
     finalize_lists(&server);
+
+    bitset_destroy(server.previous_bitset);
 
     g_ptr_array_unref(server.mons);
     g_ptr_array_unref(server.popups);
@@ -180,8 +182,6 @@ void finalize_server()
     g_ptr_array_unref(server.container_stack);
 
     destroy_event_handler(server.event_handler);
-
-    g_ptr_array_unref(server.tagsets);
 }
 
 static void run(char *startup_cmd)

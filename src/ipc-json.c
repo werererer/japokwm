@@ -129,7 +129,7 @@ json_object *ipc_json_describe_tagsets()
 
         if (!m)
             continue;
-        if (!workspace_is_visible(ws))
+        if (!workspace_is_visible(ws, m))
             continue;
 
         char *full_name = strdup(ws->name);

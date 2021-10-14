@@ -90,15 +90,14 @@ void create_monitor(struct wl_listener *listener, void *data)
         load_workspaces(server.workspaces, server.default_layout->options->tag_names);
         server_allow_reloading_config();
 
-        server.previous_bitset = bitset_create();
         bitset_set(server.previous_bitset, server.previous_workspace);
 
         call_on_start_function(server.event_handler);
     }
 
     apply_mon_rules(server.default_layout->options->mon_rules, m);
-    focus_tagset(monitor_get_active_tagset(m));
 
+    arrange();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
     set_root_color(m->root, lt->options->root_color);
@@ -179,8 +178,7 @@ static void monitor_get_initial_workspace(struct monitor *m, GPtrArray *workspac
     BitSet *bitset = bitset_create();
     bitset_set(bitset, ws_id);
 
-    struct tagset *tagset = create_tagset(m, ws_id, bitset);
-    push_tagset(tagset);
+    monitor_focus_tags(m, ws, bitset);
 }
 
 void destroy_monitor(struct wl_listener *listener, void *data)
@@ -209,15 +207,6 @@ void destroy_monitor(struct wl_listener *listener, void *data)
         }
     }
 
-    for (int i = 0; i < server.tagsets->len; i++) {
-        struct tagset *tagset = g_ptr_array_index(server.tagsets, i);
-        if (tagset->m == m) {
-            tagset->m = NULL;
-        }
-    }
-
-    destroy_tagset(m->tagset);
-    m->tagset = NULL;
     destroy_root(m->root);
     g_ptr_array_remove(server.mons, m);
     m->wlr_output->data = NULL;
@@ -231,6 +220,12 @@ void destroy_monitor(struct wl_listener *listener, void *data)
 
     struct monitor *new_focused_monitor = g_ptr_array_index(server.mons, 0);
     server_set_selected_monitor(new_focused_monitor);
+}
+
+BitSet *monitor_get_workspaces(struct monitor *m)
+{
+    struct workspace *sel_ws = monitor_get_active_workspace(m);
+    return sel_ws->workspaces;
 }
 
 void center_cursor_in_monitor(struct cursor *cursor, struct monitor *m)
@@ -275,7 +270,7 @@ void focus_monitor(struct monitor *m)
 
     // move floating containers over
     struct workspace *ws = monitor_get_active_workspace(m);
-    tagset_focus_tags(ws->id, ws->workspaces);
+    tagset_focus_tags(ws, ws->workspaces);
     server_set_selected_monitor(m);
 }
 
@@ -297,21 +292,12 @@ struct monitor *xy_to_monitor(double x, double y)
     return o ? o->data : NULL;
 }
 
-struct tagset *monitor_get_active_tagset(struct monitor *m)
-{
-    if (!m)
-        return NULL;
-
-    return m->tagset;
-}
-
 inline struct workspace *monitor_get_active_workspace(struct monitor *m)
 {
     if (!m)
         return NULL;
 
-    struct tagset *tagset = monitor_get_active_tagset(m);
-    struct workspace *ws = tagset_get_workspace(tagset);
+    struct workspace *ws = get_workspace(m->ws_id);
     return ws;
 }
 

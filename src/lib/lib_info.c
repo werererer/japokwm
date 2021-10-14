@@ -15,9 +15,9 @@
 int lib_get_active_layout(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct tagset *tagset = monitor_get_active_tagset(m);
+    struct workspace *ws = monitor_get_active_workspace(m);
 
-    struct layout *lt = tagset_get_layout(tagset);
+    struct layout *lt = workspace_get_layout(ws);
     lua_pushstring(L, lt->symbol);
     return 1;
 }
