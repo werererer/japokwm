@@ -56,7 +56,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     wl_signal_add(&m->wlr_output->events.frame, &m->frame);
 
     /* Set up event listeners */
-    m->destroy.notify = destroy_monitor;
+    m->destroy.notify = handle_destroy_monitor;
     wl_signal_add(&output->events.destroy, &m->destroy);
     m->mode.notify = handle_output_mode;
     wl_signal_add(&output->events.mode, &m->mode);
@@ -182,7 +182,7 @@ static void monitor_get_initial_workspace(struct monitor *m, GPtrArray *workspac
     monitor_focus_tags(ws, bitset);
 }
 
-void destroy_monitor(struct wl_listener *listener, void *data)
+void handle_destroy_monitor(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, destroy);
 
@@ -191,9 +191,27 @@ void destroy_monitor(struct wl_listener *listener, void *data)
     wl_list_remove(&m->destroy.link);
 
     struct workspace *ws = monitor_get_active_workspace(m);
+    for (int i = 0; i < server.workspaces->len; i++) {
+        struct workspace *ws = get_workspace(i);
+        if (ws->m == m) {
+            ws->m = NULL;
+        }
+        if (ws->current_m == m) {
+            ws->current_m = NULL;
+        }
+    }
+
     GPtrArray *stack_list = workspace_get_complete_stack_copy(ws);
     for (int i = 0; i < stack_list->len; i++) {
         struct container *con = g_ptr_array_index(stack_list, i);
+
+        if (con->client->type == LAYER_SHELL && con->client->m  == m) {
+            // FIXME: this needs to be done so that instead of segfaulting when
+            // layer shell based programs are open it leaks the memory instead
+            // this seems to be a bug in wlroots or wayland
+            wl_list_remove(&con->client->commit.link);
+            wl_list_remove(&con->client->destroy.link);
+        }
         if (con->client->m == m) {
             con->client->m = NULL;
         }
