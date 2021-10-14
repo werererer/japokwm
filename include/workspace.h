@@ -69,8 +69,10 @@ struct workspace {
 
     BitSet *workspaces;
     BitSet *prev_workspaces;
-    // the last monitor the workspace was on
-    struct monitor *prev_m;
+    // the monitor the workspace is locked to
+    struct monitor *m;
+    // the monitor the workspace is currently on
+    struct monitor *current_m;
 
     struct container_set *con_set;
     struct focus_set *focus_set;

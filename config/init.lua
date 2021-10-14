@@ -69,41 +69,38 @@ opt:bind_key("mod-e",         function() Workspace.view(info.get_next_empty_work
 opt:bind_key("mod-period",    function() action.toggle_workspace() end)
 opt:bind_key("mod-S-period",  function() action.toggle_layout() end)
 opt:bind_key("mod-comma",     function()
-    action.async_execute(function()
-        local ws = Workspace.get_focused()
-        print(type(Workspace.get_focused()))
-        local focus_stack = ws:get_focus_stack()
-        local str = ""
-        for i,con in ipairs(focus_stack) do
-            str = str .. con.app_id .. "\n"
-        end
-        local dmenu = "rofi -dmenu"
-        local echo = 'echo "' .. str .. '"'
-        local pipe = "|"
-        local cmd = echo .. pipe .. dmenu
-        print(cmd)
-        local handle = io.popen(cmd)
-        local result = handle:read("*a")
-        handle:close()
+    local ws = Workspace.get_focused()
+    local focus_stack = ws:get_focus_stack()
+    local str = ""
+    for i,con in ipairs(focus_stack) do
+        str = str .. con.app_id .. "\n"
+    end
+    local dmenu = "rofi -dmenu"
+    local echo = 'echo "' .. str .. '"'
+    local pipe = "|"
+    local cmd = echo .. pipe .. dmenu
+    print(cmd)
+    local handle = io.popen(cmd)
+    local result = handle:read("*a")
+    handle:close()
 
-        local s_con = nil
-        for i,con in ipairs(focus_stack) do
-            local res = result:gsub("%s+", "")
-            local app_id = con.app_id:gsub("%s+", "")
-            print("result: ", res)
-            print("app_id: ", app_id)
-            print("equ: ", res == app_id)
-            if res == app_id then
-                s_con = con
-                break;
-            end
+    local s_con = nil
+    for i,con in ipairs(focus_stack) do
+        local res = result:gsub("%s+", "")
+        local app_id = con.app_id:gsub("%s+", "")
+        print("result: ", res)
+        print("app_id: ", app_id)
+        print("equ: ", res == app_id)
+        if res == app_id then
+            s_con = con
+            break;
         end
+    end
 
-        if s_con then
-            local ws = s_con.workspace
-            action.view(ws:get_id())
-        end
-        end)
+    if s_con then
+        local ws = s_con.workspace
+        action.view(ws:get_id())
+    end
  end)
 opt:bind_key("mod-S-Return",  function() action.exec(termcmd) end)
 opt:bind_key("mod-a",         function() action.increase_nmaster() end)

@@ -35,9 +35,7 @@ static void tagset_assign_workspace(struct workspace *sel_ws, struct workspace *
 {
     if (!sel_ws)
         return;
-    int sel_id = sel_ws->id;
     int ws_id = ws->id;
-    debug_print("sel_id %i\n", sel_id);
     bitset_assign(sel_ws->workspaces, ws_id, active);
     workspace_damage(sel_ws);
 }
@@ -67,13 +65,12 @@ static void tagset_assign_workspaces(struct workspace *ws, BitSet *workspaces)
     bitset_assign_bitset(&ws->workspaces, workspaces);
 }
 
-void tagset_set_tags(struct monitor *m, BitSet *workspaces)
+void tagset_set_tags(struct workspace *sel_ws, BitSet *workspaces)
 {
     // we need to copy to not accidentially destroy the same thing we are
     // working with which can happen through assign_bitset
     BitSet *workspaces_copy = bitset_copy(workspaces);
 
-    struct workspace *sel_ws = monitor_get_active_workspace(m);
     bitset_assign_bitset(&sel_ws->prev_workspaces, sel_ws->workspaces);
 
     tagset_workspaces_disconnect(sel_ws);
@@ -114,9 +111,11 @@ static void tagset_workspace_disconnect(struct workspace *sel_ws, struct workspa
 {
     if (!sel_ws)
         return;
-    tagset_unset_workspace(sel_ws, ws);
+    // tagset_unset_workspace(sel_ws, ws);
+    ws->current_m = NULL;
 
-    if (workspace_get_monitor(ws) != server_get_selected_monitor()) {
+    if (ws->m && workspace_get_selected_monitor(ws) != server_get_selected_monitor()) {
+        ws->current_m = ws->m;
         // move the workspace back
         tagset_set_workspace(sel_ws, ws);
     }
@@ -148,13 +147,11 @@ void tagset_workspaces_disconnect(struct workspace *sel_ws)
 
 static void tagset_workspace_connect(struct workspace *sel_ws, struct workspace *ws)
 {
-    ws->prev_m = workspace_get_monitor(sel_ws);
+    ws->current_m = workspace_get_monitor(sel_ws);
 
-    tagset_unset_workspace(sel_ws, ws);
     if (sel_ws->id == ws->id) {
-        // ws->prev_m = sel_ws;
+        ws->m = workspace_get_monitor(sel_ws);
     }
-    tagset_set_workspace(sel_ws, ws);
 }
 
 void tagset_workspaces_connect(struct workspace *sel_ws)
@@ -176,8 +173,9 @@ void monitor_focus_tags(struct monitor *m, struct workspace *ws, BitSet *workspa
     assert(workspaces != NULL);
 
     m->ws_id = ws->id;
-    ws->prev_m = m;
-    ws->workspaces = bitset_copy(workspaces);
+    ws->m = m;
+    tagset_workspaces_disconnect(ws);
+    tagset_set_tags(ws, workspaces);
 
     push_tagset(ws);
 }
@@ -297,14 +295,18 @@ void focus_tagset(struct workspace *ws)
     if(!ws)
         return;
 
-    struct monitor *m = workspace_get_monitor(ws);
-    struct monitor *prev_m = server_get_selected_monitor();
+    struct monitor *m = workspace_get_selected_monitor(ws);
+    // struct workspace *prev_ws = monitor_get_active_workspace(m);
+    if (!m) {
+        m = server_get_selected_monitor();
+    }
+    // struct monitor *prev_m = server_get_selected_monitor();
 
     server_set_selected_monitor(m);
 
-    if (prev_m != m) {
-        tagset_workspaces_disconnect(ws);
-    }
+    // if (prev_m == m) {
+    //     tagset_workspaces_disconnect(prev_ws);
+    // }
     tagset_workspaces_connect(ws);
     tagset_load_workspaces();
     restore_floating_containers(ws);
@@ -338,15 +340,14 @@ static void _set_previous_tagset(struct workspace *sel_ws)
     server.previous_workspace = sel_ws->id;
 }
 
-void push_tagset(struct workspace *ws)
+void push_tagset(struct workspace *sel_ws)
 {
     struct monitor *m = server_get_selected_monitor();
-
-    if (m != workspace_get_monitor(ws)) {
-        _set_previous_tagset(ws);
+    if (m != workspace_get_selected_monitor(sel_ws)) {
+        _set_previous_tagset(sel_ws);
     }
 
-    focus_tagset(ws);
+    focus_tagset(sel_ws);
 }
 
 static void handle_too_few_workspaces(uint32_t ws_id)
@@ -388,7 +389,8 @@ void tagset_toggle_add(struct monitor *m, BitSet *bitset)
     BitSet *new_bitset = bitset_copy(bitset);
     bitset_xor(new_bitset, monitor_get_workspaces(m));
 
-    tagset_set_tags(m, new_bitset);
+    struct workspace *ws = monitor_get_active_workspace(m);
+    tagset_set_tags(ws, new_bitset);
 
     bitset_destroy(new_bitset);
 }

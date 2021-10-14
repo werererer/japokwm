@@ -201,9 +201,9 @@ void destroy_monitor(struct wl_listener *listener, void *data)
 
     for (int i = 0; i < server.workspaces->len; i++) {
         struct workspace *ws = g_ptr_array_index(server.workspaces, i);
-        if (ws->prev_m == m) {
+        if (ws->current_m == m) {
             debug_print("unset ws: %i\n", ws->id);
-            ws->prev_m = NULL;
+            ws->current_m = NULL;
         }
     }
 
