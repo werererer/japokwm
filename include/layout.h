@@ -34,6 +34,8 @@ struct layout {
     int lua_layout_ref;
     int lua_layout_copy_data_ref;
     int lua_layout_original_copy_data_ref;
+    GPtrArray *linked_layouts;
+    GPtrArray *linked_loaded_layouts;
 
     int lua_master_layout_data_ref;
     int lua_resize_data_ref;

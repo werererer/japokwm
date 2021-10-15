@@ -16,6 +16,7 @@ event:add_listener("on_update", update)
 layout:set_master_layout_data(
 {{{0, 0, 1, 1}}, {{0, 0, 0.5, 1}, {0.5, 0, 0.5, 1}}}
 )
+layout:set_linked_layouts({"tile"})
 opt.hidden_edges = info.direction.all
 opt.inner_gaps = 0
 opt.outer_gaps = 0

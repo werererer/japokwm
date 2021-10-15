@@ -462,31 +462,43 @@ cleanup:
     free(file);
 }
 
+// returns position of the layout if it was found and -1 if not
+static int workspace_load_layout(struct workspace *ws, const char *layout_name)
+{
+    guint i;
+    bool found = g_ptr_array_find_with_equal_func(ws->loaded_layouts, layout_name, cmp_layout_to_string, &i);
+    if (found) {
+        return i;
+    }
+
+    struct layout *lt = create_layout(L);
+
+    lt->ws_id = ws->id;
+    copy_layout_safe(lt, server.default_layout);
+
+    lt->symbol = layout_name;
+
+    g_ptr_array_insert(ws->loaded_layouts, 0, lt);
+
+    load_layout_file(L, lt);
+
+    return -1;
+}
+
 void load_layout(struct monitor *m)
 {
     struct workspace *ws = monitor_get_active_workspace(m);
     const char *name = ws->current_layout;
     assert(name != NULL);
 
-    guint i;
-    bool found = g_ptr_array_find_with_equal_func(ws->loaded_layouts, name, cmp_layout_to_string, &i);
-    if (found) {
+    int i = workspace_load_layout(ws, name);
+    push_layout(ws, name);
+    if (i >= 0) {
         struct layout *lt = g_ptr_array_steal_index(ws->loaded_layouts, i);
         g_ptr_array_insert(ws->loaded_layouts, 0, lt);
         push_layout(ws, lt->symbol);
-    } else {
-        struct layout *lt = create_layout(L);
-
-        lt->ws_id = ws->id;
-        copy_layout_safe(lt, server.default_layout);
-
-        lt->symbol = name;
-
-        g_ptr_array_insert(ws->loaded_layouts, 0, lt);
-        push_layout(ws, lt->symbol);
-
-        load_layout_file(L, lt);
     }
+
     int layout_index = server.layout_set.lua_layout_index;
     server.layout_set.lua_layout_index = layout_index;
 }

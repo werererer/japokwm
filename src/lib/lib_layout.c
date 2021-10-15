@@ -6,6 +6,7 @@
 #include "utils/coreUtils.h"
 #include "workspace.h"
 #include "translationLayer.h"
+#include "utils/parseConfigUtils.h"
 
 #include <wlr/util/edges.h>
 
@@ -16,6 +17,7 @@ static const struct luaL_Reg layout_f[] =
 
 static const struct luaL_Reg layout_m[] = {
     {"set", lib_set_layout},
+    {"set_linked_layouts", lib_set_linked_layouts_ref},
     {"set_master_layout_data", lib_set_master_layout_data},
     {"set_resize_data", lib_set_resize_data},
     {"set_resize_function", lib_set_resize_function},
@@ -111,6 +113,23 @@ int lib_set_master_layout_data(lua_State *L)
     } else {
         lua_pop(L, 1);
     }
+    return 0;
+}
+
+int lib_set_linked_layouts_ref(lua_State *L)
+{
+    // stack: [layout, master_layout_data]
+    lua_insert(L, -2);
+    // stack: [master_layout_data, layout]
+    struct layout *lt = check_layout(L, 2);
+    lua_pop(L, 1);
+
+    size_t len = lua_rawlen(L, -1);
+    for (int i = 0; i < len; i++) {
+        const char *layout_name = get_config_array_str(L, "workspaces", i+1);
+        g_ptr_array_add(lt->linked_layouts, strdup(layout_name));
+    }
+    lua_pop(L, 1);
     return 0;
 }
 
