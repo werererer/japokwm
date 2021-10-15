@@ -402,10 +402,16 @@ int lib_bind_key(lua_State *L)
     const char *binding = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    struct keybinding *keybinding = create_keybinding(binding, lua_func_ref);
-
     struct options *options = check_options(L, 1);
     lua_pop(L, 1);
+
+    for (int i = 0; i < options->keybindings->len; i++) {
+        struct keybinding *keybinding = g_ptr_array_index(options->keybindings, i);
+        if (strcmp(keybinding->binding, binding) == 0) {
+            g_ptr_array_remove_index(options->keybindings, i);
+        }
+    }
+    struct keybinding *keybinding = create_keybinding(binding, lua_func_ref);
 
     g_ptr_array_add(options->keybindings, keybinding);
     return 0;
