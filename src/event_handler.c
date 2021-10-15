@@ -70,7 +70,7 @@ void call_update_function(struct event_handler *ev, int n)
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
 
-    create_lua_layout(lt);
+    create_lua_layout(L, lt);
     emit_signal(ev->on_update_func_refs, 1);
 }
 

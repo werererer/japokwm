@@ -6,7 +6,7 @@
 
 struct layout;
 
-void create_lua_layout(struct layout *layout);
+void create_lua_layout(lua_State *L, struct layout *layout);
 void lua_init_layout(struct layout *layout);
 void lua_load_layout();
 
@@ -19,10 +19,12 @@ int lib_set_resize_data(lua_State *L);
 int lib_set_resize_function(lua_State *L);
 // setter
 int lib_set_default_layout(lua_State *L);
+int lib_layout_set_n_area(lua_State *L);
 // getter
 int lib_layout_get_direction(lua_State *L);
 int lib_layout_get_layout_data(lua_State *L);
 int lib_layout_get_n(lua_State *L);
+int lib_layout_get_n_area(lua_State *L);
 int lib_layout_get_o_layout_data(lua_State *L);
 int lib_layout_get_resize_data(lua_State *L);
 

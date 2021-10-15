@@ -112,7 +112,7 @@ int lib_resize_main(lua_State *L)
     int dir = lt->options->resize_dir;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_resize_function_ref);
-    create_lua_layout(lt);
+    create_lua_layout(L, lt);
     lua_pushnumber(L, n);
     lua_pushinteger(L, dir);
 
@@ -127,7 +127,7 @@ int lib_resize_main(lua_State *L)
         if (found) {
             struct layout *loc_lt = g_ptr_array_index(ws->loaded_layouts, j);
             lua_rawgeti(L, LUA_REGISTRYINDEX, loc_lt->lua_resize_function_ref);
-            create_lua_layout(loc_lt);
+            create_lua_layout(L, loc_lt);
             lua_pushnumber(L, n);
             lua_pushinteger(L, dir);
 

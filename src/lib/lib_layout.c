@@ -7,6 +7,7 @@
 #include "workspace.h"
 #include "translationLayer.h"
 #include "utils/parseConfigUtils.h"
+#include "tile/tileUtils.h"
 
 #include <wlr/util/edges.h>
 
@@ -27,6 +28,7 @@ static const struct luaL_Reg layout_m[] = {
 static const struct luaL_Reg layout_getter[] = {
     {"direction", lib_layout_get_direction},
     {"layout_data", lib_layout_get_layout_data},
+    {"n_area", lib_layout_get_n_area},
     {"o_layout_data", lib_layout_get_o_layout_data},
     {"resize_data", lib_layout_get_resize_data},
     {NULL, NULL},
@@ -34,6 +36,7 @@ static const struct luaL_Reg layout_getter[] = {
 
 static const struct luaL_Reg layout_setter[] = {
     {"default_layout", lib_set_default_layout},
+    {"n_area", lib_layout_set_n_area},
     // {"direction", lib_layout_get_direction},
     // {"layout_data", lib_layout_get_layout_data},
     // {"o_layout_data", lib_layout_get_o_layout_data},
@@ -41,7 +44,7 @@ static const struct luaL_Reg layout_setter[] = {
     {NULL, NULL},
 };
 
-void create_lua_layout(struct layout *layout)
+void create_lua_layout(lua_State *L, struct layout *layout)
 {
     if (!layout)
         return;
@@ -53,7 +56,7 @@ void create_lua_layout(struct layout *layout)
 
 void lua_init_layout(struct layout *layout)
 {
-    create_lua_layout(layout);
+    create_lua_layout(L, layout);
     lua_setglobal(L, "layout");
 }
 
@@ -209,6 +212,28 @@ int lib_set_default_layout(lua_State *L)
 
     lt->symbol = symbol;
     return 0;
+}
+
+int lib_layout_set_n_area(lua_State *L)
+{
+    int current_max_area = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+
+    struct layout *lt = check_layout(L, 1);
+    lua_pop(L, 1);
+
+    lt->current_max_area = current_max_area;
+    arrange();
+    return lt->current_max_area;
+}
+
+int lib_layout_get_n_area(lua_State *L)
+{
+    struct layout *lt = check_layout(L, 1);
+    lua_pop(L, 1);
+
+    int current_max_area = lt->current_max_area;
+    return current_max_area;
 }
 
 // getter

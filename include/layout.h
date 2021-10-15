@@ -11,6 +11,8 @@
 struct layout {
     const char *symbol;
 
+    // this is an option set by the user
+    int current_max_area;
     /* number of all windows in layout even if they are invisible). Note that
      * floating windows don't belong to the layout and are thereby not counted */
     int n_all;

@@ -15,6 +15,7 @@ struct layout *create_layout(lua_State *L)
 {
     struct layout *lt = calloc(1, sizeof(*lt));
     *lt = (struct layout) {
+        .current_max_area = -1,
         .symbol = "",
         .n_area = 1,
         .nmaster = 1,

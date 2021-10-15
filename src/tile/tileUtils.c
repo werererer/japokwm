@@ -71,7 +71,12 @@ static int get_layout_container_area_count(struct workspace *ws)
 
     int len = luaL_len(L, -1);
     int container_area_count = get_container_area_count(ws);
-    int n_area = MAX(MIN(len, container_area_count), 1);
+    int n_area = MAX(MIN(len, container_area_count), 0);
+
+    // user defined max count of current layout
+    if (lt->current_max_area >= 0) {
+        n_area = MIN(n_area, lt->current_max_area);  
+    }
 
     lua_pop(L, 1);
     return n_area;
