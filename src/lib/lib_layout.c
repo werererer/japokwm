@@ -167,7 +167,7 @@ int lib_layout_get_o_layout_data(lua_State *L)
     lua_pop(L, 1);
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_original_copy_data_ref);
-    return 0;
+    return 1;
 }
 
 int lib_layout_get_resize_data(lua_State *L)
@@ -176,7 +176,7 @@ int lib_layout_get_resize_data(lua_State *L)
     lua_pop(L, 1);
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_resize_data_ref);
-    return 0;
+    return 1;
 }
 
 // setter

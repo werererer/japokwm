@@ -248,7 +248,7 @@ local function is_invalid(con)
     return false
 end
 
-local function apply_resize_function(lt_data_el, o_lt_data_el, i, n, directions)
+local function apply_resize_function(lt_data_el, i, n, directions)
     for x = 1,#directions do
         local dir = directions[x]
 
@@ -268,8 +268,9 @@ local function apply_resize_function(lt_data_el, o_lt_data_el, i, n, directions)
 end
 
 -- TODO refactor and simplify
-local function resize_all(lt_data_el, o_layout_data_el, i, n, d)
+local function resize_all(lt_data_el, i, n, d)
     if i > #lt_data_el then
+        print("early return")
         return lt_data_el
     end
 
@@ -280,10 +281,12 @@ local function resize_all(lt_data_el, o_layout_data_el, i, n, d)
     --     return layout_data_element
     -- end
 
-    apply_resize_function(layout_data_element, o_layout_data_el, i, n, directions)
+    apply_resize_function(layout_data_element, i, n, directions)
 
+    print("return layout data el")
     return layout_data_element
 end
+
 
 local function get_layout_data_element_id(o_layout_data)
     return math.max(math.min(info.get_this_container_count(), #o_layout_data), 1)
@@ -302,20 +305,18 @@ local function get_layout_element(layout_data_element_id, resize_data)
     return 0
 end
 
-function Resize_main_all(layout_data, o_layout_data, resize_data, n, direction)
-    local layout_data_element_id = get_layout_data_element_id(o_layout_data)
-    local layout_id = get_layout_element(layout_data_element_id, resize_data)
+function Resize_main_all(lt, n, direction)
+    local layout_data_element_id = get_layout_data_element_id(lt.o_layout_data)
+    local layout_id = get_layout_element(layout_data_element_id, lt.resize_data)
     if layout_id == 0 then
-        return layout_data
+        return lt.layout_data
     end
 
-    local resize_element = resize_data[layout_id]
-    for i=1,#resize_element do
-        local id = resize_element[i]
-        if id <= #o_layout_data then
-            -- local id = 5
-            layout_data[id] = resize_all(layout_data[id], o_layout_data[id], 1, n, direction)
+    local resize_element = lt.resize_data[layout_id]
+    for _,id in ipairs(resize_element) do
+        if id <= #lt.o_layout_data then
+            lt.layout_data[id] = resize_all(lt.layout_data[id], 1, n, direction)
         end
     end
-    return layout_data
+    return lt.layout_data
 end
