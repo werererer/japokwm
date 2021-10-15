@@ -305,19 +305,6 @@ int lib_toggle_floating(lua_State *L)
     return 0;
 }
 
-int lib_move_container_to_workspace(lua_State *L)
-{
-    unsigned int ws_id = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-
-    struct monitor *m = server_get_selected_monitor();
-    struct container *con = monitor_get_focused_container(m);
-
-    struct workspace *ws = get_workspace(ws_id);
-    move_container_to_workspace(con, ws);
-    return 0;
-}
-
 int lib_zoom(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();

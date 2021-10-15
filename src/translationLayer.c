@@ -18,6 +18,7 @@
 #include "lib/lib_monitor.h"
 #include "lib/lib_server.h"
 #include "lib/lib_color.h"
+#include "lib/lib_list.h"
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "workspace.h"
@@ -46,7 +47,6 @@ static const struct luaL_Reg action[] =
     {"load_layout_in_set", lib_load_layout_in_set},
     {"load_next_layout_in_set", lib_load_next_layout_in_set},
     {"load_prev_layout_in_set", lib_load_prev_layout_in_set},
-    {"move_container_to_workspace", lib_move_container_to_workspace},
     {"move_resize", lib_move_resize},
     {"move_to_scratchpad", lib_move_to_scratchpad},
     {"repush", lib_repush},
@@ -307,10 +307,11 @@ void load_lua_api(lua_State *L)
     lua_load_color();
     lua_load_container();
     lua_load_events();
+    lua_load_layout();
+    lua_load_list();
     lua_load_options();
     lua_load_server();
     lua_load_workspace();
-    lua_load_layout();
 
     luaL_newlib(L, monitor);
     lua_setglobal(L, "monitor");

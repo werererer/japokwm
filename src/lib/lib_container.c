@@ -36,6 +36,7 @@ static const struct luaL_Reg container_setter[] = {
     {"ratio", lib_container_set_ratio},
     {"sticky", lib_container_set_sticky},
     {"sticky_restricted", lib_container_set_sticky_restricted},
+    {"workspace", lib_container_move_to_workspace},
     {NULL, NULL},
 };
 
@@ -94,6 +95,17 @@ int lib_container_get_focused(lua_State *L) {
 
     create_lua_container(L, con);
     return 1;
+}
+
+int lib_container_move_to_workspace(lua_State *L)
+{
+    struct workspace *ws = check_workspace(L, 2);
+    lua_pop(L, 1);
+    struct container *con = check_container(L, 1);
+    lua_pop(L, 1);
+
+    move_container_to_workspace(con, ws);
+    return 0;
 }
 
 int lib_container_set_alpha(lua_State *L) {

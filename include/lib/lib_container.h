@@ -14,6 +14,7 @@ struct container *check_container(lua_State *L, int argn);
 
 // methods
 int lib_container_get_focused(lua_State *L);
+int lib_container_move_to_workspace(lua_State *L);
 int lib_container_set_ratio(lua_State *L);
 int lib_container_set_sticky(lua_State *L);
 int lib_container_set_sticky_restricted(lua_State *L);

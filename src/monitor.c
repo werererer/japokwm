@@ -176,6 +176,7 @@ static void monitor_get_initial_workspace(struct monitor *m, GPtrArray *workspac
 
     int ws_id = ws->id;
     ws->m = m;
+    ws->current_m = m;
     BitSet *bitset = bitset_create();
     bitset_set(bitset, ws_id);
 

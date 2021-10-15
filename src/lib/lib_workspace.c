@@ -12,16 +12,18 @@
 #include "workspace.h"
 #include "list_sets/focus_stack_set.h"
 #include "lib/lib_container.h"
+#include "list_sets/list_set.h"
+#include "lib/lib_list.h"
 
 static const struct luaL_Reg workspace_f[] =
 {
+    {"get", lib_workspace_get},
     {"get_focused", lib_workspace_get_focused},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg workspace_m[] =
 {
-    {"get_focus_stack", lib_workspace_get_focus_stack},
     {"get_id", lib_workspace_get_id},
     {"swap", lib_workspace_swap},
     {NULL, NULL},
@@ -34,6 +36,8 @@ static const struct luaL_Reg workspace_setter[] =
 
 static const struct luaL_Reg workspace_getter[] =
 {
+    {"focus_stack", lib_workspace_get_focus_stack},
+    {"stack", lib_workspace_get_stack},
     {NULL, NULL},
 };
 
@@ -67,6 +71,16 @@ struct workspace *check_workspace(lua_State *L, int narg) {
 }
 
 // functions
+int lib_workspace_get(lua_State *L)
+{
+    int ws_id = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+
+    struct workspace *ws = get_workspace(ws_id);
+    create_lua_workspace(L, ws);
+    return 1;
+}
+
 int lib_workspace_get_focused(lua_State *L)
 {
     struct workspace *ws = server_get_selected_workspace();
@@ -121,21 +135,6 @@ int lib_workspace_swap(lua_State *L)
     return 0;
 }
 
-int lib_workspace_get_focus_stack(lua_State *L)
-{
-    struct workspace *ws = check_workspace(L, 1);
-    lua_pop(L, 1);
-
-    int len = length_of_composed_list(ws->focus_set->focus_stack_lists);
-    lua_createtable(L, len, 0);
-    for (int i = 0; i < len; i++) {
-        struct container *con = get_in_composed_list(ws->focus_set->focus_stack_lists, i);
-        create_lua_container(L, con);
-        lua_rawseti (L, -2, i+1); /* In lua indices start at 1 */
-    }
-    return 1;
-}
-
 int lib_workspace_get_id(lua_State *L)
 {
     struct workspace *ws = check_workspace(L, 1);
@@ -146,5 +145,21 @@ int lib_workspace_get_id(lua_State *L)
 }
 
 // setter
-
 // getter
+int lib_workspace_get_focus_stack(lua_State *L)
+{
+    struct workspace *ws = check_workspace(L, 1);
+    lua_pop(L, 1);
+
+    create_lua_list(L, ws->focus_set->focus_stack_normal);
+    return 1;
+}
+
+int lib_workspace_get_stack(lua_State *L)
+{
+    struct workspace *ws = check_workspace(L, 1);
+    lua_pop(L, 1);
+
+    create_lua_list(L, ws->con_set->tiled_containers);
+    return 1;
+}
