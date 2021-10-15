@@ -775,12 +775,13 @@ void container_set_tiled_geom(struct container *con, struct wlr_box *geom)
          * */
         int available_height = geom->height;
         int available_width = geom->width;
-        if (geom->height > geom->width) {
+        if (con->ratio <= 1) {
             // use geom->width
             geom->height = geom->width * con->ratio;
             geom->y += available_height/2 - geom->height/2;
         } else {
-            geom->width = geom->height * con->ratio;
+            float anti_ratio = 1/con->ratio;
+            geom->width = geom->height * anti_ratio;
             geom->x += available_width/2 - geom->width/2;
         }
     }
