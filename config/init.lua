@@ -19,7 +19,7 @@ opt.border_color = Color.new(0.0, 0.0, 1.0, 1.0)
 opt.focus_color = Color.new(1.0, 0.0, 0.0, 1.0)
 
 -- opt:add_rule({ class = "termite", callback = function(con) con.set_sticky(n, true) end})
-opt:add_rule({ class = "termite", callback = function(con) con.ratio = 1 end})
+opt:add_rule({ class = "", callback = function(con) con.ratio = 1/20 end})
 
 local layouts = {"two_pane", "monocle", "tile"}
 
