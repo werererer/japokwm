@@ -270,7 +270,6 @@ end
 -- TODO refactor and simplify
 local function resize_all(lt_data_el, i, n, d)
     if i > #lt_data_el then
-        print("early return")
         return lt_data_el
     end
 
@@ -283,7 +282,6 @@ local function resize_all(lt_data_el, i, n, d)
 
     apply_resize_function(layout_data_element, i, n, directions)
 
-    print("return layout data el")
     return layout_data_element
 end
 

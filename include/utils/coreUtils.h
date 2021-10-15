@@ -137,5 +137,7 @@ void *get_relative_item_in_composed_list(GPtrArray *arrays, int i, int j);
 int exec(const char *cmd);
 bool is_approx_equal(double a, double b, double error_range);
 
-int lib_lua_idenity_funcion(lua_State *L);
+int lua_idx_to_c_idx(int lua_idx);
+int c_idx_to_lua_idx(int c_idx);
+
 #endif /* COREUTILS */

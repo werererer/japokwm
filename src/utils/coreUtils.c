@@ -532,8 +532,12 @@ int length_of_composed_list(GPtrArray *array)
     return length;
 }
 
-int lib_lua_idenity_funcion(lua_State *L)
+int lua_idx_to_c_idx(int lua_idx)
 {
-    /* NO-OP */
-    return 1;
+    return lua_idx - 1;
+}
+
+int c_idx_to_lua_idx(int c_idx)
+{
+    return c_idx + 1;
 }
