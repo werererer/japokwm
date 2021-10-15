@@ -14,6 +14,7 @@
 #include "lib/lib_container.h"
 #include "list_sets/list_set.h"
 #include "lib/lib_list.h"
+#include "lib/lib_layout.h"
 
 static const struct luaL_Reg workspace_f[] =
 {
@@ -37,6 +38,7 @@ static const struct luaL_Reg workspace_setter[] =
 static const struct luaL_Reg workspace_getter[] =
 {
     {"focus_stack", lib_workspace_get_focus_stack},
+    {"layout", lib_workspace_get_layout},
     {"stack", lib_workspace_get_stack},
     {NULL, NULL},
 };
@@ -152,6 +154,16 @@ int lib_workspace_get_focus_stack(lua_State *L)
     lua_pop(L, 1);
 
     create_lua_list(L, ws->focus_set->focus_stack_normal);
+    return 1;
+}
+
+int lib_workspace_get_layout(lua_State *L)
+{
+    struct workspace *ws = check_workspace(L, 1);
+    lua_pop(L, 1);
+
+    struct layout *lt = workspace_get_layout(ws);
+    create_lua_layout(L, lt);
     return 1;
 }
 

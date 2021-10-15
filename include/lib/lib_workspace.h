@@ -23,5 +23,6 @@ int lib_workspace_swap(lua_State *L);
 
 // getter
 int lib_workspace_get_focus_stack(lua_State *L);
+int lib_workspace_get_layout(lua_State *L);
 int lib_workspace_get_stack(lua_State *L);
 #endif /* LIB_WORKSPACE */

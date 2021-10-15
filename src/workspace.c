@@ -497,6 +497,12 @@ void load_layout(struct monitor *m)
         struct layout *lt = g_ptr_array_steal_index(ws->loaded_layouts, i);
         g_ptr_array_insert(ws->loaded_layouts, 0, lt);
         push_layout(ws, lt->symbol);
+    } else {
+        struct layout *lt = workspace_get_layout(ws);
+        for (int i = 0; i < lt->linked_layouts->len; i++) {
+            char *linked_layout_name = g_ptr_array_index(lt->linked_layouts, i);
+            workspace_load_layout(ws, linked_layout_name);
+        }
     }
 
     int layout_index = server.layout_set.lua_layout_index;
