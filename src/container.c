@@ -77,8 +77,6 @@ void add_container_to_tile(struct container *con)
     }
 
     con->is_on_tile = true;
-
-    apply_rules(server.default_layout->options->rules, con);
 }
 
 void remove_container_from_tile(struct container *con)
@@ -769,21 +767,22 @@ void container_set_tiled_geom(struct container *con, struct wlr_box *geom)
         con_geom = &con->global_geom;
     }
 
-    // TODO: find out whether this works
     bool preserve_ratio = con->ratio != 0;
     if (preserve_ratio) {
         /* calculated biggest container where con->geom.width and
          * con->geom.height = con->geom.width * con->ratio is inside geom.width
          * and geom.height
          * */
-        float max_height = geom->height/con->ratio;
-        con_geom->width = MIN(geom->width, max_height);
-        con_geom->height = con_geom->width * con->ratio;
-        // TODO make a function out of that 
-        // center in x direction
-        con_geom->x += (geom->width - con_geom->width)/2;
-        // center in y direction
-        con_geom->y += (geom->height - con_geom->height)/2;
+        int available_height = geom->height;
+        int available_width = geom->width;
+        if (geom->height > geom->width) {
+            // use geom->width
+            geom->height = geom->width * con->ratio;
+            geom->y += available_height/2 - geom->height/2;
+        } else {
+            geom->width = geom->height * con->ratio;
+            geom->x += available_width/2 - geom->width/2;
+        }
     }
 
 
