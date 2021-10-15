@@ -7,6 +7,8 @@
 #include "workspace.h"
 #include "translationLayer.h"
 
+#include <wlr/util/edges.h>
+
 static const struct luaL_Reg layout_f[] =
 {
     {NULL, NULL},
@@ -21,11 +23,19 @@ static const struct luaL_Reg layout_m[] = {
 };
 
 static const struct luaL_Reg layout_getter[] = {
+    {"direction", lib_layout_get_direction},
+    {"layout_data", lib_layout_get_layout_data},
+    {"o_layout_data", lib_layout_get_o_layout_data},
+    {"resize_data", lib_layout_get_resize_data},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg layout_setter[] = {
     {"default_layout", lib_set_default_layout},
+    // {"direction", lib_layout_get_direction},
+    // {"layout_data", lib_layout_get_layout_data},
+    // {"o_layout_data", lib_layout_get_o_layout_data},
+    // {"resize_data", lib_layout_get_resize_data},
     {NULL, NULL},
 };
 
@@ -128,6 +138,44 @@ int lib_set_resize_function(lua_State *L)
     lua_pop(L, 1);
 
     lt->lua_resize_function_ref = ref;
+    return 0;
+}
+
+// getter
+int lib_layout_get_direction(lua_State *L)
+{
+    struct layout *lt = check_layout(L, 1);
+    lua_pop(L, 1);
+
+    enum wlr_edges resize_dir = lt->options->resize_dir;
+    lua_pushinteger(L, resize_dir);
+    return 1;
+}
+
+int lib_layout_get_layout_data(lua_State *L)
+{
+    struct layout *lt = check_layout(L, 1);
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
+    return 1;
+}
+
+int lib_layout_get_o_layout_data(lua_State *L)
+{
+    struct layout *lt = check_layout(L, 1);
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_original_copy_data_ref);
+    return 0;
+}
+
+int lib_layout_get_resize_data(lua_State *L)
+{
+    struct layout *lt = check_layout(L, 1);
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_resize_data_ref);
     return 0;
 }
 

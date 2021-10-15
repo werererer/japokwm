@@ -53,7 +53,7 @@ struct options {
     int outer_gap;
 
     bool arrange_by_focus;
-    int resize_dir;
+    enum wlr_edges resize_dir;
 
     enum wlr_edges hidden_edges;
     bool smart_hidden_edges;
