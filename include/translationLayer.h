@@ -34,12 +34,13 @@ struct monitor;
 #define CONFIG_CONTAINER "japokwm.container"
 #define CONFIG_DIRECTION "japokwm.direction"
 #define CONFIG_EVENT "japokwm.event"
+#define CONFIG_GEOMETRY "japokwm.geometry"
 #define CONFIG_LAYOUT "japokwm.layout"
+#define CONFIG_LIST "japokwm.list"
 #define CONFIG_LOCAL_OPTIONS "japokwm.local.options"
 #define CONFIG_OPTIONS "japokwm.options"
 #define CONFIG_SERVER "japokwm.server"
 #define CONFIG_WORKSPACE "japokwm.workspace"
-#define CONFIG_LIST "japokwm.list"
 
 void load_lua_api(lua_State *L);
 

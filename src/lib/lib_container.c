@@ -1,4 +1,5 @@
 #include "lib/lib_container.h"
+
 #include "bitset/bitset.h"
 #include "client.h"
 #include "container.h"
@@ -8,6 +9,7 @@
 #include "translationLayer.h"
 #include "workspace.h"
 #include "lib/lib_workspace.h"
+#include "lib/lib_geom.h"
 
 static const struct luaL_Reg container_f[] =
 {
@@ -26,6 +28,8 @@ static const struct luaL_Reg container_getter[] = {
     // TODO: implement getters
     {"alpha", lib_container_get_alpha},
     {"app_id", lib_container_get_app_id},
+    {"floating", lib_container_get_floating},
+    {"geom", lib_container_get_geometry},
     {"sticky", lib_container_set_sticky},
     {"workspace", lib_container_get_workspace},
     {NULL, NULL},
@@ -33,6 +37,7 @@ static const struct luaL_Reg container_getter[] = {
 
 static const struct luaL_Reg container_setter[] = {
     {"alpha", lib_container_set_alpha},
+    {"floating", lib_container_set_floating},
     {"ratio", lib_container_set_ratio},
     {"sticky", lib_container_set_sticky},
     {"sticky_restricted", lib_container_set_sticky_restricted},
@@ -108,7 +113,8 @@ int lib_container_move_to_workspace(lua_State *L)
     return 0;
 }
 
-int lib_container_set_alpha(lua_State *L) {
+int lib_container_set_alpha(lua_State *L)
+{
     float alpha = luaL_checknumber(L, -1);
     lua_pop(L, 1);
 
@@ -119,6 +125,19 @@ int lib_container_set_alpha(lua_State *L) {
         return 0;
 
     con->alpha = alpha;
+    return 0;
+}
+
+int lib_container_set_floating(lua_State *L)
+{
+    bool is_floating = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+
+    struct container *con = check_container(L, 1);
+    lua_pop(L, 1);
+
+    container_set_floating(con, NULL, is_floating);
+
     return 0;
 }
 
@@ -263,6 +282,25 @@ int lib_container_get_app_id(lua_State *L)
 
     const char *app_id = container_get_app_id(con);
     lua_pushstring(L, app_id);
+    return 1;
+}
+
+int lib_container_get_geometry(lua_State *L)
+{
+    struct container *con = check_container(L, 1);
+    lua_pop(L, 1);
+
+    create_lua_geometry(L, container_get_floating_geom(con));
+    return 1;
+}
+
+int lib_container_get_floating(lua_State *L)
+{
+    struct container *con = check_container(L, 1);
+    lua_pop(L, 1);
+
+    bool is_floating = container_is_floating(con);
+    lua_pushboolean(L, is_floating);
     return 1;
 }
 

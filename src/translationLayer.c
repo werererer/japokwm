@@ -19,6 +19,7 @@
 #include "lib/lib_server.h"
 #include "lib/lib_color.h"
 #include "lib/lib_list.h"
+#include "lib/lib_geom.h"
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "workspace.h"
@@ -309,6 +310,7 @@ void load_lua_api(lua_State *L)
     lua_load_events();
     lua_load_layout();
     lua_load_list();
+    lua_load_geom();
     lua_load_options();
     lua_load_server();
     lua_load_workspace();

@@ -49,6 +49,7 @@ srcs = files(
     'lib/lib_color.c',
     'lib/lib_container.c',
     'lib/lib_list.c',
+    'lib/lib_geom.c',
     'lib/lib_event_handler.c',
     'lib/lib_info.c',
     'lib/lib_layout.c',
