@@ -19,13 +19,13 @@ opt.border_color = Color.new(0.0, 0.0, 1.0, 1.0)
 opt.focus_color = Color.new(1.0, 0.0, 0.0, 1.0)
 
 -- opt:add_rule({ class = "termite", callback = function(con) con.set_sticky(n, true) end})
-opt:add_rule({ class = "", callback = function(con) con.ratio = 1 end})
+-- opt:add_rule({ class = "Alacritty", callback = function(con) con.ratio = 1 end})
 
-local layouts = {"two_pane", "monocle", "tile"}
+local layouts = {"two_pane", "tile"}
 
 opt.create_layout_set("default", layouts)
 
-layout.default_layout = layouts[1]
+layout.default_layout = "two_pane"
 
 -- set it to 4 to use super instead
 opt.mod = 1
@@ -115,9 +115,7 @@ opt:bind_key("mod-S-comma", function()
 end)
 opt:bind_key("mod-comma",     function()
     local focused_con = Container.get_focused() 
-    focused_con.floating = true
-    local geom = focused_con.geom
-    geom.x = 50
+    print(focused_con.app_id)
     action.arrange()
  end)
 opt:bind_key("mod-S-Return",  function() action.exec(termcmd) end)

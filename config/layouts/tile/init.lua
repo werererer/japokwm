@@ -27,6 +27,7 @@ local layout_data = {
 }
 
 layout:set(layout_data)
+layout:set_linked_layouts({"two_pane"})
 opt.hidden_edges = info.direction.all
 opt.set_smart_hidden_edges = false
 opt.resize_direction = info.direction.right

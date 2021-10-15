@@ -19,6 +19,8 @@ struct layout *create_layout(lua_State *L)
         .n_area = 1,
         .nmaster = 1,
     };
+    lt->linked_layouts = g_ptr_array_new();
+    lt->linked_loaded_layouts = g_ptr_array_new();
 
     lt->options = create_options();
 
@@ -46,6 +48,9 @@ struct layout *create_layout(lua_State *L)
 void destroy_layout(struct layout *lt)
 {
     destroy_options(lt->options);
+
+    g_ptr_array_unref(lt->linked_layouts);
+    g_ptr_array_unref(lt->linked_loaded_layouts);
 
     free(lt);
 }

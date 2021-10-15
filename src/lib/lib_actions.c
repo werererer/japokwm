@@ -119,6 +119,24 @@ int lib_resize_main(lua_State *L)
     lua_call_safe(L, 3, 1, 0);
 
     lua_copy_table_safe(L, &lt->lua_layout_copy_data_ref);
+
+    for (int i = 0; i < lt->linked_layouts->len; i++) {
+        const char *linked_layout_name = g_ptr_array_index(lt->linked_layouts, i);
+        guint j;
+        bool found = g_ptr_array_find_with_equal_func(ws->loaded_layouts, linked_layout_name, cmp_layout_to_string, &j);
+        if (found) {
+            struct layout *loc_lt = g_ptr_array_index(ws->loaded_layouts, j);
+            lua_rawgeti(L, LUA_REGISTRYINDEX, loc_lt->lua_resize_function_ref);
+            create_lua_layout(loc_lt);
+            lua_pushnumber(L, n);
+            lua_pushinteger(L, dir);
+
+            lua_call_safe(L, 3, 1, 0);
+
+            lua_copy_table_safe(L, &loc_lt->lua_layout_copy_data_ref);
+        } 
+    }
+
     arrange();
     return 0;
 }

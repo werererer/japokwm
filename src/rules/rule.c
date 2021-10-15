@@ -30,11 +30,23 @@ void apply_rule(struct rule *rule, struct container *con)
     if (rule->lua_func_ref <= 0)
         return;
 
-    bool same_id = g_strcmp0(rule->id, con->client->app_id) == 0;
-    bool id_empty = g_strcmp0(rule->id, "") == 0;
-    bool same_title = g_strcmp0(rule->title, con->client->title) == 0;
-    bool title_empty = g_strcmp0(rule->title, "") == 0;
+    bool same_id = true;
+    bool id_empty = true;
+    if (con->client->app_id) {
+        printf("appid: app: %s rule: %s\n", con->client->app_id, rule->id);
+        same_id = strstr(rule->id, con->client->app_id) != NULL;
+        id_empty = strcmp(rule->id, "") == 0;
+    }
+    bool same_title = true;
+    bool title_empty = true;
+    if (con->client->title) {
+        printf("name: app: %s rule: %s\n", con->client->title, rule->title);
+        same_title = strstr(rule->title, con->client->title) != NULL;
+        title_empty = strcmp(rule->title, "") == 0;
+    }
+    printf("same_id: %i id_empty: %i same_title: %i title_empty %i\n", same_id, id_empty, same_title, title_empty);
     if ((same_id || id_empty) && (same_title || title_empty)) {
+        printf("apply rule\n");
         lua_rawgeti(L, LUA_REGISTRYINDEX, rule->lua_func_ref);
         create_lua_container(L, con);
         lua_call_safe(L, 1, 0, 0);

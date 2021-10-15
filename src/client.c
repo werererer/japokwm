@@ -262,11 +262,11 @@ void client_handle_set_title(struct wl_listener *listener, void *data)
         title = "broken";
 
     c->title = title;
-    ipc_event_window();
 
     struct workspace *ws = container_get_workspace(c->con);
     struct layout *lt = workspace_get_layout(ws);
     apply_rules(lt->options->rules, c->con);
+    ipc_event_window();
 }
 
 void client_handle_set_app_id(struct wl_listener *listener, void *data)
