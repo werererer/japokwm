@@ -142,6 +142,7 @@ int load_config(lua_State *L)
 {
     int success = 0;
     init_global_config_variables(L);
+    load_default_keybindings();
 
     if (server.config_file != NULL && strcmp(server.config_file, "") != 0) {
         debug_print("load file\n");
