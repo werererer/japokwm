@@ -73,7 +73,7 @@ struct workspace *check_workspace(lua_State *L, int narg) {
 // functions
 int lib_workspace_get(lua_State *L)
 {
-    int ws_id = luaL_checkinteger(L, -1);
+    int ws_id = lua_idx_to_c_idx(luaL_checkinteger(L, -1));
     lua_pop(L, 1);
 
     struct workspace *ws = get_workspace(ws_id);

@@ -126,7 +126,11 @@ opt:bind_key("mod-S-j",       function() action.focus_on_hidden_stack(0) end)
 opt:bind_key("mod-S-k",       function() action.focus_on_hidden_stack(-1) end)
 opt:bind_key("mod-tab",       function() action.swap_on_hidden_stack(0) end)
 opt:bind_key("mod-S-tab",     function() action.swap_on_hidden_stack(-1) end)
-opt:bind_key("mod-S-c",       function() action.kill(Container.get_focused()) end)
+opt:bind_key("mod-S-c",       function()
+    if Container.get_focused() then
+        action.kill(Container.get_focused())
+    end
+end)
 opt:bind_key("mod-S-q",       function() server:quit() end)
 opt:bind_key("mod-space",     function() action.load_next_layout_in_set("default") end)
 opt:bind_key("mod-minus",     function() action.move_to_scratchpad(info.this_container_position()) end)
@@ -160,15 +164,51 @@ opt:bind_key("mod-C-7",       function() action.tag_view(1 << 6) end)
 opt:bind_key("mod-C-8",       function() action.tag_view(1 << 7) end)
 opt:bind_key("mod-C-9",       function() action.tag_view(1 << 8) end)
 opt:bind_key("mod-C-0",       function() action.set_tags(1 << Workspace.get_focused():get_id()) end)
-opt:bind_key("mod-S-1",       function() Container.get_focused().workspace = Workspace.get(0) end)
-opt:bind_key("mod-S-2",       function() Container.get_focused().workspace = Workspace.get(1) end)
-opt:bind_key("mod-S-3",       function() Container.get_focused().workspace = Workspace.get(2) end)
-opt:bind_key("mod-S-4",       function() Container.get_focused().workspace = Workspace.get(3) end)
-opt:bind_key("mod-S-5",       function() Container.get_focused().workspace = Workspace.get(4) end)
-opt:bind_key("mod-S-6",       function() Container.get_focused().workspace = Workspace.get(5) end)
-opt:bind_key("mod-S-7",       function() Container.get_focused().workspace = Workspace.get(6) end)
-opt:bind_key("mod-S-8",       function() Container.get_focused().workspace = Workspace.get(7) end)
-opt:bind_key("mod-S-9",       function() Container.get_focused().workspace = Workspace.get(8) end)
+opt:bind_key("mod-S-1",       function()
+    if Container.get_focused() then
+        Container.get_focused().workspace = Workspace.get(1)
+    end
+end)
+opt:bind_key("mod-S-2",       function()
+    if Container.get_focused() then
+        Container.get_focused().workspace = Workspace.get(2)
+    end
+end)
+opt:bind_key("mod-S-3",       function()
+    if Container.get_focused() then
+        Container.get_focused().workspace = Workspace.get(3)
+    end
+end)
+opt:bind_key("mod-S-4",       function()
+    if Container.get_focused() then
+        Container.get_focused().workspace = Workspace.get(4)
+    end
+end)
+opt:bind_key("mod-S-5",       function()
+    if Container.get_focused() then
+        Container.get_focused().workspace = Workspace.get(5)
+    end
+end)
+opt:bind_key("mod-S-6",       function()
+    if Container.get_focused() then
+        Container.get_focused().workspace = Workspace.get(6)
+    end
+end)
+opt:bind_key("mod-S-7",       function()
+    if Container.get_focused() then
+        Container.get_focused().workspace = Workspace.get(7)
+    end
+end)
+opt:bind_key("mod-S-8",       function()
+    if Container.get_focused() then
+        Container.get_focused().workspace = Workspace.get(8)
+    end
+end)
+opt:bind_key("mod-S-9",       function()
+    if Container.get_focused() then
+        Container.get_focused().workspace = Workspace.get(9)
+    end
+end)
 opt:bind_key("mod-C-S-0",     function() Container.get_focused():set_sticky_restricted(0) end)
 opt:bind_key("mod-C-S-1",     function() Container.get_focused():toggle_add_sticky(1 << 0) end)
 opt:bind_key("mod-C-S-2",     function() Container.get_focused():toggle_add_sticky(1 << 1) end)
@@ -179,14 +219,14 @@ opt:bind_key("mod-C-S-6",     function() Container.get_focused():toggle_add_stic
 opt:bind_key("mod-C-S-7",     function() Container.get_focused():toggle_add_sticky(1 << 6) end)
 opt:bind_key("mod-C-S-8",     function() Container.get_focused():toggle_add_sticky(1 << 7) end)
 opt:bind_key("mod-C-S-9",     function() Container.get_focused():set_sticky_restricted(255) end)
-opt:bind_key("mod-s 1",       function() Workspace.get_focused():swap(Workspace.get(0)) end)
-opt:bind_key("mod-s 2",       function() Workspace.get_focused():swap(Workspace.get(1)) end)
-opt:bind_key("mod-s 3",       function() Workspace.get_focused():swap(Workspace.get(2)) end)
-opt:bind_key("mod-s 4",       function() Workspace.get_focused():swap(Workspace.get(3)) end)
-opt:bind_key("mod-s 5",       function() Workspace.get_focused():swap(Workspace.get(4)) end)
-opt:bind_key("mod-s 6",       function() Workspace.get_focused():swap(Workspace.get(5)) end)
-opt:bind_key("mod-s 7",       function() Workspace.get_focused():swap(Workspace.get(6)) end)
-opt:bind_key("mod-s 8",       function() Workspace.get_focused():swap(Workspace.get(7)) end)
+opt:bind_key("mod-s 1",       function() Workspace.get_focused():swap(Workspace.get(1)) end)
+opt:bind_key("mod-s 2",       function() Workspace.get_focused():swap(Workspace.get(2)) end)
+opt:bind_key("mod-s 3",       function() Workspace.get_focused():swap(Workspace.get(3)) end)
+opt:bind_key("mod-s 4",       function() Workspace.get_focused():swap(Workspace.get(4)) end)
+opt:bind_key("mod-s 5",       function() Workspace.get_focused():swap(Workspace.get(5)) end)
+opt:bind_key("mod-s 6",       function() Workspace.get_focused():swap(Workspace.get(6)) end)
+opt:bind_key("mod-s 7",       function() Workspace.get_focused():swap(Workspace.get(7)) end)
+opt:bind_key("mod-s 8",       function() Workspace.get_focused():swap(Workspace.get(8)) end)
 opt:bind_key("mod-r",         function() opt.reload() end)
 opt:bind_key("mod-t",         function() action.set_floating(false)    end)
 opt:bind_key("mod-M1",  function() action.move_resize(info.cursor.mode.move) end)
