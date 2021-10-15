@@ -381,8 +381,12 @@ void focus_container(struct container *con)
 
     ipc_event_window();
 
-    call_on_focus_function(server.event_handler,
-            get_position_in_container_focus_stack(con));
+    // it is a waste of resources to call unfocus and refocus when the
+    // focused container didn't change
+    if (sel != new_sel) {
+        call_on_unfocus_function(server.event_handler, sel);
+        call_on_focus_function(server.event_handler, con);
+    }
 
     struct client *old_c = sel ? sel->client : NULL;
     struct client *new_c = new_sel ? new_sel->client : NULL;

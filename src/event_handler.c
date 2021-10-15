@@ -5,6 +5,7 @@
 #include "utils/parseConfigUtils.h"
 #include "utils/coreUtils.h"
 #include "lib/lib_layout.h"
+#include "lib/lib_container.h"
 #include "layout.h"
 #include "monitor.h"
 #include "server.h"
@@ -13,19 +14,21 @@
 struct event_handler *create_event_handler()
 {
     struct event_handler *event_handler = calloc(1, sizeof(*event_handler));
-    event_handler->on_start_func_refs = g_ptr_array_new();
-    event_handler->on_focus_func_refs = g_ptr_array_new();
-    event_handler->on_update_func_refs = g_ptr_array_new();
     event_handler->on_create_container_func_refs = g_ptr_array_new();
+    event_handler->on_focus_func_refs = g_ptr_array_new();
+    event_handler->on_start_func_refs = g_ptr_array_new();
+    event_handler->on_unfocus_func_refs = g_ptr_array_new();
+    event_handler->on_update_func_refs = g_ptr_array_new();
     return event_handler;
 }
 
 void destroy_event_handler(struct event_handler *event_handler)
 {
-    g_ptr_array_unref(event_handler->on_start_func_refs);
-    g_ptr_array_unref(event_handler->on_focus_func_refs);
-    g_ptr_array_unref(event_handler->on_update_func_refs);
     g_ptr_array_unref(event_handler->on_create_container_func_refs);
+    g_ptr_array_unref(event_handler->on_focus_func_refs);
+    g_ptr_array_unref(event_handler->on_start_func_refs);
+    g_ptr_array_unref(event_handler->on_unfocus_func_refs);
+    g_ptr_array_unref(event_handler->on_update_func_refs);
 }
 
 GPtrArray *event_name_to_signal(struct event_handler *event_handler,
@@ -34,13 +37,16 @@ GPtrArray *event_name_to_signal(struct event_handler *event_handler,
     if (strcmp(event, "on_start") == 0) {
         return event_handler->on_start_func_refs;
     }
-    if (strcmp(event, "on_focus")) {
+    if (strcmp(event, "on_focus") == 0) {
         return event_handler->on_focus_func_refs;
     }
-    if (strcmp(event, "on_update")) {
+    if (strcmp(event, "on_unfocus") == 0) {
+        return event_handler->on_unfocus_func_refs;
+    }
+    if (strcmp(event, "on_update") == 0) {
         return event_handler->on_update_func_refs;
     }
-    if (strcmp(event, "on_create_container")) {
+    if (strcmp(event, "on_create_container") == 0) {
         return event_handler->on_create_container_func_refs;
     }
     return NULL;
@@ -80,10 +86,16 @@ void call_create_container_function(struct event_handler *ev, int n)
     emit_signal(ev->on_create_container_func_refs, 1);
 }
 
-void call_on_focus_function(struct event_handler *ev, int n)
+void call_on_focus_function(struct event_handler *ev, struct container *con)
 {
-    lua_pushinteger(L, n);
+    create_lua_container(L, con);
     emit_signal(ev->on_focus_func_refs, 1);
+}
+
+void call_on_unfocus_function(struct event_handler *ev, struct container *con)
+{
+    create_lua_container(L, con);
+    emit_signal(ev->on_unfocus_func_refs, 1);
 }
 
 void call_on_start_function(struct event_handler *ev)

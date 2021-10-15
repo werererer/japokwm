@@ -12,6 +12,9 @@ void create_lua_container(lua_State *L, struct container *con);
 void lua_load_container();
 struct container *check_container(lua_State *L, int argn);
 
+// functions
+int lib_container_is_equal(lua_State *L);
+
 // methods
 int lib_container_get_focused(lua_State *L);
 int lib_container_move_to_workspace(lua_State *L);
