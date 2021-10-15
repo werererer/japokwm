@@ -288,7 +288,6 @@ void handle_error(const char *msg)
     printf("%s\n", msg);
     load_default_lua_config(L);
 
-    debug_print("error_fd: %i\n", error_fd);
     // if error file not initialized
     if (error_fd < 0)
         return;

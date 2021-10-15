@@ -13,6 +13,7 @@
 
 static const struct luaL_Reg container_f[] =
 {
+    {"__eq", lib_container_is_equal},
     {"get_focused", lib_container_get_focused},
     {NULL, NULL},
 };
@@ -85,6 +86,16 @@ int lib_container_set_ratio(lua_State *L) {
 
     con->ratio = ratio;
     return 0;
+}
+
+int lib_container_is_equal(lua_State *L) {
+    struct container *con1 = check_container(L, 2);
+    lua_pop(L, 1);
+    struct container *con2 = check_container(L, 1);
+    lua_pop(L, 1);
+    bool con_is_equal = con1 == con2;
+    lua_pushboolean(L, con_is_equal);
+    return 1;
 }
 
 int lib_container_get_focused(lua_State *L) {

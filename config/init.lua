@@ -14,6 +14,15 @@ end
 -- executes function on_start when the 
 event:add_listener("on_start", on_start)
 
+local function on_focus(con)
+    con.alpha = 1.0
+end
+local function on_unfocus(con)
+    con.alpha = 0.8
+end
+event:add_listener("on_focus", on_focus)
+event:add_listener("on_unfocus", on_unfocus)
+
 opt.inner_gaps = 15
 opt.border_color = Color.new(0.0, 0.0, 1.0, 1.0)
 opt.focus_color = Color.new(1.0, 0.0, 0.0, 1.0)
