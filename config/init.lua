@@ -72,56 +72,9 @@ opt:bind_key("mod-S-comma", function()
     action.async_execute(function()
         local ws = Workspace.get_focused()
         local focus_stack = ws.focus_stack
-        print("usw")
-        print(focus_stack.len)
-        print("usw")
-        print(focus_stack[1].app_id)
-        print("usw")
-        print("usw")
-        -- local str = ""
-        -- for i=1,focus_stack.len do
-        --     local con = focus_stack[i]
-        --     str = str .. con.app_id .. "\n"
-        -- end
-        -- local dmenu = "rofi -dmenu"
-        -- local echo = 'echo "' .. str .. '"'
-        -- local pipe = "|"
-        -- local cmd = echo .. pipe .. dmenu
-        -- print(cmd)
-        -- local handle = io.popen(cmd)
-        -- local result = handle:read("*a")
-        -- handle:close()
-        --
-        -- local s_con = nil
-        -- for i=1,focus_stack.len do
-        --     local con = focus_stack[i]
-        --     local res = result:gsub("%s+", "")
-        --     local app_id = con.app_id:gsub("%s+", "")
-        --     print("result: ", res)
-        --     print("app_id: ", app_id)
-        --     print("equ: ", res == app_id)
-        --     if res == app_id then
-        --         s_con = con
-        --         break;
-        --     end
-        -- end
-        --
-        -- if s_con then
-        --     local focus_ws = Workspace.get_focused()
-        --     s_con.workspace = focus_ws
-        --     local stack = focus_ws.stack
-        --     local pos = stack:find(s_con)
-        --     stack:repush(pos, 0)
-        -- end
-    end)
-end)
-opt:bind_key("mod-comma",     function()
-    action.async_execute(function()
-        local ws = Workspace.get_focused()
-        print(type(Workspace.get_focused()))
-        local focus_stack = ws:get_focus_stack()
         local str = ""
-        for i,con in ipairs(focus_stack) do
+        for _,con in ipairs(focus_stack) do
+            print(v)
             str = str .. con.app_id .. "\n"
         end
         local dmenu = "rofi -dmenu"
@@ -134,7 +87,7 @@ opt:bind_key("mod-comma",     function()
         handle:close()
 
         local s_con = nil
-        for i,con in ipairs(focus_stack) do
+        for _,con in ipairs(focus_stack) do
             local res = result:gsub("%s+", "")
             local app_id = con.app_id:gsub("%s+", "")
             print("result: ", res)
@@ -147,10 +100,22 @@ opt:bind_key("mod-comma",     function()
         end
 
         if s_con then
-            local ws = s_con.workspace
-            action.view(ws:get_id())
+            local focus_ws = Workspace.get_focused()
+            s_con.workspace = focus_ws
+            s_con.floating = true
+            s_con.geom.x = 40
+            s_con.geom.y = 40
+            s_con.geom.width = 40
+            s_con.geom.height = 40
         end
-        end)
+    end)
+end)
+opt:bind_key("mod-comma",     function()
+    local focused_con = Container.get_focused() 
+    focused_con.floating = true
+    local geom = focused_con.geom
+    geom.x = 50
+    action.arrange()
  end)
 opt:bind_key("mod-S-Return",  function() action.exec(termcmd) end)
 opt:bind_key("mod-a",         function() action.increase_nmaster() end)
