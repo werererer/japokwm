@@ -28,6 +28,7 @@
 #include "tagset.h"
 #include "lib/lib_container.h"
 #include "lib/lib_workspace.h"
+#include "lib/lib_layout.h"
 
 int lib_arrange(lua_State *L)
 {
@@ -111,13 +112,11 @@ int lib_resize_main(lua_State *L)
     int dir = lt->options->resize_dir;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_resize_function_ref);
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_original_copy_data_ref);
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_resize_data_ref);
+    create_lua_layout(lt);
     lua_pushnumber(L, n);
     lua_pushinteger(L, dir);
 
-    lua_call_safe(L, 5, 1, 0);
+    lua_call_safe(L, 3, 1, 0);
 
     lua_copy_table_safe(L, &lt->lua_layout_copy_data_ref);
     arrange();
