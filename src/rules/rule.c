@@ -7,6 +7,7 @@
 #include "server.h"
 #include "workspace.h"
 #include "utils/parseConfigUtils.h"
+#include "lib/lib_container.h"
 
 struct rule *create_rule(const char *id, const char *title, int lua_func_ref)
 {
@@ -35,8 +36,7 @@ void apply_rule(struct rule *rule, struct container *con)
     bool title_empty = g_strcmp0(rule->title, "") == 0;
     if ((same_id || id_empty) && (same_title || title_empty)) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, rule->lua_func_ref);
-        int position = get_position_in_container_focus_stack(con);
-        lua_pushinteger(L, position);
+        create_lua_container(L, con);
         lua_call_safe(L, 1, 0, 0);
     }
 }

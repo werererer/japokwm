@@ -80,15 +80,8 @@ struct container *check_container(lua_State *L, int argn)
 int lib_container_set_ratio(lua_State *L) {
     float ratio = luaL_checknumber(L, -1);
     lua_pop(L, 1);
-    int position = luaL_checkinteger(L, -1);
+    struct container *con = check_container(L, 1);
     lua_pop(L, 1);
-
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct container *con = get_container(ws, position);
-
-    if (!con)
-        return 0;
 
     con->ratio = ratio;
     return 0;

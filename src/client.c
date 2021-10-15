@@ -16,6 +16,7 @@
 #include "scratchpad.h"
 #include "monitor.h"
 #include "tagset.h"
+#include "rules/rule.h"
 
 struct client *create_client(enum shell shell_type, union surface_t surface)
 {
@@ -262,6 +263,10 @@ void client_handle_set_title(struct wl_listener *listener, void *data)
 
     c->title = title;
     ipc_event_window();
+
+    struct workspace *ws = container_get_workspace(c->con);
+    struct layout *lt = workspace_get_layout(ws);
+    apply_rules(lt->options->rules, c->con);
 }
 
 void client_handle_set_app_id(struct wl_listener *listener, void *data)
@@ -286,6 +291,10 @@ void client_handle_set_app_id(struct wl_listener *listener, void *data)
         app_id = "broken";
 
     c->app_id = app_id;
+
+    struct workspace *ws = container_get_workspace(c->con);
+    struct layout *lt = workspace_get_layout(ws);
+    apply_rules(lt->options->rules, c->con);
 }
 
 void reset_floating_client_borders(int border_px)
