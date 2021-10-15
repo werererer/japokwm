@@ -1009,11 +1009,9 @@ void container_set_workspace(struct container *con, struct workspace *ws)
         return;
     if (!ws)
         return;
-    struct monitor *m = container_get_monitor(con);
-    if (m->ws_id == ws->id)
+    if (con->client->ws_id == ws->id)
         return;
 
-    ws->current_m = m;
     container_set_workspace_id(con, ws->id);
 }
 

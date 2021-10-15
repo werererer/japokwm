@@ -68,6 +68,53 @@ opt:bind_key("mod-p",         function() action.exec("rofi -show run") end)
 opt:bind_key("mod-e",         function() Workspace.view(info.get_next_empty_workspace(info.get_workspace(), info.direction.left)) end)
 opt:bind_key("mod-period",    function() action.toggle_workspace() end)
 opt:bind_key("mod-S-period",  function() action.toggle_layout() end)
+opt:bind_key("mod-S-comma", function()
+    action.async_execute(function()
+        local ws = Workspace.get_focused()
+        local focus_stack = ws.focus_stack
+        print("usw")
+        print(focus_stack.len)
+        print("usw")
+        print(focus_stack[1].app_id)
+        print("usw")
+        print("usw")
+        -- local str = ""
+        -- for i=1,focus_stack.len do
+        --     local con = focus_stack[i]
+        --     str = str .. con.app_id .. "\n"
+        -- end
+        -- local dmenu = "rofi -dmenu"
+        -- local echo = 'echo "' .. str .. '"'
+        -- local pipe = "|"
+        -- local cmd = echo .. pipe .. dmenu
+        -- print(cmd)
+        -- local handle = io.popen(cmd)
+        -- local result = handle:read("*a")
+        -- handle:close()
+        --
+        -- local s_con = nil
+        -- for i=1,focus_stack.len do
+        --     local con = focus_stack[i]
+        --     local res = result:gsub("%s+", "")
+        --     local app_id = con.app_id:gsub("%s+", "")
+        --     print("result: ", res)
+        --     print("app_id: ", app_id)
+        --     print("equ: ", res == app_id)
+        --     if res == app_id then
+        --         s_con = con
+        --         break;
+        --     end
+        -- end
+        --
+        -- if s_con then
+        --     local focus_ws = Workspace.get_focused()
+        --     s_con.workspace = focus_ws
+        --     local stack = focus_ws.stack
+        --     local pos = stack:find(s_con)
+        --     stack:repush(pos, 0)
+        -- end
+    end)
+end)
 opt:bind_key("mod-comma",     function()
     action.async_execute(function()
         local ws = Workspace.get_focused()
@@ -148,15 +195,15 @@ opt:bind_key("mod-C-7",       function() action.tag_view(1 << 6) end)
 opt:bind_key("mod-C-8",       function() action.tag_view(1 << 7) end)
 opt:bind_key("mod-C-9",       function() action.tag_view(1 << 8) end)
 opt:bind_key("mod-C-0",       function() action.set_tags(1 << Workspace.get_focused():get_id()) end)
-opt:bind_key("mod-S-1",       function() action.move_container_to_workspace(0) end)
-opt:bind_key("mod-S-2",       function() action.move_container_to_workspace(1) end)
-opt:bind_key("mod-S-3",       function() action.move_container_to_workspace(2) end)
-opt:bind_key("mod-S-4",       function() action.move_container_to_workspace(3) end)
-opt:bind_key("mod-S-5",       function() action.move_container_to_workspace(4) end)
-opt:bind_key("mod-S-6",       function() action.move_container_to_workspace(5) end)
-opt:bind_key("mod-S-7",       function() action.move_container_to_workspace(6) end)
-opt:bind_key("mod-S-8",       function() action.move_container_to_workspace(7) end)
-opt:bind_key("mod-S-9",       function() action.move_container_to_workspace(8) end)
+opt:bind_key("mod-S-1",       function() Container.get_focused().workspace = Workspace.get(0) end)
+opt:bind_key("mod-S-2",       function() Container.get_focused().workspace = Workspace.get(1) end)
+opt:bind_key("mod-S-3",       function() Container.get_focused().workspace = Workspace.get(2) end)
+opt:bind_key("mod-S-4",       function() Container.get_focused().workspace = Workspace.get(3) end)
+opt:bind_key("mod-S-5",       function() Container.get_focused().workspace = Workspace.get(4) end)
+opt:bind_key("mod-S-6",       function() Container.get_focused().workspace = Workspace.get(5) end)
+opt:bind_key("mod-S-7",       function() Container.get_focused().workspace = Workspace.get(6) end)
+opt:bind_key("mod-S-8",       function() Container.get_focused().workspace = Workspace.get(7) end)
+opt:bind_key("mod-S-9",       function() Container.get_focused().workspace = Workspace.get(8) end)
 opt:bind_key("mod-C-S-0",     function() Container.get_focused():set_sticky_restricted(0) end)
 opt:bind_key("mod-C-S-1",     function() Container.get_focused():toggle_add_sticky(1 << 0) end)
 opt:bind_key("mod-C-S-2",     function() Container.get_focused():toggle_add_sticky(1 << 1) end)
@@ -167,14 +214,14 @@ opt:bind_key("mod-C-S-6",     function() Container.get_focused():toggle_add_stic
 opt:bind_key("mod-C-S-7",     function() Container.get_focused():toggle_add_sticky(1 << 6) end)
 opt:bind_key("mod-C-S-8",     function() Container.get_focused():toggle_add_sticky(1 << 7) end)
 opt:bind_key("mod-C-S-9",     function() Container.get_focused():set_sticky_restricted(255) end)
-opt:bind_key("mod-s 1",       function() server:get_focused_workspace():swap(server:get_workspace(0)) end)
-opt:bind_key("mod-s 2",       function() server:get_focused_workspace():swap(server:get_workspace(1)) end)
-opt:bind_key("mod-s 3",       function() server:get_focused_workspace():swap(server:get_workspace(2)) end)
-opt:bind_key("mod-s 4",       function() server:get_focused_workspace():swap(server:get_workspace(3)) end)
-opt:bind_key("mod-s 5",       function() server:get_focused_workspace():swap(server:get_workspace(4)) end)
-opt:bind_key("mod-s 6",       function() server:get_focused_workspace():swap(server:get_workspace(5)) end)
-opt:bind_key("mod-s 7",       function() server:get_focused_workspace():swap(server:get_workspace(6)) end)
-opt:bind_key("mod-s 8",       function() server:get_focused_workspace():swap(server:get_workspace(7)) end)
+opt:bind_key("mod-s 1",       function() Workspace.get_focused():swap(Workspace.get(0)) end)
+opt:bind_key("mod-s 2",       function() Workspace.get_focused():swap(Workspace.get(1)) end)
+opt:bind_key("mod-s 3",       function() Workspace.get_focused():swap(Workspace.get(2)) end)
+opt:bind_key("mod-s 4",       function() Workspace.get_focused():swap(Workspace.get(3)) end)
+opt:bind_key("mod-s 5",       function() Workspace.get_focused():swap(Workspace.get(4)) end)
+opt:bind_key("mod-s 6",       function() Workspace.get_focused():swap(Workspace.get(5)) end)
+opt:bind_key("mod-s 7",       function() Workspace.get_focused():swap(Workspace.get(6)) end)
+opt:bind_key("mod-s 8",       function() Workspace.get_focused():swap(Workspace.get(7)) end)
 opt:bind_key("mod-r",         function() opt.reload() end)
 opt:bind_key("mod-t",         function() action.set_floating(false)    end)
 opt:bind_key("mod-M1",  function() action.move_resize(info.cursor.mode.move) end)

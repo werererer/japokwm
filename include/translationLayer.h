@@ -39,6 +39,7 @@ struct monitor;
 #define CONFIG_OPTIONS "japokwm.options"
 #define CONFIG_SERVER "japokwm.server"
 #define CONFIG_WORKSPACE "japokwm.workspace"
+#define CONFIG_LIST "japokwm.list"
 
 void load_lua_api(lua_State *L);
 
