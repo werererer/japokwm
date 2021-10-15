@@ -11,6 +11,11 @@
 
 #include <wlr/util/edges.h>
 
+static const struct luaL_Reg layout_meta[] =
+{
+    {NULL, NULL},
+};
+
 static const struct luaL_Reg layout_f[] =
 {
     {NULL, NULL},
@@ -63,6 +68,7 @@ void lua_init_layout(struct layout *layout)
 void lua_load_layout()
 {
     create_class(
+            layout_meta,
             layout_f,
             layout_m,
             layout_setter,

@@ -5,6 +5,11 @@
 #include "utils/coreUtils.h"
 #include "color.h"
 
+static const struct luaL_Reg color_meta[] =
+{
+    {NULL, NULL},
+};
+
 static const struct luaL_Reg color_f[] =
 {
     {"new", lib_color_new},
@@ -28,7 +33,12 @@ static const struct luaL_Reg color_getter[] =
 
 void lua_load_color()
 {
-    create_class(color_f, color_m, color_setter, color_getter, CONFIG_COLOR);
+    create_class(color_meta,
+            color_f,
+            color_m,
+            color_setter,
+            color_getter,
+            CONFIG_COLOR);
 
     luaL_newlib(L, color_f);
     lua_setglobal(L, "Color");

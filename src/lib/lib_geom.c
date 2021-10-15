@@ -3,6 +3,11 @@
 #include "translationLayer.h"
 #include "server.h"
 
+static const struct luaL_Reg geom_meta[] =
+{
+    {NULL, NULL},
+};
+
 static const struct luaL_Reg geom_f[] =
 {
     {NULL, NULL},
@@ -43,6 +48,7 @@ void create_lua_geometry(lua_State *L, struct wlr_box *geom)
 void lua_load_geom()
 {
     create_class(
+            geom_meta,
             geom_f,
             geom_m,
             geom_setter,

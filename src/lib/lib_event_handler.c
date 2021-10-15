@@ -6,6 +6,11 @@
 #include "server.h"
 #include "translationLayer.h"
 
+static const struct luaL_Reg event_meta[] =
+{
+    {NULL, NULL},
+};
+
 static const struct luaL_Reg event_f[] =
 {
     {"add_listener", lib_add_listener},
@@ -38,7 +43,12 @@ void create_lua_event_handler(struct event_handler *event_handler) {
 
 void lua_load_events()
 {
-    create_class(event_f, event_m, event_setter, event_getter, CONFIG_EVENT);
+    create_class(event_meta,
+            event_f,
+            event_m,
+            event_setter,
+            event_getter,
+            CONFIG_EVENT);
 
     luaL_newlib(L, event_f);
     lua_setglobal(L, "Event");

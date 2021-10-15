@@ -4,6 +4,11 @@
 #include "translationLayer.h"
 #include "lib/lib_workspace.h"
 
+static const struct luaL_Reg server_meta[] =
+{
+    {NULL, NULL},
+};
+
 static const struct luaL_Reg server_f[] =
 {
     {NULL, NULL},
@@ -39,7 +44,12 @@ void create_lua_server(struct server *server)
 
 void lua_load_server()
 {
-    create_class(server_f, server_m, server_setter, server_getter, CONFIG_SERVER);
+    create_class(server_meta,
+            server_f,
+            server_m,
+            server_setter,
+            server_getter,
+            CONFIG_SERVER);
 
     create_lua_server(&server);
     lua_setglobal(L, "server");
