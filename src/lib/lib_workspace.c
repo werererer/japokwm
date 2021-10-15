@@ -16,6 +16,11 @@
 #include "lib/lib_list.h"
 #include "lib/lib_layout.h"
 
+static const struct luaL_Reg workspace_meta[] =
+{
+    {NULL, NULL},
+};
+
 static const struct luaL_Reg workspace_f[] =
 {
     {"get", lib_workspace_get},
@@ -56,6 +61,7 @@ void create_lua_workspace(lua_State *L, struct workspace *ws)
 void lua_load_workspace()
 {
     create_class(
+            workspace_meta,
             workspace_f,
             workspace_m,
             workspace_setter,

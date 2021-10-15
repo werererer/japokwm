@@ -11,9 +11,14 @@
 #include "lib/lib_workspace.h"
 #include "lib/lib_geom.h"
 
-static const struct luaL_Reg container_f[] =
+static const struct luaL_Reg container_meta[] =
 {
     {"__eq", lib_container_is_equal},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg container_f[] =
+{
     {"get_focused", lib_container_get_focused},
     {NULL, NULL},
 };
@@ -61,6 +66,7 @@ void create_lua_container(lua_State *L, struct container *con)
 void lua_load_container()
 {
     create_class(
+            container_meta,
             container_f,
             container_m,
             container_setter,

@@ -16,6 +16,11 @@
 #include "utils/parseConfigUtils.h"
 #include "workspace.h"
 
+static const struct luaL_Reg options_meta[] =
+{
+    {NULL, NULL},
+};
+
 static const struct luaL_Reg options_f[] = 
 {
     {"reload", lib_reload},
@@ -82,7 +87,12 @@ void create_lua_options(struct options *options) {
 
 void lua_load_options()
 {
-    create_class(options_f, options_m, options_setter, options_getter, CONFIG_OPTIONS);
+    create_class(options_meta,
+            options_f,
+            options_m,
+            options_setter,
+            options_getter,
+            CONFIG_OPTIONS);
 
     luaL_newlib(L, options_f);
     lua_setglobal(L, "Options");

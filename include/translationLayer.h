@@ -17,10 +17,11 @@ struct monitor;
     luaL_newlib(L, functions);\
     luaL_setmetatable(L, name);
 
-#define create_class(functions, methods, variable_setter, variable_getter, name)\
+#define create_class(extra_meta, functions, methods, variable_setter, variable_getter, name)\
     do {\
         luaL_newmetatable(L, name); {\
             luaL_setfuncs(L, meta, 0);\
+            luaL_setfuncs(L, extra_meta, 0);\
             add_table(L, "setter", variable_setter, -1);\
             add_table(L, "getter", variable_getter, -1);\
             \

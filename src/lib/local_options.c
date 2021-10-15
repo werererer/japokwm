@@ -4,6 +4,11 @@
 #include "lib/lib_options.h"
 #include "translationLayer.h"
 
+static const struct luaL_Reg local_options_meta[] =
+{
+    {NULL, NULL},
+};
+
 static const struct luaL_Reg local_options_f[] = 
 {
     {"reload", lib_reload},
@@ -65,6 +70,7 @@ static const struct luaL_Reg local_options_getter[] =
 void lua_load_local_options(struct options *options)
 {
     create_class(
+            local_options_meta,
             local_options_f,
             local_options_m,
             local_options_setter,
