@@ -64,6 +64,7 @@ void destroy_container(struct container *con)
     if (server.grab_c == con) {
         server.grab_c = NULL;
     }
+
     g_ptr_array_unref(con->properties);
     free(con);
 }
