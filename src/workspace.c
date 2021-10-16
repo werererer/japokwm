@@ -535,6 +535,20 @@ void workspace_rename(struct workspace *ws, const char *name)
     ws->name = strdup(name);
 }
 
+static struct container *workspace_get_local_focused_container(struct workspace *ws)
+{
+    if (!ws)
+        return NULL;
+
+    for (int i = 0; i < length_of_composed_list(ws->visible_focus_set->focus_stack_lists); i++) {
+        struct container *con = get_in_composed_list(ws->visible_focus_set->focus_stack_lists, i);
+        if (con->client->ws_id != ws->id)
+            continue;
+        return con;
+    }
+    return NULL;
+}
+
 void workspace_update_names(struct server *server, GPtrArray *workspaces)
 {
     struct layout *lt = server->default_layout;
@@ -548,7 +562,7 @@ void workspace_update_names(struct server *server, GPtrArray *workspaces)
         } else {
             default_name = ws->name;
         }
-        struct container *con = workspace_get_focused_container(ws);
+        struct container *con = workspace_get_local_focused_container(ws);
 
         const char *name = default_name;
 
