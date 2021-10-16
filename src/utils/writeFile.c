@@ -7,12 +7,12 @@
 int write_to_file(int fd, const char *content)
 {
     if (fd < 0) {
-        debug_print("ERROR: file didn't open correctly\n");
+        printf("ERROR: file didn't open correctly\n");
         return -1;
     }
 
     if (write(fd, content, strlen(content)) != strlen(content)) {
-        debug_print("ERROR: failed to write content to file\n");
+        printf("ERROR: failed to write content to file\n");
         return -1;
     }
     return 0;

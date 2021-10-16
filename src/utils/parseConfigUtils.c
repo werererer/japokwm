@@ -300,14 +300,15 @@ void handle_warning(void *user_data, const char *msg, int i)
 {
     notify_msg(msg);
 
-    debug_print("error_fd: %i\n", error_fd);
+    char *final_message = g_strconcat("WARNING: ", msg, "\n", NULL);
+    printf("%s", final_message);
+
     // if error file not initialized
     if (error_fd < 0)
         return;
 
-    write_to_file(error_fd, "WARNING: ");
     write_to_file(error_fd, msg);
-    write_to_file(error_fd, "\n");
+    free(final_message);
 }
 
 const char *get_config_str(lua_State *L, int idx)
