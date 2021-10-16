@@ -37,14 +37,14 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     client->m = m;
     struct container *con = create_container(client, m, false);
 
+    add_container_to_tile(con);
+
     // Temporarily set the layer's current state to client_pending
     // so that we can easily arrange it
     struct wlr_layer_surface_v1_state old_state = wlr_layer_surface->current;
     wlr_layer_surface->current = wlr_layer_surface->client_pending;
     arrange_layers(m);
     wlr_layer_surface->current = old_state;
-
-    add_container_to_tile(con);
 }
 
 void map_layer_surface_notify(struct wl_listener *listener, void *data)
@@ -108,7 +108,6 @@ void commitlayersurfacenotify(struct wl_listener *listener, void *data)
         return;
 
     struct monitor *m = wlr_output->data;
-    arrange_layers(m);
     struct container *con = c->con;
     container_damage_part(con);
 
@@ -171,7 +170,7 @@ void arrange_layers(struct monitor *m)
     arrangelayer(m, server.layer_visual_stack_background, &usable_area, true);
 
     set_root_geom(m->root, usable_area);
-    arrange(m);
+    arrange();
 
     // Arrange non-exlusive surfaces from top->bottom
     arrangelayer(m, server.layer_visual_stack_overlay, &usable_area, false);
