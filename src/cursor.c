@@ -14,7 +14,6 @@
 #include "tile/tileUtils.h"
 #include "workspace.h"
 
-static struct container *grabc = NULL;
 static int offsetx, offsety;
 
 // TODO refactor this function
@@ -249,11 +248,11 @@ static bool handle_move_resize(struct cursor *cursor)
     struct wlr_cursor *wlr_cursor = cursor->wlr_cursor;
     switch (cursor_mode) {
         case CURSOR_MOVE:
-            move_container(grabc, wlr_cursor, offsetx, offsety);
+            move_container(server.grab_c, wlr_cursor, offsetx, offsety);
             return true;
             break;
         case CURSOR_RESIZE:
-            resize_container(grabc, wlr_cursor, 0, 0);
+            resize_container(server.grab_c, wlr_cursor, 0, 0);
             return true;
             break;
         default:
@@ -448,13 +447,13 @@ void handle_cursor_button(struct wl_listener *listener, void *data)
 
 void move_resize(struct cursor *cursor, int ui)
 {
-    grabc = xy_to_container(cursor->wlr_cursor->x, cursor->wlr_cursor->y);
-    if (!grabc)
+    server.grab_c = xy_to_container(cursor->wlr_cursor->x, cursor->wlr_cursor->y);
+    if (!server.grab_c)
         return;
-    if (grabc->client->type == LAYER_SHELL)
+    if (server.grab_c->client->type == LAYER_SHELL)
         return;
 
-    struct monitor *m = container_get_monitor(grabc);
+    struct monitor *m = container_get_monitor(server.grab_c);
     struct layout *lt = get_layout_in_monitor(m);
     // all floating windows will be tiled. Thats why you can't make new windows
     // tiled
@@ -462,9 +461,9 @@ void move_resize(struct cursor *cursor, int ui)
         return;
 
     /* Float the window and tell motion_notify to grab it */
-    container_set_floating(grabc, container_fix_position, true);
+    container_set_floating(server.grab_c, container_fix_position, true);
 
-    struct wlr_box *grabc_geom = container_get_current_geom(grabc);
+    struct wlr_box *grabc_geom = container_get_current_geom(server.grab_c);
     struct wlr_cursor *wlr_cursor = cursor->wlr_cursor;
     switch (cursor->cursor_mode = ui) {
         case CURSOR_MOVE:
