@@ -681,10 +681,17 @@ void list_set_insert_container_to_focus_stack(struct focus_set *focus_set, int p
 void workspace_add_container_to_focus_stack(struct workspace *ws, int pos, struct container *con)
 {
     // TODO: refactor me
+    struct container *prev_sel = workspace_get_focused_container(ws);
     for (int i = 0; i < server.workspaces->len; i++) {
         ws = g_ptr_array_index(server.workspaces, i);
         list_set_insert_container_to_focus_stack(ws->focus_set, pos, con);
         update_reduced_focus_stack(ws);
+    }
+    struct container *sel = workspace_get_focused_container(ws);
+    if (prev_sel != sel) {
+        struct event_handler *ev = server.event_handler;
+        call_on_unfocus_function(ev, prev_sel);
+        call_on_focus_function(ev, sel);
     }
 }
 
@@ -768,10 +775,17 @@ void workspace_remove_container(struct workspace *ws, struct container *con)
 
 void workspace_remove_container_from_focus_stack(struct workspace *ws, struct container *con)
 {
+    struct container *prev_sel = workspace_get_focused_container(ws);
     for (int i = 0; i < server.workspaces->len; i++) {
         struct workspace *ws = g_ptr_array_index(server.workspaces, i);
         remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
         remove_in_composed_list(ws->visible_focus_set->focus_stack_lists, cmp_ptr, con);
+    }
+    struct container *sel = workspace_get_focused_container(ws);
+    if (prev_sel != sel) {
+        struct event_handler *ev = server.event_handler;
+        call_on_unfocus_function(ev, prev_sel);
+        call_on_focus_function(ev, sel);
     }
 }
 

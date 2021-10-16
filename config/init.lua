@@ -15,10 +15,14 @@ end
 event:add_listener("on_start", on_start)
 
 local function on_focus(con)
-    con.alpha = 1.0
+    if con then
+        con.alpha = 1.0
+    end
 end
 local function on_unfocus(con)
-    con.alpha = 0.8
+    if con then
+        con.alpha = 0.8
+    end
 end
 event:add_listener("on_focus", on_focus)
 event:add_listener("on_unfocus", on_unfocus)
