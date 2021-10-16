@@ -201,6 +201,8 @@ static bool process_binding(lua_State *L, const char *bind, GPtrArray *keybindin
     GPtrArray *keybindings = g_ptr_array_copy(keybindings_ptr, copy_keybinding, NULL);
 
     bool handled = false;
+    // TODO this basically uses linear search which is bad keybindings are
+    // already sorted
     for (int i = 0; i < keybindings->len; i++) {
         struct keybinding *keybinding = g_ptr_array_index(keybindings, i);
 
