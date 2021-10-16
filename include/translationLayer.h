@@ -21,6 +21,9 @@ struct monitor;
     do {\
         luaL_newmetatable(L, name); {\
             luaL_setfuncs(L, meta, 0);\
+            lua_pushstring(L, "__metatable");\
+            lua_pushstring(L, "access restricted to metatable");\
+            lua_settable(L, -3);\
             luaL_setfuncs(L, extra_meta, 0);\
             add_table(L, "setter", variable_setter, -1);\
             add_table(L, "getter", variable_getter, -1);\
