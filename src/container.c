@@ -61,6 +61,9 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 
 void destroy_container(struct container *con)
 {
+    if (server.grab_c == con) {
+        server.grab_c = NULL;
+    }
     g_ptr_array_unref(con->properties);
     free(con);
 }
@@ -710,6 +713,9 @@ static void swap_integers(int *i1, int *i2)
 
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety)
 {
+    if (!con)
+        return;
+
     struct wlr_box *con_geom = container_get_current_geom(con);
     struct wlr_box geom = *con_geom;
     geom.x = cursor->x - offsetx;
@@ -905,6 +911,8 @@ int container_get_border_width(struct container *con)
 
 void resize_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety)
 {
+    if (!con)
+        return;
 
     struct wlr_box *con_geom = container_get_current_geom(con);
     struct wlr_box geom = *con_geom;

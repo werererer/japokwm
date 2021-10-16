@@ -93,6 +93,7 @@ struct server {
     // this breaks the reload_config load_config loop
     bool prohibit_reload_config;
 
+    struct container *grab_c;
 #if JAPOKWM_HAS_XWAYLAND
     struct xwayland xwayland;
     struct wl_listener xwayland_ready;
