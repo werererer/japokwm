@@ -125,21 +125,21 @@ exit_cleanup:
     return ret_val;
 }
 
-bool is_old_combo_same(const char *bind)
+bool is_old_combo_same(GPtrArray *registered_key_combos, const char *bind)
 {
     GPtrArray *bind_combos = split_string(bind, " ");
     bool ret_val = false;
 
-    if (bind_combos->len < server.registered_key_combos->len) {
+    if (bind_combos->len < registered_key_combos->len) {
         ret_val = false;
         goto exit_cleanup;
     }
 
-    for (int i = 0; i < server.registered_key_combos->len; i++) {
-        char *server_bind = g_ptr_array_index(server.registered_key_combos, i);
+    for (int i = 0; i < registered_key_combos->len; i++) {
+        char *bind = g_ptr_array_index(registered_key_combos, i);
         char *bind_combo = g_ptr_array_index(bind_combos, i);
 
-        if (is_same_keybind_element(server_bind, bind_combo)) {
+        if (is_same_keybind_element(bind, bind_combo)) {
             ret_val = true;
         } else {
             ret_val = false;
@@ -204,7 +204,7 @@ static bool process_binding(lua_State *L, const char *bind, GPtrArray *keybindin
     for (int i = 0; i < keybindings->len; i++) {
         struct keybinding *keybinding = g_ptr_array_index(keybindings, i);
 
-        if (!is_old_combo_same(keybinding->binding))
+        if (!is_old_combo_same(server.registered_key_combos, keybinding->binding))
             continue;
         if (!is_same_keybind_completed(bind, keybinding->binding))
             continue;
@@ -214,6 +214,7 @@ static bool process_binding(lua_State *L, const char *bind, GPtrArray *keybindin
         lua_rawgeti(L, LUA_REGISTRYINDEX, keybinding->lua_func_ref);
         lua_call_safe(L, 0, 0, 0);
         server_allow_reloading_config();
+        break;
     }
     g_ptr_array_unref(keybindings);
     return handled;
@@ -282,6 +283,14 @@ void *copy_keybinding(const void *keybinding_ptr, void *user_data)
     int ref = luaL_ref(L, LUA_REGISTRYINDEX);
     struct keybinding *kb_dup = create_keybinding(keybinding->binding, ref);
     return kb_dup;
+}
+
+int cmp_keybinding(const void *keybinding1, const void *keybinding2)
+{
+    const struct keybinding *k1 = *(void **)keybinding1;
+    const struct keybinding *k2 = *(void **)keybinding2;
+    int ret_val = cmp_str(k1->binding, k2->binding);
+    return ret_val;
 }
 
 char *mod_to_keybinding(int mods, int sym)

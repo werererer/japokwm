@@ -107,7 +107,21 @@ static struct keybinding *create_keybind(const char *binding, const char *comman
 static void add_keybind(GPtrArray *keybindings, const char *binding, const char *command)
 {
     struct keybinding *keybinding = create_keybind(binding, command);
-    g_ptr_array_add(keybindings, keybinding);
+    options_add_keybinding(keybindings, keybinding);
+}
+
+void options_add_keybinding(GPtrArray *keybindings, struct keybinding *keybinding)
+{
+
+    struct keybinding **base = (struct keybinding **)keybindings->pdata;
+    int final_pos = 1 + lower_bound(
+            &keybinding,
+            base,
+            keybindings->len,
+            sizeof(struct keybinding *),
+            cmp_keybinding);
+
+    g_ptr_array_insert(keybindings, final_pos, keybinding);
 }
 
 #define bind_key(keybindings, binding, lua_func) add_keybind(keybindings, binding, #lua_func)

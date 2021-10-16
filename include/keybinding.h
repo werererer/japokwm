@@ -24,6 +24,8 @@ void destroy_keybinding0(void *keybinding);
 
 void *copy_keybinding(const void *keybinding_ptr, void *user_data);
 
+int cmp_keybinding(const void *keybinding1, const void *keybinding2);
+
 char *mod_to_keybinding(int mods, int sym);
 // WARNING: This function will change the state of the windowmanager that means
 // that certain things will be freed so don't trust your local variables that
