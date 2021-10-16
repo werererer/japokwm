@@ -16,6 +16,7 @@
 #include <wlr/types/wlr_input_inhibitor.h>
 #include <wlr/types/wlr_screencopy_v1.h>
 #include <wlr/types/wlr_viewporter.h>
+#include <wlr/types/wlr_data_control_v1.h>
 #include <unistd.h>
 #include <wait.h>
 #include <wayland-client.h>
@@ -287,6 +288,7 @@ int setup(struct server *server)
     server->compositor = wlr_compositor_create(server->wl_display, drw);
     wlr_export_dmabuf_manager_v1_create(server->wl_display);
     wlr_screencopy_manager_v1_create(server->wl_display);
+    wlr_data_control_manager_v1_create(server->wl_display);
     wlr_data_device_manager_create(server->wl_display);
     wlr_gamma_control_manager_v1_create(server->wl_display);
     wlr_primary_selection_v1_device_manager_create(server->wl_display);
