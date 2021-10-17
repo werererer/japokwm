@@ -273,10 +273,10 @@ void arrange_containers(struct workspace *ws, struct wlr_box root_geom,
     for (int i = 0; i < tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(tiled_containers, i);
 
-        // // the monitor must be on the same monitor as it is tiled on else it is
-        // // a bug
-        // printf("con: %i ws: %i monitor: %p\n", i, con->client->ws_id, container_get_monitor(con));
-        // assert(container_get_monitor(con) == server_get_selected_monitor());
+        // the monitor must be on the same monitor as it is tiled on else it is
+        // a bug
+        printf("con: %i ws: %i monitor: %p\n", i, con->client->ws_id, container_get_monitor(con));
+        assert(container_get_monitor(con) == server_get_selected_monitor());
 
         struct monitor *m = workspace_get_monitor(ws);
         arrange_container(con, m, i, root_geom, actual_inner_gap);

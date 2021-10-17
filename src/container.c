@@ -670,7 +670,7 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
 
 void container_set_hidden(struct container *con, bool b)
 {
-    struct workspace *ws = container_get_workspace(con);
+    struct workspace *ws = server_get_selected_workspace();
     container_set_hidden_at_workspace(con, b, ws);
 }
 
