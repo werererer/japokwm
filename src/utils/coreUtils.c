@@ -123,7 +123,16 @@ int cmp_ptr(const void *ptr1, const void *ptr2)
 
 int cmp_str(const void *s1, const void *s2)
 {
-    return strcmp(s1, s2);
+    const char *str1 = s1;
+    const char *str2 = s2;
+    return strcmp(str1, str2);
+}
+
+int cmp_strptr(const void *s1, const void *s2)
+{
+    const char *str1 = *(const char **)s1;
+    const char *str2 = *(const char **)s2;
+    return strcmp(str1, str2);
 }
 
 int find_in_composed_list(GPtrArray *lists,

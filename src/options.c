@@ -104,14 +104,18 @@ static struct keybinding *create_keybind(const char *binding, const char *comman
     return keybinding;
 }
 
-static void add_keybind(GPtrArray *keybindings, const char *binding, const char *command)
+static void add_keybind(struct options *options, const char *binding, const char *command)
 {
     struct keybinding *keybinding = create_keybind(binding, command);
-    options_add_keybinding(keybindings, keybinding);
+    options_add_keybinding(options, keybinding);
 }
 
-void options_add_keybinding(GPtrArray *keybindings, struct keybinding *keybinding)
+void options_add_keybinding(struct options *options, struct keybinding *keybinding)
 {
+    GPtrArray *keybindings = options->keybindings;
+    char *sorted_binding = sort_keybinding_element(options, keybinding->binding);
+    free(keybinding->binding);
+    keybinding->binding = sorted_binding;
 
     struct keybinding **base = (struct keybinding **)keybindings->pdata;
     int final_pos = 1 + lower_bound(
@@ -124,94 +128,93 @@ void options_add_keybinding(GPtrArray *keybindings, struct keybinding *keybindin
     g_ptr_array_insert(keybindings, final_pos, keybinding);
 }
 
-#define bind_key(keybindings, binding, lua_func) add_keybind(keybindings, binding, #lua_func)
+#define bind_key(options, binding, lua_func) add_keybind(options, binding, #lua_func)
 
 void load_default_keybindings()
 {
     struct layout *lt = server.default_layout;
     struct options *options = lt->options;
     list_clear(options->keybindings, NULL);
-    GPtrArray *keybindings = options->keybindings;
 
-    bind_key(keybindings, "mod-S-q", server:quit());
-    bind_key(keybindings, "mod-r", opt.reload());
-    bind_key(keybindings, "mod-S-c", 
+    bind_key(options, "mod-S-q", server:quit());
+    bind_key(options, "mod-r", opt.reload());
+    bind_key(options, "mod-S-c", 
             if Container.get_focused() then
                     action.kill(Container.get_focused())
             end
             );
-    bind_key(keybindings, "mod-S-Return", action.exec("/usr/bin/alacritty"));
-    bind_key(keybindings, "mod-j", action.focus_on_stack(1));
-    bind_key(keybindings, "mod-k", action.focus_on_stack(-1));
-    bind_key(keybindings, "mod-Return", action.zoom());
-    bind_key(keybindings, "mod-S-h", action.resize_main(-1/10));
-    bind_key(keybindings, "mod-S-l", action.resize_main(1/10));
-    bind_key(keybindings, "mod-p", action.exec("rofi -show run"));
+    bind_key(options, "mod-S-Return", action.exec("/usr/bin/alacritty"));
+    bind_key(options, "mod-j", action.focus_on_stack(1));
+    bind_key(options, "mod-k", action.focus_on_stack(-1));
+    bind_key(options, "mod-Return", action.zoom());
+    bind_key(options, "mod-S-h", action.resize_main(-1/10));
+    bind_key(options, "mod-S-l", action.resize_main(1/10));
+    bind_key(options, "mod-p", action.exec("rofi -show run"));
 
-    bind_key(keybindings, "mod-S-1", 
+    bind_key(options, "mod-S-1", 
             if Container.get_focused() then
                 Container.get_focused().workspace = Workspace.get(1)
             end
             );
-    bind_key(keybindings, "mod-S-2", 
+    bind_key(options, "mod-S-2", 
             if Container.get_focused() then
                 Container.get_focused().workspace = Workspace.get(2)
             end
             );
-    bind_key(keybindings, "mod-S-3", 
+    bind_key(options, "mod-S-3", 
             if Container.get_focused() then
                 Container.get_focused().workspace = Workspace.get(3)
             end
             );
-    bind_key(keybindings, "mod-S-4", 
+    bind_key(options, "mod-S-4", 
             if Container.get_focused() then
                 Container.get_focused().workspace = Workspace.get(4)
             end
             );
-    bind_key(keybindings, "mod-S-5", 
+    bind_key(options, "mod-S-5", 
             if Container.get_focused() then
                 Container.get_focused().workspace = Workspace.get(5)
             end
             );
-    bind_key(keybindings, "mod-S-6", 
+    bind_key(options, "mod-S-6", 
             if Container.get_focused() then
                 Container.get_focused().workspace = Workspace.get(6)
             end
             );
-    bind_key(keybindings, "mod-S-7", 
+    bind_key(options, "mod-S-7", 
             if Container.get_focused() then
                 Container.get_focused().workspace = Workspace.get(7)
             end
             );
-    bind_key(keybindings, "mod-S-8", 
+    bind_key(options, "mod-S-8", 
             if Container.get_focused() then
                 Container.get_focused().workspace = Workspace.get(8)
             end
             );
-    bind_key(keybindings, "mod-S-9", 
+    bind_key(options, "mod-S-9", 
             if Container.get_focused() then
                 Container.get_focused().workspace = Workspace.get(9)
             end
             );
 
-    bind_key(keybindings, "mod-C-1", action.tag_view(1 << 0));
-    bind_key(keybindings, "mod-C-2", action.tag_view(1 << 1));
-    bind_key(keybindings, "mod-C-3", action.tag_view(1 << 2));
-    bind_key(keybindings, "mod-C-4", action.tag_view(1 << 3));
-    bind_key(keybindings, "mod-C-5", action.tag_view(1 << 4));
-    bind_key(keybindings, "mod-C-6", action.tag_view(1 << 5));
-    bind_key(keybindings, "mod-C-7", action.tag_view(1 << 6));
-    bind_key(keybindings, "mod-C-8", action.tag_view(1 << 7));
-    bind_key(keybindings, "mod-C-9", action.tag_view(1 << 8));
+    bind_key(options, "mod-C-1", action.tag_view(1 << 0));
+    bind_key(options, "mod-C-2", action.tag_view(1 << 1));
+    bind_key(options, "mod-C-3", action.tag_view(1 << 2));
+    bind_key(options, "mod-C-4", action.tag_view(1 << 3));
+    bind_key(options, "mod-C-5", action.tag_view(1 << 4));
+    bind_key(options, "mod-C-6", action.tag_view(1 << 5));
+    bind_key(options, "mod-C-7", action.tag_view(1 << 6));
+    bind_key(options, "mod-C-8", action.tag_view(1 << 7));
+    bind_key(options, "mod-C-9", action.tag_view(1 << 8));
 
-    bind_key(keybindings, "mod-C-S-1", Container.get_focused():toggle_add_sticky(1 << 0));
-    bind_key(keybindings, "mod-C-S-2", Container.get_focused():toggle_add_sticky(1 << 1));
-    bind_key(keybindings, "mod-C-S-3", Container.get_focused():toggle_add_sticky(1 << 2));
-    bind_key(keybindings, "mod-C-S-4", Container.get_focused():toggle_add_sticky(1 << 3));
-    bind_key(keybindings, "mod-C-S-5", Container.get_focused():toggle_add_sticky(1 << 4));
-    bind_key(keybindings, "mod-C-S-6", Container.get_focused():toggle_add_sticky(1 << 5));
-    bind_key(keybindings, "mod-C-S-7", Container.get_focused():toggle_add_sticky(1 << 6));
-    bind_key(keybindings, "mod-C-S-8", Container.get_focused():toggle_add_sticky(1 << 7));
+    bind_key(options, "mod-C-S-1", Container.get_focused():toggle_add_sticky(1 << 0));
+    bind_key(options, "mod-C-S-2", Container.get_focused():toggle_add_sticky(1 << 1));
+    bind_key(options, "mod-C-S-3", Container.get_focused():toggle_add_sticky(1 << 2));
+    bind_key(options, "mod-C-S-4", Container.get_focused():toggle_add_sticky(1 << 3));
+    bind_key(options, "mod-C-S-5", Container.get_focused():toggle_add_sticky(1 << 4));
+    bind_key(options, "mod-C-S-6", Container.get_focused():toggle_add_sticky(1 << 5));
+    bind_key(options, "mod-C-S-7", Container.get_focused():toggle_add_sticky(1 << 6));
+    bind_key(options, "mod-C-S-8", Container.get_focused():toggle_add_sticky(1 << 7));
 
     return;
 }

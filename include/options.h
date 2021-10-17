@@ -11,6 +11,7 @@
 
 struct workspace;
 struct keybinding;
+struct layout;
 
 enum hidden_edge_borders {
     NONE,
@@ -73,7 +74,7 @@ void load_default_keybindings();
 GPtrArray *create_tagnames();
 void copy_options(struct options *dest_option, struct options *src_option);
 
-void options_add_keybinding(GPtrArray *keybindings, struct keybinding *keybinding);
+void options_add_keybinding(struct options *options, struct keybinding *keybinding);
 
 int workspace_get_new_position(struct workspace *ws);
 int workspace_get_new_focus_position(struct workspace *ws);

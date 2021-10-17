@@ -4,6 +4,7 @@ c_args = ['-I../include']
 test_files = files(
     'event_handler_test.c',
     'container_test.c',
+    'stringop_test.c',
     'tile/tileUtils_test.c',
     'utils/coreUtils_test.c',
     'utils/gapUtils_test.c',

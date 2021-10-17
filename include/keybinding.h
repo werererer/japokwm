@@ -14,6 +14,9 @@
 #define MOD_SUPER_L (1 << 6)
 #define MOD_ISO_LEVEL3_Shift (1 << 7)
 
+struct layout;
+struct options;
+
 struct keybinding {
     char *binding;
     int lua_func_ref;
@@ -25,7 +28,12 @@ void destroy_keybinding0(void *keybinding);
 
 void *copy_keybinding(const void *keybinding_ptr, void *user_data);
 
-bool has_keybind_same_existing_elements(GPtrArray *registered_key_combos, const char *bind);
+char *sort_keybinding_element(struct options *options, const char *binding_element);
+char *sort_keybinding(struct options *options, const char *binding);
+
+struct keybinding *has_keybind_same_existing_elements(
+        GPtrArray *keybindings,
+        GPtrArray *registered_key_combos);
 bool has_keybind_same_amount_of_elements(GPtrArray *registered_key_combos, const char *bind);
 
 int cmp_keybinding(const void *keybinding1, const void *keybinding2);
