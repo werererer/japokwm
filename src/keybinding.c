@@ -16,6 +16,7 @@ const char *modkeys[4] = {"Alt_L", "Num_Lock", "ISO_Level3_Shift", "Super_L"};
 const char *mouse[3] = {"Pointer_Button1", "Pointer_Button2", "Pointer_Button3"};
 
 static bool sym_is_modifier(const char *sym);
+static int cmp_keybinding_strings(const char *binding1, const char *binding2);
 static size_t modifiers;
 /*
  * convert mod to mask
@@ -141,7 +142,9 @@ char *sort_keybinding_element(struct options *options, const char *binding_eleme
     if (non_modifier) {
         free(non_modifier);
     }
-    g_ptr_array_free(bindarr, true);
+
+    g_ptr_array_free(mods, TRUE);
+    g_ptr_array_free(bindarr, TRUE);
     return result;
 }
 
@@ -190,12 +193,79 @@ static bool is_same_keybind_element(struct layout *lt, const char *bind, const c
     return ret_val;
 }
 
+int cmp_partly_keybinding_strings(const char *binding1, const char *binding2)
+{
+    GPtrArray *k1_array = split_string(binding1, " ");
+    GPtrArray *k2_array = split_string(binding2, " ");
+
+    int ret_val = 0;
+    int i1 = k1_array->len;
+    int i2 = k2_array->len;
+    if (i1 < i2) {
+        for (int i = 0; i < k1_array->len; i++) {
+            const char *el1 = g_ptr_array_index(k1_array, i);
+            const char *el2 = g_ptr_array_index(k2_array, i);
+
+            if (strcmp(el1, el2) != 0) {
+                ret_val = -1;
+                goto exit_return;
+            }
+        }
+        ret_val = 0;
+        goto exit_return;
+    } else if ( i1 > i2 ) {
+        ret_val = 1;
+        goto exit_return;
+    } else {
+        ret_val = 1;
+        goto exit_return;
+    }
+
+exit_return:
+    g_ptr_array_unref(k2_array);
+    g_ptr_array_unref(k1_array);
+
+    return ret_val;
+}
+
+static int cmp_partly_keybinding_ptr_ptr(const void *key_ptr, const void *keybinding_ptr2)
+{
+    const char *key = key_ptr;
+    const struct keybinding *k2 = *(const void **)keybinding_ptr2;
+
+    int ret_val = cmp_partly_keybinding_strings(key, k2->binding);
+    return ret_val;
+}
+
+bool has_partly_matching_keybinding(
+        GPtrArray *keybindings,
+        GPtrArray *registered_key_combos)
+{
+    char *binding = join_string((const char **)registered_key_combos->pdata, registered_key_combos->len, " ");
+
+    struct keybinding **base = (struct keybinding **)keybindings->pdata;
+    int len = keybindings->len;
+    struct keybinding **keybinding = bsearch(
+            binding,
+            base,
+            len,
+            sizeof(struct keybinding *),
+            cmp_partly_keybinding_ptr_ptr);
+    free(binding);
+
+    struct keybinding *ret_keybinding = NULL;
+    if (keybinding) {
+        ret_keybinding = *keybinding;
+    }
+    return ret_keybinding;
+}
+
 static int cmp_keybinding_ptr_ptr(const void *key_ptr, const void *keybinding_ptr2)
 {
     const char *key = key_ptr;
     const struct keybinding *keybinding = *(const void **)keybinding_ptr2;
-    debug_print("keybinding: %s\n", keybinding->binding);
-    return strcmp(key, keybinding->binding);
+    int ret_value = cmp_keybinding_strings(key, keybinding->binding);
+    return ret_value;
 }
 
 struct keybinding *get_matching_keybinding(
@@ -212,11 +282,11 @@ struct keybinding *get_matching_keybinding(
             len,
             sizeof(struct keybinding *),
             cmp_keybinding_ptr_ptr);
+    free(binding);
 
     struct keybinding *ret_keybinding = NULL;
     if (keybinding) {
         ret_keybinding = *keybinding;
-        debug_print("ret binding: %s\n", ret_keybinding);
     }
     return ret_keybinding;
 }
@@ -234,30 +304,12 @@ bool has_keybind_same_amount_of_elements(GPtrArray *registered_key_combos, const
 // certain things will be freed so don't trust your local variables that were
 // assigned before calling this function anymore. Global variables should be
 // fine. They might contain a different value after calling this function thou.
-static bool process_binding(lua_State *L, const char *bind, GPtrArray *keybindings_ptr)
+static void process_binding(lua_State *L, struct keybinding *keybinding)
 {
-    // calling arbitrary lua functions will change the state of the
-    // windowmanager which may lead to the keybindings array to be freed by one
-    // of those pesky functions. To protect ourself from that we create a copy.
-    GPtrArray *keybindings = g_ptr_array_copy(keybindings_ptr, copy_keybinding, NULL);
-
-    bool handled = false;
-
-    struct keybinding *keybinding = get_matching_keybinding(
-            keybindings,
-            server.registered_key_combos
-            );
-    if (!keybinding)
-        return false;
-
-    handled = true;
     list_clear(server.registered_key_combos, free);
     lua_rawgeti(L, LUA_REGISTRYINDEX, keybinding->lua_func_ref);
     lua_call_safe(L, 0, 0, 0);
     server_allow_reloading_config();
-
-    g_ptr_array_unref(keybindings);
-    return handled;
 }
 
 struct keybinding *create_keybinding(const char *binding, int lua_func_ref)
@@ -326,11 +378,38 @@ void *copy_keybinding(const void *keybinding_ptr, void *user_data)
     return kb_dup;
 }
 
+int cmp_keybinding_strings(const char *binding1, const char *binding2)
+{
+    GPtrArray *k1_array = split_string(binding1, " ");
+    GPtrArray *k2_array = split_string(binding2, " ");
+
+    int ret_val = 0;
+    int i1 = k1_array->len;
+    int i2 = k2_array->len;
+    if (i1 < i2) {
+        ret_val = -1;
+        goto exit_return;
+    } else if ( i1 > i2 ) {
+        ret_val = 1;
+        goto exit_return;
+    } else {
+        ret_val = cmp_str(binding1, binding2);
+        goto exit_return;
+    }
+
+    g_ptr_array_unref(k2_array);
+    g_ptr_array_unref(k1_array);
+
+exit_return:
+    return ret_val;
+}
+
 int cmp_keybinding(const void *keybinding1, const void *keybinding2)
 {
     const struct keybinding *k1 = *(void **)keybinding1;
     const struct keybinding *k2 = *(void **)keybinding2;
-    int ret_val = cmp_str(k1->binding, k2->binding);
+
+    int ret_val = cmp_keybinding_strings(k1->binding, k2->binding);
     return ret_val;
 }
 
@@ -362,18 +441,47 @@ bool handle_keyboard_key(const char *bind)
     free(preprocessed_bind);
 
     g_ptr_array_add(server.registered_key_combos, strdup(sorted_bind));
-    if (!get_matching_keybinding(lt->options->keybindings, server.registered_key_combos)) {
+
+    // DEBUG
+    // for (int i = 0; i < lt->options->keybindings->len; i++) {
+    //     struct keybinding *keybinding = g_ptr_array_index(lt->options->keybindings, i);
+    //     printf("%s\n", keybinding->binding);
+    // }
+    //
+    debug_print("registered len: %i\n", server.registered_key_combos->len);
+    bool partly = has_partly_matching_keybinding(
+                lt->options->keybindings,
+                server.registered_key_combos
+            );
+    if (partly) {
+        debug_print("partly: %i\n", true);
+        return true;
+    }
+
+    struct keybinding *keybinding =
+        get_matching_keybinding(
+                lt->options->keybindings,
+                server.registered_key_combos
+                );
+    if (!keybinding) {
         list_clear(server.registered_key_combos, free);
         g_ptr_array_add(server.registered_key_combos, strdup(sorted_bind));
 
+        keybinding =
+            get_matching_keybinding(
+                    lt->options->keybindings,
+                    server.registered_key_combos
+                    );
         // try again with no registered key combos
-        if (!get_matching_keybinding(lt->options->keybindings, server.registered_key_combos)) {
+        if (!keybinding) {
+            list_clear(server.registered_key_combos, free);
             return false;
         }
     }
 
-    bool handled = process_binding(L, sorted_bind, lt->options->keybindings);
-    return handled;
+    process_binding(L, keybinding);
+    printf("handled\n");
+    return true;
 }
 
 bool key_state_has_modifiers(size_t mods)
