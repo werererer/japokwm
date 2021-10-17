@@ -77,19 +77,39 @@ static char *resolve_keybind_element(struct options *options, const char *bind)
     return resolved;
 }
 
+static char *unresolve_keybind_element(struct options *options, const char *bind)
+{
+    if (strcmp(bind, modkeys[options->modkey]) == 0) {
+        char *unresolved = strdup("mod");
+        return unresolved;
+    }
+    if (strcmp(bind, mouse[0]) == 0) {
+        char *unresolved = strdup("M1");
+        return unresolved;
+    }
+    if (strcmp(bind, mouse[1]) == 0) {
+        char *unresolved = strdup("M2");
+        return unresolved;
+    }
+    if (strcmp(bind, mouse[2]) == 0) {
+        char *unresolved = strdup("M3");
+        return unresolved;
+    }
+    if (strcmp(bind, "Control_L") == 0) {
+        char *unresolved = strdup("C");
+        return unresolved;
+    }
+    if (strcmp(bind, "Shift_L") == 0) {
+        char *unresolved = strdup("S");
+        return unresolved;
+    }
+    char *unresolved = strdup(bind);
+    return unresolved;
+}
+
 char *sort_keybinding_element(struct options *options, const char *binding_element)
 {
     GPtrArray *bindarr = split_string(binding_element, "-");
-
-    for (int i = 0; i < bindarr->len; i++) {
-        char *bind_atom = g_ptr_array_index(bindarr, i);
-
-        char *resolved_bind_atom = resolve_keybind_element(options, bind_atom);
-        free(bind_atom);
-        bind_atom = resolved_bind_atom;
-
-        g_ptr_array_index(bindarr, i) = bind_atom;
-    }
 
     GPtrArray *mods = g_ptr_array_copy(bindarr, NULL, NULL);
 
@@ -100,8 +120,11 @@ char *sort_keybinding_element(struct options *options, const char *binding_eleme
     for (int i = mods->len-1; i >= 0; i--) {
         char *bind_atom = g_ptr_array_index(mods, i);
 
-        if (sym_is_modifier(bind_atom))
+        char *resolved_bind_atom = resolve_keybind_element(options, bind_atom);
+        if (sym_is_modifier(resolved_bind_atom))
             continue;
+        free(resolved_bind_atom);
+
         non_modifier = strdup(bind_atom);
         g_ptr_array_remove_index_fast(mods, i);
         break;
@@ -120,6 +143,23 @@ char *sort_keybinding_element(struct options *options, const char *binding_eleme
     }
     g_ptr_array_free(bindarr, true);
     return result;
+}
+
+char *preprocess_binding(struct options *options, const char *binding)
+{
+    GPtrArray *bindarr = split_string(binding, "-");
+
+    for (int i = 0; i < bindarr->len; i++) {
+        char *bind_el = g_ptr_array_index(bindarr, i);
+        char *res = unresolve_keybind_element(options, bind_el);
+        free(bind_el);
+        g_ptr_array_index(bindarr, i) = res;
+    }
+
+    char *res = join_string((const char **)bindarr->pdata, bindarr->len, "-");
+
+    g_ptr_array_free(bindarr, true);
+    return res;
 }
 
 char *sort_keybinding(struct options *options, const char *binding)
@@ -154,6 +194,7 @@ static int cmp_keybinding_ptr_ptr(const void *key_ptr, const void *keybinding_pt
 {
     const char *key = key_ptr;
     const struct keybinding *keybinding = *(const void **)keybinding_ptr2;
+    debug_print("keybinding: %s\n", keybinding->binding);
     return strcmp(key, keybinding->binding);
 }
 
@@ -175,6 +216,7 @@ struct keybinding *get_matching_keybinding(
     struct keybinding *ret_keybinding = NULL;
     if (keybinding) {
         ret_keybinding = *keybinding;
+        debug_print("ret binding: %s\n", ret_keybinding);
     }
     return ret_keybinding;
 }
@@ -265,6 +307,7 @@ static void reset_keycombo_timer(timer_t timer)
 
 static bool sym_is_modifier(const char *sym)
 {
+
     for (int i = 0; i < LENGTH(mods); i++) {
         const char *mod = mods[i];
         if (strcmp(mod, sym) == 0) {
@@ -314,8 +357,9 @@ bool handle_keyboard_key(const char *bind)
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
 
-    char *sorted_bind = sort_keybinding(lt->options, bind);
-    debug_print("bind: %s\n", sorted_bind);
+    char *preprocessed_bind = preprocess_binding(lt->options, bind);
+    char *sorted_bind = sort_keybinding_element(lt->options, preprocessed_bind);
+    free(preprocessed_bind);
 
     g_ptr_array_add(server.registered_key_combos, strdup(sorted_bind));
     if (!get_matching_keybinding(lt->options->keybindings, server.registered_key_combos)) {
@@ -328,8 +372,8 @@ bool handle_keyboard_key(const char *bind)
         }
     }
 
-    process_binding(L, sorted_bind, lt->options->keybindings);
-    return true;
+    bool handled = process_binding(L, sorted_bind, lt->options->keybindings);
+    return handled;
 }
 
 bool key_state_has_modifiers(size_t mods)
