@@ -150,21 +150,31 @@ static bool is_same_keybind_element(struct layout *lt, const char *bind, const c
     return ret_val;
 }
 
-struct keybinding *has_keybind_same_existing_elements(
+static int cmp_keybinding_ptr_ptr(const void *key_ptr, const void *keybinding_ptr2)
+{
+    const char *key = key_ptr;
+    const struct keybinding *keybinding = *(const void **)keybinding_ptr2;
+    return strcmp(key, keybinding->binding);
+}
+
+struct keybinding *get_matching_keybinding(
         GPtrArray *keybindings,
         GPtrArray *registered_key_combos)
 {
     char *binding = join_string((const char **)registered_key_combos->pdata, registered_key_combos->len, " ");
 
+    struct keybinding **base = (struct keybinding **)keybindings->pdata;
+    int len = keybindings->len;
+    struct keybinding **keybinding = bsearch(
+            binding,
+            base,
+            len,
+            sizeof(struct keybinding *),
+            cmp_keybinding_ptr_ptr);
+
     struct keybinding *ret_keybinding = NULL;
-    // TODO this basically uses linear search which is bad keybindings are
-    // already sorted
-    for (int i = 0; i < keybindings->len; i++) {
-        struct keybinding *keybind = g_ptr_array_index(keybindings, i);
-        if (strcmp(binding, keybind->binding) == 0) {
-            ret_keybinding = keybind; 
-            break;
-        }
+    if (keybinding) {
+        ret_keybinding = *keybinding;
     }
     return ret_keybinding;
 }
@@ -191,7 +201,7 @@ static bool process_binding(lua_State *L, const char *bind, GPtrArray *keybindin
 
     bool handled = false;
 
-    struct keybinding *keybinding = has_keybind_same_existing_elements(
+    struct keybinding *keybinding = get_matching_keybinding(
             keybindings,
             server.registered_key_combos
             );
@@ -308,12 +318,12 @@ bool handle_keyboard_key(const char *bind)
     debug_print("bind: %s\n", sorted_bind);
 
     g_ptr_array_add(server.registered_key_combos, strdup(sorted_bind));
-    if (!has_keybind_same_existing_elements(lt->options->keybindings, server.registered_key_combos)) {
+    if (!get_matching_keybinding(lt->options->keybindings, server.registered_key_combos)) {
         list_clear(server.registered_key_combos, free);
         g_ptr_array_add(server.registered_key_combos, strdup(sorted_bind));
 
         // try again with no registered key combos
-        if (!has_keybind_same_existing_elements(lt->options->keybindings, server.registered_key_combos)) {
+        if (!get_matching_keybinding(lt->options->keybindings, server.registered_key_combos)) {
             return false;
         }
     }

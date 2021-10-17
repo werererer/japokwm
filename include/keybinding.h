@@ -31,7 +31,7 @@ void *copy_keybinding(const void *keybinding_ptr, void *user_data);
 char *sort_keybinding_element(struct options *options, const char *binding_element);
 char *sort_keybinding(struct options *options, const char *binding);
 
-struct keybinding *has_keybind_same_existing_elements(
+struct keybinding *get_matching_keybinding(
         GPtrArray *keybindings,
         GPtrArray *registered_key_combos);
 bool has_keybind_same_amount_of_elements(GPtrArray *registered_key_combos, const char *bind);

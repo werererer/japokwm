@@ -24,7 +24,7 @@ void has_equal_keybind_element_test()
 
 }
 
-void has_keybind_same_existing_elements_test()
+void get_matching_keybinding_test()
 {
     GPtrArray *registered_key_combos = g_ptr_array_new();
 
@@ -38,32 +38,32 @@ void has_keybind_same_existing_elements_test()
 
     list_clear(registered_key_combos, NULL);
     g_ptr_array_add(registered_key_combos, "mod-S-Tab");
-    b = has_keybind_same_existing_elements(keycombos, registered_key_combos);
+    b = get_matching_keybinding(keycombos, registered_key_combos);
     g_assert_cmpint(b, ==, false);
 
     list_clear(registered_key_combos, NULL);
     g_ptr_array_add(registered_key_combos, "mod-S-Tab");
     g_ptr_array_add(registered_key_combos, "mod-S-1");
-    b = has_keybind_same_existing_elements(keycombos, registered_key_combos);
+    b = get_matching_keybinding(keycombos, registered_key_combos);
     g_assert_cmpint(b, ==, false);
 
     list_clear(registered_key_combos, NULL);
     g_ptr_array_add(registered_key_combos, "mod-S-1");
     g_ptr_array_add(registered_key_combos, "mod-S-Tab");
-    b = has_keybind_same_existing_elements(keycombos, registered_key_combos);
+    b = get_matching_keybinding(keycombos, registered_key_combos);
     g_assert_cmpint(b, ==, false);
 
     list_clear(registered_key_combos, NULL);
     g_ptr_array_add(registered_key_combos, "mod-S-Tab");
     g_ptr_array_add(registered_key_combos, "mod-S-Tab");
-    b = has_keybind_same_existing_elements(keycombos, registered_key_combos);
+    b = get_matching_keybinding(keycombos, registered_key_combos);
     g_assert_cmpint(b, ==, true);
 
     list_clear(registered_key_combos, NULL);
     g_ptr_array_add(registered_key_combos, "mod-Tab-S");
     g_ptr_array_add(registered_key_combos, "mod-S-Tab");
     // keybindings are required to be preprocessed (sorted etc)
-    b = has_keybind_same_existing_elements(keycombos, registered_key_combos);
+    b = get_matching_keybinding(keycombos, registered_key_combos);
     g_assert_cmpint(b, ==, false);
 }
 
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
     g_test_init(&argc, &argv, NULL);
 
     add_test(has_equal_keybind_element_test);
-    add_test(has_keybind_same_existing_elements_test);
+    add_test(get_matching_keybinding_test);
     add_test(sort_keybinding_element_test);
     add_test(sort_keybinding_test);
 
