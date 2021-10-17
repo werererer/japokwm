@@ -304,7 +304,7 @@ bool has_keybind_same_amount_of_elements(GPtrArray *registered_key_combos, const
 // certain things will be freed so don't trust your local variables that were
 // assigned before calling this function anymore. Global variables should be
 // fine. They might contain a different value after calling this function thou.
-static void process_binding(lua_State *L, struct keybinding *keybinding)
+static void execute_binding(lua_State *L, struct keybinding *keybinding)
 {
     list_clear(server.registered_key_combos, free);
     lua_rawgeti(L, LUA_REGISTRYINDEX, keybinding->lua_func_ref);
@@ -428,6 +428,33 @@ char *mod_to_keybinding(int mods, int sym)
     return bind;
 }
 
+bool process_binding(struct layout *lt, const char *bind)
+{
+    struct keybinding *keybinding =
+        get_matching_keybinding(
+                lt->options->keybindings,
+                server.registered_key_combos
+                );
+    if (!keybinding) {
+        list_clear(server.registered_key_combos, free);
+        g_ptr_array_add(server.registered_key_combos, strdup(bind));
+
+        keybinding =
+            get_matching_keybinding(
+                    lt->options->keybindings,
+                    server.registered_key_combos
+                    );
+        // try again with no registered key combos
+        if (!keybinding) {
+            list_clear(server.registered_key_combos, free);
+            return false;
+        }
+    }
+
+    execute_binding(L, keybinding);
+    return true;
+}
+
 bool handle_keyboard_key(const char *bind)
 {
     reset_keycombo_timer(server.combo_timer_source);
@@ -458,30 +485,8 @@ bool handle_keyboard_key(const char *bind)
         return true;
     }
 
-    struct keybinding *keybinding =
-        get_matching_keybinding(
-                lt->options->keybindings,
-                server.registered_key_combos
-                );
-    if (!keybinding) {
-        list_clear(server.registered_key_combos, free);
-        g_ptr_array_add(server.registered_key_combos, strdup(sorted_bind));
-
-        keybinding =
-            get_matching_keybinding(
-                    lt->options->keybindings,
-                    server.registered_key_combos
-                    );
-        // try again with no registered key combos
-        if (!keybinding) {
-            list_clear(server.registered_key_combos, free);
-            return false;
-        }
-    }
-
-    process_binding(L, keybinding);
-    printf("handled\n");
-    return true;
+    bool handled = process_binding(lt, sorted_bind);
+    return handled;
 }
 
 bool key_state_has_modifiers(size_t mods)

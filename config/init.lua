@@ -182,6 +182,8 @@ opt:bind_key("mod-s 5",       function() Workspace.get_focused():swap(Workspace.
 opt:bind_key("mod-s 6",       function() Workspace.get_focused():swap(Workspace.get(6)) end)
 opt:bind_key("mod-s 7",       function() Workspace.get_focused():swap(Workspace.get(7)) end)
 opt:bind_key("mod-s 8",       function() Workspace.get_focused():swap(Workspace.get(8)) end)
+opt:bind_key("mod-s",         function() print("notice me") end)
+opt:bind_key("mod-s",         function() print("pls") end)
 opt:bind_key("mod-r",         function() opt.reload() end)
 opt:bind_key("mod-t",         function() action.set_floating(false)    end)
 opt:bind_key("mod-M1",  function() action.move_resize(info.cursor.mode.move) end)
