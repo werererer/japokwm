@@ -160,7 +160,7 @@ void focus_most_recent_container()
 
 struct container *get_container(struct workspace *ws, int i)
 {
-    return get_in_composed_list(ws->visible_focus_set->focus_stack_visible_lists, i);
+    return g_ptr_array_index(ws->con_set->tiled_containers, i);
 }
 
 struct container *get_container_in_stack(struct workspace *ws, int i)
