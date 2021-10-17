@@ -348,7 +348,7 @@ int lib_zoom(lua_State *L)
     arrange();
 
     // focus new master window
-    struct container *con = get_container(ws, 0);
+    struct container *con = get_container_in_stack(ws, 0);
     focus_container(con);
 
     struct layout *lt = get_layout_in_monitor(m);

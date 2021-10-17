@@ -1,18 +1,29 @@
-#include <stdlib.h>
-#include <glib.h>
-
 #include "server.h"
 #include "keybinding.h"
 
+#include <stdlib.h>
+#include <glib.h>
+
+struct test_keybinding {
+    const char *binding;
+    bool is_correct;
+};
+
 void test_keybinding()
 {
-    /* server.registered_key_combos = g_ptr_array_new(); */
-    /* g_ptr_array_add(server.registered_key_combos, "hi"); */
-    /* debug_print("glength: %i\n", server.registered_key_combos->len); */
-    /* bool same = is_old_combo_same("hi"); */
-    /* debug_print("return\n"); */
-    /* g_assert_cmpint(same, ==, 1); */
-    /* show_scratchpad(); */
+    GPtrArray *registered_key_combos = g_ptr_array_new();
+    g_ptr_array_add(registered_key_combos, "mod-S-1");
+
+    const char *bind = "";
+    bool b;
+
+    bind = "mod-S-1";
+    b = has_keybind_same_existing_elements(registered_key_combos, bind);
+    g_assert_cmpint(b, ==, false);
+
+    bind = "mod-S-Tab";
+    b = has_keybind_same_existing_elements(registered_key_combos, bind);
+    g_assert_cmpint(b, ==, true);
 }
 
 #define PREFIX "keybinding"

@@ -10,7 +10,6 @@ void workspace_contains_client_crash_test()
 void workspace_has_clients_test()
 {
     /* struct workspace *ws = create_workspace("test", 3); */
-    /* ck_assert_int_eq(workspace_has_clients(ws), false); */
 }
 
 #define PREFIX "workspace"

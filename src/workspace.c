@@ -160,13 +160,13 @@ void focus_most_recent_container()
 
 struct container *get_container(struct workspace *ws, int i)
 {
-    return g_ptr_array_index(ws->con_set->tiled_containers, i);
+    return get_in_composed_list(ws->visible_focus_set->focus_stack_visible_lists, i);
 }
 
 struct container *get_container_in_stack(struct workspace *ws, int i)
 {
-    GPtrArray *visible_list = tagset_get_visible_list_copy(ws);
-    struct container *con = g_ptr_array_index(visible_list, i);
+    GPtrArray *tiled_containers = workspace_get_tiled_list_copy(ws);
+    struct container *con = g_ptr_array_index(tiled_containers, i);
     return con;
 }
 
