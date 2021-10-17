@@ -37,7 +37,7 @@ void get_matching_keybinding_test()
     bool b;
 
     list_clear(registered_key_combos, NULL);
-    g_ptr_array_add(registered_key_combos, "mod-S-Tab");
+    g_ptr_array_add(registered_key_combos, "Alt_L-S-Tab");
     b = get_matching_keybinding(keycombos, registered_key_combos);
     g_assert_cmpint(b, ==, false);
 
@@ -77,22 +77,22 @@ void sort_keybinding_element_test()
 
     element = "mod-S-1";
     res = sort_keybinding_element(&options, element);
-    g_assert_cmpstr(res, ==, "Alt_L-Shift_L-1");
+    g_assert_cmpstr(res, ==, "S-mod-1");
     free(res);
 
     element = "1-S-mod";
     res = sort_keybinding_element(&options, element);
-    g_assert_cmpstr(res, ==, "Alt_L-Shift_L-1");
+    g_assert_cmpstr(res, ==, "S-mod-1");
     free(res);
 
     element = "S-mod-1";
     res = sort_keybinding_element(&options, element);
-    g_assert_cmpstr(res, ==, "Alt_L-Shift_L-1");
+    g_assert_cmpstr(res, ==, "S-mod-1");
     free(res);
 
     element = "S-mod-C";
     res = sort_keybinding_element(&options, element);
-    g_assert_cmpstr(res, ==, "Alt_L-Control_L-Shift_L");
+    g_assert_cmpstr(res, ==, "C-S-mod");
     free(res);
 }
 
@@ -107,17 +107,17 @@ void sort_keybinding_test()
 
     element = "mod-S-1 S-mod-2";
     res = sort_keybinding(&options, element);
-    g_assert_cmpstr(res, ==, "Alt_L-Shift_L-1 Alt_L-Shift_L-2");
+    g_assert_cmpstr(res, ==, "S-mod-1 S-mod-2");
     free(res);
 
     element = "1-S-mod 2-mod-S";
     res = sort_keybinding(&options, element);
-    g_assert_cmpstr(res, ==, "Alt_L-Shift_L-1 Alt_L-Shift_L-2");
+    g_assert_cmpstr(res, ==, "S-mod-1 S-mod-2");
     free(res);
 
     element = "S-mod-1 mod-2-S";
     res = sort_keybinding(&options, element);
-    g_assert_cmpstr(res, ==, "Alt_L-Shift_L-1 Alt_L-Shift_L-2");
+    g_assert_cmpstr(res, ==, "S-mod-1 S-mod-2");
     free(res);
 }
 
