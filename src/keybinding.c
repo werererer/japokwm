@@ -46,12 +46,8 @@ static void sym_to_binding(char **dest, int sym)
 }
 
 // this function converts a string to a xkeysym string element
-static char *resolve_keybind_element(const char *bind)
+static char *resolve_keybind_element(struct layout *lt, const char *bind)
 {
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct layout *lt = workspace_get_layout(ws);
-
     if (strcmp(bind, "mod") == 0) {
         char *resolved = strdup(modkeys[lt->options->modkey]);
         return resolved;
@@ -80,7 +76,7 @@ static char *resolve_keybind_element(const char *bind)
     return resolved;
 }
 
-static bool is_same_keybind_element(const char *bind, const char *bind2)
+static bool is_same_keybind_element(struct layout *lt, const char *bind, const char *bind2)
 {
     GPtrArray *bindarr = split_string(bind, "-");
     GPtrArray *bind2arr = split_string(bind2, "-");
@@ -98,11 +94,11 @@ static bool is_same_keybind_element(const char *bind, const char *bind2)
     // remove all resolved items out of bind2arr found in bindarr
     for (int i = 0; i < bindarr->len; i++) {
         char *bind_el = g_ptr_array_index(bindarr, i);
-        char *bindelem = resolve_keybind_element(bind_el);
+        char *bindelem = resolve_keybind_element(lt, bind_el);
 
         for (int j = 0; j < bind2arr->len; j++) {
             char *bind2_el = g_ptr_array_index(bind2arr, j);
-            char *bind2elem = resolve_keybind_element(bind2_el);
+            char *bind2elem = resolve_keybind_element(lt, bind2_el);
 
             if (strcmp(bindelem, bind2elem) == 0) {
                 g_ptr_array_remove_index(bind2arr, j);
@@ -125,12 +121,12 @@ exit_cleanup:
     return ret_val;
 }
 
-bool is_old_combo_same(GPtrArray *registered_key_combos, const char *bind)
+bool has_keybind_same_existing_elements(GPtrArray *registered_key_combos, const char *bind)
 {
     GPtrArray *bind_combos = split_string(bind, " ");
     bool ret_val = false;
 
-    if (bind_combos->len < registered_key_combos->len) {
+    if (!has_keybind_same_amount_of_elements(registered_key_combos, bind)) {
         ret_val = false;
         goto exit_cleanup;
     }
@@ -139,7 +135,9 @@ bool is_old_combo_same(GPtrArray *registered_key_combos, const char *bind)
         char *bind = g_ptr_array_index(registered_key_combos, i);
         char *bind_combo = g_ptr_array_index(bind_combos, i);
 
-        if (is_same_keybind_element(bind, bind_combo)) {
+        struct workspace *ws = server_get_selected_workspace();
+        struct layout *lt = workspace_get_layout(ws);
+        if (is_same_keybind_element(lt, bind, bind_combo)) {
             ret_val = true;
         } else {
             ret_val = false;
@@ -152,19 +150,17 @@ exit_cleanup:
     return ret_val;
 }
 
-bool is_same_keybind_completed(const char *bind, const char *bind2)
+bool has_keybind_same_amount_of_elements(GPtrArray *registered_key_combos, const char *bind)
 {
-    GPtrArray *bind2combos = split_string(bind2, " ");
-    if (bind2combos->len == server.registered_key_combos->len) {
-        g_ptr_array_unref(bind2combos);
-        return true;
-    }
+    GPtrArray *bind2combos = split_string(bind, " ");
+
+    bool same_length = bind2combos->len == registered_key_combos->len;
     g_ptr_array_unref(bind2combos);
-    return false;
+    return same_length;
 }
 
 // bind2 is a saved bind
-bool has_equal_keybind_element(const char *bind, GPtrArray *keybindings)
+bool has_equal_keybind_element(struct layout *lt, const char *bind, GPtrArray *keybindings)
 {
     int current_combo_index = server.registered_key_combos->len;
     for (int i = 0; i < keybindings->len; i++) {
@@ -178,8 +174,8 @@ bool has_equal_keybind_element(const char *bind, GPtrArray *keybindings)
         }
 
         const char *_current_bind2_combo = g_ptr_array_index(bind2_combos, current_combo_index);
-        char *current_bind2_combo = resolve_keybind_element(_current_bind2_combo);
-        bool is_equal = is_same_keybind_element(bind, current_bind2_combo);
+        char *current_bind2_combo = resolve_keybind_element(lt, _current_bind2_combo);
+        bool is_equal = is_same_keybind_element(lt, bind, current_bind2_combo);
         free(current_bind2_combo);
         g_ptr_array_unref(bind2_combos);
         if (is_equal) {
@@ -205,10 +201,9 @@ static bool process_binding(lua_State *L, const char *bind, GPtrArray *keybindin
     // already sorted
     for (int i = 0; i < keybindings->len; i++) {
         struct keybinding *keybinding = g_ptr_array_index(keybindings, i);
+        debug_print("bind: %s\n", keybinding->binding);
 
-        if (!is_old_combo_same(server.registered_key_combos, keybinding->binding))
-            continue;
-        if (!is_same_keybind_completed(bind, keybinding->binding))
+        if (!has_keybind_same_existing_elements(server.registered_key_combos, keybinding->binding))
             continue;
 
         handled = true;
@@ -317,11 +312,11 @@ bool handle_keyboard_key(const char *bind)
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
-    if (!has_equal_keybind_element(bind, lt->options->keybindings)) {
+    if (!has_equal_keybind_element(lt, bind, lt->options->keybindings)) {
         list_clear(server.registered_key_combos, free);
 
         // try again with no registered key combos
-        if (!has_equal_keybind_element(bind, lt->options->keybindings)) {
+        if (!has_equal_keybind_element(lt, bind, lt->options->keybindings)) {
             return false;
         }
     }

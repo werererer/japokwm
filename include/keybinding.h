@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
+#include <glib.h>
 
 // modifiers
 #define MOD_SHIFT (1 << 0)
@@ -23,6 +24,9 @@ void destroy_keybinding(struct keybinding *keybinding);
 void destroy_keybinding0(void *keybinding);
 
 void *copy_keybinding(const void *keybinding_ptr, void *user_data);
+
+bool has_keybind_same_existing_elements(GPtrArray *registered_key_combos, const char *bind);
+bool has_keybind_same_amount_of_elements(GPtrArray *registered_key_combos, const char *bind);
 
 int cmp_keybinding(const void *keybinding1, const void *keybinding2);
 
