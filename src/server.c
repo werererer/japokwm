@@ -2,6 +2,7 @@
 
 #include "workspace.h"
 #include "monitor.h"
+#include "stringop.h"
 
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_data_device.h>
@@ -29,6 +30,7 @@
 #include "translationLayer.h"
 #include "ipc-server.h"
 #include "render/render.h"
+#include "keybinding.h"
 
 struct server server;
 
@@ -71,6 +73,17 @@ static void finalize_lists(struct server *server)
 
 
 static int clear_key_combo_timer_callback(void *data) {
+    GPtrArray *registered_key_combos = server.registered_key_combos;
+    char *sorted_bind = join_string((const char **)registered_key_combos->pdata, registered_key_combos->len, " ");
+    printf("key_combo: %s\n", sorted_bind);
+
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    struct layout *lt = workspace_get_layout(ws);
+
+    process_binding(lt, sorted_bind);
+    free(sorted_bind);
+
     list_clear(server.registered_key_combos, free);
     return 0;
 }
