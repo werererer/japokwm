@@ -740,7 +740,7 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
 
 struct container_property *container_get_property(struct container *con)
 {
-    struct workspace *ws = container_get_workspace(con);
+    struct workspace *ws = server_get_selected_workspace();
     if (!ws)
         return NULL;
     while (ws->id >= con->properties->len) {
@@ -766,7 +766,7 @@ struct container_property *container_get_property_at_workspace(
 
 void container_set_current_geom(struct container *con, struct wlr_box *geom)
 {
-    struct workspace *ws = container_get_workspace(con);
+    struct workspace *ws = server_get_selected_workspace();
     struct layout *lt = workspace_get_layout(ws);
     if (container_is_tiled(con) || lt->options->arrange_by_focus) {
         container_set_tiled_geom(con, geom);
@@ -879,7 +879,7 @@ struct wlr_box *container_get_floating_geom(struct container *con)
 struct wlr_box *container_get_current_geom(struct container *con)
 {
     struct wlr_box *geom = NULL;
-    struct workspace *ws = container_get_workspace(con);
+    struct workspace *ws = server_get_selected_workspace();
     struct layout *lt = workspace_get_layout(ws);
     if (container_is_unmanaged(con)) {
         geom = container_get_floating_geom(con);
