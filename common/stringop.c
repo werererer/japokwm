@@ -75,7 +75,7 @@ int lenient_strcmp(char *a, char *b) {
 }
 
 GPtrArray *split_string(const char *str, const char *delims) {
-    GPtrArray *res = g_ptr_array_new_with_free_func(free);
+    GPtrArray *res = g_ptr_array_new();
     char *copy = strdup(str);
 
     char *token = strtok(copy, delims);
@@ -331,4 +331,19 @@ void append_string(char **dest, const char *src)
     int len = strlen(*dest) + strlen(src) + 1;
     *dest = realloc(*dest, len);
     strcat(*dest, src);
+}
+
+char *join_string(const char *strings[], size_t len, const char *delimiter)
+{
+    char *result = strdup("");
+    for (int i = 0; i < len; i++) {
+        const char *binding_atom = strings[i];
+        append_string(&result, binding_atom);
+
+        int high = len-1;
+        if (i < high) {
+            append_string(&result, delimiter);
+        }
+    }
+    return result;
 }

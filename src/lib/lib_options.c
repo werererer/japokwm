@@ -423,7 +423,7 @@ int lib_bind_key(lua_State *L)
         }
     }
     struct keybinding *keybinding = create_keybinding(binding, lua_func_ref);
-    options_add_keybinding(options->keybindings, keybinding);
+    options_add_keybinding(options, keybinding);
     return 0;
 }
 

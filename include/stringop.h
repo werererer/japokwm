@@ -32,5 +32,6 @@ char *argsep(char **stringp, const char *delim, char *matched_delim);
 bool expand_path(char **path);
 
 void append_string(char **string, const char *next_string);
+char *join_string(const char *strings[], size_t len, const char *delimiter);
 
 #endif
