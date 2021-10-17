@@ -6,6 +6,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "container.h"
 #include "client.h"
 #include "list_sets/container_stack_set.h"
 #include "list_sets/list_set.h"
@@ -725,7 +726,11 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
     if (con->on_scratchpad) {
         remove_container_from_scratchpad(con);
     }
-    container_set_current_geom(con, &geom);
+    if (container_is_tiled(con)) {
+        container_set_floating(con, container_fix_position, true);
+        arrange();
+    }
+    container_set_floating_geom(con, &geom);
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
@@ -924,7 +929,11 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
     if (con->on_scratchpad) {
         remove_container_from_scratchpad(con);
     }
-    container_set_current_geom(con, &geom);
+    if (container_is_tiled(con)) {
+        container_set_floating(con, container_fix_position, true);
+        arrange();
+    }
+    container_set_floating_geom(con, &geom);
 
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
