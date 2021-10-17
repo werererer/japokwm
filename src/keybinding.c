@@ -122,9 +122,11 @@ char *sort_keybinding_element(struct options *options, const char *binding_eleme
         char *bind_atom = g_ptr_array_index(mods, i);
 
         char *resolved_bind_atom = resolve_keybind_element(options, bind_atom);
-        if (sym_is_modifier(resolved_bind_atom))
-            continue;
+        bool is_modifier = sym_is_modifier(resolved_bind_atom);
         free(resolved_bind_atom);
+        if (is_modifier) {
+            continue;
+        }
 
         non_modifier = strdup(bind_atom);
         g_ptr_array_remove_index_fast(mods, i);
@@ -144,6 +146,7 @@ char *sort_keybinding_element(struct options *options, const char *binding_eleme
     }
 
     g_ptr_array_free(mods, TRUE);
+    g_ptr_array_set_free_func(bindarr, free);
     g_ptr_array_free(bindarr, TRUE);
     return result;
 }
@@ -168,6 +171,7 @@ char *preprocess_binding(struct options *options, const char *binding)
 char *sort_keybinding(struct options *options, const char *binding)
 {
     GPtrArray *bindarr = split_string(binding, " ");
+    g_ptr_array_set_free_func(bindarr, free);
 
     for (int i = 0; i < bindarr->len; i++) {
         char *bind_el = g_ptr_array_index(bindarr, i);
@@ -178,7 +182,7 @@ char *sort_keybinding(struct options *options, const char *binding)
 
     char *res = join_string((const char **)bindarr->pdata, bindarr->len, " ");
 
-    g_ptr_array_free(bindarr, true);
+    g_ptr_array_free(bindarr, TRUE);
 
     return res;
 }
@@ -196,7 +200,9 @@ static bool is_same_keybind_element(struct layout *lt, const char *bind, const c
 int cmp_partly_keybinding_strings(const char *binding1, const char *binding2)
 {
     GPtrArray *k1_array = split_string(binding1, " ");
+    g_ptr_array_set_free_func(k1_array, free);
     GPtrArray *k2_array = split_string(binding2, " ");
+    g_ptr_array_set_free_func(k2_array, free);
 
     int ret_val = 0;
     int i1 = k1_array->len;
@@ -381,7 +387,9 @@ void *copy_keybinding(const void *keybinding_ptr, void *user_data)
 int cmp_keybinding_strings(const char *binding1, const char *binding2)
 {
     GPtrArray *k1_array = split_string(binding1, " ");
+    g_ptr_array_set_free_func(k1_array, free);
     GPtrArray *k2_array = split_string(binding2, " ");
+    g_ptr_array_set_free_func(k2_array, free);
 
     int ret_val = 0;
     int i1 = k1_array->len;
@@ -397,10 +405,10 @@ int cmp_keybinding_strings(const char *binding1, const char *binding2)
         goto exit_return;
     }
 
+exit_return:
     g_ptr_array_unref(k2_array);
     g_ptr_array_unref(k1_array);
 
-exit_return:
     return ret_val;
 }
 

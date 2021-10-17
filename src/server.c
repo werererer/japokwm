@@ -71,18 +71,15 @@ static void finalize_lists(struct server *server)
     g_ptr_array_unref(server->layer_visual_stack_lists);
 }
 
-
 static int clear_key_combo_timer_callback(void *data) {
     GPtrArray *registered_key_combos = server.registered_key_combos;
-    char *sorted_bind = join_string((const char **)registered_key_combos->pdata, registered_key_combos->len, " ");
-    printf("key_combo: %s\n", sorted_bind);
+    char *bind = join_string((const char **)registered_key_combos->pdata, registered_key_combos->len, " ");
 
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct workspace *ws = server_get_selected_workspace();
     struct layout *lt = workspace_get_layout(ws);
 
-    process_binding(lt, sorted_bind);
-    free(sorted_bind);
+    process_binding(lt, bind);
+    free(bind);
 
     list_clear(server.registered_key_combos, free);
     return 0;
