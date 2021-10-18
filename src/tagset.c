@@ -124,6 +124,7 @@ static void tagset_workspace_disconnect(struct workspace *sel_ws, struct workspa
 
 void tagset_workspaces_reconnect(struct workspace *ws)
 {
+    workspace_damage(ws);
     tagset_load_workspaces();
     tagset_workspaces_connect(ws);
 }

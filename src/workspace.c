@@ -438,8 +438,7 @@ void set_default_layout(struct workspace *ws)
 static void load_layout_file(lua_State *L, struct layout *lt)
 {
     struct workspace *ws = get_workspace(lt->ws_id);
-    struct monitor *m = workspace_get_monitor(ws);
-    init_local_config_variables(L, m);
+    init_local_config_variables(L, ws);
     const char *name = lt->symbol;
 
     char *config_path = get_config_file("layouts");

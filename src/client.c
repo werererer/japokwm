@@ -159,11 +159,6 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
         default:
             break;
     }
-
-    if (c == old)
-        return;
-
-    workspace_update_names(&server, server.workspaces);
 }
 
 void container_move_sticky_containers_current_ws(struct container *con)

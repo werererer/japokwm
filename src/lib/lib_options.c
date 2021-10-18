@@ -141,6 +141,10 @@ int lib_reload(lua_State *L)
         struct workspace *sel_ws = monitor_get_active_workspace(m);
         tagset_workspaces_reconnect(sel_ws);
     }
+
+    struct workspace *ws = server_get_selected_workspace();
+    tagset_focus_tags(ws, ws->prev_workspaces);
+
     arrange();
     return 0;
 }
