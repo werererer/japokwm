@@ -20,6 +20,7 @@
 #include "lib/lib_color.h"
 #include "lib/lib_list.h"
 #include "lib/lib_geom.h"
+#include "lib/lib_list2D.h"
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "workspace.h"
@@ -75,7 +76,7 @@ static const struct luaL_Reg info[] =
     {"get_active_layout", lib_get_active_layout},
     {"get_container_under_cursor", lib_get_container_under_cursor},
     {"get_n_tiled", lib_get_n_tiled},
-    {"get_next_empty_workspace", lib_get_next_empty_workspace},
+    {"get_next_empty_workspace", lib_workspace_get_next_empty},
     {"get_nmaster", lib_get_nmaster},
     {"get_previous_layout", lib_get_previous_layout},
     {"get_root_area", lib_get_root_area},
@@ -310,6 +311,7 @@ void load_lua_api(lua_State *L)
     lua_load_events();
     lua_load_layout();
     lua_load_list();
+    lua_load_list2D();
     lua_load_geom();
     lua_load_options();
     lua_load_server();

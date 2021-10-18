@@ -66,34 +66,6 @@ int lib_stack_position_to_position(lua_State *L)
     return 1;
 }
 
-int lib_get_next_empty_workspace(lua_State *L)
-{
-    enum wlr_direction dir = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-    int id = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-
-    struct workspace *ws = NULL;
-    switch (dir) {
-        case WLR_DIRECTION_LEFT:
-            ws = get_prev_empty_workspace(server.workspaces, id);
-            break;
-        case WLR_DIRECTION_RIGHT:
-            ws = get_next_empty_workspace(server.workspaces, id);
-            break;
-        default:
-            if (dir & WLR_DIRECTION_LEFT && dir & WLR_DIRECTION_RIGHT) {
-                ws = get_nearest_empty_workspace(server.workspaces, id);
-            } else {
-                ws = get_workspace(id);
-            }
-    }
-
-    int ws_id = (ws) ? ws->id : id;
-    lua_pushinteger(L, ws_id);
-    return 1;
-}
-
 int lib_get_nmaster(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();

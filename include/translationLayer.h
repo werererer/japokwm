@@ -41,6 +41,7 @@ struct monitor;
 #define CONFIG_GEOMETRY "japokwm.geometry"
 #define CONFIG_LAYOUT "japokwm.layout"
 #define CONFIG_LIST "japokwm.list"
+#define CONFIG_LIST2D "japokwm.list2D"
 #define CONFIG_LOCAL_OPTIONS "japokwm.local.options"
 #define CONFIG_OPTIONS "japokwm.options"
 #define CONFIG_SERVER "japokwm.server"

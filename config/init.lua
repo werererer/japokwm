@@ -81,7 +81,7 @@ opt.entry_focus_position_function = get_focus_entry_position
 
 opt:bind_key("mod-S-p",       function() container.set_sticky(info.this_container_position(), 255) end)
 opt:bind_key("mod-p",         function() action.exec("rofi -show run") end)
-opt:bind_key("mod-e",         function() Workspace.view(info.get_next_empty_workspace(info.get_workspace(), info.direction.left)) end)
+opt:bind_key("mod-e",         function() action.view(Workspace.get_next_empty(Workspace.get_focused(), info.direction.left):get_id()) end)
 opt:bind_key("mod-period",    function() action.toggle_workspace() end)
 opt:bind_key("mod-S-period",  function() action.toggle_layout() end)
 opt:bind_key("mod-S-comma", function()

@@ -14,6 +14,7 @@
 #include "lib/lib_container.h"
 #include "list_sets/list_set.h"
 #include "lib/lib_list.h"
+#include "lib/lib_list2D.h"
 #include "lib/lib_layout.h"
 
 static const struct luaL_Reg workspace_meta[] =
@@ -25,6 +26,7 @@ static const struct luaL_Reg workspace_f[] =
 {
     {"get", lib_workspace_get},
     {"get_focused", lib_workspace_get_focused},
+    {"get_next_empty", lib_workspace_get_next_empty},
     {NULL, NULL},
 };
 
@@ -42,6 +44,7 @@ static const struct luaL_Reg workspace_setter[] =
 
 static const struct luaL_Reg workspace_getter[] =
 {
+    {"focus_stack", lib_workspace_get_focus_stack},
     {"focus_stack", lib_workspace_get_focus_stack},
     {"layout", lib_workspace_get_layout},
     {"stack", lib_workspace_get_stack},
@@ -79,6 +82,33 @@ struct workspace *check_workspace(lua_State *L, int narg) {
 }
 
 // functions
+int lib_workspace_get_next_empty(lua_State *L)
+{
+    enum wlr_direction dir = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    struct workspace *ws = check_workspace(L, 1);
+    lua_pop(L, 1);
+
+    int ws_id = ws->id;
+    switch (dir) {
+        case WLR_DIRECTION_LEFT:
+            ws = get_prev_empty_workspace(server.workspaces, ws_id);
+            break;
+        case WLR_DIRECTION_RIGHT:
+            ws = get_next_empty_workspace(server.workspaces, ws_id);
+            break;
+        default:
+            if (dir & WLR_DIRECTION_LEFT && dir & WLR_DIRECTION_RIGHT) {
+                ws = get_nearest_empty_workspace(server.workspaces, ws_id);
+            } else {
+                ws = get_workspace(ws_id);
+            }
+    }
+
+    create_lua_workspace(L, ws);
+    return 1;
+}
+
 int lib_workspace_get(lua_State *L)
 {
     int ws_id = lua_idx_to_c_idx(luaL_checkinteger(L, -1));
@@ -159,7 +189,7 @@ int lib_workspace_get_focus_stack(lua_State *L)
     struct workspace *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
-    create_lua_list(L, ws->focus_set->focus_stack_normal);
+    create_lua_list2D(L, ws->focus_set->focus_stack_lists);
     return 1;
 }
 
