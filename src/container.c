@@ -395,6 +395,11 @@ void focus_container(struct container *con)
     struct client *new_c = new_sel ? new_sel->client : NULL;
     struct seat *seat = input_manager_get_default_seat();
     focus_client(seat, old_c, new_c);
+
+    if (sel == new_sel)
+        return;
+
+    workspace_update_names(&server, server.workspaces);
 }
 
 void focus_on_stack(struct monitor *m, int i)
