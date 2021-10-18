@@ -46,6 +46,7 @@ srcs = files(
     'bitset/bitset.c',
     'command/commands.c',
     'lib/lib_actions.c',
+    'lib/lib_list2D.c',
     'lib/lib_color.c',
     'lib/lib_container.c',
     'lib/lib_list.c',

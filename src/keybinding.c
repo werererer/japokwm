@@ -483,13 +483,11 @@ bool handle_keyboard_key(const char *bind)
     //     printf("%s\n", keybinding->binding);
     // }
     //
-    debug_print("registered len: %i\n", server.registered_key_combos->len);
     bool partly = has_partly_matching_keybinding(
                 lt->options->keybindings,
                 server.registered_key_combos
             );
     if (partly) {
-        debug_print("partly: %i\n", true);
         return true;
     }
 
