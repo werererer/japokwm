@@ -159,6 +159,11 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
         default:
             break;
     }
+
+    if (c == old)
+        return;
+
+    workspace_update_names(&server, server.workspaces);
 }
 
 void container_move_sticky_containers_current_ws(struct container *con)
@@ -266,7 +271,6 @@ void client_handle_set_title(struct wl_listener *listener, void *data)
     struct workspace *ws = container_get_workspace(c->con);
     struct layout *lt = workspace_get_layout(ws);
     apply_rules(lt->options->rules, c->con);
-    ipc_event_window();
 }
 
 void client_handle_set_app_id(struct wl_listener *listener, void *data)
