@@ -384,8 +384,6 @@ void focus_container(struct container *con)
 
     struct container *new_sel = monitor_get_focused_container(m);
 
-    ipc_event_window();
-
     // it is a waste of resources to call unfocus and refocus when the
     // focused container didn't change
     if (sel != new_sel) {
@@ -397,7 +395,6 @@ void focus_container(struct container *con)
     struct client *new_c = new_sel ? new_sel->client : NULL;
     struct seat *seat = input_manager_get_default_seat();
     focus_client(seat, old_c, new_c);
-    workspace_update_names(&server, server.workspaces);
 }
 
 void focus_on_stack(struct monitor *m, int i)
