@@ -424,6 +424,16 @@ struct monitor *workspace_get_monitor(struct workspace *ws)
     return NULL;
 }
 
+void workspace_set_selected_monitor(struct workspace *ws, struct monitor *m)
+{
+    ws->m = m;
+}
+
+void workspace_set_monitor(struct workspace *ws, struct monitor *m)
+{
+    ws->current_m = m;
+}
+
 void push_layout(struct workspace *ws, const char *layout_name)
 {
     ws->previous_layout = ws->current_layout;

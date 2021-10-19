@@ -304,6 +304,7 @@ static void arrange_container(struct container *con, struct monitor *m,
     container_surround_gaps(&geom, 2*border_width);
 
     container_set_tiled_geom(con, &geom);
+    container_update_size(con);
 }
 
 void container_update_size(struct container *con)

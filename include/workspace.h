@@ -122,7 +122,9 @@ struct root *workspace_get_root(struct workspace *ws);
 struct wlr_box workspace_get_active_geom(struct workspace *ws);
 
 struct monitor *workspace_get_selected_monitor(struct workspace *ws);
-struct monitor *workspace_get_monitor(struct workspace *ws); 
+struct monitor *workspace_get_monitor(struct workspace *ws);
+void workspace_set_selected_monitor(struct workspace *ws, struct monitor *m);
+void workspace_set_monitor(struct workspace *ws, struct monitor *m);
 
 void destroy_workspaces(GPtrArray *workspaces);
 void layout_set_set_layout(struct workspace *ws);

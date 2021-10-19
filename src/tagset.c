@@ -116,7 +116,7 @@ static void tagset_workspace_disconnect(struct workspace *sel_ws, struct workspa
 
     struct monitor *ws_m = workspace_get_selected_monitor(ws);
     if (ws_m && ws_m != server_get_selected_monitor()) {
-        ws->current_m = ws->m;
+        ws->current_m = workspace_get_selected_monitor(ws);
         // move the workspace back
         tagset_set_workspace(sel_ws, ws);
     }
@@ -124,7 +124,6 @@ static void tagset_workspace_disconnect(struct workspace *sel_ws, struct workspa
 
 void tagset_workspaces_reconnect(struct workspace *ws)
 {
-    workspace_damage(ws);
     tagset_load_workspaces();
     tagset_workspaces_connect(ws);
 }
@@ -299,9 +298,7 @@ void focus_tagset(struct workspace *ws)
 
     struct monitor *ws_m = workspace_get_selected_monitor(ws);
     struct monitor *m = ws_m ? ws_m : server_get_selected_monitor();
-    m->ws_id = ws->id;
-    ws->m = m;
-    ws->current_m = m;
+    monitor_set_selected_workspace(m, ws);
     server_set_selected_monitor(m);
 
     if (prev_m == m && prev_ws != ws) {

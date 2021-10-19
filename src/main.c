@@ -18,7 +18,6 @@
 #include <wlr/types/wlr_input_inhibitor.h>
 #include <wlr/util/log.h>
 
-#include "ipc-server.h"
 #include "keyboard.h"
 #include "layer_shell.h"
 #include "render/render.h"

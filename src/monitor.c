@@ -101,9 +101,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
     set_root_color(m->root, lt->options->root_color);
-
-    if (!wlr_output_commit(output))
-        return;
 }
 
 void create_output(struct wlr_backend *backend, void *data)
@@ -128,13 +125,19 @@ void create_output(struct wlr_backend *backend, void *data)
 /* #endif */
 }
 
+int i = 0;
 static void handle_output_frame(struct wl_listener *listener, void *data)
 {
+    struct monitor *m = wl_container_of(listener, m, damage_frame);
+    // debug_print("frame: %i\n", i++);
+
     /* NOOP */
 }
 
+int j = 0;
 static void handle_output_damage_frame(struct wl_listener *listener, void *data)
 {
+    debug_print("other output %i\n", j++);
     struct monitor *m = wl_container_of(listener, m, damage_frame);
 
     if (!m->wlr_output->enabled) {
@@ -142,10 +145,10 @@ static void handle_output_damage_frame(struct wl_listener *listener, void *data)
     }
 
     /* Check if we can scan-out the primary view. */
-    pixman_region32_t damage;
-    pixman_region32_init(&damage);
+    pixman_region32_t frame_damage;
+    pixman_region32_init(&frame_damage);
     bool needs_frame;
-    if (!wlr_output_damage_attach_render(m->damage, &needs_frame, &damage)) {
+    if (!wlr_output_damage_attach_render(m->damage, &needs_frame, &frame_damage)) {
         goto damage_finish;
     }
 
@@ -154,10 +157,10 @@ static void handle_output_damage_frame(struct wl_listener *listener, void *data)
         goto damage_finish;
     }
 
-    render_monitor(m, &damage);
+    render_monitor(m, &frame_damage);
 
 damage_finish:
-    pixman_region32_fini(&damage);
+    pixman_region32_fini(&frame_damage);
 }
 
 static void handle_output_mode(struct wl_listener *listener, void *data)
@@ -175,8 +178,6 @@ static void monitor_get_initial_workspace(struct monitor *m, GPtrArray *workspac
     assert(ws != NULL);
 
     int ws_id = ws->id;
-    ws->m = m;
-    ws->current_m = m;
     BitSet *bitset = bitset_create();
     bitset_set(bitset, ws_id);
 
@@ -240,6 +241,15 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
 
     struct monitor *new_focused_monitor = g_ptr_array_index(server.mons, 0);
     server_set_selected_monitor(new_focused_monitor);
+}
+
+void monitor_set_selected_workspace(struct monitor *m, struct workspace *ws)
+{
+    int prev_ws_id = m->ws_id;
+    struct workspace *prev_ws = get_workspace(prev_ws_id);
+    m->ws_id = ws->id;
+    prev_ws->m = NULL;
+    ws->m = m;
 }
 
 BitSet *monitor_get_workspaces(struct monitor *m)
