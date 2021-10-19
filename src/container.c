@@ -55,7 +55,9 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
         struct container_property *container_property = create_container_property();
         g_ptr_array_add(con->properties, container_property);
     }
-    container_set_workspace_id(con, m->ws_id);
+
+    struct workspace *ws = monitor_get_active_workspace(m);
+    container_set_workspace_id(con, ws->id);
 
     return con;
 }
@@ -410,7 +412,7 @@ void focus_on_stack(struct monitor *m, int i)
         return;
 
     if (sel->client->type == LAYER_SHELL) {
-        struct workspace *ws = get_workspace(m->ws_id);
+        struct workspace *ws = monitor_get_active_workspace(m);
         struct container *con = get_container(ws, 0);
         focus_container(con);
         return;
@@ -820,7 +822,6 @@ void container_set_tiled_geom(struct container *con, struct wlr_box *geom)
 
     con->prev_geom = *con_geom;
     *con_geom = *geom;
-    container_update_size(con);
 }
 
 void container_set_floating_geom(struct container *con, struct wlr_box *geom)

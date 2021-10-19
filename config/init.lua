@@ -127,8 +127,8 @@ opt:bind_key("mod-S-comma", function()
     end)
 end)
 opt:bind_key("mod-comma",     function()
-    local layout = Workspace.get_focused().layout
-    layout.n_area = 0
+    -- local layout = Workspace.get_focused().layout
+    -- layout.n_area = 0
  end)
 opt:bind_key("mod-S-Return",  function() action.exec(termcmd) end)
 opt:bind_key("mod-a",         function() action.increase_nmaster() end)
