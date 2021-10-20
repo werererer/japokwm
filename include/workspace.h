@@ -74,6 +74,8 @@ struct workspace {
     // the monitor the workspace is currently on
     struct monitor *current_m;
 
+    bool is_loaded;
+
     struct container_set *con_set;
     struct focus_set *focus_set;
 
