@@ -425,7 +425,9 @@ struct monitor *workspace_get_monitor(struct workspace *ws)
 
 void workspace_set_selected_monitor(struct workspace *ws, struct monitor *m)
 {
-    // ws->m = m;
+    if (ws->m)
+        return;
+    ws->m = m;
 }
 
 void workspace_set_monitor(struct workspace *ws, struct monitor *m)
