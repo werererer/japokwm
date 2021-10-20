@@ -43,6 +43,7 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     /* Allocates and configures monitor state using configured rules */
     struct monitor *m = output->data = calloc(1, sizeof(*m));
+    m->ws_id = INVALID_WORKSPACE_ID;
 
     m->wlr_output = output;
 
@@ -180,7 +181,7 @@ static void monitor_get_initial_workspace(struct monitor *m, GPtrArray *workspac
     BitSet *bitset = bitset_create();
     bitset_set(bitset, ws_id);
 
-    monitor_focus_tags(ws, bitset);
+    monitor_focus_tags(m, ws, bitset);
 }
 
 void handle_destroy_monitor(struct wl_listener *listener, void *data)
@@ -327,6 +328,10 @@ inline struct workspace *monitor_get_active_workspace(struct monitor *m)
         return NULL;
 
     struct workspace *ws = get_workspace(m->ws_id);
+    // if this is not correct the whole application is in an undefined state
+    if (ws) {
+        assert(ws->m == m);
+    }
     return ws;
 }
 

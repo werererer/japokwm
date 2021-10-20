@@ -57,6 +57,8 @@ static void workspace_damage(struct workspace *ws)
 
 static bool workspace_is_damaged(struct workspace *ws)
 {
+    if (!ws)
+        return false;
     return ws->damaged;
 }
 
@@ -168,11 +170,11 @@ void tagset_workspaces_connect(struct workspace *sel_ws)
     }
 }
 
-void monitor_focus_tags(struct workspace *ws, BitSet *workspaces)
+void monitor_focus_tags(struct monitor *m, struct workspace *ws, BitSet *workspaces)
 {
     assert(workspaces != NULL);
 
-    // ws->m = m;
+    ws->m = m;
     tagset_assign_workspaces(ws, workspaces);
 
     push_tagset(ws);
@@ -396,7 +398,9 @@ void tagset_toggle_add(struct monitor *m, BitSet *bitset)
 
 void tagset_focus_tags(struct workspace *ws, struct BitSet *bitset)
 {
-    monitor_focus_tags(ws, bitset);
+    struct monitor *ws_m = workspace_get_selected_monitor(ws);
+    ws_m = ws_m ? ws_m : server_get_selected_monitor();
+    monitor_focus_tags(ws_m, ws, bitset);
 }
 
 void tagset_reload(struct workspace *sel_ws)
