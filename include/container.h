@@ -28,6 +28,9 @@ struct container {
     struct wlr_box prev_geom;
     struct client *client;
 
+    // workspace id
+    int ws_id;
+
     bool is_exclusive;
     bool is_on_tile;
     bool is_xwayland_popup;

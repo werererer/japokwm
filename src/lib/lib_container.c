@@ -194,8 +194,7 @@ int lib_container_set_sticky_restricted(lua_State *L) {
     struct workspace *ws = monitor_get_active_workspace(m);
     struct container *con = get_container(ws, i);
 
-    bitset_set(bitset,
-            bitset_test(con->client->sticky_workspaces, con->client->ws_id));
+    bitset_set(bitset, bitset_test(con->client->sticky_workspaces, con->ws_id));
 
     if (!con)
         return 0;
@@ -260,8 +259,7 @@ int lib_container_toggle_add_sticky_restricted(lua_State *L) {
         return 0;
 
     bitset_xor(bitset, con->client->sticky_workspaces);
-    bitset_set(bitset,
-            bitset_test(con->client->sticky_workspaces, con->client->ws_id));
+    bitset_set(bitset, bitset_test(con->client->sticky_workspaces, con->ws_id));
 
     debug_print("container set sticky: %p\n", con);
     for (int i = 0; i < bitset->size; i++) {

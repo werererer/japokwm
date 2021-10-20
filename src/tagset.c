@@ -579,7 +579,8 @@ bool tagset_contains_client(BitSet *workspaces, struct client *c)
     }
 
     BitSet *bitset = bitset_create();
-    workspace_id_to_tag(bitset, c->ws_id);
+    struct container *con = c->con;
+    workspace_id_to_tag(bitset, con->ws_id);
     bitset_and(bitset, workspaces);
     bool contains = bitset_any(bitset);
     bitset_destroy(bitset);
@@ -656,7 +657,8 @@ bool exist_on(struct monitor *m, BitSet *workspaces, struct container *con)
     if (c->type == LAYER_SHELL)
         return true;
 
-    return tagset_contains_client(workspaces, c);
+    bool contains_client = tagset_contains_client(workspaces, c);
+    return contains_client;
 }
 
 bool tagset_exist_on(struct monitor *m, struct container *con)

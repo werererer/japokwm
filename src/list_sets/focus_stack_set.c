@@ -73,7 +73,7 @@ static bool is_container_valid_to_append(
         )
 {
     struct workspace *ws = workspace_ptr;
-    if (src_con->client->ws_id != ws->id) {
+    if (src_con->ws_id != ws->id) {
         return false;
     }
 
