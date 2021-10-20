@@ -137,7 +137,6 @@ static void handle_output_frame(struct wl_listener *listener, void *data)
 int j = 0;
 static void handle_output_damage_frame(struct wl_listener *listener, void *data)
 {
-    debug_print("other output %i\n", j++);
     struct monitor *m = wl_container_of(listener, m, damage_frame);
 
     if (!m->wlr_output->enabled) {
@@ -245,10 +244,10 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
 
 void monitor_set_selected_workspace(struct monitor *m, struct workspace *ws)
 {
-    int prev_ws_id = m->ws_id;
-    struct workspace *prev_ws = get_workspace(prev_ws_id);
+    // int prev_ws_id = m->ws_id;
+    // struct workspace *prev_ws = get_workspace(prev_ws_id);
     m->ws_id = ws->id;
-    prev_ws->m = NULL;
+    // prev_ws->m = NULL;
     ws->m = m;
 }
 

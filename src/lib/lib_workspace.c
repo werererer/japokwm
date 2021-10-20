@@ -151,16 +151,16 @@ int lib_workspace_swap(lua_State *L)
         struct monitor *ws_m = workspace_get_monitor(ws2);
         if (!exist_on(ws_m, ws2->workspaces, con))
             continue;
-        con->client->ws_id = ws1->id;
+        con->ws_id = ws1->id;
         bitset_reset_all(con->client->sticky_workspaces);
-        bitset_set(con->client->sticky_workspaces, con->client->ws_id);
+        bitset_set(con->client->sticky_workspaces, con->ws_id);
     }
 
     for (int i = 0; i < future_ws2_containers->len; i++) {
         struct container *con = g_ptr_array_index(future_ws2_containers, i);
-        con->client->ws_id = ws2->id;
+        con->ws_id = ws2->id;
         bitset_reset_all(con->client->sticky_workspaces);
-        bitset_set(con->client->sticky_workspaces, con->client->ws_id);
+        bitset_set(con->client->sticky_workspaces, con->ws_id);
     }
     g_ptr_array_unref(future_ws2_containers);
 

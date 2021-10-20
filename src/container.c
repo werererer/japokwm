@@ -75,7 +75,7 @@ void destroy_container(struct container *con)
 void add_container_to_tile(struct container *con)
 {
     assert(!con->is_on_tile);
-    add_container_to_workspace(con, get_workspace(con->client->ws_id));
+    add_container_to_workspace(con, get_workspace(con->ws_id));
 
     struct monitor *m = container_get_monitor(con);
     if (m) {
@@ -92,7 +92,7 @@ void remove_container_from_tile(struct container *con)
     if (con->on_scratchpad)
         remove_container_from_scratchpad(con);
 
-    struct workspace *ws = get_workspace(con->client->ws_id);
+    struct workspace *ws = get_workspace(con->ws_id);
 
     workspace_remove_container_from_focus_stack(ws, con);
 
@@ -954,7 +954,7 @@ struct monitor *container_get_monitor(struct container *con)
         return con->client->m;
     }
 
-    struct workspace *ws = get_workspace(con->client->ws_id);
+    struct workspace *ws = get_workspace(con->ws_id);
     if (!ws)
         return NULL;
 
@@ -1017,12 +1017,12 @@ bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *re
 
 void container_set_just_workspace_id(struct container *con, int ws_id)
 {
-    if (con->client->ws_id == ws_id)
+    if (con->ws_id == ws_id)
         return;
 
     // TODO optimize this
-    struct workspace *prev_ws = get_workspace(con->client->ws_id);
-    con->client->ws_id = ws_id;
+    struct workspace *prev_ws = get_workspace(con->ws_id);
+    con->ws_id = ws_id;
 
     tagset_reload(prev_ws);
     struct workspace *ws = get_workspace(ws_id);
@@ -1032,11 +1032,11 @@ void container_set_just_workspace_id(struct container *con, int ws_id)
 void container_set_workspace_id(struct container *con, int ws_id)
 {
     // TODO optimize this
-    struct workspace *prev_ws = get_workspace(con->client->ws_id);
-    con->client->ws_id = ws_id;
+    struct workspace *prev_ws = get_workspace(con->ws_id);
+    con->ws_id = ws_id;
     bitset_reserve(con->client->sticky_workspaces, server.workspaces->len);
     bitset_reset_all(con->client->sticky_workspaces);
-    bitset_set(con->client->sticky_workspaces, con->client->ws_id);
+    bitset_set(con->client->sticky_workspaces, con->ws_id);
 
     tagset_reload(prev_ws);
 }
@@ -1047,7 +1047,7 @@ void container_set_workspace(struct container *con, struct workspace *ws)
         return;
     if (!ws)
         return;
-    if (con->client->ws_id == ws->id)
+    if (con->ws_id == ws->id)
         return;
 
     container_set_workspace_id(con, ws->id);
@@ -1086,7 +1086,7 @@ bool container_is_bar(struct container *con)
 
 struct workspace *container_get_workspace(struct container *con)
 {
-    struct workspace *ws = get_workspace(con->client->ws_id);
+    struct workspace *ws = get_workspace(con->ws_id);
     return ws;
 }
 

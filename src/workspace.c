@@ -187,11 +187,10 @@ void destroy_workspace(struct workspace *ws)
 
     for (int i = 0; i < ws->con_set->tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(ws->con_set->tiled_containers, i);
-        struct client *c = con->client;
-
-        if (c->ws_id != ws->id)
+        if (con->ws_id != ws->id)
             continue;
 
+        struct client *c = con->client;
         kill_client(c);
     }
     destroy_container_set(ws->con_set);
@@ -274,7 +273,7 @@ int get_workspace_container_count(struct workspace *ws)
     int count = 0;
     for (int i = 0; i < ws->con_set->tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(ws->con_set->tiled_containers, i);
-        if (con->client->ws_id == ws->id) {
+        if (con->ws_id == ws->id) {
             count++;
         }
     }
@@ -426,7 +425,7 @@ struct monitor *workspace_get_monitor(struct workspace *ws)
 
 void workspace_set_selected_monitor(struct workspace *ws, struct monitor *m)
 {
-    ws->m = m;
+    // ws->m = m;
 }
 
 void workspace_set_monitor(struct workspace *ws, struct monitor *m)
@@ -551,7 +550,7 @@ static struct container *workspace_get_local_focused_container(struct workspace 
 
     for (int i = 0; i < length_of_composed_list(ws->visible_focus_set->focus_stack_lists); i++) {
         struct container *con = get_in_composed_list(ws->visible_focus_set->focus_stack_lists, i);
-        if (con->client->ws_id != ws->id)
+        if (con->ws_id != ws->id)
             continue;
         return con;
     }

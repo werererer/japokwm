@@ -143,9 +143,10 @@ void maprequestx11(struct wl_listener *listener, void *data)
     struct monitor *m = server_get_selected_monitor();
 
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
-    c->ws_id = m->ws_id;
 
     struct container *con = c->con;
+    con->ws_id = m->ws_id;
+
     add_container_to_tile(con);
     LISTEN(&xwayland_surface->surface->events.commit, &c->commit, commit_notify);
 

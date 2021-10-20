@@ -33,8 +33,6 @@ struct client {
     const char *title;
     const char *app_id;
     BitSet *sticky_workspaces;
-    // workspace id
-    int ws_id;
 
     // used to determine what to damage
     bool resized;

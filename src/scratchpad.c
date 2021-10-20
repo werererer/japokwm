@@ -20,7 +20,7 @@ void move_to_scratchpad(struct container *con, int position)
     // TODO: try to remove this
     container_set_floating(con, container_fix_position, false);
 
-    con->client->ws_id = INVALID_WORKSPACE_ID;
+    con->ws_id = INVALID_WORKSPACE_ID;
     con->on_scratchpad = true;
 
     if (server.scratchpad->len== 0) {
@@ -83,7 +83,7 @@ void show_scratchpad()
     struct container *con = g_ptr_array_index(server.scratchpad, 0);
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
-    bool visible_on_other_workspace = !container_get_hidden(con) && ws->id != con->client->ws_id;
+    bool visible_on_other_workspace = !container_get_hidden(con) && ws->id != con->ws_id;
     if (visible_on_other_workspace) {
         container_set_workspace_id(con, ws->id);
         container_set_floating(con, container_fix_position, true);

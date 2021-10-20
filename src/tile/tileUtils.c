@@ -244,7 +244,9 @@ void arrange_monitor(struct monitor *m)
     focus_most_recent_container();
 }
 
-void arrange_containers(struct workspace *ws, struct wlr_box root_geom,
+void arrange_containers(
+        struct workspace *ws,
+        struct wlr_box root_geom,
         GPtrArray *tiled_containers)
 {
     struct layout *lt = workspace_get_layout(ws);
@@ -279,6 +281,7 @@ void arrange_containers(struct workspace *ws, struct wlr_box root_geom,
         // assert(container_get_monitor(con) == server_get_selected_monitor());
 
         struct monitor *m = workspace_get_monitor(ws);
+        debug_print("con: %p ws->m: %p\n", con, workspace_get_monitor(ws));
         arrange_container(con, m, i, root_geom, actual_inner_gap);
     }
 }
