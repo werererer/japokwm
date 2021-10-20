@@ -174,7 +174,7 @@ void monitor_focus_tags(struct monitor *m, struct workspace *ws, BitSet *workspa
 {
     assert(workspaces != NULL);
 
-    ws->m = m;
+    workspace_set_selected_monitor(ws, m);
     tagset_assign_workspaces(ws, workspaces);
 
     push_tagset(ws);
