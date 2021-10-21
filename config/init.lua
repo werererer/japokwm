@@ -46,6 +46,7 @@ opt.mod = 1
 local function exec_keycombo(i)
     if (info.is_keycombo("combo")) then
         action.tag_view(1 << i)
+        Workspace.get_focused().tags = Workspace.get_focused().tags ~ i
     else
         action.view(i)
     end

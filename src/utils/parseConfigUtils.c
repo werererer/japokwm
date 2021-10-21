@@ -308,6 +308,7 @@ void handle_warning(void *user_data, const char *msg, int i)
         return;
 
     write_to_file(error_fd, msg);
+    write_to_file(error_fd, "\n");
     free(final_message);
 }
 
