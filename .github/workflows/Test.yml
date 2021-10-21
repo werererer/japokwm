@@ -15,7 +15,7 @@ jobs:
                 uname -a
                 pacman -Sy --noconfirm
                 pacman -S --noconfirm base-devel
-                pacman -S --noconfirm libffi
+                pacman -S --noconfirm glib-2
                 pacman -S --noconfirm meson
                 pacman -S --noconfirm wlroots
                 pacman -S --noconfirm lua
