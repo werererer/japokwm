@@ -245,11 +245,14 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
 
 void monitor_set_selected_workspace(struct monitor *m, struct workspace *ws)
 {
-    // int prev_ws_id = m->ws_id;
-    // struct workspace *prev_ws = get_workspace(prev_ws_id);
+    int prev_ws_id = m->ws_id;
+    struct workspace *prev_ws = get_workspace(prev_ws_id);
+    if (prev_ws) {
+        prev_ws->m = NULL;
+    }
+
     m->ws_id = ws->id;
     workspace_set_selected_monitor(ws, m);
-    // prev_ws->m = NULL;
 }
 
 BitSet *monitor_get_workspaces(struct monitor *m)
