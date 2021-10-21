@@ -30,7 +30,6 @@ static bool is_container_valid_to_append(
         )
 {
     struct monitor *m = monitor_ptr;
-    debug_print("monitor: %p\n", m);
     if (tagset_exist_on(m, src_con)) {
         return true;
     }

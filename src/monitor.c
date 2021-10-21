@@ -196,10 +196,10 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
     for (int i = 0; i < server.workspaces->len; i++) {
         struct workspace *ws = get_workspace(i);
         if (ws->m == m) {
-            ws->m = NULL;
+            workspace_set_selected_monitor(ws, NULL);
         }
         if (ws->current_m == m) {
-            ws->current_m = NULL;
+            workspace_set_current_monitor(ws, NULL);
         }
     }
 
@@ -224,7 +224,7 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
         struct workspace *ws = g_ptr_array_index(server.workspaces, i);
         if (ws->current_m == m) {
             debug_print("unset ws: %i\n", ws->id);
-            ws->current_m = NULL;
+            workspace_set_current_monitor(ws, NULL);
         }
     }
 
@@ -248,8 +248,8 @@ void monitor_set_selected_workspace(struct monitor *m, struct workspace *ws)
     // int prev_ws_id = m->ws_id;
     // struct workspace *prev_ws = get_workspace(prev_ws_id);
     m->ws_id = ws->id;
+    workspace_set_selected_monitor(ws, m);
     // prev_ws->m = NULL;
-    ws->m = m;
 }
 
 BitSet *monitor_get_workspaces(struct monitor *m)
