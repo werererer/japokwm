@@ -102,6 +102,9 @@ void create_monitor(struct wl_listener *listener, void *data)
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
     set_root_color(m->root, lt->options->root_color);
+
+    if (!wlr_output_commit(m->wlr_output))
+        return;
 }
 
 void create_output(struct wlr_backend *backend, void *data)
