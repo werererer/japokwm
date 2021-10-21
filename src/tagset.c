@@ -418,7 +418,8 @@ bool container_intersects_with_monitor(struct container *con, struct monitor *m)
         return false;
 
     struct wlr_box tmp_geom;
-    return wlr_box_intersection(&tmp_geom, container_get_current_geom(con), &m->geom);
+    struct wlr_box *geom = container_get_current_geom(con);
+    return wlr_box_intersection(&tmp_geom, geom, &m->geom);
 }
 
 GPtrArray *tagset_get_global_floating_copy(struct workspace *ws)

@@ -885,7 +885,9 @@ struct wlr_box *container_get_current_geom(struct container *con)
     struct layout *lt = workspace_get_layout(ws);
     if (container_is_unmanaged(con)) {
         geom = container_get_floating_geom(con);
-    } else if (container_is_tiled(con) || lt->options->arrange_by_focus) {
+    // TODO: lt may be NULL maybe we should wrap lt->options->arrange_by_focus
+    // in a funciton?
+    } else if (container_is_tiled(con) || (lt && lt->options->arrange_by_focus)) {
         geom = container_get_tiled_geom(con);
     } else {
         geom = container_get_floating_geom(con);
