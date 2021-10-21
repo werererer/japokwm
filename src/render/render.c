@@ -246,12 +246,18 @@ static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *bo
         }
     }
     if (hidden_edges & WLR_EDGE_TOP) {
-        if (con_geom->y == m->root->geom.y)
+        if (con_geom->y == m->root->geom.y) {
             containers_hidden_edges |= WLR_EDGE_TOP;
+            container_add_gaps(&borders[0], border_width, WLR_EDGE_TOP);
+            container_add_gaps(&borders[1], border_width, WLR_EDGE_TOP);
+        }
     }
     if (hidden_edges & WLR_EDGE_BOTTOM) {
-        if (is_approx_equal(con_geom->y + con_geom->height, m->root->geom.y + m->root->geom.height, 3))
+        if (is_approx_equal(con_geom->y + con_geom->height, m->root->geom.y + m->root->geom.height, 3)) {
             containers_hidden_edges |= WLR_EDGE_BOTTOM;
+            container_add_gaps(&borders[0], border_width, WLR_EDGE_BOTTOM);
+            container_add_gaps(&borders[1], border_width, WLR_EDGE_BOTTOM);
+        }
     }
 
     return containers_hidden_edges;

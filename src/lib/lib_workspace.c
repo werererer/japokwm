@@ -39,6 +39,7 @@ static const struct luaL_Reg workspace_m[] =
 
 static const struct luaL_Reg workspace_setter[] =
 {
+    {"tags", lib_set_tags},
     {NULL, NULL},
 };
 
@@ -183,6 +184,25 @@ int lib_workspace_get_id(lua_State *L)
 }
 
 // setter
+int lib_set_tags(lua_State *L)
+{
+    uint64_t tags_dec = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+
+    struct workspace *ws = check_workspace(L, 1);
+    lua_pop(L, 1);
+
+    BitSet *tmp_bitset = bitset_from_value(tags_dec);
+    BitSet *bitset = bitset_create();
+    for (int i = 0; i < bitset->size; i++) {
+        int last_bit_id = tmp_bitset->size - 1;
+        bitset_assign(bitset, i, bitset_test(tmp_bitset, last_bit_id - i));
+    }
+    bitset_destroy(tmp_bitset);
+
+    tagset_set_tags(ws, bitset);
+    return 0;
+}
 // getter
 int lib_workspace_get_focus_stack(lua_State *L)
 {
