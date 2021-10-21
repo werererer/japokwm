@@ -21,6 +21,7 @@ int lib_workspace_get_id(lua_State *L);
 int lib_workspace_swap(lua_State *L);
 
 // setter
+int lib_set_tags(lua_State *L);
 
 // getter
 int lib_workspace_get_focus_stack(lua_State *L);

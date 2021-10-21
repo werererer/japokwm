@@ -55,7 +55,6 @@ static const struct luaL_Reg action[] =
     {"resize_main", lib_resize_main},
     {"set_floating", lib_set_floating},
     {"set_nmaster", lib_set_nmaster},
-    {"set_tags", lib_set_tags},
     {"show_scratchpad", lib_show_scratchpad},
     {"start_keycombo", lib_start_keycombo},
     {"swap_on_hidden_stack", lib_swap_on_hidden_stack},

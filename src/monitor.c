@@ -334,8 +334,9 @@ inline struct workspace *monitor_get_active_workspace(struct monitor *m)
         return NULL;
 
     struct workspace *ws = get_workspace(m->ws_id);
+
     // if this is not correct the whole application is in an undefined state
-    if (ws) {
+    if (ws && ws->m) {
         assert(ws->m == m);
     }
     return ws;

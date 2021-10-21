@@ -127,8 +127,7 @@ opt:bind_key("mod-S-comma", function()
     end)
 end)
 opt:bind_key("mod-comma",     function()
-    -- local layout = Workspace.get_focused().layout
-    -- layout.n_area = 0
+    Workspace.get_focused().tags = 1 << 0
  end)
 opt:bind_key("mod-S-Return",  function() action.exec(termcmd) end)
 opt:bind_key("mod-a",         function() action.increase_nmaster() end)
@@ -165,8 +164,13 @@ opt:bind_key("mod-6",         function() exec_keycombo(5) end)
 opt:bind_key("mod-7",         function() exec_keycombo(6) end)
 opt:bind_key("mod-8",         function() exec_keycombo(7) end)
 opt:bind_key("mod-9",         function() exec_keycombo(8) end)
-opt:bind_key("mod-0",         function() action.set_tags(1 << Container.get_focused().workspace.id) end)
-opt:bind_key("mod-C-0",       function() action.set_tags(1 << Workspace.get_focused():get_id()) end)
+opt:bind_key("mod-0",         function() Workspace.get_focused().tags = 1 << Workspace.get_focused():get_id() end)
+opt:bind_key("mod-S-0",       function()
+    local con = Container.get_focused()
+    if con then
+        Workspace.get_focused().tags = 1 << con.workspace:get_id()
+    end
+end)
 opt:bind_key("mod-S-9",       function()
     if Container.get_focused() then
         Container.get_focused().workspace = Workspace.get(9)
