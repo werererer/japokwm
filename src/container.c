@@ -251,7 +251,6 @@ static void add_container_to_workspace(struct container *con, struct workspace *
                 int new_focus_position = workspace_get_new_focus_position(ws);
                 workspace_add_container_to_focus_stack(ws, new_focus_position, con);
 
-                debug_print("ws->conset new len: %i\n", ws->con_set->tiled_containers->len);
                 break;
             }
     }

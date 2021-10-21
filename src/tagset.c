@@ -118,7 +118,7 @@ static void tagset_workspace_disconnect(struct workspace *sel_ws, struct workspa
 
     struct monitor *ws_m = workspace_get_selected_monitor(ws);
     if (ws_m && ws_m != server_get_selected_monitor()) {
-        ws->current_m = workspace_get_selected_monitor(ws);
+        workspace_set_current_monitor(ws, workspace_get_selected_monitor(ws));
         // move the workspace back
         tagset_set_workspace(sel_ws, ws);
     }
@@ -150,7 +150,7 @@ void tagset_workspaces_disconnect(struct workspace *sel_ws)
 
 static void tagset_workspace_connect(struct workspace *sel_ws, struct workspace *ws)
 {
-    ws->current_m = workspace_get_monitor(sel_ws);
+    workspace_set_current_monitor(ws, workspace_get_selected_monitor(sel_ws));
 
     if (sel_ws->id == ws->id) {
         // ws->m = workspace_get_monitor(sel_ws);
@@ -310,7 +310,6 @@ void focus_tagset(struct workspace *ws)
     workspace_damage(ws);
     tagset_load_workspaces();
     restore_floating_containers(ws);
-    bitset_assign_bitset(&ws->workspaces, ws->workspaces);
     update_reduced_focus_stack(ws);
     ipc_event_workspace();
 
@@ -331,13 +330,13 @@ void workspace_write_to_workspaces(struct workspace *ws)
     container_set_write_to_parent(ws->con_set, ws->visible_con_set);
 }
 
-static void _set_previous_tagset(struct workspace *sel_ws)
+static void _set_previous_tagset(struct workspace *ws)
 {
-    if (!sel_ws)
+    if (!ws)
         return;
 
-    bitset_assign_bitset(&server.previous_bitset, sel_ws->workspaces);
-    server.previous_workspace = sel_ws->id;
+    bitset_assign_bitset(&server.previous_bitset, ws->workspaces);
+    server.previous_workspace = ws->id;
 }
 
 void push_tagset(struct workspace *sel_ws)

@@ -430,9 +430,10 @@ void workspace_set_selected_monitor(struct workspace *ws, struct monitor *m)
     ws->m = m;
 }
 
-void workspace_set_monitor(struct workspace *ws, struct monitor *m)
+void workspace_set_current_monitor(struct workspace *ws, struct monitor *m)
 {
     ws->current_m = m;
+    debug_print("ws: %i current: %p\n", ws->id, ws->current_m);
 }
 
 void push_layout(struct workspace *ws, const char *layout_name)

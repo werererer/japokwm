@@ -398,6 +398,7 @@ struct monitor *server_get_selected_monitor()
 void server_set_selected_monitor(struct monitor *m)
 {
     server.selected_monitor = m;
+    debug_print("set selected_moinitor: %p\n", m);
 }
 
 struct workspace *server_get_selected_workspace()

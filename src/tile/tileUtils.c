@@ -281,7 +281,6 @@ void arrange_containers(
         // assert(container_get_monitor(con) == server_get_selected_monitor());
 
         struct monitor *m = workspace_get_monitor(ws);
-        debug_print("con: %p ws->m: %p\n", con, workspace_get_monitor(ws));
         arrange_container(con, m, i, root_geom, actual_inner_gap);
     }
 }
