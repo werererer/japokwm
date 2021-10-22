@@ -7,20 +7,21 @@
 
 #include "cursor.h"
 #include "lib/lib_actions.h"
+#include "lib/lib_bitset.h"
+#include "lib/lib_color.h"
 #include "lib/lib_container.h"
-#include "lib/lib_options.h"
-#include "lib/local_options.h"
 #include "lib/lib_event_handler.h"
-#include "lib/lib_layout.h"
+#include "lib/lib_geom.h"
 #include "lib/lib_info.h"
+#include "lib/lib_layout.h"
+#include "lib/lib_list.h"
+#include "lib/lib_list2D.h"
+#include "lib/lib_monitor.h"
+#include "lib/lib_options.h"
+#include "lib/lib_server.h"
 #include "lib/lib_workspace.h"
 #include "lib/local_event_handler.h"
-#include "lib/lib_monitor.h"
-#include "lib/lib_server.h"
-#include "lib/lib_color.h"
-#include "lib/lib_list.h"
-#include "lib/lib_geom.h"
-#include "lib/lib_list2D.h"
+#include "lib/local_options.h"
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "workspace.h"
@@ -305,13 +306,14 @@ void load_lua_api(lua_State *L)
 
     load_info(L);
 
+    lua_load_bitset();
     lua_load_color();
     lua_load_container();
     lua_load_events();
+    lua_load_geom();
     lua_load_layout();
     lua_load_list();
     lua_load_list2D();
-    lua_load_geom();
     lua_load_options();
     lua_load_server();
     lua_load_workspace();

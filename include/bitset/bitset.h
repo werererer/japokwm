@@ -28,6 +28,8 @@ typedef void (*bit_operator_t)(bool*, const bool*);
 typedef struct BitSet {
     GPtrArray *bytes;
     size_t size;
+    // you should set it to the parent
+    void *data;
 } BitSet;
 
 /****************** INTERFACE ******************/
@@ -72,6 +74,8 @@ int bitset_reset_all(BitSet* bitset);
 int bitset_set_all(BitSet* bitset);
 int bitset_set_all_to_mask(BitSet* bitset, uint8_t mask);
 void bitset_clear(BitSet* bitset);
+
+uint64_t bitset_to_value(BitSet *bitset);
 
 /* Size Management */
 int bitset_push(BitSet* bitset, bool value);

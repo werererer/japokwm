@@ -101,6 +101,8 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     // TODO: findout which value must be used
     ws->workspaces = bitset_create();
     ws->prev_workspaces = bitset_create();
+    ws->workspaces->data = ws;
+
     bitset_set(ws->workspaces, ws->id);
     bitset_set(ws->prev_workspaces, ws->id);
 
@@ -434,6 +436,16 @@ void workspace_set_current_monitor(struct workspace *ws, struct monitor *m)
 {
     ws->current_m = m;
     debug_print("ws: %i current: %p\n", ws->id, ws->current_m);
+}
+
+BitSet *workspace_get_tags(struct workspace *ws)
+{
+    return ws->workspaces;
+}
+
+BitSet *workspace_get_prev_tags(struct workspace *ws)
+{
+    return ws->prev_workspaces;
 }
 
 void push_layout(struct workspace *ws, const char *layout_name)

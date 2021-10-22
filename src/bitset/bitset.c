@@ -253,6 +253,19 @@ void bitset_clear(BitSet* bitset) {
     list_clear(bitset->bytes, free);
 }
 
+uint64_t bitset_to_value(BitSet *bitset)
+{
+    uint64_t value = 0;
+    for (int i = 0; i < bitset->size; i++) {
+        bool v = bitset_test(bitset, i);
+        if (!v)
+            continue;
+
+        value += 1 << i;
+    }
+    return value;
+}
+
 /* Size Management */
 int bitset_push(BitSet* bitset, bool value) {
     if (value) {

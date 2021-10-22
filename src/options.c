@@ -216,6 +216,21 @@ void load_default_keybindings()
     bind_key(options, "mod-C-S-7", Container.get_focused():toggle_add_sticky(1 << 6));
     bind_key(options, "mod-C-S-8", Container.get_focused():toggle_add_sticky(1 << 7));
 
+    bind_key(options, "mod-s 1", Workspace.get_focused():swap(Workspace.get(1)));
+    bind_key(options, "mod-s 2", Workspace.get_focused():swap(Workspace.get(2)));
+    bind_key(options, "mod-s 3", Workspace.get_focused():swap(Workspace.get(3)));
+    bind_key(options, "mod-s 4", Workspace.get_focused():swap(Workspace.get(4)));
+    bind_key(options, "mod-s 5", Workspace.get_focused():swap(Workspace.get(5)));
+    bind_key(options, "mod-s 6", Workspace.get_focused():swap(Workspace.get(6)));
+    bind_key(options, "mod-s 7", Workspace.get_focused():swap(Workspace.get(7)));
+    bind_key(options, "mod-s 8", Workspace.get_focused():swap(Workspace.get(8)));
+
+    bind_key(options, "mod-t", action.set_floating(false));
+
+    bind_key(options, "mod-M1", action.move_resize(info.cursor.mode.move));
+    bind_key(options, "mod-M2", action.move_resize(info.cursor.mode.resize));
+    bind_key(options, "M1", action.focus_container(info.get_container_under_cursor()));
+
     return;
 }
 

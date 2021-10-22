@@ -4,6 +4,8 @@
 #include <lua.h>
 #include <lauxlib.h>
 
+#include "bitset/bitset.h"
+
 struct workspace;
 
 void create_lua_workspace(lua_State *L, struct workspace *ws);
@@ -27,4 +29,5 @@ int lib_set_tags(lua_State *L);
 int lib_workspace_get_focus_stack(lua_State *L);
 int lib_workspace_get_layout(lua_State *L);
 int lib_workspace_get_stack(lua_State *L);
+int lib_workspace_get_tags(lua_State *L);
 #endif /* LIB_WORKSPACE */

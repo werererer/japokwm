@@ -34,6 +34,13 @@ struct workspace;
     } while(0)
 
 // lua custom typenames
+#define CONFIG_BITSET "japokwm.bitset"
+// this is the same as CONFIG_BITSET but also tells that the data field of the
+// bitset is of the type workspace
+#define CONFIG_BITSET_WITH_WORKSPACE "japokwm.bitset.workspace"
+#define CONFIG_BITSET_WITH_CONTAINER "japokwm.bitset.container"
+// this is the same as CONFIG_BITSET but lifetime is handle by lua
+#define CONFIG_BITSET_GC "japokwm.bitset_gc"
 #define CONFIG_COLOR "japokwm.color"
 #define CONFIG_CONTAINER "japokwm.container"
 #define CONFIG_DIRECTION "japokwm.direction"

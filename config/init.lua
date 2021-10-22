@@ -44,9 +44,10 @@ layout.default_layout = "two_pane"
 opt.mod = 1
 
 local function exec_keycombo(i)
+    local g = Bitset.new()
+    Bitset.new(i)
     if (info.is_keycombo("combo")) then
-        action.tag_view(1 << i)
-        Workspace.get_focused().tags = Workspace.get_focused().tags ~ i
+        Workspace.get_focused().tags:_xor(1 << i)
     else
         action.view(i)
     end
@@ -128,7 +129,9 @@ opt:bind_key("mod-S-comma", function()
     end)
 end)
 opt:bind_key("mod-comma",     function()
-    Workspace.get_focused().tags = 1 << 0
+    local focused_ws = Workspace.get_focused()
+    focused_ws.tags = focused_ws.tags | (1 << 3)
+    print(focused_ws.tags[0])
  end)
 opt:bind_key("mod-S-Return",  function() action.exec(termcmd) end)
 opt:bind_key("mod-a",         function() action.increase_nmaster() end)
@@ -179,18 +182,3 @@ opt:bind_key("mod-S-9",       function()
 end)
 opt:bind_key("mod-C-S-0",     function() Container.get_focused():set_sticky_restricted(0) end)
 opt:bind_key("mod-C-S-9",     function() Container.get_focused():set_sticky_restricted(255) end)
-opt:bind_key("mod-s 1",       function() Workspace.get_focused():swap(Workspace.get(1)) end)
-opt:bind_key("mod-s 2",       function() Workspace.get_focused():swap(Workspace.get(2)) end)
-opt:bind_key("mod-s 3",       function() Workspace.get_focused():swap(Workspace.get(3)) end)
-opt:bind_key("mod-s 4",       function() Workspace.get_focused():swap(Workspace.get(4)) end)
-opt:bind_key("mod-s 5",       function() Workspace.get_focused():swap(Workspace.get(5)) end)
-opt:bind_key("mod-s 6",       function() Workspace.get_focused():swap(Workspace.get(6)) end)
-opt:bind_key("mod-s 7",       function() Workspace.get_focused():swap(Workspace.get(7)) end)
-opt:bind_key("mod-s 8",       function() Workspace.get_focused():swap(Workspace.get(8)) end)
-opt:bind_key("mod-s",         function() print("notice me") end)
-opt:bind_key("mod-s",         function() print("pls") end)
-opt:bind_key("mod-r",         function() opt.reload() end)
-opt:bind_key("mod-t",         function() action.set_floating(false)    end)
-opt:bind_key("mod-M1",  function() action.move_resize(info.cursor.mode.move) end)
-opt:bind_key("mod-M2",  function() action.move_resize(info.cursor.mode.resize) end)
-opt:bind_key("M1", function() action.focus_container(info.get_container_under_cursor()) end)
