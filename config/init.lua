@@ -45,7 +45,6 @@ opt.mod = 1
 
 local function exec_keycombo(i)
     local g = Bitset.new()
-    Bitset.new(i)
     if (info.is_keycombo("combo")) then
         Workspace.get_focused().tags:_xor(1 << i)
     else
@@ -130,8 +129,8 @@ opt:bind_key("mod-S-comma", function()
 end)
 opt:bind_key("mod-comma",     function()
     local focused_ws = Workspace.get_focused()
-    focused_ws.tags = focused_ws.tags | (1 << 3)
-    print(focused_ws.tags[0])
+    focused_ws.tags[5] = true
+    print(focused_ws.tags[5])
  end)
 opt:bind_key("mod-S-Return",  function() action.exec(termcmd) end)
 opt:bind_key("mod-a",         function() action.increase_nmaster() end)
