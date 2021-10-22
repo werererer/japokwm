@@ -252,10 +252,9 @@ int lib_move_to_scratchpad(lua_State *L)
 
 int lib_view(lua_State *L)
 {
-    unsigned int ws_id = luaL_checkinteger(L, -1);
+    struct workspace *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
-    struct workspace *ws = get_workspace(ws_id);
     tagset_focus_tags(ws, ws->workspaces);
     return 0;
 }
