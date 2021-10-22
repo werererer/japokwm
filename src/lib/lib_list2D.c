@@ -12,12 +12,12 @@
 
 static const struct luaL_Reg list2D_meta[] =
 {
+    {"__index", lib_list2D_get},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg list2D_f[] =
 {
-    {"__index", lib_list2D_get},
     {NULL, NULL},
 };
 
@@ -58,7 +58,7 @@ void lua_load_list2D()
             list2D_m,
             list2D_setter,
             list2D_getter,
-            CONFIG_LIST);
+            CONFIG_LIST2D);
 
     luaL_newlib(L, list2D_f);
     lua_setglobal(L, "List2D");
@@ -66,7 +66,7 @@ void lua_load_list2D()
 
 GPtrArray *check_list2D(lua_State *L, int argn)
 {
-    void **ud = luaL_checkudata(L, argn, CONFIG_LIST);
+    void **ud = luaL_checkudata(L, argn, CONFIG_LIST2D);
     luaL_argcheck(L, ud != NULL, argn, "`list' expected");
     return (GPtrArray *)*ud;
 }
@@ -102,7 +102,7 @@ int lib_list2D_find(lua_State *L)
 
 int lib_list2D_get(lua_State *L)
 {
-    const char *key = luaL_checkstring(L, -1); // convert lua to c index
+    const char *key = luaL_checkstring(L, -1);
     GPtrArray *array = check_list2D(L, 1);
     debug_print("key: %s\n", key);
 
@@ -122,7 +122,7 @@ int lib_list2D_get(lua_State *L)
         return 1;
     }
 
-    struct container *con = g_ptr_array_index(array, i);
+    struct container *con = get_in_composed_list(array, i);
     create_lua_container(L, con);
     return 1;
 }
@@ -162,9 +162,10 @@ int lib_list2D_repush(lua_State *L)
 // getter
 int lib_list2D_length(lua_State *L)
 {
-    GPtrArray* list = check_list2D(L, 1);
+    GPtrArray2D* list = check_list2D(L, 1);
     lua_pop(L, 1);
-    lua_pushinteger(L, list->len);
+    int composed_list_length = length_of_composed_list(list);
+    lua_pushinteger(L, composed_list_length);
     return 1;
 }
 // setter

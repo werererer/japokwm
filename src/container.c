@@ -84,6 +84,9 @@ void add_container_to_tile(struct container *con)
     }
 
     con->is_on_tile = true;
+
+    workspace_update_names(&server, server.workspaces);
+    ipc_event_workspace();
 }
 
 void remove_container_from_tile(struct container *con)
@@ -112,6 +115,7 @@ void remove_container_from_tile(struct container *con)
 
     con->is_on_tile = false;
     workspace_update_names(&server, server.workspaces);
+    ipc_event_workspace();
 }
 
 void container_damage_borders(struct container *con, struct monitor *m, struct wlr_box *geom)
@@ -401,6 +405,7 @@ void focus_container(struct container *con)
         return;
 
     workspace_update_names(&server, server.workspaces);
+    ipc_event_workspace();
 }
 
 void focus_on_stack(struct monitor *m, int i)
