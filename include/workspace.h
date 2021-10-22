@@ -12,6 +12,7 @@ struct focus_set;
 struct client;
 struct container;
 struct server;
+struct tagset;
 
 /* when an action should change the workspace and the tagsets associated with it
  * you should use this macro.
@@ -159,6 +160,9 @@ void workspace_add_container_to_visual_stack_layer(struct workspace *ws, struct 
 
 void workspace_remove_container(struct workspace *ws, struct container *con);
 void workspace_remove_container_from_focus_stack(struct workspace *ws, struct container *con);
+
+void workspace_set_tags(struct workspace *ws, BitSet *tags);
+void workspace_set_prev_tags(struct workspace *ws, BitSet *tags);
 
 GArray *container_array2D_get_positions_array(GPtrArray2D *containers);
 GArray *container_array_get_positions_array(GPtrArray *containers);
