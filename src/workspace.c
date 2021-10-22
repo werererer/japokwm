@@ -819,17 +819,12 @@ void workspace_remove_container_from_focus_stack(struct workspace *ws, struct co
 
 void workspace_set_tags(struct workspace *ws, BitSet *tags)
 {
-    debug_print("\n set workspaces\n");
     bitset_assign_bitset(&ws->workspaces, tags);
-    print_bitset(ws->workspaces);
 }
 
 void workspace_set_prev_tags(struct workspace *ws, struct BitSet *tags)
 {
-    debug_print("\n set prev_tagset\n");
     bitset_assign_bitset(&ws->prev_workspaces, tags);
-    print_bitset(ws->prev_workspaces);
-    debug_print("\n set prev_tagset end\n");
 }
 
 static int get_in_container_stack(struct container *con)
