@@ -84,7 +84,7 @@ int lib_list_find(lua_State *L)
     guint pos;
     g_ptr_array_find(array, con, &pos);
 
-    lua_pushinteger(L, pos);
+    lua_pushinteger(L, c_idx_to_lua_idx(pos));
     return 1;
 }
 
@@ -131,9 +131,9 @@ int lib_list_swap(lua_State *L)
 
 int lib_list_repush(lua_State *L)
 {
-    int abs_index = luaL_checkinteger(L, -1);
+    int abs_index = lua_idx_to_c_idx(luaL_checkinteger(L, -1));
     lua_pop(L, 1);
-    int i = luaL_checkinteger(L, -1);
+    int i = lua_idx_to_c_idx(luaL_checkinteger(L, -1));
     lua_pop(L, 1);
     GPtrArray *array = check_list(L, 1);
     lua_pop(L, 1);
