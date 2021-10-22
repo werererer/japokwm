@@ -50,7 +50,7 @@ struct color check_color(lua_State *L, int narg) {
     return *(struct color *)ud;
 }
 
-static void create_lua_color(struct color color) {
+static void create_lua_color(lua_State *L, struct color color) {
     struct color *user_color = lua_newuserdata(L, sizeof(struct color));
     *user_color = color;
 
@@ -78,6 +78,6 @@ int lib_color_new(lua_State *L)
         .blue = blue, 
         .alpha = alpha,
     };
-    create_lua_color(color);
+    create_lua_color(L, color);
     return 1;
 }

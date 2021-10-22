@@ -185,7 +185,6 @@ int lib_workspace_get_id(lua_State *L)
 }
 
 // setter
-
 int lib_set_tags(lua_State *L)
 {
     BitSet *bitset = check_bitset(L, 2);
@@ -232,6 +231,6 @@ int lib_workspace_get_tags(lua_State *L)
     lua_pop(L, 1);
 
     BitSet *workspaces = ws->workspaces;
-    create_lua_bitset_with_workspace(workspaces);
+    create_lua_bitset_with_workspace(L, workspaces);
     return 1;
 }
