@@ -259,26 +259,6 @@ int lib_view(lua_State *L)
     return 0;
 }
 
-int lib_tag_view(lua_State *L)
-{
-    uint64_t tags_dec = luaL_checkinteger(L, -1);
-
-    lua_pop(L, 1);
-
-    struct monitor *m = server_get_selected_monitor();
-
-    BitSet *tmp_bitset = bitset_from_value(tags_dec);
-    BitSet *bitset = bitset_create();
-    for (int i = 0; i < bitset->size; i++) {
-        int last_bit_id = tmp_bitset->size - 1;
-        bitset_assign(bitset, i, bitset_test(tmp_bitset, last_bit_id - i));
-    }
-    bitset_destroy(tmp_bitset);
-
-    tagset_toggle_add(m, bitset);
-    return 0;
-}
-
 int lib_toggle_view(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
@@ -478,14 +458,6 @@ int lib_toggle_layout(lua_State *L)
     struct workspace *ws = monitor_get_active_workspace(m);
     push_layout(ws, ws->previous_layout);
     arrange();
-    return 0;
-}
-
-int lib_toggle_tags(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    tagset_set_tags(ws, ws->prev_workspaces);
     return 0;
 }
 
