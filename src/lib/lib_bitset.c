@@ -5,6 +5,7 @@
 #include "bitset/bitset.h"
 #include "workspace.h"
 #include "tagset.h"
+#include "lib/lib_list.h"
 
 static const struct luaL_Reg bitset_gc_meta[] =
 {
@@ -14,6 +15,8 @@ static const struct luaL_Reg bitset_gc_meta[] =
 
 static const struct luaL_Reg bitset_meta[] =
 {
+    {"__index", lib_bitset_get},
+    {"__newindex", lib_bitset_set},
     {"__bxor", lib_bitset_meta_bxor},
     {"__band", lib_bitset_meta_band},
     {"__bor", lib_bitset_meta_bor},
@@ -149,6 +152,54 @@ void create_lua_bitset(struct BitSet *bitset)
 }
 
 // meta
+int lib_bitset_get(lua_State *L)
+{
+    // [table, key]
+    const char *key = luaL_checkstring(L, -1); // convert lua to c index
+    BitSet *bitset = check_bitset(L, 1);
+    debug_print("key: %s\n", key);
+
+    bool is_number = lua_isnumber(L, -1);
+    if (!is_number) {
+        get_lua_value(L);
+        return 1;
+    }
+
+    int i = lua_tonumber(L, -1)-1;
+    if (i < 0) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    bool b = bitset_test(bitset, i);
+    lua_pushboolean(L, b);
+    return 1;
+}
+
+int lib_bitset_set(lua_State *L)
+{
+    // [table, key, value]
+    bool value = lua_toboolean(L, 3);
+    const char *key = luaL_checkstring(L, 2); // convert lua to c index
+    BitSet *bitset = check_bitset(L, 1);
+    debug_print("key: %s\n", key);
+
+    bool is_number = lua_isnumber(L, 2);
+    if (!is_number) {
+        set_lua_value(L);
+        return 0;
+    }
+
+    int i = lua_idx_to_c_idx(lua_tonumber(L, 2));
+    if (i < 0) {
+        lua_pushnil(L);
+        return 1;
+    }
+
+    call_bitset_func(L, bitset, bitset_assign, bitset, i, value);
+    return 0;
+}
+
 int lib_bitset_meta_bxor(lua_State *L)
 {
     BitSet *bitset = check_bitset(L, 2);
@@ -227,21 +278,6 @@ int lib_bitset_new(lua_State *L)
     return 1;
 }
 // methods
-# define call_bitset_func(L, action, ...) \
-    do {\
-        action(__VA_ARGS__);\
-        if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_WORKSPACE)) {\
-            struct workspace *ws = self->data;\
-            tagset_set_tags(ws, self);\
-            return 0;\
-        }\
-        if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_CONTAINER)) {\
-            struct workspace *ws = self->data;\
-            tagset_set_tags(ws, self);\
-            return 0;\
-        }\
-        \
-    } while (0)
 
 int lib_bitset_xor(lua_State *L)
 {
@@ -249,7 +285,7 @@ int lib_bitset_xor(lua_State *L)
     lua_pop(L, 1);
 
     BitSet *self = check_bitset(L, 1);
-    call_bitset_func(L, bitset_xor, self, bitset);
+    call_bitset_func(L, self, bitset_xor, self, bitset);
     lua_pop(L, 1);
 
     return 0;
@@ -261,7 +297,7 @@ int lib_bitset_and(lua_State *L)
     lua_pop(L, 1);
 
     BitSet *self = check_bitset(L, 1);
-    call_bitset_func(L, bitset_and, self, bitset);
+    call_bitset_func(L, self, bitset_and, self, bitset);
     lua_pop(L, 1);
 
     return 0;
@@ -273,7 +309,7 @@ int lib_bitset_or(lua_State *L)
     lua_pop(L, 1);
 
     BitSet *self = check_bitset(L, 1);
-    call_bitset_func(L, bitset_or, self, bitset);
+    call_bitset_func(L, self, bitset_or, self, bitset);
     lua_pop(L, 1);
 
     return 0;
@@ -282,7 +318,7 @@ int lib_bitset_or(lua_State *L)
 int lib_bitset_not(lua_State *L)
 {
     BitSet *self = check_bitset(L, 1);
-    call_bitset_func(L, bitset_flip, self);
+    call_bitset_func(L, self, bitset_flip, self);
     lua_pop(L, 1);
     return 0;
 }

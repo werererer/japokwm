@@ -14,7 +14,25 @@ void create_lua_bitset_with_workspace(BitSet *bitset);
 void create_lua_bitset_with_container(BitSet *bitset);
 void lua_load_bitset();
 
+# define call_bitset_func(L, self, action, ...) \
+    do {\
+        action(__VA_ARGS__);\
+        if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_WORKSPACE)) {\
+            struct workspace *ws = self->data;\
+            tagset_set_tags(ws, self);\
+            return 0;\
+        }\
+        if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_CONTAINER)) {\
+            struct workspace *ws = self->data;\
+            tagset_set_tags(ws, self);\
+            return 0;\
+        }\
+        \
+    } while (0)
+
 // meta functions
+int lib_bitset_get(lua_State *L);
+int lib_bitset_set(lua_State *L);
 int lib_bitset_meta_bxor(lua_State *L);
 int lib_bitset_meta_band(lua_State * L);
 int lib_bitset_meta_bor(lua_State * L);
