@@ -306,6 +306,7 @@ void load_lua_api(lua_State *L)
     load_info(L);
 
     lua_load_bitset();
+    lua_load_monitor();
     lua_load_color();
     lua_load_container();
     lua_load_events();

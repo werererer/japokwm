@@ -46,7 +46,7 @@ void lua_load_color()
 
 struct color check_color(lua_State *L, int narg) {
     void **ud = luaL_checkudata(L, narg, CONFIG_COLOR);
-    luaL_argcheck(L, ud != NULL, 1, "`container' expected");
+    luaL_argcheck(L, ud != NULL, 1, "`color' expected");
     return *(struct color *)ud;
 }
 
