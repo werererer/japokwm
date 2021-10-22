@@ -45,7 +45,7 @@ opt.mod = 1
 
 local function exec_keycombo(i)
     if (info.is_keycombo("combo")) then
-        Workspace.get_focused().tags:_xor(1 << i)
+        Workspace.get_focused().tags:_xor(1 << (i-1))
     else
         action.view(Workspace.get(i))
     end
@@ -88,9 +88,9 @@ opt:bind_key("mod-S-comma", function()
     action.async_execute(function()
         local ws = Workspace.get_focused()
         local focus_stack = ws.focus_stack
+
         local str = ""
-        for _,con in ipairs(focus_stack) do
-            print(v)
+        for i,con in ipairs(focus_stack) do
             str = str .. con.app_id .. "\n"
         end
         local dmenu = "rofi -dmenu"
@@ -102,13 +102,11 @@ opt:bind_key("mod-S-comma", function()
         local result = handle:read("*a")
         handle:close()
 
+         -- find container
         local s_con = nil
-        for _,con in ipairs(focus_stack) do
+        for i,con in ipairs(focus_stack) do
             local res = result:gsub("%s+", "")
             local app_id = con.app_id:gsub("%s+", "")
-            print("result: ", res)
-            print("app_id: ", app_id)
-            print("equ: ", res == app_id)
             if res == app_id then
                 s_con = con
                 break;
@@ -116,13 +114,10 @@ opt:bind_key("mod-S-comma", function()
         end
 
         if s_con then
-            local focus_ws = Workspace.get_focused()
-            s_con.workspace = focus_ws
-            s_con.floating = true
-            s_con.geom.x = 40
-            s_con.geom.y = 40
-            s_con.geom.width = 40
-            s_con.geom.height = 40
+            local ws = Workspace.get_focused()
+            local ws_id = s_con.workspace:get_id()
+            ws.tags = (1 << ws_id)
+            ws.stack:repush(1, 0)
         end
     end)
 end)

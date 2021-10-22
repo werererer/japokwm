@@ -47,7 +47,6 @@ static const struct luaL_Reg workspace_setter[] =
 static const struct luaL_Reg workspace_getter[] =
 {
     {"focus_stack", lib_workspace_get_focus_stack},
-    {"focus_stack", lib_workspace_get_focus_stack},
     {"layout", lib_workspace_get_layout},
     {"stack", lib_workspace_get_stack},
     {"tags", lib_workspace_get_tags},

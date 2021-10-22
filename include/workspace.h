@@ -136,6 +136,7 @@ void load_layout(struct monitor *m);
 void workspace_remove_loaded_layouts(struct workspace *ws);
 void workspaces_remove_loaded_layouts(GPtrArray *workspaces);
 void workspace_rename(struct workspace *ws, const char *name);
+void workspace_update_name(struct workspace *ws);
 void workspace_update_names(struct server *server, GPtrArray *workspaces);
 struct container *workspace_get_focused_container(struct workspace *ws);
 

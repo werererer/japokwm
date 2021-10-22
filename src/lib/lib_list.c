@@ -7,17 +7,18 @@
 #include "tile/tileUtils.h"
 #include "tagset.h"
 
+#include <GLES2/gl2.h>
 #include <stdlib.h>
 #include <ctype.h>
 
 static const struct luaL_Reg list_meta[] =
 {
+    {"__index", lib_list_get},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg list_f[] =
 {
-    {"__index", lib_list_get},
     {NULL, NULL},
 };
 
@@ -137,7 +138,26 @@ int lib_list_repush(lua_State *L)
     GPtrArray *array = check_list(L, 1);
     lua_pop(L, 1);
 
+    if (array->len <= 0) {
+        return 0;
+    }
+
+    i = MIN(i, array->len);
+    if (i >= array->len) {
+        i = array->len-1;
+    }
+    if (i < 0) {
+        return 0;
+    }
+    if (abs_index >= array->len-1) {
+        abs_index = array->len-2;
+    }
+    if (i < 0) {
+        return 0;
+    }
+
     struct container *con = g_ptr_array_steal_index(array, i);
+
     g_ptr_array_insert(array, abs_index, con);
 
     struct workspace *ws = server_get_selected_workspace();

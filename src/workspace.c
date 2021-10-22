@@ -572,50 +572,56 @@ static struct container *workspace_get_local_focused_container(struct workspace 
     return NULL;
 }
 
+void workspace_update_name(struct workspace *ws)
+{
+    struct layout *lt = workspace_get_layout(ws);
+    if (!lt)
+        return;
+    int ws_id = ws->id;
+
+    const char *default_name;
+    if (ws_id < lt->options->tag_names->len) {
+        default_name = g_ptr_array_index(lt->options->tag_names, ws_id);
+    } else {
+        default_name = ws->name;
+    }
+    struct container *con = workspace_get_local_focused_container(ws);
+
+    const char *name = default_name;
+
+    //TODO refactor
+    char *num_name = strdup("");
+
+    const char *app_id = container_get_app_id(con);
+    if (con
+            && app_id != NULL
+            && g_strcmp0(app_id, "") != 0
+       ) {
+
+        name = app_id;
+
+        char ws_number[12];
+        char ws_name_number[12];
+        sprintf(ws_number, "%lu:", ws->id);
+        sprintf(ws_name_number, "%lu:", ws->id+1);
+        append_string(&num_name, ws_number);
+        append_string(&num_name, ws_name_number);
+    }
+
+    append_string(&num_name, name);
+
+    char final_name[12];
+    strncpy(final_name, num_name, 12);
+    workspace_rename(ws, final_name);
+    free(num_name);
+}
+
 void workspace_update_names(struct server *server, GPtrArray *workspaces)
 {
-    struct layout *lt = server->default_layout;
-    if (!lt->options->automatic_workspace_naming)
-        return;
     for (int i = 0; i < workspaces->len; i++) {
         struct workspace *ws = g_ptr_array_index(workspaces, i);
-        const char *default_name;
-        if (i < lt->options->tag_names->len) {
-            default_name = g_ptr_array_index(lt->options->tag_names, i);
-        } else {
-            default_name = ws->name;
-        }
-        struct container *con = workspace_get_local_focused_container(ws);
-
-        const char *name = default_name;
-
-        //TODO refactor
-        char *num_name = strdup("");
-
-        const char *app_id = container_get_app_id(con);
-        if (con
-                && app_id != NULL
-                && g_strcmp0(app_id, "") != 0
-                ) {
-
-            name = app_id;
-
-            char ws_number[12];
-            char ws_name_number[12];
-            sprintf(ws_number, "%lu:", ws->id);
-            sprintf(ws_name_number, "%lu:", ws->id+1);
-            append_string(&num_name, ws_number);
-            append_string(&num_name, ws_name_number);
-        }
-
-        append_string(&num_name, name);
-
-        char final_name[12];
-        strncpy(final_name, num_name, 12);
-        workspace_rename(ws, final_name);
-        free(num_name);
+        workspace_update_name(ws);
     }
-    ipc_event_workspace();
 }
 
 struct container *workspace_get_focused_container(struct workspace *ws)
