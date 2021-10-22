@@ -44,7 +44,6 @@ layout.default_layout = "two_pane"
 opt.mod = 1
 
 local function exec_keycombo(i)
-    local g = Bitset.new()
     if (info.is_keycombo("combo")) then
         Workspace.get_focused().tags:_xor(1 << i)
     else
