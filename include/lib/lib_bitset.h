@@ -9,9 +9,9 @@
 struct workspace_tags;
 
 BitSet *check_bitset(lua_State *L, int narg);
-void create_lua_bitset(struct BitSet *bitset);
-void create_lua_bitset_with_workspace(BitSet *bitset);
-void create_lua_bitset_with_container(BitSet *bitset);
+void create_lua_bitset(lua_State *L, struct BitSet *bitset);
+void create_lua_bitset_with_workspace(lua_State *L, BitSet *bitset);
+void create_lua_bitset_with_container(lua_State *L, BitSet *bitset);
 void lua_load_bitset();
 
 # define call_bitset_func(L, self, action, ...) \

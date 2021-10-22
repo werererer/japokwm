@@ -86,7 +86,7 @@ void lua_load_bitset()
     lua_setglobal(L, "Bitset");
 }
 
-static void create_lua_bitset_gc(BitSet *bitset)
+static void create_lua_bitset_gc(lua_State *L, BitSet *bitset)
 {
     BitSet **user_bitset = lua_newuserdata(L, sizeof(BitSet *));
     *user_bitset = bitset;
@@ -116,8 +116,9 @@ BitSet *check_bitset(lua_State *L, int narg)
             bitset_assign(bitset, i, bitset_test(tmp_bitset, last_bit_id - i));
         }
         bitset_destroy(tmp_bitset);
+
         // hand over garbage collection to lua
-        create_lua_bitset_gc(bitset);
+        create_lua_bitset_gc(L, bitset);
         ud = luaL_checkudata(L, narg, CONFIG_BITSET_GC);
     } else {
         lua_pushstring(L, "`bitset' expected");
@@ -127,7 +128,7 @@ BitSet *check_bitset(lua_State *L, int narg)
     return *(BitSet **)ud;
 }
 
-void create_lua_bitset_with_workspace(BitSet *bitset)
+void create_lua_bitset_with_workspace(lua_State *L, BitSet *bitset)
 {
     BitSet **user_bitset = lua_newuserdata(L, sizeof(BitSet *));
     *user_bitset = bitset;
@@ -135,7 +136,7 @@ void create_lua_bitset_with_workspace(BitSet *bitset)
     luaL_setmetatable(L, CONFIG_BITSET_WITH_WORKSPACE);
 }
 
-void create_lua_bitset_with_container(BitSet *bitset)
+void create_lua_bitset_with_container(lua_State *L, BitSet *bitset)
 {
     BitSet **user_bitset = lua_newuserdata(L, sizeof(BitSet *));
     *user_bitset = bitset;
@@ -143,7 +144,7 @@ void create_lua_bitset_with_container(BitSet *bitset)
     luaL_setmetatable(L, CONFIG_BITSET_WITH_CONTAINER);
 }
 
-void create_lua_bitset(struct BitSet *bitset)
+void create_lua_bitset(lua_State *L, struct BitSet *bitset)
 {
     struct BitSet **user_tags = lua_newuserdata(L, sizeof(BitSet *));
     *user_tags = bitset;
@@ -212,7 +213,7 @@ int lib_bitset_meta_bxor(lua_State *L)
     bitset_assign_bitset(&target_bitset, self);
     bitset_xor(target_bitset, bitset);
 
-    create_lua_bitset_gc(target_bitset);
+    create_lua_bitset_gc(L, target_bitset);
     return 1;
 }
 
@@ -228,7 +229,7 @@ int lib_bitset_meta_band(lua_State *L)
     bitset_assign_bitset(&target_bitset, oth_bitset);
     bitset_and(target_bitset, bitset);
 
-    create_lua_bitset_gc(target_bitset);
+    create_lua_bitset_gc(L, target_bitset);
     return 1;
 }
 
@@ -244,7 +245,7 @@ int lib_bitset_meta_bor(lua_State *L)
     bitset_assign_bitset(&target_bitset, oth_bitset);
     bitset_or(target_bitset, bitset);
 
-    create_lua_bitset_gc(target_bitset);
+    create_lua_bitset_gc(L, target_bitset);
     return 1;
 }
 
@@ -257,7 +258,7 @@ int lib_bitset_meta_bnot(lua_State *L)
     bitset_assign_bitset(&target_bitset, bitset);
     bitset_flip(target_bitset);
 
-    create_lua_bitset_gc(target_bitset);
+    create_lua_bitset_gc(L, target_bitset);
     return 1;
 }
 
@@ -274,7 +275,7 @@ int lib_bitset_new(lua_State *L)
 {
     BitSet *bitset = bitset_create();
     // hand over rights for this pointer (deletion etc.) to lua
-    create_lua_bitset_gc(bitset);
+    create_lua_bitset_gc(L, bitset);
     return 1;
 }
 // methods
