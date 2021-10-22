@@ -16,6 +16,7 @@
 #include "lib/lib_list.h"
 #include "lib/lib_list2D.h"
 #include "lib/lib_layout.h"
+#include "lib/lib_bitset.h"
 
 static const struct luaL_Reg workspace_meta[] =
 {
@@ -49,6 +50,7 @@ static const struct luaL_Reg workspace_getter[] =
     {"focus_stack", lib_workspace_get_focus_stack},
     {"layout", lib_workspace_get_layout},
     {"stack", lib_workspace_get_stack},
+    {"tags", lib_workspace_get_tags},
     {NULL, NULL},
 };
 
@@ -184,21 +186,14 @@ int lib_workspace_get_id(lua_State *L)
 }
 
 // setter
+
 int lib_set_tags(lua_State *L)
 {
-    uint64_t tags_dec = luaL_checkinteger(L, -1);
+    BitSet *bitset = check_bitset(L, 2);
     lua_pop(L, 1);
 
     struct workspace *ws = check_workspace(L, 1);
     lua_pop(L, 1);
-
-    BitSet *tmp_bitset = bitset_from_value(tags_dec);
-    BitSet *bitset = bitset_create();
-    for (int i = 0; i < bitset->size; i++) {
-        int last_bit_id = tmp_bitset->size - 1;
-        bitset_assign(bitset, i, bitset_test(tmp_bitset, last_bit_id - i));
-    }
-    bitset_destroy(tmp_bitset);
 
     tagset_set_tags(ws, bitset);
     return 0;
@@ -229,5 +224,15 @@ int lib_workspace_get_stack(lua_State *L)
     lua_pop(L, 1);
 
     create_lua_list(L, ws->con_set->tiled_containers);
+    return 1;
+}
+
+int lib_workspace_get_tags(lua_State *L)
+{
+    struct workspace *ws = check_workspace(L, 1);
+    lua_pop(L, 1);
+
+    BitSet *workspaces = ws->workspaces;
+    create_lua_bitset_with_workspace(workspaces);
     return 1;
 }

@@ -72,6 +72,7 @@ srcs = files(
     'utils/parseConfigUtils.c',
     'utils/stringUtils.c',
     'utils/writeFile.c',
+    'lib/lib_bitset.c'
   )
 
 libName = 'japokwm_lib'
