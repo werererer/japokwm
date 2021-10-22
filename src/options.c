@@ -117,15 +117,23 @@ void options_add_keybinding(struct options *options, struct keybinding *keybindi
     free(keybinding->binding);
     keybinding->binding = sorted_binding;
 
+    // remove duplicates
     struct keybinding **base = (struct keybinding **)keybindings->pdata;
-    int final_pos = 1 + lower_bound(
+    int lb = lower_bound(
             &keybinding,
             base,
             keybindings->len,
             sizeof(struct keybinding *),
             cmp_keybinding);
+    if (lb >= 0) {
+        struct keybinding *kb = g_ptr_array_index(options->keybindings, lb);
+        if (strcmp(kb->binding, sorted_binding) == 0) {
+            g_ptr_array_remove_index(options->keybindings, lb);
+        }
+    }
 
-    g_ptr_array_insert(keybindings, final_pos, keybinding);
+    int insert_position = 1 + lb;
+    g_ptr_array_insert(keybindings, insert_position, keybinding);
 }
 
 #define bind_key(options, binding, lua_func) add_keybind(options, binding, #lua_func)

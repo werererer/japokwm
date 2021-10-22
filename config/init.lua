@@ -179,5 +179,7 @@ opt:bind_key("mod-S-9",       function()
         Container.get_focused().workspace = Workspace.get(9)
     end
 end)
+opt:bind_key("mod-s", function() print("notice me") end)
+opt:bind_key("mod-s", function() print("no") end)
 opt:bind_key("mod-C-S-0",     function() Container.get_focused():set_sticky_restricted(0) end)
 opt:bind_key("mod-C-S-9",     function() Container.get_focused():set_sticky_restricted(255) end)
