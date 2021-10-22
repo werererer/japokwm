@@ -83,7 +83,7 @@ opt:bind_key("mod-S-p",       function() container.set_sticky(info.this_containe
 opt:bind_key("mod-p",         function() action.exec("rofi -show run") end)
 opt:bind_key("mod-e",         function() action.view(Workspace.get_focused():get_next_empty(info.direction.left):get_id()) end)
 opt:bind_key("mod-period",    function() action.toggle_workspace() end)
-opt:bind_key("mod-S-period",  function() action.toggle_layout() end)
+opt:bind_key("mod-S-period",  function() action.toggle_tags() end)
 opt:bind_key("mod-S-comma", function()
     -- action.async_execute(function()
     --     local ws = Workspace.get_focused()

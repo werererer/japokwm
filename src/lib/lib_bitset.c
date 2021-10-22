@@ -197,7 +197,7 @@ int lib_bitset_set(lua_State *L)
         return 1;
     }
 
-    call_bitset_func(L, bitset, bitset_assign, bitset, i, value);
+    call_bitset_func(L, bitset_assign, bitset, i, value);
     return 0;
 }
 
@@ -286,8 +286,9 @@ int lib_bitset_xor(lua_State *L)
     lua_pop(L, 1);
 
     BitSet *self = check_bitset(L, 1);
-    call_bitset_func(L, self, bitset_xor, self, bitset);
+    call_bitset_func(L, bitset_xor, self, bitset);
     lua_pop(L, 1);
+    bitset_destroy(self);
 
     return 0;
 }
@@ -298,7 +299,7 @@ int lib_bitset_and(lua_State *L)
     lua_pop(L, 1);
 
     BitSet *self = check_bitset(L, 1);
-    call_bitset_func(L, self, bitset_and, self, bitset);
+    call_bitset_func(L, bitset_and, self, bitset);
     lua_pop(L, 1);
 
     return 0;
@@ -310,7 +311,7 @@ int lib_bitset_or(lua_State *L)
     lua_pop(L, 1);
 
     BitSet *self = check_bitset(L, 1);
-    call_bitset_func(L, self, bitset_or, self, bitset);
+    call_bitset_func(L, bitset_or, self, bitset);
     lua_pop(L, 1);
 
     return 0;
@@ -319,7 +320,7 @@ int lib_bitset_or(lua_State *L)
 int lib_bitset_not(lua_State *L)
 {
     BitSet *self = check_bitset(L, 1);
-    call_bitset_func(L, self, bitset_flip, self);
+    call_bitset_func(L, bitset_flip, self);
     lua_pop(L, 1);
     return 0;
 }

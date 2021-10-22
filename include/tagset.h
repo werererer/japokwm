@@ -96,8 +96,8 @@ bool visible_on(struct monitor *m, BitSet *workspaces, struct container *con);
 bool tagset_exist_on(struct monitor *m, struct container *con);
 bool tagset_visible_on(struct monitor *m, struct container *con);
 
-void focus_tagset(struct workspace *ws);
-void push_tagset(struct workspace *ws);
+void push_tagset(struct workspace *ws, BitSet *workspaces);
+void focus_tagset(struct workspace *ws, BitSet *workspaces);
 
 void tagset_workspaces_reconnect(struct workspace *ws);
 void tagset_workspaces_disconnect(struct workspace *ws);

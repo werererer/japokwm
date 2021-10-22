@@ -20,6 +20,7 @@
 #include "workspace.h"
 #include "workspace.h"
 #include "root.h"
+#include "server.h"
 
 static void tagset_assign_workspace(struct workspace *sel_ws, struct workspace *ws, bool active);
 static void tagset_unset_workspace(struct workspace *sel_ws, struct workspace *ws);
@@ -64,7 +65,7 @@ static bool workspace_is_damaged(struct workspace *ws)
 
 static void tagset_assign_workspaces(struct workspace *ws, BitSet *workspaces)
 {
-    bitset_assign_bitset(&ws->workspaces, workspaces);
+    workspace_set_tags(ws, workspaces);
 }
 
 void tagset_set_tags(struct workspace *sel_ws, BitSet *workspaces)
@@ -76,12 +77,11 @@ void tagset_set_tags(struct workspace *sel_ws, BitSet *workspaces)
     bitset_assign_bitset(&sel_ws->prev_workspaces, sel_ws->workspaces);
 
     tagset_workspaces_disconnect(sel_ws);
-    tagset_assign_workspaces(sel_ws, workspaces_copy);
+    tagset_assign_workspaces(sel_ws, workspaces);
     tagset_workspaces_connect(sel_ws);
     workspace_damage(sel_ws);
     tagset_load_workspaces(sel_ws, sel_ws->workspaces);
     update_reduced_focus_stack(sel_ws);
-    bitset_assign_bitset(&sel_ws->workspaces, sel_ws->workspaces);
     arrange();
     focus_most_recent_container();
 
@@ -175,9 +175,8 @@ void monitor_focus_tags(struct monitor *m, struct workspace *ws, BitSet *workspa
     assert(workspaces != NULL);
 
     workspace_set_selected_monitor(ws, m);
-    tagset_assign_workspaces(ws, workspaces);
 
-    push_tagset(ws);
+    push_tagset(ws, workspaces);
 }
 
 void workspace_write_to_focus_stacks(struct workspace *ws)
@@ -290,10 +289,14 @@ static void restore_floating_containers(struct workspace *ws)
     }
 }
 
-void focus_tagset(struct workspace *ws)
+void focus_tagset(struct workspace *ws, BitSet *workspaces)
 {
     if(!ws)
         return;
+
+    BitSet *workspaces_copy = bitset_copy(workspaces);
+
+    tagset_assign_workspaces(ws, workspaces_copy);
 
     struct monitor *prev_m = server_get_selected_monitor();
     struct workspace *prev_ws = monitor_get_active_workspace(prev_m);
@@ -320,6 +323,8 @@ void focus_tagset(struct workspace *ws)
 
     struct seat *seat = input_manager_get_default_seat();
     cursor_rebase(seat->cursor);
+
+    bitset_destroy(workspaces_copy);
 }
 
 void workspace_write_to_workspaces(struct workspace *ws)
@@ -339,16 +344,17 @@ static void _set_previous_tagset(struct workspace *ws)
     server.previous_workspace = ws->id;
 }
 
-void push_tagset(struct workspace *sel_ws)
+void push_tagset(struct workspace *sel_ws, BitSet *workspaces)
 {
     // struct monitor *ws_m = workspace_get_selected_monitor(sel_ws);
     // struct monitor *m = ws_m ? ws_m : server_get_selected_monitor();
     struct workspace *ws = server_get_selected_workspace();
-    // if (ws != sel_ws) {
-    _set_previous_tagset(ws);
-    // }
+    if (ws != sel_ws) {
+        _set_previous_tagset(ws);
+        workspace_set_prev_tags(sel_ws, sel_ws->workspaces);
+    }
 
-    focus_tagset(sel_ws);
+    focus_tagset(sel_ws, workspaces);
 }
 
 static void handle_too_few_workspaces(uint32_t ws_id)

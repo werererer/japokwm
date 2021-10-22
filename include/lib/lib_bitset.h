@@ -14,17 +14,20 @@ void create_lua_bitset_with_workspace(lua_State *L, BitSet *bitset);
 void create_lua_bitset_with_container(lua_State *L, BitSet *bitset);
 void lua_load_bitset();
 
-# define call_bitset_func(L, self, action, ...) \
+# define call_bitset_func(L, action, self, ...) \
     do {\
-        action(__VA_ARGS__);\
+        BitSet *self_copy = bitset_copy(self);\
+        action(self_copy, ##__VA_ARGS__);\
         if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_WORKSPACE)) {\
             struct workspace *ws = self->data;\
-            tagset_set_tags(ws, self);\
+            tagset_set_tags(ws, self_copy);\
+            bitset_destroy(self_copy);\
             return 0;\
         }\
         if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_CONTAINER)) {\
             struct workspace *ws = self->data;\
-            tagset_set_tags(ws, self);\
+            tagset_set_tags(ws, self_copy);\
+            bitset_destroy(self_copy);\
             return 0;\
         }\
         \

@@ -205,15 +205,15 @@ void load_default_keybindings()
             end
             );
 
-    bind_key(options, "mod-C-1", action.tag_view(1 << 0));
-    bind_key(options, "mod-C-2", action.tag_view(1 << 1));
-    bind_key(options, "mod-C-3", action.tag_view(1 << 2));
-    bind_key(options, "mod-C-4", action.tag_view(1 << 3));
-    bind_key(options, "mod-C-5", action.tag_view(1 << 4));
-    bind_key(options, "mod-C-6", action.tag_view(1 << 5));
-    bind_key(options, "mod-C-7", action.tag_view(1 << 6));
-    bind_key(options, "mod-C-8", action.tag_view(1 << 7));
-    bind_key(options, "mod-C-9", action.tag_view(1 << 8));
+    bind_key(options, "mod-C-1", Workspace.get_focused().tags:_xor(1 << 0));
+    bind_key(options, "mod-C-2", Workspace.get_focused().tags:_xor(1 << 1));
+    bind_key(options, "mod-C-3", Workspace.get_focused().tags:_xor(1 << 2));
+    bind_key(options, "mod-C-4", Workspace.get_focused().tags:_xor(1 << 3));
+    bind_key(options, "mod-C-5", Workspace.get_focused().tags:_xor(1 << 4));
+    bind_key(options, "mod-C-6", Workspace.get_focused().tags:_xor(1 << 5));
+    bind_key(options, "mod-C-7", Workspace.get_focused().tags:_xor(1 << 6));
+    bind_key(options, "mod-C-8", Workspace.get_focused().tags:_xor(1 << 7));
+    bind_key(options, "mod-C-9", Workspace.get_focused().tags:_xor(1 << 8));
 
     bind_key(options, "mod-C-S-1", Container.get_focused():toggle_add_sticky(1 << 0));
     bind_key(options, "mod-C-S-2", Container.get_focused():toggle_add_sticky(1 << 1));

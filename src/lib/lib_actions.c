@@ -465,7 +465,10 @@ int lib_toggle_tags(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
-    tagset_set_tags(ws, ws->prev_workspaces);
+    BitSet *bitset = bitset_copy(ws->prev_workspaces);
+    tagset_set_tags(ws, bitset);
+    debug_print("\n toggle tags: \n");
+    print_bitset(ws->prev_workspaces);
     return 0;
 }
 

@@ -435,7 +435,6 @@ void workspace_set_selected_monitor(struct workspace *ws, struct monitor *m)
 void workspace_set_current_monitor(struct workspace *ws, struct monitor *m)
 {
     ws->current_m = m;
-    debug_print("ws: %i current: %p\n", ws->id, ws->current_m);
 }
 
 BitSet *workspace_get_tags(struct workspace *ws)
@@ -816,6 +815,21 @@ void workspace_remove_container_from_focus_stack(struct workspace *ws, struct co
         call_on_unfocus_function(ev, prev_sel);
         call_on_focus_function(ev, sel);
     }
+}
+
+void workspace_set_tags(struct workspace *ws, BitSet *tags)
+{
+    debug_print("\n set workspaces\n");
+    bitset_assign_bitset(&ws->workspaces, tags);
+    print_bitset(ws->workspaces);
+}
+
+void workspace_set_prev_tags(struct workspace *ws, struct BitSet *tags)
+{
+    debug_print("\n set prev_tagset\n");
+    bitset_assign_bitset(&ws->prev_workspaces, tags);
+    print_bitset(ws->prev_workspaces);
+    debug_print("\n set prev_tagset end\n");
 }
 
 static int get_in_container_stack(struct container *con)
