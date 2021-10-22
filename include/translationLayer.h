@@ -50,6 +50,7 @@ struct workspace;
 #define CONFIG_LIST "japokwm.list"
 #define CONFIG_LIST2D "japokwm.list2D"
 #define CONFIG_LOCAL_OPTIONS "japokwm.local.options"
+#define CONFIG_MONITOR "japokwm.monitor"
 #define CONFIG_OPTIONS "japokwm.options"
 #define CONFIG_SERVER "japokwm.server"
 #define CONFIG_WORKSPACE "japokwm.workspace"
