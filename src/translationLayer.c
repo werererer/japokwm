@@ -91,8 +91,8 @@ static const struct luaL_Reg info[] =
 
 static const struct luaL_Reg monitor[] = 
 {
-    {"set_scale", lib_set_scale},
-    {"set_transform", lib_set_transform},
+    {"set_scale", lib_monitor_set_scale},
+    {"set_transform", lib_monitor_set_transform},
     {NULL, NULL},
 };
 

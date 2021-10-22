@@ -125,11 +125,9 @@ opt:bind_key("mod-S-comma", function()
     end)
 end)
 opt:bind_key("mod-comma",     function()
-    local con = Container.get_focused()
-    if con then
-        Container.get_focused().geom.x = 40
-    end
- end)
+    -- Monitor.get_focused().workspace.tags = 3;
+    -- Monitor.get_focused()
+end)
 opt:bind_key("mod-S-Return",  function() action.exec(termcmd) end)
 opt:bind_key("mod-a",         function() action.increase_nmaster() end)
 opt:bind_key("mod-x",         function() action.decrease_nmaster() end)

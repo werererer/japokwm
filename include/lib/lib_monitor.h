@@ -5,7 +5,14 @@
 
 void lua_load_monitor();
 
-int lib_set_scale(lua_State *L);
-int lib_set_transform(lua_State *L);
+// functions
+int lib_monitor_get_focused(lua_State *L);
+// methods
+
+// getter
+int lib_monitor_get_workspace(lua_State *L);
+// setter
+int lib_monitor_set_scale(lua_State *L);
+int lib_monitor_set_transform(lua_State *L);
 
 #endif /* LIB_MONITOR_H */
