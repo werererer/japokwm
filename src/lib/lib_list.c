@@ -142,7 +142,6 @@ int lib_list_repush(lua_State *L)
         return 0;
     }
 
-    i = MIN(i, array->len);
     if (i >= array->len) {
         i = array->len-1;
     }
