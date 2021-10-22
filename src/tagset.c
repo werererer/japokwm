@@ -74,7 +74,7 @@ void tagset_set_tags(struct workspace *sel_ws, BitSet *workspaces)
     // working with which can happen through assign_bitset
     BitSet *workspaces_copy = bitset_copy(workspaces);
 
-    bitset_assign_bitset(&sel_ws->prev_workspaces, sel_ws->workspaces);
+    workspace_set_prev_tags(sel_ws, sel_ws->workspaces);
 
     tagset_workspaces_disconnect(sel_ws);
     tagset_assign_workspaces(sel_ws, workspaces);
@@ -351,6 +351,8 @@ void push_tagset(struct workspace *sel_ws, BitSet *workspaces)
     struct workspace *ws = server_get_selected_workspace();
     if (ws != sel_ws) {
         _set_previous_tagset(ws);
+    }
+    if (ws == sel_ws) { 
         workspace_set_prev_tags(sel_ws, sel_ws->workspaces);
     }
 
