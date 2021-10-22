@@ -35,6 +35,7 @@ int lib_workspace_swap_workspace(lua_State *L);
 int lib_toggle_bars(lua_State *L);
 int lib_toggle_floating(lua_State *L);
 int lib_toggle_layout(lua_State *L);
+int lib_toggle_tags(lua_State *L);
 int lib_toggle_view(lua_State *L);
 int lib_toggle_workspace(lua_State *L);
 int lib_view(lua_State *L);

@@ -93,10 +93,9 @@ int lib_list2D_find(lua_State *L)
     GPtrArray *array = check_list2D(L, 1);
     lua_pop(L, 1);
 
-    guint pos;
-    g_ptr_array_find(array, con, &pos);
+    guint pos = find_in_composed_list(array, NULL, con);
 
-    lua_pushinteger(L, pos);
+    lua_pushinteger(L, c_idx_to_lua_idx(pos));
     return 1;
 }
 
