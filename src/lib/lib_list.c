@@ -148,8 +148,8 @@ int lib_list_repush(lua_State *L)
     if (i < 0) {
         return 0;
     }
-    if (abs_index >= array->len-1) {
-        abs_index = array->len-2;
+    if (abs_index >= array->len) {
+        abs_index = array->len-1;
     }
     if (i < 0) {
         return 0;

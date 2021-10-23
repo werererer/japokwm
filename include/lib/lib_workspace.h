@@ -30,4 +30,6 @@ int lib_workspace_get_focus_stack(lua_State *L);
 int lib_workspace_get_layout(lua_State *L);
 int lib_workspace_get_stack(lua_State *L);
 int lib_workspace_get_tags(lua_State *L);
+int lib_workspace_get_visible_focus_stack(lua_State *L);
+int lib_workspace_get_visible_stack(lua_State *L);
 #endif /* LIB_WORKSPACE */
