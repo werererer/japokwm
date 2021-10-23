@@ -50,6 +50,8 @@ static const struct luaL_Reg workspace_getter[] =
     {"layout", lib_workspace_get_layout},
     {"stack", lib_workspace_get_stack},
     {"tags", lib_workspace_get_tags},
+    {"visible_focus_stack", lib_workspace_get_visible_focus_stack},
+    {"visible_stack", lib_workspace_get_visible_stack},
     {NULL, NULL},
 };
 
@@ -232,5 +234,23 @@ int lib_workspace_get_tags(lua_State *L)
 
     BitSet *workspaces = ws->workspaces;
     create_lua_bitset_with_workspace(L, workspaces);
+    return 1;
+}
+
+int lib_workspace_get_visible_focus_stack(lua_State *L)
+{
+    struct workspace *ws = check_workspace(L, 1);
+    lua_pop(L, 1);
+
+    create_lua_list2D(L, ws->visible_focus_set->focus_stack_lists);
+    return 1;
+}
+
+int lib_workspace_get_visible_stack(lua_State *L)
+{
+    struct workspace *ws = check_workspace(L, 1);
+    lua_pop(L, 1);
+
+    create_lua_list(L, ws->visible_con_set->tiled_containers);
     return 1;
 }

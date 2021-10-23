@@ -120,11 +120,9 @@ opt:bind_key("mod-S-comma", function()
     --         ws.stack:repush(1, 0)
     --     end
     -- end)
-    action.async_execute(function()
-        Workspace.get_focused().tags = (1 << 2)
-    end)
 end)
 opt:bind_key("mod-comma",     function()
+    Workspace.get_focused().stack:repush(1, 2)
     -- Monitor.get_focused().workspace.tags = 3;
     -- Monitor.get_focused()
 end)

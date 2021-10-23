@@ -70,7 +70,6 @@ int lib_monitor_get_focused(lua_State *L)
     struct monitor *m = server_get_selected_monitor();
     create_lua_monitor(L, m);
     return 1;
-
 }
 // methods
 // getter
