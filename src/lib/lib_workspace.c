@@ -17,6 +17,7 @@
 #include "lib/lib_list2D.h"
 #include "lib/lib_layout.h"
 #include "lib/lib_bitset.h"
+#include "lib/lib_focus_set.h"
 
 static const struct luaL_Reg workspace_meta[] =
 {
@@ -46,6 +47,8 @@ static const struct luaL_Reg workspace_setter[] =
 
 static const struct luaL_Reg workspace_getter[] =
 {
+    {"focus_set", lib_workspace_get_focus_set},
+    {"visible_focus_set", lib_workspace_get_visible_focus_set},
     {"focus_stack", lib_workspace_get_focus_stack},
     {"layout", lib_workspace_get_layout},
     {"stack", lib_workspace_get_stack},
@@ -199,6 +202,15 @@ int lib_set_tags(lua_State *L)
     return 0;
 }
 // getter
+int lib_workspace_get_focus_set(lua_State *L)
+{
+    struct workspace *ws = check_workspace(L, 1);
+    lua_pop(L, 1);
+
+    create_lua_focus_set(L, ws->focus_set);
+    return 1;
+}
+
 int lib_workspace_get_focus_stack(lua_State *L)
 {
     struct workspace *ws = check_workspace(L, 1);
@@ -234,6 +246,15 @@ int lib_workspace_get_tags(lua_State *L)
 
     BitSet *workspaces = ws->workspaces;
     create_lua_bitset_with_workspace(L, workspaces);
+    return 1;
+}
+
+int lib_workspace_get_visible_focus_set(lua_State *L)
+{
+    struct workspace *ws = check_workspace(L, 1);
+    lua_pop(L, 1);
+
+    create_lua_focus_set(L, ws->visible_focus_set);
     return 1;
 }
 

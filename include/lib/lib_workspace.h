@@ -26,10 +26,12 @@ int lib_workspace_swap(lua_State *L);
 int lib_set_tags(lua_State *L);
 
 // getter
+int lib_workspace_get_focus_set(lua_State *L);
 int lib_workspace_get_focus_stack(lua_State *L);
 int lib_workspace_get_layout(lua_State *L);
 int lib_workspace_get_stack(lua_State *L);
 int lib_workspace_get_tags(lua_State *L);
+int lib_workspace_get_visible_focus_set(lua_State *L);
 int lib_workspace_get_visible_focus_stack(lua_State *L);
 int lib_workspace_get_visible_stack(lua_State *L);
 #endif /* LIB_WORKSPACE */

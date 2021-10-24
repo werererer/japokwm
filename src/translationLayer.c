@@ -22,6 +22,7 @@
 #include "lib/lib_workspace.h"
 #include "lib/local_event_handler.h"
 #include "lib/local_options.h"
+#include "lib/lib_focus_set.h"
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "workspace.h"
@@ -306,6 +307,7 @@ void load_lua_api(lua_State *L)
     load_info(L);
 
     lua_load_bitset();
+    lua_load_focus_set();
     lua_load_monitor();
     lua_load_color();
     lua_load_container();
