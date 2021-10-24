@@ -862,7 +862,31 @@ GArray *container_array_get_positions_array(GPtrArray *containers)
     return positions;
 }
 
-void workspace_repush(struct workspace *ws, struct container *con, int new_pos)
+void workspace_repush(GPtrArray *array, int i, int abs_index)
+{
+    if (array->len <= 0) {
+        return;
+    }
+
+    if (i >= array->len) {
+        i = array->len-1;
+    }
+    if (i < 0) {
+        return;
+    }
+    if (abs_index >= array->len) {
+        abs_index = array->len-1;
+    }
+    if (i < 0) {
+        return;
+    }
+
+    struct container *con = g_ptr_array_steal_index(array, i);
+
+    g_ptr_array_insert(array, abs_index, con);
+}
+
+void workspace_repush_workspace(struct workspace *ws, struct container *con, int new_pos)
 {
     GPtrArray *tiled_list = workspace_get_tiled_list_copy(ws);
     g_ptr_array_remove(tiled_list, con);

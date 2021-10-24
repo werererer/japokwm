@@ -61,7 +61,7 @@ void focus_set_write_to_parent(
         struct focus_set *parent,
         struct focus_set *child)
 {
-    sub_list_write_to_parent_list(
+    sub_list_write_to_parent_list2D(
             parent->focus_stack_lists,
             child->focus_stack_lists);
 }
