@@ -45,6 +45,7 @@ struct workspace;
 #define CONFIG_CONTAINER "japokwm.container"
 #define CONFIG_DIRECTION "japokwm.direction"
 #define CONFIG_EVENT "japokwm.event"
+#define CONFIG_FOCUS_SET "japokwm.focus_set"
 #define CONFIG_GEOMETRY "japokwm.geometry"
 #define CONFIG_LAYOUT "japokwm.layout"
 #define CONFIG_LIST "japokwm.list"
