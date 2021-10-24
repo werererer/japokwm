@@ -585,7 +585,7 @@ void repush(int pos1, int pos2)
     g_ptr_array_unref(tiled_containers);
 
     // TODO: this doesn't work if tiled by focus
-    workspace_repush(ws, con, pos2);
+    workspace_repush_workspace(ws, con, pos2);
 
     arrange();
 

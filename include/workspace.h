@@ -166,7 +166,8 @@ void workspace_set_prev_tags(struct workspace *ws, BitSet *tags);
 
 GArray *container_array2D_get_positions_array(GPtrArray2D *containers);
 GArray *container_array_get_positions_array(GPtrArray *containers);
-void workspace_repush(struct workspace *ws, struct container *con, int i);
+void workspace_repush(GPtrArray *array, int i, int abs_index);
+void workspace_repush_workspace(struct workspace *ws, struct container *con, int new_pos);
 void workspace_repush_on_focus_stack(struct workspace *ws, struct container *con, int i);
 
 bool workspace_sticky_contains_client(struct workspace *ws, struct client *client);

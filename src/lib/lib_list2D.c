@@ -6,6 +6,8 @@
 #include "utils/coreUtils.h"
 #include "tile/tileUtils.h"
 #include "tagset.h"
+#include "list_sets/list_set.h"
+#include "workspace.h"
 
 #include <stdlib.h>
 #include <ctype.h>
@@ -146,11 +148,16 @@ int lib_list2D_repush(lua_State *L)
     lua_pop(L, 1);
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    GPtrArray *array = check_list2D(L, 1);
+    GPtrArray2D *array2D = check_list2D(L, 1);
     lua_pop(L, 1);
 
-    struct container *con = g_ptr_array_steal_index(array, i);
-    g_ptr_array_insert(array, abs_index, con);
+    GPtrArray *array = list2D_flatten(array2D);
+    array = NULL;
+
+    workspace_repush(array, i, abs_index);
+
+    sub_list_write_to_parent_list(array2D, array);
+    g_ptr_array_unref(array);
 
     struct workspace *ws = server_get_selected_workspace();
     tagset_reload(ws);

@@ -6,6 +6,7 @@
 #include "utils/coreUtils.h"
 #include "tile/tileUtils.h"
 #include "tagset.h"
+#include "workspace.h"
 
 #include <GLES2/gl2.h>
 #include <stdlib.h>
@@ -138,26 +139,7 @@ int lib_list_repush(lua_State *L)
     GPtrArray *array = check_list(L, 1);
     lua_pop(L, 1);
 
-    if (array->len <= 0) {
-        return 0;
-    }
-
-    if (i >= array->len) {
-        i = array->len-1;
-    }
-    if (i < 0) {
-        return 0;
-    }
-    if (abs_index >= array->len) {
-        abs_index = array->len-1;
-    }
-    if (i < 0) {
-        return 0;
-    }
-
-    struct container *con = g_ptr_array_steal_index(array, i);
-
-    g_ptr_array_insert(array, abs_index, con);
+    workspace_repush(array, i, abs_index);
 
     struct workspace *ws = server_get_selected_workspace();
     tagset_reload(ws);
