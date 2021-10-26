@@ -96,5 +96,3 @@ int lib_container_property_set_floating(lua_State *L)
 
     return 0;
 }
-
-

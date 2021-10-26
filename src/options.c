@@ -253,6 +253,33 @@ void load_default_keybindings()
     bind_key(options, "mod-9", action.view_or_tag(9));
 
     bind_key(options, "mod-b", Workspace.get_focused():toggle_bars());
+    bind_key(options, "mod-m", Workspace.get_focused().stack[1]:focus());
+
+    bind_key(options, "mod-S-j", action.focus_on_hidden_stack(0));
+    bind_key(options, "mod-S-k", action.focus_on_hidden_stack(-1));
+
+    bind_key(options, "mod-e", action.view(Workspace.get_focused():get_next_empty(Direction.left)));
+    bind_key(options, "mod-S-space", Layout.load_prev_in_set("default"));
+    bind_key(options, "mod-space", Layout.load_next_in_set("default"));
+
+    bind_key(options, "mod-minus", action.move_to_scratchpad(info.this_container_position()));
+    bind_key(options, "mod-S-minus", action.show_scratchpad());
+
+    bind_key(options, "mod-tab", action.swap_on_hidden_stack(0));
+    bind_key(options, "mod-S-tab", action.swap_on_hidden_stack(-1));
+
+    bind_key(options, "mod-period", action.toggle_workspace());
+    bind_key(options, "mod-S-period", action.toggle_tags());
+
+    bind_key(options, "mod-0",
+            Workspace.get_focused().tags = 1 << Workspace.get_focused():get_id()
+        );
+    bind_key(options, "mod-S-0",
+        local con = Container.get_focused()
+        if con then
+            Workspace.get_focused().tags = 1 << con.workspace:get_id()
+        end
+    );
 }
 
 static void assign_list(
