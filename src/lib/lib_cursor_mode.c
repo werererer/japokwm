@@ -3,26 +3,6 @@
 #include "cursor.h"
 #include "translationLayer.h"
 
-static const struct luaL_Reg cursor_mode_meta[] =
-{
-    {NULL, NULL},
-};
-
-static const struct luaL_Reg cursor_mode_f[] =
-{
-    {NULL, NULL},
-};
-
-static const struct luaL_Reg cursor_mode_m[] =
-{
-    {NULL, NULL},
-};
-
-static const struct luaL_Reg cursor_mode_setter[] =
-{
-    {NULL, NULL},
-};
-
 static const struct luaL_Reg cursor_mode_getter[] =
 {
     {"cursor_normal", lib_cursor_mode_get_cursor_normal},
@@ -33,15 +13,10 @@ static const struct luaL_Reg cursor_mode_getter[] =
 
 void lua_load_cursor_mode(lua_State *L)
 {
-    create_class(L,
-            cursor_mode_meta,
-            cursor_mode_f,
-            cursor_mode_m,
-            cursor_mode_setter,
-            cursor_mode_getter,
-            CONFIG_CURSOR_MODE);
+    create_enum(L, cursor_mode_getter, CONFIG_CURSOR_MODE);
 
-    luaL_newlib(L, cursor_mode_f);
+    lua_createtable(L, 0, 0);
+    luaL_setmetatable(L, CONFIG_CURSOR_MODE);
     lua_setglobal(L, "Cursor_mode");
 }
 
