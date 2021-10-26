@@ -7,7 +7,7 @@
 #include "utils/coreUtils.h"
 
 void create_lua_list2D(lua_State *L, GPtrArray2D *arr);
-void lua_load_list2D();
+void lua_load_list2D(lua_State *L);
 
 GPtrArray *check_list2D(lua_State *L, int argn);
 

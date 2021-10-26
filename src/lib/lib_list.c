@@ -52,9 +52,9 @@ void create_lua_list(lua_State *L, GPtrArray *arr)
     luaL_setmetatable(L, CONFIG_LIST);
 }
 
-void lua_load_list()
+void lua_load_list(lua_State *L)
 {
-    create_class(
+    create_class(L,
             list_meta,
             list_f,
             list_m,

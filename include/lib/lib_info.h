@@ -2,13 +2,12 @@
 #define INFO_H
 
 #include <lua.h>
+#include <lauxlib.h>
 
-int lib_get_active_layout(lua_State *L);
+void lua_load_info(lua_State *L);
+
 int lib_get_container_under_cursor(lua_State *L);
-int lib_get_n_tiled(lua_State *L);
-int lib_workspace_get_next_empty(lua_State *L);
-int lib_get_nmaster(lua_State *L);
-int lib_get_previous_layout(lua_State *L);
+// decided
 int lib_get_root_area(lua_State *L);
 int lib_get_this_container_count(lua_State *L);
 int lib_get_workspace_count(lua_State *L);

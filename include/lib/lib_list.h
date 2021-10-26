@@ -6,7 +6,7 @@
 #include <glib.h>
 
 void create_lua_list(lua_State *L, GPtrArray *arr);
-void lua_load_list();
+void lua_load_list(lua_State *L);
 
 // functions
 int lib_list_to_array(lua_State *L);

@@ -30,6 +30,73 @@
 #include "lib/lib_workspace.h"
 #include "lib/lib_layout.h"
 
+static const struct luaL_Reg action_meta[] =
+{
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg action_f[] =
+{
+    {"arrange", lib_arrange},
+    {"async_execute", lib_async_execute},
+    {"create_output", lib_create_output},
+    {"exec", lib_exec},
+    {"focus_container", lib_focus_container},
+    {"focus_on_hidden_stack", lib_focus_on_hidden_stack},
+    {"focus_on_stack", lib_focus_on_stack},
+    {"kill", lib_kill},
+    {"load_layout", lib_load_layout},
+    {"load_layout_in_set", lib_load_layout_in_set},
+    {"load_next_layout_in_set", lib_load_next_layout_in_set},
+    {"load_prev_layout_in_set", lib_load_prev_layout_in_set},
+    {"move_resize", lib_move_resize},
+    {"move_to_scratchpad", lib_move_to_scratchpad},
+    {"repush", lib_repush},
+    {"resize_main", lib_resize_main},
+    {"set_floating", lib_set_floating},
+    {"set_nmaster", lib_set_nmaster},
+    {"show_scratchpad", lib_show_scratchpad},
+    {"start_keycombo", lib_start_keycombo},
+    {"swap_on_hidden_stack", lib_swap_on_hidden_stack},
+    {"toggle_floating", lib_toggle_floating},
+    {"toggle_layout", lib_toggle_layout},
+    {"toggle_tags", lib_toggle_tags},
+    {"toggle_view", lib_toggle_view},
+    {"toggle_workspace", lib_toggle_workspace},
+    {"view", lib_view},
+    {"zoom", lib_zoom},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg action_m[] =
+{
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg action_setter[] =
+{
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg action_getter[] =
+{
+    {NULL, NULL},
+};
+
+void lua_load_action(lua_State *L)
+{
+    create_class(L,
+            action_meta,
+            action_f,
+            action_m,
+            action_setter,
+            action_getter,
+            CONFIG_ACTION);
+
+    luaL_newlib(L, action_f);
+    lua_setglobal(L, "action");
+}
+
 int lib_arrange(lua_State *L)
 {
     arrange();
@@ -90,17 +157,6 @@ int lib_focus_container(lua_State *L)
     return 0;
 }
 
-int lib_toggle_bars(lua_State *L)
-{
-    int direction = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-    struct workspace *ws = check_workspace(L, 1);
-    lua_pop(L, 1);
-
-    toggle_bars_visible(ws, direction);
-    return 0;
-}
-
 int lib_resize_main(lua_State *L)
 {
     float n = luaL_checknumber(L, -1);
@@ -109,14 +165,16 @@ int lib_resize_main(lua_State *L)
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
-    int dir = lt->options->resize_dir;
+    enum wlr_edges dir = lt->options->resize_dir;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_resize_function_ref);
     create_lua_layout(L, lt);
     lua_pushnumber(L, n);
     lua_pushinteger(L, dir);
 
-    lua_call_safe(L, 3, 1, 0);
+    if (lua_call_safe(L, 3, 1, 0) != LUA_OK) {
+        return 0;
+    }
 
     lua_copy_table_safe(L, &lt->lua_layout_copy_data_ref);
 
@@ -175,31 +233,8 @@ int lib_set_nmaster(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
     struct layout *lt = get_layout_in_monitor(m);
-    lt->nmaster = luaL_checkinteger(L, -1);
+    lt->n_master = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    arrange();
-    return 0;
-}
-
-int lib_increase_nmaster(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_master_layout_data_ref);
-    int max_nmaster = luaL_len(L, -1);
-    lua_pop(L, 1);
-
-    lt->nmaster = MIN(max_nmaster, lt->nmaster + 1);
-    arrange();
-    return 0;
-}
-
-int lib_decrease_nmaster(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-
-    lt->nmaster = MAX(1, lt->nmaster - 1);
     arrange();
     return 0;
 }

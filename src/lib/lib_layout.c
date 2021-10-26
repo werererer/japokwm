@@ -34,6 +34,7 @@ static const struct luaL_Reg layout_getter[] = {
     {"direction", lib_layout_get_direction},
     {"layout_data", lib_layout_get_layout_data},
     {"n_area", lib_layout_get_n_area},
+    {"n_master", lib_layout_get_n_master},
     {"o_layout_data", lib_layout_get_o_layout_data},
     {"resize_data", lib_layout_get_resize_data},
     {NULL, NULL},
@@ -42,6 +43,7 @@ static const struct luaL_Reg layout_getter[] = {
 static const struct luaL_Reg layout_setter[] = {
     {"default_layout", lib_set_default_layout},
     {"n_area", lib_layout_set_n_area},
+    {"n_master", lib_layout_set_n_area},
     // {"direction", lib_layout_get_direction},
     // {"layout_data", lib_layout_get_layout_data},
     // {"o_layout_data", lib_layout_get_o_layout_data},
@@ -65,9 +67,9 @@ void lua_init_layout(struct layout *layout)
     lua_setglobal(L, "layout");
 }
 
-void lua_load_layout()
+void lua_load_layout(lua_State *L)
 {
-    create_class(
+    create_class(L,
             layout_meta,
             layout_f,
             layout_m,
@@ -87,6 +89,17 @@ struct layout *check_layout(lua_State *L, int argn)
 }
 
 // functions
+int lib_get_active_layout(lua_State *L)
+{
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+
+    struct layout *lt = workspace_get_layout(ws);
+    lua_pushstring(L, lt->symbol);
+    return 1;
+}
+
+
 // methods
 int lib_set_layout(lua_State *L)
 {
@@ -233,13 +246,44 @@ int lib_layout_set_n_area(lua_State *L)
     return lt->current_max_area;
 }
 
+int lib_layout_set_nmaster(lua_State *L)
+{
+    int nmaster = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    struct layout *lt = check_layout(L, 1);
+    lua_pop(L, 1);
+
+    lt->n_master = nmaster;
+    return 0;
+}
+
 int lib_layout_get_n_area(lua_State *L)
 {
     struct layout *lt = check_layout(L, 1);
     lua_pop(L, 1);
 
     int current_max_area = lt->current_max_area;
-    return current_max_area;
+    lua_pushinteger(L, current_max_area);
+    return 1;
 }
 
+int lib_layout_get_n_master(lua_State *L)
+{
+    struct layout *lt = check_layout(L, 1);
+    lua_pop(L, 1);
+
+    int n_master = lt->n_master;
+    lua_pushinteger(L, n_master);
+    return 1;
+}
+
+int lib_layout_get_n_tiled(lua_State *L)
+{
+    struct layout *lt = check_layout(L, 1);
+    lua_pop(L, 1);
+
+    int n_tiled = lt->n_tiled;
+    lua_pushinteger(L, n_tiled);
+    return 1;
+}
 // getter

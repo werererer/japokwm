@@ -5,7 +5,7 @@
 #include <lauxlib.h>
 
 // functions
-void lua_load_color();
+void lua_load_color(lua_State *L);
 int lib_color_new(lua_State *L);
 
 struct color check_color(lua_State *L, int narg);

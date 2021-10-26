@@ -31,9 +31,10 @@ static const struct luaL_Reg color_getter[] =
     {NULL, NULL},
 };
 
-void lua_load_color()
+void lua_load_color(lua_State *L)
 {
-    create_class(color_meta,
+    create_class(L,
+            color_meta,
             color_f,
             color_m,
             color_setter,

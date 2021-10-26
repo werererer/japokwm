@@ -31,7 +31,7 @@ struct layout {
     // the absolute amount of master windows
     int n_master_abs;
     // the amount master windows
-    int nmaster;
+    int n_master;
     int lua_resize_function_ref;
     int lua_layout_ref;
     int lua_layout_copy_data_ref;

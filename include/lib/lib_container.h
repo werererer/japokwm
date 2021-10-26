@@ -9,7 +9,7 @@
 struct container;
 
 void create_lua_container(lua_State *L, struct container *con);
-void lua_load_container();
+void lua_load_container(lua_State *L);
 struct container *check_container(lua_State *L, int argn);
 
 // functions

@@ -45,9 +45,9 @@ void create_lua_geometry(lua_State *L, struct wlr_box *geom)
     luaL_setmetatable(L, CONFIG_GEOMETRY);
 }
 
-void lua_load_geom()
+void lua_load_geom(lua_State *L)
 {
-    create_class(
+    create_class(L,
             geom_meta,
             geom_f,
             geom_m,
