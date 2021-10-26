@@ -24,9 +24,10 @@ static const struct luaL_Reg container_f[] =
 };
 
 static const struct luaL_Reg container_m[] = {
+    {"focus", lib_container_focus},
+    {"kill", lib_container_kill},
     {"toggle_add_sticky", lib_container_toggle_add_sticky},
-    {"toggle_add_sticky_restricted",
-     lib_container_toggle_add_sticky_restricted},
+    {"toggle_add_sticky_restricted", lib_container_toggle_add_sticky_restricted},
     {NULL, NULL},
 };
 
@@ -102,6 +103,19 @@ int lib_container_is_equal(lua_State *L) {
     bool con_is_equal = con1 == con2;
     lua_pushboolean(L, con_is_equal);
     return 1;
+}
+
+int lib_container_focus(lua_State *L)
+{
+    int pos = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    struct container *con = get_container_from_container_stack_position(pos);
+
+    if (!con)
+        return 0;
+
+    focus_container(con);
+    return 0;
 }
 
 int lib_container_get_focused(lua_State *L) {
@@ -270,6 +284,19 @@ int lib_container_toggle_add_sticky_restricted(lua_State *L) {
         return 0;
 
     client_setsticky(con->client, bitset);
+    return 0;
+}
+
+int lib_container_kill(lua_State *L)
+{
+    struct container *con = check_container(L, 1);
+    lua_pop(L, 1);
+
+    if (!con)
+        return 0;
+
+    struct client *c = con->client;
+    kill_client(c);
     return 0;
 }
 

@@ -74,6 +74,7 @@ struct workspace;
 #define CONFIG_MONITOR "japokwm.monitor"
 #define CONFIG_OPTIONS "japokwm.options"
 #define CONFIG_OUTPUT_TRANSFORM "japokwm.output_transform"
+#define CONFIG_ROOT "japokwm.root"
 #define CONFIG_SERVER "japokwm.server"
 #define CONFIG_WORKSPACE "japokwm.workspace"
 

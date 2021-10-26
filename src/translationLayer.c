@@ -11,22 +11,23 @@
 #include "lib/lib_color.h"
 #include "lib/lib_cursor_mode.h"
 #include "lib/lib_container.h"
-#include "lib/lib_event_handler.h"
-#include "lib/lib_geom.h"
+#include "lib/lib_cursor.h"
 #include "lib/lib_direction.h"
+#include "lib/lib_event_handler.h"
+#include "lib/lib_focus_set.h"
+#include "lib/lib_geom.h"
 #include "lib/lib_info.h"
 #include "lib/lib_layout.h"
 #include "lib/lib_list.h"
 #include "lib/lib_list2D.h"
 #include "lib/lib_monitor.h"
 #include "lib/lib_options.h"
+#include "lib/lib_output_transform.h"
+#include "lib/lib_root.h"
 #include "lib/lib_server.h"
 #include "lib/lib_workspace.h"
 #include "lib/local_event_handler.h"
 #include "lib/local_options.h"
-#include "lib/lib_focus_set.h"
-#include "lib/lib_output_transform.h"
-#include "lib/lib_cursor.h"
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "workspace.h"
@@ -179,6 +180,7 @@ void load_lua_api(lua_State *L)
     lua_load_monitor(L);
     lua_load_options(L);
     lua_load_output_transform(L);
+    lua_load_root(L);
     lua_load_server(L);
     lua_load_workspace(L);
 }

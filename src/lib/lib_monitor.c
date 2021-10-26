@@ -8,6 +8,7 @@
 #include "translationLayer.h"
 #include "server.h"
 #include "lib/lib_workspace.h"
+#include "lib/lib_root.h"
 
 static const struct luaL_Reg monitor_meta[] =
 {
@@ -34,6 +35,7 @@ static const struct luaL_Reg monitor_setter[] =
 
 static const struct luaL_Reg monitor_getter[] =
 {
+    {"root", lib_monitor_get_root},
     {"workspace", lib_monitor_get_workspace},
     {NULL, NULL},
 };
@@ -74,6 +76,15 @@ int lib_monitor_get_focused(lua_State *L)
 }
 // methods
 // getter
+int lib_monitor_get_root(lua_State *L)
+{
+    struct monitor *m = check_monitor(L, 1);
+    lua_pop(L, 1);
+
+    create_lua_root(L, m->root);
+    return 1;
+}
+
 int lib_monitor_get_workspace(lua_State *L)
 {
     struct monitor *m = check_monitor(L, 1);
