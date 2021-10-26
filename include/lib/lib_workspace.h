@@ -9,7 +9,7 @@
 struct workspace;
 
 void create_lua_workspace(lua_State *L, struct workspace *ws);
-void lua_load_workspace();
+void lua_load_workspace(lua_State *L);
 
 struct workspace *check_workspace(lua_State *L, int narg);
 
@@ -24,11 +24,14 @@ int lib_workspace_swap(lua_State *L);
 
 // setter
 int lib_set_tags(lua_State *L);
+int lib_workspace_set_bars_visibility(lua_State *L);
 
 // getter
+int lib_workspace_get_bars_visibility(lua_State *L);
 int lib_workspace_get_focus_set(lua_State *L);
 int lib_workspace_get_focus_stack(lua_State *L);
 int lib_workspace_get_layout(lua_State *L);
+int lib_workspace_get_previous_layout_name(lua_State *L);
 int lib_workspace_get_stack(lua_State *L);
 int lib_workspace_get_tags(lua_State *L);
 int lib_workspace_get_visible_focus_set(lua_State *L);

@@ -5,7 +5,7 @@
 struct server;
 
 void create_lua_server(struct server *server);
-void lua_load_server();
+void lua_load_server(lua_State *L);
 
 // functions
 int lib_server_get_focused_workspace(lua_State *L);

@@ -28,8 +28,8 @@ local layout_data = {
 
 layout:set(layout_data)
 layout:set_linked_layouts({"two_pane"})
-opt.hidden_edges = info.direction.all
+opt.hidden_edges = Direction.all
 opt.smart_hidden_edges = false
-opt.resize_direction = info.direction.right
+opt.resize_direction = Direction.right
 opt:set_layout_constraints({min_width = 0.1, max_width = 1, min_height = 0.1, max_height = 1})
 opt:set_master_constraints({min_width = 0.1, max_width = 1, min_height = 0.1, max_height = 1})

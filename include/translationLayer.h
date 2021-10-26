@@ -17,7 +17,7 @@ struct workspace;
     luaL_newlib(L, functions);\
     luaL_setmetatable(L, name);
 
-#define create_class(extra_meta, functions, methods, variable_setter, variable_getter, name)\
+#define create_class(L, extra_meta, functions, methods, variable_setter, variable_getter, name)\
     do {\
         luaL_newmetatable(L, name); {\
             luaL_setfuncs(L, meta, 0);\
@@ -33,7 +33,24 @@ struct workspace;
         } lua_pop(L, 1);\
     } while(0)
 
+#define create_enum(L, variable_getter, name)\
+    do {\
+        luaL_newmetatable(L, name); {\
+            luaL_setfuncs(L, meta, 0);\
+            lua_pushstring(L, "__metatable");\
+            lua_pushstring(L, "access restricted to metatable");\
+            lua_settable(L, -3);\
+            \
+            lua_pushstring(L, "setter");\
+            lua_createtable(L, 0, 0);\
+            lua_settable(L, -3);\
+            \
+            add_table(L, "getter", variable_getter, -1);\
+        } lua_pop(L, 1);\
+    } while(0)
+
 // lua custom typenames
+#define CONFIG_ACTION "japokwm.action"
 #define CONFIG_BITSET "japokwm.bitset"
 // this is the same as CONFIG_BITSET but also tells that the data field of the
 // bitset is of the type workspace
@@ -43,16 +60,20 @@ struct workspace;
 #define CONFIG_BITSET_GC "japokwm.bitset_gc"
 #define CONFIG_COLOR "japokwm.color"
 #define CONFIG_CONTAINER "japokwm.container"
+#define CONFIG_CURSOR "japokwm.cursor"
+#define CONFIG_CURSOR_MODE "japokwm.cursor_mode"
 #define CONFIG_DIRECTION "japokwm.direction"
 #define CONFIG_EVENT "japokwm.event"
 #define CONFIG_FOCUS_SET "japokwm.focus_set"
 #define CONFIG_GEOMETRY "japokwm.geometry"
+#define CONFIG_INFO "japokwm.info"
 #define CONFIG_LAYOUT "japokwm.layout"
 #define CONFIG_LIST "japokwm.list"
 #define CONFIG_LIST2D "japokwm.list2D"
 #define CONFIG_LOCAL_OPTIONS "japokwm.local.options"
 #define CONFIG_MONITOR "japokwm.monitor"
 #define CONFIG_OPTIONS "japokwm.options"
+#define CONFIG_OUTPUT_TRANSFORM "japokwm.output_transform"
 #define CONFIG_SERVER "japokwm.server"
 #define CONFIG_WORKSPACE "japokwm.workspace"
 

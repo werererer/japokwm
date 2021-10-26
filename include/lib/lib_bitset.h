@@ -12,7 +12,7 @@ BitSet *check_bitset(lua_State *L, int narg);
 void create_lua_bitset(lua_State *L, struct BitSet *bitset);
 void create_lua_bitset_with_workspace(lua_State *L, BitSet *bitset);
 void create_lua_bitset_with_container(lua_State *L, BitSet *bitset);
-void lua_load_bitset();
+void lua_load_bitset(lua_State *L);
 
 # define call_bitset_func(L, action, self, ...) \
     do {\

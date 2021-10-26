@@ -52,9 +52,9 @@ void create_lua_list2D(lua_State *L, GPtrArray2D *arr)
     luaL_setmetatable(L, CONFIG_LIST2D);
 }
 
-void lua_load_list2D()
+void lua_load_list2D(lua_State *L)
 {
-    create_class(
+    create_class(L,
             list2D_meta,
             list2D_f,
             list2D_m,

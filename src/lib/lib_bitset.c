@@ -49,30 +49,34 @@ static const struct luaL_Reg bitset_getter[] =
     {NULL, NULL},
 };
 
-void lua_load_bitset()
+void lua_load_bitset(lua_State *L)
 {
-    create_class(bitset_meta,
+    create_class(L,
+            bitset_meta,
             bitset_f,
             bitset_m,
             bitset_setter,
             bitset_getter,
             CONFIG_BITSET);
 
-    create_class(bitset_meta,
+    create_class(L,
+            bitset_meta,
             bitset_f,
             bitset_m,
             bitset_setter,
             bitset_getter,
             CONFIG_BITSET_WITH_WORKSPACE);
 
-    create_class(bitset_meta,
+    create_class(L,
+            bitset_meta,
             bitset_f,
             bitset_m,
             bitset_setter,
             bitset_getter,
             CONFIG_BITSET_WITH_CONTAINER);
 
-    create_class(bitset_meta,
+    create_class(L,
+            bitset_meta,
             bitset_f,
             bitset_m,
             bitset_setter,

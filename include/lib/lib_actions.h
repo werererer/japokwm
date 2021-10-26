@@ -7,6 +7,8 @@
 #include "monitor.h"
 #include "client.h"
 
+void lua_load_action(lua_State *L);
+
 int lib_arrange(lua_State *L);
 int lib_async_execute(lua_State *L);
 int lib_create_output(lua_State *L);
@@ -32,7 +34,6 @@ int lib_show_scratchpad(lua_State *L);
 int lib_start_keycombo(lua_State *L);
 int lib_swap_on_hidden_stack(lua_State *L);
 int lib_workspace_swap_workspace(lua_State *L);
-int lib_toggle_bars(lua_State *L);
 int lib_toggle_floating(lua_State *L);
 int lib_toggle_layout(lua_State *L);
 int lib_toggle_tags(lua_State *L);

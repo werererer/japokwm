@@ -38,9 +38,10 @@ static const struct luaL_Reg monitor_getter[] =
     {NULL, NULL},
 };
 
-void lua_load_monitor()
+void lua_load_monitor(lua_State *L)
 {
-    create_class(monitor_meta,
+    create_class(L,
+            monitor_meta,
             monitor_f,
             monitor_m,
             monitor_setter,
@@ -84,18 +85,23 @@ int lib_monitor_get_workspace(lua_State *L)
 }
 
 // setter
+
 int lib_monitor_set_scale(lua_State *L)
 {
-    struct monitor *m = server_get_selected_monitor();
     float scale = luaL_checknumber(L, -1);
+    lua_pop(L, 1);
+    struct monitor *m = check_monitor(L, 1);
+    lua_pop(L, 1);
     scale_monitor(m, scale);
     return 0;
 }
 
 int lib_monitor_set_transform(lua_State *L)
 {
-    struct monitor *m = server_get_selected_monitor();
     enum wl_output_transform transform = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+    struct monitor *m = check_monitor(L, 1);
+    lua_pop(L, 1);
     transform_monitor(m, transform);
     return 0;
 }

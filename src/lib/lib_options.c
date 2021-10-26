@@ -15,6 +15,7 @@
 #include "utils/gapUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "workspace.h"
+#include "lib/lib_direction.h"
 
 static const struct luaL_Reg options_meta[] =
 {
@@ -85,9 +86,10 @@ void create_lua_options(struct options *options) {
     luaL_setmetatable(L, CONFIG_OPTIONS);
 }
 
-void lua_load_options()
+void lua_load_options(lua_State *L)
 {
-    create_class(options_meta,
+    create_class(L,
+            options_meta,
             options_f,
             options_m,
             options_setter,
@@ -449,7 +451,7 @@ int lib_set_master_constraints(lua_State *L)
 
 int lib_set_resize_direction(lua_State *L)
 {
-    int resize_dir = luaL_checkinteger(L, -1);
+    enum wlr_edges resize_dir = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
     struct options *options = check_options(L, 1);
@@ -462,7 +464,7 @@ int lib_set_resize_direction(lua_State *L)
 
 int lib_set_hidden_edges(lua_State *L)
 {
-    int hidden_edges = luaL_checkinteger(L, -1);
+    enum wlr_edges hidden_edges = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
     struct options *options = check_options(L, 1);

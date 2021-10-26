@@ -3,7 +3,7 @@
 
 #include <lua.h>
 
-void lua_load_monitor();
+void lua_load_monitor(lua_State *L);
 
 // functions
 int lib_monitor_get_focused(lua_State *L);
@@ -11,6 +11,7 @@ int lib_monitor_get_focused(lua_State *L);
 
 // getter
 int lib_monitor_get_workspace(lua_State *L);
+int lib_monitor_get_previous_layout(lua_State *L);
 // setter
 int lib_monitor_set_scale(lua_State *L);
 int lib_monitor_set_transform(lua_State *L);

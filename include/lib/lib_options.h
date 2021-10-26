@@ -6,7 +6,7 @@
 #include <lua.h>
 
 // init
-void lua_load_options();
+void lua_load_options(lua_State *L);
 void lua_init_options(struct options *options);
 void create_lua_options(struct options *options);
 struct options *check_options(lua_State *L, int narg);

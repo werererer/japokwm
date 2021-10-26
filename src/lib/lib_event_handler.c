@@ -41,9 +41,10 @@ void create_lua_event_handler(struct event_handler *event_handler) {
     luaL_setmetatable(L, CONFIG_EVENT);
 }
 
-void lua_load_events()
+void lua_load_events(lua_State *L)
 {
-    create_class(event_meta,
+    create_class(L,
+            event_meta,
             event_f,
             event_m,
             event_setter,

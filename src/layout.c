@@ -18,7 +18,7 @@ struct layout *create_layout(lua_State *L)
         .current_max_area = -1,
         .symbol = "",
         .n_area = 1,
-        .nmaster = 1,
+        .n_master = 1,
     };
     lt->linked_layouts = g_ptr_array_new();
     lt->linked_loaded_layouts = g_ptr_array_new();

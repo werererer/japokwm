@@ -22,13 +22,13 @@ end
 -- client: current window
 function Move_container(container, n, d)
     local con = container
-    if d == info.direction.top then
+    if d == Direction.top then
         con[Y] = con[Y] + n
-    elseif d == info.direction.bottom then
+    elseif d == Direction.bottom then
         con[Y] = con[Y] + n
-    elseif d == info.direction.left then
+    elseif d == Direction.left then
         con[X] = con[X] + n
-    elseif d == info.direction.right then
+    elseif d == Direction.right then
         con[X] = con[X] + n
     end
     return con
@@ -68,15 +68,15 @@ end
 
 function Resize_container(container, n, d)
     local con = container
-    if d == info.direction.top then
+    if d == Direction.top then
         con[Y] = con[Y] - n
         con[HEIGHT] = con[HEIGHT] + n
-    elseif d == info.direction.bottom then
+    elseif d == Direction.bottom then
         con[HEIGHT] = con[HEIGHT] + n
-    elseif d == info.direction.left then
+    elseif d == Direction.left then
         con[X] = con[X] - n
         con[WIDTH] = con[WIDTH] + n
-    elseif d == info.direction.right then
+    elseif d == Direction.right then
         con[WIDTH] = con[WIDTH] + n
     end
     return con

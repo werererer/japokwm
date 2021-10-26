@@ -18,6 +18,7 @@
 #include "lib/lib_layout.h"
 #include "lib/lib_bitset.h"
 #include "lib/lib_focus_set.h"
+#include "lib/lib_direction.h"
 
 static const struct luaL_Reg workspace_meta[] =
 {
@@ -42,17 +43,20 @@ static const struct luaL_Reg workspace_m[] =
 static const struct luaL_Reg workspace_setter[] =
 {
     {"tags", lib_set_tags},
+    {"bar", lib_workspace_set_bars_visibility},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg workspace_getter[] =
 {
+    {"bar", lib_workspace_get_bars_visibility},
     {"focus_set", lib_workspace_get_focus_set},
-    {"visible_focus_set", lib_workspace_get_visible_focus_set},
     {"focus_stack", lib_workspace_get_focus_stack},
     {"layout", lib_workspace_get_layout},
+    {"prev_layout_name", lib_workspace_get_previous_layout_name},
     {"stack", lib_workspace_get_stack},
     {"tags", lib_workspace_get_tags},
+    {"visible_focus_set", lib_workspace_get_visible_focus_set},
     {"visible_focus_stack", lib_workspace_get_visible_focus_stack},
     {"visible_stack", lib_workspace_get_visible_stack},
     {NULL, NULL},
@@ -68,9 +72,9 @@ void create_lua_workspace(lua_State *L, struct workspace *ws)
     luaL_setmetatable(L, CONFIG_WORKSPACE);
 }
 
-void lua_load_workspace()
+void lua_load_workspace(lua_State *L)
 {
-    create_class(
+    create_class(L,
             workspace_meta,
             workspace_f,
             workspace_m,
@@ -201,7 +205,28 @@ int lib_set_tags(lua_State *L)
     tagset_set_tags(ws, bitset);
     return 0;
 }
+
+int lib_workspace_set_bars_visibility(lua_State *L)
+{
+    enum wlr_edges dir = luaL_checkinteger(L, 2);
+    lua_pop(L, 1);
+    struct workspace *ws = check_workspace(L, 1);
+    lua_pop(L, 1);
+
+    ws->visible_edges = dir;
+    return 0;
+}
+
 // getter
+int lib_workspace_get_bars_visibility(lua_State *L)
+{
+    struct workspace *ws = check_workspace(L, 1);
+    lua_pop(L, 1);
+
+    lua_pushinteger(L, ws->visible_edges);
+    return 1;
+}
+
 int lib_workspace_get_focus_set(lua_State *L)
 {
     struct workspace *ws = check_workspace(L, 1);
@@ -227,6 +252,15 @@ int lib_workspace_get_layout(lua_State *L)
 
     struct layout *lt = workspace_get_layout(ws);
     create_lua_layout(L, lt);
+    return 1;
+}
+
+int lib_workspace_get_previous_layout_name(lua_State *L)
+{
+    struct workspace *ws = check_workspace(L, 1);
+    lua_pop(L, 1);
+
+    lua_pushstring(L, ws->previous_layout);
     return 1;
 }
 

@@ -63,9 +63,9 @@ void create_lua_container(lua_State *L, struct container *con)
     luaL_setmetatable(L, CONFIG_CONTAINER);
 }
 
-void lua_load_container()
+void lua_load_container(lua_State *L)
 {
-    create_class(
+    create_class(L,
             container_meta,
             container_f,
             container_m,

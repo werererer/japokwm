@@ -42,9 +42,10 @@ void create_lua_server(struct server *server)
     luaL_setmetatable(L, CONFIG_SERVER);
 }
 
-void lua_load_server()
+void lua_load_server(lua_State *L)
 {
-    create_class(server_meta,
+    create_class(L,
+            server_meta,
             server_f,
             server_m,
             server_setter,

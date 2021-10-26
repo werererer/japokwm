@@ -143,13 +143,13 @@ static struct wlr_fbox lua_unbox_layout_geom(lua_State *L, int i) {
 /* update layout and was set in the arrange function */
 static void apply_nmaster_layout(struct wlr_box *box, struct layout *lt, int position)
 {
-    if (position > lt->nmaster)
+    if (position > lt->n_master)
         return;
 
     // get layout
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_master_layout_data_ref);
     int len = luaL_len(L, -1);
-    int g = MIN(lt->n_master_abs, lt->nmaster);
+    int g = MIN(lt->n_master_abs, lt->n_master);
     g = MAX(MIN(len, g), 1);
     lua_rawgeti(L, -1, g);
     int k = MIN(position, g);
@@ -165,7 +165,7 @@ static struct wlr_box get_nth_geom_in_layout(lua_State *L, struct layout *lt,
         struct wlr_box root_geom, int arrange_position)
 {
     // relative position
-    int n = MAX(0, arrange_position+1 - lt->nmaster) + 1;
+    int n = MAX(0, arrange_position+1 - lt->n_master) + 1;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_ref);
     struct wlr_fbox rel_geom = lua_unbox_layout_geom(L, n);
@@ -182,7 +182,7 @@ int get_slave_container_count(struct workspace *ws)
 {
     struct layout *lt = workspace_get_layout(ws);
     int abs_count = get_tiled_container_count(ws);
-    return MAX(abs_count - lt->nmaster, 0);
+    return MAX(abs_count - lt->n_master, 0);
 }
 
 int get_floating_container_count(struct workspace *ws)

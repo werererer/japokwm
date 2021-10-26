@@ -174,26 +174,26 @@ local function get_cissor_container_right(alpha_area)
 end
 
 local function get_opposite_direction(dir)
-    if dir == info.direction.left then
-        return info.direction.right
-    elseif dir == info.direction.right then
-        return info.direction.left
-    elseif dir == info.direction.top then
-        return info.direction.bottom
-    elseif dir == info.direction.bottom then
-        return info.direction.top
+    if dir == Direction.left then
+        return Direction.right
+    elseif dir == Direction.right then
+        return Direction.left
+    elseif dir == Direction.top then
+        return Direction.bottom
+    elseif dir == Direction.bottom then
+        return Direction.top
     end
 end
 
 local function get_cissor_container(alpha_area, dir)
     local area = nil
-    if dir == info.direction.left then
+    if dir == Direction.left then
         area = get_cissor_container_left(alpha_area)
-    elseif dir == info.direction.right then
+    elseif dir == Direction.right then
         area = get_cissor_container_right(alpha_area)
-    elseif dir == info.direction.top then
+    elseif dir == Direction.top then
         area = get_cissor_container_top(alpha_area)
-    elseif dir == info.direction.bottom then
+    elseif dir == Direction.bottom then
         area = get_cissor_container_bottom(alpha_area)
     end
     return area
@@ -230,9 +230,9 @@ end
 
 local function get_alpha_area_from_container(con, dir)
     local area = nil
-    if dir == info.direction.left or dir == info.direction.right then
+    if dir == Direction.left or dir == Direction.right then
         area = get_alpha_container_horizontal(con)
-    elseif dir == info.direction.top or dir == info.direction.bottom then
+    elseif dir == Direction.top or dir == Direction.bottom then
         area = get_alpha_container_vertical(con)
     end
     return area

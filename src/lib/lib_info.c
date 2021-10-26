@@ -11,15 +11,57 @@
 #include "layout.h"
 #include "tagset.h"
 #include "root.h"
+#include "translationLayer.h"
+#include "lib/lib_layout.h"
+#include "lib/lib_workspace.h"
 
-int lib_get_active_layout(lua_State *L)
+static const struct luaL_Reg info_meta[] =
 {
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    {NULL, NULL},
+};
 
-    struct layout *lt = workspace_get_layout(ws);
-    lua_pushstring(L, lt->symbol);
-    return 1;
+static const struct luaL_Reg info_f[] =
+{
+    {"get_active_layout", lib_get_active_layout},
+    {"get_container_under_cursor", lib_get_container_under_cursor},
+    {"get_next_empty_workspace", lib_workspace_get_next_empty},
+    {"get_root_area", lib_get_root_area},
+    {"get_this_container_count", lib_get_this_container_count},
+    {"get_workspace_count", lib_get_workspace_count},
+    {"is_container_not_in_limit", lib_is_container_not_in_limit},
+    {"is_container_not_in_master_limit", lib_is_container_not_in_master_limit},
+    {"is_keycombo", lib_is_keycombo},
+    {"this_container_position", lib_this_container_position},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg info_m[] =
+{
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg info_setter[] =
+{
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg info_getter[] =
+{
+    {NULL, NULL},
+};
+
+void lua_load_info(lua_State *L)
+{
+    create_class(L,
+            info_meta,
+            info_f,
+            info_m,
+            info_setter,
+            info_getter,
+            CONFIG_INFO);
+
+    luaL_newlib(L, info_f);
+    lua_setglobal(L, "info");
 }
 
 int lib_get_this_container_count(lua_State *L)
@@ -32,16 +74,6 @@ int lib_get_this_container_count(lua_State *L)
     return 1;
 }
 
-int lib_get_n_tiled(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct layout *lt = workspace_get_layout(ws);
-    int i = lt->n_tiled;
-    lua_pushinteger(L, i);
-    return 1;
-}
-
 int lib_this_container_position(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
@@ -49,38 +81,6 @@ int lib_this_container_position(lua_State *L)
 
     int position = get_position_in_container_focus_stack(sel);
     lua_pushinteger(L, position);
-    return 1;
-}
-
-int lib_stack_position_to_position(lua_State *L)
-{
-    int pos = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-
-    struct container *con = get_container_in_stack(ws, pos);
-    int focus_position = get_position_in_container_focus_stack(con);
-    lua_pushinteger(L, focus_position);
-    return 1;
-}
-
-int lib_get_nmaster(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-    lua_pushinteger(L, lt->nmaster);
-    return 1;
-}
-
-int lib_get_previous_layout(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-
-    struct layout *lt = workspace_get_layout(ws);
-    lua_pushstring(L, lt->symbol);
     return 1;
 }
 
