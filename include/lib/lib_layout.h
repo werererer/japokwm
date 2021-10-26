@@ -18,9 +18,11 @@ int lib_layout_load_in_set(lua_State *L);
 int lib_layout_load_next_in_set(lua_State *L);
 int lib_layout_load_prev_in_set(lua_State *L);
 // methods
+int lib_decrease_n_master(lua_State *L);
+int lib_increase_n_master(lua_State *L);
 int lib_layout_set_layout(lua_State *L);
-int lib_layout_set_master_layout_data(lua_State *L);
 int lib_layout_set_linked_layouts_ref(lua_State *L);
+int lib_layout_set_master_layout_data(lua_State *L);
 int lib_layout_set_resize_data(lua_State *L);
 int lib_layout_set_resize_function(lua_State *L);
 // setter

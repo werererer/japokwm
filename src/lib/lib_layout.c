@@ -27,6 +27,8 @@ static const struct luaL_Reg layout_f[] =
 };
 
 static const struct luaL_Reg layout_m[] = {
+    {"decrease_n_master", lib_decrease_n_master},
+    {"increase_n_master", lib_increase_n_master},
     {"set", lib_layout_set_layout},
     {"set_linked_layouts", lib_layout_set_linked_layouts_ref},
     {"set_master_layout_data", lib_layout_set_master_layout_data},
@@ -216,6 +218,26 @@ int lib_layout_load_prev_in_set(lua_State *L)
 }
 
 // methods
+int lib_decrease_n_master(lua_State *L)
+{
+    struct layout *lt = check_layout(L, 1);
+    lua_pop(L, 1);
+
+    lt->n_master = MAX(lt->n_master-1, 1);
+    arrange();
+    return 1;
+}
+
+int lib_increase_n_master(lua_State *L)
+{
+    struct layout *lt = check_layout(L, 1);
+    lua_pop(L, 1);
+
+    lt->n_master++;
+    arrange();
+    return 1;
+}
+
 int lib_layout_set_layout(lua_State *L)
 {
     int ref = 0;
