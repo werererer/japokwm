@@ -421,3 +421,22 @@ bool server_is_config_reloading_prohibited()
 {
     return server.prohibit_reload_config;
 }
+
+int cmp_str_bool(const void *s1, const void *s2)
+{
+    return strcmp(s1, s2) == 0;
+}
+
+void server_start_keycombo(const char *key_combo_name)
+{
+    g_ptr_array_add(server.named_key_combos, strdup(key_combo_name));
+}
+
+bool server_is_keycombo(const char *key_combo_name)
+{
+    guint pos = 0;
+    bool found = g_ptr_array_find_with_equal_func(
+            server.named_key_combos,
+            key_combo_name, cmp_str_bool, &pos);
+    return found;
+}

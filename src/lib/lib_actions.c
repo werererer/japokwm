@@ -53,6 +53,7 @@ static const struct luaL_Reg action_f[] =
     {"toggle_view", lib_toggle_view},
     {"toggle_workspace", lib_toggle_workspace},
     {"view", lib_view},
+    {"view_or_tag", lib_view_or_tag},
     {"zoom", lib_zoom},
     {NULL, NULL},
 };
@@ -186,7 +187,7 @@ int lib_start_keycombo(lua_State *L)
     const char *key_combo_name = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    g_ptr_array_add(server.named_key_combos, strdup(key_combo_name));
+    server_start_keycombo(key_combo_name);
     return 0;
 }
 
@@ -242,6 +243,26 @@ int lib_view(lua_State *L)
     lua_pop(L, 1);
 
     tagset_focus_tags(ws, ws->workspaces);
+    return 0;
+}
+
+int lib_view_or_tag(lua_State *L)
+{
+    int i = lua_idx_to_c_idx(luaL_checkinteger(L, 1));
+    lua_pop(L, 1);
+
+    if (server_is_keycombo("_lib_view_or_tag_combo")) {
+        struct workspace *ws = server_get_selected_workspace();
+        BitSet *bitset = bitset_create();
+        bitset_set(bitset, i);
+        bitset_xor(ws->workspaces, bitset);
+        bitset_destroy(bitset);
+        tagset_focus_workspace(ws);
+    } else {
+        struct workspace *ws = get_workspace(i);
+        tagset_focus_workspace(ws);
+    }
+    server_start_keycombo("_lib_view_or_tag_combo");
     return 0;
 }
 
@@ -314,9 +335,8 @@ int lib_toggle_tags(lua_State *L)
 
 int lib_toggle_workspace(lua_State *L)
 {
-    struct monitor *m = server_get_selected_monitor();
     struct workspace *prev_ws = get_workspace(server.previous_workspace);
-    tagset_focus_workspace(m, prev_ws);
+    tagset_focus_workspace(prev_ws);
     return 0;
 }
 

@@ -117,6 +117,9 @@ void server_prohibit_reloading_config();
 void server_allow_reloading_config();
 bool server_is_config_reloading_prohibited();
 
+void server_start_keycombo(const char *key_combo_name);
+bool server_is_keycombo(const char *key_combo_name);
+
 struct monitor *server_get_selected_monitor();
 void server_set_selected_monitor(struct monitor *m);
 
