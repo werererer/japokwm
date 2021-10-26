@@ -29,6 +29,8 @@
 #include "lib/lib_container.h"
 #include "lib/lib_workspace.h"
 #include "lib/lib_layout.h"
+#include "layer_shell.h"
+#include "root.h"
 
 static const struct luaL_Reg action_meta[] =
 {
@@ -325,11 +327,22 @@ int lib_swap_on_hidden_stack(lua_State *L)
 
 int lib_toggle_all_bars(lua_State *L)
 {
+    struct workspace *sel_ws = server_get_selected_workspace();
+
+    // toggle edges
+    enum wlr_edges visible_edges = WLR_EDGE_NONE;
+    if (sel_ws->visible_bar_edges == WLR_EDGE_NONE) {
+        visible_edges =
+            WLR_EDGE_BOTTOM |
+            WLR_EDGE_RIGHT |
+            WLR_EDGE_LEFT |
+            WLR_EDGE_TOP;
+    }
+
     for (int i = 0; i < server_get_workspace_count(); i++) {
         struct workspace *ws = get_workspace(i);
-        ws->visible_bar_edges = WLR_EDGE_NONE;
+        set_bars_visible(ws, visible_edges);
     }
-    arrange();
     return 0;
 }
 
