@@ -11,17 +11,22 @@ void lua_init_layout(struct layout *layout);
 void lua_load_layout(lua_State *L);
 
 // functions
-int lib_get_active_layout(lua_State *L);
+int lib_layout_get_focused(lua_State *L);
+int lib_layout_get_active_layout(lua_State *L);
+int lib_layout_load(lua_State *L);
+int lib_layout_load_in_set(lua_State *L);
+int lib_layout_load_next_in_set(lua_State *L);
+int lib_layout_load_prev_in_set(lua_State *L);
 // methods
-int lib_set_layout(lua_State *L);
-int lib_set_master_layout_data(lua_State *L);
-int lib_set_linked_layouts_ref(lua_State *L);
-int lib_set_resize_data(lua_State *L);
-int lib_set_resize_function(lua_State *L);
+int lib_layout_set_layout(lua_State *L);
+int lib_layout_set_master_layout_data(lua_State *L);
+int lib_layout_set_linked_layouts_ref(lua_State *L);
+int lib_layout_set_resize_data(lua_State *L);
+int lib_layout_set_resize_function(lua_State *L);
 // setter
 int lib_layout_set_n_area(lua_State *L);
 int lib_layout_set_nmaster(lua_State *L);
-int lib_set_default_layout(lua_State *L);
+int lib_layout_set_default_layout(lua_State *L);
 // getter
 int lib_layout_get_direction(lua_State *L);
 int lib_layout_get_layout_data(lua_State *L);

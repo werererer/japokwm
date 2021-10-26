@@ -14,6 +14,7 @@ struct container *check_container(lua_State *L, int argn);
 
 // functions
 int lib_container_is_equal(lua_State *L);
+int lib_container_focus(lua_State *L);
 
 // methods
 int lib_container_get_focused(lua_State *L);
@@ -23,6 +24,7 @@ int lib_container_set_sticky(lua_State *L);
 int lib_container_set_sticky_restricted(lua_State *L);
 int lib_container_toggle_add_sticky(lua_State *L);
 int lib_container_toggle_add_sticky_restricted(lua_State *L);
+int lib_container_kill(lua_State *L);
 
 // getter
 int lib_container_get_alpha(lua_State *L);

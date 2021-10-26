@@ -41,25 +41,14 @@ static const struct luaL_Reg action_f[] =
     {"async_execute", lib_async_execute},
     {"create_output", lib_create_output},
     {"exec", lib_exec},
-    {"focus_container", lib_focus_container},
     {"focus_on_hidden_stack", lib_focus_on_hidden_stack},
     {"focus_on_stack", lib_focus_on_stack},
-    {"kill", lib_kill},
-    {"load_layout", lib_load_layout},
-    {"load_layout_in_set", lib_load_layout_in_set},
-    {"load_next_layout_in_set", lib_load_next_layout_in_set},
-    {"load_prev_layout_in_set", lib_load_prev_layout_in_set},
     {"move_resize", lib_move_resize},
     {"move_to_scratchpad", lib_move_to_scratchpad},
-    {"repush", lib_repush},
     {"resize_main", lib_resize_main},
-    {"set_floating", lib_set_floating},
-    {"set_nmaster", lib_set_nmaster},
     {"show_scratchpad", lib_show_scratchpad},
     {"start_keycombo", lib_start_keycombo},
     {"swap_on_hidden_stack", lib_swap_on_hidden_stack},
-    {"toggle_floating", lib_toggle_floating},
-    {"toggle_layout", lib_toggle_layout},
     {"toggle_tags", lib_toggle_tags},
     {"toggle_view", lib_toggle_view},
     {"toggle_workspace", lib_toggle_workspace},
@@ -144,19 +133,6 @@ int lib_create_output(lua_State *L)
     return 0;
 }
 
-int lib_focus_container(lua_State *L)
-{
-    int pos = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-    struct container *con = get_container_from_container_stack_position(pos);
-
-    if (!con)
-        return 0;
-
-    focus_container(con);
-    return 0;
-}
-
 int lib_resize_main(lua_State *L)
 {
     float n = luaL_checknumber(L, -1);
@@ -199,21 +175,6 @@ int lib_resize_main(lua_State *L)
     return 0;
 }
 
-int lib_set_floating(lua_State *L)
-{
-    bool floating = lua_toboolean(L, -1);
-    lua_pop(L, 1);
-    struct monitor *m = server_get_selected_monitor();
-    struct container *sel = monitor_get_focused_container(m);
-    if (!sel)
-        return 0;
-
-    container_set_floating(sel, container_fix_position, floating);
-
-    arrange();
-    return 0;
-}
-
 int lib_show_scratchpad(lua_State *L)
 {
     show_scratchpad();
@@ -226,16 +187,6 @@ int lib_start_keycombo(lua_State *L)
     lua_pop(L, 1);
 
     g_ptr_array_add(server.named_key_combos, strdup(key_combo_name));
-    return 0;
-}
-
-int lib_set_nmaster(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
-    lt->n_master = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-    arrange();
     return 0;
 }
 
@@ -304,17 +255,6 @@ int lib_toggle_view(lua_State *L)
     return 0;
 }
 
-int lib_toggle_floating(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct container *sel = monitor_get_focused_container(m);
-    if (!sel)
-        return 0;
-    container_set_floating(sel, container_fix_position, !container_is_floating(sel));
-    arrange();
-    return 0;
-}
-
 int lib_zoom(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
@@ -352,147 +292,12 @@ int lib_zoom(lua_State *L)
     return 0;
 }
 
-int lib_repush(lua_State *L)
-{
-    int abs_index = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-    int i = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-
-    repush(i, abs_index);
-    return 0;
-}
-
 int lib_swap_on_hidden_stack(lua_State *L)
 {
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
     struct monitor *m = server_get_selected_monitor();
     swap_on_hidden_stack(m, i);
-    return 0;
-}
-
-int lib_load_next_layout_in_set(lua_State *L)
-{
-    const char *layout_set_key = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
-    if (!lua_is_index_defined(L, layout_set_key)) {
-        lua_pop(L, 1);
-        return 0;
-    }
-    lua_pop(L, 1);
-    server.layout_set.key = layout_set_key;
-
-    // arg1
-    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
-    lua_get_layout_set_element(L, layout_set_key);
-    int n_layouts = luaL_len(L, -1);
-    lua_pop(L, 2);
-
-    server.layout_set.lua_layout_index++;
-    if (server.layout_set.lua_layout_index > n_layouts) {
-        server.layout_set.lua_layout_index = 1;
-    }
-
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    layout_set_set_layout(ws);
-
-    arrange();
-    return 0;
-}
-
-int lib_load_prev_layout_in_set(lua_State *L)
-{
-    const char *layout_set_key = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
-    if (!lua_is_index_defined(L, layout_set_key)) {
-        lua_pop(L, 1);
-        return 0;
-    }
-    lua_pop(L, 1);
-    server.layout_set.key = layout_set_key;
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
-    lua_get_layout_set_element(L, layout_set_key);
-    int n_layouts = luaL_len(L, -1);
-    lua_pop(L, 2);
-
-    server.layout_set.lua_layout_index--;
-    if (server.layout_set.lua_layout_index <= 0) {
-        server.layout_set.lua_layout_index = n_layouts;
-    }
-
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    layout_set_set_layout(ws);
-
-    arrange();
-    return 0;
-}
-
-int lib_load_layout_in_set(lua_State *L)
-{
-    server.layout_set.lua_layout_index = luaL_checkinteger(L, -1);
-    lua_pop(L, 1);
-
-    const char *layout_set_key = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-
-    // if nil return
-    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
-    if (!lua_is_index_defined(L, layout_set_key)) {
-        lua_pop(L, 1);
-        return 0;
-    }
-    lua_pop(L, 1);
-
-    server.layout_set.key = layout_set_key;
-
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    layout_set_set_layout(ws);
-
-    arrange();
-    return 0;
-}
-
-int lib_load_layout(lua_State *L)
-{
-    const char *layout_name = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    push_layout(ws, layout_name);
-
-    arrange();
-    return 0;
-}
-
-int lib_kill(lua_State *L)
-{
-    struct container *con = check_container(L, 1);
-    lua_pop(L, 1);
-
-    if (!con)
-        return 0;
-
-    struct client *c = con->client;
-    kill_client(c);
-    return 0;
-}
-
-int lib_toggle_layout(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    push_layout(ws, ws->previous_layout);
-    arrange();
     return 0;
 }
 

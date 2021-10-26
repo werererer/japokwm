@@ -18,15 +18,20 @@ static const struct luaL_Reg layout_meta[] =
 
 static const struct luaL_Reg layout_f[] =
 {
+    {"get_focused", lib_layout_get_focused},
+    {"load", lib_layout_load},
+    {"load_in_set", lib_layout_load_in_set},
+    {"load_next_in_set", lib_layout_load_next_in_set},
+    {"load_prev_in_set", lib_layout_load_prev_in_set},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg layout_m[] = {
-    {"set", lib_set_layout},
-    {"set_linked_layouts", lib_set_linked_layouts_ref},
-    {"set_master_layout_data", lib_set_master_layout_data},
-    {"set_resize_data", lib_set_resize_data},
-    {"set_resize_function", lib_set_resize_function},
+    {"set", lib_layout_set_layout},
+    {"set_linked_layouts", lib_layout_set_linked_layouts_ref},
+    {"set_master_layout_data", lib_layout_set_master_layout_data},
+    {"set_resize_data", lib_layout_set_resize_data},
+    {"set_resize_function", lib_layout_set_resize_function},
     {NULL, NULL},
 };
 
@@ -41,7 +46,7 @@ static const struct luaL_Reg layout_getter[] = {
 };
 
 static const struct luaL_Reg layout_setter[] = {
-    {"default_layout", lib_set_default_layout},
+    {"default_layout", lib_layout_set_default_layout},
     {"n_area", lib_layout_set_n_area},
     {"n_master", lib_layout_set_n_area},
     // {"direction", lib_layout_get_direction},
@@ -89,7 +94,16 @@ struct layout *check_layout(lua_State *L, int argn)
 }
 
 // functions
-int lib_get_active_layout(lua_State *L)
+int lib_layout_get_focused(lua_State *L)
+{
+    struct workspace *ws = server_get_selected_workspace();
+    struct layout *lt = workspace_get_layout(ws);
+
+    create_lua_layout(L, lt);
+    return 1;
+}
+
+int lib_layout_get_active_layout(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
@@ -99,9 +113,110 @@ int lib_get_active_layout(lua_State *L)
     return 1;
 }
 
+int lib_layout_load(lua_State *L)
+{
+    const char *layout_name = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    push_layout(ws, layout_name);
+
+    arrange();
+    return 0;
+}
+
+int lib_layout_load_in_set(lua_State *L)
+{
+    server.layout_set.lua_layout_index = luaL_checkinteger(L, -1);
+    lua_pop(L, 1);
+
+    const char *layout_set_key = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+
+    // if nil return
+    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
+    if (!lua_is_index_defined(L, layout_set_key)) {
+        lua_pop(L, 1);
+        return 0;
+    }
+    lua_pop(L, 1);
+
+    server.layout_set.key = layout_set_key;
+
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    layout_set_set_layout(ws);
+
+    arrange();
+    return 0;
+}
+
+int lib_layout_load_next_in_set(lua_State *L)
+{
+    const char *layout_set_key = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
+    if (!lua_is_index_defined(L, layout_set_key)) {
+        lua_pop(L, 1);
+        return 0;
+    }
+    lua_pop(L, 1);
+    server.layout_set.key = layout_set_key;
+
+    // arg1
+    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
+    lua_get_layout_set_element(L, layout_set_key);
+    int n_layouts = luaL_len(L, -1);
+    lua_pop(L, 2);
+
+    server.layout_set.lua_layout_index++;
+    if (server.layout_set.lua_layout_index > n_layouts) {
+        server.layout_set.lua_layout_index = 1;
+    }
+
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    layout_set_set_layout(ws);
+
+    arrange();
+    return 0;
+}
+
+int lib_layout_load_prev_in_set(lua_State *L)
+{
+    const char *layout_set_key = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
+    if (!lua_is_index_defined(L, layout_set_key)) {
+        lua_pop(L, 1);
+        return 0;
+    }
+    lua_pop(L, 1);
+    server.layout_set.key = layout_set_key;
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
+    lua_get_layout_set_element(L, layout_set_key);
+    int n_layouts = luaL_len(L, -1);
+    lua_pop(L, 2);
+
+    server.layout_set.lua_layout_index--;
+    if (server.layout_set.lua_layout_index <= 0) {
+        server.layout_set.lua_layout_index = n_layouts;
+    }
+
+    struct monitor *m = server_get_selected_monitor();
+    struct workspace *ws = monitor_get_active_workspace(m);
+    layout_set_set_layout(ws);
+
+    arrange();
+    return 0;
+}
 
 // methods
-int lib_set_layout(lua_State *L)
+int lib_layout_set_layout(lua_State *L)
 {
     int ref = 0;
     // 1. argument -- layout_set
@@ -122,7 +237,7 @@ int lib_set_layout(lua_State *L)
     return 0;
 }
 
-int lib_set_master_layout_data(lua_State *L)
+int lib_layout_set_master_layout_data(lua_State *L)
 {
     // stack: [layout, master_layout_data]
     lua_insert(L, -2);
@@ -138,7 +253,7 @@ int lib_set_master_layout_data(lua_State *L)
     return 0;
 }
 
-int lib_set_linked_layouts_ref(lua_State *L)
+int lib_layout_set_linked_layouts_ref(lua_State *L)
 {
     // stack: [layout, master_layout_data]
     lua_insert(L, -2);
@@ -155,7 +270,7 @@ int lib_set_linked_layouts_ref(lua_State *L)
     return 0;
 }
 
-int lib_set_resize_data(lua_State *L)
+int lib_layout_set_resize_data(lua_State *L)
 {
     // stack: [layout, master_layout_data]
     lua_insert(L, -2);
@@ -170,7 +285,7 @@ int lib_set_resize_data(lua_State *L)
     return 0;
 }
 
-int lib_set_resize_function(lua_State *L)
+int lib_layout_set_resize_function(lua_State *L)
 {
     int ref = 0;
     lua_ref_safe(L, LUA_REGISTRYINDEX, &ref);
@@ -221,7 +336,7 @@ int lib_layout_get_resize_data(lua_State *L)
 }
 
 // setter
-int lib_set_default_layout(lua_State *L)
+int lib_layout_set_default_layout(lua_State *L)
 {
     const char *symbol = luaL_checkstring(L, -1);
     lua_pop(L, 1);

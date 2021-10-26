@@ -22,16 +22,14 @@ static const struct luaL_Reg info_meta[] =
 
 static const struct luaL_Reg info_f[] =
 {
-    {"get_active_layout", lib_get_active_layout},
+    {"get_active_layout", lib_layout_get_active_layout},
     {"get_container_under_cursor", lib_get_container_under_cursor},
     {"get_next_empty_workspace", lib_workspace_get_next_empty},
-    {"get_root_area", lib_get_root_area},
     {"get_this_container_count", lib_get_this_container_count},
     {"get_workspace_count", lib_get_workspace_count},
     {"is_container_not_in_limit", lib_is_container_not_in_limit},
     {"is_container_not_in_master_limit", lib_is_container_not_in_master_limit},
     {"is_keycombo", lib_is_keycombo},
-    {"this_container_position", lib_this_container_position},
     {NULL, NULL},
 };
 
@@ -71,16 +69,6 @@ int lib_get_this_container_count(lua_State *L)
 
     int i = get_slave_container_count(ws) + 1;
     lua_pushinteger(L, i);
-    return 1;
-}
-
-int lib_this_container_position(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct container *sel = monitor_get_focused_container(m);
-
-    int position = get_position_in_container_focus_stack(sel);
-    lua_pushinteger(L, position);
     return 1;
 }
 
