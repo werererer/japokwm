@@ -233,11 +233,11 @@ void load_default_keybindings()
     bind_key(options, "mod-s 7", Workspace.get_focused():swap(Workspace.get(7)));
     bind_key(options, "mod-s 8", Workspace.get_focused():swap(Workspace.get(8)));
 
-    bind_key(options, "mod-t", action.set_floating(false));
+    bind_key(options, "mod-t", Container.get_focused().floating = false);
 
-    bind_key(options, "mod-M1", action.move_resize(info.cursor.mode.move));
-    bind_key(options, "mod-M2", action.move_resize(info.cursor.mode.resize));
-    bind_key(options, "M1", action.focus_container(info.get_container_under_cursor()));
+    bind_key(options, "mod-M1", action.move_resize(Cursor_mode.move));
+    bind_key(options, "mod-M2", action.move_resize(Cursor_mode.resize));
+    bind_key(options, "M1", info.get_container_under_cursor():focus());
 
     bind_key(options, "mod-a", Layout.get_focused():increase_n_master());
     bind_key(options, "mod-x", Layout.get_focused():decrease_n_master());

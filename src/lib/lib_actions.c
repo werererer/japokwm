@@ -49,6 +49,7 @@ static const struct luaL_Reg action_f[] =
     {"show_scratchpad", lib_show_scratchpad},
     {"start_keycombo", lib_start_keycombo},
     {"swap_on_hidden_stack", lib_swap_on_hidden_stack},
+    {"toggle_all_bars", lib_toggle_all_bars},
     {"toggle_tags", lib_toggle_tags},
     {"toggle_view", lib_toggle_view},
     {"toggle_workspace", lib_toggle_workspace},
@@ -319,6 +320,16 @@ int lib_swap_on_hidden_stack(lua_State *L)
     lua_pop(L, 1);
     struct monitor *m = server_get_selected_monitor();
     swap_on_hidden_stack(m, i);
+    return 0;
+}
+
+int lib_toggle_all_bars(lua_State *L)
+{
+    for (int i = 0; i < server_get_workspace_count(); i++) {
+        struct workspace *ws = get_workspace(i);
+        ws->visible_bar_edges = WLR_EDGE_NONE;
+    }
+    arrange();
     return 0;
 }
 

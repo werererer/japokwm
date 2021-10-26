@@ -20,11 +20,7 @@ opt.create_layout_set("default", layouts)
 layout.default_layout = "two_pane"
 
 local function toggle_all_bars()
-    for i = 1,info.get_workspace_count() do
-        local ws_id = i-1
-        local ws = server:get_workspace(ws_id)
-        action.toggle_bars(ws, Direction.all)
-    end
+    action.toggle_all_bars()
 end
 
 opt:bind_key("mod-S-p",       function() container.set_sticky(info.this_container_position(), 255) end)

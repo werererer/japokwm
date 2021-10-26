@@ -5,9 +5,9 @@
 
 static const struct luaL_Reg cursor_mode_getter[] =
 {
-    {"cursor_normal", lib_cursor_mode_get_cursor_normal},
-    {"cursor_move", lib_cursor_mode_get_cursor_move},
-    {"cursor_resize", lib_cursor_mode_get_cursor_resize},
+    {"normal", lib_cursor_mode_get_cursor_normal},
+    {"move", lib_cursor_mode_get_cursor_move},
+    {"resize", lib_cursor_mode_get_cursor_resize},
     {NULL, NULL},
 };
 
@@ -37,17 +37,17 @@ static void create_lua_cursor_mode(lua_State *L, enum cursor_mode cursor_mode) {
 int lib_cursor_mode_get_cursor_normal(lua_State *L)
 {
     lua_pushinteger(L, CURSOR_NORMAL);
-    return 0;
+    return 1;
 }
 
 int lib_cursor_mode_get_cursor_move(lua_State *L)
 {
     lua_pushinteger(L, CURSOR_MOVE);
-    return 0;
+    return 1;
 }
 
 int lib_cursor_mode_get_cursor_resize(lua_State *L)
 {
     lua_pushinteger(L, CURSOR_RESIZE);
-    return 0;
+    return 1;
 }

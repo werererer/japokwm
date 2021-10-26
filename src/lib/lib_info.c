@@ -14,6 +14,7 @@
 #include "translationLayer.h"
 #include "lib/lib_layout.h"
 #include "lib/lib_workspace.h"
+#include "lib/lib_container.h"
 
 static const struct luaL_Reg info_meta[] =
 {
@@ -84,8 +85,7 @@ int lib_get_container_under_cursor(lua_State *L)
     struct wlr_cursor *wlr_cursor = seat->cursor->wlr_cursor;
 
     struct container *con = xy_to_container(wlr_cursor->x, wlr_cursor->y);
-    int pos = get_position_in_container_focus_stack(con);
-    lua_pushinteger(L, pos);
+    create_lua_container(L, con);
     return 1;
 }
 

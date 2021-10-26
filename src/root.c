@@ -118,7 +118,7 @@ static enum wlr_edges bar_get_direction(struct container *con)
 
 void bars_update_visiblitiy(struct workspace *ws)
 {
-    enum wlr_edges visible_edges = ws->visible_edges;
+    enum wlr_edges visible_edges = ws->visible_bar_edges;
     for (int i = 0; i < length_of_composed_list(server.layer_visual_stack_lists); i++) {
         struct container *con = get_in_composed_list(server.layer_visual_stack_lists, i);
 
@@ -137,6 +137,6 @@ void bars_update_visiblitiy(struct workspace *ws)
 
 void toggle_bars_visible(struct workspace *ws, enum wlr_edges direction)
 {
-    ws->visible_edges ^= direction;
+    ws->visible_bar_edges ^= direction;
     bars_update_visiblitiy(ws);
 }

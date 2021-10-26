@@ -213,7 +213,7 @@ int lib_workspace_set_bars_visibility(lua_State *L)
     struct workspace *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
-    ws->visible_edges = dir;
+    ws->visible_bar_edges = dir;
     return 0;
 }
 
@@ -223,7 +223,7 @@ int lib_workspace_get_bars_visibility(lua_State *L)
     struct workspace *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
-    lua_pushinteger(L, ws->visible_edges);
+    lua_pushinteger(L, ws->visible_bar_edges);
     return 1;
 }
 
