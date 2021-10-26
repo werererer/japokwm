@@ -19,6 +19,7 @@
 #include "lib/lib_info.h"
 #include "lib/lib_layout.h"
 #include "lib/lib_list.h"
+#include "lib/lib_container_property.h"
 #include "lib/lib_list2D.h"
 #include "lib/lib_monitor.h"
 #include "lib/lib_options.h"
@@ -167,6 +168,7 @@ void load_lua_api(lua_State *L)
     lua_load_bitset(L);
     lua_load_color(L);
     lua_load_container(L);
+    lua_load_container_property(L);
     lua_load_cursor(L);
     lua_load_cursor_mode(L);
     lua_load_direction(L);
