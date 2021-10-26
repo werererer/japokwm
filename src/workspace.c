@@ -112,7 +112,7 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     ws->focus_set = focus_set_create();
     ws->visible_focus_set = focus_set_create();
 
-    ws->visible_edges = WLR_EDGE_BOTTOM
+    ws->visible_bar_edges = WLR_EDGE_BOTTOM
         | WLR_EDGE_TOP
         | WLR_EDGE_LEFT
         | WLR_EDGE_RIGHT;

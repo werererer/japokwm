@@ -87,7 +87,7 @@ struct workspace {
     bool damaged;
 
     /* should anchored layershell programs be taken into consideration */
-    enum wlr_edges visible_edges;
+    enum wlr_edges visible_bar_edges;
 };
 
 GPtrArray *create_workspaces();

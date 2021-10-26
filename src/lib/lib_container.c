@@ -107,12 +107,8 @@ int lib_container_is_equal(lua_State *L) {
 
 int lib_container_focus(lua_State *L)
 {
-    int pos = luaL_checkinteger(L, -1);
+    struct container *con = check_container(L, 1);
     lua_pop(L, 1);
-    struct container *con = get_container_from_container_stack_position(pos);
-
-    if (!con)
-        return 0;
 
     focus_container(con);
     return 0;
