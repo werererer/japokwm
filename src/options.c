@@ -148,7 +148,7 @@ void load_default_keybindings()
     bind_key(options, "mod-r", opt.reload());
     bind_key(options, "mod-S-c", 
             if Container.get_focused() then
-                    action.kill(Container.get_focused())
+                    Container.get_focused():kill()
             end
             );
     bind_key(options, "mod-S-Return", action.exec("/usr/bin/alacritty"));
@@ -239,6 +239,8 @@ void load_default_keybindings()
     bind_key(options, "mod-M2", action.move_resize(info.cursor.mode.resize));
     bind_key(options, "M1", action.focus_container(info.get_container_under_cursor()));
 
+    bind_key(options, "mod-a", Layout.get_focused():increase_n_master());
+    bind_key(options, "mod-x", Layout.get_focused():decrease_n_master());
     return;
 }
 
