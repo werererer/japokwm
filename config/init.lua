@@ -56,7 +56,7 @@ local function toggle_all_bars()
     for i = 1,info.get_workspace_count() do
         local ws_id = i-1
         local ws = server:get_workspace(ws_id)
-        action.toggle_bars(ws, info.direction.all)
+        action.toggle_bars(ws, Direction.all)
     end
 end
 
@@ -81,7 +81,7 @@ opt.entry_focus_position_function = get_focus_entry_position
 
 opt:bind_key("mod-S-p",       function() container.set_sticky(info.this_container_position(), 255) end)
 opt:bind_key("mod-p",         function() action.exec("rofi -show run") end)
-opt:bind_key("mod-e",         function() action.view(Workspace.get_focused():get_next_empty(info.direction.left):get_id()) end)
+opt:bind_key("mod-e",         function() action.view(Workspace.get_focused():get_next_empty(Direction.left):get_id()) end)
 opt:bind_key("mod-period",    function() action.toggle_workspace() end)
 opt:bind_key("mod-S-period",  function() action.toggle_tags() end)
 opt:bind_key("mod-S-comma", function()
