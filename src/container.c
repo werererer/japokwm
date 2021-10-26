@@ -28,9 +28,10 @@
 
 static void add_container_to_workspace(struct container *con, struct workspace *ws);
 
-static struct container_property *create_container_property()
+static struct container_property *create_container_property(struct container *con)
 {
     struct container_property *property = calloc(1, sizeof(*property));
+    property->con = con;
     return property;
 }
 
@@ -38,6 +39,46 @@ static void destroy_container_property(void *property_ptr)
 {
     struct container_property *property = property_ptr;
     free(property);
+}
+
+bool container_property_is_floating(struct container_property *property)
+{
+    if (!property)
+        return false;
+    return property->floating;
+}
+
+struct wlr_box *container_property_get_floating_geom(struct container_property *property)
+{
+    struct container *con = property->con;
+    struct wlr_box *geom = &property->floating_geom;
+
+    if (con->client->type == LAYER_SHELL) {
+        geom = &con->global_geom;
+    }
+    return geom;
+}
+
+void container_property_set_floating(struct container_property *property, bool floating)
+{
+    property->floating = floating;
+    struct container *con = property->con;
+    if (!container_is_floating(con)) {
+        struct monitor *m = server_get_selected_monitor();
+        struct workspace *sel_ws = monitor_get_active_workspace(m);
+        container_set_workspace_id(con, sel_ws->id);
+
+        if (con->on_scratchpad) {
+            remove_container_from_scratchpad(con);
+        }
+    } else {
+        container_set_floating_geom(con, container_get_tiled_geom(con));
+        container_set_hidden(con, false);
+    }
+
+    lift_container(con);
+    con->client->resized = true;
+    container_damage_whole(con);
 }
 
 struct container *create_container(struct client *c, struct monitor *m, bool has_border)
@@ -52,7 +93,7 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 
     con->properties = g_ptr_array_new_with_free_func(destroy_container_property);
     for (int i = 0; i < server.workspaces->len; i++) {
-        struct container_property *container_property = create_container_property();
+        struct container_property *container_property = create_container_property(con);
         g_ptr_array_add(con->properties, container_property);
     }
 
@@ -653,27 +694,11 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
         m = server_get_selected_monitor();
 
     struct container_property *property = container_get_property(con);
-    property->floating = floating;
 
     if (fix_position)
         fix_position(con);
 
-    if (!container_is_floating(con)) {
-        struct monitor *m = server_get_selected_monitor();
-        struct workspace *sel_ws = monitor_get_active_workspace(m);
-        container_set_workspace_id(con, sel_ws->id);
-
-        if (con->on_scratchpad) {
-            remove_container_from_scratchpad(con);
-        }
-    } else {
-        container_set_floating_geom(con, container_get_tiled_geom(con));
-        container_set_hidden(con, false);
-    }
-
-    lift_container(con);
-    con->client->resized = true;
-    container_damage_whole(con);
+    container_property_set_floating(property, floating);
 }
 
 void container_set_hidden(struct container *con, bool b)
@@ -752,7 +777,7 @@ struct container_property *container_get_property(struct container *con)
     if (!ws)
         return NULL;
     while (ws->id >= con->properties->len) {
-        struct container_property *property = create_container_property();
+        struct container_property *property = create_container_property(con);
         g_ptr_array_add(con->properties, property);
     }
 
@@ -875,12 +900,7 @@ struct wlr_box *container_get_floating_geom(struct container *con)
     struct container_property *property =
         g_ptr_array_index(con->properties, ws->id); 
 
-    struct wlr_box *geom = &property->floating_geom;
-
-    if (con->client->type == LAYER_SHELL) {
-        geom = &con->global_geom;
-    }
-    return geom;
+    return container_property_get_floating_geom(property);
 }
 
 struct wlr_box *container_get_current_geom(struct container *con)
@@ -1099,9 +1119,7 @@ struct workspace *container_get_workspace(struct container *con)
 bool container_is_floating(struct container *con)
 {
     struct container_property *property = container_get_property(con);
-    if (!property)
-        return false;
-    return property->floating;
+    return container_property_is_floating(property);
 }
 
 bool container_is_floating_and_visible(struct container *con)

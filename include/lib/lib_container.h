@@ -28,15 +28,14 @@ int lib_container_kill(lua_State *L);
 
 // getter
 int lib_container_get_alpha(lua_State *L);
-int lib_container_get_geometry(lua_State *L);
-int lib_container_get_floating(lua_State *L);
 int lib_container_get_app_id(lua_State *L);
+int lib_container_get_property(lua_State *L);
 int lib_container_get_sticky(lua_State *L);
 int lib_container_get_workspace(lua_State *L);
 
 // setter
 int lib_container_set_alpha(lua_State *L);
-int lib_container_set_floating(lua_State *L);
+int lib_container_property_set_floating(lua_State *L);
 int lib_container_set_sticky(lua_State *L);
 
 #endif /* LIB_CONTAINER_H */

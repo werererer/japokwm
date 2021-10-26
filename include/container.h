@@ -18,6 +18,7 @@ struct container_property {
     int border_width;
     bool floating;
     bool hidden;
+    struct container *con;
 };
 
 struct container {
@@ -48,6 +49,10 @@ struct container {
 struct container *create_container(struct client *c, struct monitor *m, bool has_border);
 
 void destroy_container(struct container *con);
+
+bool container_property_is_floating(struct container_property *property);
+struct wlr_box *container_property_get_floating_geom(struct container_property *property);
+void container_property_set_floating(struct container_property *property, bool floating);
 
 void add_container_to_tile(struct container *con);
 void remove_container_from_tile(struct container *con);

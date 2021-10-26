@@ -60,6 +60,7 @@ struct workspace;
 #define CONFIG_BITSET_GC "japokwm.bitset_gc"
 #define CONFIG_COLOR "japokwm.color"
 #define CONFIG_CONTAINER "japokwm.container"
+#define CONFIG_CONTAINER_PROPERTY "japokwm.container_porperty"
 #define CONFIG_CURSOR "japokwm.cursor"
 #define CONFIG_CURSOR_MODE "japokwm.cursor_mode"
 #define CONFIG_DIRECTION "japokwm.direction"

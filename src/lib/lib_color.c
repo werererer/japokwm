@@ -45,13 +45,15 @@ void lua_load_color(lua_State *L)
     lua_setglobal(L, "Color");
 }
 
-struct color check_color(lua_State *L, int narg) {
+struct color check_color(lua_State *L, int narg)
+{
     void **ud = luaL_checkudata(L, narg, CONFIG_COLOR);
     luaL_argcheck(L, ud != NULL, narg, "`color' expected");
     return *(struct color *)ud;
 }
 
-static void create_lua_color(lua_State *L, struct color color) {
+static void create_lua_color(lua_State *L, struct color color)
+{
     struct color *user_color = lua_newuserdata(L, sizeof(struct color));
     *user_color = color;
 
