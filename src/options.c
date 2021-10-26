@@ -252,7 +252,7 @@ void load_default_keybindings()
     bind_key(options, "mod-8", action.view_or_tag(8));
     bind_key(options, "mod-9", action.view_or_tag(9));
 
-    bind_key(options, "mod-b", action.toggle_all_bars());
+    bind_key(options, "mod-b", Workspace.get_focused():toggle_bars());
 }
 
 static void assign_list(

@@ -38,19 +38,20 @@ static const struct luaL_Reg workspace_m[] =
 {
     {"get_id", lib_workspace_get_id},
     {"swap", lib_workspace_swap},
+    {"toggle_bars", lib_workspace_toggle_bars},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg workspace_setter[] =
 {
     {"tags", lib_set_tags},
-    {"bar", lib_workspace_set_bars_visibility},
+    {"bars", lib_workspace_set_bars_visibility},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg workspace_getter[] =
 {
-    {"bar", lib_workspace_get_bars_visibility},
+    {"bars", lib_workspace_get_bars_visibility},
     {"focus_set", lib_workspace_get_focus_set},
     {"focus_stack", lib_workspace_get_focus_stack},
     {"layout", lib_workspace_get_layout},
@@ -192,6 +193,19 @@ int lib_workspace_get_id(lua_State *L)
 
     lua_pushinteger(L, ws->id);
     return 1;
+}
+
+int lib_workspace_toggle_bars(lua_State *L)
+{
+    struct workspace *ws = check_workspace(L, 1);
+    lua_pop(L, 1);
+    enum wlr_edges visible_edges =
+            WLR_EDGE_BOTTOM |
+            WLR_EDGE_RIGHT |
+            WLR_EDGE_LEFT |
+            WLR_EDGE_TOP;
+    toggle_bars_visible(ws, visible_edges);
+    return 0;
 }
 
 // setter
