@@ -382,7 +382,7 @@ static void handle_too_few_workspaces(uint32_t ws_id)
     }
 }
 
-void tagset_focus_workspace(struct monitor *m, struct workspace *ws)
+void tagset_focus_workspace(struct workspace *ws)
 {
     BitSet *workspaces = bitset_copy(ws->workspaces);
     tagset_focus_tags(ws, workspaces);

@@ -2,9 +2,8 @@
 opt.automatic_workspace_naming = true;
 opt.sloppy_focus = true
 opt.workspaces = {"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"}
-opt.inner_gaps = 15
-opt.border_color = Color.new(0.0, 0.0, 1.0, 1.0)
-opt.focus_color = Color.new(1.0, 0.0, 0.0, 1.0)
+-- set it to 4 to use super instead
+opt.mod = 1
 
 local function on_start()
     -- execute programs or do what ever you want e.g.:
@@ -19,18 +18,6 @@ local layouts = {"two_pane", "tile"}
 opt.create_layout_set("default", layouts)
 
 layout.default_layout = "two_pane"
-
--- set it to 4 to use super instead
-opt.mod = 1
-
-local function exec_keycombo(i)
-    if (info.is_keycombo("combo")) then
-        Workspace.get_focused().tags:_xor(1 << (i-1))
-    else
-        action.view(Workspace.get(i))
-    end
-    action.start_keycombo("combo")
-end
 
 local function toggle_all_bars()
     for i = 1,info.get_workspace_count() do
@@ -62,15 +49,6 @@ opt:bind_key("mod-b",         function() toggle_all_bars() end)
 opt:bind_key("mod-S-h",       function() action.resize_main(-1/10) end)
 opt:bind_key("mod-S-l",       function() action.resize_main(1/10) end)
 opt:bind_key("mod-Return",    function() action.zoom() end)
-opt:bind_key("mod-1",         function() exec_keycombo(1) end)
-opt:bind_key("mod-2",         function() exec_keycombo(2) end)
-opt:bind_key("mod-3",         function() exec_keycombo(3) end)
-opt:bind_key("mod-4",         function() exec_keycombo(4) end)
-opt:bind_key("mod-5",         function() exec_keycombo(5) end)
-opt:bind_key("mod-6",         function() exec_keycombo(6) end)
-opt:bind_key("mod-7",         function() exec_keycombo(7) end)
-opt:bind_key("mod-8",         function() exec_keycombo(8) end)
-opt:bind_key("mod-9",         function() exec_keycombo(9) end)
 opt:bind_key("mod-0",         function() Workspace.get_focused().tags = 1 << Workspace.get_focused():get_id() end)
 opt:bind_key("mod-S-0",       function()
     local con = Container.get_focused()

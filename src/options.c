@@ -241,7 +241,16 @@ void load_default_keybindings()
 
     bind_key(options, "mod-a", Layout.get_focused():increase_n_master());
     bind_key(options, "mod-x", Layout.get_focused():decrease_n_master());
-    return;
+
+    bind_key(options, "mod-1", action.view_or_tag(1));
+    bind_key(options, "mod-2", action.view_or_tag(2));
+    bind_key(options, "mod-3", action.view_or_tag(3));
+    bind_key(options, "mod-4", action.view_or_tag(4));
+    bind_key(options, "mod-5", action.view_or_tag(5));
+    bind_key(options, "mod-6", action.view_or_tag(6));
+    bind_key(options, "mod-7", action.view_or_tag(7));
+    bind_key(options, "mod-8", action.view_or_tag(8));
+    bind_key(options, "mod-9", action.view_or_tag(9));
 }
 
 static void assign_list(

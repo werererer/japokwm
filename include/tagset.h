@@ -46,7 +46,7 @@ void monitor_focus_tags(struct monitor *m, struct workspace *ws, BitSet *workspa
 
 void workspace_write_to_workspaces(struct workspace *ws);
 
-void tagset_focus_workspace(struct monitor *m, struct workspace *ws);
+void tagset_focus_workspace(struct workspace *ws);
 void tagset_toggle_add(struct monitor *m, BitSet *bitset);
 void tagset_set_tags(struct workspace *sel_ws, BitSet *workspaces);
 void tagset_focus_tags(struct workspace *ws, struct BitSet *bitset);

@@ -26,6 +26,7 @@ int lib_toggle_tags(lua_State *L);
 int lib_toggle_view(lua_State *L);
 int lib_toggle_workspace(lua_State *L);
 int lib_view(lua_State *L);
+int lib_view_or_tag(lua_State *L);
 int lib_zoom(lua_State *L);
 
 #endif /* LIB_ACTIONS_H */
