@@ -140,3 +140,9 @@ void toggle_bars_visible(struct workspace *ws, enum wlr_edges direction)
     ws->visible_bar_edges ^= direction;
     bars_update_visiblitiy(ws);
 }
+
+void set_bars_visible(struct workspace *ws, enum wlr_edges direction)
+{
+    ws->visible_bar_edges = direction;
+    bars_update_visiblitiy(ws);
+}

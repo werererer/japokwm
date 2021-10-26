@@ -19,6 +19,7 @@
 #include "lib/lib_bitset.h"
 #include "lib/lib_focus_set.h"
 #include "lib/lib_direction.h"
+#include "root.h"
 
 static const struct luaL_Reg workspace_meta[] =
 {
@@ -213,7 +214,7 @@ int lib_workspace_set_bars_visibility(lua_State *L)
     struct workspace *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
-    ws->visible_bar_edges = dir;
+    set_bars_visible(ws, dir);
     return 0;
 }
 

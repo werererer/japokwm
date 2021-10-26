@@ -19,10 +19,6 @@ opt.create_layout_set("default", layouts)
 
 layout.default_layout = "two_pane"
 
-local function toggle_all_bars()
-    action.toggle_all_bars()
-end
-
 opt:bind_key("mod-S-p",       function() container.set_sticky(info.this_container_position(), 255) end)
 opt:bind_key("mod-e",         function() action.view(Workspace.get_focused():get_next_empty(Direction.left):get_id()) end)
 opt:bind_key("mod-period",    function() action.toggle_workspace() end)
@@ -41,7 +37,6 @@ opt:bind_key("mod-m",         function() action.focus_container(info.stack_posit
 opt:bind_key("mod-S-t",       function() action.load_layout_in_set("default", 2) end)
 opt:bind_key("mod-w",         function() action.load_layout_in_set("default", 3) end)
 opt:bind_key("mod-S-w",       function() action.load_layout_in_set("default", 4) end)
-opt:bind_key("mod-b",         function() toggle_all_bars() end)
 opt:bind_key("mod-S-h",       function() action.resize_main(-1/10) end)
 opt:bind_key("mod-S-l",       function() action.resize_main(1/10) end)
 opt:bind_key("mod-Return",    function() action.zoom() end)

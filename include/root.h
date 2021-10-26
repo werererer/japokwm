@@ -25,5 +25,6 @@ void root_damage_whole(struct root *root);
 void bars_update_visiblitiy(struct workspace *ws);
 enum wlr_edges get_bars_visible(struct workspace *ws);
 void toggle_bars_visible(struct workspace *ws, enum wlr_edges direction);
+void set_bars_visible(struct workspace *ws, enum wlr_edges direction);
 
 #endif /* ROOT_H */
