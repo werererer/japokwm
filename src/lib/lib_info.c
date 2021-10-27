@@ -23,7 +23,7 @@ static const struct luaL_Reg info_meta[] =
 
 static const struct luaL_Reg info_f[] =
 {
-    {"get_active_layout", lib_layout_get_active_layout},
+    {"get_active_layout", lib_layout_get_layout_name},
     {"get_container_under_cursor", lib_get_container_under_cursor},
     {"get_next_empty_workspace", lib_workspace_get_next_empty},
     {"get_this_container_count", lib_get_this_container_count},
