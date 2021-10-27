@@ -11,6 +11,8 @@
 #include "lib/lib_workspace.h"
 #include "lib/lib_geom.h"
 #include "lib/lib_container_property.h"
+#include "bitset/bitset.h"
+#include "lib/lib_bitset.h"
 
 static const struct luaL_Reg container_meta[] =
 {
@@ -172,28 +174,13 @@ int lib_container_set_sticky(lua_State *L) {
 
 int lib_container_set_sticky_restricted(lua_State *L) {
     // TODO fix this function
-    /* bool sticky = lua_toboolean(L, -1); */
-    uint64_t tags_dec = luaL_checkinteger(L, -1);
+    BitSet *bitset = check_bitset(L, 2);
     lua_pop(L, 1);
-    int i = luaL_checkinteger(L, -1);
+    struct container *con = check_container(L, 1);
     lua_pop(L, 1);
 
-    BitSet *tmp_bitset = bitset_from_value(tags_dec);
-    BitSet *bitset = bitset_create();
-    for (int i = 0; i < bitset->size; i++) {
-        int last_bit_id = tmp_bitset->size - 1;
-        bitset_assign(bitset, i, bitset_test(tmp_bitset, last_bit_id - i));
-    }
-    bitset_destroy(tmp_bitset);
-
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct container *con = get_container(ws, i);
-
-    bitset_set(bitset, bitset_test(con->client->sticky_workspaces, con->ws_id));
-
-    if (!con)
-        return 0;
+    bool is_sticky_at_ws_id = bitset_test(con->client->sticky_workspaces, con->ws_id);
+    bitset_assign(bitset, con->ws_id, is_sticky_at_ws_id);
 
     client_setsticky(con->client, bitset);
     return 0;

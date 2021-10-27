@@ -95,11 +95,12 @@ void create_monitor(struct wl_listener *listener, void *data)
 
         call_on_start_function(server.event_handler);
     }
+    struct workspace *ws = monitor_get_active_workspace(m);
+    tagset_focus_workspace(ws);
 
     apply_mon_rules(server.default_layout->options->mon_rules, m);
 
     arrange();
-    struct workspace *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
     set_root_color(m->root, lt->options->root_color);
 
@@ -181,6 +182,7 @@ static void monitor_get_initial_workspace(struct monitor *m, GPtrArray *workspac
     assert(ws != NULL);
 
     int ws_id = ws->id;
+    ws->m = m;
     BitSet *bitset = bitset_create();
     bitset_set(bitset, ws_id);
 
