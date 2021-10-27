@@ -70,8 +70,8 @@ void load_workspaces(GPtrArray *workspaces, GPtrArray *tag_names)
     for (int i = 0; i < tag_names->len; i++) {
         struct workspace *ws = get_workspace(i);
         const char *name = g_ptr_array_index(tag_names, i);
-        ws->current_layout = server.default_layout->symbol;
-        ws->previous_layout = server.default_layout->symbol;
+        ws->current_layout = server.default_layout->name;
+        ws->previous_layout = server.default_layout->name;
         workspace_remove_loaded_layouts(ws);
         workspace_rename(ws, name);
     }
@@ -95,8 +95,8 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     ws->id = id;
 
     ws->loaded_layouts = g_ptr_array_new();
-    ws->current_layout = lt->symbol;
-    ws->previous_layout = lt->symbol;
+    ws->current_layout = lt->name;
+    ws->previous_layout = lt->name;
 
     // TODO: findout which value must be used
     ws->workspaces = bitset_create();
@@ -455,14 +455,14 @@ void push_layout(struct workspace *ws, const char *layout_name)
 
 void set_default_layout(struct workspace *ws)
 {
-    push_layout(ws, server.default_layout->symbol);
+    push_layout(ws, server.default_layout->name);
 }
 
 static void load_layout_file(lua_State *L, struct layout *lt)
 {
     struct workspace *ws = get_workspace(lt->ws_id);
     init_local_config_variables(L, ws);
-    const char *name = lt->symbol;
+    const char *name = lt->name;
 
     char *config_path = get_config_file("layouts");
     char *file = strdup("");
@@ -498,7 +498,7 @@ static int workspace_load_layout(struct workspace *ws, const char *layout_name)
     lt->ws_id = ws->id;
     copy_layout_safe(lt, server.default_layout);
 
-    lt->symbol = layout_name;
+    lt->name = layout_name;
 
     g_ptr_array_insert(ws->loaded_layouts, 0, lt);
 
@@ -518,7 +518,7 @@ void load_layout(struct monitor *m)
     if (i >= 0) {
         struct layout *lt = g_ptr_array_steal_index(ws->loaded_layouts, i);
         g_ptr_array_insert(ws->loaded_layouts, 0, lt);
-        push_layout(ws, lt->symbol);
+        push_layout(ws, lt->name);
     } else {
         struct layout *lt = workspace_get_layout(ws);
         for (int i = 0; i < lt->linked_layouts->len; i++) {

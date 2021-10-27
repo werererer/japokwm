@@ -165,7 +165,7 @@ void load_default_lua_config(lua_State *L)
     g_ptr_array_add(tagnames, "1:2");
     g_ptr_array_add(tagnames, "2:3");
     g_ptr_array_add(tagnames, "3:4");
-    server.default_layout->symbol = "";
+    server.default_layout->name = "";
     load_workspaces(server.workspaces, tagnames);
 
     bitset_set(server.previous_bitset, server.previous_workspace);

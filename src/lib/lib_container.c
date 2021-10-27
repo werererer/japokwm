@@ -187,30 +187,13 @@ int lib_container_set_sticky_restricted(lua_State *L) {
 }
 
 int lib_container_toggle_add_sticky(lua_State *L) {
-    // TODO fix this function
     /* bool sticky = lua_toboolean(L, -1); */
-    uint64_t tags_dec = luaL_checkinteger(L, -1);
+    BitSet *bitset = check_bitset(L, 2);
     lua_pop(L, 1);
     struct container *con = check_container(L, 1);
     lua_pop(L, 1);
 
-    BitSet *tmp_bitset = bitset_from_value(tags_dec);
-    BitSet *bitset = bitset_create();
-    for (int i = 0; i < bitset->size; i++) {
-        int last_bit_id = tmp_bitset->size - 1;
-        bitset_assign(bitset, i, bitset_test(tmp_bitset, last_bit_id - i));
-    }
-    bitset_destroy(tmp_bitset);
-
-    if (!con)
-        return 0;
-
     bitset_xor(bitset, con->client->sticky_workspaces);
-
-    debug_print("container set sticky: %p\n", con);
-    for (int i = 0; i < bitset->size; i++) {
-        debug_print("bit: %i\n", bitset_test(bitset, i));
-    }
 
     if (!con)
         return 0;

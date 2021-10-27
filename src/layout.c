@@ -16,7 +16,7 @@ struct layout *create_layout(lua_State *L)
     struct layout *lt = calloc(1, sizeof(*lt));
     *lt = (struct layout) {
         .current_max_area = -1,
-        .symbol = "",
+        .name = "",
         .n_area = 1,
         .n_master = 1,
     };
@@ -100,8 +100,8 @@ struct resize_constraints lua_toresize_constrains(lua_State *L)
 
 bool is_same_layout(struct layout layout, struct layout layout2)
 {
-    const char *c = layout.symbol;
-    const char *c2 = layout2.symbol;
+    const char *c = layout.name;
+    const char *c2 = layout2.name;
     // same string means same layout
     return strcmp(c, c2) != 0;
 }
@@ -200,12 +200,12 @@ int cmp_layout(const void *ptr1, const void *ptr2)
 {
     const struct layout *lt1 = ptr1;
     const struct layout *lt2 = ptr2;
-    return strcmp(lt1->symbol, lt2->symbol) == 0;
+    return strcmp(lt1->name, lt2->name) == 0;
 }
 
 int cmp_layout_to_string(const void *ptr1, const void *symbol_ptr)
 {
     const struct layout *lt1 = ptr1;
     const char *symbol = symbol_ptr;
-    return strcmp(lt1->symbol, symbol) == 0;
+    return strcmp(lt1->name, symbol) == 0;
 }

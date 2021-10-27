@@ -42,6 +42,7 @@ static const struct luaL_Reg layout_getter[] = {
     {"layout_data", lib_layout_get_layout_data},
     {"n_area", lib_layout_get_n_area},
     {"n_master", lib_layout_get_n_master},
+    {"name", lib_layout_get_layout_name},
     {"o_layout_data", lib_layout_get_o_layout_data},
     {"resize_data", lib_layout_get_resize_data},
     {NULL, NULL},
@@ -102,16 +103,6 @@ int lib_layout_get_focused(lua_State *L)
     struct layout *lt = workspace_get_layout(ws);
 
     create_lua_layout(L, lt);
-    return 1;
-}
-
-int lib_layout_get_active_layout(lua_State *L)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-
-    struct layout *lt = workspace_get_layout(ws);
-    lua_pushstring(L, lt->symbol);
     return 1;
 }
 
@@ -320,6 +311,14 @@ int lib_layout_set_resize_function(lua_State *L)
 }
 
 // getter
+int lib_layout_get_layout_name(lua_State *L)
+{
+    struct layout *lt = check_layout(L, 1);
+    lua_pop(L, 1);
+    lua_pushstring(L, lt->name);
+    return 1;
+}
+
 int lib_layout_get_direction(lua_State *L)
 {
     struct layout *lt = check_layout(L, 1);
@@ -360,13 +359,13 @@ int lib_layout_get_resize_data(lua_State *L)
 // setter
 int lib_layout_set_default_layout(lua_State *L)
 {
-    const char *symbol = luaL_checkstring(L, -1);
+    const char *name = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
     struct layout *lt = check_layout(L, 1);
     lua_pop(L, 1);
 
-    lt->symbol = symbol;
+    lt->name = name;
     return 0;
 }
 

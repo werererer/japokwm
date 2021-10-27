@@ -9,7 +9,7 @@
 #include "layout_set.h"
 
 struct layout {
-    const char *symbol;
+    const char *name;
 
     // this is an option set by the user
     int current_max_area;
