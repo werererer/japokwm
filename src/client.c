@@ -175,12 +175,13 @@ void container_move_sticky_containers(struct container *con, int ws_id)
     if (!bitset_test(con->client->sticky_workspaces, ws->id)) {
         if (bitset_any(con->client->sticky_workspaces)) {
             for (int i = 0; i < con->client->sticky_workspaces->size; i++) {
-                if (bitset_test(con->client->sticky_workspaces, i)) {
-                    container_set_just_workspace_id(con, i);
-                    arrange();
-                    focus_most_recent_container();
-                    ipc_event_workspace();
-                }
+                bool sticky_workspace = bitset_test(con->client->sticky_workspaces, i);
+                if (!sticky_workspace)
+                    continue;
+                container_set_just_workspace_id(con, i);
+                arrange();
+                focus_most_recent_container();
+                ipc_event_workspace();
             }
         } else {
             move_to_scratchpad(con, 0);

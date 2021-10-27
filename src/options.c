@@ -85,7 +85,8 @@ void options_reset(struct options *options)
     options->arrange_by_focus = false;
     options->hidden_edges = WLR_EDGE_NONE;
     options->smart_hidden_edges = false;
-    options->automatic_workspace_naming = false;
+    options->sloppy_focus = true;
+    options->automatic_workspace_naming = true;
 
     list_clear(options->mon_rules, NULL);
     list_clear(options->rules, NULL);
@@ -280,6 +281,18 @@ void load_default_keybindings()
             Workspace.get_focused().tags = 1 << con.workspace:get_id()
         end
     );
+    bind_key(options, "mod-C-S-0",
+            local con = Container.get_focused()
+            if con then
+                con.sticky_restricted = 0
+            end
+            );
+    bind_key(options, "mod-C-S-9",
+            local con = Container.get_focused()
+            if con then
+                con.sticky_restricted = 255
+            end
+            );
 }
 
 static void assign_list(
