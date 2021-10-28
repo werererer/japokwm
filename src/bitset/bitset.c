@@ -144,17 +144,7 @@ int bit_wise_operation(BitSet* destination,
 }
 
 int bitset_and(BitSet* destination, BitSet* source) {
-    for (GList *iter = g_hash_table_get_keys(source->bytes); iter; iter = iter->next) {
-        size_t i = *(size_t *)iter->data;
-        bool first = bitset_test(destination, i);
-        const bool second = bitset_test(source, i);
-
-        first &= second;
-
-        bitset_assign(destination, i, first);
-    }
-
-    return BITSET_SUCCESS;
+    return bit_wise_operation(destination, source, _bit_and);
 }
 
 int bitset_or(BitSet* destination, BitSet* source) {
