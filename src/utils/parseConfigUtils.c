@@ -142,7 +142,6 @@ int load_config(lua_State *L)
 {
     int success = 0;
     init_global_config_variables(L);
-    load_default_keybindings();
 
     if (server.config_file != NULL && strcmp(server.config_file, "") != 0) {
         debug_print("load file\n");
@@ -157,7 +156,6 @@ int load_config(lua_State *L)
 void load_default_lua_config(lua_State *L)
 {
     options_reset(server.default_layout->options);
-    load_default_keybindings();
 
     list_clear(server.default_layout->options->tag_names, NULL);
     GPtrArray *tagnames = server.default_layout->options->tag_names;

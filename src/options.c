@@ -91,7 +91,7 @@ void options_reset(struct options *options)
     list_clear(options->mon_rules, NULL);
     list_clear(options->rules, NULL);
     list_clear(options->tag_names, NULL);
-    list_clear(options->keybindings, NULL);
+    load_default_keybindings(options);
 }
 
 static struct keybinding *create_keybind(const char *binding, const char *command)
@@ -139,10 +139,8 @@ void options_add_keybinding(struct options *options, struct keybinding *keybindi
 
 #define bind_key(options, binding, lua_func) add_keybind(options, binding, #lua_func)
 
-void load_default_keybindings()
+void load_default_keybindings(struct options *options)
 {
-    struct layout *lt = server.default_layout;
-    struct options *options = lt->options;
     list_clear(options->keybindings, NULL);
 
     bind_key(options, "mod-S-q", server:quit());

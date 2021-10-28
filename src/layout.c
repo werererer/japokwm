@@ -37,9 +37,6 @@ struct layout *create_layout(lua_State *L)
     lua_get_default_layout_data(L);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_copy_data_ref);
 
-    lua_createtable(L, 0, 0);
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_ref);
-
     lua_get_default_resize_function(L);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_resize_function_ref);
 

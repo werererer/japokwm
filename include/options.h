@@ -70,7 +70,7 @@ struct options {
 struct options *create_options();
 void destroy_options(struct options *options);
 void options_reset(struct options *options);
-void load_default_keybindings();
+void load_default_keybindings(struct options *options);
 GPtrArray *create_tagnames();
 void copy_options(struct options *dest_option, struct options *src_option);
 
