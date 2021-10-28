@@ -339,7 +339,7 @@ int lib_toggle_all_bars(lua_State *L)
             WLR_EDGE_TOP;
     }
 
-    for (int i = 0; i < server_get_workspace_count(); i++) {
+    for (int i = 0; i < server_get_workspace_key_count(); i++) {
         struct workspace *ws = get_workspace(i);
         set_bars_visible(ws, visible_edges);
     }

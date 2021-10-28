@@ -27,7 +27,7 @@
 static void handle_output_damage_frame(struct wl_listener *listener, void *data);
 static void handle_output_frame(struct wl_listener *listener, void *data);
 static void handle_output_mode(struct wl_listener *listener, void *data);
-static void monitor_get_initial_workspace(struct monitor *m, GPtrArray *workspaces);
+static void monitor_get_initial_workspace(struct monitor *m, GList *workspaces);
 
 void create_monitor(struct wl_listener *listener, void *data)
 {
@@ -84,11 +84,11 @@ void create_monitor(struct wl_listener *listener, void *data)
     if (is_first_monitor) {
         server_set_selected_monitor(m);
     }
-    monitor_get_initial_workspace(m, server.workspaces);
+    monitor_get_initial_workspace(m, server_get_workspaces());
 
     if (is_first_monitor) {
         load_config(L);
-        load_workspaces(server.workspaces, server.default_layout->options->tag_names);
+        load_workspaces(server_get_workspaces(), server.default_layout->options->tag_names);
         server_allow_reloading_config();
 
         bitset_set(server.previous_bitset, server.previous_workspace);
@@ -175,7 +175,7 @@ static void handle_output_mode(struct wl_listener *listener, void *data)
     arrange_layers(m);
 }
 
-static void monitor_get_initial_workspace(struct monitor *m, GPtrArray *workspaces)
+static void monitor_get_initial_workspace(struct monitor *m, GList *workspaces)
 {
     struct workspace *ws = find_next_unoccupied_workspace(workspaces, get_workspace(0));
 
@@ -198,8 +198,8 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
     wl_list_remove(&m->destroy.link);
 
     struct workspace *ws = monitor_get_active_workspace(m);
-    for (int i = 0; i < server.workspaces->len; i++) {
-        struct workspace *ws = get_workspace(i);
+    for (GList *iterator = server_get_workspaces(); iterator; iterator = iterator->next) {
+        struct workspace *ws = iterator->data;
         if (ws->m == m) {
             workspace_set_selected_monitor(ws, NULL);
         }
@@ -225,8 +225,8 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
     }
     g_ptr_array_unref(stack_list);
 
-    for (int i = 0; i < server.workspaces->len; i++) {
-        struct workspace *ws = g_ptr_array_index(server.workspaces, i);
+    for (GList *iterator = server_get_workspaces(); iterator; iterator = iterator->next) {
+        struct workspace *ws = iterator->data;
         if (ws->current_m == m) {
             debug_print("unset ws: %i\n", ws->id);
             workspace_set_current_monitor(ws, NULL);

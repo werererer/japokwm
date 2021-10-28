@@ -166,16 +166,16 @@ void load_default_lua_config(lua_State *L)
     g_ptr_array_add(tagnames, "2:3");
     g_ptr_array_add(tagnames, "3:4");
     server.default_layout->name = "";
-    load_workspaces(server.workspaces, tagnames);
+    load_workspaces(server_get_workspaces(), tagnames);
 
     bitset_set(server.previous_bitset, server.previous_workspace);
 
-    workspaces_remove_loaded_layouts(server.workspaces);
+    workspaces_remove_loaded_layouts(server_get_workspaces());
 
     // FIXME: you have to reconnect your workspaces because workspaces may have
     // been destroyed that belong to the tagset this may lead to segfaults
-    for (int i = 0; i < server.workspaces->len; i++) {
-        struct workspace *ws = g_ptr_array_index(server.workspaces, i);
+    for (int i = 0; i < server_get_workspace_count(); i++) {
+        struct workspace *ws = get_workspace(i);
         set_default_layout(ws);
     }
 

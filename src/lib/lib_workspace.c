@@ -105,14 +105,14 @@ int lib_workspace_get_next_empty(lua_State *L)
     int ws_id = ws->id;
     switch (dir) {
         case WLR_DIRECTION_LEFT:
-            ws = get_prev_empty_workspace(server.workspaces, ws_id);
+            ws = get_prev_empty_workspace(server_get_workspaces(), ws_id);
             break;
         case WLR_DIRECTION_RIGHT:
-            ws = get_next_empty_workspace(server.workspaces, ws_id);
+            ws = get_next_empty_workspace(server_get_workspaces(), ws_id);
             break;
         default:
             if (dir & WLR_DIRECTION_LEFT && dir & WLR_DIRECTION_RIGHT) {
-                ws = get_nearest_empty_workspace(server.workspaces, ws_id);
+                ws = get_nearest_empty_workspace(server_get_workspaces(), ws_id);
             } else {
                 ws = get_workspace(ws_id);
             }

@@ -52,7 +52,7 @@ struct server {
     // TODO: rename
     GPtrArray *named_key_combos;
 
-    GPtrArray *workspaces;
+    GHashTable *workspaces;
 
     GPtrArray *scratchpad;
 
@@ -112,6 +112,9 @@ int start_server(char *startup_cmd);
 int stop_server();
 
 int server_get_workspace_count();
+int server_get_workspace_key_count();
+GList *server_get_workspaces();
+struct workspace *get_workspace(int id);
 
 void server_prohibit_reloading_config();
 void server_allow_reloading_config();

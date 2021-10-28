@@ -92,7 +92,7 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
     con->focusable = true;
 
     con->properties = g_ptr_array_new_with_free_func(destroy_container_property);
-    for (int i = 0; i < server.workspaces->len; i++) {
+    for (int i = 0; i < server_get_workspace_key_count(); i++) {
         struct container_property *container_property = create_container_property(con);
         g_ptr_array_add(con->properties, container_property);
     }
@@ -126,7 +126,7 @@ void add_container_to_tile(struct container *con)
 
     con->is_on_tile = true;
 
-    workspace_update_names(&server, server.workspaces);
+    workspace_update_names(&server, server_get_workspaces());
     ipc_event_workspace();
 }
 
@@ -155,7 +155,7 @@ void remove_container_from_tile(struct container *con)
     }
 
     con->is_on_tile = false;
-    workspace_update_names(&server, server.workspaces);
+    workspace_update_names(&server, server_get_workspaces());
     ipc_event_workspace();
 }
 
@@ -445,7 +445,7 @@ void focus_container(struct container *con)
     if (sel == new_sel)
         return;
 
-    workspace_update_names(&server, server.workspaces);
+    workspace_update_names(&server, server_get_workspaces());
     ipc_event_workspace();
 }
 
@@ -1060,7 +1060,7 @@ void container_set_workspace_id(struct container *con, int ws_id)
     // TODO optimize this
     struct workspace *prev_ws = get_workspace(con->ws_id);
     con->ws_id = ws_id;
-    bitset_reserve(con->client->sticky_workspaces, server.workspaces->len);
+    bitset_reserve(con->client->sticky_workspaces, server_get_workspace_count());
     bitset_reset_all(con->client->sticky_workspaces);
     bitset_set(con->client->sticky_workspaces, con->ws_id);
 

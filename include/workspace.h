@@ -36,8 +36,8 @@ struct tagset;
 
 #define DO_ACTION_GLOBALLY(workspaces, action) \
     do {\
-        for (int _i = 0; _i < workspaces->len; _i++) {\
-            struct workspace *_ws = g_ptr_array_index(workspaces, _i);\
+        for (GList *_iter = workspaces; _iter; _iter = _iter->next) {\
+            struct workspace *_ws = _iter->data;\
             \
             struct container_set *con_set = _ws->con_set;\
             do {\
@@ -90,15 +90,15 @@ struct workspace {
     enum wlr_edges visible_bar_edges;
 };
 
-GPtrArray *create_workspaces();
-void destroy_workspaces(GPtrArray *workspaces);
+GHashTable *create_workspaces();
+void destroy_workspaces(GHashTable *workspaces);
 
-void load_workspaces(GPtrArray *workspaces, GPtrArray *tag_names);
+void load_workspaces(GList *workspaces, GPtrArray *tag_names);
 
 struct workspace *create_workspace(const char *name, size_t id, struct layout *lt);
 void destroy_workspace(struct workspace *ws);
 
-void update_workspaces(GPtrArray *workspaces, GPtrArray *tag_names);
+void update_workspaces(GList *workspaces, GPtrArray *tag_names);
 void update_workspace_ids(GPtrArray *workspaces);
 
 bool is_workspace_occupied(struct workspace *ws);
@@ -114,11 +114,10 @@ void focus_most_recent_container();
 struct container *get_container(struct workspace *ws, int i);
 struct container *get_container_in_stack(struct workspace *ws, int i);
 
-struct workspace *find_next_unoccupied_workspace(GPtrArray *workspaces, struct workspace *ws);
-struct workspace *get_workspace(int id);
-struct workspace *get_next_empty_workspace(GPtrArray *workspaces, size_t i);
-struct workspace *get_prev_empty_workspace(GPtrArray *workspaces, size_t i);
-struct workspace *get_nearest_empty_workspace(GPtrArray *workspaces, int ws_id);
+struct workspace *find_next_unoccupied_workspace(GList *workspaces, struct workspace *ws);
+struct workspace *get_next_empty_workspace(GList *workspaces, size_t i);
+struct workspace *get_prev_empty_workspace(GList *workspaces, size_t ws_id);
+struct workspace *get_nearest_empty_workspace(GList *workspaces, int ws_id);
 
 struct layout *workspace_get_layout(struct workspace *ws);
 struct root *workspace_get_root(struct workspace *ws);
@@ -129,16 +128,16 @@ struct monitor *workspace_get_monitor(struct workspace *ws);
 void workspace_set_selected_monitor(struct workspace *ws, struct monitor *m);
 void workspace_set_current_monitor(struct workspace *ws, struct monitor *m);
 
-void destroy_workspaces(GPtrArray *workspaces);
+void destroy_workspaces(GHashTable *workspaces);
 void layout_set_set_layout(struct workspace *ws);
 void push_layout(struct workspace *ws, const char *layout_name);
 void set_default_layout(struct workspace *ws);
-void load_layout(struct monitor *m);
+void load_layout(struct workspace *ws);
 void workspace_remove_loaded_layouts(struct workspace *ws);
-void workspaces_remove_loaded_layouts(GPtrArray *workspaces);
+void workspaces_remove_loaded_layouts(GList *workspaces);
 void workspace_rename(struct workspace *ws, const char *name);
 void workspace_update_name(struct workspace *ws);
-void workspace_update_names(struct server *server, GPtrArray *workspaces);
+void workspace_update_names(struct server *server, GList *workspaces);
 struct container *workspace_get_focused_container(struct workspace *ws);
 
 void workspace_add_container_to_containers(struct workspace *ws, int i, struct container *con);

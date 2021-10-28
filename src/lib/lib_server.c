@@ -78,10 +78,11 @@ int lib_server_get_workspaces(lua_State *L)
 {
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    struct server *server = check_server(L);
+    // TODO fixme use server variable instead
+    check_server(L);
     lua_pop(L, 1);
 
-    struct workspace *ws = g_ptr_array_index(server->workspaces, i);
+    struct workspace *ws = get_workspace(i);
     create_lua_workspace(L, ws);
     return 1;
 }
