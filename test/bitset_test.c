@@ -14,6 +14,54 @@ void test_bitset()
     g_assert_cmpint(bitset_test(bitset, 20), ==, true);
 }
 
+void test_bitset_reverse()
+{
+    BitSet *bitset = bitset_create();
+    bitset_assign(bitset, 0, true);
+    bitset_assign(bitset, 1, false);
+    bitset_assign(bitset, 2, true);
+    bitset_assign(bitset, 3, true);
+    bitset_assign(bitset, 4, false);
+    bitset_reverse(bitset, 0, 5);
+}
+
+void test_bitset_from_value_reversed()
+{
+    // 123 == 0b01111011
+    // reversed(123) == 0b11011110
+    int test_value = 123;
+    BitSet *bitset_normal = bitset_from_value(test_value);
+    BitSet *bitset_reversed = bitset_from_value_reversed(test_value);
+
+    g_assert_cmpint(bitset_test(bitset_normal, 0), ==, 1);
+    g_assert_cmpint(bitset_test(bitset_normal, 1), ==, 1);
+    g_assert_cmpint(bitset_test(bitset_normal, 2), ==, 0);
+    g_assert_cmpint(bitset_test(bitset_normal, 3), ==, 1);
+    g_assert_cmpint(bitset_test(bitset_normal, 4), ==, 1);
+    g_assert_cmpint(bitset_test(bitset_normal, 5), ==, 1);
+    g_assert_cmpint(bitset_test(bitset_normal, 6), ==, 1);
+    g_assert_cmpint(bitset_test(bitset_normal, 7), ==, 0);
+
+    g_assert_cmpint(bitset_test(bitset_reversed, 0), ==, 0);
+    g_assert_cmpint(bitset_test(bitset_reversed, 1), ==, 1);
+    g_assert_cmpint(bitset_test(bitset_reversed, 2), ==, 1);
+    g_assert_cmpint(bitset_test(bitset_reversed, 3), ==, 1);
+    g_assert_cmpint(bitset_test(bitset_reversed, 4), ==, 1);
+    g_assert_cmpint(bitset_test(bitset_reversed, 5), ==, 0);
+    g_assert_cmpint(bitset_test(bitset_reversed, 6), ==, 1);
+    g_assert_cmpint(bitset_test(bitset_reversed, 7), ==, 1);
+
+    bitset_reverse(bitset_reversed, 0, 64);
+    g_assert_cmpint(bitset_test(bitset_reversed, 0), ==, 1);
+    g_assert_cmpint(bitset_test(bitset_reversed, 1), ==, 1);
+    g_assert_cmpint(bitset_test(bitset_reversed, 2), ==, 0);
+    g_assert_cmpint(bitset_test(bitset_reversed, 3), ==, 1);
+    g_assert_cmpint(bitset_test(bitset_reversed, 4), ==, 1);
+    g_assert_cmpint(bitset_test(bitset_reversed, 5), ==, 1);
+    g_assert_cmpint(bitset_test(bitset_reversed, 6), ==, 1);
+    g_assert_cmpint(bitset_test(bitset_reversed, 7), ==, 0);
+}
+
 void test_bitset_xor()
 {
     BitSet *bitset1 = bitset_create();
