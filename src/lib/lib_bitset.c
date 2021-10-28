@@ -113,16 +113,8 @@ BitSet *check_bitset(lua_State *L, int narg)
         int tags_dec = luaL_checkinteger(L, -1);
         lua_pop(L, 1);
 
-        BitSet *tmp_bitset = bitset_from_value(tags_dec);
-        BitSet *bitset = bitset_create();
-        for (GList *iter = g_hash_table_get_keys(bitset->bytes);
-                iter;
-                iter = iter->next) {
-            int i = *(int *)iter->data;
-            int last_bit_id = g_hash_table_size(tmp_bitset->bytes) - 1;
-            bitset_assign(bitset, i, bitset_test(tmp_bitset, last_bit_id - i));
-        }
-        bitset_destroy(tmp_bitset);
+        BitSet *bitset = bitset_from_value(tags_dec);
+        bitset_reverse(bitset, 0, 64);
 
         // hand over garbage collection to lua
         create_lua_bitset_gc(L, bitset);
@@ -291,6 +283,8 @@ int lib_bitset_xor(lua_State *L)
 {
     BitSet *bitset = check_bitset(L, 2);
     lua_pop(L, 1);
+    debug_print("xor\n");
+    print_bitset(bitset);
 
     BitSet *self = check_bitset(L, 1);
     call_bitset_func(L, bitset_xor, self, bitset);

@@ -51,6 +51,18 @@ void bitset_assign_bitset(BitSet** dest, BitSet* source)
     g_hash_table_foreach(source->bytes, append_bits, (*dest)->bytes);
 }
 
+void bitset_reverse(BitSet *bitset, int start, int end)
+{
+    BitSet *bitset_tmp = bitset_copy(bitset);
+    for (int i = start; i < end; i++) {
+        int high = end - 1;
+        int reverse_i = high - i;
+        bool b = bitset_test(bitset_tmp, reverse_i);
+        bitset_assign(bitset, i, b);
+    }
+    bitset_destroy(bitset_tmp);
+}
+
 int bitset_swap(BitSet* destination, BitSet* source) {
     // TODO: fix later
     /* assert(destination != NULL); */
@@ -78,6 +90,18 @@ BitSet *bitset_from_value(uint64_t value) {
         bool v = LAST_BIT(value);
         bitset_assign(bitset, bit, v);
         value <<= 1;
+    }
+
+    return bitset;
+}
+
+BitSet *bitset_from_value_reversed(uint64_t value)
+{
+    BitSet *bitset = bitset_create();
+    for (size_t bit = 0; bit < 64; ++bit) {
+        bool v = FIRST_BIT(value);
+        bitset_assign(bitset, bit, v);
+        value >>= 1;
     }
 
     return bitset;
@@ -165,7 +189,8 @@ int bitset_assign(BitSet* bitset, size_t index, bool value) {
 int bitset_toggle(BitSet* bitset, size_t index) {
     bool byte = byte_const_get(bitset, index);
 
-    bitset_assign(bitset, index, !byte);
+    bool v = !byte;
+    bitset_assign(bitset, index, !v);
 
     return BITSET_SUCCESS;
 }
@@ -301,10 +326,9 @@ int bitset_none(BitSet* bitset) {
 
 void print_bitset(BitSet *bitset)
 {
-    // TODO: this is a bit unaccurate
-    for (GList *iter = g_hash_table_get_values(bitset->bytes); iter; iter = iter->next) {
-        bool *bit = iter->data;
-        debug_print("%i\n", *bit);
+    for (int i = 0; i < 8; i++) {
+        bool bit = bitset_test(bitset, i);
+        debug_print("%i\n", bit);
     }
 }
 

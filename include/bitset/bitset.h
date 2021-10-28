@@ -39,12 +39,16 @@ BitSet *bitset_create();
 BitSet* bitset_copy(BitSet* source);
 // both dest and source must be initialized
 void bitset_assign_bitset(BitSet** dest, BitSet* source);
+// note the it reverses the bitset from the bitset up to end-1 because it is
+// most of the time nicer to write according to python
+void bitset_reverse(BitSet *bitset, int start, int end);
 int bitset_swap(BitSet* destination, BitSet* source);
 
 void bitset_destroy(BitSet* bitset);
 
 /* Factory */
 BitSet *bitset_from_value(uint64_t value);
+BitSet *bitset_from_value_reversed(uint64_t value);
 
 /* Logical Operations */
 int byte_wise_operation(BitSet* destination,
@@ -88,6 +92,7 @@ void print_bitset(BitSet *bitset);
 #define LAST_BIT_MASK(value) (1ULL << LAST_BIT_INDEX(value))
 #define LAST_BIT(value) \
     ((value & LAST_BIT_MASK(value)) >> LAST_BIT_INDEX(value))
+#define FIRST_BIT(value) value & 1
 
 #define CEIL(x) ((x == ((int)(x))) ? x : ((int)(x)) + 1)
 #define BITS_TO_BYTES(bits) CEIL((bits) / 8.0)
