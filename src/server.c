@@ -437,8 +437,6 @@ struct workspace *get_workspace(int id)
 {
     if (id < 0)
         return NULL;
-    int hash_len = g_list_length(g_hash_table_get_keys(server.workspaces));
-    printf("hashtable actual length: %i\n", hash_len);
     struct workspace *ws = g_hash_table_lookup(server.workspaces, &id);
     if (!ws) {
         ws = handle_too_few_workspaces(id);
