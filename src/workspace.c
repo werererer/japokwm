@@ -248,15 +248,14 @@ bool is_workspace_empty(struct workspace *ws)
 
 struct workspace *find_next_unoccupied_workspace(GList *workspaces, struct workspace *ws)
 {
-    for (size_t i = ws ? ws->id : 0; i < server_get_workspace_count(); i++) {
-        struct workspace *w = get_workspace(i);
-        if (!w)
-            break;
-        if (!is_workspace_occupied(w))
-            return w;
+    // we have infinity amount of workspaces so just get the next one
+    // (infinity - 1 = infinity ;) )
+    size_t start_id = ws ? ws->id : 0;
+    for (size_t i = start_id ;; i++) {
+        struct workspace *ws = get_workspace(i);
+        if (!is_workspace_occupied(ws))
+            return ws;
     }
-    struct workspace *w = get_workspace(server_get_workspace_key_count());
-    return w;
 }
 
 struct workspace *get_next_empty_workspace(GList *workspaces, size_t ws_id)
