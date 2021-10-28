@@ -26,8 +26,7 @@ typedef void (*bit_operator_t)(bool*, const bool*);
 /****************** STRUCTURES ******************/
 
 typedef struct BitSet {
-    GPtrArray *bytes;
-    size_t size;
+    GHashTable *bytes;
     // you should set it to the parent
     void *data;
 } BitSet;
@@ -64,37 +63,17 @@ int bitset_assign(BitSet* bitset, size_t index, bool value);
 int bitset_toggle(BitSet* bitset, size_t index);
 
 int bitset_test(BitSet* bitset, size_t index);
-const uint8_t* byte_const_get(BitSet* bitset, size_t index);
-uint8_t* byte_get(BitSet* bitset, size_t index);
+const bool byte_const_get(BitSet* bitset, size_t index);
+bool* byte_get(BitSet* bitset, size_t index);
 
 int bitset_msb(BitSet* bitset);
-int bitset_lsb(BitSet* bitset);
 
 int bitset_reset_all(BitSet* bitset);
 int bitset_set_all(BitSet* bitset);
 int bitset_set_all_to_mask(BitSet* bitset, uint8_t mask);
 void bitset_clear(BitSet* bitset);
 
-uint64_t bitset_to_value(BitSet *bitset);
-
-/* Size Management */
-int bitset_push(BitSet* bitset, bool value);
-int bitset_push_one(BitSet* bitset);
-int bitset_push_zero(BitSet* bitset);
-void bitset_pop(BitSet* bitset);
-
-/* Capacity Management */
-void bitset_reserve(BitSet* bitset, size_t minimum_number_of_bits);
-void bitset_equalize_size(BitSet* bitset1, BitSet *bitset2);
-void bitset_grow_to_size(BitSet* bitset, size_t size);
-void bitset_shrink_to_size(BitSet* bitset, size_t size);
-void bitset_grow(BitSet* bitset);
-void bitset_shrink(BitSet* bitset);
-
 /* Information */
-size_t bitset_capacity(const BitSet* bitset);
-size_t bitset_size_in_bytes(const BitSet* bitset);
-
 int bitset_count(BitSet* bitset);
 int bitset_all(BitSet* bitset);
 int bitset_any(BitSet* bitset);
@@ -115,21 +94,8 @@ void print_bitset(BitSet *bitset);
 #define DEFAULT_ALLOCATED_BYTES 1
 #define DEFAULT_NUMBER_OF_BITS 8
 
-/* Popcount Masks */
-#define POPCOUNT_MASK1 0x55
-#define POPCOUNT_MASK2 0x33
-#define POPCOUNT_MASK3 0x0F
-
-uint8_t _byte_popcount(uint8_t value);
-
-int _bitset_increment_size(BitSet* bitset);
-
 void _bit_and(bool* first, const bool* second);
 void _bit_or(bool* first, const bool* second);
 void _bit_xor(bool* first, const bool* second);
-
-size_t _byte_index(size_t index);
-uint8_t _bitset_index(size_t index);
-uint8_t _bitset_offset(size_t index);
 
 #endif /* BITSET_H */

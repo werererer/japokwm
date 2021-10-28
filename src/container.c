@@ -1060,7 +1060,6 @@ void container_set_workspace_id(struct container *con, int ws_id)
     // TODO optimize this
     struct workspace *prev_ws = get_workspace(con->ws_id);
     con->ws_id = ws_id;
-    bitset_reserve(con->client->sticky_workspaces, server_get_workspace_count());
     bitset_reset_all(con->client->sticky_workspaces);
     bitset_set(con->client->sticky_workspaces, con->ws_id);
 

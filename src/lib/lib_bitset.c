@@ -115,8 +115,11 @@ BitSet *check_bitset(lua_State *L, int narg)
 
         BitSet *tmp_bitset = bitset_from_value(tags_dec);
         BitSet *bitset = bitset_create();
-        for (int i = 0; i < bitset->size; i++) {
-            int last_bit_id = tmp_bitset->size - 1;
+        for (GList *iter = g_hash_table_get_keys(bitset->bytes);
+                iter;
+                iter = iter->next) {
+            int i = *(int *)iter->data;
+            int last_bit_id = g_hash_table_size(tmp_bitset->bytes) - 1;
             bitset_assign(bitset, i, bitset_test(tmp_bitset, last_bit_id - i));
         }
         bitset_destroy(tmp_bitset);

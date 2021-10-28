@@ -6,23 +6,24 @@
 #include "monitor.h"
 #include "stringop.h"
 
-#include <wlr/types/wlr_xdg_decoration_v1.h>
-#include <wlr/types/wlr_data_device.h>
-#include <wlr/types/wlr_server_decoration.h>
-#include <wlr/types/wlr_export_dmabuf_v1.h>
-#include <wlr/types/wlr_gamma_control_v1.h>
-#include <wlr/types/wlr_primary_selection_v1.h>
-#include <wlr/types/wlr_xdg_decoration_v1.h>
-#include <wlr/types/wlr_xdg_output_v1.h>
-#include <wlr/types/wlr_idle.h>
-#include <wlr/types/wlr_idle_inhibit_v1.h>
-#include <wlr/types/wlr_input_inhibitor.h>
-#include <wlr/types/wlr_screencopy_v1.h>
-#include <wlr/types/wlr_viewporter.h>
-#include <wlr/types/wlr_data_control_v1.h>
+#include <assert.h>
 #include <unistd.h>
 #include <wait.h>
 #include <wayland-client.h>
+#include <wlr/types/wlr_data_control_v1.h>
+#include <wlr/types/wlr_data_device.h>
+#include <wlr/types/wlr_export_dmabuf_v1.h>
+#include <wlr/types/wlr_gamma_control_v1.h>
+#include <wlr/types/wlr_idle.h>
+#include <wlr/types/wlr_idle_inhibit_v1.h>
+#include <wlr/types/wlr_input_inhibitor.h>
+#include <wlr/types/wlr_primary_selection_v1.h>
+#include <wlr/types/wlr_screencopy_v1.h>
+#include <wlr/types/wlr_server_decoration.h>
+#include <wlr/types/wlr_viewporter.h>
+#include <wlr/types/wlr_xdg_decoration_v1.h>
+#include <wlr/types/wlr_xdg_decoration_v1.h>
+#include <wlr/types/wlr_xdg_output_v1.h>
 
 #include "layer_shell.h"
 #include "monitor.h"
@@ -422,8 +423,7 @@ int server_get_workspace_count()
 
 int server_get_workspace_key_count()
 {
-    GList *workspaces = server_get_workspaces();
-    size_t count = g_list_length(workspaces);
+    size_t count = g_hash_table_size(server.workspaces);
     return count;
 }
 
@@ -440,6 +440,7 @@ struct workspace *get_workspace(int id)
     struct workspace *ws = g_hash_table_lookup(server.workspaces, &id);
     if (!ws) {
         ws = handle_too_few_workspaces(id);
+        assert(ws != NULL);
     }
 
     return ws;
