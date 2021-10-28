@@ -25,6 +25,12 @@ typedef void (*bit_operator_t)(bool*, const bool*);
 
 /****************** STRUCTURES ******************/
 
+/*
+ * This is an infinit data structure. That means it has no start and no end and
+ * you can get the value of any index you want at any time and set each value.
+ * The data structure ensures that we don't waste memory by doing such
+ * operations.
+ * */
 typedef struct BitSet {
     GHashTable *bytes;
     // you should set it to the parent
