@@ -75,7 +75,7 @@ int lib_get_this_container_count(lua_State *L)
 
 int lib_get_workspace_count(lua_State *L)
 {
-    lua_pushinteger(L, server.workspaces->len);
+    lua_pushinteger(L, server_get_workspace_count());
     return 1;
 }
 

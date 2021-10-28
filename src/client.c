@@ -17,6 +17,7 @@
 #include "monitor.h"
 #include "tagset.h"
 #include "rules/rule.h"
+#include "server.h"
 
 struct client *create_client(enum shell shell_type, union surface_t surface)
 {

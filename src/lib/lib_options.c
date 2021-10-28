@@ -16,6 +16,7 @@
 #include "utils/parseConfigUtils.h"
 #include "workspace.h"
 #include "lib/lib_direction.h"
+#include "server.h"
 
 static const struct luaL_Reg options_meta[] =
 {
@@ -129,12 +130,10 @@ int lib_reload(lua_State *L)
 
     options_reset(server.default_layout->options);
 
-    debug_print("remove loaded layouts start\n");
-    workspaces_remove_loaded_layouts(server.workspaces);
-    debug_print("remove loaded layouts end\n");
+    workspaces_remove_loaded_layouts(server_get_workspaces());
     load_config(L);
-    for (int i = 0; i < server.workspaces->len; i++) {
-        struct workspace *ws = g_ptr_array_index(server.workspaces, i);
+    for (GList *iterator = server_get_workspaces(); iterator; iterator = iterator->next) {
+        struct workspace *ws = iterator->data;
         set_default_layout(ws);
     }
 
@@ -362,7 +361,7 @@ int lib_create_workspaces(lua_State *L)
     list_clear(options->tag_names, NULL);
     wlr_list_cat(options->tag_names, tag_names);
 
-    load_workspaces(server.workspaces, options->tag_names);
+    load_workspaces(server_get_workspaces(), options->tag_names);
 
     g_ptr_array_unref(tag_names);
 

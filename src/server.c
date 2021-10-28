@@ -1,5 +1,7 @@
 #include "server.h"
 
+#include "list_sets/container_stack_set.h"
+#include "list_sets/focus_stack_set.h"
 #include "workspace.h"
 #include "monitor.h"
 #include "stringop.h"
@@ -45,6 +47,33 @@ static void finalize_event_handlers(struct server *server);
 static void finalize_lists(struct server *server);
 static void finalize_timers(struct server *server);
 static void finalize_lua_api(struct server *server);
+
+static struct workspace *handle_too_few_workspaces(uint32_t ws_id);
+
+static struct workspace *handle_too_few_workspaces(uint32_t ws_id)
+{
+    // no number has more than 11 digits when int is 32 bit long
+    char name[12];
+    // TODO explain why +1
+    snprintf(name, 12, "%d:%d", ws_id, c_idx_to_lua_idx(ws_id));
+
+    struct workspace *new_ws = create_workspace(name, ws_id, server.default_layout);
+    int *ws_id_ptr = malloc(sizeof(*ws_id_ptr));
+    *ws_id_ptr = ws_id;
+    g_hash_table_insert(server.workspaces, ws_id_ptr, new_ws);
+    struct workspace *ws0 = get_workspace(0);
+    wlr_list_cat(new_ws->con_set->tiled_containers, ws0->con_set->tiled_containers);
+
+    wlr_list_cat(new_ws->focus_set->focus_stack_layer_background, ws0->focus_set->focus_stack_layer_background);
+    wlr_list_cat(new_ws->focus_set->focus_stack_layer_bottom, ws0->focus_set->focus_stack_layer_bottom);
+    wlr_list_cat(new_ws->focus_set->focus_stack_layer_top, ws0->focus_set->focus_stack_layer_top);
+    wlr_list_cat(new_ws->focus_set->focus_stack_layer_overlay, ws0->focus_set->focus_stack_layer_overlay);
+    wlr_list_cat(new_ws->focus_set->focus_stack_on_top, ws0->focus_set->focus_stack_on_top);
+    wlr_list_cat(new_ws->focus_set->focus_stack_normal, ws0->focus_set->focus_stack_normal);
+    wlr_list_cat(new_ws->focus_set->focus_stack_not_focusable, ws0->focus_set->focus_stack_not_focusable);
+    return new_ws;
+}
+
 
 static void init_lists(struct server *server)
 {
@@ -387,7 +416,35 @@ int stop_server()
 
 int server_get_workspace_count()
 {
-    return server.workspaces->len;
+    size_t len = server.default_layout->options->tag_names->len;
+    return len;
+}
+
+int server_get_workspace_key_count()
+{
+    GList *workspaces = server_get_workspaces();
+    size_t count = g_list_length(workspaces);
+    return count;
+}
+
+GList *server_get_workspaces()
+{
+    GList *values = g_hash_table_get_values(server.workspaces);
+    return values;
+}
+
+struct workspace *get_workspace(int id)
+{
+    if (id < 0)
+        return NULL;
+    int hash_len = g_list_length(g_hash_table_get_keys(server.workspaces));
+    printf("hashtable actual length: %i\n", hash_len);
+    struct workspace *ws = g_hash_table_lookup(server.workspaces, &id);
+    if (!ws) {
+        ws = handle_too_few_workspaces(id);
+    }
+
+    return ws;
 }
 
 struct monitor *server_get_selected_monitor()

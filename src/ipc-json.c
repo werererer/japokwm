@@ -123,8 +123,8 @@ json_object *ipc_json_describe_tagsets()
     struct monitor *sel_m = server_get_selected_monitor();
     struct workspace *sel_ws = monitor_get_active_workspace(sel_m);
     struct container *sel_con = workspace_get_focused_container(sel_ws);
-    for (int i = 0; i < server.workspaces->len; i++) {
-        struct workspace *ws = get_workspace(i);
+    for (GList *iterator = server_get_workspaces(); iterator; iterator = iterator->next) {
+        struct workspace *ws = iterator->data;
         struct monitor *m = workspace_get_monitor(ws);
 
         if (!m)
