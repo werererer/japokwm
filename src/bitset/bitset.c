@@ -175,14 +175,26 @@ int bitset_reset(BitSet* bitset, size_t index) {
     return bitset_assign(bitset, index, false);
 }
 
-int bitset_assign(BitSet* bitset, size_t index, bool value) {
-    bool* byte;
-    if ((byte = byte_get(bitset, index)) == NULL) {
-        return BITSET_ERROR;
+static void bitset_ensure_index_exist(BitSet* bitset, size_t index)
+{
+    if (!g_hash_table_contains(bitset->bytes, &index)) {
+        size_t *key = malloc(sizeof(*key));
+        *key = index;
+        bool *value = malloc(sizeof(*value));
+        *value = false;
+        g_hash_table_insert(bitset->bytes, key, value);
     }
+}
 
+int bitset_assign(BitSet* bitset, size_t index, bool value) {
+    if (value) {
+        bitset_ensure_index_exist(bitset, index);
+    }
+    bool* byte = g_hash_table_lookup(bitset->bytes, &index);
+
+    if (!byte)
+        return BITSET_SUCCESS;
     *byte = value;
-
     return BITSET_SUCCESS;
 }
 
@@ -198,28 +210,6 @@ int bitset_toggle(BitSet* bitset, size_t index) {
 int bitset_test(BitSet* bitset, size_t index) {
     bool byte = byte_const_get(bitset, index);
 
-    return byte;
-}
-
-static void bitset_ensure_index_exist(BitSet* bitset, size_t index)
-{
-    if (!g_hash_table_contains(bitset->bytes, &index)) {
-        size_t *key = malloc(sizeof(*key));
-        *key = index;
-        bool *value = malloc(sizeof(*value));
-        *value = false;
-        g_hash_table_insert(bitset->bytes, key, value);
-    }
-}
-
-bool *byte_get(BitSet* bitset, size_t index)
-{
-    assert(bitset != NULL);
-    if (bitset == NULL) return NULL;
-
-    bitset_ensure_index_exist(bitset, index);
-
-    bool *byte = g_hash_table_lookup(bitset->bytes, &index);
     return byte;
 }
 
@@ -242,10 +232,15 @@ int bitset_msb(BitSet* bitset) {
 
 int bitset_reset_all(BitSet* bitset) {
     for (GList *iter = g_hash_table_get_values(bitset->bytes); iter; iter = iter->next) {
-        int key = *(int *)iter->data;
+        bool key = *(bool *)iter->data;
         printf("k_prev: %i\n", key);
     }
-    return bitset_set_all_to_mask(bitset, 0);
+    int success = bitset_set_all_to_mask(bitset, 0);
+    for (GList *iter = g_hash_table_get_values(bitset->bytes); iter; iter = iter->next) {
+        bool key = *(bool *)iter->data;
+        printf("k_end: %i\n", key);
+    }
+    return success;
 }
 
 int bitset_set_all(BitSet* bitset) {
@@ -256,7 +251,6 @@ int bitset_set_all_to_mask(BitSet* bitset, uint8_t mask) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    // TODO that doesn't work
     const int byte_len = 8;
     for (int i = 0; i < byte_len; i++) {
         bool value = LAST_BIT(mask);
