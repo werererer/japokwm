@@ -241,17 +241,17 @@ void test_bitset_and()
     BitSet *bitset1 = bitset_create();
     BitSet *bitset2 = bitset_create();
     bitset_set(bitset1, 1);
-    bitset_set(bitset2, 1);
+    bitset_set(bitset2, 0);
 
     bitset_and(bitset1, bitset2);
 
-    g_assert_cmpint(bitset_any(bitset1), ==, true);
+    g_assert_cmpint(bitset_any(bitset1), ==, false);
 
     bitset_reset_all(bitset1);
     bitset_reset_all(bitset2);
 
-    bitset_set(bitset1, 1);
-    bitset_set(bitset2, 2);
+    bitset_set(bitset1, 0);
+    bitset_set(bitset2, 1);
 
     bitset_and(bitset1, bitset2);
     g_assert_cmpint(bitset_any(bitset1), ==, false);
