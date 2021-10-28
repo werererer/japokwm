@@ -492,8 +492,8 @@ void workspace_remove_loaded_layouts(struct workspace *ws)
 
 void workspaces_remove_loaded_layouts(GList *workspaces)
 {
-    for (GList *iterator = workspaces; iterator; iterator = workspaces->next) {
-        struct workspace *ws = iterator->data;
+    for (GList *iter = workspaces; iter; iter = iter->next) {
+        struct workspace *ws = iter->data;
         workspace_remove_loaded_layouts(ws);
     }
 }
