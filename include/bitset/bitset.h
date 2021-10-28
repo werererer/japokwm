@@ -68,7 +68,6 @@ int bitset_toggle(BitSet* bitset, size_t index);
 
 int bitset_test(BitSet* bitset, size_t index);
 const bool byte_const_get(BitSet* bitset, size_t index);
-bool* byte_get(BitSet* bitset, size_t index);
 
 int bitset_msb(BitSet* bitset);
 
