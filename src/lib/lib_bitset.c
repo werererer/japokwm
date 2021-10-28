@@ -155,9 +155,7 @@ void create_lua_bitset(lua_State *L, struct BitSet *bitset)
 int lib_bitset_get(lua_State *L)
 {
     // [table, key]
-    const char *key = luaL_checkstring(L, -1); // convert lua to c index
     BitSet *bitset = check_bitset(L, 1);
-    debug_print("key: %s\n", key);
 
     bool is_number = lua_isnumber(L, -1);
     if (!is_number) {
@@ -180,9 +178,7 @@ int lib_bitset_set(lua_State *L)
 {
     // [table, key, value]
     bool value = lua_toboolean(L, 3);
-    const char *key = luaL_checkstring(L, 2); // convert lua to c index
     BitSet *bitset = check_bitset(L, 1);
-    debug_print("key: %s\n", key);
 
     bool is_number = lua_isnumber(L, 2);
     if (!is_number) {
@@ -283,7 +279,6 @@ int lib_bitset_xor(lua_State *L)
 {
     BitSet *bitset = check_bitset(L, 2);
     lua_pop(L, 1);
-    debug_print("xor\n");
     print_bitset(bitset);
 
     BitSet *self = check_bitset(L, 1);

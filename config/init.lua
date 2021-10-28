@@ -1,3 +1,1 @@
-opt.workspaces = {"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"}
-
--- layout.default_layout = "two_pane"
+opt.workspaces = {"0:1"}
