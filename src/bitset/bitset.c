@@ -188,6 +188,9 @@ static void bitset_ensure_index_exist(BitSet* bitset, size_t index)
 
 int bitset_assign(BitSet* bitset, size_t index, bool value) {
     if (value) {
+        // the default value of a bit is false so we don't need to ensure that
+        // such an index exist if the value is indeed false. this is just for
+        // optimization
         bitset_ensure_index_exist(bitset, index);
     }
     bool* byte = g_hash_table_lookup(bitset->bytes, &index);
