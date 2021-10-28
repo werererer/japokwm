@@ -9,32 +9,35 @@
 BitSet *bitset_create()
 {
     BitSet *bitset = calloc(1, sizeof(*bitset));
-    size_t number_of_bytes = DEFAULT_ALLOCATED_BYTES;
 
-    bitset->bytes = g_ptr_array_sized_new(number_of_bytes);
-
-    bitset->size = DEFAULT_NUMBER_OF_BITS;
-    for (size_t byte = 0; byte < number_of_bytes; ++byte) {
-        bitset_grow(bitset);
-    }
+    bitset->bytes = g_hash_table_new_full(g_int_hash, g_int_equal, free, free);
 
     return bitset;
 }
 
-static void *copy_int(const void *src_ptr, void *data)
+static void append_bits(void *key_ptr, void *value_ptr, void *user_data)
 {
-    int *src = (int *)src_ptr;
-    int *dest = calloc(1, sizeof(*dest));
-    memcpy(dest, src, sizeof(uint8_t));
-    return dest;
+    int *key = malloc(sizeof(*key));
+    int *value = malloc(sizeof(*value));
+
+    int key_v = *(int *)key_ptr;
+    bool value_v = *(bool *)value_ptr;
+
+    *key = key_v;
+    *value = value_v;
+
+    GHashTable *bits = user_data;
+    g_hash_table_insert(bits, key, value);
 }
 
-BitSet* bitset_copy(BitSet* source) {
+BitSet* bitset_copy(BitSet* source)
+{
     assert(source != NULL);
 
     BitSet *destination = malloc(sizeof(BitSet));
-    destination->bytes = g_ptr_array_copy(source->bytes, copy_int, NULL);
-    destination->size = source->size;
+
+    destination->bytes = g_hash_table_new_full(g_int_hash, g_int_equal, free, free);
+    g_hash_table_foreach(source->bytes, append_bits, destination->bytes);
 
     return destination;
 }
@@ -44,11 +47,8 @@ void bitset_assign_bitset(BitSet** dest, BitSet* source)
     if (*dest == source) {
         return;
     }
-    bitset_equalize_size(*dest, source);
-    for (int i = 0; i < source->size; i++) {
-        bool bit = bitset_test(source, i);
-        bitset_assign(*dest, i, bit);
-    }
+    g_hash_table_remove_all((*dest)->bytes);
+    g_hash_table_foreach(source->bytes, append_bits, (*dest)->bytes);
 }
 
 int bitset_swap(BitSet* destination, BitSet* source) {
@@ -68,14 +68,15 @@ int bitset_swap(BitSet* destination, BitSet* source) {
 }
 
 void bitset_destroy(BitSet* bitset) {
-    g_ptr_array_unref(bitset->bytes);
+    g_hash_table_unref(bitset->bytes);
     free(bitset);
 }
 
 BitSet *bitset_from_value(uint64_t value) {
     BitSet *bitset = bitset_create();
     for (size_t bit = 0; bit < 64; ++bit) {
-        bitset_assign(bitset, bit, LAST_BIT(value));
+        bool v = LAST_BIT(value);
+        bitset_assign(bitset, bit, v);
         value <<= 1;
     }
 
@@ -86,7 +87,8 @@ int bitset_equals(BitSet* bitset1, BitSet* bitset2)
 {
     BitSet *bitset = bitset_copy(bitset1);
 
-    for (int bit = 0; bit < bitset->size; bit++) {
+    for (GList *iter = g_hash_table_get_values(bitset->bytes); iter; iter = iter->next) {
+        int bit = *(int *)iter->data;
         bitset_toggle(bitset, bit);
     }
 
@@ -105,15 +107,13 @@ int bit_wise_operation(BitSet* destination,
     if (destination == NULL) return BITSET_ERROR;
     if (source == NULL) return BITSET_ERROR;
 
-    // TODO: export as func
-    bitset_equalize_size(destination, source);
-
-    for (size_t bit = 0; bit < destination->size; bit++) {
-        bool first = bitset_test(destination, bit);
-        const bool second = bitset_test(source, bit);
+    for (GList *iter = g_hash_table_get_keys(source->bytes); iter; iter = iter->next) {
+        size_t i = *(size_t *)iter->data;
+        bool first = bitset_test(destination, i);
+        const bool second = bitset_test(source, i);
 
         bit_operator(&first, &second);
-        bitset_assign(destination, bit, first);
+        bitset_assign(destination, i, first);
     }
 
     return BITSET_SUCCESS;
@@ -135,98 +135,91 @@ int bitset_flip(BitSet* bitset) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    for (int byte_idx = 0; byte_idx < bitset->bytes->len; byte_idx++) {
-        uint8_t* byte = g_ptr_array_index(bitset->bytes, byte_idx);
-        *byte = ~(*byte);
+    for (GList *iter = g_hash_table_get_values(bitset->bytes); iter; iter = iter->next) {
+        int *byte = iter->data;
+        *byte = !(*byte);
     }
 
     return BITSET_SUCCESS;
 }
 
 int bitset_set(BitSet* bitset, size_t index) {
-    uint8_t* byte;
-    if ((byte = byte_get(bitset, index)) == NULL) {
-        return BITSET_ERROR;
-    }
-
-    *byte |= _bitset_index(index);
-
-    return BITSET_SUCCESS;
+    return bitset_assign(bitset, index, true);
 }
 
 int bitset_reset(BitSet* bitset, size_t index) {
-    uint8_t* byte;
+    return bitset_assign(bitset, index, false);
+}
+
+int bitset_assign(BitSet* bitset, size_t index, bool value) {
+    bool* byte;
     if ((byte = byte_get(bitset, index)) == NULL) {
         return BITSET_ERROR;
     }
 
-    *byte &= ~(_bitset_index(index));
+    *byte = value;
 
     return BITSET_SUCCESS;
 }
 
-int bitset_assign(BitSet* bitset, size_t index, bool value) {
-    /*
-     * I estimate that this is more efficient than the usual "reset, then OR in
-     * the value" pattern
-     */
-    if (value) {
-        return bitset_set(bitset, index);
-    } else {
-        return bitset_reset(bitset, index);
-    }
-}
-
 int bitset_toggle(BitSet* bitset, size_t index) {
-    uint8_t* byte;
-    if ((byte = byte_get(bitset, index)) == NULL) {
-        return BITSET_ERROR;
-    }
+    bool byte = byte_const_get(bitset, index);
 
-    *byte ^= _bitset_index(index);
+    bitset_assign(bitset, index, !byte);
 
     return BITSET_SUCCESS;
 }
 
 int bitset_test(BitSet* bitset, size_t index) {
-    const uint8_t* byte;
-    if ((byte = byte_const_get(bitset, index)) == NULL) {
-        return BITSET_ERROR;
+    bool byte = byte_const_get(bitset, index);
+
+    return byte;
+}
+
+static void bitset_ensure_index_exist(BitSet* bitset, size_t index)
+{
+    if (!g_hash_table_contains(bitset->bytes, &index)) {
+        size_t *key = malloc(sizeof(*key));
+        *key = index;
+        bool *value = malloc(sizeof(*value));
+        *value = false;
+        g_hash_table_insert(bitset->bytes, key, value);
     }
-
-    return (*byte & _bitset_index(index)) != 0;
 }
 
-uint8_t* byte_get(BitSet* bitset, size_t index) {
+bool *byte_get(BitSet* bitset, size_t index)
+{
     assert(bitset != NULL);
     if (bitset == NULL) return NULL;
 
-    bitset_grow_to_size(bitset, index+1);
-    int byte_index = _byte_index(index);
-    return (uint8_t*)g_ptr_array_index(bitset->bytes, byte_index);
+    bitset_ensure_index_exist(bitset, index);
+
+    bool *byte = g_hash_table_lookup(bitset->bytes, &index);
+    return byte;
 }
 
-const uint8_t* byte_const_get(BitSet* bitset, size_t index) {
+const bool byte_const_get(BitSet* bitset, size_t index) {
     assert(bitset != NULL);
     if (bitset == NULL) return NULL;
 
-    bitset_grow_to_size(bitset, index+1);
-    int byte_index = _byte_index(index);
-    return (const uint8_t*)g_ptr_array_index(bitset->bytes, byte_index);
+    const bool *byte = g_hash_table_lookup(bitset->bytes, &index);
+
+    bool ret_value = false;
+    if (byte) {
+        ret_value = *byte;
+    }
+    return ret_value;
 }
 
 int bitset_msb(BitSet* bitset) {
     return bitset_test(bitset, 0);
 }
 
-int bitset_lsb(BitSet* bitset) {
-    assert(bitset != NULL);
-    if (bitset == NULL) return BITSET_ERROR;
-
-    return bitset_test(bitset, bitset->size - 1);
-}
-
 int bitset_reset_all(BitSet* bitset) {
+    for (GList *iter = g_hash_table_get_values(bitset->bytes); iter; iter = iter->next) {
+        int key = *(int *)iter->data;
+        printf("k_prev: %i\n", key);
+    }
     return bitset_set_all_to_mask(bitset, 0);
 }
 
@@ -238,9 +231,12 @@ int bitset_set_all_to_mask(BitSet* bitset, uint8_t mask) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    for (int byte_idx = 0; byte_idx < bitset->bytes->len; byte_idx++) {
-        uint8_t *byte = g_ptr_array_index(bitset->bytes, byte_idx);
-        *byte = mask;
+    // TODO that doesn't work
+    const int byte_len = 8;
+    for (int i = 0; i < byte_len; i++) {
+        bool value = LAST_BIT(mask);
+        bitset_assign(bitset, i, value);
+        mask <<= 1;
     }
 
     return BITSET_SUCCESS;
@@ -248,134 +244,19 @@ int bitset_set_all_to_mask(BitSet* bitset, uint8_t mask) {
 
 void bitset_clear(BitSet* bitset) {
     assert(bitset != NULL);
-    bitset->size = 0;
-
-    list_clear(bitset->bytes, free);
-}
-
-uint64_t bitset_to_value(BitSet *bitset)
-{
-    uint64_t value = 0;
-    for (int i = 0; i < bitset->size; i++) {
-        bool v = bitset_test(bitset, i);
-        if (!v)
-            continue;
-
-        value += 1 << i;
-    }
-    return value;
-}
-
-/* Size Management */
-int bitset_push(BitSet* bitset, bool value) {
-    if (value) {
-        return bitset_push_one(bitset);
-    } else {
-        return bitset_push_zero(bitset);
-    }
-}
-
-int bitset_push_one(BitSet* bitset) {
-    if (_bitset_increment_size(bitset) == BITSET_ERROR) {
-        return BITSET_ERROR;
-    }
-
-    if (bitset_set(bitset, bitset->size - 1) == BITSET_ERROR) {
-        return BITSET_ERROR;
-    }
-
-    return BITSET_SUCCESS;
-}
-
-int bitset_push_zero(BitSet* bitset) {
-    if (_bitset_increment_size(bitset) == BITSET_ERROR) {
-        return BITSET_ERROR;
-    }
-
-    if (bitset_reset(bitset, bitset->size - 1) == BITSET_ERROR) {
-        return BITSET_ERROR;
-    }
-
-    return BITSET_SUCCESS;
-}
-
-void bitset_pop(BitSet* bitset) {
-    if (--bitset->size % 8 == 0) {
-        bitset_shrink(bitset);
-    }
-}
-
-/* Capacity Management */
-void bitset_reserve(BitSet* bitset, size_t minimum_number_of_bits) {
-    assert(bitset != NULL);
-
-    int number_of_bytes = BITS_TO_BYTES(minimum_number_of_bits);
-    while(bitset->bytes->len < number_of_bytes) {
-        bitset_grow(bitset);
-    }
-    while(bitset->bytes->len > number_of_bytes) {
-        bitset_shrink(bitset);
-    }
-    bitset->size = minimum_number_of_bits;
-}
-
-void bitset_equalize_size(BitSet* bitset1, BitSet *bitset2)
-{
-    bitset_grow_to_size(bitset1, bitset2->size);
-    bitset_grow_to_size(bitset2, bitset1->size);
-
-    assert(bitset1->size == bitset2->size);
-}
-
-void bitset_grow_to_size(BitSet* bitset, size_t size)
-{
-    int number_of_bytes = BITS_TO_BYTES(size);
-    if (bitset->size < size) {
-        bitset->size = size;
-    }
-    while(bitset->bytes->len < number_of_bytes) {
-        bitset_grow(bitset);
-    }
-}
-
-void bitset_grow(BitSet* bitset) {
-
-    assert(bitset != NULL);
-
-    /* ERROR/SUCCESS flags are the same */
-    uint8_t *empty = calloc(1, sizeof(*empty));
-    g_ptr_array_add(bitset->bytes, empty);
-}
-
-void bitset_shrink(BitSet* bitset) {
-    assert(bitset != NULL);
-
-    uint8_t *byte = g_ptr_array_steal_index(bitset->bytes, bitset->size-1);
-    free(byte);
-}
-
-/* Information */
-size_t bitset_capacity(const BitSet* bitset) {
-    assert(bitset != NULL);
-    return bitset->bytes->len * 8;
-}
-
-size_t bitset_size_in_bytes(const BitSet* bitset) {
-    assert(bitset != NULL);
-    if (bitset == NULL) return false;
-    return BITS_TO_BYTES(bitset->size);
+    g_hash_table_remove_all(bitset->bytes);
 }
 
 int bitset_count(BitSet* bitset) {
-    size_t count;
-
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    count = 0;
-    for (int byte_idx = 0; byte_idx < bitset->bytes->len; byte_idx++) {
-        uint8_t *byte = g_ptr_array_index(bitset->bytes, byte_idx);
-        count += _byte_popcount(*byte);
+    size_t count = 0;
+    for (GList *iter = g_hash_table_get_values(bitset->bytes); iter; iter = iter->next) {
+        uint8_t *byte = iter->data;
+        if (*byte) {
+            count++;
+        }
     }
 
     return count;
@@ -385,9 +266,9 @@ int bitset_all(BitSet* bitset) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    for (int byte_idx = 0; byte_idx < bitset->bytes->len; byte_idx++) {
-        uint8_t *byte = g_ptr_array_index(bitset->bytes, byte_idx);
-        if (*byte != 0xff) {
+    for (GList *iter = g_hash_table_get_values(bitset->bytes); iter; iter = iter->next) {
+        bool *byte = iter->data;
+        if (!*byte) {
             return false;
         }
     }
@@ -399,9 +280,9 @@ int bitset_any(BitSet* bitset) {
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    for (int byte_idx = 0; byte_idx < bitset->bytes->len; byte_idx++) {
-        uint8_t *byte = g_ptr_array_index(bitset->bytes, byte_idx);
-        if (*byte != 0) {
+    for (GList *iter = g_hash_table_get_values(bitset->bytes); iter; iter = iter->next) {
+        bool *byte = iter->data;
+        if (*byte) {
             return true;
         }
     }
@@ -420,32 +301,14 @@ int bitset_none(BitSet* bitset) {
 
 void print_bitset(BitSet *bitset)
 {
-    for (int bit = 0; bit < bitset->size; bit++) {
-        debug_print("%i\n", bitset_test(bitset, bit));
+    // TODO: this is a bit unaccurate
+    for (GList *iter = g_hash_table_get_values(bitset->bytes); iter; iter = iter->next) {
+        bool *bit = iter->data;
+        debug_print("%i\n", *bit);
     }
 }
 
 /****************** PRIVATE ******************/
-
-uint8_t _byte_popcount(uint8_t value) {
-    value = (value & POPCOUNT_MASK1) + ((value >> 1) & POPCOUNT_MASK1);
-    value = (value & POPCOUNT_MASK2) + ((value >> 2) & POPCOUNT_MASK2);
-    value = (value & POPCOUNT_MASK3) + ((value >> 4) & POPCOUNT_MASK3);
-
-    return value;
-}
-
-int _bitset_increment_size(BitSet* bitset) {
-    assert(bitset != NULL);
-    if (bitset == NULL) return BITSET_ERROR;
-
-    if (bitset->size++ % 8 == 0) {
-        uint8_t *empty = calloc(1, sizeof(*empty));
-        g_ptr_array_add(bitset->bytes, empty);
-    }
-
-    return BITSET_SUCCESS;
-}
 
 void _bit_and(bool* first, const bool* second) {
     *first &= *second;
@@ -457,16 +320,4 @@ void _bit_or(bool* first, const bool* second) {
 
 void _bit_xor(bool* first, const bool* second) {
     *first ^= *second;
-}
-
-size_t _byte_index(size_t index) {
-    return index / 8;
-}
-
-uint8_t _bitset_index(size_t index) {
-    return 1 << _bitset_offset(index);
-}
-
-uint8_t _bitset_offset(size_t index) {
-    return 7 - (index % 8);
 }

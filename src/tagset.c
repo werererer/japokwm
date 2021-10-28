@@ -137,13 +137,16 @@ void tagset_workspaces_disconnect(struct workspace *sel_ws)
 
     tagset_workspace_disconnect(sel_ws, sel_ws);
 
-    for (size_t i = 0; i < sel_ws->workspaces->size; i++) {
-        bool bit = bitset_test(sel_ws->workspaces, i);
+    for (GList *iter = g_hash_table_get_keys(sel_ws->workspaces->bytes);
+            iter;
+            iter = iter->next) {
+        int ws_id = *(int *) iter->data;
+        bool bit = g_hash_table_lookup(sel_ws->workspaces->bytes, &ws_id);
 
         if (!bit)
             continue;
 
-        struct workspace *ws = get_workspace(i);
+        struct workspace *ws = get_workspace(ws_id);
         tagset_workspace_disconnect(sel_ws, ws);
     }
 }
@@ -159,13 +162,17 @@ static void tagset_workspace_connect(struct workspace *sel_ws, struct workspace 
 
 void tagset_workspaces_connect(struct workspace *sel_ws)
 {
-    for (size_t i = 0; i < sel_ws->workspaces->size; i++) {
-        bool bit = bitset_test(sel_ws->workspaces, i);
+    for (GList *iter = g_hash_table_get_keys(sel_ws->workspaces->bytes);
+            iter;
+            iter = iter->next) {
+        int ws_id = *(int *) iter->data;
+        bool bit = g_hash_table_lookup(sel_ws->workspaces->bytes, &ws_id);
+
 
         if (!bit)
             continue;
 
-        struct workspace *ws = get_workspace(i);
+        struct workspace *ws = get_workspace(ws_id);
         tagset_workspace_connect(sel_ws, ws);
     }
 }

@@ -175,11 +175,16 @@ void container_move_sticky_containers(struct container *con, int ws_id)
     struct workspace *ws = get_workspace(ws_id);
     if (!bitset_test(con->client->sticky_workspaces, ws->id)) {
         if (bitset_any(con->client->sticky_workspaces)) {
-            for (int i = 0; i < con->client->sticky_workspaces->size; i++) {
-                bool sticky_workspace = bitset_test(con->client->sticky_workspaces, i);
+            for (
+                    GList *iter = g_hash_table_get_keys(con->client->sticky_workspaces->bytes);
+                    iter;
+                    iter = iter->next) {
+                int ws_id = *(int *)iter->data;
+                bool sticky_workspace = 
+                    g_hash_table_lookup(con->client->sticky_workspaces->bytes, &ws_id);
                 if (!sticky_workspace)
                     continue;
-                container_set_just_workspace_id(con, i);
+                container_set_just_workspace_id(con, ws_id);
                 arrange();
                 focus_most_recent_container();
                 ipc_event_workspace();
