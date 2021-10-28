@@ -171,39 +171,29 @@ void container_move_sticky_containers_current_ws(struct container *con)
 
 void container_move_sticky_containers(struct container *con, int ws_id)
 {
-    // TODO: refactor this function
-    struct workspace *ws = get_workspace(ws_id);
-    if (!bitset_test(con->client->sticky_workspaces, ws->id)) {
-        if (bitset_any(con->client->sticky_workspaces)) {
-            for (
-                    GList *iter = g_hash_table_get_keys(con->client->sticky_workspaces->bytes);
-                    iter;
-                    iter = iter->next) {
-                int ws_id = *(int *)iter->data;
-                bool sticky_workspace = 
-                    g_hash_table_lookup(con->client->sticky_workspaces->bytes, &ws_id);
-                if (!sticky_workspace)
-                    continue;
-                container_set_just_workspace_id(con, ws_id);
-                arrange();
-                focus_most_recent_container();
-                ipc_event_workspace();
-            }
-        } else {
-            move_to_scratchpad(con, 0);
-            return;
-        }
-        return;
-    }
-    if (con->on_scratchpad) {
-        return;
-    }
-
-    if (workspace_sticky_contains_client(ws, con->client)) {
-        container_set_just_workspace_id(con, ws->id);
-    } else if (bitset_none(con->client->sticky_workspaces)) {
-        move_to_scratchpad(con, 0);
-    }
+    // // TODO: refactor this function
+    // struct workspace *ws = get_workspace(ws_id);
+    // if (!bitset_test(con->client->sticky_workspaces, ws->id)) {
+    //     if (bitset_any(con->client->sticky_workspaces)) {
+    //         container_set_just_workspace_id(con, ws_id);
+    //         arrange();
+    //         focus_most_recent_container();
+    //         ipc_event_workspace();
+    //     } else {
+    //         move_to_scratchpad(con, 0);
+    //         return;
+    //     }
+    //     return;
+    // }
+    // if (con->on_scratchpad) {
+    //     return;
+    // }
+    //
+    // if (workspace_sticky_contains_client(ws, con->client)) {
+    //     container_set_just_workspace_id(con, ws->id);
+    // } else if (bitset_none(con->client->sticky_workspaces)) {
+    //     move_to_scratchpad(con, 0);
+    // }
 }
 
 void client_setsticky(struct client *c, BitSet *workspaces)

@@ -129,8 +129,9 @@ int bit_wise_operation(BitSet* destination,
     if (destination == NULL) return BITSET_ERROR;
     if (source == NULL) return BITSET_ERROR;
 
-    for (GList *iter = g_hash_table_get_keys(source->bytes); iter; iter = iter->next) {
-        size_t i = *(size_t *)iter->data;
+    int low = MIN(destination->low, source->low);
+    int high = MAX(destination->high, source->high);
+    for (int i = low; i <= high; i++) {
         bool first = bitset_test(destination, i);
         const bool second = bitset_test(source, i);
 
@@ -143,31 +144,21 @@ int bit_wise_operation(BitSet* destination,
 }
 
 int bitset_and(BitSet* destination, BitSet* source) {
-    return bit_wise_operation(destination, source, _bit_and);
-}
-
-int bitset_or(BitSet* destination, BitSet* source) {
-    // we only have to check the values of destination because xoring shows
-    // where values change
-    for (GList *iter = g_hash_table_get_keys(destination->bytes); iter; iter = iter->next) {
-        size_t i = *(size_t *)iter->data;
-        bool first = bitset_test(destination, i);
-        const bool second = bitset_test(source, i);
-
-        first |= second;
-
-        bitset_assign(destination, i, first);
-    }
     for (GList *iter = g_hash_table_get_keys(source->bytes); iter; iter = iter->next) {
         size_t i = *(size_t *)iter->data;
         bool first = bitset_test(destination, i);
         const bool second = bitset_test(source, i);
 
-        first |= second;
+        first &= second;
 
         bitset_assign(destination, i, first);
     }
+
     return BITSET_SUCCESS;
+}
+
+int bitset_or(BitSet* destination, BitSet* source) {
+    return bit_wise_operation(destination, source, _bit_or);
 }
 
 int bitset_xor(BitSet* destination, BitSet* source)
