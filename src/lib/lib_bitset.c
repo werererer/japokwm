@@ -255,7 +255,7 @@ int lib_bitset_meta_bnot(lua_State *L)
 
     BitSet *target_bitset = bitset_create();
     bitset_assign_bitset(&target_bitset, bitset);
-    bitset_flip(target_bitset);
+    bitset_flip(target_bitset, 0, 8);
 
     create_lua_bitset_gc(L, target_bitset);
     return 1;
@@ -321,7 +321,7 @@ int lib_bitset_or(lua_State *L)
 int lib_bitset_not(lua_State *L)
 {
     BitSet *self = check_bitset(L, 1);
-    call_bitset_func(L, bitset_flip, self);
+    call_bitset_func(L, bitset_flip, self, 0, 8);
     lua_pop(L, 1);
     return 0;
 }

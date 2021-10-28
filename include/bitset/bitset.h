@@ -35,6 +35,8 @@ typedef struct BitSet {
     GHashTable *bytes;
     // you should set it to the parent
     void *data;
+    int low;
+    int high;
 } BitSet;
 
 /****************** INTERFACE ******************/
@@ -49,6 +51,7 @@ void bitset_assign_bitset(BitSet** dest, BitSet* source);
 // most of the time nicer to write according to python
 void bitset_reverse(BitSet *bitset, int start, int end);
 int bitset_swap(BitSet* destination, BitSet* source);
+int bitset_equals(BitSet* bitset1, BitSet* bitset2);
 
 void bitset_destroy(BitSet* bitset);
 
@@ -64,7 +67,7 @@ int byte_wise_operation(BitSet* destination,
 int bitset_and(BitSet* destination, BitSet* source);
 int bitset_or(BitSet* destination, BitSet* source);
 int bitset_xor(BitSet* destination, BitSet* source);
-int bitset_flip(BitSet* bitset);
+int bitset_flip(BitSet* bitset, int start, int end);
 
 /* Access */
 int bitset_set(BitSet* bitset, size_t index);

@@ -10,6 +10,9 @@ BitSet *bitset_create()
 {
     BitSet *bitset = calloc(1, sizeof(*bitset));
 
+    bitset->low = 0;
+    bitset->high = 0;
+
     bitset->bytes = g_hash_table_new_full(g_int_hash, g_int_equal, free, free);
 
     return bitset;
@@ -17,27 +20,21 @@ BitSet *bitset_create()
 
 static void append_bits(void *key_ptr, void *value_ptr, void *user_data)
 {
-    int *key = malloc(sizeof(*key));
-    int *value = malloc(sizeof(*value));
+    int key = *(int *)key_ptr;
+    bool value = *(bool *)value_ptr;
 
-    int key_v = *(int *)key_ptr;
-    bool value_v = *(bool *)value_ptr;
-
-    *key = key_v;
-    *value = value_v;
-
-    GHashTable *bits = user_data;
-    g_hash_table_insert(bits, key, value);
+    BitSet *destination = user_data;
+    bitset_assign(destination, key, value);
 }
 
 BitSet* bitset_copy(BitSet* source)
 {
     assert(source != NULL);
 
-    BitSet *destination = malloc(sizeof(BitSet));
+    BitSet *destination = bitset_create();
 
     destination->bytes = g_hash_table_new_full(g_int_hash, g_int_equal, free, free);
-    g_hash_table_foreach(source->bytes, append_bits, destination->bytes);
+    g_hash_table_foreach(source->bytes, append_bits, destination);
 
     return destination;
 }
@@ -48,7 +45,7 @@ void bitset_assign_bitset(BitSet** dest, BitSet* source)
         return;
     }
     g_hash_table_remove_all((*dest)->bytes);
-    g_hash_table_foreach(source->bytes, append_bits, (*dest)->bytes);
+    g_hash_table_foreach(source->bytes, append_bits, *dest);
 }
 
 void bitset_reverse(BitSet *bitset, int start, int end)
@@ -109,17 +106,18 @@ BitSet *bitset_from_value_reversed(uint64_t value)
 
 int bitset_equals(BitSet* bitset1, BitSet* bitset2)
 {
-    BitSet *bitset = bitset_copy(bitset1);
-
-    for (GList *iter = g_hash_table_get_values(bitset->bytes); iter; iter = iter->next) {
-        int bit = *(int *)iter->data;
-        bitset_toggle(bitset, bit);
+    if (bitset1->low != bitset2->low)
+        return false;
+    if (bitset1->high != bitset2->high)
+        return false;
+    for (int i = bitset1->low; i <= bitset2->high; i++) {
+        bool b1 = bitset_test(bitset1, i);
+        bool b2 = bitset_test(bitset2, i);
+        if (b1 != b2) {
+            return false;
+        }
     }
-
-    bitset_and(bitset, bitset2);
-    bool equals = bitset_none(bitset);
-    bitset_destroy(bitset);
-    return equals;
+    return true;
 }
 
 int bit_wise_operation(BitSet* destination,
@@ -137,6 +135,7 @@ int bit_wise_operation(BitSet* destination,
         const bool second = bitset_test(source, i);
 
         bit_operator(&first, &second);
+
         bitset_assign(destination, i, first);
     }
 
@@ -148,20 +147,42 @@ int bitset_and(BitSet* destination, BitSet* source) {
 }
 
 int bitset_or(BitSet* destination, BitSet* source) {
-    return bit_wise_operation(destination, source, _bit_or);
+    // we only have to check the values of destination because xoring shows
+    // where values change
+    for (GList *iter = g_hash_table_get_keys(destination->bytes); iter; iter = iter->next) {
+        size_t i = *(size_t *)iter->data;
+        bool first = bitset_test(destination, i);
+        const bool second = bitset_test(source, i);
+
+        first |= second;
+
+        bitset_assign(destination, i, first);
+    }
+    for (GList *iter = g_hash_table_get_keys(source->bytes); iter; iter = iter->next) {
+        size_t i = *(size_t *)iter->data;
+        bool first = bitset_test(destination, i);
+        const bool second = bitset_test(source, i);
+
+        first |= second;
+
+        bitset_assign(destination, i, first);
+    }
+    return BITSET_SUCCESS;
 }
 
-int bitset_xor(BitSet* destination, BitSet* source) {
+int bitset_xor(BitSet* destination, BitSet* source)
+{
     return bit_wise_operation(destination, source, _bit_xor);
 }
 
-int bitset_flip(BitSet* bitset) {
+int bitset_flip(BitSet* bitset, int start, int end)
+{
     assert(bitset != NULL);
     if (bitset == NULL) return BITSET_ERROR;
 
-    for (GList *iter = g_hash_table_get_values(bitset->bytes); iter; iter = iter->next) {
-        int *byte = iter->data;
-        *byte = !(*byte);
+    for (int i = start; i < end; i++) {
+        bool byte = bitset_test(bitset, i);
+        bitset_assign(bitset, i, !byte);
     }
 
     return BITSET_SUCCESS;
@@ -186,6 +207,32 @@ static void bitset_ensure_index_exist(BitSet* bitset, size_t index)
     }
 }
 
+static void bitset_set_new_high(BitSet *bitset, int updated_index)
+{
+    int start_value = MAX(updated_index, bitset->high);
+    for (int i = start_value; i >= bitset->low; i--) {
+        if (bitset_test(bitset, i)) {
+            bitset->high = i;
+            return;
+        }
+    }
+    // else
+    bitset->high = bitset->low;
+}
+
+static void bitset_set_new_low(BitSet *bitset, int updated_index)
+{
+    int start_value = MIN(updated_index, bitset->low);
+    for (int i = start_value; i <= bitset->high; i++) {
+        if (bitset_test(bitset, i)) {
+            bitset->low = i;
+            return;
+        }
+    }
+    // else
+    bitset->low = bitset->high;
+}
+
 int bitset_assign(BitSet* bitset, size_t index, bool value) {
     if (value) {
         // the default value of a bit is false so we don't need to ensure that
@@ -195,9 +242,13 @@ int bitset_assign(BitSet* bitset, size_t index, bool value) {
     }
     bool* byte = g_hash_table_lookup(bitset->bytes, &index);
 
-    if (!byte)
-        return BITSET_SUCCESS;
-    *byte = value;
+    if (byte) {
+        *byte = value;
+
+        bitset_set_new_high(bitset, index);
+        bitset_set_new_low(bitset, index);
+    }
+    // debug_print("new low: %i\n", bitset->low);
     return BITSET_SUCCESS;
 }
 
@@ -267,7 +318,7 @@ int bitset_count(BitSet* bitset) {
 
     size_t count = 0;
     for (GList *iter = g_hash_table_get_values(bitset->bytes); iter; iter = iter->next) {
-        uint8_t *byte = iter->data;
+        bool *byte = iter->data;
         if (*byte) {
             count++;
         }

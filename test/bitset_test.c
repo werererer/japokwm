@@ -87,6 +87,93 @@ void test_bitset_xor()
 void test_bitset_count()
 {
     BitSet *bitset = bitset_create();
+
+    // there once was a bug where this resulted into the false count
+    bitset_set(bitset, 1);
+    bitset_reset(bitset, 1);
+    bitset_set(bitset, 1);
+
+    bitset_set(bitset, 10);
+    bitset_set(bitset, 10);
+
+    bitset_set(bitset, 12);
+    bitset_set(bitset, 15);
+    bitset_set(bitset, 3);
+
+    g_assert_cmpint(bitset_count(bitset), ==, 5);
+}
+
+void test_bitset_high()
+{
+    BitSet *bitset = bitset_create();
+
+    bitset_set(bitset, 1);
+    bitset_set(bitset, 2);
+    bitset_reset(bitset, 2);
+
+    g_assert_cmpint(bitset->high, ==, 1);
+
+    bitset_reset_all(bitset);
+    g_assert_cmpint(bitset->high, ==, bitset->low);
+}
+
+void test_bitset_low()
+{
+    BitSet *bitset = bitset_create();
+    bitset_set(bitset, 1);
+    g_assert_cmpint(bitset->low, ==, 1);
+    bitset_set(bitset, 0);
+    g_assert_cmpint(bitset->low, ==, 0);
+    bitset_reset(bitset, 0);
+    g_assert_cmpint(bitset->low, ==, 1);
+    bitset_reset_all(bitset);
+    g_assert_cmpint(bitset->high, ==, bitset->low);
+}
+
+void test_bitset_equals()
+{
+    BitSet *bitset1 = bitset_create();
+
+    bitset_assign(bitset1, 0, true);
+    bitset_assign(bitset1, 1, false);
+    bitset_assign(bitset1, 2, false);
+    bitset_assign(bitset1, 3, true);
+
+    BitSet *bitset2 = bitset_create();
+    bitset_assign(bitset2, 0, true);
+    bitset_assign(bitset2, 1, false);
+    bitset_assign(bitset2, 2, false);
+    bitset_assign(bitset2, 3, true);
+    bitset_assign(bitset2, 4, false);
+
+    BitSet *bitset3 = bitset_create();
+    bitset_assign(bitset3, 0, true);
+    bitset_assign(bitset3, 1, false);
+    bitset_assign(bitset3, 2, false);
+    bitset_assign(bitset3, 3, false);
+    bitset_assign(bitset3, 4, true);
+
+    g_assert_cmpint(bitset_equals(bitset1, bitset2), ==, true);
+    g_assert_cmpint(bitset_equals(bitset1, bitset3), ==, false);
+}
+
+void test_bitset_flip()
+{
+    BitSet *bitset = bitset_create();
+
+    bitset_assign(bitset, 0, true);
+    bitset_assign(bitset, 1, false);
+    bitset_assign(bitset, 2, false);
+    bitset_assign(bitset, 3, true);
+    bitset_assign(bitset, 4, true);
+
+    bitset_flip(bitset, bitset->low, bitset->high+1);
+
+    g_assert_cmpint(bitset_test(bitset, 0), ==, false);
+    g_assert_cmpint(bitset_test(bitset, 1), ==, true);
+    g_assert_cmpint(bitset_test(bitset, 2), ==, true);
+    g_assert_cmpint(bitset_test(bitset, 3), ==, false);
+    g_assert_cmpint(bitset_test(bitset, 4), ==, false);
 }
 
 void test_bitset_and()
@@ -147,6 +234,10 @@ int main(int argc, char** argv)
     add_test(test_bitset);
     add_test(test_bitset_xor);
     add_test(test_bitset_count);
+    add_test(test_bitset_high);
+    add_test(test_bitset_low);
+    add_test(test_bitset_flip);
+    add_test(test_bitset_equals);
     add_test(test_bitset_and);
     add_test(test_copy_bitset);
     add_test(test_bitset_assign);
