@@ -234,15 +234,7 @@ int bitset_msb(BitSet* bitset) {
 }
 
 int bitset_reset_all(BitSet* bitset) {
-    for (GList *iter = g_hash_table_get_values(bitset->bytes); iter; iter = iter->next) {
-        bool key = *(bool *)iter->data;
-        printf("k_prev: %i\n", key);
-    }
     int success = bitset_set_all_to_mask(bitset, 0);
-    for (GList *iter = g_hash_table_get_values(bitset->bytes); iter; iter = iter->next) {
-        bool key = *(bool *)iter->data;
-        printf("k_end: %i\n", key);
-    }
     return success;
 }
 

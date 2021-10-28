@@ -84,6 +84,11 @@ void test_bitset_xor()
     g_assert_cmpint(bitset_test(bitset1, 1), ==, true);
 }
 
+void test_bitset_count()
+{
+    BitSet *bitset = bitset_create();
+}
+
 void test_bitset_and()
 {
     BitSet *bitset1 = bitset_create();
@@ -141,6 +146,7 @@ int main(int argc, char** argv)
 
     add_test(test_bitset);
     add_test(test_bitset_xor);
+    add_test(test_bitset_count);
     add_test(test_bitset_and);
     add_test(test_copy_bitset);
     add_test(test_bitset_assign);
