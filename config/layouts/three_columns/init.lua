@@ -44,6 +44,6 @@ local layout_data = {
 }
 
 layout:set(layout_data)
-opt.resize_direction = info.direction.right
-opt.hidden_edges = info.direction.all
-opt.float_borderpx = 14
+opt.resize_direction = Direction.right
+opt.hidden_edges = Direction.all
+opt.float_border_width = 14
