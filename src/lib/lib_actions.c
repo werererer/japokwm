@@ -42,6 +42,7 @@ static const struct luaL_Reg action_f[] =
     {"arrange", lib_arrange},
     {"async_execute", lib_async_execute},
     {"create_output", lib_create_output},
+    {"deep_copy", lib_deep_copy},
     {"exec", lib_exec},
     {"focus_on_hidden_stack", lib_focus_on_hidden_stack},
     {"focus_on_stack", lib_focus_on_stack},
@@ -135,6 +136,17 @@ int lib_create_output(lua_State *L)
     }
 
     return 0;
+}
+
+int lib_deep_copy(lua_State *L)
+{
+    if (lua_gettop(L) != 1) {
+        luaL_error(L, "function expects exactly one argument");
+    }
+    lua_pushcfunction(L, deep_copy_table);
+    lua_insert(L, -2);
+    lua_call_safe(L, 1, 1, 0);
+    return 1;
 }
 
 int lib_resize_main(lua_State *L)
