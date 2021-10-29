@@ -258,16 +258,23 @@ int lua_getglobal_safe(lua_State *L, const char *name)
 static void *_notify_msg(void *arg)
 {
     char *msg = arg;
+    strip_whitespace(msg);
+    if (strcmp(msg, "") == 0) {
+        goto exit_cleanup;
+    }
+
     notify_init(msg);
     NotifyNotification* n = notify_notification_new("Error in config file", 
             msg,
             0);
     notify_notification_set_timeout(n, 10000); // 10 seconds
 
-    if (!notify_notification_show(n, 0)) 
+    if (!notify_notification_show(n, 0))
     {
         printf("showing notification failed!\n");
     }
+
+exit_cleanup:
     free(msg);
     return NULL;
 }

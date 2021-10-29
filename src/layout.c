@@ -63,6 +63,83 @@ void lua_copy_table(lua_State *L, int *ref)
     return;
 }
 
+// This function represents something like that
+// function Deep_copy(orig)
+//     local orig_type = type(orig)
+//     local copy
+//     if orig_type == 'table' then
+//         copy = {}
+//         for orig_key, orig_value in next, orig, nil do
+//             copy[Deep_copy(orig_key)] = Deep_copy(orig_value)
+//         end
+//         setmetatable(copy, Deep_copy(getmetatable(orig)))
+//     else -- number, string, boolean, etc
+//         copy = orig
+//     end
+//     return copy
+// end
+//
+int deep_copy_table(lua_State *L)
+{
+    // // this function takes one argument
+    // // [table]
+    // if (lua_istable(L, 1)) {
+    //     // local copy = {}
+    //     lua_createtable(L, 0, 0);
+    //     // [table, copy]
+    //
+    //     // lenght of the original table
+    //
+    //     // first key
+    //     lua_pushnil(L);
+    //     while (lua_next(L, 1) != 0) {
+    //         // [table, copy, k, v]
+    //         // we need to keep a key for lua_next to work so make a copy of it
+    //         lua_pushvalue(L, -2);
+    //         // [table, copy, k, v, k]
+    //
+    //         // get copied key
+    //         lua_pushcfunction(L, deep_copy_table);
+    //         // [table, copy, k, v, k, cfunc]
+    //         lua_insert(L, -2);
+    //         // [table, copy, k, v, cfunc, k]
+    //         lua_call_safe(L, 1, 1, 0);
+    //         // [table, copy, k, v, copied_k]
+    //         lua_insert(L, -2);
+    //         // [table, copy, k, copied_k, v]
+    //
+    //         // get copied value
+    //         lua_pushcfunction(L, deep_copy_table);
+    //         // [table, copy, k, copied_k, v, cfunc]
+    //         lua_insert(L, -2);
+    //         // [table, copy, k, copied_k, cfunc, v]
+    //         lua_call_safe(L, 1, 1, 0);
+    //         // [table, copy, k, copied_k, copied_v]
+    //         lua_settable(L, 2);
+    //
+    //         // we need to keep a key else lua_next won't work
+    //         // [table, copy, k]
+    //     }
+    //
+    //     // [table, newtable]
+    //     lua_getmetatable(L, 1);
+    //     // [table, newtable, metatable]
+    //     lua_setmetatable(L, -2);
+    //     // [table, newtable]
+    //     return 1;
+    // } else {
+    //     // we only copy tables here ;)
+    //     const char *cp = luaL_checkstring(L, 1);
+    //     printf("cp: %s\n", cp);
+    //     return 1;
+    // }
+    //
+    lua_getglobal_safe(L, "Deep_copy");
+    lua_insert(L, -2);
+    lua_call_safe(L, 1, 1, 0);
+    return 1;
+}
+
 void lua_copy_table_safe(lua_State *L, int *ref)
 {
     assert(lua_istable(L, -1));

@@ -304,7 +304,7 @@ void lua_get_default_layout_data(lua_State *L)
 
 void lua_get_default_resize_function(lua_State *L)
 {
-    lua_getglobal_safe(L, "Resize_main_all");
+    lua_getglobal(L, "Resize_main_all");
 }
 
 void lua_get_default_master_layout_data(lua_State *L)

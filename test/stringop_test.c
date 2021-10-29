@@ -23,6 +23,20 @@ void join_string_test()
     }
 }
 
+void strip_whitespace_test()
+{
+    char *str = strdup(" test \r \n");
+
+    strip_whitespace(str);
+    g_assert_cmpint(strcmp(str, "test"), ==, 0);
+    free(str);
+
+    str = strdup(" \r        \t \r \n");
+    strip_whitespace(str);
+    g_assert_cmpint(strcmp(str, ""), ==, 0);
+    free(str);
+}
+
 #define PREFIX "keybinding"
 #define add_test(func) g_test_add_func("/"PREFIX"/"#func, func)
 int main(int argc, char **argv)
@@ -31,6 +45,7 @@ int main(int argc, char **argv)
     g_test_init(&argc, &argv, NULL);
 
     add_test(join_string_test);
+    add_test(strip_whitespace_test);
 
     return g_test_run();
 }
