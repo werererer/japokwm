@@ -18,6 +18,7 @@ int lib_move_resize(lua_State *L);
 int lib_focus_on_hidden_stack(lua_State *L);
 int lib_focus_on_stack(lua_State *L);
 int lib_move_to_scratchpad(lua_State *L);
+int lib_deep_copy(lua_State *L);
 int lib_resize_main(lua_State *L);
 int lib_show_scratchpad(lua_State *L);
 int lib_start_keycombo(lua_State *L);

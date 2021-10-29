@@ -3,21 +3,6 @@ local Y<const> = 2
 local WIDTH<const> = 3
 local HEIGHT<const> = 4
 
-function Deep_copy(orig)
-    local orig_type = type(orig)
-    local copy
-    if orig_type == 'table' then
-        copy = {}
-        for orig_key, orig_value in next, orig, nil do
-            copy[Deep_copy(orig_key)] = Deep_copy(orig_value)
-        end
-        setmetatable(copy, Deep_copy(getmetatable(orig)))
-    else -- number, string, boolean, etc
-        copy = orig
-    end
-    return copy
-end
-
 -- set: which window conf set
 -- client: current window
 function Move_container(container, n, d)
@@ -83,7 +68,7 @@ function Resize_container(container, n, d)
 end
 
 function Move_resize(container, nmove, nresize, d)
-    local con = Deep_copy(container)
+    local con = action.deep_copy(container)
     con = Move_container(con, nmove, d)
     con = Resize_container(con, nresize, d)
     return con
