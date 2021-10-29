@@ -26,6 +26,7 @@
 #include "translationLayer.h"
 #include "utils/parseConfigUtils.h"
 #include "xdg_shell.h"
+#include "stringop.h"
 
 void print_help()
 {
@@ -76,7 +77,9 @@ int main(int argc, char *argv[])
                 server.config_file = optarg;
                 break;
             case 'p':
-                g_ptr_array_insert(server.config_paths, 0, optarg);
+                server.custom_path = strdup(optarg);
+                expand_path(&server.custom_path);
+                g_ptr_array_insert(server.config_paths, 0, server.custom_path);
                 break;
             case 'h':
                 print_help();
