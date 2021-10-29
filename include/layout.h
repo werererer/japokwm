@@ -61,6 +61,8 @@ void copy_layout(struct layout *dest_lt, struct layout *src_lt);
 // copy layout and override all references with the given ones
 void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt);
 
+int deep_copy_table(lua_State *L);
+
 int cmp_layout(const void *ptr1, const void *ptr2);
 int cmp_layout_to_string(const void *ptr1, const void *symbol_ptr);
 #endif /* LAYOUT_H */

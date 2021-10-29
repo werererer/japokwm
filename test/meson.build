@@ -12,7 +12,8 @@ test_files = files(
     'workspace_test.c',
     'scratchpad_test.c',
     'bitset_test.c',
-    'keybinding_test.c'
+    'keybinding_test.c',
+    'layout_test.c'
     )
 
 foreach test_file: test_files

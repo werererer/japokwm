@@ -452,7 +452,7 @@ GPtrArray *workspace_get_tiled_list_copy(struct workspace *ws)
         tiled_list = g_ptr_array_new();
         list_append_list_under_condition(
                 tiled_list,
-                ws->focus_set->focus_stack_normal,
+                ws->visible_focus_set->focus_stack_normal,
                 _is_local_focus_stack,
                 ws);
         return tiled_list;
