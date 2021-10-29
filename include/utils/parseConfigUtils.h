@@ -7,6 +7,7 @@
 #include <lauxlib.h>
 
 GPtrArray *create_default_config_paths();
+GPtrArray *create_default_user_data_paths();
 
 int load_file(lua_State *L, const char *file);
 /* returns 0 if loading file was successful else return 1
@@ -19,11 +20,11 @@ void close_error_file();
 
 
 // utils
-char *get_config_file(const char *file);
+char *get_config_file(GPtrArray *paths, const char *file);
 /* returned char pointer must be freed */
 char *get_config_layout_path();
 /* returned char pointer must be freed */
-char *get_config_dir(const char *file);
+char *get_config_dir(GPtrArray *paths, const char *file);
 void append_to_lua_path(lua_State *L, const char *path);
 
 // get values

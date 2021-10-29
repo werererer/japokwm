@@ -56,7 +56,10 @@ struct server {
 
     GPtrArray *scratchpad;
 
+    char *custom_path;
+    char *error_path;
     GPtrArray *config_paths;
+    GPtrArray *user_data_paths;
     char *config_file;
 
     int previous_workspace;

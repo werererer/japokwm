@@ -63,10 +63,18 @@ GPtrArray *create_default_config_paths()
     return config_paths;
 }
 
-char *get_config_file(const char *file)
+GPtrArray *create_default_user_data_paths()
 {
-    for (size_t i = 0; i < server.config_paths->len; ++i) {
-        char *path = strdup(g_ptr_array_index(server.config_paths, i));
+    GPtrArray *user_data_paths = g_ptr_array_new();
+    g_ptr_array_add(user_data_paths, "/usr/share/japokwm");
+    g_ptr_array_add(user_data_paths, "/usr/local/share/japokwm");
+    return user_data_paths;
+}
+
+char *get_config_file(GPtrArray *paths, const char *file)
+{
+    for (size_t i = 0; i < paths->len; ++i) {
+        char *path = strdup(g_ptr_array_index(paths, i));
         join_path(&path, file);
         expand_path(&path);
         if (file_exists(path))
@@ -78,12 +86,12 @@ char *get_config_file(const char *file)
 
 char *get_config_layout_path()
 {
-    return get_config_file("layouts");
+    return get_config_file(server.config_paths, "layouts");
 }
 
-char *get_config_dir(const char *file)
+char *get_config_dir(GPtrArray *paths, const char *file)
 {
-    char *abs_file = get_config_file(file);
+    char *abs_file = get_config_file(paths, file);
     if (!abs_file)
         return NULL;
 
@@ -110,7 +118,7 @@ void append_to_lua_path(lua_State *L, const char *path)
 
 static int load_plugin_paths(lua_State *L)
 {
-    char *base_path = get_config_dir(config_file);
+    char *base_path = get_config_dir(server.config_paths, config_file);
     for (int i = 0; i < LENGTH(plugin_relative_paths); i++) {
         char *base = strdup(base_path);
         const char *path = plugin_relative_paths[i];
@@ -127,7 +135,7 @@ static int load_plugin_paths(lua_State *L)
 // returns 0 upon success and 1 upon failure
 static int load_default_config(lua_State *L)
 {
-    char *file_path = get_config_file(config_file);
+    char *file_path = get_config_file(server.config_paths, config_file);
     if (!file_path)
         return EXIT_FAILURE;
 
@@ -193,7 +201,7 @@ int init_utils(lua_State *L)
 {
     load_plugin_paths(L);
     const char *tile_file = "tile.lua";
-    char *config_dir = get_config_dir(tile_file);
+    char *config_dir = get_config_dir(server.user_data_paths, tile_file);
 
     if (!config_dir)
         return EXIT_FAILURE;
@@ -215,7 +223,17 @@ int init_utils(lua_State *L)
 
 void init_error_file()
 {
-    char *ef_dir = get_config_dir(config_file);
+    char *ef_dir = NULL;
+    if (server.custom_path) {
+        if (file_exists(server.custom_path)) {
+            ef_dir = strdup(server.custom_path);
+        } else {
+            ef_dir = strdup(server.error_path);
+        }
+    } else {
+        ef_dir = strdup(server.error_path);
+    }
+
     mkdir(ef_dir, 0777);
     char *ef = strdup(ef_dir);
     join_path(&ef, error_file);

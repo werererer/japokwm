@@ -414,7 +414,7 @@ static void load_layout_file(lua_State *L, struct layout *lt)
     init_local_config_variables(L, ws);
     const char *name = lt->name;
 
-    char *config_path = get_config_file("layouts");
+    char *config_path = get_config_file(server.config_paths, "layouts");
     char *file = strdup("");
     join_path(&file, config_path);
     join_path(&file, name);

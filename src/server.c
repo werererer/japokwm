@@ -183,6 +183,8 @@ void init_server()
 
     server.registered_key_combos = g_ptr_array_new();
     server.named_key_combos = g_ptr_array_new();
+    server.error_path = strdup("$HOME/.config/japokwm");
+    expand_path(&server.error_path);
 
     init_lists(&server);
 
@@ -193,6 +195,7 @@ void init_server()
     server.scratchpad = g_ptr_array_new();
     server.keyboards = g_ptr_array_new();
     server.config_paths = create_default_config_paths();
+    server.user_data_paths = create_default_user_data_paths();
     server.workspaces = create_workspaces();
 
     server.container_stack = g_ptr_array_new();
@@ -221,6 +224,7 @@ void finalize_server()
     g_ptr_array_unref(server.scratchpad);
     g_ptr_array_unref(server.keyboards);
     g_ptr_array_unref(server.config_paths);
+    g_ptr_array_unref(server.user_data_paths);
 
     g_ptr_array_unref(server.container_stack);
 
