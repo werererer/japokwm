@@ -144,6 +144,7 @@ int lib_reload(lua_State *L)
     }
 
     arrange();
+    workspace_update_names(server_get_workspaces());
     return 0;
 }
 

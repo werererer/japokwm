@@ -136,15 +136,15 @@ void options_add_keybinding(struct options *options, struct keybinding *keybindi
             keybindings->len,
             sizeof(struct keybinding *),
             cmp_keybinding);
+
+    int insert_position = 1 + lb;
     if (lb >= 0 && lb+1 < options->keybindings->len) {
-        int idx = lb + 1;
-        struct keybinding *kb = g_ptr_array_index(options->keybindings, idx);
+        struct keybinding *kb = g_ptr_array_index(options->keybindings, insert_position);
         if (strcmp(kb->binding, sorted_binding) == 0) {
-            g_ptr_array_remove_index(options->keybindings, idx);
+            g_ptr_array_remove_index(options->keybindings, insert_position);
         }
     }
 
-    int insert_position = 1 + lb;
     g_ptr_array_insert(keybindings, insert_position, keybinding);
 }
 
@@ -247,7 +247,11 @@ void load_default_keybindings(struct options *options)
 
     bind_key(options, "mod-M1", action.move_resize(Cursor_mode.move));
     bind_key(options, "mod-M2", action.move_resize(Cursor_mode.resize));
-    bind_key(options, "M1", info.get_container_under_cursor():focus());
+    bind_key(options, "M1",
+            local con = info.get_container_under_cursor()
+            if con then
+                con:focus()
+            end);
 
     bind_key(options, "mod-a", Layout.get_focused():increase_n_master());
     bind_key(options, "mod-x", Layout.get_focused():decrease_n_master());
