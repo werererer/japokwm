@@ -224,7 +224,11 @@ int lib_increase_n_master(lua_State *L)
     struct layout *lt = check_layout(L, 1);
     lua_pop(L, 1);
 
-    lt->n_master++;
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_master_layout_data_ref);
+    int len = luaL_len(L, -1);
+    lua_pop(L, 1);
+
+    lt->n_master = MIN(lt->n_master+1, len);
     arrange();
     return 1;
 }
