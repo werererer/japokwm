@@ -243,11 +243,8 @@ int lib_move_resize(lua_State *L)
 
 int lib_move_to_scratchpad(lua_State *L)
 {
-    int i = luaL_checkinteger(L, -1);
+    struct container *con = check_container(L, 1);
     lua_pop(L, 1);
-    struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
-    struct container *con = get_container(ws, i);
     move_to_scratchpad(con, 0);
     return 0;
 }

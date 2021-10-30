@@ -8,7 +8,6 @@ void lua_load_info(lua_State *L);
 
 int lib_get_container_under_cursor(lua_State *L);
 int lib_is_keycombo(lua_State *L);
-// ?
 int lib_stack_position_to_position(lua_State *L);
 // decided
 // ws
