@@ -8,6 +8,7 @@
 
 GPtrArray *create_default_config_paths();
 GPtrArray *create_default_user_data_paths();
+GPtrArray *create_default_layout_paths();
 
 int load_file(lua_State *L, const char *file);
 /* returns 0 if loading file was successful else return 1

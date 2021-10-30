@@ -43,7 +43,6 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     /* Allocates and configures monitor state using configured rules */
     struct monitor *m = output->data = calloc(1, sizeof(*m));
-    m->ws_id = INVALID_WORKSPACE_ID;
 
     m->wlr_output = output;
 

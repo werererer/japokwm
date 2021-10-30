@@ -58,6 +58,7 @@ struct server {
 
     char *custom_path;
     char *error_path;
+    GPtrArray *layout_paths;
     GPtrArray *config_paths;
     GPtrArray *user_data_paths;
     char *config_file;

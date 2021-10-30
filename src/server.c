@@ -196,6 +196,7 @@ void init_server()
     server.keyboards = g_ptr_array_new();
     server.config_paths = create_default_config_paths();
     server.user_data_paths = create_default_user_data_paths();
+    server.layout_paths = create_default_layout_paths();
     server.workspaces = create_workspaces();
 
     server.container_stack = g_ptr_array_new();
@@ -225,6 +226,7 @@ void finalize_server()
     g_ptr_array_unref(server.keyboards);
     g_ptr_array_unref(server.config_paths);
     g_ptr_array_unref(server.user_data_paths);
+    g_ptr_array_unref(server.layout_paths);
 
     g_ptr_array_unref(server.container_stack);
 

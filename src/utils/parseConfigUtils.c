@@ -66,9 +66,20 @@ GPtrArray *create_default_config_paths()
 GPtrArray *create_default_user_data_paths()
 {
     GPtrArray *user_data_paths = g_ptr_array_new();
-    g_ptr_array_add(user_data_paths, "/usr/share/japokwm");
     g_ptr_array_add(user_data_paths, "/usr/local/share/japokwm");
+    g_ptr_array_add(user_data_paths, "/usr/share/japokwm");
     return user_data_paths;
+}
+
+GPtrArray *create_default_layout_paths()
+{
+    GPtrArray *layout_paths = g_ptr_array_new();
+    g_ptr_array_add(layout_paths, "$XDG_CONFIG_HOME/japokwm/");
+    g_ptr_array_add(layout_paths, "$HOME/.config/japokwm/");
+    g_ptr_array_add(layout_paths, "/etc/japokwm/");
+    g_ptr_array_add(layout_paths, "/usr/local/share/japokwm");
+    g_ptr_array_add(layout_paths, "/usr/share/japokwm");
+    return layout_paths;
 }
 
 char *get_config_file(GPtrArray *paths, const char *file)
@@ -86,7 +97,7 @@ char *get_config_file(GPtrArray *paths, const char *file)
 
 char *get_config_layout_path()
 {
-    return get_config_file(server.config_paths, "layouts");
+    return get_config_file(server.layout_paths, "layouts");
 }
 
 char *get_config_dir(GPtrArray *paths, const char *file)
@@ -199,6 +210,7 @@ void load_default_lua_config(lua_State *L)
 // returns 0 upon success and 1 upon failure
 int init_utils(lua_State *L)
 {
+    init_global_config_variables(L);
     load_plugin_paths(L);
     const char *tile_file = "tile.lua";
     char *config_dir = get_config_dir(server.user_data_paths, tile_file);
