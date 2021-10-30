@@ -279,7 +279,6 @@ int lib_bitset_xor(lua_State *L)
 {
     BitSet *bitset = check_bitset(L, 2);
     lua_pop(L, 1);
-    print_bitset(bitset);
 
     BitSet *self = check_bitset(L, 1);
     call_bitset_func(L, bitset_xor, self, bitset);

@@ -396,8 +396,6 @@ void handle_cursor_button(struct wl_listener *listener, void *data)
     struct cursor *cursor = wl_container_of(listener, cursor, button);
     struct wlr_event_pointer_button *event = data;
 
-    debug_print("number of popups: %i\n", server.popups->len);
-    debug_print("number of xwayland_popups: %i\n", server.popups->len);
     switch (event->state) {
         case WLR_BUTTON_PRESSED:
             {

@@ -83,6 +83,7 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     if (is_first_monitor) {
         server_set_selected_monitor(m);
+        init_utils(L);
     }
     monitor_get_initial_workspace(m, server_get_workspaces());
 
