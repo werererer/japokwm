@@ -159,6 +159,167 @@ json_object *ipc_json_describe_tagsets()
     return array;
 }
 
+json_object *ipc_json_describe_bar_config() {
+    json_object *json = json_object_new_object();
+    // json_object_object_add(json, "mode", json_object_new_string("show"));
+    json_object_object_add(json, "hidden_state",
+            json_object_new_string("show"));
+    json_object_object_add(json, "position",
+            json_object_new_string("bottom"));
+    json_object_object_add(json, "status_command", NULL);
+    // json_object_object_add(json, "font",
+    //         json_object_new_string((bar->font) ? bar->font : config->font));
+
+    // json_object *gaps = json_object_new_object();
+    // json_object_object_add(gaps, "top",
+    //         json_object_new_int(bar->gaps.top));
+    // json_object_object_add(gaps, "right",
+    //         json_object_new_int(bar->gaps.right));
+    // json_object_object_add(gaps, "bottom",
+    //         json_object_new_int(bar->gaps.bottom));
+    // json_object_object_add(gaps, "left",
+    //         json_object_new_int(bar->gaps.left));
+    // json_object_object_add(json, "gaps", gaps);
+
+    // if (bar->separator_symbol) {
+    //     json_object_object_add(json, "separator_symbol",
+    //             json_object_new_string(bar->separator_symbol));
+    // }
+    json_object_object_add(json, "bar_height",
+            json_object_new_int(0));
+    json_object_object_add(json, "status_padding",
+            json_object_new_int(0));
+    json_object_object_add(json, "status_edge_padding",
+            json_object_new_int(0));
+    json_object_object_add(json, "wrap_scroll",
+            json_object_new_boolean(false));
+    json_object_object_add(json, "workspace_buttons",
+            json_object_new_boolean(true));
+    json_object_object_add(json, "strip_workspace_numbers",
+            json_object_new_boolean(false));
+    json_object_object_add(json, "strip_workspace_name",
+            json_object_new_boolean(false));
+    json_object_object_add(json, "workspace_min_width",
+            json_object_new_int(0));
+    json_object_object_add(json, "binding_mode_indicator",
+            json_object_new_boolean(false));
+    json_object_object_add(json, "verbose",
+            json_object_new_boolean(false));
+    json_object_object_add(json, "pango_markup",
+            json_object_new_boolean(false));
+
+    // json_object *colors = json_object_new_object();
+    // json_object_object_add(colors, "background",
+    //         json_object_new_string(bar->colors.background));
+    // json_object_object_add(colors, "statusline",
+    //         json_object_new_string(bar->colors.statusline));
+    // json_object_object_add(colors, "separator",
+    //         json_object_new_string(bar->colors.separator));
+
+//     json_object_object_add(colors, "focused_background",
+//             json_object_new_string(bar->colors.focused_background));
+
+    // if (bar->colors.focused_statusline) {
+    //     json_object_object_add(colors, "focused_statusline",
+    //             json_object_new_string(bar->colors.focused_statusline));
+    // } else {
+    //     json_object_object_add(colors, "focused_statusline",
+    //             json_object_new_string(bar->colors.statusline));
+    // }
+    //
+    // if (bar->colors.focused_separator) {
+    //     json_object_object_add(colors, "focused_separator",
+    //             json_object_new_string(bar->colors.focused_separator));
+    // } else {
+    //     json_object_object_add(colors, "focused_separator",
+    //             json_object_new_string(bar->colors.separator));
+    // }
+    //
+    // json_object_object_add(colors, "focused_workspace_border",
+    //         json_object_new_string(bar->colors.focused_workspace_border));
+    // json_object_object_add(colors, "focused_workspace_bg",
+    //         json_object_new_string(bar->colors.focused_workspace_bg));
+    // json_object_object_add(colors, "focused_workspace_text",
+    //         json_object_new_string(bar->colors.focused_workspace_text));
+    //
+    // json_object_object_add(colors, "inactive_workspace_border",
+    //         json_object_new_string(bar->colors.inactive_workspace_border));
+    // json_object_object_add(colors, "inactive_workspace_bg",
+    //         json_object_new_string(bar->colors.inactive_workspace_bg));
+    // json_object_object_add(colors, "inactive_workspace_text",
+    //         json_object_new_string(bar->colors.inactive_workspace_text));
+    //
+    // json_object_object_add(colors, "active_workspace_border",
+    //         json_object_new_string(bar->colors.active_workspace_border));
+    // json_object_object_add(colors, "active_workspace_bg",
+    //         json_object_new_string(bar->colors.active_workspace_bg));
+    // json_object_object_add(colors, "active_workspace_text",
+    //         json_object_new_string(bar->colors.active_workspace_text));
+    //
+    // json_object_object_add(colors, "urgent_workspace_border",
+    //         json_object_new_string(bar->colors.urgent_workspace_border));
+    // json_object_object_add(colors, "urgent_workspace_bg",
+    //         json_object_new_string(bar->colors.urgent_workspace_bg));
+    // json_object_object_add(colors, "urgent_workspace_text",
+    //         json_object_new_string(bar->colors.urgent_workspace_text));
+    //
+    // if (bar->colors.binding_mode_border) {
+    //     json_object_object_add(colors, "binding_mode_border",
+    //             json_object_new_string(bar->colors.binding_mode_border));
+    // } else {
+    //     json_object_object_add(colors, "binding_mode_border",
+    //             json_object_new_string(bar->colors.urgent_workspace_border));
+    // }
+    //
+    // if (bar->colors.binding_mode_bg) {
+    //     json_object_object_add(colors, "binding_mode_bg",
+    //             json_object_new_string(bar->colors.binding_mode_bg));
+    // } else {
+    //     json_object_object_add(colors, "binding_mode_bg",
+    //             json_object_new_string(bar->colors.urgent_workspace_bg));
+    // }
+    //
+    // if (bar->colors.binding_mode_text) {
+    //     json_object_object_add(colors, "binding_mode_text",
+    //             json_object_new_string(bar->colors.binding_mode_text));
+    // } else {
+    //     json_object_object_add(colors, "binding_mode_text",
+    //             json_object_new_string(bar->colors.urgent_workspace_text));
+    // }
+    //
+    // json_object_object_add(json, "colors", colors);
+    //
+    // if (bar->bindings->length > 0) {
+    //     json_object *bindings = json_object_new_array();
+    //     for (int i = 0; i < bar->bindings->length; ++i) {
+    //         struct bar_binding *binding = bar->bindings->items[i];
+    //         json_object *bind = json_object_new_object();
+    //         json_object_object_add(bind, "input_code",
+    //                 json_object_new_int(event_to_x11_button(binding->button)));
+    //         json_object_object_add(bind, "event_code",
+    //                 json_object_new_int(binding->button));
+    //         json_object_object_add(bind, "command",
+    //                 json_object_new_string(binding->command));
+    //         json_object_object_add(bind, "release",
+    //                 json_object_new_boolean(binding->release));
+    //         json_object_array_add(bindings, bind);
+    //     }
+    //     json_object_object_add(json, "bindings", bindings);
+    // }
+    //
+    // // Add outputs if defined
+    // if (bar->outputs && bar->outputs->length > 0) {
+    //     json_object *outputs = json_object_new_array();
+    //     for (int i = 0; i < bar->outputs->length; ++i) {
+    //         const char *name = bar->outputs->items[i];
+    //         json_object_array_add(outputs, json_object_new_string(name));
+    //     }
+    //     json_object_object_add(json, "outputs", outputs);
+    // }
+    return json;
+}
+
+
 json_object *ipc_json_describe_tag(const char *name, bool is_active_workspace, struct monitor *m)
 {
     struct wlr_box box;

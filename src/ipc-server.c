@@ -430,8 +430,23 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
                     const char *event_type = json_object_get_string(json_object_array_get_idx(request, i));
                     if (strcmp(event_type, "workspace") == 0) {
                         client->subscribed_events |= event_mask(IPC_EVENT_WORKSPACE);
+                    } else if (strcmp(event_type, "barconfig_update") == 0) {
+                        client->subscribed_events |= event_mask(IPC_EVENT_BARCONFIG_UPDATE);
+                    } else if (strcmp(event_type, "bar_state_update") == 0) {
+                        client->subscribed_events |= event_mask(IPC_EVENT_BAR_STATE_UPDATE);
+                    } else if (strcmp(event_type, "mode") == 0) {
+                        client->subscribed_events |= event_mask(IPC_EVENT_MODE);
+                    } else if (strcmp(event_type, "shutdown") == 0) {
+                        client->subscribed_events |= event_mask(IPC_EVENT_SHUTDOWN);
                     } else if (strcmp(event_type, "window") == 0) {
                         client->subscribed_events |= event_mask(IPC_EVENT_WINDOW);
+                    } else if (strcmp(event_type, "binding") == 0) {
+                        client->subscribed_events |= event_mask(IPC_EVENT_BINDING);
+                    } else if (strcmp(event_type, "tick") == 0) {
+                        client->subscribed_events |= event_mask(IPC_EVENT_TICK);
+                        is_tick = true;
+                    } else if (strcmp(event_type, "input") == 0) {
+                        client->subscribed_events |= event_mask(IPC_EVENT_INPUT);
                     } else {
                         const char msg[] = "{\"success\": false}";
                         ipc_send_reply(client, payload_type, msg, strlen(msg));
@@ -462,6 +477,31 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
                 json_object_put(tree);
                 goto exit_cleanup;
             }
+
+        case IPC_GET_BAR_CONFIG:
+            {
+                if (!buf[0]) {
+                    // Send list of configured bar IDs
+                    json_object *bars = json_object_new_array();
+                    // for (int i = 0; i < config->bars->length; ++i) {
+                    //     struct bar_config *bar = config->bars->items[i];
+                    //     json_object_array_add(bars, json_object_new_string(bar->id));
+                    // }
+                    const char *json_string = json_object_to_json_string(bars);
+                    ipc_send_reply(client, payload_type, json_string,
+                            (uint32_t)strlen(json_string));
+                    json_object_put(bars); // free
+                } else {
+                    // Send particular bar's details
+                    json_object *json = ipc_json_describe_bar_config();
+                    const char *json_string = json_object_to_json_string(json);
+                    ipc_send_reply(client, payload_type, json_string,
+                            (uint32_t)strlen(json_string));
+                    json_object_put(json); // free
+                }
+                goto exit_cleanup;
+            }
+
 
         default:
             printf("Unknown IPC command type %x\n", payload_type);
