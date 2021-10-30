@@ -50,7 +50,7 @@ struct container_property *check_container_property(lua_State *L, int narg)
 {
     void **ud = luaL_checkudata(L, narg, CONFIG_CONTAINER_PROPERTY);
     luaL_argcheck(L, ud != NULL, narg, "`container_property' expected");
-    return (struct container_property *)ud;
+    return *(struct container_property **)ud;
 }
 
 void create_lua_container_property(lua_State *L, struct container_property *container_property)

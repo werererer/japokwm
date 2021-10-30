@@ -252,7 +252,7 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-s 7", Workspace.get_focused():swap(Workspace.get(7)));
     bind_key(options, "mod-s 8", Workspace.get_focused():swap(Workspace.get(8)));
 
-    bind_key(options, "mod-t", Container.get_focused().floating = false);
+    bind_key(options, "mod-t", Container.get_focused().property.floating = false);
 
     bind_key(options, "mod-M1", action.move_resize(Cursor_mode.move));
     bind_key(options, "mod-M2", action.move_resize(Cursor_mode.resize));
@@ -281,7 +281,7 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-S-space", Layout.load_prev_in_set("default"));
     bind_key(options, "mod-space", Layout.load_next_in_set("default"));
 
-    bind_key(options, "mod-minus", action.move_to_scratchpad(info.this_container_position()));
+    bind_key(options, "mod-minus", action.move_to_scratchpad(Container.get_focused()));
     bind_key(options, "mod-S-minus", action.show_scratchpad());
 
     bind_key(options, "mod-tab", action.swap_on_hidden_stack(0));
