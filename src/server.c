@@ -306,8 +306,6 @@ int setup(struct server *server)
 
     server->layout_set = get_default_layout_set();
 
-    init_utils(L);
-
     server->default_layout = create_layout(L);
 
     load_lua_api(L);
