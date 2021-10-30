@@ -80,6 +80,7 @@ int main(int argc, char *argv[])
                 server.custom_path = strdup(optarg);
                 expand_path(&server.custom_path);
                 g_ptr_array_insert(server.config_paths, 0, server.custom_path);
+                g_ptr_array_insert(server.layout_paths, 0, server.custom_path);
                 break;
             case 'h':
                 print_help();

@@ -4,6 +4,7 @@ configFiles = files(
 runtimeFiles = files(
   'tile.lua',
   'tileutils.lua',
+  'default_values.lua',
   )
 
 datadir = get_option('datadir') / 'japokwm'

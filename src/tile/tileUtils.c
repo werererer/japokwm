@@ -29,6 +29,12 @@ static void arrange_container(struct container *con, struct monitor *m,
 
 void arrange()
 {
+    for (int i = 0; i < server.mons->len; i++) {
+        struct monitor *m = g_ptr_array_index(server.mons, i);
+        struct workspace *ws = monitor_get_active_workspace(m);
+        load_layout(ws);
+    }
+
     for (int i = 0; i < server.container_stack->len; i++) {
         struct container *con = g_ptr_array_index(server.container_stack, i);
 
