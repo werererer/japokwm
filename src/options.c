@@ -252,7 +252,7 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-s 7", Workspace.get_focused():swap(Workspace.get(7)));
     bind_key(options, "mod-s 8", Workspace.get_focused():swap(Workspace.get(8)));
 
-    bind_key(options, "mod-t", Container.get_focused().property.floating = false);
+    bind_key(options, "mod-t", Container.get_focused().properties[1].floating = false);
 
     bind_key(options, "mod-M1", action.move_resize(Cursor_mode.move));
     bind_key(options, "mod-M2", action.move_resize(Cursor_mode.resize));

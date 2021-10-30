@@ -13,7 +13,7 @@
 #include "list_sets/focus_stack_set.h"
 #include "lib/lib_container.h"
 #include "list_sets/list_set.h"
-#include "lib/lib_list.h"
+#include "lib/lib_container_list.h"
 #include "lib/lib_list2D.h"
 #include "lib/lib_layout.h"
 #include "lib/lib_bitset.h"
@@ -256,7 +256,7 @@ int lib_workspace_get_focus_stack(lua_State *L)
     struct workspace *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
-    create_lua_list(L, ws->focus_set->focus_stack_normal);
+    create_lua_container_list(L, ws->focus_set->focus_stack_normal);
     return 1;
 }
 
@@ -284,7 +284,7 @@ int lib_workspace_get_stack(lua_State *L)
     struct workspace *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
-    create_lua_list(L, ws->con_set->tiled_containers);
+    create_lua_container_list(L, ws->con_set->tiled_containers);
     return 1;
 }
 
@@ -312,7 +312,7 @@ int lib_workspace_get_visible_focus_stack(lua_State *L)
     struct workspace *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
-    create_lua_list(L, ws->visible_focus_set->focus_stack_normal);
+    create_lua_container_list(L, ws->visible_focus_set->focus_stack_normal);
     return 1;
 }
 
@@ -321,6 +321,6 @@ int lib_workspace_get_visible_stack(lua_State *L)
     struct workspace *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
-    create_lua_list(L, ws->visible_con_set->tiled_containers);
+    create_lua_container_list(L, ws->visible_con_set->tiled_containers);
     return 1;
 }

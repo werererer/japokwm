@@ -4,8 +4,8 @@
 #include "list_sets/focus_stack_set.h"
 #include "translationLayer.h"
 #include "lib/lib_focus_set.h"
-#include "lib/lib_list.h"
 #include "lib/lib_list2D.h"
+#include "lib/lib_container_list.h"
 
 static const struct luaL_Reg focus_stack_meta[] =
 {
@@ -104,7 +104,7 @@ int lib_get_focus_stack_layer_background(lua_State *L)
     struct focus_set *focus_set = check_focus_set(L, 1);
     lua_pop(L, 1);
 
-    create_lua_list(L, focus_set->focus_stack_layer_background);
+    create_lua_container_list(L, focus_set->focus_stack_layer_background);
     return 1;
 }
 
@@ -113,7 +113,7 @@ int lib_get_focus_stack_layer_bottom(lua_State *L)
     struct focus_set *focus_set = check_focus_set(L, 1);
     lua_pop(L, 1);
 
-    create_lua_list(L, focus_set->focus_stack_layer_bottom);
+    create_lua_container_list(L, focus_set->focus_stack_layer_bottom);
     return 1;
 }
 
@@ -122,7 +122,7 @@ int lib_get_focus_stack_layer_top(lua_State *L)
     struct focus_set *focus_set = check_focus_set(L, 1);
     lua_pop(L, 1);
 
-    create_lua_list(L, focus_set->focus_stack_layer_top);
+    create_lua_container_list(L, focus_set->focus_stack_layer_top);
     return 1;
 }
 
@@ -131,7 +131,7 @@ int lib_get_focus_stack_layer_overlay(lua_State *L)
     struct focus_set *focus_set = check_focus_set(L, 1);
     lua_pop(L, 1);
 
-    create_lua_list(L, focus_set->focus_stack_layer_overlay);
+    create_lua_container_list(L, focus_set->focus_stack_layer_overlay);
     return 1;
 }
 
@@ -140,7 +140,7 @@ int lib_get_focus_stack_on_top(lua_State *L)
     struct focus_set *focus_set = check_focus_set(L, 1);
     lua_pop(L, 1);
 
-    create_lua_list(L, focus_set->focus_stack_on_top);
+    create_lua_container_list(L, focus_set->focus_stack_on_top);
     return 1;
 }
 
@@ -149,7 +149,7 @@ int lib_get_focus_stack_normal(lua_State *L)
     struct focus_set *focus_set = check_focus_set(L, 1);
     lua_pop(L, 1);
 
-    create_lua_list(L, focus_set->focus_stack_normal);
+    create_lua_container_list(L, focus_set->focus_stack_normal);
     return 1;
 }
 
@@ -158,6 +158,6 @@ int lib_get_focus_stack_not_focusable(lua_State *L)
     struct focus_set *focus_set = check_focus_set(L, 1);
     lua_pop(L, 1);
 
-    create_lua_list(L, focus_set->focus_stack_not_focusable);
+    create_lua_container_list(L, focus_set->focus_stack_not_focusable);
     return 1;
 }

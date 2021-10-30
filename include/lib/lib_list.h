@@ -5,9 +5,14 @@
 #include <lauxlib.h>
 #include <glib.h>
 
-void create_lua_list(lua_State *L, GPtrArray *arr);
+void create_lua_list(
+        lua_State *L,
+        GPtrArray *arr,
+        void create_lua_object(lua_State *L, void *),
+        void *check_object(lua_State *L, int narg));
 void lua_load_list(lua_State *L);
 
+int lib_list_gc(lua_State *L);
 // functions
 int lib_list_to_array(lua_State *L);
 // methods
