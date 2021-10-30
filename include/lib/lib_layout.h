@@ -27,7 +27,7 @@ int lib_layout_set_resize_function(lua_State *L);
 // setter
 int lib_layout_set_n_area(lua_State *L);
 int lib_layout_set_nmaster(lua_State *L);
-int lib_layout_set_default_layout(lua_State *L);
+int lib_layout_set_layout_name(lua_State *L);
 // getter
 int lib_layout_get_direction(lua_State *L);
 int lib_layout_get_layout_data(lua_State *L);

@@ -49,7 +49,7 @@ static const struct luaL_Reg layout_getter[] = {
 };
 
 static const struct luaL_Reg layout_setter[] = {
-    {"default_layout", lib_layout_set_default_layout},
+    {"name", lib_layout_set_layout_name},
     {"n_area", lib_layout_set_n_area},
     {"n_master", lib_layout_set_n_area},
     // {"direction", lib_layout_get_direction},
@@ -361,7 +361,7 @@ int lib_layout_get_resize_data(lua_State *L)
 }
 
 // setter
-int lib_layout_set_default_layout(lua_State *L)
+int lib_layout_set_layout_name(lua_State *L)
 {
     const char *name = luaL_checkstring(L, -1);
     lua_pop(L, 1);
