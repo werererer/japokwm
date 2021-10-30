@@ -65,8 +65,10 @@ void container_property_set_floating(struct container_property *property, bool f
     struct container *con = property->con;
     if (!container_property_is_floating(property)) {
         struct monitor *m = server_get_selected_monitor();
-        struct workspace *sel_ws = monitor_get_active_workspace(m);
-        container_set_workspace_id(con, sel_ws->id);
+        if (container_get_monitor(con) != server_get_selected_monitor()) {
+            struct workspace *sel_ws = monitor_get_active_workspace(m);
+            container_set_workspace_id(con, sel_ws->id);
+        }
 
         if (con->on_scratchpad) {
             remove_container_from_scratchpad(con);
@@ -673,7 +675,11 @@ void container_fix_position(struct container *con)
     if (!container_is_floating(con)) {
         g_ptr_array_remove(tiled_containers, con);
         int last_pos = lt->n_tiled;
-        g_ptr_array_insert(tiled_containers, last_pos, con);
+        if (tiled_containers->len <= last_pos) {
+            g_ptr_array_add(tiled_containers, con);
+        } else {
+            g_ptr_array_insert(tiled_containers, last_pos, con);
+        }
     }
     workspace_write_to_workspaces(ws);
     workspace_write_to_focus_stacks(ws);
