@@ -65,7 +65,7 @@ void container_property_set_floating(struct container_property *property, bool f
     struct container *con = property->con;
     if (!container_property_is_floating(property)) {
         struct monitor *m = server_get_selected_monitor();
-        if (container_get_monitor(con) != server_get_selected_monitor()) {
+        if (container_get_monitor(con) != server_get_selected_monitor() || con->on_scratchpad) {
             struct workspace *sel_ws = monitor_get_active_workspace(m);
             container_set_workspace_id(con, sel_ws->id);
         }
