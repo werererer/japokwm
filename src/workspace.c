@@ -565,7 +565,7 @@ void workspace_update_name(struct workspace *ws)
     free(num_name);
 }
 
-void workspace_update_names(struct server *server, GList *workspaces)
+void workspace_update_names(GList *workspaces)
 {
     for (GList *iterator = workspaces; iterator; iterator = iterator->next) {
         struct workspace *ws = iterator->data;

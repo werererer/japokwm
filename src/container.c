@@ -128,7 +128,7 @@ void add_container_to_tile(struct container *con)
 
     con->is_on_tile = true;
 
-    workspace_update_names(&server, server_get_workspaces());
+    workspace_update_names(server_get_workspaces());
     ipc_event_workspace();
 }
 
@@ -157,7 +157,7 @@ void remove_container_from_tile(struct container *con)
     }
 
     con->is_on_tile = false;
-    workspace_update_names(&server, server_get_workspaces());
+    workspace_update_names(server_get_workspaces());
     ipc_event_workspace();
 }
 
@@ -447,7 +447,7 @@ void focus_container(struct container *con)
     if (sel == new_sel)
         return;
 
-    workspace_update_names(&server, server_get_workspaces());
+    workspace_update_names(server_get_workspaces());
     ipc_event_workspace();
 }
 
@@ -1100,6 +1100,7 @@ void move_container_to_workspace(struct container *con, struct workspace *ws)
     arrange();
     focus_most_recent_container();
 
+    workspace_update_names(server_get_workspaces());
     ipc_event_workspace();
 }
 
