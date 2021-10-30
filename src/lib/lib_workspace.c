@@ -181,6 +181,7 @@ int lib_workspace_swap(lua_State *L)
     struct workspace *ws = monitor_get_active_workspace(m);
     tagset_reload(ws);
     arrange();
+    workspace_update_names(server_get_workspaces());
     focus_most_recent_container();
     root_damage_whole(m->root);
     return 0;

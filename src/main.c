@@ -107,7 +107,9 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     int status = start_server(startup_cmd);
-    stop_server();
+    if (status == 0) {
+        stop_server();
+    }
     finalize_server();
     return status;
 }
