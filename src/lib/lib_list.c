@@ -2,7 +2,6 @@
 
 #include "translationLayer.h"
 #include "server.h"
-#include "lib/lib_container.h"
 #include "utils/coreUtils.h"
 #include "tile/tileUtils.h"
 #include "tagset.h"
@@ -12,9 +11,16 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+struct user_list {
+    GPtrArray *list;
+    void (*create_lua_object)(lua_State *L, void *item);
+    void *(*check_object)(lua_State *L, int narg);
+};
+
 static const struct luaL_Reg list_meta[] =
 {
     {"__index", lib_list_get},
+    {"__gc", lib_list_gc},
     {NULL, NULL},
 };
 
@@ -40,14 +46,37 @@ static const struct luaL_Reg list_setter[] = {
     {NULL, NULL},
 };
 
-void create_lua_list(lua_State *L, GPtrArray *arr)
+static struct user_list *create_user_list(
+        GPtrArray *list,
+        void *check_object(lua_State *L, int nagr),
+        void create_lua_object(lua_State *L, void *obj))
+{
+    struct user_list *user_list = calloc(1, sizeof(struct user_list));
+    user_list->list = list;
+    user_list->check_object = check_object;
+    user_list->create_lua_object = create_lua_object;
+    return user_list;
+}
+
+static void destroy_user_list(struct user_list *user_list)
+{
+    free(user_list);
+}
+
+void create_lua_list(
+        lua_State *L,
+        GPtrArray *arr,
+        void create_lua_object(lua_State *L, void *),
+        void *check_object(lua_State *L, int narg))
 {
     if (!arr) {
         lua_pushnil(L);
         return;
     }
-    GPtrArray **user_con = lua_newuserdata(L, sizeof(GPtrArray *));
-    *user_con = arr;
+
+    struct user_list *list = create_user_list(arr, check_object, create_lua_object);
+    struct user_list **user_list = lua_newuserdata(L, sizeof(struct user_list *));
+    *user_list = list;
 
     luaL_setmetatable(L, CONFIG_LIST);
 }
@@ -66,24 +95,37 @@ void lua_load_list(lua_State *L)
     lua_setglobal(L, "List");
 }
 
-GPtrArray *check_list(lua_State *L, int argn)
+struct user_list *check_user_list(lua_State *L, int argn)
 {
     void **ud = luaL_checkudata(L, argn, CONFIG_LIST);
     luaL_argcheck(L, ud != NULL, argn, "`list' expected");
-    return (GPtrArray *)*ud;
+    return (struct user_list *)*ud;
+}
+
+GPtrArray *check_list(lua_State *L, int argn)
+{
+    struct user_list *user_list = check_user_list(L, argn);
+    return user_list->list;
+}
+
+int lib_list_gc(lua_State *L)
+{
+    struct user_list *user_list = check_user_list(L, 1);
+    lua_pop(L, 1);
+    destroy_user_list(user_list);
+    return 0;
 }
 
 // functions
 // methods
 int lib_list_find(lua_State *L)
 {
-    struct container *con = check_container(L, 2);
-    lua_pop(L, 1);
-    GPtrArray *array = check_list(L, 1);
-    lua_pop(L, 1);
+    struct user_list *user_list = check_user_list(L, 1);
+    struct container *con = user_list->check_object(L, 2);
+    lua_pop(L, 2);
 
     guint pos;
-    g_ptr_array_find(array, con, &pos);
+    g_ptr_array_find(user_list->list, con, &pos);
 
     lua_pushinteger(L, c_idx_to_lua_idx(pos));
     return 1;
@@ -92,7 +134,7 @@ int lib_list_find(lua_State *L)
 int lib_list_get(lua_State *L)
 {
     const char *key = luaL_checkstring(L, -1); // convert lua to c index
-    GPtrArray *array = check_list(L, 1);
+    struct user_list *user_list = check_user_list(L, 1);
     debug_print("key: %s\n", key);
 
     bool is_number = lua_isnumber(L, -1);
@@ -106,13 +148,13 @@ int lib_list_get(lua_State *L)
         lua_pushnil(L);
         return 1;
     }
-    if (i >= array->len) {
+    if (i >= user_list->list->len) {
         lua_pushnil(L);
         return 1;
     }
 
-    struct container *con = g_ptr_array_index(array, i);
-    create_lua_container(L, con);
+    void *con = g_ptr_array_index(user_list->list, i);
+    user_list->create_lua_object(L, con);
     return 1;
 }
 

@@ -13,6 +13,7 @@
 #include "lib/lib_container_property.h"
 #include "bitset/bitset.h"
 #include "lib/lib_bitset.h"
+#include "lib/lib_container_property_list.h"
 
 static const struct luaL_Reg container_meta[] =
 {
@@ -38,7 +39,8 @@ static const struct luaL_Reg container_getter[] = {
     // TODO: implement getters
     {"alpha", lib_container_get_alpha},
     {"app_id", lib_container_get_app_id},
-    {"property", lib_container_get_property},
+    {"properties", lib_container_get_property},
+    {"property", lib_container_get_current_property},
     {"sticky", lib_container_set_sticky},
     {"workspace", lib_container_get_workspace},
     {NULL, NULL},
@@ -248,7 +250,7 @@ int lib_container_get_app_id(lua_State *L)
     return 1;
 }
 
-int lib_container_get_property(lua_State *L)
+int lib_container_get_current_property(lua_State *L)
 {
     struct container *con = check_container(L, 1);
     lua_pop(L, 1);
@@ -256,6 +258,15 @@ int lib_container_get_property(lua_State *L)
     struct container_property *con_property = container_get_property(con);
 
     create_lua_container_property(L, con_property);
+    return 1;
+}
+
+int lib_container_get_property(lua_State *L)
+{
+    struct container *con = check_container(L, 1);
+    lua_pop(L, 1);
+
+    create_lua_container_property_list(L, con->properties);
     return 1;
 }
 

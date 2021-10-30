@@ -3,6 +3,7 @@
 #include "container.h"
 #include "translationLayer.h"
 #include "lib/lib_geom.h"
+#include "tile/tileUtils.h"
 
 static const struct luaL_Reg container_property_meta[] =
 {
@@ -94,5 +95,6 @@ int lib_container_property_set_floating(lua_State *L)
 
     container_property_set_floating(property, is_floating);
 
+    arrange();
     return 0;
 }
