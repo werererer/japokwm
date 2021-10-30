@@ -136,10 +136,11 @@ void options_add_keybinding(struct options *options, struct keybinding *keybindi
             keybindings->len,
             sizeof(struct keybinding *),
             cmp_keybinding);
-    if (lb >= 0) {
-        struct keybinding *kb = g_ptr_array_index(options->keybindings, lb);
+    if (lb >= 0 && lb+1 < options->keybindings->len) {
+        int idx = lb + 1;
+        struct keybinding *kb = g_ptr_array_index(options->keybindings, idx);
         if (strcmp(kb->binding, sorted_binding) == 0) {
-            g_ptr_array_remove_index(options->keybindings, lb);
+            g_ptr_array_remove_index(options->keybindings, idx);
         }
     }
 
