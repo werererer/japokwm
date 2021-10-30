@@ -318,5 +318,3 @@ function Resize_main_all(lt, n, direction)
     end
     return lt.layout_data
 end
-
-require("default_values")

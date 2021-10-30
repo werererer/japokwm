@@ -47,6 +47,20 @@ void destroy_options(struct options *options)
 
 static void set_default_layout_set(struct options *options)
 {
+    // create a table looking like this: {"tile", "monocle"}
+    lua_createtable(L, 0, 0);
+    lua_pushstring(L, "tile");
+    lua_rawseti(L, -2, 1);
+    lua_pushstring(L, "monocle");
+    lua_rawseti(L, -2, 2);
+
+    int *layout_set_ref = &server.layout_set.layout_sets_ref;
+    lua_copy_table_safe(L, layout_set_ref);
+    const char *layout_set_key = "default";
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, *layout_set_ref);
+    lua_set_layout_set_element(L, layout_set_key, *layout_set_ref);
+    lua_pop(L, 1);
 }
 
 void options_reset(struct options *options)
