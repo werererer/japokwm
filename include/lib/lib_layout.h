@@ -13,9 +13,6 @@ void lua_load_layout(lua_State *L);
 // functions
 int lib_layout_get_focused(lua_State *L);
 int lib_layout_load(lua_State *L);
-int lib_layout_load_in_set(lua_State *L);
-int lib_layout_load_next_in_set(lua_State *L);
-int lib_layout_load_prev_in_set(lua_State *L);
 // methods
 int lib_decrease_n_master(lua_State *L);
 int lib_increase_n_master(lua_State *L);
@@ -27,7 +24,6 @@ int lib_layout_set_resize_function(lua_State *L);
 // setter
 int lib_layout_set_n_area(lua_State *L);
 int lib_layout_set_nmaster(lua_State *L);
-int lib_layout_set_layout_name(lua_State *L);
 // getter
 int lib_layout_get_direction(lua_State *L);
 int lib_layout_get_layout_data(lua_State *L);

@@ -34,6 +34,7 @@
 #include "ipc-server.h"
 #include "render/render.h"
 #include "keybinding.h"
+#include "ring_buffer.h"
 
 struct server server;
 
@@ -306,7 +307,7 @@ int setup(struct server *server)
     init_lua_api(server);
     init_error_file();
 
-    server->layout_set = get_default_layout_set();
+    server->default_layout_ring = create_ring_buffer();
 
     server->default_layout = create_layout(L);
 
@@ -397,6 +398,7 @@ int finalize(struct server *server)
 {
     finalize_timers(server);
     destroy_layout(server->default_layout);
+    destroy_ring_buffer(server->default_layout_ring);
     return 0;
 }
 

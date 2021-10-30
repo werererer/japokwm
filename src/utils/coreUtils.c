@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 
 #include "utils/parseConfigUtils.h"
+#include "ring_buffer.h"
 
 struct lua_State *L;
 
@@ -478,26 +479,6 @@ GPtrArray *get_list_at_i_in_composed_list(GPtrArray *arrays, int i)
 
     // no item found
     return NULL;
-}
-
-int relative_index_to_absolute_index(int i, int j, int length)
-{
-    if (length <= 0)
-        return INVALID_POSITION;
-
-    int new_position = (i + j) % length;
-    while (new_position < 0)
-        new_position += length;
-
-    return new_position;
-}
-
-static void *get_relative_item(GPtrArray *list, 
-        void *(*get_item)(GPtrArray *, int i),
-        int (*length_of)(GPtrArray *), int i, int j)
-{
-    int new_position = relative_index_to_absolute_index(i, j, length_of(list));
-    return get_item(list, new_position);
 }
 
 void *get_relative_item_in_list(GPtrArray *array, int i, int j)

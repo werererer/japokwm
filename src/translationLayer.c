@@ -19,6 +19,7 @@
 #include "lib/lib_info.h"
 #include "lib/lib_layout.h"
 #include "lib/lib_list.h"
+#include "lib/lib_ring_buffer.h"
 #include "lib/lib_container_property.h"
 #include "lib/lib_list2D.h"
 #include "lib/lib_monitor.h"
@@ -182,6 +183,7 @@ void load_lua_api(lua_State *L)
     lua_load_monitor(L);
     lua_load_options(L);
     lua_load_output_transform(L);
+    lua_load_ring_buffer(L);
     lua_load_root(L);
     lua_load_server(L);
     lua_load_workspace(L);

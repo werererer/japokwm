@@ -40,7 +40,7 @@ struct server {
     struct wlr_pointer_constraints_v1 *pointer_constraints;
 
     struct layout *default_layout;
-    struct layout_set layout_set;
+    struct ring_buffer *default_layout_ring;
 
     struct wlr_output_layout *output_layout;
     GPtrArray *keyboards;

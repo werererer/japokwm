@@ -94,6 +94,14 @@ void create_monitor(struct wl_listener *listener, void *data)
         bitset_set(server.previous_bitset, server.previous_workspace);
 
         call_on_start_function(server.event_handler);
+
+        // reset all layouts
+        for (GList *iterator = server_get_workspaces(); iterator; iterator = iterator->next) {
+            struct workspace *ws = iterator->data;
+            assert(ws->loaded_layouts->len == 0);
+            ws->current_layout = server.default_layout->name;
+            ws->previous_layout = server.default_layout->name;
+        }
     }
     struct workspace *ws = monitor_get_active_workspace(m);
     tagset_focus_workspace(ws);
@@ -186,7 +194,7 @@ static void monitor_get_initial_workspace(struct monitor *m, GList *workspaces)
     BitSet *bitset = bitset_create();
     bitset_set(bitset, ws_id);
 
-    monitor_focus_tags(m, ws, bitset);
+    // monitor_focus_tags(m, ws, bitset);
 }
 
 void handle_destroy_monitor(struct wl_listener *listener, void *data)

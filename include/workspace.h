@@ -129,7 +129,6 @@ void workspace_set_selected_monitor(struct workspace *ws, struct monitor *m);
 void workspace_set_current_monitor(struct workspace *ws, struct monitor *m);
 
 void destroy_workspaces(GHashTable *workspaces);
-void layout_set_set_layout(struct workspace *ws);
 void push_layout(struct workspace *ws, const char *layout_name);
 void set_default_layout(struct workspace *ws);
 void load_layout(struct workspace *ws);
