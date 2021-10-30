@@ -12,6 +12,7 @@
 #include "keybinding.h"
 #include "workspace.h"
 #include "color.h"
+#include "ring_buffer.h"
 
 GPtrArray *create_tagnames()
 {
@@ -47,20 +48,9 @@ void destroy_options(struct options *options)
 
 static void set_default_layout_set(struct options *options)
 {
-    // create a table looking like this: {"tile", "monocle"}
-    lua_createtable(L, 0, 0);
-    lua_pushstring(L, "tile");
-    lua_rawseti(L, -2, 1);
-    lua_pushstring(L, "monocle");
-    lua_rawseti(L, -2, 2);
-
-    int *layout_set_ref = &server.layout_set.layout_sets_ref;
-    lua_copy_table_safe(L, layout_set_ref);
-    const char *layout_set_key = "default";
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, *layout_set_ref);
-    lua_set_layout_set_element(L, layout_set_key, *layout_set_ref);
-    lua_pop(L, 1);
+    list_clear(server.default_layout_ring->names, NULL);
+    g_ptr_array_add(server.default_layout_ring->names, strdup("tile"));
+    g_ptr_array_add(server.default_layout_ring->names, strdup("monocle"));
 }
 
 void options_reset(struct options *options)
@@ -278,8 +268,8 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-S-k", action.focus_on_hidden_stack(-1));
 
     bind_key(options, "mod-e", action.view(Workspace.get_focused():get_next_empty(Direction.left)));
-    bind_key(options, "mod-S-space", Layout.load_prev_in_set("default"));
-    bind_key(options, "mod-space", Layout.load_next_in_set("default"));
+    bind_key(options, "mod-S-space", Layout.load(server.default_layout_ring:prev()));
+    bind_key(options, "mod-space", Layout.load(server.default_layout_ring:next()));
 
     bind_key(options, "mod-minus",
             if Container.get_focused() then

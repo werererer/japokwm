@@ -3,6 +3,8 @@
 #include "server.h"
 #include "translationLayer.h"
 #include "lib/lib_workspace.h"
+#include "lib/lib_ring_buffer.h"
+#include "ring_buffer.h"
 
 static const struct luaL_Reg server_meta[] =
 {
@@ -24,11 +26,13 @@ static const struct luaL_Reg server_m[] =
 
 static const struct luaL_Reg server_setter[] =
 {
+    {"default_layout_ring", lib_server_set_default_layout_ring},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg server_getter[] =
 {
+    {"default_layout_ring", lib_server_get_default_layout_ring},
     {NULL, NULL},
 };
 
@@ -96,3 +100,20 @@ int lib_server_quit(lua_State *L)
 }
 
 // getter
+int lib_server_get_default_layout_ring(lua_State *L)
+{
+    create_lua_ring_buffer(L, server.default_layout_ring);
+    return 1;
+}
+// setter
+int lib_server_set_default_layout_ring(lua_State *L)
+{
+    struct ring_buffer *default_layout_ring = check_ring_buffer(L, 2);
+    lua_pop(L, 1);
+    struct server *server = check_server(L);
+    lua_pop(L, 1);
+
+    ring_buffer_set(server->default_layout_ring, default_layout_ring);
+    lua_pop(L, 1);
+    return 0;
+}

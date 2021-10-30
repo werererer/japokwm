@@ -34,7 +34,6 @@ static const struct luaL_Reg options_m[] =
     {"add_mon_rule", lib_add_mon_rule},
     {"add_rule", lib_add_rule},
     {"bind_key", lib_bind_key},
-    {"create_layout_set", lib_create_layout_set},
     {"set_layout_constraints", lib_set_layout_constraints},
     {"set_master_constraints", lib_set_master_constraints},
     {"set_mod", lib_set_mod},
@@ -48,6 +47,8 @@ static const struct luaL_Reg options_setter[] =
     {"arrange_by_focus", lib_set_arrange_by_focus},
     {"automatic_workspace_naming", lib_set_automatic_workspace_naming},
     {"border_color", lib_set_border_color},
+    {"border_width", lib_set_tile_border_width},
+    {"default_layout", lib_set_default_layout},
     {"entry_focus_position_function", lib_set_entry_focus_position_function},
     {"entry_position_function", lib_set_entry_position_function},
     {"float_border_width", lib_set_float_border_width},
@@ -60,7 +61,6 @@ static const struct luaL_Reg options_setter[] =
     {"root_color", lib_set_root_color},
     {"sloppy_focus", lib_set_sloppy_focus},
     {"smart_hidden_edges", lib_set_smart_hidden_edges},
-    {"border_width", lib_set_tile_border_width},
     {"workspaces", lib_create_workspaces},
     {NULL, NULL},
 };
@@ -205,6 +205,15 @@ int lib_set_tile_border_width(lua_State *L)
     lua_pop(L, 1);
 
     options->tile_border_px = tile_border_width;
+    return 0;
+}
+
+int lib_set_default_layout(lua_State *L)
+{
+    const char *name = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+
+    server.default_layout->name = strdup(name);
     return 0;
 }
 
@@ -377,19 +386,6 @@ int lib_add_rule(lua_State *L)
 
     GPtrArray *rules = options->rules;
     g_ptr_array_add(rules, rule);
-    return 0;
-}
-
-int lib_create_layout_set(lua_State *L)
-{
-    int *layout_set_ref = &server.layout_set.layout_sets_ref;
-    lua_copy_table_safe(L, layout_set_ref);
-    const char *layout_set_key = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, *layout_set_ref);
-    lua_set_layout_set_element(L, layout_set_key, *layout_set_ref);
-    lua_pop(L, 1);
     return 0;
 }
 

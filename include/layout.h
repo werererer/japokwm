@@ -6,8 +6,6 @@
 #include <lauxlib.h>
 #include "options.h"
 
-#include "layout_set.h"
-
 struct layout {
     const char *name;
 

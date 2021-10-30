@@ -452,7 +452,7 @@ static int workspace_load_layout(struct workspace *ws, const char *layout_name)
     lt->ws_id = ws->id;
     copy_layout_safe(lt, server.default_layout);
 
-    lt->name = layout_name;
+    lt->name = strdup(layout_name);
 
     g_ptr_array_insert(ws->loaded_layouts, 0, lt);
 
@@ -479,9 +479,6 @@ void load_layout(struct workspace *ws)
             workspace_load_layout(ws, linked_layout_name);
         }
     }
-
-    int layout_index = server.layout_set.lua_layout_index;
-    server.layout_set.lua_layout_index = layout_index;
 }
 
 static void destroy_layout0(void *lt)
@@ -863,29 +860,4 @@ void workspace_repush_on_focus_stack(struct workspace *ws, struct container *con
 bool workspace_sticky_contains_client(struct workspace *ws, struct client *client)
 {
     return bitset_test(client->sticky_workspaces, ws->id);
-}
-
-// TODO refactor this function
-void layout_set_set_layout(struct workspace *ws)
-{
-    if (server.layout_set.layout_sets_ref <= 0) {
-        return;
-    }
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, server.layout_set.layout_sets_ref);
-    if (!lua_is_index_defined(L, server.layout_set.key)) {
-        lua_pop(L, 1);
-        return;
-    }
-    lua_get_layout_set_element(L, server.layout_set.key);
-
-    lua_rawgeti(L, -1, server.layout_set.lua_layout_index);
-    const char *layout_name = luaL_checkstring(L, -1);
-    lua_pop(L, 1);
-
-    lua_pop(L, 1);
-
-    lua_pop(L, 1);
-
-    push_layout(ws, layout_name);
 }

@@ -130,6 +130,9 @@ void append_to_lua_path(lua_State *L, const char *path)
 static int load_plugin_paths(lua_State *L)
 {
     char *base_path = get_config_dir(server.config_paths, config_file);
+    if (!base_path) {
+        return 1;
+    }
     for (int i = 0; i < LENGTH(plugin_relative_paths); i++) {
         char *base = strdup(base_path);
         const char *path = plugin_relative_paths[i];
