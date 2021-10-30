@@ -431,7 +431,6 @@ static void load_layout_file(lua_State *L, struct layout *lt)
         goto cleanup;
 
     if (load_file(L, file) != EXIT_SUCCESS) {
-        lua_pop(L, 1);
         goto cleanup;
     }
 
