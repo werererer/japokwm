@@ -32,7 +32,7 @@ void arrange()
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
         struct workspace *ws = monitor_get_active_workspace(m);
-        load_layout(ws);
+        focus_layout(ws, ws->current_layout);
     }
 
     for (int i = 0; i < server.container_stack->len; i++) {

@@ -469,6 +469,13 @@ struct workspace *server_get_selected_workspace()
     return ws;
 }
 
+struct layout *server_get_selected_layout()
+{
+    struct workspace *ws = server_get_selected_workspace();
+    struct layout *lt = workspace_get_layout(ws);
+    return lt;
+}
+
 void server_prohibit_reloading_config()
 {
     server.prohibit_reload_config = true;

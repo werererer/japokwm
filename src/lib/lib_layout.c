@@ -18,7 +18,7 @@ static const struct luaL_Reg layout_meta[] =
 
 static const struct luaL_Reg layout_f[] =
 {
-    {"get_focused", lib_layout_get_focused},
+    {"get_active", lib_layout_get_active},
     {"load", lib_layout_load},
     {NULL, NULL},
 };
@@ -93,7 +93,7 @@ struct layout *check_layout(lua_State *L, int argn)
 }
 
 // functions
-int lib_layout_get_focused(lua_State *L)
+int lib_layout_get_active(lua_State *L)
 {
     struct workspace *ws = server_get_selected_workspace();
     struct layout *lt = workspace_get_layout(ws);

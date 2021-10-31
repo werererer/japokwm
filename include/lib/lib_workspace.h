@@ -16,7 +16,7 @@ struct workspace *check_workspace(lua_State *L, int narg);
 // functions
 int lib_workspace_get_next_empty(lua_State *L);
 int lib_workspace_get(lua_State *L);
-int lib_workspace_get_focused(lua_State *L);
+int lib_workspace_get_active(lua_State *L);
 
 // methods
 int lib_workspace_get_id(lua_State *L);
@@ -32,7 +32,7 @@ int lib_workspace_get_bars_visibility(lua_State *L);
 int lib_workspace_get_focus_set(lua_State *L);
 int lib_workspace_get_focus_stack(lua_State *L);
 int lib_workspace_get_layout(lua_State *L);
-int lib_workspace_get_previous_layout_name(lua_State *L);
+int lib_workspace_get_previous_layout(lua_State *L);
 int lib_workspace_get_stack(lua_State *L);
 int lib_workspace_get_tags(lua_State *L);
 int lib_workspace_get_visible_focus_set(lua_State *L);

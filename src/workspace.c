@@ -335,10 +335,21 @@ struct layout *workspace_get_layout(struct workspace *ws)
     if (!ws)
         return NULL;
     if (ws->loaded_layouts->len == 0) {
-        load_layout(ws);
+        focus_layout(ws, ws->current_layout);
         assert(ws->loaded_layouts->len > 0);
     }
     return g_ptr_array_index(ws->loaded_layouts, 0);
+}
+
+struct layout *workspace_get_previous_layout(struct workspace *ws)
+{
+    if (!ws)
+        return NULL;
+    while (ws->loaded_layouts->len < 1) {
+        workspace_load_layout(ws, ws->previous_layout);
+        assert(ws->loaded_layouts->len > 0);
+    }
+    return g_ptr_array_index(ws->loaded_layouts, 1);
 }
 
 struct root *workspace_get_root(struct workspace *ws)
@@ -410,8 +421,7 @@ void set_default_layout(struct workspace *ws)
 
 static void load_layout_file(lua_State *L, struct layout *lt)
 {
-    struct workspace *ws = get_workspace(lt->ws_id);
-    init_local_config_variables(L, ws);
+    init_local_config_variables(L, lt);
     const char *name = lt->name;
 
     char *config_path = get_config_layout_path();
@@ -438,15 +448,8 @@ cleanup:
     free(file);
 }
 
-// returns position of the layout if it was found and -1 if not
-static int workspace_load_layout(struct workspace *ws, const char *layout_name)
+static int _load_layout(struct workspace *ws, const char *layout_name)
 {
-    guint i;
-    bool found = g_ptr_array_find_with_equal_func(ws->loaded_layouts, layout_name, cmp_layout_to_string, &i);
-    if (found) {
-        return i;
-    }
-
     struct layout *lt = create_layout(L);
 
     lt->ws_id = ws->id;
@@ -454,31 +457,49 @@ static int workspace_load_layout(struct workspace *ws, const char *layout_name)
 
     lt->name = strdup(layout_name);
 
-    g_ptr_array_insert(ws->loaded_layouts, 0, lt);
+    int insert_position = ws->loaded_layouts->len;
+    g_ptr_array_add(ws->loaded_layouts, lt);
 
     load_layout_file(L, lt);
-
-    return -1;
+    return insert_position;
 }
 
-void load_layout(struct workspace *ws)
+// returns position of the layout if it was found and -1 if not
+int workspace_load_layout(struct workspace *ws, const char *layout_name)
 {
-    const char *name = ws->current_layout;
+    guint i;
+    bool found = g_ptr_array_find_with_equal_func(ws->loaded_layouts, layout_name, cmp_layout_to_string, &i);
+    if (found) {
+        return i;
+    }
+
+    int insert_position = _load_layout(ws, layout_name);
+    struct layout *lt = g_ptr_array_index(ws->loaded_layouts, insert_position);
+    for (int i = 0; i < lt->linked_layouts->len; i++) {
+        char *linked_layout_name = g_ptr_array_index(lt->linked_layouts, i);
+        workspace_load_layout(ws, linked_layout_name);
+    }
+    printf("focused: %s\n", workspace_get_layout(ws)->name);
+
+    return insert_position;
+}
+
+void focus_layout(struct workspace *ws, const char *name)
+{
+    assert(ws != NULL);
     assert(name != NULL);
 
+    printf("focus_layout: %s\n", name);
     int i = workspace_load_layout(ws, name);
-    push_layout(ws, name);
-    if (i >= 0) {
-        struct layout *lt = g_ptr_array_steal_index(ws->loaded_layouts, i);
-        g_ptr_array_insert(ws->loaded_layouts, 0, lt);
-        push_layout(ws, lt->name);
-    } else {
-        struct layout *lt = workspace_get_layout(ws);
-        for (int i = 0; i < lt->linked_layouts->len; i++) {
-            char *linked_layout_name = g_ptr_array_index(lt->linked_layouts, i);
-            workspace_load_layout(ws, linked_layout_name);
-        }
-    }
+
+    // if it is already at position 0 it is already focused. A value smaller
+    // than 0 would be an error
+    assert(i >= 0);
+    if (i == 0)
+        return;
+
+    struct layout *lt = g_ptr_array_steal_index(ws->loaded_layouts, i);
+    g_ptr_array_insert(ws->loaded_layouts, 0, lt);
 }
 
 static void destroy_layout0(void *lt)

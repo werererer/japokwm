@@ -29,7 +29,7 @@ static const struct luaL_Reg workspace_meta[] =
 static const struct luaL_Reg workspace_f[] =
 {
     {"get", lib_workspace_get},
-    {"get_focused", lib_workspace_get_focused},
+    {"get_active", lib_workspace_get_active},
     {"get_next_empty", lib_workspace_get_next_empty},
     {NULL, NULL},
 };
@@ -55,7 +55,7 @@ static const struct luaL_Reg workspace_getter[] =
     {"focus_set", lib_workspace_get_focus_set},
     {"focus_stack", lib_workspace_get_focus_stack},
     {"layout", lib_workspace_get_layout},
-    {"prev_layout_name", lib_workspace_get_previous_layout_name},
+    {"prev_layout", lib_workspace_get_previous_layout},
     {"stack", lib_workspace_get_stack},
     {"tags", lib_workspace_get_tags},
     {"visible_focus_set", lib_workspace_get_visible_focus_set},
@@ -132,7 +132,7 @@ int lib_workspace_get(lua_State *L)
     return 1;
 }
 
-int lib_workspace_get_focused(lua_State *L)
+int lib_workspace_get_active(lua_State *L)
 {
     struct workspace *ws = server_get_selected_workspace();
 
@@ -271,12 +271,13 @@ int lib_workspace_get_layout(lua_State *L)
     return 1;
 }
 
-int lib_workspace_get_previous_layout_name(lua_State *L)
+int lib_workspace_get_previous_layout(lua_State *L)
 {
     struct workspace *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
-    lua_pushstring(L, ws->previous_layout);
+    struct layout *prev_layout = workspace_get_previous_layout(ws);
+    create_lua_layout(L, prev_layout);
     return 1;
 }
 

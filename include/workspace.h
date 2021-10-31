@@ -120,6 +120,7 @@ struct workspace *get_prev_empty_workspace(GList *workspaces, size_t ws_id);
 struct workspace *get_nearest_empty_workspace(GList *workspaces, int ws_id);
 
 struct layout *workspace_get_layout(struct workspace *ws);
+struct layout *workspace_get_previous_layout(struct workspace *ws);
 struct root *workspace_get_root(struct workspace *ws);
 struct wlr_box workspace_get_active_geom(struct workspace *ws);
 
@@ -131,7 +132,8 @@ void workspace_set_current_monitor(struct workspace *ws, struct monitor *m);
 void destroy_workspaces(GHashTable *workspaces);
 void push_layout(struct workspace *ws, const char *layout_name);
 void set_default_layout(struct workspace *ws);
-void load_layout(struct workspace *ws);
+void focus_layout(struct workspace *ws, const char *name);
+int workspace_load_layout(struct workspace *ws, const char *layout_name);
 void workspace_remove_loaded_layouts(struct workspace *ws);
 void workspaces_remove_loaded_layouts(GList *workspaces);
 void workspace_rename(struct workspace *ws, const char *name);
