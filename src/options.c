@@ -148,7 +148,6 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-S-q", server:quit());
     bind_key(options, "mod-r", opt.reload());
     bind_key(options, "mod-S-c", 
-            print("mod S c")
             if Container.focused then
                 print("exist")
                 Container.focused:kill()
