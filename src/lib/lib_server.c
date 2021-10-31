@@ -102,6 +102,10 @@ int lib_server_quit(lua_State *L)
 // getter
 int lib_server_get_default_layout_ring(lua_State *L)
 {
+    for (int i = 0; i < server.default_layout_ring->names->len; i++) {
+        const char *name = g_ptr_array_index(server.default_layout_ring->names, i);
+        printf("get: name: %s\n", name);
+    }
     create_lua_ring_buffer(L, server.default_layout_ring);
     return 1;
 }
@@ -115,5 +119,11 @@ int lib_server_set_default_layout_ring(lua_State *L)
 
     ring_buffer_set(server->default_layout_ring, default_layout_ring);
     lua_pop(L, 1);
+
+    for (int i = 0; i < server->default_layout_ring->names->len; i++) {
+        const char *name = g_ptr_array_index(server->default_layout_ring->names, i);
+        printf("new: name: %s\n", name);
+        printf("new: name: %s\n", name);
+    }
     return 0;
 }

@@ -1,1 +1,2 @@
-opt:bind_key("mod-S-m", function() Layout.load(Workspace.focused.prev_layout.name) end)
+local layouts = {"two_pane", "three_columns"}
+server.default_layout_ring = Ring.new(layouts)

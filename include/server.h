@@ -115,6 +115,7 @@ void finalize_server();
 int start_server(char *startup_cmd);
 int stop_server();
 
+void server_reset_layout_ring(struct ring_buffer *layout_ring);
 int server_get_workspace_count();
 int server_get_workspace_key_count();
 GList *server_get_workspaces();
