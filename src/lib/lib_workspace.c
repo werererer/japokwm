@@ -29,7 +29,6 @@ static const struct luaL_Reg workspace_meta[] =
 static const struct luaL_Reg workspace_f[] =
 {
     {"get", lib_workspace_get},
-    {"get_active", lib_workspace_get_active},
     {"get_next_empty", lib_workspace_get_next_empty},
     {NULL, NULL},
 };
@@ -54,6 +53,7 @@ static const struct luaL_Reg workspace_getter[] =
     {"bars", lib_workspace_get_bars_visibility},
     {"focus_set", lib_workspace_get_focus_set},
     {"focus_stack", lib_workspace_get_focus_stack},
+    {"focused", lib_workspace_get_focused},
     {"layout", lib_workspace_get_layout},
     {"prev_layout", lib_workspace_get_previous_layout},
     {"stack", lib_workspace_get_stack},
@@ -128,14 +128,6 @@ int lib_workspace_get(lua_State *L)
     lua_pop(L, 1);
 
     struct workspace *ws = get_workspace(ws_id);
-    create_lua_workspace(L, ws);
-    return 1;
-}
-
-int lib_workspace_get_active(lua_State *L)
-{
-    struct workspace *ws = server_get_selected_workspace();
-
     create_lua_workspace(L, ws);
     return 1;
 }
@@ -234,6 +226,14 @@ int lib_workspace_set_bars_visibility(lua_State *L)
 }
 
 // getter
+int lib_workspace_get_focused(lua_State *L)
+{
+    struct workspace *ws = server_get_selected_workspace();
+
+    create_lua_workspace(L, ws);
+    return 1;
+}
+
 int lib_workspace_get_bars_visibility(lua_State *L)
 {
     struct workspace *ws = check_workspace(L, 1);
