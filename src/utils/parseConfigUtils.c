@@ -297,7 +297,7 @@ static void *_notify_msg(void *arg)
     }
 
     notify_init(msg);
-    NotifyNotification* n = notify_notification_new("Error in config file", 
+    NotifyNotification* n = notify_notification_new("Japokwm.message: ", 
             msg,
             0);
     notify_notification_set_timeout(n, 10000); // 10 seconds
