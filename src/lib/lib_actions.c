@@ -335,8 +335,15 @@ int lib_swap_on_hidden_stack(lua_State *L)
 
 int lib_toggle_all_bars(lua_State *L)
 {
-    enum wlr_edges edges = luaL_checkinteger(L, 1);
-    lua_pop(L, 1);
+    enum wlr_edges edges =
+            WLR_EDGE_BOTTOM |
+            WLR_EDGE_RIGHT |
+            WLR_EDGE_LEFT |
+            WLR_EDGE_TOP;
+    if (lua_gettop(L) >= 2) {
+        edges = luaL_checkinteger(L, 1);
+        lua_pop(L, 1);
+    }
 
     struct workspace *sel_ws = server_get_selected_workspace();
 
