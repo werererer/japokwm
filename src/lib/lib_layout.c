@@ -18,7 +18,6 @@ static const struct luaL_Reg layout_meta[] =
 
 static const struct luaL_Reg layout_f[] =
 {
-    {"get_active", lib_layout_get_active},
     {"load", lib_layout_load},
     {NULL, NULL},
 };
@@ -36,6 +35,7 @@ static const struct luaL_Reg layout_m[] = {
 
 static const struct luaL_Reg layout_getter[] = {
     {"direction", lib_layout_get_direction},
+    {"focused", lib_layout_get_focused},
     {"layout_data", lib_layout_get_layout_data},
     {"n_area", lib_layout_get_n_area},
     {"n_master", lib_layout_get_n_master},
@@ -93,15 +93,6 @@ struct layout *check_layout(lua_State *L, int argn)
 }
 
 // functions
-int lib_layout_get_active(lua_State *L)
-{
-    struct workspace *ws = server_get_selected_workspace();
-    struct layout *lt = workspace_get_layout(ws);
-
-    create_lua_layout(L, lt);
-    return 1;
-}
-
 int lib_layout_load(lua_State *L)
 {
     const char *layout_name = luaL_checkstring(L, -1);
@@ -222,6 +213,15 @@ int lib_layout_set_resize_function(lua_State *L)
 }
 
 // getter
+int lib_layout_get_focused(lua_State *L)
+{
+    struct workspace *ws = server_get_selected_workspace();
+    struct layout *lt = workspace_get_layout(ws);
+
+    create_lua_layout(L, lt);
+    return 1;
+}
+
 int lib_layout_get_layout_name(lua_State *L)
 {
     struct layout *lt = check_layout(L, 1);

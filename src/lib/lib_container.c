@@ -23,7 +23,6 @@ static const struct luaL_Reg container_meta[] =
 
 static const struct luaL_Reg container_f[] =
 {
-    {"get_focused", lib_container_get_focused},
     {NULL, NULL},
 };
 
@@ -39,6 +38,7 @@ static const struct luaL_Reg container_getter[] = {
     // TODO: implement getters
     {"alpha", lib_container_get_alpha},
     {"app_id", lib_container_get_app_id},
+    {"focused", lib_container_get_focused},
     {"properties", lib_container_get_property},
     {"property", lib_container_get_current_property},
     {"sticky", lib_container_set_sticky},
@@ -115,14 +115,6 @@ int lib_container_focus(lua_State *L)
 
     focus_container(con);
     return 0;
-}
-
-int lib_container_get_focused(lua_State *L) {
-    struct monitor *m = server_get_selected_monitor();
-    struct container *con = monitor_get_focused_container(m);
-
-    create_lua_container(L, con);
-    return 1;
 }
 
 int lib_container_move_to_workspace(lua_State *L)
@@ -231,6 +223,14 @@ int lib_container_kill(lua_State *L)
 }
 
 // getter
+int lib_container_get_focused(lua_State *L) {
+    struct monitor *m = server_get_selected_monitor();
+    struct container *con = monitor_get_focused_container(m);
+
+    create_lua_container(L, con);
+    return 1;
+}
+
 int lib_container_get_alpha(lua_State *L)
 {
     struct container *con = check_container(L, 1);
