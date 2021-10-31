@@ -133,10 +133,14 @@ int lib_reload(lua_State *L)
 
     workspaces_remove_loaded_layouts(server_get_workspaces());
     load_config(L);
+
+    // TODO: do we need to reset all layouts? or is it undesirable?
     for (GList *iterator = server_get_workspaces(); iterator; iterator = iterator->next) {
         struct workspace *ws = iterator->data;
         set_default_layout(ws);
     }
+
+    notify_msg("reloaded config file");
 
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);

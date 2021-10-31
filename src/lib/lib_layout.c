@@ -31,6 +31,7 @@ static const struct luaL_Reg layout_static_setter[] =
 static const struct luaL_Reg layout_f[] =
 {
     {"load", lib_layout_load},
+    {"toggle", lib_layout_toggle},
     {NULL, NULL},
 };
 
@@ -115,6 +116,26 @@ int lib_layout_load(lua_State *L)
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     push_layout(ws, strdup(layout_name));
+
+    arrange();
+    return 0;
+}
+
+int lib_layout_toggle(lua_State *L)
+{
+    const char *desired_layout = luaL_checkstring(L, 1);
+    lua_pop(L, 1);
+
+    struct workspace *ws = server_get_selected_workspace();
+    struct layout *lt = workspace_get_layout(ws);
+    bool is_layout = strcmp(lt->name, desired_layout) == 0;
+
+    if (is_layout) {
+        struct layout *prev_layout = workspace_get_previous_layout(ws);
+        push_layout(ws, strdup(prev_layout->name));
+    } else {
+        push_layout(ws, strdup(desired_layout));
+    }
 
     arrange();
     return 0;

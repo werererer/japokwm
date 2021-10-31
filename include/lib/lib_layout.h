@@ -12,6 +12,7 @@ void lua_load_layout(lua_State *L);
 
 // functions
 int lib_layout_load(lua_State *L);
+int lib_layout_toggle(lua_State *L);
 // methods
 int lib_decrease_n_master(lua_State *L);
 int lib_increase_n_master(lua_State *L);
