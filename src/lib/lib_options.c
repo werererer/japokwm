@@ -129,6 +129,7 @@ int lib_reload(lua_State *L)
     init_error_file();
 
     options_reset(server.default_layout->options);
+    server_reset_layout_ring(server.default_layout_ring);
 
     workspaces_remove_loaded_layouts(server_get_workspaces());
     load_config(L);

@@ -479,7 +479,6 @@ int workspace_load_layout(struct workspace *ws, const char *layout_name)
         char *linked_layout_name = g_ptr_array_index(lt->linked_layouts, i);
         workspace_load_layout(ws, linked_layout_name);
     }
-    printf("focused: %s\n", workspace_get_layout(ws)->name);
 
     return insert_position;
 }
@@ -489,7 +488,6 @@ void focus_layout(struct workspace *ws, const char *name)
     assert(ws != NULL);
     assert(name != NULL);
 
-    printf("focus_layout: %s\n", name);
     int i = workspace_load_layout(ws, name);
 
     // if it is already at position 0 it is already focused. A value smaller

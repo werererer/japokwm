@@ -46,13 +46,6 @@ void destroy_options(struct options *options)
     free(options);
 }
 
-static void set_default_layout_set(struct options *options)
-{
-    list_clear(server.default_layout_ring->names, NULL);
-    g_ptr_array_add(server.default_layout_ring->names, strdup("tile"));
-    g_ptr_array_add(server.default_layout_ring->names, strdup("monocle"));
-}
-
 void options_reset(struct options *options)
 {
     options->resize_dir = 0;
@@ -100,8 +93,6 @@ void options_reset(struct options *options)
     list_clear(options->rules, NULL);
     list_clear(options->tag_names, NULL);
     load_default_keybindings(options);
-
-    set_default_layout_set(options);
 }
 
 static struct keybinding *create_keybind(const char *binding, const char *command)

@@ -137,6 +137,10 @@ int lib_ring_buffer_prev(lua_State *L)
 int lib_ring_buffer_next(lua_State *L)
 {
     struct ring_buffer *ring_buffer = check_ring_buffer(L, 1);
+    for (int i = 0; i < ring_buffer->names->len; i++) {
+        const char *name = g_ptr_array_index(ring_buffer->names, i);
+        printf("name: %s\n", name);
+    }
     ring_buffer_rotate(ring_buffer, 1);
     const char *content = ring_buffer_get(ring_buffer);
     lua_pushstring(L, content);

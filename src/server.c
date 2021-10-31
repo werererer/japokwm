@@ -302,12 +302,20 @@ static void finalize_lua_api(struct server *server)
     lua_close(L);
 }
 
+void server_reset_layout_ring(struct ring_buffer *layout_ring)
+{
+    list_clear(layout_ring->names, NULL);
+    g_ptr_array_add(layout_ring->names, strdup("tile"));
+    g_ptr_array_add(layout_ring->names, strdup("monocle"));
+}
+
 int setup(struct server *server)
 {
     init_lua_api(server);
     init_error_file();
 
     server->default_layout_ring = create_ring_buffer();
+    server_reset_layout_ring(server->default_layout_ring);
 
     server->default_layout = create_layout(L);
 
