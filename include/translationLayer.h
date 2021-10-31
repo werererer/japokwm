@@ -3,7 +3,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-struct workspace;
+struct layout;
 
 // adds a lib table to the table ontop of the lua stack
 #define add_table(L, name, functions, idx)\
@@ -84,7 +84,7 @@ struct workspace;
 void load_lua_api(lua_State *L);
 
 void init_global_config_variables(lua_State *L);
-void init_local_config_variables(lua_State *L, struct workspace *ws);
+void init_local_config_variables(lua_State *L, struct layout *lt);
 
 extern const struct luaL_Reg meta[];
 

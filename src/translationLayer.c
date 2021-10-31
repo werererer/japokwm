@@ -196,10 +196,8 @@ void init_global_config_variables(lua_State *L)
     lua_init_layout(server.default_layout);
 }
 
-void init_local_config_variables(lua_State *L, struct workspace *ws)
+void init_local_config_variables(lua_State *L, struct layout *lt)
 {
-    struct layout *lt = workspace_get_layout(ws);
-
     lua_init_events(server.event_handler);
     lua_init_options(lt->options);
     lua_init_layout(lt);

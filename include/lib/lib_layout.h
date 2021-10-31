@@ -11,7 +11,7 @@ void lua_init_layout(struct layout *layout);
 void lua_load_layout(lua_State *L);
 
 // functions
-int lib_layout_get_focused(lua_State *L);
+int lib_layout_get_active(lua_State *L);
 int lib_layout_load(lua_State *L);
 // methods
 int lib_decrease_n_master(lua_State *L);
