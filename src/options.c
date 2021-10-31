@@ -259,7 +259,7 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-8", action.view_or_tag(8));
     bind_key(options, "mod-9", action.view_or_tag(9));
 
-    bind_key(options, "mod-b", Workspace.focused.toggle_bars());
+    bind_key(options, "mod-b", Workspace.focused:toggle_bars());
     bind_key(options, "mod-m", Workspace.focused.stack[1]:focus());
 
     bind_key(options, "mod-S-j", action.focus_on_hidden_stack(0));
@@ -283,7 +283,7 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-S-period", action.toggle_tags());
 
     bind_key(options, "mod-0",
-            Workspace.focused.tags = 1 << Workspace.focused.get_id()
+            Workspace.focused.tags = 1 << Workspace.focused:get_id()
         );
     bind_key(options, "mod-S-0",
         local con = Container.focused

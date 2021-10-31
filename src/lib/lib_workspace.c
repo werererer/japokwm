@@ -203,13 +203,17 @@ int lib_workspace_get_id(lua_State *L)
 
 int lib_workspace_toggle_bars(lua_State *L)
 {
-    struct workspace *ws = check_workspace(L, 1);
-    lua_pop(L, 1);
     enum wlr_edges visible_edges =
             WLR_EDGE_BOTTOM |
             WLR_EDGE_RIGHT |
             WLR_EDGE_LEFT |
             WLR_EDGE_TOP;
+    if (lua_gettop(L) >= 2) {
+        visible_edges = luaL_checkinteger(L, 2);
+        lua_pop(L, 1);
+    }
+    struct workspace *ws = check_workspace(L, 1);
+    lua_pop(L, 1);
     toggle_bars_visible(ws, visible_edges);
     return 0;
 }
