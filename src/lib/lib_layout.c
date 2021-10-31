@@ -16,6 +16,18 @@ static const struct luaL_Reg layout_meta[] =
     {NULL, NULL},
 };
 
+static const struct luaL_Reg layout_static_getter[] =
+{
+    {"focused", lib_layout_get_focused},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg layout_static_setter[] =
+{
+    {"focused", lib_layout_get_focused},
+    {NULL, NULL},
+};
+
 static const struct luaL_Reg layout_f[] =
 {
     {"load", lib_layout_load},
@@ -35,7 +47,6 @@ static const struct luaL_Reg layout_m[] = {
 
 static const struct luaL_Reg layout_getter[] = {
     {"direction", lib_layout_get_direction},
-    {"focused", lib_layout_get_focused},
     {"layout_data", lib_layout_get_layout_data},
     {"n_area", lib_layout_get_n_area},
     {"n_master", lib_layout_get_n_master},
@@ -81,8 +92,11 @@ void lua_load_layout(lua_State *L)
             layout_getter,
             CONFIG_LAYOUT);
 
-    luaL_newlib(L, layout_f);
-    lua_setglobal(L, "Layout");
+    create_static_accessor(L,
+            "Layout",
+            layout_f,
+            layout_static_setter,
+            layout_static_getter);
 }
 
 struct layout *check_layout(lua_State *L, int argn)

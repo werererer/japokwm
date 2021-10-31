@@ -157,8 +157,10 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-S-q", server:quit());
     bind_key(options, "mod-r", opt.reload());
     bind_key(options, "mod-S-c", 
-            if Container.get_focused() then
-                    Container.get_focused():kill()
+            print("mod S c")
+            if Container.focused then
+                print("exist")
+                Container.focused:kill()
             end
             );
     bind_key(options, "mod-S-Return", action.exec("/usr/bin/alacritty"));
@@ -170,80 +172,80 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-p", action.exec("rofi -show run"));
 
     bind_key(options, "mod-S-1", 
-            if Container.get_focused() then
-                Container.get_focused().workspace = Workspace.get(1)
+            if Container.focused then
+                Container.focused.workspace = Workspace.get(1)
             end
             );
     bind_key(options, "mod-S-2", 
-            if Container.get_focused() then
-                Container.get_focused().workspace = Workspace.get(2)
+            if Container.focused then
+                Container.focused.workspace = Workspace.get(2)
             end
             );
     bind_key(options, "mod-S-3", 
-            if Container.get_focused() then
-                Container.get_focused().workspace = Workspace.get(3)
+            if Container.focused then
+                Container.focused.workspace = Workspace.get(3)
             end
             );
     bind_key(options, "mod-S-4", 
-            if Container.get_focused() then
-                Container.get_focused().workspace = Workspace.get(4)
+            if Container.focused then
+                Container.focused.workspace = Workspace.get(4)
             end
             );
     bind_key(options, "mod-S-5", 
-            if Container.get_focused() then
-                Container.get_focused().workspace = Workspace.get(5)
+            if Container.focused then
+                Container.focused.workspace = Workspace.get(5)
             end
             );
     bind_key(options, "mod-S-6", 
-            if Container.get_focused() then
-                Container.get_focused().workspace = Workspace.get(6)
+            if Container.focused then
+                Container.focused.workspace = Workspace.get(6)
             end
             );
     bind_key(options, "mod-S-7", 
-            if Container.get_focused() then
-                Container.get_focused().workspace = Workspace.get(7)
+            if Container.focused then
+                Container.focused.workspace = Workspace.get(7)
             end
             );
     bind_key(options, "mod-S-8", 
-            if Container.get_focused() then
-                Container.get_focused().workspace = Workspace.get(8)
+            if Container.focused then
+                Container.focused.workspace = Workspace.get(8)
             end
             );
     bind_key(options, "mod-S-9", 
-            if Container.get_focused() then
-                Container.get_focused().workspace = Workspace.get(9)
+            if Container.focused then
+                Container.focused.workspace = Workspace.get(9)
             end
             );
 
-    bind_key(options, "mod-C-1", Workspace.get_focused().tags:_xor(1 << 0));
-    bind_key(options, "mod-C-2", Workspace.get_focused().tags:_xor(1 << 1));
-    bind_key(options, "mod-C-3", Workspace.get_focused().tags:_xor(1 << 2));
-    bind_key(options, "mod-C-4", Workspace.get_focused().tags:_xor(1 << 3));
-    bind_key(options, "mod-C-5", Workspace.get_focused().tags:_xor(1 << 4));
-    bind_key(options, "mod-C-6", Workspace.get_focused().tags:_xor(1 << 5));
-    bind_key(options, "mod-C-7", Workspace.get_focused().tags:_xor(1 << 6));
-    bind_key(options, "mod-C-8", Workspace.get_focused().tags:_xor(1 << 7));
-    bind_key(options, "mod-C-9", Workspace.get_focused().tags:_xor(1 << 8));
+    bind_key(options, "mod-C-1", Workspace.focused.tags:_xor(1 << 0));
+    bind_key(options, "mod-C-2", Workspace.focused.tags:_xor(1 << 1));
+    bind_key(options, "mod-C-3", Workspace.focused.tags:_xor(1 << 2));
+    bind_key(options, "mod-C-4", Workspace.focused.tags:_xor(1 << 3));
+    bind_key(options, "mod-C-5", Workspace.focused.tags:_xor(1 << 4));
+    bind_key(options, "mod-C-6", Workspace.focused.tags:_xor(1 << 5));
+    bind_key(options, "mod-C-7", Workspace.focused.tags:_xor(1 << 6));
+    bind_key(options, "mod-C-8", Workspace.focused.tags:_xor(1 << 7));
+    bind_key(options, "mod-C-9", Workspace.focused.tags:_xor(1 << 8));
 
-    bind_key(options, "mod-C-S-1", Container.get_focused():toggle_add_sticky(1 << 0));
-    bind_key(options, "mod-C-S-2", Container.get_focused():toggle_add_sticky(1 << 1));
-    bind_key(options, "mod-C-S-3", Container.get_focused():toggle_add_sticky(1 << 2));
-    bind_key(options, "mod-C-S-4", Container.get_focused():toggle_add_sticky(1 << 3));
-    bind_key(options, "mod-C-S-5", Container.get_focused():toggle_add_sticky(1 << 4));
-    bind_key(options, "mod-C-S-6", Container.get_focused():toggle_add_sticky(1 << 5));
-    bind_key(options, "mod-C-S-7", Container.get_focused():toggle_add_sticky(1 << 6));
-    bind_key(options, "mod-C-S-8", Container.get_focused():toggle_add_sticky(1 << 7));
+    bind_key(options, "mod-C-S-1", Container.focused.toggle_add_sticky(1 << 0));
+    bind_key(options, "mod-C-S-2", Container.focused.toggle_add_sticky(1 << 1));
+    bind_key(options, "mod-C-S-3", Container.focused.toggle_add_sticky(1 << 2));
+    bind_key(options, "mod-C-S-4", Container.focused.toggle_add_sticky(1 << 3));
+    bind_key(options, "mod-C-S-5", Container.focused.toggle_add_sticky(1 << 4));
+    bind_key(options, "mod-C-S-6", Container.focused.toggle_add_sticky(1 << 5));
+    bind_key(options, "mod-C-S-7", Container.focused.toggle_add_sticky(1 << 6));
+    bind_key(options, "mod-C-S-8", Container.focused.toggle_add_sticky(1 << 7));
 
-    bind_key(options, "mod-s 1", Workspace.get_focused():swap(Workspace.get(1)));
-    bind_key(options, "mod-s 2", Workspace.get_focused():swap(Workspace.get(2)));
-    bind_key(options, "mod-s 3", Workspace.get_focused():swap(Workspace.get(3)));
-    bind_key(options, "mod-s 4", Workspace.get_focused():swap(Workspace.get(4)));
-    bind_key(options, "mod-s 5", Workspace.get_focused():swap(Workspace.get(5)));
-    bind_key(options, "mod-s 6", Workspace.get_focused():swap(Workspace.get(6)));
-    bind_key(options, "mod-s 7", Workspace.get_focused():swap(Workspace.get(7)));
-    bind_key(options, "mod-s 8", Workspace.get_focused():swap(Workspace.get(8)));
+    bind_key(options, "mod-s 1", Workspace.focused.swap(Workspace.get(1)));
+    bind_key(options, "mod-s 2", Workspace.focused.swap(Workspace.get(2)));
+    bind_key(options, "mod-s 3", Workspace.focused.swap(Workspace.get(3)));
+    bind_key(options, "mod-s 4", Workspace.focused.swap(Workspace.get(4)));
+    bind_key(options, "mod-s 5", Workspace.focused.swap(Workspace.get(5)));
+    bind_key(options, "mod-s 6", Workspace.focused.swap(Workspace.get(6)));
+    bind_key(options, "mod-s 7", Workspace.focused.swap(Workspace.get(7)));
+    bind_key(options, "mod-s 8", Workspace.focused.swap(Workspace.get(8)));
 
-    bind_key(options, "mod-t", Container.get_focused().property.floating = false);
+    bind_key(options, "mod-t", Container.focused.property.floating = false);
 
     bind_key(options, "mod-M1", action.move_resize(Cursor_mode.move));
     bind_key(options, "mod-M2", action.move_resize(Cursor_mode.resize));
@@ -253,8 +255,8 @@ void load_default_keybindings(struct options *options)
                 con:focus()
             end);
 
-    bind_key(options, "mod-a", Layout.get_focused():increase_n_master());
-    bind_key(options, "mod-x", Layout.get_focused():decrease_n_master());
+    bind_key(options, "mod-a", Layout.focused.increase_n_master());
+    bind_key(options, "mod-x", Layout.focused.decrease_n_master());
 
     bind_key(options, "mod-1", action.view_or_tag(1));
     bind_key(options, "mod-2", action.view_or_tag(2));
@@ -266,19 +268,19 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-8", action.view_or_tag(8));
     bind_key(options, "mod-9", action.view_or_tag(9));
 
-    bind_key(options, "mod-b", Workspace.get_focused():toggle_bars());
-    bind_key(options, "mod-m", Workspace.get_focused().stack[1]:focus());
+    bind_key(options, "mod-b", Workspace.focused.toggle_bars());
+    bind_key(options, "mod-m", Workspace.focused.stack[1]:focus());
 
     bind_key(options, "mod-S-j", action.focus_on_hidden_stack(0));
     bind_key(options, "mod-S-k", action.focus_on_hidden_stack(-1));
 
-    bind_key(options, "mod-e", action.view(Workspace.get_focused():get_next_empty(Direction.left)));
+    bind_key(options, "mod-e", action.view(Workspace.focused.get_next_empty(Direction.left)));
     bind_key(options, "mod-S-space", Layout.load(server.default_layout_ring:prev()));
     bind_key(options, "mod-space", Layout.load(server.default_layout_ring:next()));
 
     bind_key(options, "mod-minus",
-            if Container.get_focused() then
-                action.move_to_scratchpad(Container.get_focused())
+            if Container.focused then
+                action.move_to_scratchpad(Container.focused)
             end
                 );
     bind_key(options, "mod-S-minus", action.show_scratchpad());
@@ -290,22 +292,22 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-S-period", action.toggle_tags());
 
     bind_key(options, "mod-0",
-            Workspace.get_focused().tags = 1 << Workspace.get_focused():get_id()
+            Workspace.focused.tags = 1 << Workspace.focused.get_id()
         );
     bind_key(options, "mod-S-0",
-        local con = Container.get_focused()
+        local con = Container.focused
         if con then
-            Workspace.get_focused().tags = 1 << con.workspace:get_id()
+            Workspace.focused.tags = 1 << con.workspace:get_id()
         end
     );
     bind_key(options, "mod-C-S-0",
-            local con = Container.get_focused()
+            local con = Container.focused
             if con then
                 con.sticky_restricted = 0
             end
             );
     bind_key(options, "mod-C-S-9",
-            local con = Container.get_focused()
+            local con = Container.focused
             if con then
                 con.sticky_restricted = 255
             end
