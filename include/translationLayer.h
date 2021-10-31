@@ -33,6 +33,21 @@ struct layout;
         } lua_pop(L, 1);\
     } while(0)
 
+#define create_static_accessor(L, name, functions, static_setter, static_getter)\
+    do {\
+        lua_createtable(L, 0, 0); {\
+            luaL_setfuncs(L, meta, 0);\
+            luaL_setfuncs(L, functions, 0);\
+            add_table(L, "setter", static_setter, -1);\
+            add_table(L, "getter", static_getter, -1);\
+            \
+            lua_createtable(L, 0, 0);\
+            lua_insert(L, -2);\
+            lua_setmetatable(L, -2);\
+            lua_setglobal(L, name);\
+        }\
+    } while(0)
+
 #define create_enum(L, variable_getter, name)\
     do {\
         luaL_newmetatable(L, name); {\

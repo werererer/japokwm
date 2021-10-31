@@ -26,6 +26,17 @@ static const struct luaL_Reg workspace_meta[] =
     {NULL, NULL},
 };
 
+static const struct luaL_Reg workspace_static_getter[] =
+{
+    {"focused", lib_workspace_get_focused},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg workspace_static_setter[] =
+{
+    {NULL, NULL},
+};
+
 static const struct luaL_Reg workspace_f[] =
 {
     {"get", lib_workspace_get},
@@ -53,7 +64,6 @@ static const struct luaL_Reg workspace_getter[] =
     {"bars", lib_workspace_get_bars_visibility},
     {"focus_set", lib_workspace_get_focus_set},
     {"focus_stack", lib_workspace_get_focus_stack},
-    {"focused", lib_workspace_get_focused},
     {"layout", lib_workspace_get_layout},
     {"prev_layout", lib_workspace_get_previous_layout},
     {"stack", lib_workspace_get_stack},
@@ -84,8 +94,11 @@ void lua_load_workspace(lua_State *L)
             workspace_getter,
             CONFIG_WORKSPACE);
 
-    luaL_newlib(L, workspace_f);
-    lua_setglobal(L, "Workspace");
+    create_static_accessor(L,
+            "Workspace",
+            workspace_f,
+            workspace_static_setter,
+            workspace_static_getter);
 }
 
 struct workspace *check_workspace(lua_State *L, int narg) {

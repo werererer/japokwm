@@ -26,6 +26,17 @@ static const struct luaL_Reg container_f[] =
     {NULL, NULL},
 };
 
+static const struct luaL_Reg container_static_getter[] =
+{
+    {"focused", lib_container_get_focused},
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg container_static_setter[] =
+{
+    {NULL, NULL},
+};
+
 static const struct luaL_Reg container_m[] = {
     {"focus", lib_container_focus},
     {"kill", lib_container_kill},
@@ -38,7 +49,6 @@ static const struct luaL_Reg container_getter[] = {
     // TODO: implement getters
     {"alpha", lib_container_get_alpha},
     {"app_id", lib_container_get_app_id},
-    {"focused", lib_container_get_focused},
     {"properties", lib_container_get_property},
     {"property", lib_container_get_current_property},
     {"sticky", lib_container_set_sticky},
@@ -77,8 +87,11 @@ void lua_load_container(lua_State *L)
             container_getter,
             CONFIG_CONTAINER);
 
-    luaL_newlib(L, container_f);
-    lua_setglobal(L, "Container");
+    create_static_accessor(L,
+            "Container",
+            container_f,
+            container_static_setter,
+            container_static_getter);
 }
 
 struct container *check_container(lua_State *L, int argn)
