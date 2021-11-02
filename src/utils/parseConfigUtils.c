@@ -10,7 +10,7 @@
 #include <translationLayer.h>
 #include <execinfo.h>
 #include <sys/stat.h>
-#include <libnotify/notify.h>
+#include <gio/gio.h>
 #include <fts.h>
 
 #include "tile/tileUtils.h"
@@ -296,16 +296,16 @@ static void *_notify_msg(void *arg)
         goto exit_cleanup;
     }
 
-    notify_init(msg);
-    NotifyNotification* n = notify_notification_new("Japokwm.message: ", 
-            msg,
-            0);
-    notify_notification_set_timeout(n, 10000); // 10 seconds
-
-    if (!notify_notification_show(n, 0))
-    {
-        printf("showing notification failed!\n");
-    }
+    GApplication *application = g_application_new("hello.world", G_APPLICATION_FLAGS_NONE);
+    g_application_register(application, NULL, NULL);
+    GNotification *notification = g_notification_new("Japokwm.message: ");
+    g_notification_set_body(notification, "This is an example notification.");
+    GIcon *icon = g_themed_icon_new("dialog-information");
+    g_notification_set_icon(notification, icon);
+    g_application_send_notification(application, NULL, notification);;
+    g_object_unref(icon);
+    g_object_unref(notification);
+    g_object_unref(application);
 
 exit_cleanup:
     free(msg);
@@ -314,9 +314,10 @@ exit_cleanup:
 
 void notify_msg(const char *msg)
 {
-    pthread_t thread;
-    pthread_create(&thread, NULL, _notify_msg, strdup(msg));
-    pthread_detach(thread);
+    _notify_msg(strdup(msg));
+    // pthread_t thread;
+    // pthread_create(&thread, NULL, _notify_msg, strdup(msg));
+    // pthread_detach(thread);
 }
 
 void handle_error(const char *msg)
