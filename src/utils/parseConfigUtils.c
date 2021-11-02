@@ -302,6 +302,12 @@ static void *_notify_msg(void *arg)
             0);
     notify_notification_set_timeout(n, 10000); // 10 seconds
 
+    /* NOTE: this causes a lot of thread warnings in valgrind's helgrind tool. I
+     * am pretty sure that this application is not of fault(or I hope so :O)
+     * because similiar errors can be reproduced by calling
+     * `valgrind -tool=helgrind notify-send "test"`. Btw I also tested this by
+     * removing the thread that calls this function with the same errors
+     * reappearing */
     if (!notify_notification_show(n, 0))
     {
         printf("showing notification failed!\n");
@@ -314,6 +320,8 @@ exit_cleanup:
 
 void notify_msg(const char *msg)
 {
+    // we need to call this in a thread because sometimes notifications hang or
+    // so I experienced.
     pthread_t thread;
     pthread_create(&thread, NULL, _notify_msg, strdup(msg));
     pthread_detach(thread);
