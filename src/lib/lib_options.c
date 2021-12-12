@@ -36,9 +36,6 @@ static const struct luaL_Reg options_m[] =
     {"bind_key", lib_bind_key},
     {"set_layout_constraints", lib_set_layout_constraints},
     {"set_master_constraints", lib_set_master_constraints},
-    {"set_mod", lib_set_mod},
-    {"set_repeat_delay", lib_set_repeat_delay},
-    {"set_repeat_rate", lib_set_repeat_rate},
     {NULL, NULL},
 };
 
@@ -57,6 +54,8 @@ static const struct luaL_Reg options_setter[] =
     {"inner_gaps", lib_set_inner_gaps},
     {"mod", lib_set_mod},
     {"outer_gaps", lib_set_outer_gaps},
+    {"repeat_delay", lib_set_repeat_delay},
+    {"repeat_rate", lib_set_repeat_rate},
     {"resize_direction", lib_set_resize_direction},
     {"root_color", lib_set_root_color},
     {"sloppy_focus", lib_set_sloppy_focus},
