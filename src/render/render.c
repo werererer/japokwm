@@ -229,34 +229,26 @@ static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *bo
 
     enum wlr_edges containers_hidden_edges = WLR_EDGE_NONE;
     struct wlr_box *con_geom = container_get_current_geom(con);
-    int border_width = container_get_border_width(con);
+    // int border_width = container_get_border_width(con);
     // hide edges if needed
     if (hidden_edges & WLR_EDGE_LEFT) {
         if (con_geom->x == m->root->geom.x) {
             containers_hidden_edges |= WLR_EDGE_LEFT;
-            container_add_gaps(&borders[0], border_width, WLR_EDGE_LEFT);
-            container_add_gaps(&borders[1], border_width, WLR_EDGE_LEFT);
         }
     }
     if (hidden_edges & WLR_EDGE_RIGHT) {
         if (is_approx_equal(con_geom->x + con_geom->width, m->root->geom.x + m->root->geom.width, 3)) {
             containers_hidden_edges |= WLR_EDGE_RIGHT;
-            container_add_gaps(&borders[0], border_width, WLR_EDGE_RIGHT);
-            container_add_gaps(&borders[1], border_width, WLR_EDGE_RIGHT);
         }
     }
     if (hidden_edges & WLR_EDGE_TOP) {
         if (con_geom->y == m->root->geom.y) {
             containers_hidden_edges |= WLR_EDGE_TOP;
-            container_add_gaps(&borders[0], border_width, WLR_EDGE_TOP);
-            container_add_gaps(&borders[1], border_width, WLR_EDGE_TOP);
         }
     }
     if (hidden_edges & WLR_EDGE_BOTTOM) {
         if (is_approx_equal(con_geom->y + con_geom->height, m->root->geom.y + m->root->geom.height, 3)) {
             containers_hidden_edges |= WLR_EDGE_BOTTOM;
-            container_add_gaps(&borders[0], border_width, WLR_EDGE_BOTTOM);
-            container_add_gaps(&borders[1], border_width, WLR_EDGE_BOTTOM);
         }
     }
 
