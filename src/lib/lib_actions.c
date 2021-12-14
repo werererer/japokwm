@@ -39,7 +39,7 @@ static const struct luaL_Reg action_meta[] =
 static const struct luaL_Reg action_f[] =
 {
     {"arrange", lib_arrange},
-    {"async_execute", lib_async_execute},
+    {"async_exec", lib_async_exec},
     {"create_output", lib_create_output},
     {"deep_copy", lib_deep_copy},
     {"exec", lib_exec},
@@ -109,7 +109,7 @@ static void *_call(void *arg)
     return NULL;
 }
 
-int lib_async_execute(lua_State *L)
+int lib_async_exec(lua_State *L)
 {
     pthread_t thread;
     int *func_ref = calloc(1, sizeof(int));
