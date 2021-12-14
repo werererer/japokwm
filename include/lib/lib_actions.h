@@ -10,7 +10,7 @@
 void lua_load_action(lua_State *L);
 
 int lib_arrange(lua_State *L);
-int lib_async_execute(lua_State *L);
+int lib_async_exec(lua_State *L);
 int lib_create_output(lua_State *L);
 int lib_exec(lua_State *L);
 // what is that?

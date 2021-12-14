@@ -56,6 +56,7 @@ if scdoc.found()
     man_files = [
         'man/japokwm.1.scd',
         'man/japokwm.5.scd',
+        'man/japokwm-actions.5.scd',
         'man/japokwm-action.5.scd',
         'man/japokwm-opt.5.scd',
     ]
