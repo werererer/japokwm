@@ -16,6 +16,21 @@ static const struct luaL_Reg color_f[] =
     {NULL, NULL},
 };
 
+static const struct luaL_Reg color_static_setter[] =
+{
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg color_static_getter[] =
+{
+    {"BLACK", lib_color_get_black},
+    {"WHITE", lib_color_get_white},
+    {"RED", lib_color_get_red},
+    {"GREEN", lib_color_get_green},
+    {"BLUE", lib_color_get_blue},
+    {NULL, NULL},
+};
+
 static const struct luaL_Reg color_m[] =
 {
     {NULL, NULL},
@@ -40,6 +55,12 @@ void lua_load_color(lua_State *L)
             color_setter,
             color_getter,
             CONFIG_COLOR);
+
+    create_static_accessor(L,
+            "Color",
+            color_f,
+            color_static_setter,
+            color_static_getter);
 
     luaL_newlib(L, color_f);
     lua_setglobal(L, "Color");
@@ -81,6 +102,43 @@ int lib_color_new(lua_State *L)
         .blue = blue, 
         .alpha = alpha,
     };
+    create_lua_color(L, color);
+    return 1;
+}
+
+// static setters
+// static getters
+int lib_color_get_black(lua_State *L)
+{
+    struct color color = BLACK;
+    create_lua_color(L, color);
+    return 1;
+}
+
+int lib_color_get_white(lua_State *L)
+{
+    struct color color = WHITE;
+    create_lua_color(L, color);
+    return 1;
+}
+
+int lib_color_get_red(lua_State *L)
+{
+    struct color color = RED;
+    create_lua_color(L, color);
+    return 1;
+}
+
+int lib_color_get_green(lua_State *L)
+{
+    struct color color = GREEN;
+    create_lua_color(L, color);
+    return 1;
+}
+
+int lib_color_get_blue(lua_State *L)
+{
+    struct color color = BLUE;
     create_lua_color(L, color);
     return 1;
 }

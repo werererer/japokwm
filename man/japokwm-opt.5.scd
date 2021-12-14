@@ -24,8 +24,11 @@ japokwm-opt(5)
 # Variables
 	bool arrange_by_focus = false
 		whether the layout should be arranged by focus. This can be
-		useful for a fullscreen layout like monocle
+		useful for a fullscreen layouts like monocle
 	
 	bool automatic_workspace_naming = false
 		whether workspaces should be renamed to the active window in
 		them.
+	
+	color border_color = "Color.black"
+		the color of the border of the windows
