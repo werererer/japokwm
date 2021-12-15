@@ -149,7 +149,6 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-r", opt.reload());
     bind_key(options, "mod-S-c", 
             if Container.focused then
-                print("exist")
                 Container.focused:kill()
             end
             );
@@ -245,8 +244,8 @@ void load_default_keybindings(struct options *options)
                 con:focus()
             end);
 
-    bind_key(options, "mod-a", Layout.focused.increase_n_master());
-    bind_key(options, "mod-x", Layout.focused.decrease_n_master());
+    bind_key(options, "mod-a", Layout.focused:increase_n_master());
+    bind_key(options, "mod-x", Layout.focused:decrease_n_master());
 
     bind_key(options, "mod-1", action.view_or_tag(1));
     bind_key(options, "mod-2", action.view_or_tag(2));
@@ -264,7 +263,7 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-S-j", action.focus_on_hidden_stack(0));
     bind_key(options, "mod-S-k", action.focus_on_hidden_stack(-1));
 
-    bind_key(options, "mod-e", action.view(Workspace.focused.get_next_empty(Direction.left)));
+    bind_key(options, "mod-e", action.view(Workspace.focused:get_next_empty(Direction.right)));
     bind_key(options, "mod-S-space", Layout.load(server.default_layout_ring:prev()));
     bind_key(options, "mod-space", Layout.load(server.default_layout_ring:next()));
 

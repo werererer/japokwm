@@ -300,7 +300,7 @@ static void *_notify_msg(void *arg)
     NotifyNotification* n = notify_notification_new("Japokwm.message: ", 
             msg,
             0);
-    notify_notification_set_timeout(n, 10000); // 10 seconds
+    notify_notification_set_timeout(n, 6000); // 6 seconds
 
     /* NOTE: this causes a lot of thread warnings in valgrind's helgrind tool. I
      * am pretty sure that this application is not of fault(or I hope so :O)
