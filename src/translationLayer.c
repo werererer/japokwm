@@ -165,18 +165,85 @@ int get_lua_value(lua_State *L)
     return 1;
 }
 
+// function to convert a lua value to a string
+static const char *lua_value_to_string(lua_State *L, int index)
+{
+    if (lua_isboolean(L, index)) {
+        lua_pushstring(L, lua_toboolean(L, index) ? "1" : "0");
+    } else if (lua_isnumber(L, index)) {
+        lua_pushstring(L, lua_tostring(L, index));
+    } else if (lua_isstring(L, index)) {
+        lua_pushvalue(L, index);
+    } else if (lua_isnil(L, index)) {
+        lua_pushliteral(L, "nil");
+    } else if (lua_isuserdata(L, index)) {
+        lua_getmetatable(L, index);
+        lua_pushstring(L, "__tostring");
+        lua_gettable(L, -2);
+        if (lua_isfunction(L, -1)) {
+            lua_pushvalue(L, index);
+            lua_pcall(L, 1, 1, 0);
+        } else {
+            lua_pushliteral(L, "userdata");
+        }
+    } else if (lua_istable(L, index)) {
+        // convert the table to string recursively using this function and push
+        // the result on the lua stack
+        char *res = strdup("");
+        append_string(&res, "{");
+
+        lua_pushnil(L);
+        while (lua_next(L, -2) != 0) {
+            const char *value = lua_value_to_string(L, -1);
+            append_string(&res, value);
+            // pop value from stack
+            lua_pop(L, 1);
+
+            // checks whether we are at the last element of the table
+            lua_pushvalue(L, -1);
+            if (lua_next(L, -3) != 0) {
+                append_string(&res, ", ");
+                // pop the value/key from the stack
+                lua_pop(L, 2);
+            }
+        }
+
+        append_string(&res, "}");
+        lua_pushstring(L, res);
+        free(res);
+    } else if (lua_isfunction(L, index)) {
+        lua_pushliteral(L, "function");
+    } else if (lua_islightuserdata(L, index)) {
+        lua_pushliteral(L, "lightuserdata");
+    } else {
+        lua_pushliteral(L, "unknown");
+    }
+
+    const char *str = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+    return str;
+}
+
 // replace lua print statement with notify-send
 static int l_print(lua_State *L) {
     int nargs = lua_gettop(L);
 
     char *msg = strdup("");
     for (int i=1; i <= nargs; i++) {
-        const char *string = lua_tostring(L, i);
+        const char *string = lua_value_to_string(L, i);
+
+        if (string == NULL) {
+            const char *errmsg = luaL_checkstring(L, -1);
+            handle_error(errmsg);
+            lua_pop(L, 1);
+            return 0;
+        }
 
         append_string(&msg, string);
     }
     notify_msg(msg);
     write_line_to_error_file(msg);
+
     free(msg);
 
     return 0;
