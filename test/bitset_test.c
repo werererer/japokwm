@@ -14,6 +14,19 @@ void test_bitset()
     g_assert_cmpint(bitset_test(bitset, 20), ==, true);
 }
 
+void test_bitset_to_string()
+{
+    BitSet *bitset = bitset_create();
+
+    g_assert_cmpstr(bitset_to_string(bitset), ==, "00000000");
+    bitset_set(bitset, 0);
+    g_assert_cmpstr(bitset_to_string(bitset), ==, "00000001");
+    bitset_set(bitset, 2);
+    g_assert_cmpstr(bitset_to_string(bitset), ==, "00000101");
+
+    bitset_destroy(bitset);
+}
+
 void test_bitset_reverse()
 {
     BitSet *bitset = bitset_create();
@@ -301,6 +314,7 @@ int main(int argc, char** argv)
     g_test_init(&argc, &argv, NULL);
 
     add_test(test_bitset);
+    add_test(test_bitset_to_string);
     add_test(test_bitset_or);
     add_test(test_bitset_xor);
     add_test(test_bitset_count);

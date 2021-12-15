@@ -1,8 +1,10 @@
 #include "bitset/bitset.h"
-#include "utils/coreUtils.h"
 #include <GLES2/gl2.h>
 #include <assert.h>
 #include <wlr/util/log.h>
+
+#include "stringop.h"
+#include "utils/coreUtils.h"
 
 /****************** INTERFACE ******************/
 
@@ -343,6 +345,24 @@ int bitset_none(BitSet* bitset) {
     return !bitset_any(bitset);
 
     return true;
+}
+
+char *bitset_to_string(BitSet* bitset)
+{
+    assert(bitset != NULL);
+    if (bitset == NULL) return NULL;
+
+    char *str = strdup("");
+
+    int low = 0;
+    int high = 7;
+    for (int i = high; i >= low; i--) {
+        bool bit = bitset_test(bitset, i);
+        char *bit_str = bit ? "1" : "0";
+        append_string(&str, bit_str);
+    }
+
+    return str;
 }
 
 void print_bitset(BitSet *bitset)

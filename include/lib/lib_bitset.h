@@ -16,18 +16,17 @@ void lua_load_bitset(lua_State *L);
 
 # define call_bitset_func(L, action, self, ...) \
     do {\
-        BitSet *self_copy = bitset_copy(self);\
-        action(self_copy, ##__VA_ARGS__);\
+        action(self, ##__VA_ARGS__);\
         if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_WORKSPACE)) {\
             struct workspace *ws = self->data;\
-            tagset_set_tags(ws, self_copy);\
-            bitset_destroy(self_copy);\
+            tagset_set_tags(ws, self);\
+            bitset_destroy(self);\
             return 0;\
         }\
         if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_CONTAINER)) {\
             struct workspace *ws = self->data;\
-            tagset_set_tags(ws, self_copy);\
-            bitset_destroy(self_copy);\
+            tagset_set_tags(ws, self);\
+            bitset_destroy(self);\
             return 0;\
         }\
         \
@@ -42,6 +41,7 @@ int lib_bitset_meta_bor(lua_State * L);
 int lib_bitset_meta_bnot(lua_State * L);
 
 int lib_bitset_gc(lua_State *L);
+int lib_bitset_tostring(lua_State *L);
 
 // functions
 int lib_bitset_new(lua_State *L);

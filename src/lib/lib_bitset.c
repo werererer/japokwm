@@ -10,6 +10,7 @@
 static const struct luaL_Reg bitset_gc_meta[] =
 {
     {"__gc", lib_bitset_gc},
+    {"__tostring", lib_bitset_tostring},
     {NULL, NULL},
 };
 
@@ -163,7 +164,7 @@ int lib_bitset_get(lua_State *L)
         return 1;
     }
 
-    int i = lua_tonumber(L, -1)-1;
+    int i = lua_idx_to_c_idx(lua_tonumber(L, -1));
     if (i < 0) {
         lua_pushnil(L);
         return 1;
@@ -263,6 +264,17 @@ int lib_bitset_gc(lua_State *L)
     lua_pop(L, 1);
     bitset_destroy(bitset);
     return 0;
+}
+
+int lib_bitset_tostring(lua_State *L)
+{
+    BitSet *bitset = check_bitset(L, 1);
+    lua_pop(L, 1);
+
+    char *str = bitset_to_string(bitset);
+    lua_pushstring(L, str);
+    free(str);
+    return 1;
 }
 
 // functions
