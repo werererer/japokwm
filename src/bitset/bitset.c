@@ -2,6 +2,7 @@
 #include <GLES2/gl2.h>
 #include <assert.h>
 #include <wlr/util/log.h>
+#include <math.h>
 
 #include "stringop.h"
 #include "utils/stringUtils.h"
@@ -355,12 +356,13 @@ char *bitset_to_string(BitSet* bitset)
 
     char *str = strdup("");
 
-    int byte_start = bitset->low / 8;
+    int which_byte = floor((float)bitset->low / 8);
+    int byte_start = which_byte*8;
     int byte_end = byte_start + 8;
 
     append_string(&str, "(");
     const char str_integer[NUM_DIGITS];
-    int_to_string((char *)str_integer, byte_start);
+    int_to_string((char *)str_integer, which_byte);
     append_string(&str, str_integer);
     append_string(&str, ")");
 
