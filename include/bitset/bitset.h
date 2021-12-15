@@ -90,6 +90,7 @@ int bitset_count(BitSet* bitset);
 int bitset_all(BitSet* bitset);
 int bitset_any(BitSet* bitset);
 int bitset_none(BitSet* bitset);
+char *bitset_to_string(BitSet* bitset);
 
 /* Debugging */
 void print_bitset(BitSet *bitset);
