@@ -13,7 +13,7 @@ japokwm-bitset(5)
 	a[i] = b
 		Sets the ith bit of bitset a to b.
 	
-	a ^ b
+	a ~ b
 		Performs bitwise XOR on the bitsets a and b.
 	
 	a & b
