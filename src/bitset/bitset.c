@@ -4,6 +4,7 @@
 #include <wlr/util/log.h>
 
 #include "stringop.h"
+#include "utils/stringUtils.h"
 #include "utils/coreUtils.h"
 
 /****************** INTERFACE ******************/
@@ -354,9 +355,17 @@ char *bitset_to_string(BitSet* bitset)
 
     char *str = strdup("");
 
-    int low = 0;
-    int high = 7;
-    for (int i = high; i >= low; i--) {
+    int byte_start = bitset->low / 8;
+    int byte_end = byte_start + 8;
+
+    append_string(&str, "(");
+    const char str_integer[256];
+    int_to_string((char *)str_integer, byte_start);
+    append_string(&str, str_integer);
+    append_string(&str, ")");
+
+    // reveser this for loop
+    for (int i = byte_start; i < byte_end; i++) {
         bool bit = bitset_test(bitset, i);
         char *bit_str = bit ? "1" : "0";
         append_string(&str, bit_str);
@@ -367,10 +376,8 @@ char *bitset_to_string(BitSet* bitset)
 
 void print_bitset(BitSet *bitset)
 {
-    for (int i = 0; i < 8; i++) {
-        bool bit = bitset_test(bitset, i);
-        debug_print("%i\n", bit);
-    }
+    char *str = bitset_to_string(bitset);
+    printf("%s\n", str);
 }
 
 /****************** PRIVATE ******************/
