@@ -18,11 +18,11 @@ void test_bitset_to_string()
 {
     BitSet *bitset = bitset_create();
 
-    g_assert_cmpstr(bitset_to_string(bitset), ==, "00000000");
+    g_assert_cmpstr(bitset_to_string(bitset), ==, "(0)00000000");
     bitset_set(bitset, 0);
-    g_assert_cmpstr(bitset_to_string(bitset), ==, "00000001");
+    g_assert_cmpstr(bitset_to_string(bitset), ==, "(0)10000000");
     bitset_set(bitset, 2);
-    g_assert_cmpstr(bitset_to_string(bitset), ==, "00000101");
+    g_assert_cmpstr(bitset_to_string(bitset), ==, "(0)10100000");
 
     bitset_destroy(bitset);
 }
