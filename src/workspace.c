@@ -274,7 +274,10 @@ struct workspace *get_next_empty_workspace(GList *workspaces, size_t ws_id)
         }
     }
 
-    return NULL;
+    struct workspace *ws = g_list_last(workspaces)->data;
+    struct workspace *new_workspace = get_workspace(ws->id + 1);
+
+    return new_workspace;
 }
 
 struct workspace *get_nearest_empty_workspace(GList *workspaces, int ws_id)
@@ -293,12 +296,12 @@ struct workspace *get_nearest_empty_workspace(GList *workspaces, int ws_id)
         bool is_up_counter_valid = up_counter < workspace_count;
         bool is_down_counter_valid = down_counter >= 0;
         if (is_down_counter_valid) {
-            ws = g_list_nth(workspaces, down_counter)->data;
+            ws = get_workspace(down_counter);
             if (is_workspace_empty(ws))
                 break;
         }
         if (is_up_counter_valid) {
-            ws = g_list_nth(workspaces, up_counter)->data;
+            ws = get_workspace(up_counter);
             if (is_workspace_empty(ws))
                 break;
         }
@@ -327,7 +330,10 @@ struct workspace *get_prev_empty_workspace(GList *workspaces, size_t ws_id)
         }
     }
 
-    return NULL;
+    struct workspace *ws = g_list_first(workspaces)->data;
+    struct workspace *new_workspace = get_workspace(ws->id - 1);
+
+    return new_workspace;
 }
 
 struct layout *workspace_get_layout(struct workspace *ws)
