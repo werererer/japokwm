@@ -1,6 +1,7 @@
 #include "translationLayer.h"
 
 #include <lauxlib.h>
+#include <libnotify/notify.h>
 #include <lua.h>
 #include <wayland-server-protocol.h>
 #include <wlr/types/wlr_output_layout.h>
@@ -161,9 +162,35 @@ int get_lua_value(lua_State *L)
     return 1;
 }
 
+// replace lua print statement with notify-send
+static int l_print(lua_State *L) {
+    int nargs = lua_gettop(L);
+
+    for (int i=1; i <= nargs; i++) {
+        const char *string = lua_tostring(L, i);
+
+        // send string to notify-send
+        notify_init("Lua");
+        NotifyNotification *notification = notify_notification_new("Lua", string, NULL);
+        notify_notification_show(notification, NULL);
+        notify_uninit();
+    }
+
+    return 0;
+}
+
+static const struct luaL_Reg mylib [] = {
+    {"print", l_print},
+    {NULL, NULL}
+};
+
 void load_lua_api(lua_State *L)
 {
     luaL_openlibs(L);
+
+    lua_getglobal(L, "_G");
+    luaL_setfuncs(L, mylib, 0);
+    lua_pop(L, 1);
 
     lua_load_action(L);
     lua_load_bitset(L);

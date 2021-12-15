@@ -87,7 +87,7 @@ void lua_load_bitset(lua_State *L)
     lua_pop(L, 1);
 
     luaL_newlib(L, bitset_f);
-    lua_setglobal(L, "Bitset");
+    lua_setglobal(L, "BitSet");
 }
 
 static void create_lua_bitset_gc(lua_State *L, BitSet *bitset)
