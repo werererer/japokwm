@@ -359,12 +359,11 @@ char *bitset_to_string(BitSet* bitset)
     int byte_end = byte_start + 8;
 
     append_string(&str, "(");
-    const char str_integer[256];
+    const char str_integer[NUM_DIGITS];
     int_to_string((char *)str_integer, byte_start);
     append_string(&str, str_integer);
     append_string(&str, ")");
 
-    // reveser this for loop
     for (int i = byte_start; i < byte_end; i++) {
         bool bit = bitset_test(bitset, i);
         char *bit_str = bit ? "1" : "0";
