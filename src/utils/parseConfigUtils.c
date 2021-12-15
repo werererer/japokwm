@@ -320,11 +320,30 @@ exit_cleanup:
 
 void notify_msg(const char *msg)
 {
+    if (!msg)
+        return;
     // we need to call this in a thread because sometimes notifications hang or
     // so I experienced.
     pthread_t thread;
     pthread_create(&thread, NULL, _notify_msg, strdup(msg));
     pthread_detach(thread);
+}
+
+void write_to_error_file(const char *msg)
+{
+    if (error_fd < 0)
+        return;
+
+    write_to_file(error_fd, msg);
+}
+
+void write_line_to_error_file(const char *msg)
+{
+    if (error_fd < 0)
+        return;
+
+    write_to_file(error_fd, msg);
+    write_to_file(error_fd, "\n");
 }
 
 void handle_error(const char *msg)
@@ -338,8 +357,7 @@ void handle_error(const char *msg)
     if (error_fd < 0)
         return;
 
-    write_to_file(error_fd, msg);
-    write_to_file(error_fd, "\n");
+    write_line_to_error_file(msg);
 }
 
 void handle_warning(void *user_data, const char *msg, int i)
