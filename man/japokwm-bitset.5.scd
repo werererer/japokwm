@@ -22,8 +22,18 @@ japokwm-bitset(5)
 	a | b
 		Performs bitwise OR on the bitsets a and b.
 	
-	not a
+	~ a
 		Performs bitwise NOT on the bitset a.
+	
+	print(a)
+		Prints the bitset in the format: "(which_byte)bytes". Where which_byte
+		is the byte at which the bitset gets interesting and bytes represents
+		the bytes that are stored in that byte. Since the bitset has infinite
+		size, we can't print the whole bitset. Instead, we print the *first* byte
+		that differs from from the previous bytes. If the bitset is
+		...(0)00000000 00000000 00000001 00000000, where the first byte is at
+		position 0 (as you can see in the parentheses), then we would print:
+		"(2)00000001".
 # Functions
 	BitSet new()
 		Creates a new bitset.
