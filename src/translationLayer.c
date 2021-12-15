@@ -10,9 +10,10 @@
 #include "lib/lib_actions.h"
 #include "lib/lib_bitset.h"
 #include "lib/lib_color.h"
-#include "lib/lib_cursor_mode.h"
 #include "lib/lib_container.h"
+#include "lib/lib_container_property.h"
 #include "lib/lib_cursor.h"
+#include "lib/lib_cursor_mode.h"
 #include "lib/lib_direction.h"
 #include "lib/lib_event_handler.h"
 #include "lib/lib_focus_set.h"
@@ -20,19 +21,21 @@
 #include "lib/lib_info.h"
 #include "lib/lib_layout.h"
 #include "lib/lib_list.h"
-#include "lib/lib_ring_buffer.h"
-#include "lib/lib_container_property.h"
 #include "lib/lib_list2D.h"
 #include "lib/lib_monitor.h"
 #include "lib/lib_options.h"
 #include "lib/lib_output_transform.h"
+#include "lib/lib_ring_buffer.h"
 #include "lib/lib_root.h"
 #include "lib/lib_server.h"
 #include "lib/lib_workspace.h"
 #include "lib/local_event_handler.h"
 #include "lib/local_options.h"
 #include "server.h"
+#include "stringop.h"
 #include "utils/coreUtils.h"
+#include "utils/parseConfigUtils.h"
+#include "utils/parseConfigUtils.h"
 #include "workspace.h"
 
 const struct luaL_Reg meta[] = 
@@ -166,15 +169,15 @@ int get_lua_value(lua_State *L)
 static int l_print(lua_State *L) {
     int nargs = lua_gettop(L);
 
+    char *msg = strdup("");
     for (int i=1; i <= nargs; i++) {
         const char *string = lua_tostring(L, i);
 
-        // send string to notify-send
-        notify_init("Lua");
-        NotifyNotification *notification = notify_notification_new("Lua", string, NULL);
-        notify_notification_show(notification, NULL);
-        notify_uninit();
+        append_string(&msg, string);
     }
+    notify_msg(msg);
+    write_line_to_error_file(msg);
+    free(msg);
 
     return 0;
 }
