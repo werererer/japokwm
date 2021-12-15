@@ -5,6 +5,13 @@
 #include "utils/coreUtils.h"
 #include "stringop.h"
 
+void append_string_test() {
+    char *dest = strdup("hello");
+    const char *src = " world";
+    append_string(&dest, src);
+    g_assert_cmpstr(dest, ==, "hello world");
+}
+
 void join_string_test()
 {
     char *res = NULL;
@@ -44,6 +51,7 @@ int main(int argc, char **argv)
     setbuf(stdout, NULL);
     g_test_init(&argc, &argv, NULL);
 
+    add_test(append_string_test);
     add_test(join_string_test);
     add_test(strip_whitespace_test);
 
