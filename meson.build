@@ -57,6 +57,7 @@ if scdoc.found()
         'man/japokwm-action.5.scd',
         'man/japokwm-bitset.5.scd',
         'man/japokwm-color.5.scd',
+        'man/japokwm-container.5.scd',
         'man/japokwm-opt.5.scd',
         'man/japokwm.1.scd',
         'man/japokwm.5.scd',
