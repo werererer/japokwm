@@ -17,5 +17,6 @@ int lib_container_property_get_floating(lua_State *L);
 int lib_container_property_get_geometry(lua_State *L);
 // setter
 int lib_container_property_set_floating(lua_State *L);
+int lib_container_property_set_geom(lua_State *L);
 
 #endif /* LIB_CONTAINER_PROPERTY_H */

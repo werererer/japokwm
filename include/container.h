@@ -52,6 +52,7 @@ void destroy_container(struct container *con);
 
 bool container_property_is_floating(struct container_property *property);
 struct wlr_box *container_property_get_floating_geom(struct container_property *property);
+void container_property_set_floating_geom(struct container_property *property, struct wlr_box *geom);
 void container_property_set_floating(struct container_property *property, bool floating);
 
 void add_container_to_tile(struct container *con);

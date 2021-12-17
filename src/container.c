@@ -59,6 +59,19 @@ struct wlr_box *container_property_get_floating_geom(struct container_property *
     return geom;
 }
 
+void container_property_set_floating_geom(struct container_property *property,
+        struct wlr_box *geom)
+{
+    struct container *con = property->con;
+    struct wlr_box *old_geom = &property->floating_geom;
+
+    if (con->client->type == LAYER_SHELL) {
+        old_geom = &con->global_geom;
+    }
+
+    *old_geom = *geom;
+}
+
 void container_property_set_floating(struct container_property *property, bool floating)
 {
     property->floating = floating;
