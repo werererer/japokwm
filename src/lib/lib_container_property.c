@@ -23,6 +23,7 @@ static const struct luaL_Reg container_property_m[] =
 static const struct luaL_Reg container_property_setter[] =
 {
     {"floating", lib_container_property_set_floating},
+    {"geom", lib_container_property_set_geom},
     {NULL, NULL},
 };
 
@@ -94,6 +95,20 @@ int lib_container_property_set_floating(lua_State *L)
     lua_pop(L, 1);
 
     container_property_set_floating(property, is_floating);
+
+    arrange();
+    return 0;
+}
+
+int lib_container_property_set_geom(lua_State *L)
+{
+    struct wlr_box *geom = check_geometry(L, -1);
+    lua_pop(L, 1);
+
+    struct container_property *property = check_container_property(L, 1);
+    lua_pop(L, 1);
+
+    container_property_set_floating_geom(property, geom);
 
     arrange();
     return 0;
