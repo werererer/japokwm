@@ -20,13 +20,11 @@ void lua_load_bitset(lua_State *L);
         if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_WORKSPACE)) {\
             struct workspace *ws = self->data;\
             tagset_set_tags(ws, self);\
-            bitset_destroy(self);\
             return 0;\
         }\
         if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_CONTAINER)) {\
             struct workspace *ws = self->data;\
             tagset_set_tags(ws, self);\
-            bitset_destroy(self);\
             return 0;\
         }\
         \
