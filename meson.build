@@ -60,6 +60,7 @@ if scdoc.found()
         'man/japokwm-container.5.scd',
         'man/japokwm-cursor.5.scd',
         'man/japokwm-cursor_mode.5.scd',
+        'man/japokwm-direction.5.scd',
         'man/japokwm-opt.5.scd',
         'man/japokwm.1.scd',
         'man/japokwm.5.scd',
