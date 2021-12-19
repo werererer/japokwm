@@ -225,14 +225,14 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-C-S-7", Container.focused.toggle_add_sticky(1 << 6));
     bind_key(options, "mod-C-S-8", Container.focused.toggle_add_sticky(1 << 7));
 
-    bind_key(options, "mod-s 1", Workspace.focused:swap(Workspace.get(1)));
-    bind_key(options, "mod-s 2", Workspace.focused:swap(Workspace.get(2)));
-    bind_key(options, "mod-s 3", Workspace.focused:swap(Workspace.get(3)));
-    bind_key(options, "mod-s 4", Workspace.focused:swap(Workspace.get(4)));
-    bind_key(options, "mod-s 5", Workspace.focused:swap(Workspace.get(5)));
-    bind_key(options, "mod-s 6", Workspace.focused:swap(Workspace.get(6)));
-    bind_key(options, "mod-s 7", Workspace.focused:swap(Workspace.get(7)));
-    bind_key(options, "mod-s 8", Workspace.focused:swap(Workspace.get(8)));
+    bind_key(options, "mod-s 1", Workspace.focused:swap_smart(Workspace.get(1)));
+    bind_key(options, "mod-s 2", Workspace.focused:swap_smart(Workspace.get(2)));
+    bind_key(options, "mod-s 3", Workspace.focused:swap_smart(Workspace.get(3)));
+    bind_key(options, "mod-s 4", Workspace.focused:swap_smart(Workspace.get(4)));
+    bind_key(options, "mod-s 5", Workspace.focused:swap_smart(Workspace.get(5)));
+    bind_key(options, "mod-s 6", Workspace.focused:swap_smart(Workspace.get(6)));
+    bind_key(options, "mod-s 7", Workspace.focused:swap_smart(Workspace.get(7)));
+    bind_key(options, "mod-s 8", Workspace.focused:swap_smart(Workspace.get(8)));
 
     bind_key(options, "mod-t", Container.focused.property.floating = false);
 
