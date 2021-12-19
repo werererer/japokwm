@@ -128,6 +128,8 @@ struct monitor *workspace_get_selected_monitor(struct workspace *ws);
 struct monitor *workspace_get_monitor(struct workspace *ws);
 void workspace_set_selected_monitor(struct workspace *ws, struct monitor *m);
 void workspace_set_current_monitor(struct workspace *ws, struct monitor *m);
+void workspace_swap(struct workspace *ws1, struct workspace *ws2);
+void workspace_swap_smart(struct workspace *ws1, struct workspace *ws2);
 
 void destroy_workspaces(GHashTable *workspaces);
 void push_layout(struct workspace *ws, const char *layout_name);

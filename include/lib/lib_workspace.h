@@ -20,6 +20,7 @@ int lib_workspace_get(lua_State *L);
 // methods
 int lib_workspace_get_id(lua_State *L);
 int lib_workspace_swap(lua_State *L);
+int lib_workspace_swap_smart(lua_State *L);
 int lib_workspace_toggle_bars(lua_State *L);
 
 // setter

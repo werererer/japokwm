@@ -404,6 +404,63 @@ void workspace_set_current_monitor(struct workspace *ws, struct monitor *m)
     ws->current_m = m;
 }
 
+/**
+ * A helper function to make swapping workspaces more natural. This is just my
+ * preference. So if you don't like it just use the dumb version of swap
+ * workspaces. And define your own helper function in lua.
+ */
+static void swap_workspace_tags_smart(struct workspace *ws1, struct workspace *ws2)
+{
+    monitor_set_selected_workspace(server_get_selected_monitor(), ws1);
+    for (GList *iterator = server_get_workspaces(); iterator; iterator = iterator->next) {
+        struct workspace *ws = iterator->data;
+
+        if (ws->id == ws1->id || ws->id == ws2->id) {
+            continue;
+        }
+        bool b1 = bitset_test(ws->workspaces, ws1->id);
+        bool b2 = bitset_test(ws->workspaces, ws2->id);
+
+        bitset_assign(ws->workspaces, ws1->id, b2);
+        bitset_assign(ws->workspaces, ws2->id, b1);
+    }
+}
+
+void workspace_swap(struct workspace *ws1, struct workspace *ws2)
+{
+    GPtrArray *future_ws2_containers = g_ptr_array_new();
+    for (int i = 0; i < ws1->con_set->tiled_containers->len; i++) {
+        struct container *con = g_ptr_array_index(ws1->con_set->tiled_containers, i);
+        if (ws1->id != con->ws_id)
+            continue;
+
+        g_ptr_array_add(future_ws2_containers, con);
+    }
+
+    for (int i = 0; i < ws2->con_set->tiled_containers->len; i++) {
+        struct container *con = g_ptr_array_index(ws2->con_set->tiled_containers, i);
+        if (ws2->id != con->ws_id)
+            continue;
+        con->ws_id = ws1->id;
+        bitset_reset_all(con->client->sticky_workspaces);
+        bitset_set(con->client->sticky_workspaces, con->ws_id);
+    }
+
+    for (int i = 0; i < future_ws2_containers->len; i++) {
+        struct container *con = g_ptr_array_index(future_ws2_containers, i);
+        con->ws_id = ws2->id;
+        bitset_reset_all(con->client->sticky_workspaces);
+        bitset_set(con->client->sticky_workspaces, con->ws_id);
+    }
+    g_ptr_array_unref(future_ws2_containers);
+}
+
+void workspace_swap_smart(struct workspace *ws1, struct workspace *ws2)
+{
+    workspace_swap(ws1, ws2);
+    swap_workspace_tags_smart(ws1, ws2);
+}
+
 BitSet *workspace_get_tags(struct workspace *ws)
 {
     return ws->workspaces;
