@@ -6,14 +6,18 @@ japokwm-direction(5)
 	An Enum of directions.
 # Variables
 	direction all
-		= direction.left | direction.right | direction.top | direction.bottom
+		↑ | ↓ | ← | →
 	direction bottom
 		↓
+	direction horizontal
+		← | →
 	direction left
 		←
+	direction none
+		No direction.
 	direction right
 		→
 	direction top
 		↑
-	direction none
-		No direction.
+	direction vertical
+		↑ | ↓
