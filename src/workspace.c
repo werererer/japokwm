@@ -404,6 +404,21 @@ void workspace_set_current_monitor(struct workspace *ws, struct monitor *m)
     ws->current_m = m;
 }
 
+// swap everything but the bit at ws*->id
+static void workspace_swap_supplementary_tags(
+        struct workspace *ws1,
+        struct workspace *ws2)
+{
+    bool prev_ws1_value = bitset_test(ws1->workspaces, ws1->id);
+    bool prev_ws1_ws2_value = bitset_test(ws1->workspaces, ws2->id);
+    bool prev_ws2_value = bitset_test(ws2->workspaces, ws2->id);
+    bool prev_ws2_ws1_value = bitset_test(ws2->workspaces, ws1->id);
+    bitset_swap(ws1->workspaces, ws2->workspaces);
+    bitset_assign(ws1->workspaces, ws1->id, prev_ws1_value);
+    bitset_assign(ws1->workspaces, ws2->id, prev_ws1_ws2_value);
+    bitset_assign(ws2->workspaces, ws2->id, prev_ws2_value);
+    bitset_assign(ws2->workspaces, ws1->id, prev_ws2_ws1_value);
+}
 /**
  * A helper function to make swapping workspaces more natural. This is just my
  * preference. So if you don't like it just use the dumb version of swap
@@ -424,6 +439,8 @@ static void swap_workspace_tags_smart(struct workspace *ws1, struct workspace *w
         bitset_assign(ws->workspaces, ws1->id, b2);
         bitset_assign(ws->workspaces, ws2->id, b1);
     }
+
+    workspace_swap_supplementary_tags(ws1, ws2);
 }
 
 void workspace_swap(struct workspace *ws1, struct workspace *ws2)
