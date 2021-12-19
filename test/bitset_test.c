@@ -14,6 +14,25 @@ void test_bitset()
     g_assert_cmpint(bitset_test(bitset, 20), ==, true);
 }
 
+void test_bitset_swap()
+{
+    BitSet *bitset = bitset_create();
+    BitSet *bitset2 = bitset_create();
+
+    bitset_set(bitset, 1);
+    bitset_set(bitset2, 2);
+    bitset_swap(bitset, bitset2);
+
+    g_assert_cmpint(bitset_test(bitset, 1), ==, false);
+    g_assert_cmpint(bitset_test(bitset, 2), ==, true);
+
+    g_assert_cmpint(bitset_test(bitset2, 1), ==, true);
+    g_assert_cmpint(bitset_test(bitset2, 2), ==, false);
+
+    bitset_destroy(bitset);
+    bitset_destroy(bitset2);
+}
+
 void test_bitset_to_string()
 {
     BitSet *bitset = bitset_create();
@@ -314,6 +333,7 @@ int main(int argc, char** argv)
     g_test_init(&argc, &argv, NULL);
 
     add_test(test_bitset);
+    add_test(test_bitset_swap);
     add_test(test_bitset_to_string);
     add_test(test_bitset_or);
     add_test(test_bitset_xor);

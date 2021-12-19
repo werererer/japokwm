@@ -64,18 +64,18 @@ void bitset_reverse(BitSet *bitset, int start, int end)
     bitset_destroy(bitset_tmp);
 }
 
-int bitset_swap(BitSet* destination, BitSet* source) {
+int bitset_swap(BitSet* destination, BitSet* source)
+{
     // TODO: fix later
-    /* assert(destination != NULL); */
-    /* assert(source != NULL); */
+    assert(destination != NULL);
+    assert(source != NULL);
 
-    /* if (destination == NULL) return BITSET_ERROR; */
-    /* if (source == NULL) return BITSET_ERROR; */
+    if (destination == NULL) return BITSET_ERROR;
+    if (source == NULL) return BITSET_ERROR;
 
-    /* if (vector_swap(destination->bits, source->bits) == VECTOR_ERROR) { */
-    /*     return BITSET_ERROR; */
-    /* } */
-    /* _vector_swap(&destination->size, &source->size); */
+    BitSet *tmp = bitset_copy(destination);
+    bitset_assign_bitset(&destination, source);
+    bitset_assign_bitset(&source, tmp);
 
     return BITSET_SUCCESS;
 }
