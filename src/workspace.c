@@ -405,9 +405,9 @@ static void workspace_swap_supplementary_tags(
     bool prev_ws2_ws1_value = bitset_test(ws2->workspaces, ws1->id);
     bitset_swap(ws1->workspaces, ws2->workspaces);
     bitset_assign(ws1->workspaces, ws1->id, prev_ws1_value);
-    bitset_assign(ws1->workspaces, ws2->id, prev_ws1_ws2_value);
+    bitset_assign(ws1->workspaces, ws2->id, prev_ws2_ws1_value);
     bitset_assign(ws2->workspaces, ws2->id, prev_ws2_value);
-    bitset_assign(ws2->workspaces, ws1->id, prev_ws2_ws1_value);
+    bitset_assign(ws2->workspaces, ws1->id, prev_ws1_ws2_value);
 }
 /**
  * A helper function to make swapping workspaces more natural. This is just my
