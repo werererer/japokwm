@@ -394,7 +394,7 @@ void workspace_set_current_monitor(struct workspace *ws, struct monitor *m)
     ws->current_m = m;
 }
 
-// swap everything but the bit at ws*->id
+// swap everything but the bits at ws*->id
 static void workspace_swap_supplementary_tags(
         struct workspace *ws1,
         struct workspace *ws2)
