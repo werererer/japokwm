@@ -260,24 +260,19 @@ struct workspace *find_next_unoccupied_workspace(GList *workspaces, struct works
 
 struct workspace *get_next_empty_workspace(GList *workspaces, size_t ws_id)
 {
-    for (GList *iter = g_list_nth(workspaces, ws_id); iter; iter = iter->next) {
-        struct workspace *ws = iter->data;
+    for (size_t i = ws_id; i < 8; i++) {
+        struct workspace *ws = get_workspace(i);
         if (is_workspace_empty(ws)) {
             return ws;
         }
     }
-
-    for (GList *iter = g_list_nth(workspaces, ws_id); iter; iter = iter->prev) {
-        struct workspace *ws = iter->data;
+    for (size_t i = ws_id-1; i >= 0; i--) {
+        struct workspace *ws = get_workspace(i);
         if (is_workspace_empty(ws)) {
             return ws;
         }
     }
-
-    struct workspace *ws = g_list_last(workspaces)->data;
-    struct workspace *new_workspace = get_workspace(ws->id + 1);
-
-    return new_workspace;
+    return NULL;
 }
 
 struct workspace *get_nearest_empty_workspace(GList *workspaces, int ws_id)
@@ -316,24 +311,19 @@ struct workspace *get_nearest_empty_workspace(GList *workspaces, int ws_id)
 
 struct workspace *get_prev_empty_workspace(GList *workspaces, size_t ws_id)
 {
-    for (GList *iter = g_list_nth(workspaces, ws_id); iter; iter = iter->next) {
-        struct workspace *ws = iter->data;
+    for (size_t i = ws_id-1; i >= 0; i--) {
+        struct workspace *ws = get_workspace(i);
         if (is_workspace_empty(ws)) {
             return ws;
         }
     }
-
-    for (GList *iter = g_list_nth(workspaces, ws_id+1); iter; iter = iter->prev) {
-        struct workspace *ws = iter->data;
+    for (size_t i = ws_id; i < 8; i++) {
+        struct workspace *ws = get_workspace(i);
         if (is_workspace_empty(ws)) {
             return ws;
         }
     }
-
-    struct workspace *ws = g_list_first(workspaces)->data;
-    struct workspace *new_workspace = get_workspace(ws->id - 1);
-
-    return new_workspace;
+    return NULL;
 }
 
 struct layout *workspace_get_layout(struct workspace *ws)
