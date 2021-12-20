@@ -202,7 +202,7 @@ void load_default_lua_config(lua_State *L)
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
         struct workspace *ws = monitor_get_active_workspace(m);
-        tagset_focus_tags(ws, ws->prev_workspaces);
+        tagset_focus_tags(ws, ws->prev_tags);
     }
 
     ipc_event_workspace();

@@ -37,7 +37,7 @@ static void tagset_assign_workspace(struct workspace *sel_ws, struct workspace *
     if (!sel_ws)
         return;
     int ws_id = ws->id;
-    bitset_assign(sel_ws->workspaces, ws_id, active);
+    bitset_assign(sel_ws->tags, ws_id, active);
     workspace_damage(sel_ws);
 }
 
@@ -74,13 +74,13 @@ void tagset_set_tags(struct workspace *sel_ws, BitSet *workspaces)
     // working with which can happen through assign_bitset
     BitSet *workspaces_copy = bitset_copy(workspaces);
 
-    workspace_set_prev_tags(sel_ws, sel_ws->workspaces);
+    workspace_set_prev_tags(sel_ws, sel_ws->tags);
 
     tagset_workspaces_disconnect(sel_ws);
     tagset_assign_workspaces(sel_ws, workspaces);
     tagset_workspaces_connect(sel_ws);
     workspace_damage(sel_ws);
-    tagset_load_workspaces(sel_ws, sel_ws->workspaces);
+    tagset_load_workspaces(sel_ws, sel_ws->tags);
     update_reduced_focus_stack(sel_ws);
     arrange();
     focus_most_recent_container();
@@ -137,11 +137,11 @@ void tagset_workspaces_disconnect(struct workspace *sel_ws)
 
     tagset_workspace_disconnect(sel_ws, sel_ws);
 
-    for (GList *iter = g_hash_table_get_keys(sel_ws->workspaces->bytes);
+    for (GList *iter = g_hash_table_get_keys(sel_ws->tags->bytes);
             iter;
             iter = iter->next) {
         int ws_id = *(int *) iter->data;
-        bool bit = g_hash_table_lookup(sel_ws->workspaces->bytes, &ws_id);
+        bool bit = g_hash_table_lookup(sel_ws->tags->bytes, &ws_id);
 
         if (!bit)
             continue;
@@ -162,11 +162,11 @@ static void tagset_workspace_connect(struct workspace *sel_ws, struct workspace 
 
 void tagset_workspaces_connect(struct workspace *sel_ws)
 {
-    for (GList *iter = g_hash_table_get_keys(sel_ws->workspaces->bytes);
+    for (GList *iter = g_hash_table_get_keys(sel_ws->tags->bytes);
             iter;
             iter = iter->next) {
         int ws_id = *(int *) iter->data;
-        bool bit = g_hash_table_lookup(sel_ws->workspaces->bytes, &ws_id);
+        bool bit = g_hash_table_lookup(sel_ws->tags->bytes, &ws_id);
 
 
         if (!bit)
@@ -198,7 +198,7 @@ bool is_reduced_focus_stack(struct workspace *ws, struct container *con)
 {
     struct monitor *m = workspace_get_monitor(ws);
     bool viewable = container_viewable_on_monitor(m, con);
-    bool visible = visible_on(m, ws->workspaces, con);
+    bool visible = visible_on(m, ws->tags, con);
     if (viewable || visible) {
         return true;
     }
@@ -214,7 +214,7 @@ bool _is_reduced_focus_stack(
     struct workspace *ws = workspace_ptr;
     struct monitor *m = workspace_get_monitor(ws);
     bool viewable = container_viewable_on_monitor(m, con);
-    bool visible = exist_on(m, ws->workspaces, con);
+    bool visible = exist_on(m, ws->tags, con);
     if (viewable || visible) {
         return true;
     }
@@ -237,7 +237,7 @@ bool is_local_focus_stack(struct workspace *ws, struct container *con)
     if (!container_is_managed(con)) {
         return false;
     }
-    if (!exist_on(m, ws->workspaces, con)) {
+    if (!exist_on(m, ws->tags, con)) {
         return false;
     }
     return true;
@@ -347,7 +347,7 @@ static void _set_previous_tagset(struct workspace *ws)
     if (!ws)
         return;
 
-    bitset_assign_bitset(&server.previous_bitset, ws->workspaces);
+    bitset_assign_bitset(&server.previous_bitset, ws->tags);
     server.previous_workspace = ws->id;
 }
 
@@ -360,7 +360,7 @@ void push_tagset(struct workspace *sel_ws, BitSet *workspaces)
         _set_previous_tagset(ws);
     }
     if (ws == sel_ws) { 
-        workspace_set_prev_tags(sel_ws, sel_ws->workspaces);
+        workspace_set_prev_tags(sel_ws, sel_ws->tags);
     }
 
     focus_tagset(sel_ws, workspaces);
@@ -368,7 +368,7 @@ void push_tagset(struct workspace *sel_ws, BitSet *workspaces)
 
 void tagset_focus_workspace(struct workspace *ws)
 {
-    BitSet *workspaces = bitset_copy(ws->workspaces);
+    BitSet *workspaces = bitset_copy(ws->tags);
     tagset_focus_tags(ws, workspaces);
     bitset_destroy(workspaces);
 }
@@ -613,7 +613,7 @@ bool container_potentially_viewable_on_monitor(struct monitor *m,
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
         struct workspace *sel_ws = monitor_get_active_workspace(m);
-        bool contains_client = tagset_contains_client(sel_ws->workspaces, con->client);
+        bool contains_client = tagset_contains_client(sel_ws->tags, con->client);
         if (contains_client) {
             return true;
         }
@@ -664,7 +664,7 @@ bool tagset_exist_on(struct monitor *m, struct container *con)
     if (!con)
         return false;
     struct workspace *ws = monitor_get_active_workspace(m);
-    return exist_on(m, ws->workspaces, con);
+    return exist_on(m, ws->tags, con);
 }
 
 bool tagset_visible_on(struct monitor *m, struct container *con)
@@ -674,5 +674,5 @@ bool tagset_visible_on(struct monitor *m, struct container *con)
     if (!con)
         return false;
     struct workspace *ws = monitor_get_active_workspace(m);
-    return visible_on(m, ws->workspaces, con);
+    return visible_on(m, ws->tags, con);
 }

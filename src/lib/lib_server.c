@@ -70,7 +70,6 @@ static struct server *check_server(lua_State *L) {
 }
 
 // functions
-
 int lib_server_get_focused_workspace(lua_State *L)
 {
     struct workspace *ws = server_get_selected_workspace();
