@@ -312,7 +312,6 @@ static void arrange_container(struct container *con, struct monitor *m,
 
 void container_update_size(struct container *con)
 {
-
     con->client->resized = true;
 
     struct wlr_box *con_geom = container_get_current_geom(con);
