@@ -26,7 +26,7 @@
 #include "list_sets/focus_stack_set.h"
 #include "options.h"
 
-static void add_container_to_workspace(struct container *con, struct tag *ws);
+static void add_container_to_workspace(struct container *con, struct tag *tag);
 
 static struct container_property *create_container_property(struct container *con)
 {
