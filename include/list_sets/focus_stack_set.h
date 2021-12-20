@@ -28,7 +28,7 @@ void focus_set_write_to_parent(
         struct focus_set *parent,
         struct focus_set *child);
 void focus_set_append(
-        struct tag *ws,
+        struct tag *tag,
         struct focus_set *dest,
         struct focus_set *src);
 void focus_set_clear(struct focus_set *focus_set);

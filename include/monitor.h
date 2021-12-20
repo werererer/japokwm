@@ -40,7 +40,7 @@ void focus_tags(struct BitSet bitset);
 void transform_monitor(struct monitor *m, enum wl_output_transform transform);
 void update_monitor_geometries();
 
-void monitor_set_selected_workspace(struct monitor *m, struct tag *ws);
+void monitor_set_selected_workspace(struct monitor *m, struct tag *tag);
 
 BitSet *monitor_get_workspaces(struct monitor *m);
 

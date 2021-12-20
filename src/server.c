@@ -63,16 +63,16 @@ static struct tag *handle_too_few_workspaces(uint32_t ws_id)
     int *ws_id_ptr = malloc(sizeof(*ws_id_ptr));
     *ws_id_ptr = ws_id;
     g_hash_table_insert(server.workspaces, ws_id_ptr, new_ws);
-    struct tag *ws0 = get_workspace(0);
-    wlr_list_cat(new_ws->con_set->tiled_containers, ws0->con_set->tiled_containers);
+    struct tag *tag = get_workspace(0);
+    wlr_list_cat(new_ws->con_set->tiled_containers, tag->con_set->tiled_containers);
 
-    wlr_list_cat(new_ws->focus_set->focus_stack_layer_background, ws0->focus_set->focus_stack_layer_background);
-    wlr_list_cat(new_ws->focus_set->focus_stack_layer_bottom, ws0->focus_set->focus_stack_layer_bottom);
-    wlr_list_cat(new_ws->focus_set->focus_stack_layer_top, ws0->focus_set->focus_stack_layer_top);
-    wlr_list_cat(new_ws->focus_set->focus_stack_layer_overlay, ws0->focus_set->focus_stack_layer_overlay);
-    wlr_list_cat(new_ws->focus_set->focus_stack_on_top, ws0->focus_set->focus_stack_on_top);
-    wlr_list_cat(new_ws->focus_set->focus_stack_normal, ws0->focus_set->focus_stack_normal);
-    wlr_list_cat(new_ws->focus_set->focus_stack_not_focusable, ws0->focus_set->focus_stack_not_focusable);
+    wlr_list_cat(new_ws->focus_set->focus_stack_layer_background, tag->focus_set->focus_stack_layer_background);
+    wlr_list_cat(new_ws->focus_set->focus_stack_layer_bottom, tag->focus_set->focus_stack_layer_bottom);
+    wlr_list_cat(new_ws->focus_set->focus_stack_layer_top, tag->focus_set->focus_stack_layer_top);
+    wlr_list_cat(new_ws->focus_set->focus_stack_layer_overlay, tag->focus_set->focus_stack_layer_overlay);
+    wlr_list_cat(new_ws->focus_set->focus_stack_on_top, tag->focus_set->focus_stack_on_top);
+    wlr_list_cat(new_ws->focus_set->focus_stack_normal, tag->focus_set->focus_stack_normal);
+    wlr_list_cat(new_ws->focus_set->focus_stack_not_focusable, tag->focus_set->focus_stack_not_focusable);
     return new_ws;
 }
 
@@ -106,8 +106,8 @@ static int clear_key_combo_timer_callback(void *data) {
     GPtrArray *registered_key_combos = server.registered_key_combos;
     char *bind = join_string((const char **)registered_key_combos->pdata, registered_key_combos->len, " ");
 
-    struct tag *ws = server_get_selected_workspace();
-    struct layout *lt = workspace_get_layout(ws);
+    struct tag *tag = server_get_selected_workspace();
+    struct layout *lt = workspace_get_layout(tag);
 
     process_binding(lt, bind);
     free(bind);
@@ -451,13 +451,13 @@ struct tag *get_workspace(int id)
 {
     if (id < 0)
         return NULL;
-    struct tag *ws = g_hash_table_lookup(server.workspaces, &id);
-    if (!ws) {
-        ws = handle_too_few_workspaces(id);
-        assert(ws != NULL);
+    struct tag *tag = g_hash_table_lookup(server.workspaces, &id);
+    if (!tag) {
+        tag = handle_too_few_workspaces(id);
+        assert(tag != NULL);
     }
 
-    return ws;
+    return tag;
 }
 
 struct monitor *server_get_selected_monitor()
@@ -473,14 +473,14 @@ void server_set_selected_monitor(struct monitor *m)
 struct tag *server_get_selected_workspace()
 {
     struct monitor *m = server_get_selected_monitor();
-    struct tag *ws = monitor_get_active_workspace(m);
-    return ws;
+    struct tag *tag = monitor_get_active_workspace(m);
+    return tag;
 }
 
 struct layout *server_get_selected_layout()
 {
-    struct tag *ws = server_get_selected_workspace();
-    struct layout *lt = workspace_get_layout(ws);
+    struct tag *tag = server_get_selected_workspace();
+    struct layout *lt = workspace_get_layout(tag);
     return lt;
 }
 

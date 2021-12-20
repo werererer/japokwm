@@ -195,11 +195,11 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 c->is_independent = true;
 
                 debug_print("is unmanaged\n");
-                struct tag *ws = monitor_get_active_workspace(m);
+                struct tag *tag = monitor_get_active_workspace(m);
                 if (x11_is_popup_menu(c) || xwayland_surface->parent) {
                     debug_print("is popup\n");
-                    remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
-                    g_ptr_array_insert(ws->focus_set->focus_stack_normal, 0, con);
+                    remove_in_composed_list(tag->focus_set->focus_stack_lists, cmp_ptr, con);
+                    g_ptr_array_insert(tag->focus_set->focus_stack_normal, 0, con);
 
                     con->is_xwayland_popup = true;
                     g_ptr_array_add(server.xwayland_popups, con);

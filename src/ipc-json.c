@@ -107,12 +107,12 @@ static void add_infix(char **full_name, const char *prefix, const char *postfix)
     free(position);
 }
 
-static bool sel_con_has_bitset_here(struct container *con, struct tag *ws)
+static bool sel_con_has_bitset_here(struct container *con, struct tag *tag)
 {
     if (!con)
         return false;
     bool min_count = bitset_count(con->client->sticky_workspaces) > 1;
-    bool visible = bitset_test(con->client->sticky_workspaces, ws->id);
+    bool visible = bitset_test(con->client->sticky_workspaces, tag->id);
     return min_count && visible;
 }
 
@@ -124,31 +124,31 @@ json_object *ipc_json_describe_tagsets()
     struct tag *sel_ws = monitor_get_active_workspace(sel_m);
     struct container *sel_con = workspace_get_focused_container(sel_ws);
     for (GList *iterator = server_get_workspaces(); iterator; iterator = iterator->next) {
-        struct tag *ws = iterator->data;
-        struct monitor *m = workspace_get_monitor(ws);
+        struct tag *tag = iterator->data;
+        struct monitor *m = workspace_get_monitor(tag);
 
         if (!m)
             continue;
-        if (!workspace_is_visible(ws, m))
+        if (!workspace_is_visible(tag, m))
             continue;
 
-        char *full_name = strdup(ws->name);
+        char *full_name = strdup(tag->name);
 
-        if (sel_con_has_bitset_here(sel_con, ws)) {
+        if (sel_con_has_bitset_here(sel_con, tag)) {
             add_infix(&full_name, "", "+");
         }
-        if (is_workspace_the_selected_one(ws)) {
+        if (is_workspace_the_selected_one(tag)) {
             add_infix(&full_name, "*", "*");
         }
 
-        bool is_active = workspace_is_active(ws);
+        bool is_active = workspace_is_active(tag);
         json_object *tagset_object = ipc_json_describe_tag(full_name, is_active, m);
         json_object_array_add(array, tagset_object);
 
         // for the second monitor
-        if (is_workspace_extern(ws)) {
-            struct monitor *selected_monitor = workspace_get_selected_monitor(ws);
-            char *hidden_name = strdup(ws->name);
+        if (is_workspace_extern(tag)) {
+            struct monitor *selected_monitor = workspace_get_selected_monitor(tag);
+            char *hidden_name = strdup(tag->name);
             add_infix(&hidden_name, "(", ")");
             json_object *tagset_object = ipc_json_describe_tag(hidden_name, false, selected_monitor);
             json_object_array_add(array, tagset_object);
@@ -393,8 +393,8 @@ json_object *ipc_json_describe_selected_container(struct monitor *m)
     json_object_object_get_ex(monitor_object, "nodes", &monitor_children);
 
     struct monitor *sel_m = server_get_selected_monitor();
-    struct tag *ws = monitor_get_active_workspace(sel_m);
-    json_object *workspace_object = ipc_json_describe_tag(ws->name, true, sel_m);
+    struct tag *tag = monitor_get_active_workspace(sel_m);
+    json_object *workspace_object = ipc_json_describe_tag(tag->name, true, sel_m);
     json_object_array_add(monitor_children, workspace_object);
     json_object *workspace_children;
     json_object_object_get_ex(monitor_object, "nodes", &workspace_children);

@@ -73,8 +73,8 @@ static void emit_signal(GPtrArray *func_refs, int narg)
 void call_update_function(struct event_handler *ev, int n)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct tag *ws = monitor_get_active_workspace(m);
-    struct layout *lt = workspace_get_layout(ws);
+    struct tag *tag = monitor_get_active_workspace(m);
+    struct layout *lt = workspace_get_layout(tag);
 
     create_lua_layout(L, lt);
     emit_signal(ev->on_update_func_refs, 1);

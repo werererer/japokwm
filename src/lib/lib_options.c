@@ -135,16 +135,16 @@ int lib_reload(lua_State *L)
 
     // TODO: do we need to reset all layouts? or is it undesirable?
     for (GList *iterator = server_get_workspaces(); iterator; iterator = iterator->next) {
-        struct tag *ws = iterator->data;
-        set_default_layout(ws);
+        struct tag *tag = iterator->data;
+        set_default_layout(tag);
     }
 
     notify_msg("reloaded config file");
 
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
-        struct tag *ws = monitor_get_active_workspace(m);
-        tagset_focus_tags(ws, ws->prev_tags);
+        struct tag *tag = monitor_get_active_workspace(m);
+        tagset_focus_tags(tag, tag->prev_tags);
     }
 
     arrange();

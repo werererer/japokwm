@@ -341,16 +341,16 @@ void copy_options(struct options *dest_option, struct options *src_option)
     assign_list(&dest_option->keybindings, src_option->keybindings, copy_keybinding);
 }
 
-int workspace_get_new_position(struct tag *ws)
+int workspace_get_new_position(struct tag *tag)
 {
-    struct layout *lt = workspace_get_layout(ws);
+    struct layout *lt = workspace_get_layout(tag);
     int func_ref = lt->options->new_position_func_ref;
     if (func_ref == 0) {
         return 0;
     } else {
-        int ws_id = ws->id;
-        bool is_focused = is_workspace_the_selected_one(ws)
-            && workspace_get_monitor(ws) == server_get_selected_monitor();
+        int ws_id = tag->id;
+        bool is_focused = is_workspace_the_selected_one(tag)
+            && workspace_get_monitor(tag) == server_get_selected_monitor();
         lua_rawgeti(L, LUA_REGISTRYINDEX, func_ref);
         lua_pushinteger(L, ws_id);
         lua_pushboolean(L, is_focused);
@@ -361,16 +361,16 @@ int workspace_get_new_position(struct tag *ws)
     }
 }
 
-int workspace_get_new_focus_position(struct tag *ws)
+int workspace_get_new_focus_position(struct tag *tag)
 {
-    struct layout *lt = workspace_get_layout(ws);
+    struct layout *lt = workspace_get_layout(tag);
     int func_ref = lt->options->new_focus_position_func_ref;
     if (func_ref == 0) {
         return 0;
     } else {
-        int ws_id = ws->id;
-        bool is_focused = is_workspace_the_selected_one(ws)
-            && workspace_get_monitor(ws) == server_get_selected_monitor();
+        int ws_id = tag->id;
+        bool is_focused = is_workspace_the_selected_one(tag)
+            && workspace_get_monitor(tag) == server_get_selected_monitor();
         lua_rawgeti(L, LUA_REGISTRYINDEX, func_ref);
         lua_pushinteger(L, ws_id);
         lua_pushboolean(L, is_focused);

@@ -87,7 +87,7 @@ void repush(int pos, int pos2);
 void container_set_floating(struct container *con, void (*fix_position)(struct container *con),
         bool floating);
 void container_set_hidden(struct container *con, bool b);
-void container_set_hidden_at_workspace(struct container *con, bool b, struct tag *ws);
+void container_set_hidden_at_workspace(struct container *con, bool b, struct tag *tag);
 void set_container_monitor(struct container *con, struct monitor *m);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
@@ -95,7 +95,7 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
 struct container_property *container_get_property(struct container *con);
 struct container_property *container_get_property_at_workspace(
         struct container *con,
-        struct tag *ws);
+        struct tag *tag);
 
 void container_set_current_geom(struct container *con, struct wlr_box *geom);
 void container_set_tiled_geom(struct container *con, struct wlr_box *geom);
@@ -104,15 +104,15 @@ struct wlr_box *container_get_tiled_geom(struct container *con);
 struct wlr_box *container_get_floating_geom(struct container *con);
 struct wlr_box *container_get_current_geom(struct container *con);
 bool container_get_hidden(struct container *con);
-bool container_get_hidden_at_workspace(struct container *con, struct tag *ws);
+bool container_get_hidden_at_workspace(struct container *con, struct tag *tag);
 
 void container_set_border_width(struct container *con, int border_width);
 int container_get_border_width(struct container *con);
 
 void container_set_just_workspace_id(struct container *con, int ws_id);
 void container_set_workspace_id(struct container *con, int ws_id);
-void container_set_workspace(struct container *con, struct tag *ws);
-void move_container_to_workspace(struct container *con, struct tag *ws);
+void container_set_workspace(struct container *con, struct tag *tag);
+void move_container_to_workspace(struct container *con, struct tag *tag);
 
 struct monitor *container_get_monitor(struct container *con);
 
@@ -129,7 +129,7 @@ bool container_is_bar(struct container *con);
 struct tag *container_get_workspace(struct container *con);
 bool container_is_floating(struct container *con);
 bool container_is_floating_and_visible(struct container *con);
-bool container_is_floating_on_workspace(struct container *con, struct tag *ws);
+bool container_is_floating_on_workspace(struct container *con, struct tag *tag);
 bool container_is_tiled(struct container *con);
 bool container_is_tiled_and_visible(struct container *con);
 bool container_is_hidden(struct container *con);
