@@ -23,7 +23,7 @@ struct client *create_client(enum shell shell_type, union surface_t surface)
 {
     struct client *c = calloc(1, sizeof(*c));
 
-    c->sticky_tags = bitset_create();
+    c->sticky_tags = bitset_create_with_data(c);
     c->type = shell_type;
     c->surface = surface;
 

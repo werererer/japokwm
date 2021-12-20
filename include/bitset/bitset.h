@@ -43,6 +43,7 @@ typedef struct BitSet {
 
 /* Setup */
 BitSet *bitset_create();
+BitSet *bitset_create_with_data(void *data);
 
 BitSet* bitset_copy(BitSet* source);
 // both dest and source must be initialized

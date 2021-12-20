@@ -1,11 +1,13 @@
 #include "lib/lib_bitset.h"
 
-#include "server.h"
-#include "translationLayer.h"
 #include "bitset/bitset.h"
+#include "client.h"
+#include "container.h"
+#include "lib/lib_list.h"
+#include "server.h"
 #include "tag.h"
 #include "tagset.h"
-#include "lib/lib_list.h"
+#include "translationLayer.h"
 
 static const struct luaL_Reg bitset_gc_meta[] =
 {
