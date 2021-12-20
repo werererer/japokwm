@@ -183,7 +183,7 @@ int lib_list_repush(lua_State *L)
 
     workspace_repush(array, i, abs_index);
 
-    struct workspace *ws = server_get_selected_workspace();
+    struct tag *ws = server_get_selected_workspace();
     tagset_reload(ws);
     arrange();
     return 0;

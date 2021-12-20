@@ -195,13 +195,13 @@ void load_default_lua_config(lua_State *L)
     // FIXME: you have to reconnect your workspaces because workspaces may have
     // been destroyed that belong to the tagset this may lead to segfaults
     for (int i = 0; i < server_get_workspace_count(); i++) {
-        struct workspace *ws = get_workspace(i);
+        struct tag *ws = get_workspace(i);
         set_default_layout(ws);
     }
 
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
-        struct workspace *ws = monitor_get_active_workspace(m);
+        struct tag *ws = monitor_get_active_workspace(m);
         tagset_focus_tags(ws, ws->prev_tags);
     }
 

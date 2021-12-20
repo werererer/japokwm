@@ -89,7 +89,7 @@ void map_request(struct wl_listener *listener, void *data)
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
     struct container *con = c->con;
-    struct workspace *ws = get_workspace(con->ws_id);
+    struct tag *ws = get_workspace(con->ws_id);
 
     add_container_to_tile(con);
     arrange();

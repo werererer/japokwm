@@ -5,7 +5,7 @@
 
 #include "utils/coreUtils.h"
 
-struct workspace;
+struct tag;
 
 struct focus_set {
     GPtrArray2D *focus_stack_lists_with_layer_shell;
@@ -28,7 +28,7 @@ void focus_set_write_to_parent(
         struct focus_set *parent,
         struct focus_set *child);
 void focus_set_append(
-        struct workspace *ws,
+        struct tag *ws,
         struct focus_set *dest,
         struct focus_set *src);
 void focus_set_clear(struct focus_set *focus_set);

@@ -165,7 +165,7 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
 void container_move_sticky_containers_current_ws(struct container *con)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     container_move_sticky_containers(con, ws->id);
 }
 
@@ -260,7 +260,7 @@ void client_handle_set_title(struct wl_listener *listener, void *data)
 
     c->title = title;
 
-    struct workspace *ws = container_get_workspace(c->con);
+    struct tag *ws = container_get_workspace(c->con);
     struct layout *lt = workspace_get_layout(ws);
     apply_rules(lt->options->rules, c->con);
 }
@@ -288,7 +288,7 @@ void client_handle_set_app_id(struct wl_listener *listener, void *data)
 
     c->app_id = app_id;
 
-    struct workspace *ws = container_get_workspace(c->con);
+    struct tag *ws = container_get_workspace(c->con);
     struct layout *lt = workspace_get_layout(ws);
     apply_rules(lt->options->rules, c->con);
 }

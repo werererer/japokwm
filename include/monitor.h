@@ -29,7 +29,7 @@ struct monrule {
     int lua_func_ref;
 };
 
-struct workspace;
+struct tag;
 void center_cursor_in_monitor(struct cursor *cursor, struct monitor *m);
 void create_monitor(struct wl_listener *listener, void *data);
 void create_output(struct wlr_backend *backend, void *data);
@@ -40,13 +40,13 @@ void focus_tags(struct BitSet bitset);
 void transform_monitor(struct monitor *m, enum wl_output_transform transform);
 void update_monitor_geometries();
 
-void monitor_set_selected_workspace(struct monitor *m, struct workspace *ws);
+void monitor_set_selected_workspace(struct monitor *m, struct tag *ws);
 
 BitSet *monitor_get_workspaces(struct monitor *m);
 
 struct monitor *output_to_monitor(struct wlr_output *output);
 struct monitor *xy_to_monitor(double x, double y);
-struct workspace *monitor_get_active_workspace(struct monitor *m);
+struct tag *monitor_get_active_workspace(struct monitor *m);
 struct layout *get_layout_in_monitor(struct monitor *m);
 struct root *monitor_get_active_root(struct monitor *m);
 struct wlr_box monitor_get_active_geom(struct monitor *m);

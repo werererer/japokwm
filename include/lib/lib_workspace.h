@@ -6,12 +6,12 @@
 
 #include "bitset/bitset.h"
 
-struct workspace;
+struct tag;
 
-void create_lua_workspace(lua_State *L, struct workspace *ws);
+void create_lua_workspace(lua_State *L, struct tag *ws);
 void lua_load_workspace(lua_State *L);
 
-struct workspace *check_workspace(lua_State *L, int narg);
+struct tag *check_workspace(lua_State *L, int narg);
 
 // functions
 int lib_workspace_get_next_empty(lua_State *L);

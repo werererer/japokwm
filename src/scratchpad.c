@@ -31,7 +31,7 @@ void move_to_scratchpad(struct container *con, int position)
         g_ptr_array_insert(server.scratchpad, new_position, con);
     }
 
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     tagset_reload(ws);
 
     container_damage_whole(con);
@@ -62,7 +62,7 @@ static void hide_container(struct container *con)
 static void show_container(struct container *con)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
 
     container_set_hidden(con, false);
     container_set_workspace_id(con, ws->id);
@@ -82,7 +82,7 @@ void show_scratchpad()
 
     struct container *con = g_ptr_array_index(server.scratchpad, 0);
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     bool visible_on_other_workspace = !container_get_hidden(con) && ws->id != con->ws_id;
     if (visible_on_other_workspace) {
         container_set_workspace_id(con, ws->id);

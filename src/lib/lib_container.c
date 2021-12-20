@@ -132,7 +132,7 @@ int lib_container_focus(lua_State *L)
 
 int lib_container_move_to_workspace(lua_State *L)
 {
-    struct workspace *ws = check_workspace(L, 2);
+    struct tag *ws = check_workspace(L, 2);
     lua_pop(L, 1);
     struct container *con = check_container(L, 1);
     lua_pop(L, 1);
@@ -207,7 +207,7 @@ int lib_container_toggle_add_sticky_restricted(lua_State *L) {
     lua_pop(L, 1);
 
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     struct container *con = get_container(ws, i);
     if (!con)
         return 0;
@@ -300,7 +300,7 @@ int lib_container_get_workspace(lua_State *L) {
     if (!con)
         return 0;
 
-    struct workspace *ws = container_get_workspace(con);
+    struct tag *ws = container_get_workspace(con);
     create_lua_workspace(L, ws);
     return 1;
 }

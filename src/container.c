@@ -26,7 +26,7 @@
 #include "list_sets/focus_stack_set.h"
 #include "options.h"
 
-static void add_container_to_workspace(struct container *con, struct workspace *ws);
+static void add_container_to_workspace(struct container *con, struct tag *ws);
 
 static struct container_property *create_container_property(struct container *con)
 {
@@ -79,7 +79,7 @@ void container_property_set_floating(struct container_property *property, bool f
     if (!container_property_is_floating(property)) {
         struct monitor *m = server_get_selected_monitor();
         if (container_get_monitor(con) != server_get_selected_monitor() || con->on_scratchpad) {
-            struct workspace *sel_ws = monitor_get_active_workspace(m);
+            struct tag *sel_ws = monitor_get_active_workspace(m);
             container_set_workspace_id(con, sel_ws->id);
         }
 
@@ -112,7 +112,7 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
         g_ptr_array_add(con->properties, container_property);
     }
 
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     container_set_workspace_id(con, ws->id);
 
     return con;
@@ -151,7 +151,7 @@ void remove_container_from_tile(struct container *con)
     if (con->on_scratchpad)
         remove_container_from_scratchpad(con);
 
-    struct workspace *ws = get_workspace(con->ws_id);
+    struct tag *ws = get_workspace(con->ws_id);
 
     workspace_remove_container_from_focus_stack(ws, con);
 
@@ -251,7 +251,7 @@ struct container *monitor_get_focused_container(struct monitor *m)
     if (!m)
         return NULL;
 
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     struct container *con = workspace_get_focused_container(ws);
     return con;
 }
@@ -262,7 +262,7 @@ struct container *xy_to_container(double x, double y)
     if (!m)
         return NULL;
 
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     GPtrArray *stack_set = workspace_get_complete_stack_copy(ws);
     for (int i = 0; i < stack_set->len; i++) {
         struct container *con = g_ptr_array_index(stack_set, i);
@@ -281,7 +281,7 @@ struct container *xy_to_container(double x, double y)
     return NULL;
 }
 
-static void add_container_to_workspace(struct container *con, struct workspace *ws)
+static void add_container_to_workspace(struct container *con, struct tag *ws)
 {
     if (!ws || !con)
         return;
@@ -433,7 +433,7 @@ void focus_container(struct container *con)
         return;
 
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
 
     if (!container_viewable_on_monitor(m, con))
         return;
@@ -472,13 +472,13 @@ void focus_on_stack(struct monitor *m, int i)
         return;
 
     if (sel->client->type == LAYER_SHELL) {
-        struct workspace *ws = monitor_get_active_workspace(m);
+        struct tag *ws = monitor_get_active_workspace(m);
         struct container *con = get_container(ws, 0);
         focus_container(con);
         return;
     }
 
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     GPtrArray *visible_container_list = tagset_get_global_floating_copy(ws);
     guint sel_index;
     g_ptr_array_find(visible_container_list, sel, &sel_index);
@@ -503,7 +503,7 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     if (container_is_unmanaged(sel))
         return;
 
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     GPtrArray *hidden_containers = tagset_get_hidden_list_copy(ws);
     struct container *con = get_relative_item_in_list(hidden_containers, 0, i);
 
@@ -564,7 +564,7 @@ void swap_on_hidden_stack(struct monitor *m, int i)
     if (container_is_unmanaged(sel))
         return;
 
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     GPtrArray *hidden_containers = tagset_get_hidden_list_copy(ws);
     struct container *con = get_relative_item_in_list(hidden_containers, 0, i);
 
@@ -621,7 +621,7 @@ void lift_container(struct container *con)
         return;
 
     struct monitor *m = container_get_monitor(con);
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     remove_container_from_stack(ws, con);
     add_container_to_stack(ws, con);
 }
@@ -629,7 +629,7 @@ void lift_container(struct container *con)
 void repush(int pos1, int pos2)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     GPtrArray *tiled_containers = workspace_get_tiled_list_copy(ws);
 
     if (pos1 >= tiled_containers->len)
@@ -661,7 +661,7 @@ void container_fix_position_to_begin(struct container *con)
     if (!m)
         return;
 
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     if (!container_is_floating(con)) {
         workspace_remove_container_from_floating_stack_locally(ws, con);
         workspace_add_container_to_containers_locally(ws, 0, con);
@@ -681,7 +681,7 @@ void container_fix_position(struct container *con)
     if (!m)
         return;
 
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     GPtrArray *tiled_containers = workspace_get_tiled_list_copy(ws);
     struct layout *lt = workspace_get_layout(ws);
 
@@ -722,11 +722,11 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
 
 void container_set_hidden(struct container *con, bool b)
 {
-    struct workspace *ws = server_get_selected_workspace();
+    struct tag *ws = server_get_selected_workspace();
     container_set_hidden_at_workspace(con, b, ws);
 }
 
-void container_set_hidden_at_workspace(struct container *con, bool b, struct workspace *ws)
+void container_set_hidden_at_workspace(struct container *con, bool b, struct tag *ws)
 {
     struct container_property *property =
         container_get_property_at_workspace(con, ws);
@@ -747,7 +747,7 @@ void set_container_monitor(struct container *con, struct monitor *m)
         con->client->m = m;
     }
 
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     container_set_workspace(con, ws);
 }
 
@@ -784,7 +784,7 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
     }
     container_set_floating_geom(con, &geom);
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
     container_set_border_width(con, lt->options->float_border_px);
     container_damage(con, true);
@@ -792,7 +792,7 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
 
 struct container_property *container_get_property(struct container *con)
 {
-    struct workspace *ws = server_get_selected_workspace();
+    struct tag *ws = server_get_selected_workspace();
     if (!ws)
         return NULL;
     while (ws->id >= con->properties->len) {
@@ -807,7 +807,7 @@ struct container_property *container_get_property(struct container *con)
 
 struct container_property *container_get_property_at_workspace(
         struct container *con,
-        struct workspace *ws)
+        struct tag *ws)
 {
     if (!ws)
         return NULL;
@@ -818,7 +818,7 @@ struct container_property *container_get_property_at_workspace(
 
 void container_set_current_geom(struct container *con, struct wlr_box *geom)
 {
-    struct workspace *ws = server_get_selected_workspace();
+    struct tag *ws = server_get_selected_workspace();
     struct layout *lt = workspace_get_layout(ws);
     if (container_is_tiled(con) || lt->options->arrange_by_focus) {
         container_set_tiled_geom(con, geom);
@@ -893,7 +893,7 @@ void container_set_floating_geom(struct container *con, struct wlr_box *geom)
 struct wlr_box *container_get_tiled_geom(struct container *con)
 {
     struct monitor *m = container_get_monitor(con);
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     if (!ws)
         return NULL;
 
@@ -911,7 +911,7 @@ struct wlr_box *container_get_tiled_geom(struct container *con)
 struct wlr_box *container_get_floating_geom(struct container *con)
 {
     struct monitor *m = container_get_monitor(con);
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     if (!ws) {
         return NULL;
     }
@@ -925,7 +925,7 @@ struct wlr_box *container_get_floating_geom(struct container *con)
 struct wlr_box *container_get_current_geom(struct container *con)
 {
     struct wlr_box *geom = NULL;
-    struct workspace *ws = server_get_selected_workspace();
+    struct tag *ws = server_get_selected_workspace();
     struct layout *lt = workspace_get_layout(ws);
     if (container_is_unmanaged(con)) {
         geom = container_get_floating_geom(con);
@@ -984,7 +984,7 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
     container_set_floating_geom(con, &geom);
 
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
     container_set_border_width(con, lt->options->float_border_px);
 
@@ -999,7 +999,7 @@ struct monitor *container_get_monitor(struct container *con)
         return con->client->m;
     }
 
-    struct workspace *ws = get_workspace(con->ws_id);
+    struct tag *ws = get_workspace(con->ws_id);
     if (!ws)
         return NULL;
 
@@ -1023,7 +1023,7 @@ int get_position_in_container_focus_stack(struct container *con)
         return INVALID_POSITION;
 
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     int position = find_in_composed_list(ws->visible_focus_set->focus_stack_visible_lists, cmp_ptr, con);
     return position;
 }
@@ -1034,7 +1034,7 @@ int get_position_in_container_stack(struct container *con)
         return INVALID_POSITION;
 
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     guint position = 0;
     g_ptr_array_find(ws->con_set->tiled_containers, con, &position);
     return position;
@@ -1043,7 +1043,7 @@ int get_position_in_container_stack(struct container *con)
 struct container *get_container_from_container_stack_position(int i)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     struct container *con = get_container(ws, i);
     return con;
 }
@@ -1066,18 +1066,18 @@ void container_set_just_workspace_id(struct container *con, int ws_id)
         return;
 
     // TODO optimize this
-    struct workspace *prev_ws = get_workspace(con->ws_id);
+    struct tag *prev_ws = get_workspace(con->ws_id);
     con->ws_id = ws_id;
 
     tagset_reload(prev_ws);
-    struct workspace *ws = get_workspace(ws_id);
+    struct tag *ws = get_workspace(ws_id);
     tagset_reload(ws);
 }
 
 void container_set_workspace_id(struct container *con, int ws_id)
 {
     // TODO optimize this
-    struct workspace *prev_ws = get_workspace(con->ws_id);
+    struct tag *prev_ws = get_workspace(con->ws_id);
     con->ws_id = ws_id;
     bitset_reset_all(con->client->sticky_workspaces);
     bitset_set(con->client->sticky_workspaces, con->ws_id);
@@ -1085,7 +1085,7 @@ void container_set_workspace_id(struct container *con, int ws_id)
     tagset_reload(prev_ws);
 }
 
-void container_set_workspace(struct container *con, struct workspace *ws)
+void container_set_workspace(struct container *con, struct tag *ws)
 {
     if (!con)
         return;
@@ -1097,7 +1097,7 @@ void container_set_workspace(struct container *con, struct workspace *ws)
     container_set_workspace_id(con, ws->id);
 }
 
-void move_container_to_workspace(struct container *con, struct workspace *ws)
+void move_container_to_workspace(struct container *con, struct tag *ws)
 {
     if (!ws)
         return;
@@ -1129,9 +1129,9 @@ bool container_is_bar(struct container *con)
     }
 }
 
-struct workspace *container_get_workspace(struct container *con)
+struct tag *container_get_workspace(struct container *con)
 {
-    struct workspace *ws = get_workspace(con->ws_id);
+    struct tag *ws = get_workspace(con->ws_id);
     return ws;
 }
 
@@ -1153,7 +1153,7 @@ bool container_is_floating_and_visible(struct container *con)
     return true;
 }
 
-bool container_is_floating_on_workspace(struct container *con, struct workspace *ws)
+bool container_is_floating_on_workspace(struct container *con, struct tag *ws)
 {
     struct container_property *property = container_get_property_at_workspace(con, ws);
     if (!property)

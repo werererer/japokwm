@@ -72,7 +72,7 @@ static struct server *check_server(lua_State *L) {
 // functions
 int lib_server_get_focused_workspace(lua_State *L)
 {
-    struct workspace *ws = server_get_selected_workspace();
+    struct tag *ws = server_get_selected_workspace();
     create_lua_workspace(L, ws);
     return 1;
 }
@@ -85,7 +85,7 @@ int lib_server_get_workspaces(lua_State *L)
     check_server(L);
     lua_pop(L, 1);
 
-    struct workspace *ws = get_workspace(i);
+    struct tag *ws = get_workspace(i);
     create_lua_workspace(L, ws);
     return 1;
 }

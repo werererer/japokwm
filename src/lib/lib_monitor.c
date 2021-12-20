@@ -90,7 +90,7 @@ int lib_monitor_get_workspace(lua_State *L)
     struct monitor *m = check_monitor(L, 1);
     lua_pop(L, 1);
 
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     create_lua_workspace(L, ws);
     return 1;
 }
