@@ -195,7 +195,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 c->is_independent = true;
 
                 debug_print("is unmanaged\n");
-                struct tag *tag = monitor_get_active_workspace(m);
+                struct tag *tag = monitor_get_active_tag(m);
                 if (x11_is_popup_menu(c) || xwayland_surface->parent) {
                     debug_print("is popup\n");
                     remove_in_composed_list(tag->focus_set->focus_stack_lists, cmp_ptr, con);

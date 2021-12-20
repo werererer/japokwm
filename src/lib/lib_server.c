@@ -2,7 +2,7 @@
 
 #include "server.h"
 #include "translationLayer.h"
-#include "lib/lib_workspace.h"
+#include "lib/lib_tag.h"
 #include "lib/lib_ring_buffer.h"
 #include "ring_buffer.h"
 
@@ -18,8 +18,8 @@ static const struct luaL_Reg server_f[] =
 
 static const struct luaL_Reg server_m[] =
 {
-    {"get_workspace", lib_server_get_workspaces},
-    {"get_focused_workspace", lib_server_get_focused_workspace},
+    {"get_tag", lib_server_get_tags},
+    {"get_focused_tag", lib_server_get_focused_tag},
     {"quit", lib_server_quit},
     {NULL, NULL},
 };
@@ -70,14 +70,14 @@ static struct server *check_server(lua_State *L) {
 }
 
 // functions
-int lib_server_get_focused_workspace(lua_State *L)
+int lib_server_get_focused_tag(lua_State *L)
 {
-    struct tag *tag = server_get_selected_workspace();
-    create_lua_workspace(L, tag);
+    struct tag *tag = server_get_selected_tag();
+    create_lua_tag(L, tag);
     return 1;
 }
 
-int lib_server_get_workspaces(lua_State *L)
+int lib_server_get_tags(lua_State *L)
 {
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
@@ -85,8 +85,8 @@ int lib_server_get_workspaces(lua_State *L)
     check_server(L);
     lua_pop(L, 1);
 
-    struct tag *tag = get_workspace(i);
-    create_lua_workspace(L, tag);
+    struct tag *tag = get_tag(i);
+    create_lua_tag(L, tag);
     return 1;
 }
 

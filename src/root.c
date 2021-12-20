@@ -128,10 +128,10 @@ void bars_update_visiblitiy(struct tag *tag)
         enum wlr_edges bar_dir = bar_get_direction(con);
         bool is_visible = visible_edges & bar_dir;
 
-        container_set_hidden_at_workspace(con, !is_visible, tag);
+        container_set_hidden_at_tag(con, !is_visible, tag);
     }
 
-    struct monitor *m = workspace_get_monitor(tag);
+    struct monitor *m = tag_get_monitor(tag);
     arrange_layers(m);
 }
 

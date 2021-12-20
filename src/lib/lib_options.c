@@ -42,7 +42,7 @@ static const struct luaL_Reg options_m[] =
 static const struct luaL_Reg options_setter[] =
 {
     {"arrange_by_focus", lib_set_arrange_by_focus},
-    {"automatic_workspace_naming", lib_set_automatic_workspace_naming},
+    {"automatic_tag_naming", lib_set_automatic_tag_naming},
     {"border_color", lib_set_border_color},
     {"border_width", lib_set_tile_border_width},
     {"default_layout", lib_set_default_layout},
@@ -60,15 +60,15 @@ static const struct luaL_Reg options_setter[] =
     {"root_color", lib_set_root_color},
     {"sloppy_focus", lib_set_sloppy_focus},
     {"smart_hidden_edges", lib_set_smart_hidden_edges},
-    {"workspaces", lib_create_workspaces},
+    {"tags", lib_create_tags},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg options_getter[] =
 {
-    /* {"workspaces", lib_create_workspaces}, */
+    /* {"tags", lib_create_tags}, */
     {"sloppy_focus", lib_get_sloppy_focus},
-    /* {"automatic_workspace_naming", lib_lua_idenity_funcion}, */
+    /* {"automatic_tag_naming", lib_lua_idenity_funcion}, */
     /* {"mod", lib_lua_idenity_funcion}, */
     {"inner_gaps", lib_get_inner_gaps},
     /* {"outer_gaps", lib_lua_idenity_funcion}, */
@@ -130,11 +130,11 @@ int lib_reload(lua_State *L)
     options_reset(server.default_layout->options);
     server_reset_layout_ring(server.default_layout_ring);
 
-    workspaces_remove_loaded_layouts(server_get_workspaces());
+    tags_remove_loaded_layouts(server_get_tags());
     load_config(L);
 
     // TODO: do we need to reset all layouts? or is it undesirable?
-    for (GList *iterator = server_get_workspaces(); iterator; iterator = iterator->next) {
+    for (GList *iterator = server_get_tags(); iterator; iterator = iterator->next) {
         struct tag *tag = iterator->data;
         set_default_layout(tag);
     }
@@ -143,12 +143,12 @@ int lib_reload(lua_State *L)
 
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
-        struct tag *tag = monitor_get_active_workspace(m);
+        struct tag *tag = monitor_get_active_tag(m);
         tagset_focus_tags(tag, tag->prev_tags);
     }
 
     arrange();
-    workspace_update_names(server_get_workspaces());
+    tag_update_names(server_get_tags());
     return 0;
 }
 
@@ -164,16 +164,16 @@ int lib_set_arrange_by_focus(lua_State *L)
     return 0;
 }
 
-int lib_set_automatic_workspace_naming(lua_State *L)
+int lib_set_automatic_tag_naming(lua_State *L)
 {
-    bool automatic_workspace_naming = lua_toboolean(L, -1);
+    bool automatic_tag_naming = lua_toboolean(L, -1);
     lua_pop(L, 1);
 
     struct options *options = check_options(L, 1);
     lua_pop(L, 1);
 
-    options->automatic_workspace_naming = automatic_workspace_naming;
-    ipc_event_workspace();
+    options->automatic_tag_naming = automatic_tag_naming;
+    ipc_event_tag();
     return 0;
 }
 
@@ -358,13 +358,13 @@ int lib_set_entry_focus_position_function(lua_State *L)
 }
 
 // TODO refactor this function hard to read
-int lib_create_workspaces(lua_State *L)
+int lib_create_tags(lua_State *L)
 {
     GPtrArray *tag_names = g_ptr_array_new();
 
     size_t len = lua_rawlen(L, -1);
     for (int i = 0; i < len; i++) {
-        const char *ws_name = get_config_array_str(L, "workspaces", i+1);
+        const char *ws_name = get_config_array_str(L, "tags", i+1);
         g_ptr_array_add(tag_names, strdup(ws_name));
     }
     lua_pop(L, 1);
@@ -375,7 +375,7 @@ int lib_create_workspaces(lua_State *L)
     list_clear(options->tag_names, NULL);
     wlr_list_cat(options->tag_names, tag_names);
 
-    load_workspaces(server_get_workspaces(), options->tag_names);
+    load_tags(server_get_tags(), options->tag_names);
 
     g_ptr_array_unref(tag_names);
 

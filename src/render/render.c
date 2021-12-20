@@ -278,8 +278,8 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
     };
 
     enum wlr_edges hidden_edges = WLR_EDGE_NONE;
-    struct tag *tag = monitor_get_active_workspace(m);
-    struct layout *lt = workspace_get_layout(tag);
+    struct tag *tag = monitor_get_active_tag(m);
+    struct layout *lt = tag_get_layout(tag);
     if (lt->options->smart_hidden_edges) {
         if (tag->visible_con_set->tiled_containers->len <= 1) {
             hidden_edges = get_hidden_edges(con, borders, lt->options->hidden_edges);
@@ -303,8 +303,8 @@ static void render_stack(struct monitor *m, pixman_region32_t *output_damage)
 {
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
-    struct tag *tag = monitor_get_active_workspace(m);
-    GPtrArray *stack_list = workspace_get_complete_stack_copy(tag);
+    struct tag *tag = monitor_get_active_tag(m);
+    GPtrArray *stack_list = tag_get_complete_stack_copy(tag);
     for (int i = stack_list->len-1; i >= 0; i--) {
         struct container *con = g_ptr_array_index(stack_list, i);
         if (!container_viewable_on_monitor(m, con))

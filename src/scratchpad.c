@@ -20,7 +20,7 @@ void move_to_scratchpad(struct container *con, int position)
     // TODO: try to remove this
     container_set_floating(con, container_fix_position, false);
 
-    con->ws_id = INVALID_WORKSPACE_ID;
+    con->ws_id = INVALID_tag_ID;
     con->on_scratchpad = true;
 
     if (server.scratchpad->len== 0) {
@@ -31,7 +31,7 @@ void move_to_scratchpad(struct container *con, int position)
         g_ptr_array_insert(server.scratchpad, new_position, con);
     }
 
-    struct tag *tag = monitor_get_active_workspace(m);
+    struct tag *tag = monitor_get_active_tag(m);
     tagset_reload(tag);
 
     container_damage_whole(con);
@@ -62,10 +62,10 @@ static void hide_container(struct container *con)
 static void show_container(struct container *con)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct tag *tag = monitor_get_active_workspace(m);
+    struct tag *tag = monitor_get_active_tag(m);
 
     container_set_hidden(con, false);
-    container_set_workspace_id(con, tag->id);
+    container_set_tag_id(con, tag->id);
     container_set_floating(con, container_fix_position, true);
     struct wlr_box center_box = get_center_box(m->geom);
     container_set_current_geom(con, &center_box);
@@ -82,10 +82,10 @@ void show_scratchpad()
 
     struct container *con = g_ptr_array_index(server.scratchpad, 0);
     struct monitor *m = server_get_selected_monitor();
-    struct tag *tag = monitor_get_active_workspace(m);
-    bool visible_on_other_workspace = !container_get_hidden(con) && tag->id != con->ws_id;
-    if (visible_on_other_workspace) {
-        container_set_workspace_id(con, tag->id);
+    struct tag *tag = monitor_get_active_tag(m);
+    bool visible_on_other_tag = !container_get_hidden(con) && tag->id != con->ws_id;
+    if (visible_on_other_tag) {
+        container_set_tag_id(con, tag->id);
         container_set_floating(con, container_fix_position, true);
         struct wlr_box center_box = get_center_box(m->geom);
         container_set_current_geom(con, &center_box);

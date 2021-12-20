@@ -14,7 +14,7 @@ struct container;
 struct server;
 struct tagset;
 
-/* when an action should change the workspace and the tagsets associated with it
+/* when an action should change the tag and the tagsets associated with it
  * you should use this macro.
  * NOTE: use to jump to the end of the current action*/
 #define DO_ACTION_LOCALLY(_ws, action) \
@@ -26,7 +26,7 @@ struct tagset;
         \
         do {\
             struct monitor *m = container_get_monitor(con);\
-            struct tag *_ws = monitor_get_active_workspace(m);\
+            struct tag *_ws = monitor_get_active_tag(m);\
             if (!_ws)\
                 continue;\
             struct container_set *con_set = _ws->visible_con_set;\
@@ -34,9 +34,9 @@ struct tagset;
         } while (0);\
     } while (0)
 
-#define DO_ACTION_GLOBALLY(workspaces, action) \
+#define DO_ACTION_GLOBALLY(tags, action) \
     do {\
-        for (GList *_iter = workspaces; _iter; _iter = _iter->next) {\
+        for (GList *_iter = tags; _iter; _iter = _iter->next) {\
             struct tag *_ws = _iter->data;\
             \
             struct container_set *con_set = _ws->con_set;\
@@ -47,7 +47,7 @@ struct tagset;
         }\
         do {\
             struct monitor *m = container_get_monitor(con);\
-            struct tag *_ws = monitor_get_active_workspace(m);\
+            struct tag *_ws = monitor_get_active_tag(m);\
             if (!_ws)\
                 continue;\
             struct container_set *con_set = _ws->visible_con_set;\
@@ -65,9 +65,9 @@ struct tag {
 
     BitSet *tags;
     BitSet *prev_tags;
-    // the monitor the workspace is locked to
+    // the monitor the tag is locked to
     struct monitor *m;
-    // the monitor the workspace is currently on
+    // the monitor the tag is currently on
     struct monitor *current_m;
 
     bool is_loaded;
@@ -78,95 +78,95 @@ struct tag {
     struct container_set *visible_con_set;
     struct focus_set *visible_focus_set;
 
-    // whether the workspace needs to be reloaded
+    // whether the tag needs to be reloaded
     bool damaged;
 
     /* should anchored layershell programs be taken into consideration */
     enum wlr_edges visible_bar_edges;
 };
 
-GHashTable *create_workspaces();
-void destroy_workspaces(GHashTable *workspaces);
+GHashTable *create_tags();
+void destroy_tags(GHashTable *tags);
 
-void load_workspaces(GList *workspaces, GPtrArray *tag_names);
+void load_tags(GList *tags, GPtrArray *tag_names);
 
-struct tag *create_workspace(const char *name, size_t id, struct layout *lt);
-void destroy_workspace(struct tag *tag);
+struct tag *create_tag(const char *name, size_t id, struct layout *lt);
+void destroy_tag(struct tag *tag);
 
-void update_workspaces(GList *workspaces, GPtrArray *tag_names);
-void update_workspace_ids(GPtrArray *workspaces);
+void update_tags(GList *tags, GPtrArray *tag_names);
+void update_tag_ids(GPtrArray *tags);
 
-bool is_workspace_occupied(struct tag *tag);
-bool workspace_is_visible(struct tag *tag, struct monitor *m);
-bool is_workspace_the_selected_one(struct tag *tag);
-bool is_workspace_extern(struct tag *tag);
-bool workspace_is_active(struct tag *tag);
+bool is_tag_occupied(struct tag *tag);
+bool tag_is_visible(struct tag *tag, struct monitor *m);
+bool is_tag_the_selected_one(struct tag *tag);
+bool is_tag_extern(struct tag *tag);
+bool tag_is_active(struct tag *tag);
 
-int get_workspace_container_count(struct tag *tag);
-bool is_workspace_empty(struct tag *tag);
+int get_tag_container_count(struct tag *tag);
+bool is_tag_empty(struct tag *tag);
 
 void focus_most_recent_container();
 struct container *get_container(struct tag *tag, int i);
 struct container *get_container_in_stack(struct tag *tag, int i);
 
-struct tag *find_next_unoccupied_workspace(GList *workspaces, struct tag *tag);
-struct tag *get_next_empty_workspace(GList *workspaces, size_t i);
-struct tag *get_prev_empty_workspace(GList *workspaces, size_t ws_id);
-struct tag *get_nearest_empty_workspace(GList *workspaces, int ws_id);
+struct tag *find_next_unoccupied_tag(GList *tags, struct tag *tag);
+struct tag *get_next_empty_tag(GList *tags, size_t i);
+struct tag *get_prev_empty_tag(GList *tags, size_t ws_id);
+struct tag *get_nearest_empty_tag(GList *tags, int ws_id);
 
-struct layout *workspace_get_layout(struct tag *tag);
-struct layout *workspace_get_previous_layout(struct tag *tag);
-struct root *workspace_get_root(struct tag *tag);
-struct wlr_box workspace_get_active_geom(struct tag *tag);
+struct layout *tag_get_layout(struct tag *tag);
+struct layout *tag_get_previous_layout(struct tag *tag);
+struct root *tag_get_root(struct tag *tag);
+struct wlr_box tag_get_active_geom(struct tag *tag);
 
-struct monitor *workspace_get_selected_monitor(struct tag *tag);
-struct monitor *workspace_get_monitor(struct tag *tag);
-void workspace_set_selected_monitor(struct tag *tag, struct monitor *m);
-void workspace_set_current_monitor(struct tag *tag, struct monitor *m);
-void workspace_swap(struct tag *tag1, struct tag *tag2);
-void workspace_swap_smart(struct tag *tag1, struct tag *tag2);
+struct monitor *tag_get_selected_monitor(struct tag *tag);
+struct monitor *tag_get_monitor(struct tag *tag);
+void tag_set_selected_monitor(struct tag *tag, struct monitor *m);
+void tag_set_current_monitor(struct tag *tag, struct monitor *m);
+void tag_swap(struct tag *tag1, struct tag *tag2);
+void tag_swap_smart(struct tag *tag1, struct tag *tag2);
 
-void destroy_workspaces(GHashTable *workspaces);
+void destroy_tags(GHashTable *tags);
 void push_layout(struct tag *tag, const char *layout_name);
 void set_default_layout(struct tag *tag);
 void focus_layout(struct tag *tag, const char *name);
-int workspace_load_layout(struct tag *tag, const char *layout_name);
-void workspace_remove_loaded_layouts(struct tag *tag);
-void workspaces_remove_loaded_layouts(GList *workspaces);
-void workspace_rename(struct tag *tag, const char *name);
-void workspace_update_name(struct tag *tag);
-void workspace_update_names(GList *workspaces);
-struct container *workspace_get_focused_container(struct tag *tag);
+int tag_load_layout(struct tag *tag, const char *layout_name);
+void tag_remove_loaded_layouts(struct tag *tag);
+void tags_remove_loaded_layouts(GList *tags);
+void tag_rename(struct tag *tag, const char *name);
+void tag_update_name(struct tag *tag);
+void tag_update_names(GList *tags);
+struct container *tag_get_focused_container(struct tag *tag);
 
-void workspace_add_container_to_containers(struct tag *tag, int i, struct container *con);
-void workspace_add_container_to_focus_stack(struct tag *tag, int i, struct container *con);
+void tag_add_container_to_containers(struct tag *tag, int i, struct container *con);
+void tag_add_container_to_focus_stack(struct tag *tag, int i, struct container *con);
 void remove_container_from_stack(struct tag *tag, struct container *con);
 void add_container_to_stack(struct tag *tag, struct container *con);
 void add_container_to_layer_stack(struct tag *tag, struct container *con);
 
 void list_set_insert_container_to_focus_stack(struct focus_set *focus_set, int position, struct container *con);
-void workspace_remove_container_from_containers_locally(struct tag *tag, struct container *con);
-void workspace_add_container_to_containers_locally(struct tag *tag, int i, struct container *con);
-void workspace_remove_container_from_focus_stack_locally(struct tag *tag, struct container *con);
-void workspace_add_container_to_focus_stack_locally(struct tag *tag, struct container *con);
-void workspace_remove_container_from_floating_stack_locally(struct tag *tag, struct container *con);
-void workspace_add_container_to_floating_stack_locally(struct tag *tag, int i, struct container *con);
+void tag_remove_container_from_containers_locally(struct tag *tag, struct container *con);
+void tag_add_container_to_containers_locally(struct tag *tag, int i, struct container *con);
+void tag_remove_container_from_focus_stack_locally(struct tag *tag, struct container *con);
+void tag_add_container_to_focus_stack_locally(struct tag *tag, struct container *con);
+void tag_remove_container_from_floating_stack_locally(struct tag *tag, struct container *con);
+void tag_add_container_to_floating_stack_locally(struct tag *tag, int i, struct container *con);
 
-void workspace_remove_container_from_visual_stack_layer(struct tag *tag, struct container *con);
-void workspace_add_container_to_visual_stack_layer(struct tag *tag, struct container *con);
+void tag_remove_container_from_visual_stack_layer(struct tag *tag, struct container *con);
+void tag_add_container_to_visual_stack_layer(struct tag *tag, struct container *con);
 
-void workspace_remove_container(struct tag *tag, struct container *con);
-void workspace_remove_container_from_focus_stack(struct tag *tag, struct container *con);
+void tag_remove_container(struct tag *tag, struct container *con);
+void tag_remove_container_from_focus_stack(struct tag *tag, struct container *con);
 
-void workspace_set_tags(struct tag *tag, BitSet *tags);
-void workspace_set_prev_tags(struct tag *tag, BitSet *tags);
+void tag_set_tags(struct tag *tag, BitSet *tags);
+void tag_set_prev_tags(struct tag *tag, BitSet *tags);
 
 GArray *container_array2D_get_positions_array(GPtrArray2D *containers);
 GArray *container_array_get_positions_array(GPtrArray *containers);
-void workspace_repush(GPtrArray *array, int i, int abs_index);
-void workspace_repush_workspace(struct tag *tag, struct container *con, int new_pos);
-void workspace_repush_on_focus_stack(struct tag *tag, struct container *con, int i);
+void tag_repush(GPtrArray *array, int i, int abs_index);
+void tag_repush_tag(struct tag *tag, struct container *con, int new_pos);
+void tag_repush_on_focus_stack(struct tag *tag, struct container *con, int i);
 
-bool workspace_sticky_contains_client(struct tag *tag, struct client *client);
+bool tag_sticky_contains_client(struct tag *tag, struct client *client);
 
 #endif /* TAG_H */

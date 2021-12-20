@@ -9,7 +9,7 @@ struct tagset;
 struct monitor;
 
 /*
- * list_set is used by tagsets and workspaces to hold all containers on them
+ * list_set is used by tagsets and tags to hold all containers on them
  * */
 struct container_set {
     GPtrArray *tiled_containers;

@@ -328,8 +328,8 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
 
     struct monitor *m = server_get_selected_monitor();
     struct container *sel = monitor_get_focused_container(m);
-    struct tag *tag = monitor_get_active_workspace(m);
-    struct layout *lt = workspace_get_layout(tag);
+    struct tag *tag = monitor_get_active_tag(m);
+    struct layout *lt = tag_get_layout(tag);
     if (!lt->options->sloppy_focus) {
         return;
     }

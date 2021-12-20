@@ -192,7 +192,7 @@ integers
 	set the current selected tags
 <where> ++
 	i: integer - an integer representing a binary number where each digit
-	represents a workspace that will be set
+	represents a tag that will be set
 
 *load_layout(l)* ++
 	load a layout ++
@@ -215,8 +215,8 @@ integers
 <where> ++
 	set: string - the name of the set
 
-*move_container_to_workspace(i)* ++
-	move the selected container to the workspace i ++
+*move_container_to_tag(i)* ++
+	move the selected container to the tag i ++
 <where> ++
 	i: integer
 
@@ -258,22 +258,22 @@ integers
 	show the first window on the scratchpad. If it is already visible hide it
 	instead and move it to the end of the scratchpad.
 
-*swap_workspace(i, i2)*
-	swap the workspace i with the workspace i2 ++
+*swap_tag(i, i2)*
+	swap the tag i with the tag i2 ++
 <where> ++
-	i: integer - workspace at i ++
-	i2: integer - workspace at i2
+	i: integer - tag at i ++
+	i2: integer - tag at i2
 
 *tag_view(i)*
 	tag a view
 <where> ++
 	i: integer - an integer representing a binary number where each digit
-	represents a workspace that will be toggled
+	represents a tag that will be toggled
 
 *toggle_bars(i)* ++
 	toggles layer_shell bars
 <where> ++
-	i: integer - the workspace from which the bar will be toggled
+	i: integer - the tag from which the bar will be toggled
 
 *toggle_floating()* ++
 	toggles if current container is floating
@@ -282,24 +282,24 @@ integers
 	toggle previous layout
 
 *toggle_tags()* ++
-	toggle previous tags on current workspace
+	toggle previous tags on current tag
 
-*toggle_workspace()* ++
-	toggle previous workspace
+*toggle_tag()* ++
+	toggle previous tag
 
 *view(i)* ++
-	view the ith workspace ++
+	view the ith tag ++
 <where> ++
-	i: integer - ith workspace
+	i: integer - ith tag
 
 *zoom()* ++
 	like dwm's zoom
 
 # CONTAINER
-*get_workspace(i, alpha)* ++
-	gets the workspace the container belongs to ++
+*get_tag(i, alpha)* ++
+	gets the tag the container belongs to ++
 <return> ++
-	integer - workspace id of the container
+	integer - tag id of the container
 
 *container_set_alpha(i, alpha)* ++
 	set the opacity of the container ++
@@ -317,7 +317,7 @@ integers
 	make container sticky ++
 <where> ++
 	i: integer - position of the container
-	sticky: integer - should represent the binary number for the workspaces to
+	sticky: integer - should represent the binary number for the tags to
 	set it sticky to. If it is 0 the container will be moved to the scratchpad
 
 # EVENT
@@ -337,12 +337,12 @@ integers
 
 # INFO
 *get_active_layout()* ++
-	get the name of the layout currently active on the selected workspace
+	get the name of the layout currently active on the selected tag
 <return> ++
 	string - name of the layout
 
 *get_this_container_count()* ++
-	get the amount of visible containers in this workspace
+	get the amount of visible containers in this tag
 <return> ++
 	integer - number of containers
 
@@ -357,7 +357,7 @@ integers
 	integer - number of master windows
 
 *get_previous_layout()* ++
-	get the name of the layout previously active on the selected workspace
+	get the name of the layout previously active on the selected tag
 <return> ++
 	string - name of the layout
 
@@ -371,20 +371,20 @@ integers
 	width: integer - width of the root area ++
 	height: integer - height of the root area
 
-*get_next_empty_workspace()* ++
-	Get next workspaces not used by any window
+*get_next_empty_tag()* ++
+	Get next tags not used by any window
 <return> ++
-	integer - workspace id of this empty workspace
+	integer - tag id of this empty tag
 
-*get_workspace()* ++
-	Get the workspaces id of the current workspace
+*get_tag()* ++
+	Get the tags id of the current tag
 <return> ++
-	integer - workspace id
+	integer - tag id
 
-*get_workspace_count()* ++
-	Get the amount of workspaces that currently exist
+*get_tag_count()* ++
+	Get the amount of tags that currently exist
 <return> ++
-	integer - number of workspaces
+	integer - number of tags
 
 *get_container_under_cursor()* ++
 	get the container beneath the cursor ++
@@ -438,10 +438,10 @@ integers
 	name: string - name of the layout set ++
 	layouts: layout_info - layouts that belong to this set
 
-*create_workspaces(names)*
-	create or recreate all workspaces with an array of names for each ++
-	workspace. The order of the workspace can be set by prefixing the names ++
-	with: "%i:" where %i represents the position the workspace will be on. ++
+*create_tags(names)*
+	create or recreate all tags with an array of names for each ++
+	tag. The order of the tag can be set by prefixing the names ++
+	with: "%i:" where %i represents the position the tag will be on. ++
 <where> ++
 	names: array(string)
 
@@ -453,9 +453,9 @@ integers
 <where> ++
 	b: boolean
 
-*set_automatic_workspace_naming(b)* ++
-	if b is true workspaces will be automatically to the app-id of the focused 
-	container on on that particular workspace
+*set_automatic_tag_naming(b)* ++
+	if b is true tags will be automatically to the app-id of the focused 
+	container on on that particular tag
 <where> ++
 	b: boolean
 
@@ -476,8 +476,8 @@ integers
 <where> ++
 	func: function(ws_id, is_focused) - the function that will be called ++
 	<where> ++
-		ws_id: integer - the workspace on which that happens ++
-		is_focused: bool - whether the workspace is currently focused/visible
+		ws_id: integer - the tag on which that happens ++
+		is_focused: bool - whether the tag is currently focused/visible
 	<return> ++
 		integer - the new entry position
 
@@ -487,8 +487,8 @@ integers
 <where> ++
 	func: function(ws_id, is_focused) - the function that will be called ++
 	<where> ++
-		ws_id: integer - the workspace on which that happens ++
-		is_focused: bool - whether the workspace is currently focused/visible
+		ws_id: integer - the tag on which that happens ++
+		is_focused: bool - whether the tag is currently focused/visible
 	<return> ++
 		integer - the new entry position
 
@@ -613,7 +613,7 @@ integers
 
 *set_smart_hidden_edges(b)* ++
 	if true edges are only hidden (see set_hidden_edges) if the number of ++
-	containers in the current workspace <= 1 ++
+	containers in the current tag <= 1 ++
 <where> ++
 	b: boolean
 

@@ -87,7 +87,7 @@ void options_reset(struct options *options)
     options->hidden_edges = WLR_EDGE_NONE;
     options->smart_hidden_edges = false;
     options->sloppy_focus = true;
-    options->automatic_workspace_naming = true;
+    options->automatic_tag_naming = true;
 
     list_clear(options->mon_rules, NULL);
     list_clear(options->rules, NULL);
@@ -162,59 +162,59 @@ void load_default_keybindings(struct options *options)
 
     bind_key(options, "mod-S-1", 
             if Container.focused then
-                Container.focused.workspace = Workspace.get(1)
+                Container.focused.tag = tag.get(1)
             end
             );
     bind_key(options, "mod-S-2", 
             if Container.focused then
-                Container.focused.workspace = Workspace.get(2)
+                Container.focused.tag = tag.get(2)
             end
             );
     bind_key(options, "mod-S-3", 
             if Container.focused then
-                Container.focused.workspace = Workspace.get(3)
+                Container.focused.tag = tag.get(3)
             end
             );
     bind_key(options, "mod-S-4", 
             if Container.focused then
-                Container.focused.workspace = Workspace.get(4)
+                Container.focused.tag = tag.get(4)
             end
             );
     bind_key(options, "mod-S-5", 
             if Container.focused then
-                Container.focused.workspace = Workspace.get(5)
+                Container.focused.tag = tag.get(5)
             end
             );
     bind_key(options, "mod-S-6", 
             if Container.focused then
-                Container.focused.workspace = Workspace.get(6)
+                Container.focused.tag = tag.get(6)
             end
             );
     bind_key(options, "mod-S-7", 
             if Container.focused then
-                Container.focused.workspace = Workspace.get(7)
+                Container.focused.tag = tag.get(7)
             end
             );
     bind_key(options, "mod-S-8", 
             if Container.focused then
-                Container.focused.workspace = Workspace.get(8)
+                Container.focused.tag = tag.get(8)
             end
             );
     bind_key(options, "mod-S-9", 
             if Container.focused then
-                Container.focused.workspace = Workspace.get(9)
+                Container.focused.tag = tag.get(9)
             end
             );
 
-    bind_key(options, "mod-C-1", Workspace.focused.tags:_xor(1 << 0));
-    bind_key(options, "mod-C-2", Workspace.focused.tags:_xor(1 << 1));
-    bind_key(options, "mod-C-3", Workspace.focused.tags:_xor(1 << 2));
-    bind_key(options, "mod-C-4", Workspace.focused.tags:_xor(1 << 3));
-    bind_key(options, "mod-C-5", Workspace.focused.tags:_xor(1 << 4));
-    bind_key(options, "mod-C-6", Workspace.focused.tags:_xor(1 << 5));
-    bind_key(options, "mod-C-7", Workspace.focused.tags:_xor(1 << 6));
-    bind_key(options, "mod-C-8", Workspace.focused.tags:_xor(1 << 7));
-    bind_key(options, "mod-C-9", Workspace.focused.tags:_xor(1 << 8));
+    bind_key(options, "mod-C-1", tag.focused.tags:_xor(1 << 0));
+    bind_key(options, "mod-C-2", tag.focused.tags:_xor(1 << 1));
+    bind_key(options, "mod-C-3", tag.focused.tags:_xor(1 << 2));
+    bind_key(options, "mod-C-4", tag.focused.tags:_xor(1 << 3));
+    bind_key(options, "mod-C-5", tag.focused.tags:_xor(1 << 4));
+    bind_key(options, "mod-C-6", tag.focused.tags:_xor(1 << 5));
+    bind_key(options, "mod-C-7", tag.focused.tags:_xor(1 << 6));
+    bind_key(options, "mod-C-8", tag.focused.tags:_xor(1 << 7));
+    bind_key(options, "mod-C-9", tag.focused.tags:_xor(1 << 8));
 
     bind_key(options, "mod-C-S-1", Container.focused.toggle_add_sticky(1 << 0));
     bind_key(options, "mod-C-S-2", Container.focused.toggle_add_sticky(1 << 1));
@@ -225,14 +225,14 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-C-S-7", Container.focused.toggle_add_sticky(1 << 6));
     bind_key(options, "mod-C-S-8", Container.focused.toggle_add_sticky(1 << 7));
 
-    bind_key(options, "mod-s 1", Workspace.focused:swap_smart(Workspace.get(1)));
-    bind_key(options, "mod-s 2", Workspace.focused:swap_smart(Workspace.get(2)));
-    bind_key(options, "mod-s 3", Workspace.focused:swap_smart(Workspace.get(3)));
-    bind_key(options, "mod-s 4", Workspace.focused:swap_smart(Workspace.get(4)));
-    bind_key(options, "mod-s 5", Workspace.focused:swap_smart(Workspace.get(5)));
-    bind_key(options, "mod-s 6", Workspace.focused:swap_smart(Workspace.get(6)));
-    bind_key(options, "mod-s 7", Workspace.focused:swap_smart(Workspace.get(7)));
-    bind_key(options, "mod-s 8", Workspace.focused:swap_smart(Workspace.get(8)));
+    bind_key(options, "mod-s 1", tag.focused:swap_smart(tag.get(1)));
+    bind_key(options, "mod-s 2", tag.focused:swap_smart(tag.get(2)));
+    bind_key(options, "mod-s 3", tag.focused:swap_smart(tag.get(3)));
+    bind_key(options, "mod-s 4", tag.focused:swap_smart(tag.get(4)));
+    bind_key(options, "mod-s 5", tag.focused:swap_smart(tag.get(5)));
+    bind_key(options, "mod-s 6", tag.focused:swap_smart(tag.get(6)));
+    bind_key(options, "mod-s 7", tag.focused:swap_smart(tag.get(7)));
+    bind_key(options, "mod-s 8", tag.focused:swap_smart(tag.get(8)));
 
     bind_key(options, "mod-t", Container.focused.property.floating = false);
 
@@ -257,13 +257,13 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-8", action.view_or_tag(8));
     bind_key(options, "mod-9", action.view_or_tag(9));
 
-    bind_key(options, "mod-b", Workspace.focused:toggle_bars());
-    bind_key(options, "mod-m", Workspace.focused.stack[1]:focus());
+    bind_key(options, "mod-b", tag.focused:toggle_bars());
+    bind_key(options, "mod-m", tag.focused.stack[1]:focus());
 
     bind_key(options, "mod-S-j", action.focus_on_hidden_stack(0));
     bind_key(options, "mod-S-k", action.focus_on_hidden_stack(-1));
 
-    bind_key(options, "mod-e", action.view(Workspace.focused:get_next_empty(Direction.right)));
+    bind_key(options, "mod-e", action.view(tag.focused:get_next_empty(Direction.right)));
     bind_key(options, "mod-S-space", Layout.load(server.default_layout_ring:prev()));
     bind_key(options, "mod-space", Layout.load(server.default_layout_ring:next()));
 
@@ -277,16 +277,16 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-tab", action.swap_on_hidden_stack(0));
     bind_key(options, "mod-S-tab", action.swap_on_hidden_stack(-1));
 
-    bind_key(options, "mod-period", action.toggle_workspace());
+    bind_key(options, "mod-period", action.toggle_tag());
     bind_key(options, "mod-S-period", action.toggle_tags());
 
     bind_key(options, "mod-0",
-            Workspace.focused.tags = 1 << Workspace.focused:get_id()
+            tag.focused.tags = 1 << tag.focused:get_id()
         );
     bind_key(options, "mod-S-0",
         local con = Container.focused
         if con then
-            Workspace.focused.tags = 1 << con.workspace:get_id()
+            tag.focused.tags = 1 << con.tag:get_id()
         end
     );
     bind_key(options, "mod-C-S-0",
@@ -333,7 +333,7 @@ void copy_options(struct options *dest_option, struct options *src_option)
     dest_option->arrange_by_focus = src_option->arrange_by_focus;
     dest_option->hidden_edges = src_option->hidden_edges;
     dest_option->smart_hidden_edges = src_option->smart_hidden_edges;
-    dest_option->automatic_workspace_naming = src_option->automatic_workspace_naming;
+    dest_option->automatic_tag_naming = src_option->automatic_tag_naming;
 
     assign_list(&dest_option->mon_rules, src_option->mon_rules, NULL);
     assign_list(&dest_option->rules, src_option->rules, NULL);
@@ -341,16 +341,16 @@ void copy_options(struct options *dest_option, struct options *src_option)
     assign_list(&dest_option->keybindings, src_option->keybindings, copy_keybinding);
 }
 
-int workspace_get_new_position(struct tag *tag)
+int tag_get_new_position(struct tag *tag)
 {
-    struct layout *lt = workspace_get_layout(tag);
+    struct layout *lt = tag_get_layout(tag);
     int func_ref = lt->options->new_position_func_ref;
     if (func_ref == 0) {
         return 0;
     } else {
         int ws_id = tag->id;
-        bool is_focused = is_workspace_the_selected_one(tag)
-            && workspace_get_monitor(tag) == server_get_selected_monitor();
+        bool is_focused = is_tag_the_selected_one(tag)
+            && tag_get_monitor(tag) == server_get_selected_monitor();
         lua_rawgeti(L, LUA_REGISTRYINDEX, func_ref);
         lua_pushinteger(L, ws_id);
         lua_pushboolean(L, is_focused);
@@ -361,16 +361,16 @@ int workspace_get_new_position(struct tag *tag)
     }
 }
 
-int workspace_get_new_focus_position(struct tag *tag)
+int tag_get_new_focus_position(struct tag *tag)
 {
-    struct layout *lt = workspace_get_layout(tag);
+    struct layout *lt = tag_get_layout(tag);
     int func_ref = lt->options->new_focus_position_func_ref;
     if (func_ref == 0) {
         return 0;
     } else {
         int ws_id = tag->id;
-        bool is_focused = is_workspace_the_selected_one(tag)
-            && workspace_get_monitor(tag) == server_get_selected_monitor();
+        bool is_focused = is_tag_the_selected_one(tag)
+            && tag_get_monitor(tag) == server_get_selected_monitor();
         lua_rawgeti(L, LUA_REGISTRYINDEX, func_ref);
         lua_pushinteger(L, ws_id);
         lua_pushboolean(L, is_focused);

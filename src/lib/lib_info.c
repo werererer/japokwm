@@ -13,7 +13,7 @@
 #include "root.h"
 #include "translationLayer.h"
 #include "lib/lib_layout.h"
-#include "lib/lib_workspace.h"
+#include "lib/lib_tag.h"
 #include "lib/lib_container.h"
 
 static const struct luaL_Reg info_meta[] =
@@ -25,9 +25,9 @@ static const struct luaL_Reg info_f[] =
 {
     {"get_active_layout", lib_layout_get_layout_name},
     {"get_container_under_cursor", lib_get_container_under_cursor},
-    {"get_next_empty_workspace", lib_workspace_get_next_empty},
+    {"get_next_empty_tag", lib_tag_get_next_empty},
     {"get_this_container_count", lib_get_this_container_count},
-    {"get_workspace_count", lib_get_workspace_count},
+    {"get_tag_count", lib_get_tag_count},
     {"is_container_not_in_limit", lib_is_container_not_in_limit},
     {"is_container_not_in_master_limit", lib_is_container_not_in_master_limit},
     {"is_keycombo", lib_is_keycombo},
@@ -66,16 +66,16 @@ void lua_load_info(lua_State *L)
 int lib_get_this_container_count(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct tag *tag = monitor_get_active_workspace(m);
+    struct tag *tag = monitor_get_active_tag(m);
 
     int i = get_slave_container_count(tag) + 1;
     lua_pushinteger(L, i);
     return 1;
 }
 
-int lib_get_workspace_count(lua_State *L)
+int lib_get_tag_count(lua_State *L)
 {
-    lua_pushinteger(L, server_get_workspace_count());
+    lua_pushinteger(L, server_get_tag_count());
     return 1;
 }
 

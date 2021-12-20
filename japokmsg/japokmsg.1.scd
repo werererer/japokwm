@@ -59,8 +59,8 @@ _swaymsg_ [options...] [message]
 	  anything beyond that point as an option. For example, use
 	  _swaymsg -- mark --add test_ instead of _swaymsg mark --add test_.
 
-*get\_workspaces*
-	Gets a JSON-encoded list of workspaces and their status.
+*get\_tags*
+	Gets a JSON-encoded list of tags and their status.
 
 *get\_inputs*
 	Gets a JSON-encoded list of current inputs.
@@ -70,7 +70,7 @@ _swaymsg_ [options...] [message]
 
 *get\_tree*
 	Gets a JSON-encoded layout tree of all open windows, containers, outputs,
-	workspaces, and so on.
+	tags, and so on.
 
 *get\_seats*
 	Gets a JSON-encoded list of all seats,

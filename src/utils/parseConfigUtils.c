@@ -186,26 +186,26 @@ void load_default_lua_config(lua_State *L)
     g_ptr_array_add(tagnames, "2:3");
     g_ptr_array_add(tagnames, "3:4");
     server.default_layout->name = "";
-    load_workspaces(server_get_workspaces(), tagnames);
+    load_tags(server_get_tags(), tagnames);
 
-    bitset_set(server.previous_bitset, server.previous_workspace);
+    bitset_set(server.previous_bitset, server.previous_tag);
 
-    workspaces_remove_loaded_layouts(server_get_workspaces());
+    tags_remove_loaded_layouts(server_get_tags());
 
-    // FIXME: you have to reconnect your workspaces because workspaces may have
+    // FIXME: you have to reconnect your tags because tags may have
     // been destroyed that belong to the tagset this may lead to segfaults
-    for (int i = 0; i < server_get_workspace_count(); i++) {
-        struct tag *tag = get_workspace(i);
+    for (int i = 0; i < server_get_tag_count(); i++) {
+        struct tag *tag = get_tag(i);
         set_default_layout(tag);
     }
 
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
-        struct tag *tag = monitor_get_active_workspace(m);
+        struct tag *tag = monitor_get_active_tag(m);
         tagset_focus_tags(tag, tag->prev_tags);
     }
 
-    ipc_event_workspace();
+    ipc_event_tag();
 
     arrange();
 }

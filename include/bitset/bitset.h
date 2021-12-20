@@ -2,7 +2,7 @@
 #define BITSET_H
 
 /* this data struct acts as an infinite list like you may know from haskell. We
- * need this data struct so that the user can create new workspaces lazily.*/
+ * need this data struct so that the user can create new tags lazily.*/
 
 #include <stdbool.h>
 #include <stddef.h>

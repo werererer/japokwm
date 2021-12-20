@@ -114,7 +114,7 @@ int lib_layout_load(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = server_get_selected_monitor();
-    struct tag *tag = monitor_get_active_workspace(m);
+    struct tag *tag = monitor_get_active_tag(m);
     push_layout(tag, strdup(layout_name));
 
     arrange();
@@ -126,12 +126,12 @@ int lib_layout_toggle(lua_State *L)
     const char *desired_layout = luaL_checkstring(L, 1);
     lua_pop(L, 1);
 
-    struct tag *tag = server_get_selected_workspace();
-    struct layout *lt = workspace_get_layout(tag);
+    struct tag *tag = server_get_selected_tag();
+    struct layout *lt = tag_get_layout(tag);
     bool is_layout = strcmp(lt->name, desired_layout) == 0;
 
     if (is_layout) {
-        struct layout *prev_layout = workspace_get_previous_layout(tag);
+        struct layout *prev_layout = tag_get_previous_layout(tag);
         push_layout(tag, strdup(prev_layout->name));
     } else {
         push_layout(tag, strdup(desired_layout));
@@ -213,7 +213,7 @@ int lib_layout_set_linked_layouts_ref(lua_State *L)
 
     size_t len = lua_rawlen(L, -1);
     for (int i = 0; i < len; i++) {
-        const char *layout_name = get_config_array_str(L, "workspaces", i+1);
+        const char *layout_name = get_config_array_str(L, "tags", i+1);
         g_ptr_array_add(lt->linked_layouts, strdup(layout_name));
     }
     lua_pop(L, 1);
@@ -250,8 +250,8 @@ int lib_layout_set_resize_function(lua_State *L)
 // getter
 int lib_layout_get_focused(lua_State *L)
 {
-    struct tag *tag = server_get_selected_workspace();
-    struct layout *lt = workspace_get_layout(tag);
+    struct tag *tag = server_get_selected_tag();
+    struct layout *lt = tag_get_layout(tag);
 
     create_lua_layout(L, lt);
     return 1;

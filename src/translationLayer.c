@@ -28,7 +28,7 @@
 #include "lib/lib_ring_buffer.h"
 #include "lib/lib_root.h"
 #include "lib/lib_server.h"
-#include "lib/lib_workspace.h"
+#include "lib/lib_tag.h"
 #include "lib/local_event_handler.h"
 #include "lib/local_options.h"
 #include "server.h"
@@ -283,7 +283,7 @@ void load_lua_api(lua_State *L)
     lua_load_ring_buffer(L);
     lua_load_root(L);
     lua_load_server(L);
-    lua_load_workspace(L);
+    lua_load_tag(L);
 }
 
 void init_global_config_variables(lua_State *L)

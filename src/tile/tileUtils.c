@@ -31,7 +31,7 @@ void arrange()
 {
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
-        struct tag *tag = monitor_get_active_workspace(m);
+        struct tag *tag = monitor_get_active_tag(m);
         focus_layout(tag, tag->current_layout);
     }
 
@@ -42,8 +42,8 @@ void arrange()
             continue;
 
         struct monitor *m = server_get_selected_monitor();
-        struct tag *tag = monitor_get_active_workspace(m);
-        struct layout *lt = workspace_get_layout(tag);
+        struct tag *tag = monitor_get_active_tag(m);
+        struct layout *lt = tag_get_layout(tag);
         container_set_border_width(con, lt->options->float_border_px);
         container_update_size(con);
         container_set_hidden(con, false);
@@ -67,7 +67,7 @@ static void set_layout_ref(struct layout *lt, int n_area)
 
 static int get_layout_container_area_count(struct tag *tag)
 {
-    struct layout *lt = workspace_get_layout(tag);
+    struct layout *lt = tag_get_layout(tag);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
 
     int len = luaL_len(L, -1);
@@ -85,7 +85,7 @@ static int get_layout_container_area_count(struct tag *tag)
 
 static int get_layout_container_max_area_count(struct tag *tag)
 {
-    struct layout *lt = workspace_get_layout(tag);
+    struct layout *lt = tag_get_layout(tag);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
 
     int len = luaL_len(L, -1);
@@ -101,7 +101,7 @@ static int get_layout_container_max_area_count(struct tag *tag)
 
 static void update_layout_counters(struct tag *tag)
 {
-    struct layout *lt = workspace_get_layout(tag);
+    struct layout *lt = tag_get_layout(tag);
 
     lt->n_all = get_container_count(tag);
     lt->n_area = get_layout_container_area_count(tag);
@@ -181,14 +181,14 @@ static struct wlr_box get_nth_geom_in_layout(lua_State *L, struct layout *lt,
 
 int get_slave_container_count(struct tag *tag)
 {
-    struct layout *lt = workspace_get_layout(tag);
+    struct layout *lt = tag_get_layout(tag);
     int abs_count = get_tiled_container_count(tag);
     return MAX(abs_count - lt->n_master, 0);
 }
 
 int get_floating_container_count(struct tag *tag)
 {
-    struct layout *lt = workspace_get_layout(tag);
+    struct layout *lt = tag_get_layout(tag);
 
     // there are no floating windows when using arrange by focus
     if (lt->options->arrange_by_focus)
@@ -225,15 +225,15 @@ void arrange_monitor(struct monitor *m)
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     struct wlr_box active_geom = monitor_get_active_geom(m);
 
-    struct tag *tag = monitor_get_active_workspace(m);
+    struct tag *tag = monitor_get_active_tag(m);
 
-    struct layout *lt = workspace_get_layout(tag);
+    struct layout *lt = tag_get_layout(tag);
     container_surround_gaps(&active_geom, lt->options->outer_gap);
 
     update_layout_counters(tag);
     call_update_function(server.event_handler, lt->n_area);
 
-    GPtrArray *tiled_containers = workspace_get_tiled_list_copy(tag);
+    GPtrArray *tiled_containers = tag_get_tiled_list_copy(tag);
 
     update_hidden_status_of_containers(m, tiled_containers);
 
@@ -250,7 +250,7 @@ void arrange_containers(
         struct wlr_box root_geom,
         GPtrArray *tiled_containers)
 {
-    struct layout *lt = workspace_get_layout(tag);
+    struct layout *lt = tag_get_layout(tag);
 
     /* each container will get an inner_gap. If two containers are adjacent the
      * inner_gap is applied twice. To counter this effect we divide the
@@ -281,7 +281,7 @@ void arrange_containers(
         // printf("con: %i ws: %i monitor: %p\n", i, con->client->ws_id, container_get_monitor(con));
         // assert(container_get_monitor(con) == server_get_selected_monitor());
 
-        struct monitor *m = workspace_get_monitor(tag);
+        struct monitor *m = tag_get_monitor(tag);
         arrange_container(con, m, i, root_geom, actual_inner_gap);
     }
 }
@@ -370,7 +370,7 @@ int get_container_count(struct tag *tag)
 int get_tiled_container_count(struct tag *tag)
 {
     int n = 0;
-    GPtrArray *tiled_containers = workspace_get_tiled_list_copy(tag);
+    GPtrArray *tiled_containers = tag_get_tiled_list_copy(tag);
 
     n = tiled_containers->len;
     g_ptr_array_unref(tiled_containers);

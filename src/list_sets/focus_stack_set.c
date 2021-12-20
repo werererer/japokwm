@@ -67,12 +67,12 @@ void focus_set_write_to_parent(
 }
 
 static bool is_container_valid_to_append(
-        void *workspace_ptr,
+        void *tag_ptr,
         GPtrArray *src_list,
         struct container *src_con
         )
 {
-    struct tag *tag = workspace_ptr;
+    struct tag *tag = tag_ptr;
     if (src_con->ws_id != tag->id) {
         return false;
     }
