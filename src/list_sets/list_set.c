@@ -159,7 +159,7 @@ void lists_append_list_under_condition(
         GPtrArray2D *dest,
         GPtrArray2D *src,
         is_condition_t is_condition,
-        struct workspace *ws
+        struct tag *ws
         )
 {
     assert(src->len == dest->len);

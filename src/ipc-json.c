@@ -107,7 +107,7 @@ static void add_infix(char **full_name, const char *prefix, const char *postfix)
     free(position);
 }
 
-static bool sel_con_has_bitset_here(struct container *con, struct workspace *ws)
+static bool sel_con_has_bitset_here(struct container *con, struct tag *ws)
 {
     if (!con)
         return false;
@@ -121,10 +121,10 @@ json_object *ipc_json_describe_tagsets()
     json_object *array = json_object_new_array();
 
     struct monitor *sel_m = server_get_selected_monitor();
-    struct workspace *sel_ws = monitor_get_active_workspace(sel_m);
+    struct tag *sel_ws = monitor_get_active_workspace(sel_m);
     struct container *sel_con = workspace_get_focused_container(sel_ws);
     for (GList *iterator = server_get_workspaces(); iterator; iterator = iterator->next) {
-        struct workspace *ws = iterator->data;
+        struct tag *ws = iterator->data;
         struct monitor *m = workspace_get_monitor(ws);
 
         if (!m)
@@ -393,7 +393,7 @@ json_object *ipc_json_describe_selected_container(struct monitor *m)
     json_object_object_get_ex(monitor_object, "nodes", &monitor_children);
 
     struct monitor *sel_m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(sel_m);
+    struct tag *ws = monitor_get_active_workspace(sel_m);
     json_object *workspace_object = ipc_json_describe_tag(ws->name, true, sel_m);
     json_object_array_add(monitor_children, workspace_object);
     json_object *workspace_children;

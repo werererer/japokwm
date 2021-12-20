@@ -341,7 +341,7 @@ void copy_options(struct options *dest_option, struct options *src_option)
     assign_list(&dest_option->keybindings, src_option->keybindings, copy_keybinding);
 }
 
-int workspace_get_new_position(struct workspace *ws)
+int workspace_get_new_position(struct tag *ws)
 {
     struct layout *lt = workspace_get_layout(ws);
     int func_ref = lt->options->new_position_func_ref;
@@ -361,7 +361,7 @@ int workspace_get_new_position(struct workspace *ws)
     }
 }
 
-int workspace_get_new_focus_position(struct workspace *ws)
+int workspace_get_new_focus_position(struct tag *ws)
 {
     struct layout *lt = workspace_get_layout(ws);
     int func_ref = lt->options->new_focus_position_func_ref;

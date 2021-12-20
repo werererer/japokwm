@@ -119,7 +119,7 @@ void server_reset_layout_ring(struct ring_buffer *layout_ring);
 int server_get_workspace_count();
 int server_get_workspace_key_count();
 GList *server_get_workspaces();
-struct workspace *get_workspace(int id);
+struct tag *get_workspace(int id);
 
 void server_prohibit_reloading_config();
 void server_allow_reloading_config();
@@ -131,6 +131,6 @@ bool server_is_keycombo(const char *key_combo_name);
 struct monitor *server_get_selected_monitor();
 void server_set_selected_monitor(struct monitor *m);
 
-struct workspace *server_get_selected_workspace();
+struct tag *server_get_selected_workspace();
 struct layout *server_get_selected_layout();
 #endif /* SERVER_H */

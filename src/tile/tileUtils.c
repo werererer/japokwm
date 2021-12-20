@@ -31,7 +31,7 @@ void arrange()
 {
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
-        struct workspace *ws = monitor_get_active_workspace(m);
+        struct tag *ws = monitor_get_active_workspace(m);
         focus_layout(ws, ws->current_layout);
     }
 
@@ -42,7 +42,7 @@ void arrange()
             continue;
 
         struct monitor *m = server_get_selected_monitor();
-        struct workspace *ws = monitor_get_active_workspace(m);
+        struct tag *ws = monitor_get_active_workspace(m);
         struct layout *lt = workspace_get_layout(ws);
         container_set_border_width(con, lt->options->float_border_px);
         container_update_size(con);
@@ -65,7 +65,7 @@ static void set_layout_ref(struct layout *lt, int n_area)
     lua_pop(L, 1);
 }
 
-static int get_layout_container_area_count(struct workspace *ws)
+static int get_layout_container_area_count(struct tag *ws)
 {
     struct layout *lt = workspace_get_layout(ws);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
@@ -83,7 +83,7 @@ static int get_layout_container_area_count(struct workspace *ws)
     return n_area;
 }
 
-static int get_layout_container_max_area_count(struct workspace *ws)
+static int get_layout_container_max_area_count(struct tag *ws)
 {
     struct layout *lt = workspace_get_layout(ws);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_copy_data_ref);
@@ -99,7 +99,7 @@ static int get_layout_container_max_area_count(struct workspace *ws)
     return max_n_area;
 }
 
-static void update_layout_counters(struct workspace *ws)
+static void update_layout_counters(struct tag *ws)
 {
     struct layout *lt = workspace_get_layout(ws);
 
@@ -179,14 +179,14 @@ static struct wlr_box get_nth_geom_in_layout(lua_State *L, struct layout *lt,
     return box;
 }
 
-int get_slave_container_count(struct workspace *ws)
+int get_slave_container_count(struct tag *ws)
 {
     struct layout *lt = workspace_get_layout(ws);
     int abs_count = get_tiled_container_count(ws);
     return MAX(abs_count - lt->n_master, 0);
 }
 
-int get_floating_container_count(struct workspace *ws)
+int get_floating_container_count(struct tag *ws)
 {
     struct layout *lt = workspace_get_layout(ws);
 
@@ -207,7 +207,7 @@ int get_floating_container_count(struct workspace *ws)
     return n;
 }
 
-int get_master_container_count(struct workspace *ws)
+int get_master_container_count(struct tag *ws)
 {
     int abs_count = get_tiled_container_count(ws);
     int slave_container_count = get_slave_container_count(ws);
@@ -215,7 +215,7 @@ int get_master_container_count(struct workspace *ws)
 }
 
 // amount of slave containers plus the one master area
-int get_container_area_count(struct workspace *ws)
+int get_container_area_count(struct tag *ws)
 {
     return get_slave_container_count(ws) + 1;
 }
@@ -225,7 +225,7 @@ void arrange_monitor(struct monitor *m)
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     struct wlr_box active_geom = monitor_get_active_geom(m);
 
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
 
     struct layout *lt = workspace_get_layout(ws);
     container_surround_gaps(&active_geom, lt->options->outer_gap);
@@ -246,7 +246,7 @@ void arrange_monitor(struct monitor *m)
 }
 
 void arrange_containers(
-        struct workspace *ws,
+        struct tag *ws,
         struct wlr_box root_geom,
         GPtrArray *tiled_containers)
 {
@@ -362,12 +362,12 @@ void update_hidden_status_of_containers(struct monitor *m, GPtrArray *tiled_cont
     }
 }
 
-int get_container_count(struct workspace *ws)
+int get_container_count(struct tag *ws)
 {
     return ws->visible_con_set->tiled_containers->len;
 }
 
-int get_tiled_container_count(struct workspace *ws)
+int get_tiled_container_count(struct tag *ws)
 {
     int n = 0;
     GPtrArray *tiled_containers = workspace_get_tiled_list_copy(ws);

@@ -66,7 +66,7 @@ void lua_load_info(lua_State *L)
 int lib_get_this_container_count(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
 
     int i = get_slave_container_count(ws) + 1;
     lua_pushinteger(L, i);

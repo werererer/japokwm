@@ -76,11 +76,11 @@ static const struct luaL_Reg workspace_getter[] =
     {NULL, NULL},
 };
 
-void create_lua_workspace(lua_State *L, struct workspace *ws)
+void create_lua_workspace(lua_State *L, struct tag *ws)
 {
     if (!ws)
         return;
-    struct workspace **user_con = lua_newuserdata(L, sizeof(struct workspace*));
+    struct tag **user_con = lua_newuserdata(L, sizeof(struct tag*));
     *user_con = ws;
 
     luaL_setmetatable(L, CONFIG_WORKSPACE);
@@ -103,10 +103,10 @@ void lua_load_workspace(lua_State *L)
             workspace_static_getter);
 }
 
-struct workspace *check_workspace(lua_State *L, int narg) {
+struct tag *check_workspace(lua_State *L, int narg) {
     void **ud = luaL_checkudata(L, narg, CONFIG_WORKSPACE);
     luaL_argcheck(L, ud != NULL, 1, "`container' expected");
-    return (struct workspace *)*ud;
+    return (struct tag *)*ud;
 }
 
 // functions
@@ -114,7 +114,7 @@ int lib_workspace_get_next_empty(lua_State *L)
 {
     enum wlr_direction dir = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    struct workspace *ws = check_workspace(L, 1);
+    struct tag *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
     int ws_id = ws->id;
@@ -142,7 +142,7 @@ int lib_workspace_get(lua_State *L)
     int ws_id = lua_idx_to_c_idx(luaL_checkinteger(L, -1));
     lua_pop(L, 1);
 
-    struct workspace *ws = get_workspace(ws_id);
+    struct tag *ws = get_workspace(ws_id);
     create_lua_workspace(L, ws);
     return 1;
 }
@@ -150,16 +150,16 @@ int lib_workspace_get(lua_State *L)
 // methods
 int lib_workspace_swap(lua_State *L)
 {
-    struct workspace *ws2 = check_workspace(L, 2);
+    struct tag *ws2 = check_workspace(L, 2);
     lua_pop(L, 1);
 
-    struct workspace *ws1 = check_workspace(L, 1);
+    struct tag *ws1 = check_workspace(L, 1);
     lua_pop(L, 1);
 
     workspace_swap(ws1, ws2);
 
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     tagset_reload(ws);
     arrange();
     workspace_update_names(server_get_workspaces());
@@ -171,19 +171,17 @@ int lib_workspace_swap(lua_State *L)
 
 int lib_workspace_swap_smart(lua_State *L)
 {
-    struct workspace *ws2 = check_workspace(L, 2);
+    struct tag *ws2 = check_workspace(L, 2);
     lua_pop(L, 1);
 
-    struct workspace *ws1 = check_workspace(L, 1);
+    struct tag *ws1 = check_workspace(L, 1);
     lua_pop(L, 1);
 
     workspace_swap_smart(ws1, ws2);
 
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     tagset_reload(ws);
-    tagset_reload(ws1);
-    tagset_reload(ws2);
     arrange();
     workspace_update_names(server_get_workspaces());
     focus_most_recent_container();
@@ -194,7 +192,7 @@ int lib_workspace_swap_smart(lua_State *L)
 
 int lib_workspace_get_id(lua_State *L)
 {
-    struct workspace *ws = check_workspace(L, 1);
+    struct tag *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
     lua_pushinteger(L, ws->id);
@@ -212,7 +210,7 @@ int lib_workspace_toggle_bars(lua_State *L)
         visible_edges = luaL_checkinteger(L, 2);
         lua_pop(L, 1);
     }
-    struct workspace *ws = check_workspace(L, 1);
+    struct tag *ws = check_workspace(L, 1);
     lua_pop(L, 1);
     toggle_bars_visible(ws, visible_edges);
     return 0;
@@ -224,7 +222,7 @@ int lib_set_tags(lua_State *L)
     BitSet *bitset = check_bitset(L, 2);
     lua_pop(L, 1);
 
-    struct workspace *ws = check_workspace(L, 1);
+    struct tag *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
     tagset_set_tags(ws, bitset);
@@ -235,7 +233,7 @@ int lib_workspace_set_bars_visibility(lua_State *L)
 {
     enum wlr_edges dir = luaL_checkinteger(L, 2);
     lua_pop(L, 1);
-    struct workspace *ws = check_workspace(L, 1);
+    struct tag *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
     set_bars_visible(ws, dir);
@@ -245,7 +243,7 @@ int lib_workspace_set_bars_visibility(lua_State *L)
 // getter
 int lib_workspace_get_focused(lua_State *L)
 {
-    struct workspace *ws = server_get_selected_workspace();
+    struct tag *ws = server_get_selected_workspace();
 
     create_lua_workspace(L, ws);
     return 1;
@@ -253,7 +251,7 @@ int lib_workspace_get_focused(lua_State *L)
 
 int lib_workspace_get_bars_visibility(lua_State *L)
 {
-    struct workspace *ws = check_workspace(L, 1);
+    struct tag *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
     lua_pushinteger(L, ws->visible_bar_edges);
@@ -262,7 +260,7 @@ int lib_workspace_get_bars_visibility(lua_State *L)
 
 int lib_workspace_get_focus_set(lua_State *L)
 {
-    struct workspace *ws = check_workspace(L, 1);
+    struct tag *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
     create_lua_focus_set(L, ws->focus_set);
@@ -271,7 +269,7 @@ int lib_workspace_get_focus_set(lua_State *L)
 
 int lib_workspace_get_focus_stack(lua_State *L)
 {
-    struct workspace *ws = check_workspace(L, 1);
+    struct tag *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
     create_lua_container_list(L, ws->focus_set->focus_stack_normal);
@@ -280,7 +278,7 @@ int lib_workspace_get_focus_stack(lua_State *L)
 
 int lib_workspace_get_layout(lua_State *L)
 {
-    struct workspace *ws = check_workspace(L, 1);
+    struct tag *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
     struct layout *lt = workspace_get_layout(ws);
@@ -290,7 +288,7 @@ int lib_workspace_get_layout(lua_State *L)
 
 int lib_workspace_get_previous_layout(lua_State *L)
 {
-    struct workspace *ws = check_workspace(L, 1);
+    struct tag *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
     struct layout *prev_layout = workspace_get_previous_layout(ws);
@@ -300,7 +298,7 @@ int lib_workspace_get_previous_layout(lua_State *L)
 
 int lib_workspace_get_stack(lua_State *L)
 {
-    struct workspace *ws = check_workspace(L, 1);
+    struct tag *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
     create_lua_container_list(L, ws->con_set->tiled_containers);
@@ -309,7 +307,7 @@ int lib_workspace_get_stack(lua_State *L)
 
 int lib_workspace_get_tags(lua_State *L)
 {
-    struct workspace *ws = check_workspace(L, 1);
+    struct tag *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
     BitSet *workspaces = ws->tags;
@@ -319,7 +317,7 @@ int lib_workspace_get_tags(lua_State *L)
 
 int lib_workspace_get_visible_focus_set(lua_State *L)
 {
-    struct workspace *ws = check_workspace(L, 1);
+    struct tag *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
     create_lua_focus_set(L, ws->visible_focus_set);
@@ -328,7 +326,7 @@ int lib_workspace_get_visible_focus_set(lua_State *L)
 
 int lib_workspace_get_visible_focus_stack(lua_State *L)
 {
-    struct workspace *ws = check_workspace(L, 1);
+    struct tag *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
     create_lua_container_list(L, ws->visible_focus_set->focus_stack_normal);
@@ -337,7 +335,7 @@ int lib_workspace_get_visible_focus_stack(lua_State *L)
 
 int lib_workspace_get_visible_stack(lua_State *L)
 {
-    struct workspace *ws = check_workspace(L, 1);
+    struct tag *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
     create_lua_container_list(L, ws->visible_con_set->tiled_containers);

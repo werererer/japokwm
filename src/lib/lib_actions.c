@@ -154,7 +154,7 @@ int lib_resize_main(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     struct layout *lt = workspace_get_layout(ws);
     enum wlr_edges dir = lt->options->resize_dir;
 
@@ -250,7 +250,7 @@ int lib_move_to_scratchpad(lua_State *L)
 
 int lib_view(lua_State *L)
 {
-    struct workspace *ws = check_workspace(L, 1);
+    struct tag *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
     tagset_focus_tags(ws, ws->tags);
@@ -263,14 +263,14 @@ int lib_view_or_tag(lua_State *L)
     lua_pop(L, 1);
 
     if (server_is_keycombo("_lib_view_or_tag_combo")) {
-        struct workspace *ws = server_get_selected_workspace();
+        struct tag *ws = server_get_selected_workspace();
         BitSet *bitset = bitset_create();
         bitset_set(bitset, i);
         bitset_xor(ws->tags, bitset);
         bitset_destroy(bitset);
         tagset_focus_workspace(ws);
     } else {
-        struct workspace *ws = get_workspace(i);
+        struct tag *ws = get_workspace(i);
         tagset_focus_workspace(ws);
     }
     server_start_keycombo("_lib_view_or_tag_combo");
@@ -296,7 +296,7 @@ int lib_zoom(lua_State *L)
     if (!sel)
         return 0;
 
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     GPtrArray *tiled_containers = workspace_get_tiled_list_copy(ws);
     guint position;
     bool found = g_ptr_array_find(tiled_containers, sel, &position);
@@ -345,7 +345,7 @@ int lib_toggle_all_bars(lua_State *L)
         lua_pop(L, 1);
     }
 
-    struct workspace *sel_ws = server_get_selected_workspace();
+    struct tag *sel_ws = server_get_selected_workspace();
 
     // toggle edges
     enum wlr_edges visible_edges = WLR_EDGE_NONE;
@@ -354,7 +354,7 @@ int lib_toggle_all_bars(lua_State *L)
     }
 
     for (int i = 0; i < server_get_workspace_key_count(); i++) {
-        struct workspace *ws = get_workspace(i);
+        struct tag *ws = get_workspace(i);
         set_bars_visible(ws, visible_edges);
     }
     return 0;
@@ -363,7 +363,7 @@ int lib_toggle_all_bars(lua_State *L)
 int lib_toggle_tags(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     BitSet *bitset = bitset_copy(ws->prev_tags);
     tagset_set_tags(ws, bitset);
     return 0;
@@ -371,7 +371,7 @@ int lib_toggle_tags(lua_State *L)
 
 int lib_toggle_workspace(lua_State *L)
 {
-    struct workspace *prev_ws = get_workspace(server.previous_workspace);
+    struct tag *prev_ws = get_workspace(server.previous_workspace);
     tagset_focus_workspace(prev_ws);
     return 0;
 }

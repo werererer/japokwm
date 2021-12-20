@@ -25,7 +25,7 @@
 static void update_workspaces_id(GPtrArray *workspaces)
 {
     for (int id = 0; id < workspaces->len; id++) {
-        struct workspace *ws = g_ptr_array_index(workspaces, id);
+        struct tag *ws = g_ptr_array_index(workspaces, id);
         ws->id = id;
     }
 }
@@ -38,7 +38,7 @@ static void _destroy_workspace(void *ws)
 void load_workspaces(GList *workspaces, GPtrArray *tag_names)
 {
     for (int i = 0; i < tag_names->len; i++) {
-        struct workspace *ws = get_workspace(i);
+        struct tag *ws = get_workspace(i);
         const char *name = g_ptr_array_index(tag_names, i);
         ws->current_layout = server.default_layout->name;
         ws->previous_layout = server.default_layout->name;
@@ -59,9 +59,9 @@ GHashTable *create_workspaces()
     return workspaces;
 }
 
-struct workspace *create_workspace(const char *name, size_t id, struct layout *lt)
+struct tag *create_workspace(const char *name, size_t id, struct layout *lt)
 {
-    struct workspace *ws = calloc(1, sizeof(struct workspace));
+    struct tag *ws = calloc(1, sizeof(struct tag));
     ws->name = strdup(name);
     ws->id = id;
 
@@ -93,7 +93,7 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
 void update_workspaces(GList *workspaces, GPtrArray *tag_names)
 {
     for (GList *iterator = workspaces; iterator; iterator = iterator->next) {
-        struct workspace *ws = iterator->data;
+        struct tag *ws = iterator->data;
         if (ws->id > tag_names->len)
             continue;
         const char *new_name = g_ptr_array_index(tag_names, ws->id);
@@ -104,7 +104,7 @@ void update_workspaces(GList *workspaces, GPtrArray *tag_names)
 void focus_most_recent_container()
 {
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
 
     struct container *con = monitor_get_focused_container(m);
     // TODO: this can be exported to an external function
@@ -119,19 +119,19 @@ void focus_most_recent_container()
     focus_container(con);
 }
 
-struct container *get_container(struct workspace *ws, int i)
+struct container *get_container(struct tag *ws, int i)
 {
     return get_in_composed_list(ws->visible_focus_set->focus_stack_visible_lists, i);
 }
 
-struct container *get_container_in_stack(struct workspace *ws, int i)
+struct container *get_container_in_stack(struct tag *ws, int i)
 {
     GPtrArray *tiled_containers = workspace_get_tiled_list_copy(ws);
     struct container *con = g_ptr_array_index(tiled_containers, i);
     return con;
 }
 
-void destroy_workspace(struct workspace *ws)
+void destroy_workspace(struct tag *ws)
 {
     for (int i = 0; i < ws->loaded_layouts->len; i++) {
         struct layout *lt = g_ptr_array_steal_index(ws->loaded_layouts, 0);
@@ -163,12 +163,12 @@ void destroy_workspace(struct workspace *ws)
 void update_workspace_ids(GPtrArray *workspaces)
 {
     for (int i = 0; i < workspaces->len; i++) {
-        struct workspace *ws = g_ptr_array_index(workspaces, i);
+        struct tag *ws = g_ptr_array_index(workspaces, i);
         ws->id = i;
     }
 }
 
-bool is_workspace_occupied(struct workspace *ws)
+bool is_workspace_occupied(struct tag *ws)
 {
     assert(ws);
 
@@ -177,11 +177,11 @@ bool is_workspace_occupied(struct workspace *ws)
     return is_occupied;
 }
 
-bool workspace_is_visible(struct workspace *ws, struct monitor *m)
+bool workspace_is_visible(struct tag *ws, struct monitor *m)
 {
     assert(ws != NULL);
 
-    struct workspace *sel_ws = monitor_get_active_workspace(m);
+    struct tag *sel_ws = monitor_get_active_workspace(m);
     if (ws == sel_ws) {
         return true;
     }
@@ -194,7 +194,7 @@ bool workspace_is_visible(struct workspace *ws, struct monitor *m)
     return false;
 }
 
-bool is_workspace_extern(struct workspace *ws)
+bool is_workspace_extern(struct tag *ws)
 {
     struct monitor *ws_m = workspace_get_selected_monitor(ws);
     if (!ws_m) {
@@ -202,31 +202,31 @@ bool is_workspace_extern(struct workspace *ws)
     }
 
     struct monitor *sel_m = server_get_selected_monitor();
-    struct workspace *sel_ws = monitor_get_active_workspace(sel_m);
+    struct tag *sel_ws = monitor_get_active_workspace(sel_m);
     if (bitset_test(sel_ws->tags, ws->id) && sel_m != ws_m) {
         return true;
     }
     return false;
 }
 
-bool is_workspace_the_selected_one(struct workspace *ws)
+bool is_workspace_the_selected_one(struct tag *ws)
 {
     struct monitor *m = workspace_get_monitor(ws);
-    struct workspace *sel_ws = monitor_get_active_workspace(m);
+    struct tag *sel_ws = monitor_get_active_workspace(m);
     return sel_ws->id == ws->id && !is_workspace_extern(ws);
 }
 
-bool workspace_is_active(struct workspace *ws)
+bool workspace_is_active(struct tag *ws)
 {
     struct monitor *m = workspace_get_monitor(ws);
     if (!m)
         return false;
-    struct workspace *sel_ws = monitor_get_active_workspace(m);
+    struct tag *sel_ws = monitor_get_active_workspace(m);
 
     return bitset_test(sel_ws->tags, ws->id);
 }
 
-int get_workspace_container_count(struct workspace *ws)
+int get_workspace_container_count(struct tag *ws)
 {
     if (!ws)
         return -1;
@@ -241,33 +241,33 @@ int get_workspace_container_count(struct workspace *ws)
     return count;
 }
 
-bool is_workspace_empty(struct workspace *ws)
+bool is_workspace_empty(struct tag *ws)
 {
     return get_workspace_container_count(ws) == 0;
 }
 
-struct workspace *find_next_unoccupied_workspace(GList *workspaces, struct workspace *ws)
+struct tag *find_next_unoccupied_workspace(GList *workspaces, struct tag *ws)
 {
     // we have infinity amount of workspaces so just get the next one
     // (infinity - 1 = infinity ;) )
     size_t start_id = ws ? ws->id : 0;
     for (size_t i = start_id ;; i++) {
-        struct workspace *ws = get_workspace(i);
+        struct tag *ws = get_workspace(i);
         if (!is_workspace_occupied(ws))
             return ws;
     }
 }
 
-struct workspace *get_next_empty_workspace(GList *workspaces, size_t ws_id)
+struct tag *get_next_empty_workspace(GList *workspaces, size_t ws_id)
 {
     for (size_t i = ws_id; i < 8; i++) {
-        struct workspace *ws = get_workspace(i);
+        struct tag *ws = get_workspace(i);
         if (is_workspace_empty(ws)) {
             return ws;
         }
     }
     for (size_t i = ws_id-1; i >= 0; i--) {
-        struct workspace *ws = get_workspace(i);
+        struct tag *ws = get_workspace(i);
         if (is_workspace_empty(ws)) {
             return ws;
         }
@@ -275,15 +275,15 @@ struct workspace *get_next_empty_workspace(GList *workspaces, size_t ws_id)
     return NULL;
 }
 
-struct workspace *get_nearest_empty_workspace(GList *workspaces, int ws_id)
+struct tag *get_nearest_empty_workspace(GList *workspaces, int ws_id)
 {
-    struct workspace *initial_workspace = get_workspace(ws_id);
+    struct tag *initial_workspace = get_workspace(ws_id);
     if (is_workspace_empty(initial_workspace)) {
         return initial_workspace;
     }
 
     int workspace_count = server_get_workspace_count();
-    struct workspace *ws = NULL;
+    struct tag *ws = NULL;
     for (int i = 0, up_counter = ws_id+1, down_counter = ws_id-1;
             i < workspace_count;
             i++,up_counter++,down_counter--) {
@@ -309,16 +309,16 @@ struct workspace *get_nearest_empty_workspace(GList *workspaces, int ws_id)
 }
 
 
-struct workspace *get_prev_empty_workspace(GList *workspaces, size_t ws_id)
+struct tag *get_prev_empty_workspace(GList *workspaces, size_t ws_id)
 {
     for (size_t i = ws_id-1; i >= 0; i--) {
-        struct workspace *ws = get_workspace(i);
+        struct tag *ws = get_workspace(i);
         if (is_workspace_empty(ws)) {
             return ws;
         }
     }
     for (size_t i = ws_id; i < 8; i++) {
-        struct workspace *ws = get_workspace(i);
+        struct tag *ws = get_workspace(i);
         if (is_workspace_empty(ws)) {
             return ws;
         }
@@ -326,7 +326,7 @@ struct workspace *get_prev_empty_workspace(GList *workspaces, size_t ws_id)
     return NULL;
 }
 
-struct layout *workspace_get_layout(struct workspace *ws)
+struct layout *workspace_get_layout(struct tag *ws)
 {
     if (!ws)
         return NULL;
@@ -337,7 +337,7 @@ struct layout *workspace_get_layout(struct workspace *ws)
     return g_ptr_array_index(ws->loaded_layouts, 0);
 }
 
-struct layout *workspace_get_previous_layout(struct workspace *ws)
+struct layout *workspace_get_previous_layout(struct tag *ws)
 {
     if (!ws)
         return NULL;
@@ -348,14 +348,14 @@ struct layout *workspace_get_previous_layout(struct workspace *ws)
     return g_ptr_array_index(ws->loaded_layouts, 1);
 }
 
-struct root *workspace_get_root(struct workspace *ws)
+struct root *workspace_get_root(struct tag *ws)
 {
     struct monitor *m = workspace_get_monitor(ws);
     struct root *root = monitor_get_active_root(m);
     return root;
 }
 
-struct wlr_box workspace_get_active_geom(struct workspace *ws)
+struct wlr_box workspace_get_active_geom(struct tag *ws)
 {
     struct wlr_box geom;
     struct root *root = workspace_get_root(ws);
@@ -363,13 +363,13 @@ struct wlr_box workspace_get_active_geom(struct workspace *ws)
     return geom;
 }
 
-struct monitor *workspace_get_selected_monitor(struct workspace *ws)
+struct monitor *workspace_get_selected_monitor(struct tag *ws)
 {
     assert(ws != NULL);
     return ws->m;
 }
 
-struct monitor *workspace_get_monitor(struct workspace *ws)
+struct monitor *workspace_get_monitor(struct tag *ws)
 {
     assert(ws != NULL);
 
@@ -382,22 +382,22 @@ struct monitor *workspace_get_monitor(struct workspace *ws)
     return NULL;
 }
 
-void workspace_set_selected_monitor(struct workspace *ws, struct monitor *m)
+void workspace_set_selected_monitor(struct tag *ws, struct monitor *m)
 {
     if (ws->m)
         return;
     ws->m = m;
 }
 
-void workspace_set_current_monitor(struct workspace *ws, struct monitor *m)
+void workspace_set_current_monitor(struct tag *ws, struct monitor *m)
 {
     ws->current_m = m;
 }
 
 // swap everything but the bits at ws*->id
 static void workspace_swap_supplementary_tags(
-        struct workspace *ws1,
-        struct workspace *ws2)
+        struct tag *ws1,
+        struct tag *ws2)
 {
     bool prev_ws1_value = bitset_test(ws1->tags, ws1->id);
     bool prev_ws1_ws2_value = bitset_test(ws1->tags, ws2->id);
@@ -414,11 +414,11 @@ static void workspace_swap_supplementary_tags(
  * preference. So if you don't like it just use the dumb version of swap
  * workspaces. And define your own helper function in lua.
  */
-static void swap_workspace_tags_smart(struct workspace *ws1, struct workspace *ws2)
+static void swap_workspace_tags_smart(struct tag *ws1, struct tag *ws2)
 {
     monitor_set_selected_workspace(server_get_selected_monitor(), ws1);
     for (GList *iterator = server_get_workspaces(); iterator; iterator = iterator->next) {
-        struct workspace *ws = iterator->data;
+        struct tag *ws = iterator->data;
 
         if (ws->id == ws1->id || ws->id == ws2->id) {
             continue;
@@ -433,7 +433,7 @@ static void swap_workspace_tags_smart(struct workspace *ws1, struct workspace *w
     workspace_swap_supplementary_tags(ws1, ws2);
 }
 
-void workspace_swap(struct workspace *ws1, struct workspace *ws2)
+void workspace_swap(struct tag *ws1, struct tag *ws2)
 {
     GPtrArray *future_ws2_containers = g_ptr_array_new();
     for (int i = 0; i < ws1->con_set->tiled_containers->len; i++) {
@@ -462,29 +462,29 @@ void workspace_swap(struct workspace *ws1, struct workspace *ws2)
     g_ptr_array_unref(future_ws2_containers);
 }
 
-void workspace_swap_smart(struct workspace *ws1, struct workspace *ws2)
+void workspace_swap_smart(struct tag *ws1, struct tag *ws2)
 {
     workspace_swap(ws1, ws2);
     swap_workspace_tags_smart(ws1, ws2);
 }
 
-BitSet *workspace_get_tags(struct workspace *ws)
+BitSet *workspace_get_tags(struct tag *ws)
 {
     return ws->tags;
 }
 
-BitSet *workspace_get_prev_tags(struct workspace *ws)
+BitSet *workspace_get_prev_tags(struct tag *ws)
 {
     return ws->prev_tags;
 }
 
-void push_layout(struct workspace *ws, const char *layout_name)
+void push_layout(struct tag *ws, const char *layout_name)
 {
     ws->previous_layout = ws->current_layout;
     ws->current_layout = layout_name;
 }
 
-void set_default_layout(struct workspace *ws)
+void set_default_layout(struct tag *ws)
 {
     push_layout(ws, server.default_layout->name);
 }
@@ -518,7 +518,7 @@ cleanup:
     free(file);
 }
 
-static int _load_layout(struct workspace *ws, const char *layout_name)
+static int _load_layout(struct tag *ws, const char *layout_name)
 {
     struct layout *lt = create_layout(L);
 
@@ -535,7 +535,7 @@ static int _load_layout(struct workspace *ws, const char *layout_name)
 }
 
 // returns position of the layout if it was found and -1 if not
-int workspace_load_layout(struct workspace *ws, const char *layout_name)
+int workspace_load_layout(struct tag *ws, const char *layout_name)
 {
     guint i;
     bool found = g_ptr_array_find_with_equal_func(ws->loaded_layouts, layout_name, cmp_layout_to_string, &i);
@@ -553,7 +553,7 @@ int workspace_load_layout(struct workspace *ws, const char *layout_name)
     return insert_position;
 }
 
-void focus_layout(struct workspace *ws, const char *name)
+void focus_layout(struct tag *ws, const char *name)
 {
     assert(ws != NULL);
     assert(name != NULL);
@@ -575,7 +575,7 @@ static void destroy_layout0(void *lt)
     destroy_layout(lt);
 }
 
-void workspace_remove_loaded_layouts(struct workspace *ws)
+void workspace_remove_loaded_layouts(struct tag *ws)
 {
     list_clear(ws->loaded_layouts, destroy_layout0);
 }
@@ -583,12 +583,12 @@ void workspace_remove_loaded_layouts(struct workspace *ws)
 void workspaces_remove_loaded_layouts(GList *workspaces)
 {
     for (GList *iter = workspaces; iter; iter = iter->next) {
-        struct workspace *ws = iter->data;
+        struct tag *ws = iter->data;
         workspace_remove_loaded_layouts(ws);
     }
 }
 
-void workspace_rename(struct workspace *ws, const char *name)
+void workspace_rename(struct tag *ws, const char *name)
 {
     if (!ws)
         return;
@@ -596,7 +596,7 @@ void workspace_rename(struct workspace *ws, const char *name)
     ws->name = strdup(name);
 }
 
-static struct container *workspace_get_local_focused_container(struct workspace *ws)
+static struct container *workspace_get_local_focused_container(struct tag *ws)
 {
     if (!ws)
         return NULL;
@@ -610,7 +610,7 @@ static struct container *workspace_get_local_focused_container(struct workspace 
     return NULL;
 }
 
-void workspace_update_name(struct workspace *ws)
+void workspace_update_name(struct tag *ws)
 {
     struct layout *lt = workspace_get_layout(ws);
     if (!lt)
@@ -657,12 +657,12 @@ void workspace_update_name(struct workspace *ws)
 void workspace_update_names(GList *workspaces)
 {
     for (GList *iterator = workspaces; iterator; iterator = iterator->next) {
-        struct workspace *ws = iterator->data;
+        struct tag *ws = iterator->data;
         workspace_update_name(ws);
     }
 }
 
-struct container *workspace_get_focused_container(struct workspace *ws)
+struct container *workspace_get_focused_container(struct tag *ws)
 {
     if (!ws)
         return NULL;
@@ -679,7 +679,7 @@ void list_set_add_container_to_containers(struct container_set *con_set, struct 
     list_insert(con_set->tiled_containers, i, con);
 }
 
-void workspace_add_container_to_containers(struct workspace *ws, int i, struct container *con)
+void workspace_add_container_to_containers(struct tag *ws, int i, struct container *con)
 {
     assert(con != NULL);
 
@@ -688,7 +688,7 @@ void workspace_add_container_to_containers(struct workspace *ws, int i, struct c
     );
 }
 
-void workspace_remove_container_from_containers_locally(struct workspace *ws, struct container *con)
+void workspace_remove_container_from_containers_locally(struct tag *ws, struct container *con)
 {
     struct layout *lt = workspace_get_layout(ws);
     if (lt->options->arrange_by_focus) {
@@ -701,7 +701,7 @@ void workspace_remove_container_from_containers_locally(struct workspace *ws, st
     }
 }
 
-void workspace_add_container_to_containers_locally(struct workspace *ws, int i, struct container *con)
+void workspace_add_container_to_containers_locally(struct tag *ws, int i, struct container *con)
 {
     struct layout *lt = workspace_get_layout(ws);
     if (lt->options->arrange_by_focus) {
@@ -745,12 +745,12 @@ void list_set_insert_container_to_focus_stack(struct focus_set *focus_set, int p
     list_insert(focus_set->focus_stack_normal, position, con);
 }
 
-void workspace_add_container_to_focus_stack(struct workspace *ws, int pos, struct container *con)
+void workspace_add_container_to_focus_stack(struct tag *ws, int pos, struct container *con)
 {
     // TODO: refactor me
     struct container *prev_sel = workspace_get_focused_container(ws);
     for (GList *iter = server_get_workspaces(); iter; iter = iter->next) {
-        struct workspace *ws = iter->data;
+        struct tag *ws = iter->data;
         list_set_insert_container_to_focus_stack(ws->focus_set, pos, con);
         update_reduced_focus_stack(ws);
     }
@@ -762,43 +762,43 @@ void workspace_add_container_to_focus_stack(struct workspace *ws, int pos, struc
     }
 }
 
-void workspace_remove_container_from_focus_stack_locally(struct workspace *ws, struct container *con)
+void workspace_remove_container_from_focus_stack_locally(struct tag *ws, struct container *con)
 {
     remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
     update_reduced_focus_stack(ws);
 }
 
-void workspace_add_container_to_focus_stack_locally(struct workspace *ws, struct container *con)
+void workspace_add_container_to_focus_stack_locally(struct tag *ws, struct container *con)
 {
     list_set_insert_container_to_focus_stack(ws->focus_set, 0, con);
     update_reduced_focus_stack(ws);
 }
 
-void workspace_remove_container_from_floating_stack_locally(struct workspace *ws, struct container *con)
+void workspace_remove_container_from_floating_stack_locally(struct tag *ws, struct container *con)
 {
     DO_ACTION_LOCALLY(ws, 
             g_ptr_array_remove(con_set->tiled_containers, con);
             );
 }
 
-void workspace_add_container_to_floating_stack_locally(struct workspace *ws, int i, struct container *con)
+void workspace_add_container_to_floating_stack_locally(struct tag *ws, int i, struct container *con)
 {
     DO_ACTION_LOCALLY(ws,
             g_ptr_array_insert(con_set->tiled_containers, i, con);
             );
 }
 
-void workspace_remove_container_from_visual_stack_layer(struct workspace *ws, struct container *con)
+void workspace_remove_container_from_visual_stack_layer(struct tag *ws, struct container *con)
 {
     remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
 }
 
-void workspace_add_container_to_visual_stack_layer(struct workspace *ws, struct container *con)
+void workspace_add_container_to_visual_stack_layer(struct tag *ws, struct container *con)
 {
     add_container_to_layer_stack(ws, con);
 }
 
-void add_container_to_layer_stack(struct workspace *ws, struct container *con)
+void add_container_to_layer_stack(struct tag *ws, struct container *con)
 {
     assert(con->client->type == LAYER_SHELL);
 
@@ -819,12 +819,12 @@ void add_container_to_layer_stack(struct workspace *ws, struct container *con)
     return;
 }
 
-void remove_container_from_stack(struct workspace *ws, struct container *con)
+void remove_container_from_stack(struct tag *ws, struct container *con)
 {
     g_ptr_array_remove(server.container_stack, con);
 }
 
-void add_container_to_stack(struct workspace *ws, struct container *con)
+void add_container_to_stack(struct tag *ws, struct container *con)
 {
     if (!con)
         return;
@@ -833,18 +833,18 @@ void add_container_to_stack(struct workspace *ws, struct container *con)
     g_ptr_array_insert(server.container_stack, 0, con);
 }
 
-void workspace_remove_container(struct workspace *ws, struct container *con)
+void workspace_remove_container(struct tag *ws, struct container *con)
 {
     DO_ACTION_GLOBALLY(server_get_workspaces(),
             g_ptr_array_remove(con_set->tiled_containers, con);
             );
 }
 
-void workspace_remove_container_from_focus_stack(struct workspace *ws, struct container *con)
+void workspace_remove_container_from_focus_stack(struct tag *ws, struct container *con)
 {
     struct container *prev_sel = workspace_get_focused_container(ws);
     for (GList *iter = server_get_workspaces(); iter; iter = iter->next) {
-        struct workspace *ws = iter->data;
+        struct tag *ws = iter->data;
         remove_in_composed_list(ws->focus_set->focus_stack_lists, cmp_ptr, con);
         remove_in_composed_list(ws->visible_focus_set->focus_stack_lists, cmp_ptr, con);
     }
@@ -856,12 +856,12 @@ void workspace_remove_container_from_focus_stack(struct workspace *ws, struct co
     }
 }
 
-void workspace_set_tags(struct workspace *ws, BitSet *tags)
+void workspace_set_tags(struct tag *ws, BitSet *tags)
 {
     bitset_assign_bitset(&ws->tags, tags);
 }
 
-void workspace_set_prev_tags(struct workspace *ws, struct BitSet *tags)
+void workspace_set_prev_tags(struct tag *ws, struct BitSet *tags)
 {
     bitset_assign_bitset(&ws->prev_tags, tags);
 }
@@ -872,7 +872,7 @@ static int get_in_container_stack(struct container *con)
         return INVALID_POSITION;
 
     struct monitor *m = server_get_selected_monitor();
-    struct workspace *ws = monitor_get_active_workspace(m);
+    struct tag *ws = monitor_get_active_workspace(m);
     guint position = 0;
     g_ptr_array_find(ws->con_set->tiled_containers, con, &position);
     return position;
@@ -925,7 +925,7 @@ void workspace_repush(GPtrArray *array, int i, int abs_index)
     g_ptr_array_insert(array, abs_index, con);
 }
 
-void workspace_repush_workspace(struct workspace *ws, struct container *con, int new_pos)
+void workspace_repush_workspace(struct tag *ws, struct container *con, int new_pos)
 {
     GPtrArray *tiled_list = workspace_get_tiled_list_copy(ws);
     g_ptr_array_remove(tiled_list, con);
@@ -939,14 +939,14 @@ void workspace_repush_workspace(struct workspace *ws, struct container *con, int
     workspace_write_to_workspaces(ws);
 }
 
-void workspace_repush_on_focus_stack(struct workspace *ws, struct container *con, int new_pos)
+void workspace_repush_on_focus_stack(struct tag *ws, struct container *con, int new_pos)
 {
     remove_in_composed_list(ws->visible_focus_set->focus_stack_lists, cmp_ptr, con);
     list_set_insert_container_to_focus_stack(ws->visible_focus_set, new_pos, con);
     focus_set_write_to_parent(ws->focus_set, ws->visible_focus_set);
 }
 
-bool workspace_sticky_contains_client(struct workspace *ws, struct client *client)
+bool workspace_sticky_contains_client(struct tag *ws, struct client *client)
 {
     return bitset_test(client->sticky_workspaces, ws->id);
 }

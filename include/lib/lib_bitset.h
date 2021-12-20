@@ -18,12 +18,12 @@ void lua_load_bitset(lua_State *L);
     do {\
         action(self, ##__VA_ARGS__);\
         if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_WORKSPACE)) {\
-            struct workspace *ws = self->data;\
+            struct tag *ws = self->data;\
             tagset_set_tags(ws, self);\
             return 0;\
         }\
         if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_CONTAINER)) {\
-            struct workspace *ws = self->data;\
+            struct tag *ws = self->data;\
             tagset_set_tags(ws, self);\
             return 0;\
         }\
