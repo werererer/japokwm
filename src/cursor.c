@@ -12,7 +12,7 @@
 #include "seat.h"
 #include "server.h"
 #include "tile/tileUtils.h"
-#include "workspace.h"
+#include "tag.h"
 
 static int offsetx, offsety;
 

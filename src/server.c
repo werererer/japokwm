@@ -2,7 +2,7 @@
 
 #include "list_sets/container_stack_set.h"
 #include "list_sets/focus_stack_set.h"
-#include "workspace.h"
+#include "tag.h"
 #include "monitor.h"
 #include "stringop.h"
 

@@ -9,7 +9,7 @@ test_files = files(
     'utils/coreUtils_test.c',
     'utils/gapUtils_test.c',
     'utils/stringUtils_test.c',
-    'workspace_test.c',
+    'tag_test.c',
     'scratchpad_test.c',
     'bitset_test.c',
     'keybinding_test.c',

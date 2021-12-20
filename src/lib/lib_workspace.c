@@ -9,7 +9,7 @@
 #include "tagset.h"
 #include "tile/tileUtils.h"
 #include "translationLayer.h"
-#include "workspace.h"
+#include "tag.h"
 #include "list_sets/focus_stack_set.h"
 #include "lib/lib_container.h"
 #include "list_sets/list_set.h"

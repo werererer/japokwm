@@ -9,7 +9,7 @@
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"
-#include "workspace.h"
+#include "tag.h"
 
 struct layout *create_layout(lua_State *L)
 {

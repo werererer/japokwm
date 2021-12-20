@@ -19,7 +19,7 @@
 #include "tile/tileUtils.h"
 #include "utils/gapUtils.h"
 #include "layer_shell.h"
-#include "workspace.h"
+#include "tag.h"
 #include "tagset.h"
 
 struct wlr_renderer *drw;

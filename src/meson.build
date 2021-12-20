@@ -39,7 +39,7 @@ srcs = files(
     'tagset.c',
     'translationLayer.c',
     'wlr_signal.c',
-    'workspace.c',
+    'tag.c',
     'xdg_shell.c',
     'xwayland.c',
     'bitset/bitset.c',

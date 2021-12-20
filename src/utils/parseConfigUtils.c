@@ -20,7 +20,7 @@
 #include "stringop.h"
 #include "utils/coreUtils.h"
 #include "rules/mon_rule.h"
-#include "workspace.h"
+#include "tag.h"
 #include "rules/rule.h"
 #include "translationLayer.h"
 #include "ipc-server.h"

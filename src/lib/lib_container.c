@@ -7,7 +7,7 @@
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "translationLayer.h"
-#include "workspace.h"
+#include "tag.h"
 #include "lib/lib_workspace.h"
 #include "lib/lib_geom.h"
 #include "lib/lib_container_property.h"

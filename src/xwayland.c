@@ -9,7 +9,7 @@
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "seat.h"
-#include "workspace.h"
+#include "tag.h"
 #include "list_sets/focus_stack_set.h"
 #include "tagset.h"
 

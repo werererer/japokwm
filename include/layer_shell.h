@@ -4,7 +4,7 @@
 #include <wayland-server.h>
 #include "client.h"
 #include "monitor.h"
-#include "workspace.h"
+#include "tag.h"
 
 struct edge {
     uint32_t singular_anchor;

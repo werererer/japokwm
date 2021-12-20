@@ -2,7 +2,7 @@
 
 #include "client.h"
 #include "container.h"
-#include "workspace.h"
+#include "tag.h"
 #include "list_sets/list_set.h"
 
 struct focus_set *focus_set_create()
