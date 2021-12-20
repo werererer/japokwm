@@ -69,7 +69,6 @@ struct tag *create_tag(const char *name, size_t id, struct layout *lt)
     tag->current_layout = lt->name;
     tag->previous_layout = lt->name;
 
-    // TODO: findout which value must be used
     tag->tags = bitset_create();
     tag->prev_tags = bitset_create();
     tag->tags->data = tag;
@@ -101,19 +100,29 @@ void update_tags(GList *tags, GPtrArray *tag_names)
     }
 }
 
+bool tag_has_no_visible_containers(struct tag *tag)
+{
+    return tag->visible_con_set->tiled_containers->len <= 0;
+}
+
+void tag_focus_first_container(struct tag *tag)
+{
+    if (tag_has_no_visible_containers(tag))
+        return;
+
+    struct container *con = g_ptr_array_index(tag->visible_con_set->tiled_containers, 0);
+    if (!con)
+        return;
+}
+
 void focus_most_recent_container()
 {
     struct monitor *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
 
     struct container *con = monitor_get_focused_container(m);
-    // TODO: this can be exported to an external function
     if (!con) {
-        if (tag->visible_con_set->tiled_containers->len <= 0)
-            return;
-        struct container *con = g_ptr_array_index(tag->visible_con_set->tiled_containers, 0);
-        if (!con)
-            return;
+        tag_focus_first_container(tag);
     }
 
     focus_container(con);

@@ -105,6 +105,8 @@ bool tag_is_active(struct tag *tag);
 int get_tag_container_count(struct tag *tag);
 bool is_tag_empty(struct tag *tag);
 
+bool tag_has_no_visible_containers(struct tag *tag);
+void tag_focus_first_container(struct tag *tag);
 void focus_most_recent_container();
 struct container *get_container(struct tag *tag, int i);
 struct container *get_container_in_stack(struct tag *tag, int i);
