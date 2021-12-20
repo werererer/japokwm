@@ -271,7 +271,7 @@ void monitor_set_selected_workspace(struct monitor *m, struct workspace *ws)
 BitSet *monitor_get_workspaces(struct monitor *m)
 {
     struct workspace *sel_ws = monitor_get_active_workspace(m);
-    return sel_ws->workspaces;
+    return sel_ws->tags;
 }
 
 void center_cursor_in_monitor(struct cursor *cursor, struct monitor *m)
@@ -316,7 +316,7 @@ void focus_monitor(struct monitor *m)
 
     // move floating containers over
     struct workspace *ws = monitor_get_active_workspace(m);
-    tagset_focus_tags(ws, ws->workspaces);
+    tagset_focus_tags(ws, ws->tags);
     server_set_selected_monitor(m);
 }
 

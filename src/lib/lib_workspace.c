@@ -182,6 +182,8 @@ int lib_workspace_swap_smart(lua_State *L)
     struct monitor *m = server_get_selected_monitor();
     struct workspace *ws = monitor_get_active_workspace(m);
     tagset_reload(ws);
+    tagset_reload(ws1);
+    tagset_reload(ws2);
     arrange();
     workspace_update_names(server_get_workspaces());
     focus_most_recent_container();
@@ -310,7 +312,7 @@ int lib_workspace_get_tags(lua_State *L)
     struct workspace *ws = check_workspace(L, 1);
     lua_pop(L, 1);
 
-    BitSet *workspaces = ws->workspaces;
+    BitSet *workspaces = ws->tags;
     create_lua_bitset_with_workspace(L, workspaces);
     return 1;
 }

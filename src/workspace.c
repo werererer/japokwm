@@ -70,12 +70,12 @@ struct workspace *create_workspace(const char *name, size_t id, struct layout *l
     ws->previous_layout = lt->name;
 
     // TODO: findout which value must be used
-    ws->workspaces = bitset_create();
-    ws->prev_workspaces = bitset_create();
-    ws->workspaces->data = ws;
+    ws->tags = bitset_create();
+    ws->prev_tags = bitset_create();
+    ws->tags->data = ws;
 
-    bitset_set(ws->workspaces, ws->id);
-    bitset_set(ws->prev_workspaces, ws->id);
+    bitset_set(ws->tags, ws->id);
+    bitset_set(ws->prev_tags, ws->id);
 
     ws->con_set = create_container_set();
     ws->visible_con_set = create_container_set();
@@ -141,8 +141,8 @@ void destroy_workspace(struct workspace *ws)
     workspace_remove_loaded_layouts(ws);
     g_ptr_array_unref(ws->loaded_layouts);
 
-    bitset_destroy(ws->workspaces);
-    bitset_destroy(ws->prev_workspaces);
+    bitset_destroy(ws->tags);
+    bitset_destroy(ws->prev_tags);
     focus_set_destroy(ws->focus_set);
     focus_set_destroy(ws->visible_focus_set);
 
@@ -185,7 +185,7 @@ bool workspace_is_visible(struct workspace *ws, struct monitor *m)
     if (ws == sel_ws) {
         return true;
     }
-    if (bitset_test(sel_ws->workspaces, ws->id)) {
+    if (bitset_test(sel_ws->tags, ws->id)) {
         return true;
     }
     if (ws->current_m && !is_workspace_empty(ws)) {
@@ -203,7 +203,7 @@ bool is_workspace_extern(struct workspace *ws)
 
     struct monitor *sel_m = server_get_selected_monitor();
     struct workspace *sel_ws = monitor_get_active_workspace(sel_m);
-    if (bitset_test(sel_ws->workspaces, ws->id) && sel_m != ws_m) {
+    if (bitset_test(sel_ws->tags, ws->id) && sel_m != ws_m) {
         return true;
     }
     return false;
@@ -223,7 +223,7 @@ bool workspace_is_active(struct workspace *ws)
         return false;
     struct workspace *sel_ws = monitor_get_active_workspace(m);
 
-    return bitset_test(sel_ws->workspaces, ws->id);
+    return bitset_test(sel_ws->tags, ws->id);
 }
 
 int get_workspace_container_count(struct workspace *ws)
@@ -399,15 +399,15 @@ static void workspace_swap_supplementary_tags(
         struct workspace *ws1,
         struct workspace *ws2)
 {
-    bool prev_ws1_value = bitset_test(ws1->workspaces, ws1->id);
-    bool prev_ws1_ws2_value = bitset_test(ws1->workspaces, ws2->id);
-    bool prev_ws2_value = bitset_test(ws2->workspaces, ws2->id);
-    bool prev_ws2_ws1_value = bitset_test(ws2->workspaces, ws1->id);
-    bitset_swap(ws1->workspaces, ws2->workspaces);
-    bitset_assign(ws1->workspaces, ws1->id, prev_ws1_value);
-    bitset_assign(ws1->workspaces, ws2->id, prev_ws2_ws1_value);
-    bitset_assign(ws2->workspaces, ws2->id, prev_ws2_value);
-    bitset_assign(ws2->workspaces, ws1->id, prev_ws1_ws2_value);
+    bool prev_ws1_value = bitset_test(ws1->tags, ws1->id);
+    bool prev_ws1_ws2_value = bitset_test(ws1->tags, ws2->id);
+    bool prev_ws2_value = bitset_test(ws2->tags, ws2->id);
+    bool prev_ws2_ws1_value = bitset_test(ws2->tags, ws1->id);
+    bitset_swap(ws1->tags, ws2->tags);
+    bitset_assign(ws1->tags, ws1->id, prev_ws1_value);
+    bitset_assign(ws1->tags, ws2->id, prev_ws2_ws1_value);
+    bitset_assign(ws2->tags, ws2->id, prev_ws2_value);
+    bitset_assign(ws2->tags, ws1->id, prev_ws1_ws2_value);
 }
 /**
  * A helper function to make swapping workspaces more natural. This is just my
@@ -423,11 +423,11 @@ static void swap_workspace_tags_smart(struct workspace *ws1, struct workspace *w
         if (ws->id == ws1->id || ws->id == ws2->id) {
             continue;
         }
-        bool b1 = bitset_test(ws->workspaces, ws1->id);
-        bool b2 = bitset_test(ws->workspaces, ws2->id);
+        bool b1 = bitset_test(ws->tags, ws1->id);
+        bool b2 = bitset_test(ws->tags, ws2->id);
 
-        bitset_assign(ws->workspaces, ws1->id, b2);
-        bitset_assign(ws->workspaces, ws2->id, b1);
+        bitset_assign(ws->tags, ws1->id, b2);
+        bitset_assign(ws->tags, ws2->id, b1);
     }
 
     workspace_swap_supplementary_tags(ws1, ws2);
@@ -470,12 +470,12 @@ void workspace_swap_smart(struct workspace *ws1, struct workspace *ws2)
 
 BitSet *workspace_get_tags(struct workspace *ws)
 {
-    return ws->workspaces;
+    return ws->tags;
 }
 
 BitSet *workspace_get_prev_tags(struct workspace *ws)
 {
-    return ws->prev_workspaces;
+    return ws->prev_tags;
 }
 
 void push_layout(struct workspace *ws, const char *layout_name)
@@ -858,12 +858,12 @@ void workspace_remove_container_from_focus_stack(struct workspace *ws, struct co
 
 void workspace_set_tags(struct workspace *ws, BitSet *tags)
 {
-    bitset_assign_bitset(&ws->workspaces, tags);
+    bitset_assign_bitset(&ws->tags, tags);
 }
 
 void workspace_set_prev_tags(struct workspace *ws, struct BitSet *tags)
 {
-    bitset_assign_bitset(&ws->prev_workspaces, tags);
+    bitset_assign_bitset(&ws->prev_tags, tags);
 }
 
 static int get_in_container_stack(struct container *con)

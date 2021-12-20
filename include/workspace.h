@@ -68,8 +68,8 @@ struct workspace {
     size_t id;
     char *name;
 
-    BitSet *workspaces;
-    BitSet *prev_workspaces;
+    BitSet *tags;
+    BitSet *prev_tags;
     // the monitor the workspace is locked to
     struct monitor *m;
     // the monitor the workspace is currently on
