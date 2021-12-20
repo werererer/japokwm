@@ -17,7 +17,7 @@ int lib_container_is_equal(lua_State *L);
 int lib_container_focus(lua_State *L);
 
 // methods
-int lib_container_move_to_workspace(lua_State *L);
+int lib_container_move_to_tag(lua_State *L);
 int lib_container_set_ratio(lua_State *L);
 int lib_container_set_sticky(lua_State *L);
 int lib_container_set_sticky_restricted(lua_State *L);
@@ -32,7 +32,7 @@ int lib_container_get_current_property(lua_State *L);
 int lib_container_get_focused(lua_State *L);
 int lib_container_get_property(lua_State *L);
 int lib_container_get_sticky(lua_State *L);
-int lib_container_get_workspace(lua_State *L);
+int lib_container_get_tag(lua_State *L);
 
 // setter
 int lib_container_set_alpha(lua_State *L);

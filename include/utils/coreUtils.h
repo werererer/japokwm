@@ -30,7 +30,7 @@ typedef GPtrArray GPtrArray2D;
 #define NUM_CHARS 64
 #define NUM_DIGITS 9
 #define INVALID_POSITION -1
-#define INVALID_WORKSPACE_ID -1
+#define INVALID_tag_ID -1
 
 #define MIN_CONTAINER_WIDTH 30
 #define MIN_CONTAINER_HEIGHT 30

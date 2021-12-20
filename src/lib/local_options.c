@@ -36,9 +36,9 @@ static const struct luaL_Reg local_options_f[] =
 //
 // static const struct luaL_Reg local_options_setter[] =
 // {
-//     {"workspaces", lib_create_workspaces},
+//     {"tags", lib_create_tags},
 //     {"sloppy_focus", lib_set_sloppy_focus},
-//     {"automatic_workspace_naming", lib_set_automatic_workspace_naming},
+//     {"automatic_tag_naming", lib_set_automatic_tag_naming},
 //     {"mod", lib_set_mod},
 //     {"inner_gaps", lib_set_inner_gaps},
 //     {"outer_gaps", lib_set_outer_gaps},
@@ -55,9 +55,9 @@ static const struct luaL_Reg local_options_f[] =
 //
 // static const struct luaL_Reg local_options_getter[] =
 // {
-//     /* {"workspaces", lib_create_workspaces}, */
+//     /* {"tags", lib_create_tags}, */
 //     {"sloppy_focus", lib_get_sloppy_focus},
-//     /* {"automatic_workspace_naming", lib_lua_idenity_funcion}, */
+//     /* {"automatic_tag_naming", lib_lua_idenity_funcion}, */
 //     /* {"mod", lib_lua_idenity_funcion}, */
 //     {"inner_gaps", lib_get_inner_gaps},
 //     /* {"outer_gaps", lib_lua_idenity_funcion}, */

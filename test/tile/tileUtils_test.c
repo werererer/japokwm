@@ -10,12 +10,12 @@ void get_container_count_test()
     /* wlr_list_init(&tag_names); */
     /* wlr_list_push(&tag_names, "1"); */
     /* wlr_list_push(&tag_names, "2"); */
-    /* create_workspaces(&server.workspaces, &tag_names); */
+    /* create_tags(&server.tags, &tag_names); */
 
     /* struct monitor m0, m1; */
-    /* struct tagset *tagset0 = get_tagset_from_workspace_id(&server.workspaces, 0); */
+    /* struct tagset *tagset0 = get_tagset_from_tag_id(&server.tags, 0); */
     /* tagset0->m = &m0; */
-    /* struct tagset *tagset1 = get_tagset_from_workspace_id(&server.workspaces, 1); */
+    /* struct tagset *tagset1 = get_tagset_from_tag_id(&server.tags, 1); */
     /* tagset1->m = &m1; */
 
     /* const int container_count = 3; */

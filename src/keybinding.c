@@ -354,8 +354,8 @@ static long millisec_to_nanosec(long milli_sec)
 static void reset_keycombo_timer(timer_t timer)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct tag *tag = monitor_get_active_workspace(m);
-    struct layout *lt = workspace_get_layout(tag);
+    struct tag *tag = monitor_get_active_tag(m);
+    struct layout *lt = tag_get_layout(tag);
     long timeout = lt->options->key_combo_timeout;
 
     if (wl_event_source_timer_update(server.combo_timer_source, timeout) < 0) {
@@ -468,8 +468,8 @@ bool handle_keyboard_key(const char *bind)
     reset_keycombo_timer(server.combo_timer_source);
 
     struct monitor *m = server_get_selected_monitor();
-    struct tag *tag = monitor_get_active_workspace(m);
-    struct layout *lt = workspace_get_layout(tag);
+    struct tag *tag = monitor_get_active_tag(m);
+    struct layout *lt = tag_get_layout(tag);
 
     char *preprocessed_bind = preprocess_binding(lt->options, bind);
     char *sorted_bind = sort_keybinding_element(lt->options, preprocessed_bind);

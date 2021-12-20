@@ -68,8 +68,8 @@ struct layout;
 #define CONFIG_ACTION "japokwm.action"
 #define CONFIG_BITSET "japokwm.bitset"
 // this is the same as CONFIG_BITSET but also tells that the data field of the
-// bitset is of the type workspace
-#define CONFIG_BITSET_WITH_WORKSPACE "japokwm.bitset.workspace"
+// bitset is of the type tag
+#define CONFIG_BITSET_WITH_tag "japokwm.bitset.tag"
 #define CONFIG_BITSET_WITH_CONTAINER "japokwm.bitset.container"
 // this is the same as CONFIG_BITSET but lifetime is handle by lua
 #define CONFIG_BITSET_GC "japokwm.bitset_gc"
@@ -94,7 +94,7 @@ struct layout;
 #define CONFIG_RING_BUFFER_GC "japokwm.ring_buffer_gc"
 #define CONFIG_ROOT "japokwm.root"
 #define CONFIG_SERVER "japokwm.server"
-#define CONFIG_WORKSPACE "japokwm.workspace"
+#define CONFIG_tag "japokwm.tag"
 
 void load_lua_api(lua_State *L);
 

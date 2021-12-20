@@ -26,7 +26,7 @@
 #include "scratchpad.h"
 #include "tagset.h"
 #include "lib/lib_container.h"
-#include "lib/lib_workspace.h"
+#include "lib/lib_tag.h"
 #include "lib/lib_layout.h"
 #include "layer_shell.h"
 #include "root.h"
@@ -54,7 +54,7 @@ static const struct luaL_Reg action_f[] =
     {"toggle_all_bars", lib_toggle_all_bars},
     {"toggle_tags", lib_toggle_tags},
     {"toggle_view", lib_toggle_view},
-    {"toggle_workspace", lib_toggle_workspace},
+    {"toggle_tag", lib_toggle_tag},
     {"view", lib_view},
     {"view_or_tag", lib_view_or_tag},
     {"zoom", lib_zoom},
@@ -154,8 +154,8 @@ int lib_resize_main(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = server_get_selected_monitor();
-    struct tag *tag = monitor_get_active_workspace(m);
-    struct layout *lt = workspace_get_layout(tag);
+    struct tag *tag = monitor_get_active_tag(m);
+    struct layout *lt = tag_get_layout(tag);
     enum wlr_edges dir = lt->options->resize_dir;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_resize_function_ref);
@@ -250,7 +250,7 @@ int lib_move_to_scratchpad(lua_State *L)
 
 int lib_view(lua_State *L)
 {
-    struct tag *tag = check_workspace(L, 1);
+    struct tag *tag = check_tag(L, 1);
     lua_pop(L, 1);
 
     tagset_focus_tags(tag, tag->tags);
@@ -263,15 +263,15 @@ int lib_view_or_tag(lua_State *L)
     lua_pop(L, 1);
 
     if (server_is_keycombo("_lib_view_or_tag_combo")) {
-        struct tag *tag = server_get_selected_workspace();
+        struct tag *tag = server_get_selected_tag();
         BitSet *bitset = bitset_create();
         bitset_set(bitset, i);
         bitset_xor(tag->tags, bitset);
         bitset_destroy(bitset);
-        tagset_focus_workspace(tag);
+        tagset_focus_tag(tag);
     } else {
-        struct tag *tag = get_workspace(i);
-        tagset_focus_workspace(tag);
+        struct tag *tag = get_tag(i);
+        tagset_focus_tag(tag);
     }
     server_start_keycombo("_lib_view_or_tag_combo");
     return 0;
@@ -296,8 +296,8 @@ int lib_zoom(lua_State *L)
     if (!sel)
         return 0;
 
-    struct tag *tag = monitor_get_active_workspace(m);
-    GPtrArray *tiled_containers = workspace_get_tiled_list_copy(tag);
+    struct tag *tag = monitor_get_active_tag(m);
+    GPtrArray *tiled_containers = tag_get_tiled_list_copy(tag);
     guint position;
     bool found = g_ptr_array_find(tiled_containers, sel, &position);
     if (!found)
@@ -345,7 +345,7 @@ int lib_toggle_all_bars(lua_State *L)
         lua_pop(L, 1);
     }
 
-    struct tag *sel_ws = server_get_selected_workspace();
+    struct tag *sel_ws = server_get_selected_tag();
 
     // toggle edges
     enum wlr_edges visible_edges = WLR_EDGE_NONE;
@@ -353,8 +353,8 @@ int lib_toggle_all_bars(lua_State *L)
         visible_edges = edges;
     }
 
-    for (int i = 0; i < server_get_workspace_key_count(); i++) {
-        struct tag *tag = get_workspace(i);
+    for (int i = 0; i < server_get_tag_key_count(); i++) {
+        struct tag *tag = get_tag(i);
         set_bars_visible(tag, visible_edges);
     }
     return 0;
@@ -363,16 +363,16 @@ int lib_toggle_all_bars(lua_State *L)
 int lib_toggle_tags(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct tag *tag = monitor_get_active_workspace(m);
+    struct tag *tag = monitor_get_active_tag(m);
     BitSet *bitset = bitset_copy(tag->prev_tags);
     tagset_set_tags(tag, bitset);
     return 0;
 }
 
-int lib_toggle_workspace(lua_State *L)
+int lib_toggle_tag(lua_State *L)
 {
-    struct tag *prev_ws = get_workspace(server.previous_workspace);
-    tagset_focus_workspace(prev_ws);
+    struct tag *prev_ws = get_tag(server.previous_tag);
+    tagset_focus_tag(prev_ws);
     return 0;
 }
 

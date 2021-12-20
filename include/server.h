@@ -52,7 +52,7 @@ struct server {
     // TODO: rename
     GPtrArray *named_key_combos;
 
-    GHashTable *workspaces;
+    GHashTable *tags;
 
     GPtrArray *scratchpad;
 
@@ -63,7 +63,7 @@ struct server {
     GPtrArray *user_data_paths;
     char *config_file;
 
-    int previous_workspace;
+    int previous_tag;
     BitSet *previous_bitset;
 
     struct monitor *selected_monitor;
@@ -116,10 +116,10 @@ int start_server(char *startup_cmd);
 int stop_server();
 
 void server_reset_layout_ring(struct ring_buffer *layout_ring);
-int server_get_workspace_count();
-int server_get_workspace_key_count();
-GList *server_get_workspaces();
-struct tag *get_workspace(int id);
+int server_get_tag_count();
+int server_get_tag_key_count();
+GList *server_get_tags();
+struct tag *get_tag(int id);
 
 void server_prohibit_reloading_config();
 void server_allow_reloading_config();
@@ -131,6 +131,6 @@ bool server_is_keycombo(const char *key_combo_name);
 struct monitor *server_get_selected_monitor();
 void server_set_selected_monitor(struct monitor *m);
 
-struct tag *server_get_selected_workspace();
+struct tag *server_get_selected_tag();
 struct layout *server_get_selected_layout();
 #endif /* SERVER_H */

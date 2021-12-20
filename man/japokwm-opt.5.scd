@@ -26,8 +26,8 @@ japokwm-opt(5)
 		whether the layout should be arranged by focus. This can be
 		useful for a fullscreen layouts like monocle
 	
-	bool automatic_workspace_naming = false
-		whether workspaces should be renamed to the active window in
+	bool automatic_tag_naming = false
+		whether tags should be renamed to the active window in
 		them.
 	
 	color border_color = "Color.red"
@@ -89,5 +89,5 @@ japokwm-opt(5)
 	bool smart_hidden_edges = false
 		if true the edges on the edge of the screen are hidden.
 	
-	string[] workspaces = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
-		the names of the workspaces.
+	string[] tags = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+		the names of the tags.

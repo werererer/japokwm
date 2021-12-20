@@ -23,7 +23,7 @@ struct client *create_client(enum shell shell_type, union surface_t surface)
 {
     struct client *c = calloc(1, sizeof(*c));
 
-    c->sticky_workspaces = bitset_create();
+    c->sticky_tags = bitset_create();
     c->type = shell_type;
     c->surface = surface;
 
@@ -32,7 +32,7 @@ struct client *create_client(enum shell shell_type, union surface_t surface)
 
 void destroy_client(struct client *c)
 {
-    bitset_destroy(c->sticky_workspaces);
+    bitset_destroy(c->sticky_tags);
     free(c);
 }
 
@@ -165,20 +165,20 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
 void container_move_sticky_containers_current_ws(struct container *con)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct tag *tag = monitor_get_active_workspace(m);
+    struct tag *tag = monitor_get_active_tag(m);
     container_move_sticky_containers(con, tag->id);
 }
 
 void container_move_sticky_containers(struct container *con, int ws_id)
 {
     // // TODO: refactor this function
-    // struct workspace *ws = get_workspace(ws_id);
-    // if (!bitset_test(con->client->sticky_workspaces, ws->id)) {
-    //     if (bitset_any(con->client->sticky_workspaces)) {
-    //         container_set_just_workspace_id(con, ws_id);
+    // struct tag *ws = get_tag(ws_id);
+    // if (!bitset_test(con->client->sticky_tags, ws->id)) {
+    //     if (bitset_any(con->client->sticky_tags)) {
+    //         container_set_just_tag_id(con, ws_id);
     //         arrange();
     //         focus_most_recent_container();
-    //         ipc_event_workspace();
+    //         ipc_event_tag();
     //     } else {
     //         move_to_scratchpad(con, 0);
     //         return;
@@ -189,19 +189,19 @@ void container_move_sticky_containers(struct container *con, int ws_id)
     //     return;
     // }
     //
-    // if (workspace_sticky_contains_client(ws, con->client)) {
-    //     container_set_just_workspace_id(con, ws->id);
-    // } else if (bitset_none(con->client->sticky_workspaces)) {
+    // if (tag_sticky_contains_client(ws, con->client)) {
+    //     container_set_just_tag_id(con, ws->id);
+    // } else if (bitset_none(con->client->sticky_tags)) {
     //     move_to_scratchpad(con, 0);
     // }
 }
 
-void client_setsticky(struct client *c, BitSet *workspaces)
+void client_setsticky(struct client *c, BitSet *tags)
 {
-    bitset_assign_bitset(&c->sticky_workspaces, workspaces);
+    bitset_assign_bitset(&c->sticky_tags, tags);
     struct container *con = c->con;
     container_move_sticky_containers_current_ws(con);
-    ipc_event_workspace();
+    ipc_event_tag();
 }
 
 float calc_ratio(float width, float height)
@@ -260,8 +260,8 @@ void client_handle_set_title(struct wl_listener *listener, void *data)
 
     c->title = title;
 
-    struct tag *tag = container_get_workspace(c->con);
-    struct layout *lt = workspace_get_layout(tag);
+    struct tag *tag = container_get_tag(c->con);
+    struct layout *lt = tag_get_layout(tag);
     apply_rules(lt->options->rules, c->con);
 }
 
@@ -288,8 +288,8 @@ void client_handle_set_app_id(struct wl_listener *listener, void *data)
 
     c->app_id = app_id;
 
-    struct tag *tag = container_get_workspace(c->con);
-    struct layout *lt = workspace_get_layout(tag);
+    struct tag *tag = container_get_tag(c->con);
+    struct layout *lt = tag_get_layout(tag);
     apply_rules(lt->options->rules, c->con);
 }
 

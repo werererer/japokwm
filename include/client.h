@@ -32,11 +32,11 @@ struct client {
     enum shell type;
     const char *title;
     const char *app_id;
-    BitSet *sticky_workspaces;
+    BitSet *sticky_tags;
 
     // used to determine what to damage
     bool resized;
-    bool moved_workspace;
+    bool moved_tag;
     bool is_independent;
 };
 
@@ -48,7 +48,7 @@ void container_move_sticky_containers(struct container *con, int ws_id);
 
 void focus_client(struct seat *seat, struct client *old, struct client *c);
 void focus_surface(struct seat *seat, struct wlr_surface *surface);
-void client_setsticky(struct client *c, BitSet *workspaces);
+void client_setsticky(struct client *c, BitSet *tags);
 void reset_floating_client_borders(int border_px);
 void kill_client(struct client *c);
 

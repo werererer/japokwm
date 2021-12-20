@@ -39,7 +39,7 @@ static const char ipc_magic[] = {'i', '3', '-', 'i', 'p', 'c'};
 enum ipc_command_type {
     // i3 command types - see i3's I3_REPLY_TYPE constants
     IPC_COMMAND = 0,
-    IPC_GET_WORKSPACES = 1,
+    IPC_GET_tagS = 1,
     IPC_SUBSCRIBE = 2,
     IPC_GET_OUTPUTS = 3,
     IPC_GET_TREE = 4,
@@ -57,7 +57,7 @@ enum ipc_command_type {
     IPC_GET_SEATS = 101,
 
     // Events sent from sway to clients. Events have the highest bits set.
-    IPC_EVENT_WORKSPACE = ((1<<31) | 0),
+    IPC_EVENT_tag = ((1<<31) | 0),
     IPC_EVENT_OUTPUT = ((1<<31) | 1),
     IPC_EVENT_MODE = ((1<<31) | 2),
     IPC_EVENT_WINDOW = ((1<<31) | 3),
@@ -124,7 +124,7 @@ void ipc_init(struct wl_event_loop *wl_event_loop) {
     }
 
     // Set SWAY IPC socket path so that waybar automatically shows
-    // workspaces(tags)
+    // tags(tags)
     setenv("SWAYSOCK", ipc_sockaddr->sun_path, 1);
     setenv("JAPOKWMSOCK", ipc_sockaddr->sun_path, 1);
 
@@ -287,8 +287,8 @@ static void ipc_send_event(const char *json_string, enum ipc_command_type event)
     }
 }
 
-void ipc_event_workspace() {
-    ipc_send_event("", IPC_EVENT_WORKSPACE);
+void ipc_event_tag() {
+    ipc_send_event("", IPC_EVENT_tag);
 }
 
 int ipc_client_handle_writable(int client_fd, uint32_t mask, void *data) {
@@ -404,7 +404,7 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
             free(results);
             goto exit_cleanup;
         }
-        case IPC_GET_WORKSPACES:
+        case IPC_GET_tagS:
             {
                 json_object *array;
 
@@ -428,8 +428,8 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
                 // parse requested event types
                 for (size_t i = 0; i < json_object_array_length(request); i++) {
                     const char *event_type = json_object_get_string(json_object_array_get_idx(request, i));
-                    if (strcmp(event_type, "workspace") == 0) {
-                        client->subscribed_events |= event_mask(IPC_EVENT_WORKSPACE);
+                    if (strcmp(event_type, "tag") == 0) {
+                        client->subscribed_events |= event_mask(IPC_EVENT_tag);
                     } else if (strcmp(event_type, "barconfig_update") == 0) {
                         client->subscribed_events |= event_mask(IPC_EVENT_BARCONFIG_UPDATE);
                     } else if (strcmp(event_type, "bar_state_update") == 0) {

@@ -59,7 +59,7 @@ struct options {
 
     enum wlr_edges hidden_edges;
     bool smart_hidden_edges;
-    bool automatic_workspace_naming;
+    bool automatic_tag_naming;
 
     GPtrArray *keybindings;
 
@@ -76,7 +76,7 @@ void copy_options(struct options *dest_option, struct options *src_option);
 
 void options_add_keybinding(struct options *options, struct keybinding *keybinding);
 
-int workspace_get_new_position(struct tag *tag);
-int workspace_get_new_focus_position(struct tag *tag);
+int tag_get_new_position(struct tag *tag);
+int tag_get_new_focus_position(struct tag *tag);
 
 #endif /* OPTIONS_H */

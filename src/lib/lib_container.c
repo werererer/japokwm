@@ -8,7 +8,7 @@
 #include "tile/tileUtils.h"
 #include "translationLayer.h"
 #include "tag.h"
-#include "lib/lib_workspace.h"
+#include "lib/lib_tag.h"
 #include "lib/lib_geom.h"
 #include "lib/lib_container_property.h"
 #include "bitset/bitset.h"
@@ -52,7 +52,7 @@ static const struct luaL_Reg container_getter[] = {
     {"properties", lib_container_get_property},
     {"property", lib_container_get_current_property},
     {"sticky", lib_container_set_sticky},
-    {"workspace", lib_container_get_workspace},
+    {"tag", lib_container_get_tag},
     {NULL, NULL},
 };
 
@@ -61,7 +61,7 @@ static const struct luaL_Reg container_setter[] = {
     {"ratio", lib_container_set_ratio},
     {"sticky", lib_container_set_sticky},
     {"sticky_restricted", lib_container_set_sticky_restricted},
-    {"workspace", lib_container_move_to_workspace},
+    {"tag", lib_container_move_to_tag},
     {NULL, NULL},
 };
 
@@ -130,14 +130,14 @@ int lib_container_focus(lua_State *L)
     return 0;
 }
 
-int lib_container_move_to_workspace(lua_State *L)
+int lib_container_move_to_tag(lua_State *L)
 {
-    struct tag *tag = check_workspace(L, 2);
+    struct tag *tag = check_tag(L, 2);
     lua_pop(L, 1);
     struct container *con = check_container(L, 1);
     lua_pop(L, 1);
 
-    move_container_to_workspace(con, tag);
+    move_container_to_tag(con, tag);
     return 0;
 }
 
@@ -175,7 +175,7 @@ int lib_container_set_sticky_restricted(lua_State *L) {
     struct container *con = check_container(L, 1);
     lua_pop(L, 1);
 
-    bool is_sticky_at_ws_id = bitset_test(con->client->sticky_workspaces, con->ws_id);
+    bool is_sticky_at_ws_id = bitset_test(con->client->sticky_tags, con->ws_id);
     bitset_assign(bitset, con->ws_id, is_sticky_at_ws_id);
 
     client_setsticky(con->client, bitset);
@@ -189,7 +189,7 @@ int lib_container_toggle_add_sticky(lua_State *L) {
     struct container *con = check_container(L, 1);
     lua_pop(L, 1);
 
-    bitset_xor(bitset, con->client->sticky_workspaces);
+    bitset_xor(bitset, con->client->sticky_tags);
 
     if (!con)
         return 0;
@@ -207,13 +207,13 @@ int lib_container_toggle_add_sticky_restricted(lua_State *L) {
     lua_pop(L, 1);
 
     struct monitor *m = server_get_selected_monitor();
-    struct tag *tag = monitor_get_active_workspace(m);
+    struct tag *tag = monitor_get_active_tag(m);
     struct container *con = get_container(tag, i);
     if (!con)
         return 0;
 
-    bitset_xor(bitset, con->client->sticky_workspaces);
-    bitset_set(bitset, bitset_test(con->client->sticky_workspaces, con->ws_id));
+    bitset_xor(bitset, con->client->sticky_tags);
+    bitset_set(bitset, bitset_test(con->client->sticky_tags, con->ws_id));
 
     if (!con)
         return 0;
@@ -289,18 +289,18 @@ int lib_container_get_sticky(lua_State *L)
     /* struct container *con = check_container(L); */
     /* lua_pop(L, 1); */
 
-    /* lua_pushinteger(L, con->client->sticky_workspaces); */
+    /* lua_pushinteger(L, con->client->sticky_tags); */
     return 1;
 }
 
-int lib_container_get_workspace(lua_State *L) {
+int lib_container_get_tag(lua_State *L) {
     struct container *con = check_container(L, 1);
     lua_pop(L, 1);
 
     if (!con)
         return 0;
 
-    struct tag *tag = container_get_workspace(con);
-    create_lua_workspace(L, tag);
+    struct tag *tag = container_get_tag(con);
+    create_lua_tag(L, tag);
     return 1;
 }

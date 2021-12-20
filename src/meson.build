@@ -63,7 +63,7 @@ srcs = files(
     'lib/lib_output_transform.c',
     'lib/lib_server.c',
     'lib/lib_root.c',
-    'lib/lib_workspace.c',
+    'lib/lib_tag.c',
     'lib/lib_container_property.c',
     'lib/local_event_handler.c',
     'lib/local_options.c',

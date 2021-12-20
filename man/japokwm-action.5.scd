@@ -49,7 +49,7 @@ void async_exec(function)
 		Swaps the window at the hidden stack in position $1.
 
 	void toggle_all_bars()
-		Toggles the visibility of all bars in all workspaces.
+		Toggles the visibility of all bars in all tags.
 	
 	void toggle_tags()
 		Toggles the previously selected tags.
@@ -58,14 +58,14 @@ void async_exec(function)
 	void toggle_view()
 		??? (not documented)
 	
-	void toggle_workspace()
-		Toggles the previously selected workspace.
+	void toggle_tag()
+		Toggles the previously selected tag.
 	
-	void view(workspace)
-		Views the workspace $1.
+	void view(tag)
+		Views the tag $1.
 	
-	void view_or_tag(workspace)
-		Views the workspace $1 or selects the tag if in a keycombo.
+	void view_or_tag(tag)
+		Views the tag $1 or selects the tag if in a keycombo.
 	
 	void zoom()
 		dwm like zoom. That is, if the currently focused window is not

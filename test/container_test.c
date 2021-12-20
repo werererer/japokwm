@@ -17,14 +17,14 @@ void test_visible_on()
 
     /* struct layout lt; */
     /* lt.options.arrange_by_focus = false; */
-    /* struct wlr_list workspaces; */
-    /* create_workspaces(&workspaces, &tag_names); */
+    /* struct wlr_list tags; */
+    /* create_tags(&tags, &tag_names); */
 
     /* struct monitor m0; */
     /* struct monitor m1; */
 
-    /* struct workspace *ws0 = workspaces.items[0]; */
-    /* struct workspace *ws1 = workspaces.items[1]; */
+    /* struct tag *ws0 = tags.items[0]; */
+    /* struct tag *ws1 = tags.items[1]; */
     /* ws0->m = &m0; */
     /* ws1->m = &m1; */
 
@@ -65,14 +65,14 @@ void test_exist_on()
 
     /* struct layout lt; */
     /* lt.options.arrange_by_focus = false; */
-    /* struct wlr_list workspaces; */
-    /* create_workspaces(&workspaces, &tag_names, &lt); */
+    /* struct wlr_list tags; */
+    /* create_tags(&tags, &tag_names, &lt); */
 
     /* struct monitor m0; */
     /* struct monitor m1; */
 
-    /* struct workspace *ws0 = workspaces.items[0]; */
-    /* struct workspace *ws1 = workspaces.items[1]; */
+    /* struct tag *ws0 = tags.items[0]; */
+    /* struct tag *ws1 = tags.items[1]; */
 
     /* ws0->m = &m0; */
     /* ws1->m = &m1; */

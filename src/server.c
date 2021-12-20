@@ -50,20 +50,20 @@ static void finalize_lists(struct server *server);
 static void finalize_timers(struct server *server);
 static void finalize_lua_api(struct server *server);
 
-static struct tag *handle_too_few_workspaces(uint32_t ws_id);
+static struct tag *handle_too_few_tags(uint32_t ws_id);
 
-static struct tag *handle_too_few_workspaces(uint32_t ws_id)
+static struct tag *handle_too_few_tags(uint32_t ws_id)
 {
     // no number has more than 11 digits when int is 32 bit long
     char name[12];
     // TODO explain why +1
     snprintf(name, 12, "%d:%d", ws_id, c_idx_to_lua_idx(ws_id));
 
-    struct tag *new_ws = create_workspace(name, ws_id, server.default_layout);
+    struct tag *new_ws = create_tag(name, ws_id, server.default_layout);
     int *ws_id_ptr = malloc(sizeof(*ws_id_ptr));
     *ws_id_ptr = ws_id;
-    g_hash_table_insert(server.workspaces, ws_id_ptr, new_ws);
-    struct tag *tag = get_workspace(0);
+    g_hash_table_insert(server.tags, ws_id_ptr, new_ws);
+    struct tag *tag = get_tag(0);
     wlr_list_cat(new_ws->con_set->tiled_containers, tag->con_set->tiled_containers);
 
     wlr_list_cat(new_ws->focus_set->focus_stack_layer_background, tag->focus_set->focus_stack_layer_background);
@@ -106,8 +106,8 @@ static int clear_key_combo_timer_callback(void *data) {
     GPtrArray *registered_key_combos = server.registered_key_combos;
     char *bind = join_string((const char **)registered_key_combos->pdata, registered_key_combos->len, " ");
 
-    struct tag *tag = server_get_selected_workspace();
-    struct layout *lt = workspace_get_layout(tag);
+    struct tag *tag = server_get_selected_tag();
+    struct layout *lt = tag_get_layout(tag);
 
     process_binding(lt, bind);
     free(bind);
@@ -198,13 +198,13 @@ void init_server()
     server.config_paths = create_default_config_paths();
     server.user_data_paths = create_default_user_data_paths();
     server.layout_paths = create_default_layout_paths();
-    server.workspaces = create_workspaces();
+    server.tags = create_tags();
 
     server.container_stack = g_ptr_array_new();
 
     server.event_handler = create_event_handler();
 
-    server.previous_workspace = 0;
+    server.previous_tag = 0;
     server.previous_bitset = bitset_create();
 
     server_prohibit_reloading_config();
@@ -423,37 +423,37 @@ int stop_server()
     wlr_output_layout_destroy(server.output_layout);
     wl_display_destroy(server.wl_display);
     destroy_input_manager(server.input_manager);
-    destroy_workspaces(server.workspaces);
+    destroy_tags(server.tags);
 
     finalize_lua_api(&server);
     return EXIT_SUCCESS;
 }
 
-int server_get_workspace_count()
+int server_get_tag_count()
 {
     size_t len = server.default_layout->options->tag_names->len;
     return len;
 }
 
-int server_get_workspace_key_count()
+int server_get_tag_key_count()
 {
-    size_t count = g_hash_table_size(server.workspaces);
+    size_t count = g_hash_table_size(server.tags);
     return count;
 }
 
-GList *server_get_workspaces()
+GList *server_get_tags()
 {
-    GList *values = g_hash_table_get_values(server.workspaces);
+    GList *values = g_hash_table_get_values(server.tags);
     return values;
 }
 
-struct tag *get_workspace(int id)
+struct tag *get_tag(int id)
 {
     if (id < 0)
         return NULL;
-    struct tag *tag = g_hash_table_lookup(server.workspaces, &id);
+    struct tag *tag = g_hash_table_lookup(server.tags, &id);
     if (!tag) {
-        tag = handle_too_few_workspaces(id);
+        tag = handle_too_few_tags(id);
         assert(tag != NULL);
     }
 
@@ -470,17 +470,17 @@ void server_set_selected_monitor(struct monitor *m)
     server.selected_monitor = m;
 }
 
-struct tag *server_get_selected_workspace()
+struct tag *server_get_selected_tag()
 {
     struct monitor *m = server_get_selected_monitor();
-    struct tag *tag = monitor_get_active_workspace(m);
+    struct tag *tag = monitor_get_active_tag(m);
     return tag;
 }
 
 struct layout *server_get_selected_layout()
 {
-    struct tag *tag = server_get_selected_workspace();
-    struct layout *lt = workspace_get_layout(tag);
+    struct tag *tag = server_get_selected_tag();
+    struct layout *lt = tag_get_layout(tag);
     return lt;
 }
 

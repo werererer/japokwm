@@ -111,8 +111,8 @@ static bool sel_con_has_bitset_here(struct container *con, struct tag *tag)
 {
     if (!con)
         return false;
-    bool min_count = bitset_count(con->client->sticky_workspaces) > 1;
-    bool visible = bitset_test(con->client->sticky_workspaces, tag->id);
+    bool min_count = bitset_count(con->client->sticky_tags) > 1;
+    bool visible = bitset_test(con->client->sticky_tags, tag->id);
     return min_count && visible;
 }
 
@@ -121,15 +121,15 @@ json_object *ipc_json_describe_tagsets()
     json_object *array = json_object_new_array();
 
     struct monitor *sel_m = server_get_selected_monitor();
-    struct tag *sel_ws = monitor_get_active_workspace(sel_m);
-    struct container *sel_con = workspace_get_focused_container(sel_ws);
-    for (GList *iterator = server_get_workspaces(); iterator; iterator = iterator->next) {
+    struct tag *sel_ws = monitor_get_active_tag(sel_m);
+    struct container *sel_con = tag_get_focused_container(sel_ws);
+    for (GList *iterator = server_get_tags(); iterator; iterator = iterator->next) {
         struct tag *tag = iterator->data;
-        struct monitor *m = workspace_get_monitor(tag);
+        struct monitor *m = tag_get_monitor(tag);
 
         if (!m)
             continue;
-        if (!workspace_is_visible(tag, m))
+        if (!tag_is_visible(tag, m))
             continue;
 
         char *full_name = strdup(tag->name);
@@ -137,17 +137,17 @@ json_object *ipc_json_describe_tagsets()
         if (sel_con_has_bitset_here(sel_con, tag)) {
             add_infix(&full_name, "", "+");
         }
-        if (is_workspace_the_selected_one(tag)) {
+        if (is_tag_the_selected_one(tag)) {
             add_infix(&full_name, "*", "*");
         }
 
-        bool is_active = workspace_is_active(tag);
+        bool is_active = tag_is_active(tag);
         json_object *tagset_object = ipc_json_describe_tag(full_name, is_active, m);
         json_object_array_add(array, tagset_object);
 
         // for the second monitor
-        if (is_workspace_extern(tag)) {
-            struct monitor *selected_monitor = workspace_get_selected_monitor(tag);
+        if (is_tag_extern(tag)) {
+            struct monitor *selected_monitor = tag_get_selected_monitor(tag);
             char *hidden_name = strdup(tag->name);
             add_infix(&hidden_name, "(", ")");
             json_object *tagset_object = ipc_json_describe_tag(hidden_name, false, selected_monitor);
@@ -193,13 +193,13 @@ json_object *ipc_json_describe_bar_config() {
             json_object_new_int(0));
     json_object_object_add(json, "wrap_scroll",
             json_object_new_boolean(false));
-    json_object_object_add(json, "workspace_buttons",
+    json_object_object_add(json, "tag_buttons",
             json_object_new_boolean(true));
-    json_object_object_add(json, "strip_workspace_numbers",
+    json_object_object_add(json, "strip_tag_numbers",
             json_object_new_boolean(false));
-    json_object_object_add(json, "strip_workspace_name",
+    json_object_object_add(json, "strip_tag_name",
             json_object_new_boolean(false));
-    json_object_object_add(json, "workspace_min_width",
+    json_object_object_add(json, "tag_min_width",
             json_object_new_int(0));
     json_object_object_add(json, "binding_mode_indicator",
             json_object_new_boolean(false));
@@ -235,40 +235,40 @@ json_object *ipc_json_describe_bar_config() {
     //             json_object_new_string(bar->colors.separator));
     // }
     //
-    // json_object_object_add(colors, "focused_workspace_border",
-    //         json_object_new_string(bar->colors.focused_workspace_border));
-    // json_object_object_add(colors, "focused_workspace_bg",
-    //         json_object_new_string(bar->colors.focused_workspace_bg));
-    // json_object_object_add(colors, "focused_workspace_text",
-    //         json_object_new_string(bar->colors.focused_workspace_text));
+    // json_object_object_add(colors, "focused_tag_border",
+    //         json_object_new_string(bar->colors.focused_tag_border));
+    // json_object_object_add(colors, "focused_tag_bg",
+    //         json_object_new_string(bar->colors.focused_tag_bg));
+    // json_object_object_add(colors, "focused_tag_text",
+    //         json_object_new_string(bar->colors.focused_tag_text));
     //
-    // json_object_object_add(colors, "inactive_workspace_border",
-    //         json_object_new_string(bar->colors.inactive_workspace_border));
-    // json_object_object_add(colors, "inactive_workspace_bg",
-    //         json_object_new_string(bar->colors.inactive_workspace_bg));
-    // json_object_object_add(colors, "inactive_workspace_text",
-    //         json_object_new_string(bar->colors.inactive_workspace_text));
+    // json_object_object_add(colors, "inactive_tag_border",
+    //         json_object_new_string(bar->colors.inactive_tag_border));
+    // json_object_object_add(colors, "inactive_tag_bg",
+    //         json_object_new_string(bar->colors.inactive_tag_bg));
+    // json_object_object_add(colors, "inactive_tag_text",
+    //         json_object_new_string(bar->colors.inactive_tag_text));
     //
-    // json_object_object_add(colors, "active_workspace_border",
-    //         json_object_new_string(bar->colors.active_workspace_border));
-    // json_object_object_add(colors, "active_workspace_bg",
-    //         json_object_new_string(bar->colors.active_workspace_bg));
-    // json_object_object_add(colors, "active_workspace_text",
-    //         json_object_new_string(bar->colors.active_workspace_text));
+    // json_object_object_add(colors, "active_tag_border",
+    //         json_object_new_string(bar->colors.active_tag_border));
+    // json_object_object_add(colors, "active_tag_bg",
+    //         json_object_new_string(bar->colors.active_tag_bg));
+    // json_object_object_add(colors, "active_tag_text",
+    //         json_object_new_string(bar->colors.active_tag_text));
     //
-    // json_object_object_add(colors, "urgent_workspace_border",
-    //         json_object_new_string(bar->colors.urgent_workspace_border));
-    // json_object_object_add(colors, "urgent_workspace_bg",
-    //         json_object_new_string(bar->colors.urgent_workspace_bg));
-    // json_object_object_add(colors, "urgent_workspace_text",
-    //         json_object_new_string(bar->colors.urgent_workspace_text));
+    // json_object_object_add(colors, "urgent_tag_border",
+    //         json_object_new_string(bar->colors.urgent_tag_border));
+    // json_object_object_add(colors, "urgent_tag_bg",
+    //         json_object_new_string(bar->colors.urgent_tag_bg));
+    // json_object_object_add(colors, "urgent_tag_text",
+    //         json_object_new_string(bar->colors.urgent_tag_text));
     //
     // if (bar->colors.binding_mode_border) {
     //     json_object_object_add(colors, "binding_mode_border",
     //             json_object_new_string(bar->colors.binding_mode_border));
     // } else {
     //     json_object_object_add(colors, "binding_mode_border",
-    //             json_object_new_string(bar->colors.urgent_workspace_border));
+    //             json_object_new_string(bar->colors.urgent_tag_border));
     // }
     //
     // if (bar->colors.binding_mode_bg) {
@@ -276,7 +276,7 @@ json_object *ipc_json_describe_bar_config() {
     //             json_object_new_string(bar->colors.binding_mode_bg));
     // } else {
     //     json_object_object_add(colors, "binding_mode_bg",
-    //             json_object_new_string(bar->colors.urgent_workspace_bg));
+    //             json_object_new_string(bar->colors.urgent_tag_bg));
     // }
     //
     // if (bar->colors.binding_mode_text) {
@@ -284,7 +284,7 @@ json_object *ipc_json_describe_bar_config() {
     //             json_object_new_string(bar->colors.binding_mode_text));
     // } else {
     //     json_object_object_add(colors, "binding_mode_text",
-    //             json_object_new_string(bar->colors.urgent_workspace_text));
+    //             json_object_new_string(bar->colors.urgent_tag_text));
     // }
     //
     // json_object_object_add(json, "colors", colors);
@@ -320,14 +320,14 @@ json_object *ipc_json_describe_bar_config() {
 }
 
 
-json_object *ipc_json_describe_tag(const char *name, bool is_active_workspace, struct monitor *m)
+json_object *ipc_json_describe_tag(const char *name, bool is_active_tag, struct monitor *m)
 {
     struct wlr_box box;
     box = m->geom;
 
     char *s = strdup(name);
 
-    json_object *object = ipc_json_create_node(0, s, is_active_workspace, NULL, &box);
+    json_object *object = ipc_json_create_node(0, s, is_active_tag, NULL, &box);
 
     json_object *children = json_object_new_array();
     json_object_object_add(object, "nodes", children);
@@ -350,7 +350,7 @@ json_object *ipc_json_describe_tag(const char *name, bool is_active_workspace, s
     json_object_object_add(object, "fullscreen_mode", json_object_new_int(0));
     json_object_object_add(object, "output", m ?
             json_object_new_string(m->wlr_output->name) : NULL);
-    json_object_object_add(object, "type", json_object_new_string("workspace"));
+    json_object_object_add(object, "type", json_object_new_string("tag"));
     json_object_object_add(object, "urgent",
             json_object_new_boolean(false));
 
@@ -393,15 +393,15 @@ json_object *ipc_json_describe_selected_container(struct monitor *m)
     json_object_object_get_ex(monitor_object, "nodes", &monitor_children);
 
     struct monitor *sel_m = server_get_selected_monitor();
-    struct tag *tag = monitor_get_active_workspace(sel_m);
-    json_object *workspace_object = ipc_json_describe_tag(tag->name, true, sel_m);
-    json_object_array_add(monitor_children, workspace_object);
-    json_object *workspace_children;
-    json_object_object_get_ex(monitor_object, "nodes", &workspace_children);
+    struct tag *tag = monitor_get_active_tag(sel_m);
+    json_object *tag_object = ipc_json_describe_tag(tag->name, true, sel_m);
+    json_object_array_add(monitor_children, tag_object);
+    json_object *tag_children;
+    json_object_object_get_ex(monitor_object, "nodes", &tag_children);
 
     struct container *sel = monitor_get_focused_container(m);
     json_object *obj = ipc_json_describe_container(sel);
-    json_object_array_add(workspace_children, obj);
+    json_object_array_add(tag_children, obj);
 
     return root_object;
 }

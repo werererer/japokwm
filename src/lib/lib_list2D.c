@@ -154,12 +154,12 @@ int lib_list2D_repush(lua_State *L)
     GPtrArray *array = list2D_flatten(array2D);
     array = NULL;
 
-    workspace_repush(array, i, abs_index);
+    tag_repush(array, i, abs_index);
 
     sub_list_write_to_parent_list(array2D, array);
     g_ptr_array_unref(array);
 
-    struct tag *tag = server_get_selected_workspace();
+    struct tag *tag = server_get_selected_tag();
     tagset_reload(tag);
     arrange();
     return 0;

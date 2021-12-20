@@ -6,18 +6,18 @@
 
 #include "bitset/bitset.h"
 
-struct workspace_tags;
+struct tag_tags;
 
 BitSet *check_bitset(lua_State *L, int narg);
 void create_lua_bitset(lua_State *L, struct BitSet *bitset);
-void create_lua_bitset_with_workspace(lua_State *L, BitSet *bitset);
+void create_lua_bitset_with_tag(lua_State *L, BitSet *bitset);
 void create_lua_bitset_with_container(lua_State *L, BitSet *bitset);
 void lua_load_bitset(lua_State *L);
 
 # define call_bitset_func(L, action, self, ...) \
     do {\
         action(self, ##__VA_ARGS__);\
-        if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_WORKSPACE)) {\
+        if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_tag)) {\
             struct tag *tag = self->data;\
             tagset_set_tags(tag, self);\
             return 0;\

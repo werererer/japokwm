@@ -181,9 +181,9 @@ int lib_list_repush(lua_State *L)
     GPtrArray *array = check_list(L, 1);
     lua_pop(L, 1);
 
-    workspace_repush(array, i, abs_index);
+    tag_repush(array, i, abs_index);
 
-    struct tag *tag = server_get_selected_workspace();
+    struct tag *tag = server_get_selected_tag();
     tagset_reload(tag);
     arrange();
     return 0;

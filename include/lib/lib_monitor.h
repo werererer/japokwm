@@ -13,7 +13,7 @@ int lib_monitor_get_focused(lua_State *L);
 //
 int lib_monitor_get_previous_layout(lua_State *L);
 int lib_monitor_get_root(lua_State *L);
-int lib_monitor_get_workspace(lua_State *L);
+int lib_monitor_get_tag(lua_State *L);
 // setter
 int lib_monitor_set_scale(lua_State *L);
 int lib_monitor_set_transform(lua_State *L);
