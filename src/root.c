@@ -116,9 +116,9 @@ static enum wlr_edges bar_get_direction(struct container *con)
     return WLR_EDGE_NONE;
 }
 
-void bars_update_visiblitiy(struct tag *ws)
+void bars_update_visiblitiy(struct tag *tag)
 {
-    enum wlr_edges visible_edges = ws->visible_bar_edges;
+    enum wlr_edges visible_edges = tag->visible_bar_edges;
     for (int i = 0; i < length_of_composed_list(server.layer_visual_stack_lists); i++) {
         struct container *con = get_in_composed_list(server.layer_visual_stack_lists, i);
 
@@ -128,21 +128,21 @@ void bars_update_visiblitiy(struct tag *ws)
         enum wlr_edges bar_dir = bar_get_direction(con);
         bool is_visible = visible_edges & bar_dir;
 
-        container_set_hidden_at_workspace(con, !is_visible, ws);
+        container_set_hidden_at_workspace(con, !is_visible, tag);
     }
 
-    struct monitor *m = workspace_get_monitor(ws);
+    struct monitor *m = workspace_get_monitor(tag);
     arrange_layers(m);
 }
 
-void toggle_bars_visible(struct tag *ws, enum wlr_edges direction)
+void toggle_bars_visible(struct tag *tag, enum wlr_edges direction)
 {
-    ws->visible_bar_edges ^= direction;
-    bars_update_visiblitiy(ws);
+    tag->visible_bar_edges ^= direction;
+    bars_update_visiblitiy(tag);
 }
 
-void set_bars_visible(struct tag *ws, enum wlr_edges direction)
+void set_bars_visible(struct tag *tag, enum wlr_edges direction)
 {
-    ws->visible_bar_edges = direction;
-    bars_update_visiblitiy(ws);
+    tag->visible_bar_edges = direction;
+    bars_update_visiblitiy(tag);
 }
