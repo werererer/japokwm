@@ -55,6 +55,8 @@ void create_notify_xdg(struct wl_listener *listener, void *data)
     /* Listen to the various events it can emit */
     LISTEN(&xdg_surface->events.map, &c->map, map_request);
     LISTEN(&xdg_surface->surface->events.commit, &c->commit, commit_notify);
+    LISTEN(&xdg_surface->events.configure, &c->configure, configure_notify);
+    LISTEN(&xdg_surface->events.ack_configure, &c->ack_configure, ack_configure);
     LISTEN(&xdg_surface->events.unmap, &c->unmap, unmap_notify);
     LISTEN(&xdg_surface->events.destroy, &c->destroy, destroy_notify);
 

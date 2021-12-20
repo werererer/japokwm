@@ -421,6 +421,16 @@ void commit_notify(struct wl_listener *listener, void *data)
     }
 }
 
+void configure_notify(struct wl_listener *listener, void *data)
+{
+    /* NO-OP */
+}
+
+void ack_configure(struct wl_listener *listener, void *data)
+{
+    /* NO-OP */
+}
+
 void focus_container(struct container *con)
 {
     if (!con)

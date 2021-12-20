@@ -1,5 +1,5 @@
-#ifndef CLIENT
-#define CLIENT
+#ifndef CLIENT_H
+#define CLIENT_H
 #include <X11/Xlib.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
 #include <wlr/xwayland.h>
@@ -22,6 +22,8 @@ struct client {
     struct monitor *m;
     struct wl_listener activate;
     struct wl_listener commit;
+    struct wl_listener configure;
+    struct wl_listener ack_configure;
     struct wl_listener set_title;
     struct wl_listener set_app_id;
     struct wl_listener map;
@@ -60,4 +62,4 @@ void client_handle_set_app_id(struct wl_listener *listener, void *data);
 
 struct wlr_surface *get_base_wlrsurface(struct client *c);
 struct wlr_surface *get_wlrsurface(struct client *c);
-#endif
+#endif /* CLIENT_H */
