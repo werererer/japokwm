@@ -29,17 +29,17 @@ static const struct luaL_Reg focus_stack_setter[] =
 
 static const struct luaL_Reg focus_stack_getter[] =
 {
-    {"focus_stack_lists_with_layer_shell", lib_get_focus_stack_lists_with_layer_shell},
-    {"focus_stack_visible_lists", lib_get_focus_stack_visible_lists},
-    {"focus_stack_lists", lib_get_focus_stack_lists},
 
     {"focus_stack_layer_background", lib_get_focus_stack_layer_background},
     {"focus_stack_layer_bottom", lib_get_focus_stack_layer_bottom},
-    {"focus_stack_layer_top", lib_get_focus_stack_layer_top},
     {"focus_stack_layer_overlay", lib_get_focus_stack_layer_overlay},
-    {"focus_stack_on_top", lib_get_focus_stack_on_top},
+    {"focus_stack_layer_top", lib_get_focus_stack_layer_top},
+    {"focus_stack_lists", lib_get_focus_stack_lists},
+    {"focus_stack_lists_with_layer_shell", lib_get_focus_stack_lists_with_layer_shell},
     {"focus_stack_normal", lib_get_focus_stack_normal},
     {"focus_stack_not_focusable", lib_get_focus_stack_not_focusable},
+    {"focus_stack_on_top", lib_get_focus_stack_on_top},
+    {"focus_stack_visible_lists", lib_get_focus_stack_visible_lists},
     {NULL, NULL},
 };
 
