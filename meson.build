@@ -62,6 +62,7 @@ if scdoc.found()
         'man/japokwm-cursor_mode.5.scd',
         'man/japokwm-direction.5.scd',
         'man/japokwm-focus_set.5.scd',
+        'man/japokwm-geom.5.scd',
         'man/japokwm-opt.5.scd',
         'man/japokwm-event_handler.5.scd',
         'man/japokwm.1.scd',
