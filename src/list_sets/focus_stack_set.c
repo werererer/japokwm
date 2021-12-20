@@ -72,8 +72,8 @@ static bool is_container_valid_to_append(
         struct container *src_con
         )
 {
-    struct tag *ws = workspace_ptr;
-    if (src_con->ws_id != ws->id) {
+    struct tag *tag = workspace_ptr;
+    if (src_con->ws_id != tag->id) {
         return false;
     }
 
@@ -81,7 +81,7 @@ static bool is_container_valid_to_append(
 }
 
 void focus_set_append(
-        struct tag *ws,
+        struct tag *tag,
         struct focus_set *dest,
         struct focus_set *src)
 {
@@ -89,7 +89,7 @@ void focus_set_append(
             dest->focus_stack_lists,
             src->focus_stack_lists,
             is_container_valid_to_append,
-            ws);
+            tag);
 }
 
 void focus_set_clear(struct focus_set *focus_set)

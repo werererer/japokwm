@@ -99,16 +99,16 @@ static int get_layout_container_max_area_count(struct tag *tag)
     return max_n_area;
 }
 
-static void update_layout_counters(struct tag *ws)
+static void update_layout_counters(struct tag *tag)
 {
-    struct layout *lt = workspace_get_layout(ws);
+    struct layout *lt = workspace_get_layout(tag);
 
-    lt->n_all = get_container_count(ws);
-    lt->n_area = get_layout_container_area_count(ws);
+    lt->n_all = get_container_count(tag);
+    lt->n_area = get_layout_container_area_count(tag);
     set_layout_ref(lt, lt->n_area);
-    lt->n_area_max = get_layout_container_max_area_count(ws);
-    lt->n_master_abs = get_master_container_count(ws);
-    lt->n_floating = get_floating_container_count(ws);
+    lt->n_area_max = get_layout_container_max_area_count(tag);
+    lt->n_master_abs = get_master_container_count(tag);
+    lt->n_floating = get_floating_container_count(tag);
     lt->n_tiled = lt->n_area-1 + lt->n_master_abs;
     lt->n_tiled_max = lt->n_area_max + lt->n_master_abs-1;
     lt->n_visible = lt->n_tiled + lt->n_floating;
@@ -179,10 +179,10 @@ static struct wlr_box get_nth_geom_in_layout(lua_State *L, struct layout *lt,
     return box;
 }
 
-int get_slave_container_count(struct tag *ws)
+int get_slave_container_count(struct tag *tag)
 {
-    struct layout *lt = workspace_get_layout(ws);
-    int abs_count = get_tiled_container_count(ws);
+    struct layout *lt = workspace_get_layout(tag);
+    int abs_count = get_tiled_container_count(tag);
     return MAX(abs_count - lt->n_master, 0);
 }
 

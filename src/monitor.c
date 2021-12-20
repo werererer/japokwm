@@ -96,19 +96,19 @@ void create_monitor(struct wl_listener *listener, void *data)
 
         // reset all layouts
         for (GList *iterator = server_get_workspaces(); iterator; iterator = iterator->next) {
-            struct tag *ws = iterator->data;
-            assert(ws->loaded_layouts->len == 0);
-            ws->current_layout = server.default_layout->name;
-            ws->previous_layout = server.default_layout->name;
+            struct tag *tag = iterator->data;
+            assert(tag->loaded_layouts->len == 0);
+            tag->current_layout = server.default_layout->name;
+            tag->previous_layout = server.default_layout->name;
         }
     }
-    struct tag *ws = monitor_get_active_workspace(m);
-    tagset_focus_workspace(ws);
+    struct tag *tag = monitor_get_active_workspace(m);
+    tagset_focus_workspace(tag);
 
     apply_mon_rules(server.default_layout->options->mon_rules, m);
 
     arrange();
-    struct layout *lt = workspace_get_layout(ws);
+    struct layout *lt = workspace_get_layout(tag);
     set_root_color(m->root, lt->options->root_color);
 
     if (!wlr_output_commit(m->wlr_output))
@@ -184,12 +184,12 @@ static void handle_output_mode(struct wl_listener *listener, void *data)
 
 static void monitor_get_initial_workspace(struct monitor *m, GList *workspaces)
 {
-    struct tag *ws = find_next_unoccupied_workspace(workspaces, get_workspace(0));
+    struct tag *tag = find_next_unoccupied_workspace(workspaces, get_workspace(0));
 
-    assert(ws != NULL);
+    assert(tag != NULL);
 
-    int ws_id = ws->id;
-    ws->m = m;
+    int ws_id = tag->id;
+    tag->m = m;
     BitSet *bitset = bitset_create();
     bitset_set(bitset, ws_id);
 
@@ -204,18 +204,18 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
     wl_list_remove(&m->frame.link);
     wl_list_remove(&m->destroy.link);
 
-    struct tag *ws = monitor_get_active_workspace(m);
+    struct tag *tag = monitor_get_active_workspace(m);
     for (GList *iterator = server_get_workspaces(); iterator; iterator = iterator->next) {
-        struct tag *ws = iterator->data;
-        if (ws->m == m) {
-            workspace_set_selected_monitor(ws, NULL);
+        struct tag *tag = iterator->data;
+        if (tag->m == m) {
+            workspace_set_selected_monitor(tag, NULL);
         }
-        if (ws->current_m == m) {
-            workspace_set_current_monitor(ws, NULL);
+        if (tag->current_m == m) {
+            workspace_set_current_monitor(tag, NULL);
         }
     }
 
-    GPtrArray *stack_list = workspace_get_complete_stack_copy(ws);
+    GPtrArray *stack_list = workspace_get_complete_stack_copy(tag);
     for (int i = 0; i < stack_list->len; i++) {
         struct container *con = g_ptr_array_index(stack_list, i);
 
@@ -233,10 +233,10 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
     g_ptr_array_unref(stack_list);
 
     for (GList *iterator = server_get_workspaces(); iterator; iterator = iterator->next) {
-        struct tag *ws = iterator->data;
-        if (ws->current_m == m) {
-            debug_print("unset ws: %i\n", ws->id);
-            workspace_set_current_monitor(ws, NULL);
+        struct tag *tag = iterator->data;
+        if (tag->current_m == m) {
+            debug_print("unset ws: %i\n", tag->id);
+            workspace_set_current_monitor(tag, NULL);
         }
     }
 
@@ -255,7 +255,7 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
     server_set_selected_monitor(new_focused_monitor);
 }
 
-void monitor_set_selected_workspace(struct monitor *m, struct tag *ws)
+void monitor_set_selected_workspace(struct monitor *m, struct tag *tag)
 {
     int prev_ws_id = m->ws_id;
     struct tag *prev_ws = get_workspace(prev_ws_id);
@@ -263,8 +263,8 @@ void monitor_set_selected_workspace(struct monitor *m, struct tag *ws)
         prev_ws->m = NULL;
     }
 
-    m->ws_id = ws->id;
-    workspace_set_selected_monitor(ws, m);
+    m->ws_id = tag->id;
+    workspace_set_selected_monitor(tag, m);
 }
 
 BitSet *monitor_get_workspaces(struct monitor *m)
@@ -314,8 +314,8 @@ void focus_monitor(struct monitor *m)
     /* wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, m->wlr_output.) */
 
     // move floating containers over
-    struct tag *ws = monitor_get_active_workspace(m);
-    tagset_focus_tags(ws, ws->tags);
+    struct tag *tag = monitor_get_active_workspace(m);
+    tagset_focus_tags(tag, tag->tags);
     server_set_selected_monitor(m);
 }
 
@@ -342,20 +342,20 @@ inline struct tag *monitor_get_active_workspace(struct monitor *m)
     if (!m)
         return NULL;
 
-    struct tag *ws = get_workspace(m->ws_id);
+    struct tag *tag = get_workspace(m->ws_id);
     // if this is not correct the whole application is in an undefined state
-    if (ws && ws->m) {
-        assert(ws->m == m);
+    if (tag && tag->m) {
+        assert(tag->m == m);
     }
-    return ws;
+    return tag;
 }
 
 inline struct layout *get_layout_in_monitor(struct monitor *m)
 {
     if (!m)
         return NULL;
-    struct tag *ws = monitor_get_active_workspace(m);
-    struct layout *lt = workspace_get_layout(ws);
+    struct tag *tag = monitor_get_active_workspace(m);
+    struct layout *lt = workspace_get_layout(tag);
     return lt;
 }
 
@@ -367,7 +367,7 @@ struct root *monitor_get_active_root(struct monitor *m)
 
 struct wlr_box monitor_get_active_geom(struct monitor *m)
 {
-    struct tag *ws = monitor_get_active_workspace(m);
-    struct wlr_box geom = workspace_get_active_geom(ws);
+    struct tag *tag = monitor_get_active_workspace(m);
+    struct wlr_box geom = workspace_get_active_geom(tag);
     return geom;
 }

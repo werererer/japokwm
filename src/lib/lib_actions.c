@@ -154,8 +154,8 @@ int lib_resize_main(lua_State *L)
     lua_pop(L, 1);
 
     struct monitor *m = server_get_selected_monitor();
-    struct tag *ws = monitor_get_active_workspace(m);
-    struct layout *lt = workspace_get_layout(ws);
+    struct tag *tag = monitor_get_active_workspace(m);
+    struct layout *lt = workspace_get_layout(tag);
     enum wlr_edges dir = lt->options->resize_dir;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_resize_function_ref);
@@ -172,9 +172,9 @@ int lib_resize_main(lua_State *L)
     for (int i = 0; i < lt->linked_layouts->len; i++) {
         const char *linked_layout_name = g_ptr_array_index(lt->linked_layouts, i);
         guint j;
-        bool found = g_ptr_array_find_with_equal_func(ws->loaded_layouts, linked_layout_name, cmp_layout_to_string, &j);
+        bool found = g_ptr_array_find_with_equal_func(tag->loaded_layouts, linked_layout_name, cmp_layout_to_string, &j);
         if (found) {
-            struct layout *loc_lt = g_ptr_array_index(ws->loaded_layouts, j);
+            struct layout *loc_lt = g_ptr_array_index(tag->loaded_layouts, j);
             lua_rawgeti(L, LUA_REGISTRYINDEX, loc_lt->lua_resize_function_ref);
             create_lua_layout(L, loc_lt);
             lua_pushnumber(L, n);
@@ -250,10 +250,10 @@ int lib_move_to_scratchpad(lua_State *L)
 
 int lib_view(lua_State *L)
 {
-    struct tag *ws = check_workspace(L, 1);
+    struct tag *tag = check_workspace(L, 1);
     lua_pop(L, 1);
 
-    tagset_focus_tags(ws, ws->tags);
+    tagset_focus_tags(tag, tag->tags);
     return 0;
 }
 
@@ -263,15 +263,15 @@ int lib_view_or_tag(lua_State *L)
     lua_pop(L, 1);
 
     if (server_is_keycombo("_lib_view_or_tag_combo")) {
-        struct tag *ws = server_get_selected_workspace();
+        struct tag *tag = server_get_selected_workspace();
         BitSet *bitset = bitset_create();
         bitset_set(bitset, i);
-        bitset_xor(ws->tags, bitset);
+        bitset_xor(tag->tags, bitset);
         bitset_destroy(bitset);
-        tagset_focus_workspace(ws);
+        tagset_focus_workspace(tag);
     } else {
-        struct tag *ws = get_workspace(i);
-        tagset_focus_workspace(ws);
+        struct tag *tag = get_workspace(i);
+        tagset_focus_workspace(tag);
     }
     server_start_keycombo("_lib_view_or_tag_combo");
     return 0;
@@ -296,8 +296,8 @@ int lib_zoom(lua_State *L)
     if (!sel)
         return 0;
 
-    struct tag *ws = monitor_get_active_workspace(m);
-    GPtrArray *tiled_containers = workspace_get_tiled_list_copy(ws);
+    struct tag *tag = monitor_get_active_workspace(m);
+    GPtrArray *tiled_containers = workspace_get_tiled_list_copy(tag);
     guint position;
     bool found = g_ptr_array_find(tiled_containers, sel, &position);
     if (!found)
@@ -313,7 +313,7 @@ int lib_zoom(lua_State *L)
     arrange();
 
     // focus new master window
-    struct container *con = get_container_in_stack(ws, 0);
+    struct container *con = get_container_in_stack(tag, 0);
     focus_container(con);
 
     struct layout *lt = get_layout_in_monitor(m);
@@ -354,8 +354,8 @@ int lib_toggle_all_bars(lua_State *L)
     }
 
     for (int i = 0; i < server_get_workspace_key_count(); i++) {
-        struct tag *ws = get_workspace(i);
-        set_bars_visible(ws, visible_edges);
+        struct tag *tag = get_workspace(i);
+        set_bars_visible(tag, visible_edges);
     }
     return 0;
 }
@@ -363,9 +363,9 @@ int lib_toggle_all_bars(lua_State *L)
 int lib_toggle_tags(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct tag *ws = monitor_get_active_workspace(m);
-    BitSet *bitset = bitset_copy(ws->prev_tags);
-    tagset_set_tags(ws, bitset);
+    struct tag *tag = monitor_get_active_workspace(m);
+    BitSet *bitset = bitset_copy(tag->prev_tags);
+    tagset_set_tags(tag, bitset);
     return 0;
 }
 

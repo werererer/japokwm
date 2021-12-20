@@ -159,7 +159,7 @@ void lists_append_list_under_condition(
         GPtrArray2D *dest,
         GPtrArray2D *src,
         is_condition_t is_condition,
-        struct tag *ws
+        struct tag *tag
         )
 {
     assert(src->len == dest->len);
@@ -167,7 +167,7 @@ void lists_append_list_under_condition(
     for (int i = 0; i < dest->len; i++) {
         GPtrArray *dest_list = g_ptr_array_index(dest, i);
         GPtrArray *src_list = g_ptr_array_index(src, i);
-        list_append_list_under_condition(dest_list, src_list, is_condition, ws);
+        list_append_list_under_condition(dest_list, src_list, is_condition, tag);
     }
 }
 

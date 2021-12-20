@@ -159,8 +159,8 @@ int lib_list2D_repush(lua_State *L)
     sub_list_write_to_parent_list(array2D, array);
     g_ptr_array_unref(array);
 
-    struct tag *ws = server_get_selected_workspace();
-    tagset_reload(ws);
+    struct tag *tag = server_get_selected_workspace();
+    tagset_reload(tag);
     arrange();
     return 0;
 }

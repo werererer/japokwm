@@ -8,7 +8,7 @@
 
 struct tag;
 
-void create_lua_workspace(lua_State *L, struct tag *ws);
+void create_lua_workspace(lua_State *L, struct tag *tag);
 void lua_load_workspace(lua_State *L);
 
 struct tag *check_workspace(lua_State *L, int narg);
