@@ -22,6 +22,13 @@ BitSet *bitset_create()
     return bitset;
 }
 
+BitSet *bitset_create_with_data(void *data)
+{
+    BitSet *bitset = bitset_create();
+    bitset->data = data;
+    return bitset;
+}
+
 static void append_bits(void *key_ptr, void *value_ptr, void *user_data)
 {
     int key = *(int *)key_ptr;

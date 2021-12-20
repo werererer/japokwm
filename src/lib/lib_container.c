@@ -51,7 +51,7 @@ static const struct luaL_Reg container_getter[] = {
     {"app_id", lib_container_get_app_id},
     {"properties", lib_container_get_property},
     {"property", lib_container_get_current_property},
-    {"sticky", lib_container_set_sticky},
+    {"tags", lib_container_get_tags},
     {"tag", lib_container_get_tag},
     {NULL, NULL},
 };
@@ -59,7 +59,7 @@ static const struct luaL_Reg container_getter[] = {
 static const struct luaL_Reg container_setter[] = {
     {"alpha", lib_container_set_alpha},
     {"ratio", lib_container_set_ratio},
-    {"sticky", lib_container_set_sticky},
+    {"sticky", lib_container_set_tags},
     {"sticky_restricted", lib_container_set_sticky_restricted},
     {"tag", lib_container_move_to_tag},
     {NULL, NULL},
@@ -156,15 +156,9 @@ int lib_container_set_alpha(lua_State *L)
     return 0;
 }
 
-int lib_container_set_sticky(lua_State *L) {
-    // TODO fix this function
-    /* bool sticky = lua_toboolean(L, -1); */
-    BitSet *bitset = check_bitset(L, 2);
-    lua_pop(L, 1);
-    struct container *con = check_container(L, 1);
-    lua_pop(L, 1);
+int lib_container_set_tags(lua_State *L)
+{
 
-    client_setsticky(con->client, bitset);
     return 0;
 }
 
@@ -283,13 +277,12 @@ int lib_container_get_property(lua_State *L)
     return 1;
 }
 
-int lib_container_get_sticky(lua_State *L)
+int lib_container_get_tags(lua_State *L)
 {
-    // TODO implement me
-    /* struct container *con = check_container(L); */
-    /* lua_pop(L, 1); */
+    struct container *con = check_container(L, 1);
+    lua_pop(L, 1);
 
-    /* lua_pushinteger(L, con->client->sticky_tags); */
+    create_lua_bitset_with_container(L, con->client->sticky_tags);
     return 1;
 }
 

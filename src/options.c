@@ -216,14 +216,14 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-C-8", Tag.focused.tags:_xor(1 << 7));
     bind_key(options, "mod-C-9", Tag.focused.tags:_xor(1 << 8));
 
-    bind_key(options, "mod-C-S-1", Container.focused.toggle_add_sticky(1 << 0));
-    bind_key(options, "mod-C-S-2", Container.focused.toggle_add_sticky(1 << 1));
-    bind_key(options, "mod-C-S-3", Container.focused.toggle_add_sticky(1 << 2));
-    bind_key(options, "mod-C-S-4", Container.focused.toggle_add_sticky(1 << 3));
-    bind_key(options, "mod-C-S-5", Container.focused.toggle_add_sticky(1 << 4));
-    bind_key(options, "mod-C-S-6", Container.focused.toggle_add_sticky(1 << 5));
-    bind_key(options, "mod-C-S-7", Container.focused.toggle_add_sticky(1 << 6));
-    bind_key(options, "mod-C-S-8", Container.focused.toggle_add_sticky(1 << 7));
+    bind_key(options, "mod-C-S-1", Container.focused.tags:_xor(1 << 0));
+    bind_key(options, "mod-C-S-2", Container.focused.tags:_xor(1 << 1));
+    bind_key(options, "mod-C-S-3", Container.focused.tags:_xor(1 << 2));
+    bind_key(options, "mod-C-S-4", Container.focused.tags:_xor(1 << 3));
+    bind_key(options, "mod-C-S-5", Container.focused.tags:_xor(1 << 4));
+    bind_key(options, "mod-C-S-6", Container.focused.tags:_xor(1 << 5));
+    bind_key(options, "mod-C-S-7", Container.focused.tags:_xor(1 << 6));
+    bind_key(options, "mod-C-S-8", Container.focused.tags:_xor(1 << 7));
 
     bind_key(options, "mod-s 1", tag.focused:swap_smart(tag.get(1)));
     bind_key(options, "mod-s 2", tag.focused:swap_smart(tag.get(2)));
