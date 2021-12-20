@@ -97,7 +97,7 @@ void lua_load_tag(lua_State *L)
             CONFIG_tag);
 
     create_static_accessor(L,
-            "tag",
+            "Tag",
             tag_f,
             tag_static_setter,
             tag_static_getter);
