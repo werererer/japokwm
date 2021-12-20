@@ -21,7 +21,7 @@
 #include "ipc-json.h"
 #include "ipc-server.h"
 #include "server.h"
-#include "workspace.h"
+#include "tag.h"
 #include "client.h"
 #include "command.h"
 #include "monitor.h"

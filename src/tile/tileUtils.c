@@ -20,7 +20,7 @@
 #include "utils/parseConfigUtils.h"
 #include "event_handler.h"
 #include "layer_shell.h"
-#include "workspace.h"
+#include "tag.h"
 #include "list_sets/focus_stack_set.h"
 #include "tagset.h"
 

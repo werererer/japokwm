@@ -9,7 +9,7 @@
 #include "layout.h"
 #include "monitor.h"
 #include "server.h"
-#include "workspace.h"
+#include "tag.h"
 
 struct event_handler *create_event_handler()
 {

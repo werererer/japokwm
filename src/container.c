@@ -21,7 +21,7 @@
 #include "tagset.h"
 #include "ipc-server.h"
 #include "layer_shell.h"
-#include "workspace.h"
+#include "tag.h"
 #include "rules/rule.h"
 #include "list_sets/focus_stack_set.h"
 #include "options.h"

@@ -7,7 +7,7 @@
 #include "seat.h"
 #include "server.h"
 #include "tile/tileUtils.h"
-#include "workspace.h"
+#include "tag.h"
 #include "layout.h"
 #include "tagset.h"
 #include "root.h"

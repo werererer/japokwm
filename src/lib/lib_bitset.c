@@ -3,7 +3,7 @@
 #include "server.h"
 #include "translationLayer.h"
 #include "bitset/bitset.h"
-#include "workspace.h"
+#include "tag.h"
 #include "tagset.h"
 #include "lib/lib_list.h"
 

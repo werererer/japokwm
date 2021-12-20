@@ -10,7 +10,7 @@
 #include "utils/parseConfigUtils.h"
 #include "layout.h"
 #include "keybinding.h"
-#include "workspace.h"
+#include "tag.h"
 #include "color.h"
 #include "ring_buffer.h"
 

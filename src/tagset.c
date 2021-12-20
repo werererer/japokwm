@@ -7,7 +7,7 @@
 #include "list_sets/container_stack_set.h"
 #include "list_sets/list_set.h"
 #include "server.h"
-#include "workspace.h"
+#include "tag.h"
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "tile/tileUtils.h"
@@ -17,8 +17,6 @@
 #include "scratchpad.h"
 #include "list_sets/focus_stack_set.h"
 #include "list_sets/container_stack_set.h"
-#include "workspace.h"
-#include "workspace.h"
 #include "root.h"
 #include "server.h"
 

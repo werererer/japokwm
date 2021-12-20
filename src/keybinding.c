@@ -8,7 +8,7 @@
 #include "tile/tileUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "stringop.h"
-#include "workspace.h"
+#include "tag.h"
 #include "monitor.h"
 
 const char *mods[8] = {"Shift_L", "Caps_Lock", "Control_L", "Alt_L", "", "", "Super_L", "ISO_Level3_Shift"};

@@ -4,7 +4,7 @@
 #include "monitor.h"
 #include "server.h"
 #include "tile/tileUtils.h"
-#include "workspace.h"
+#include "tag.h"
 #include "tagset.h"
 
 // TODO rewrite this function so it is easier to read

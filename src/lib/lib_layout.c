@@ -4,7 +4,7 @@
 #include "monitor.h"
 #include "server.h"
 #include "utils/coreUtils.h"
-#include "workspace.h"
+#include "tag.h"
 #include "translationLayer.h"
 #include "utils/parseConfigUtils.h"
 #include "tile/tileUtils.h"

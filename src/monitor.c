@@ -13,7 +13,7 @@
 #include "render/render.h"
 #include "server.h"
 #include "tile/tileUtils.h"
-#include "workspace.h"
+#include "tag.h"
 #include "utils/parseConfigUtils.h"
 #include "layer_shell.h"
 #include "rules/mon_rule.h"
@@ -22,7 +22,6 @@
 #include "list_sets/container_stack_set.h"
 #include "client.h"
 #include "container.h"
-#include "workspace.h"
 
 static void handle_output_damage_frame(struct wl_listener *listener, void *data);
 static void handle_output_frame(struct wl_listener *listener, void *data);

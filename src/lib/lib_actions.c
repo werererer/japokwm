@@ -21,7 +21,7 @@
 #include "translationLayer.h"
 #include "utils/stringUtils.h"
 #include "utils/parseConfigUtils.h"
-#include "workspace.h"
+#include "tag.h"
 #include "xdg-shell-protocol.h"
 #include "scratchpad.h"
 #include "tagset.h"

@@ -5,7 +5,7 @@
 #include "utils/coreUtils.h"
 #include "tile/tileUtils.h"
 #include "tagset.h"
-#include "workspace.h"
+#include "tag.h"
 
 #include <GLES2/gl2.h>
 #include <stdlib.h>

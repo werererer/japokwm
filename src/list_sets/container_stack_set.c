@@ -4,7 +4,7 @@
 #include "container.h"
 #include "list_sets/list_set.h"
 #include "server.h"
-#include "workspace.h"
+#include "tag.h"
 #include "monitor.h"
 #include "tagset.h"
 

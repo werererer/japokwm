@@ -11,7 +11,7 @@
 #include "utils/coreUtils.h"
 #include "container.h"
 #include "tile/tileUtils.h"
-#include "workspace.h"
+#include "tag.h"
 #include "rules/rule.h"
 
 static void destroyxdeco(struct wl_listener *listener, void *data);

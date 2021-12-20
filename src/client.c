@@ -12,7 +12,7 @@
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "ipc-server.h"
-#include "workspace.h"
+#include "tag.h"
 #include "scratchpad.h"
 #include "monitor.h"
 #include "tagset.h"

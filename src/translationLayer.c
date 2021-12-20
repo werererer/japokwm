@@ -36,7 +36,7 @@
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "utils/parseConfigUtils.h"
-#include "workspace.h"
+#include "tag.h"
 
 const struct luaL_Reg meta[] = 
 {

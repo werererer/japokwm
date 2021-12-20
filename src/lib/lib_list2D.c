@@ -7,7 +7,7 @@
 #include "tile/tileUtils.h"
 #include "tagset.h"
 #include "list_sets/list_set.h"
-#include "workspace.h"
+#include "tag.h"
 
 #include <stdlib.h>
 #include <ctype.h>
