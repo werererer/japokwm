@@ -150,17 +150,17 @@ int lib_workspace_get(lua_State *L)
 // methods
 int lib_workspace_swap(lua_State *L)
 {
-    struct tag *tag = check_workspace(L, 2);
+    struct tag *tag2 = check_workspace(L, 2);
     lua_pop(L, 1);
 
-    struct tag *ws1 = check_workspace(L, 1);
+    struct tag *tag1 = check_workspace(L, 1);
     lua_pop(L, 1);
 
-    workspace_swap(ws1, tag);
+    workspace_swap(tag1, tag2);
 
     struct monitor *m = server_get_selected_monitor();
-    struct tag *ws = monitor_get_active_workspace(m);
-    tagset_reload(ws);
+    struct tag *tag = monitor_get_active_workspace(m);
+    tagset_reload(tag);
     arrange();
     workspace_update_names(server_get_workspaces());
     focus_most_recent_container();
@@ -171,17 +171,17 @@ int lib_workspace_swap(lua_State *L)
 
 int lib_workspace_swap_smart(lua_State *L)
 {
-    struct tag *tag = check_workspace(L, 2);
+    struct tag *tag2 = check_workspace(L, 2);
     lua_pop(L, 1);
 
-    struct tag *ws1 = check_workspace(L, 1);
+    struct tag *tag1 = check_workspace(L, 1);
     lua_pop(L, 1);
 
-    workspace_swap_smart(ws1, tag);
+    workspace_swap_smart(tag1, tag2);
 
     struct monitor *m = server_get_selected_monitor();
-    struct tag *ws = monitor_get_active_workspace(m);
-    tagset_reload(ws);
+    struct tag *tag = monitor_get_active_workspace(m);
+    tagset_reload(tag);
     arrange();
     workspace_update_names(server_get_workspaces());
     focus_most_recent_container();
