@@ -76,6 +76,8 @@ void destroy_notify(struct wl_listener *listener, void *data)
     wl_list_remove(&c->commit.link);
     wl_list_remove(&c->unmap.link);
     wl_list_remove(&c->destroy.link);
+    wl_list_remove(&c->configure.link);
+    wl_list_remove(&c->ack_configure.link);
 
     wl_list_remove(&c->set_title.link);
     wl_list_remove(&c->set_app_id.link);
