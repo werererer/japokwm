@@ -65,6 +65,7 @@ if scdoc.found()
         'man/japokwm-geom.5.scd',
         'man/japokwm-opt.5.scd',
         'man/japokwm-event_handler.5.scd',
+        'man/japokwm-info.5.scd',
         'man/japokwm.1.scd',
         'man/japokwm.5.scd',
     ]
