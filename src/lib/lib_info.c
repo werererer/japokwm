@@ -60,7 +60,7 @@ void lua_load_info(lua_State *L)
             CONFIG_INFO);
 
     luaL_newlib(L, info_f);
-    lua_setglobal(L, "info");
+    lua_setglobal(L, "Info");
 }
 
 int lib_get_this_container_count(lua_State *L)

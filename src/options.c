@@ -239,7 +239,7 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-M1", Action.move_resize(Cursor_mode.move));
     bind_key(options, "mod-M2", Action.move_resize(Cursor_mode.resize));
     bind_key(options, "M1",
-            local con = info.get_container_under_cursor()
+            local con = Info.get_container_under_cursor()
             if con then
                 con:focus()
             end);
