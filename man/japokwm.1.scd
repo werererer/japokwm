@@ -75,7 +75,7 @@ local layout_data = {
 	},
 }
 
-layout.set("foo", layout_data)
+layout:set(layout_data)
 ```
 Now add the new layout to the layouts array in ~/.config/japokwm/init.lua: ++
 Replace:
