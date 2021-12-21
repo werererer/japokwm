@@ -157,15 +157,18 @@ int lib_list_get(lua_State *L)
 
 int lib_list_swap(lua_State *L)
 {
-    // int j = luaL_checkinteger(L, -1);
-    // lua_pop(L, 1);
-    // int i = luaL_checkinteger(L, -1);
-    // lua_pop(L, 1);
-    // GPtrArray *array = check_list(L, 1);
-    // lua_pop(L, 1);
+    int j = lua_idx_to_c_idx(luaL_checkinteger(L, -1));
+    lua_pop(L, 1);
+    int i = lua_idx_to_c_idx(luaL_checkinteger(L, -1));
+    lua_pop(L, 1);
+    GPtrArray *array = check_list(L, 1);
+    lua_pop(L, 1);
 
-    // struct container *con 
-    // g_ptr_array_index(array)
+    tag_swap_containers(array, i, j);
+
+    struct tag *tag = server_get_selected_tag();
+    tagset_reload(tag);
+    arrange();
     return 0;
 }
 
@@ -178,7 +181,7 @@ int lib_list_repush(lua_State *L)
     GPtrArray *array = check_list(L, 1);
     lua_pop(L, 1);
 
-    tag_repush(array, i, abs_index);
+    tag_repush_containers(array, i, abs_index);
 
     struct tag *tag = server_get_selected_tag();
     tagset_reload(tag);

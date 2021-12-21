@@ -965,7 +965,7 @@ GArray *container_array_get_positions_array(GPtrArray *containers)
     return positions;
 }
 
-void tag_repush(GPtrArray *array, int i, int abs_index)
+void tag_repush_containers(GPtrArray *array, int i, int abs_index)
 {
     if (array->len <= 0) {
         return;
@@ -987,6 +987,25 @@ void tag_repush(GPtrArray *array, int i, int abs_index)
     struct container *con = g_ptr_array_steal_index(array, i);
 
     g_ptr_array_insert(array, abs_index, con);
+}
+
+void tag_swap_containers(GPtrArray *array, int i, int j)
+{
+    if (array->len <= 0) {
+        return;
+    }
+    if (i < 0 || i >= array->len) {
+        return;
+    }
+    if (i < 0 || j >= array->len) {
+        return;
+    }
+
+    do {
+      typeof(((array)->pdata)[i]) tmp = ((array)->pdata)[i];
+      ((array)->pdata)[i] = ((array)->pdata)[j];
+      ((array)->pdata)[j] = tmp;
+    } while (0);
 }
 
 void tag_repush_tag(struct tag *tag, struct container *con, int new_pos)
