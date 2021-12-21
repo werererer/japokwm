@@ -163,6 +163,8 @@ int lib_tag_swap(lua_State *L)
     tagset_reload(tag);
     arrange();
 
+    update_reduced_focus_stack(tag1);
+    update_reduced_focus_stack(tag2);
     tag_focus_most_recent_container(tag1);
     tag_focus_most_recent_container(tag2);
 
@@ -188,6 +190,8 @@ int lib_tag_swap_smart(lua_State *L)
     tagset_reload(tag);
     arrange();
 
+    update_reduced_focus_stack(tag1);
+    update_reduced_focus_stack(tag2);
     tag_focus_most_recent_container(tag1);
     tag_focus_most_recent_container(tag2);
 
