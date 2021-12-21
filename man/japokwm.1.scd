@@ -33,7 +33,7 @@ You can run japokwm directly from a tty, or via a Wayland-compatible login manag
 
 # CONFIGURATION
 
-japokwm searches for a the init.lua in the following locations, in this order:
+japokwm searches for the init.lua file in the following locations, in this order:
 
 . $XDG_CONFIG_HOME/japokwm
 . ~/.config/japokwm (suggested location)
