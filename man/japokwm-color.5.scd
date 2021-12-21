@@ -1,7 +1,7 @@
 japokwm-color(5)
 
-# NAME
-	color
+# Type
+	enum Color
 # Description
 	Represents a color of the form rgba.
 # Functions

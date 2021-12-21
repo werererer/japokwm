@@ -1,7 +1,7 @@
 japokwm-layout(5)
 
-# NAME
-	Layout
+# Type
+	class Layout
 # Description
 	Modify the layout of the windows in the current tag.
 # Functions

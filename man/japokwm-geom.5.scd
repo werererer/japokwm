@@ -1,7 +1,7 @@
 japokwm-geom(5)
 
-# NAME
-	Geom
+# Type
+	class Geom
 # Description
 	A collection of functions to alter the state of the windowmanager.
 # Functions

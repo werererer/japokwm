@@ -1,7 +1,7 @@
 japokwm-focus_set(5)
 
-# NAME
-	focus_set
+# Type
+	class Focus_set
 # Description
 	A collection of lists corrosponding to the focus order of the
 	containers.

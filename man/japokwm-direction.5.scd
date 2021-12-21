@@ -1,7 +1,7 @@
 japokwm-direction(5)
 
-# NAME
-	direction
+# Type
+	enum Direction
 # Description
 	An Enum of directions.
 # Variables
