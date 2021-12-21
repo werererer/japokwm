@@ -1,7 +1,7 @@
 japokwm-info(5)
 
-# NAME
-	info
+# Type
+	class Info
 # Description
 	Access information about the window manager.
 # Functions
