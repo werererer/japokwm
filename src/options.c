@@ -281,7 +281,7 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-S-period", action.toggle_tags());
 
     bind_key(options, "mod-0",
-            Tag.focused.tags = 1 << Tag.focused.id
+            Tag.focused.tags = 1 << Tag.focused:get_id()
         );
     bind_key(options, "mod-S-0",
         local con = Container.focused
