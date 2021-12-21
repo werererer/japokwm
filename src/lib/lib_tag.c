@@ -56,8 +56,8 @@ static const struct luaL_Reg tag_m[] =
 
 static const struct luaL_Reg tag_setter[] =
 {
-    {"tags", lib_set_tags},
     {"bars", lib_tag_set_bars_visibility},
+    {"tags", lib_set_tags},
     {NULL, NULL},
 };
 
