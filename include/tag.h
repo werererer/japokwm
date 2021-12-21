@@ -101,13 +101,14 @@ bool tag_is_visible(struct tag *tag, struct monitor *m);
 bool is_tag_the_selected_one(struct tag *tag);
 bool is_tag_extern(struct tag *tag);
 bool tag_is_active(struct tag *tag);
+bool is_tag_empty(struct tag *tag);
+bool tag_has_no_visible_containers(struct tag *tag);
 
 int get_tag_container_count(struct tag *tag);
-bool is_tag_empty(struct tag *tag);
 
-bool tag_has_no_visible_containers(struct tag *tag);
 struct container *get_container(struct tag *tag, int i);
 struct container *get_container_in_stack(struct tag *tag, int i);
+struct container *tag_get_focused_container(struct tag *tag);
 
 struct tag *find_next_unoccupied_tag(GList *tags, struct tag *tag);
 struct tag *get_next_empty_tag(GList *tags, size_t i);
