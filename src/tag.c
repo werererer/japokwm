@@ -429,7 +429,7 @@ static void tag_swap_supplementary_tags(
  * preference. So if you don't like it just use the dumb version of swap
  * tags. And define your own helper function in lua.
  */
-static void swap_tag_tags_smart(struct tag *tag1, struct tag *tag2)
+static void tag_swap_tags_smart(struct tag *tag1, struct tag *tag2)
 {
     monitor_set_selected_tag(server_get_selected_monitor(), tag1);
     for (GList *iterator = server_get_tags(); iterator; iterator = iterator->next) {
@@ -438,10 +438,10 @@ static void swap_tag_tags_smart(struct tag *tag1, struct tag *tag2)
         if (tag->id == tag1->id || tag->id == tag2->id) {
             continue;
         }
-        bool b1 = bitset_test(tag->tags, tag->id);
+        bool b1 = bitset_test(tag->tags, tag1->id);
         bool b2 = bitset_test(tag->tags, tag2->id);
 
-        bitset_assign(tag->tags, tag->id, b2);
+        bitset_assign(tag->tags, tag1->id, b2);
         bitset_assign(tag->tags, tag2->id, b1);
     }
 
@@ -475,15 +475,12 @@ void tag_swap(struct tag *tag1, struct tag *tag2)
         bitset_set(con->client->sticky_tags, con->ws_id);
     }
     g_ptr_array_unref(future_tag2_containers);
-
-    tag_focus_most_recent_container(tag1);
-    tag_focus_most_recent_container(tag2);
 }
 
 void tag_swap_smart(struct tag *tag1, struct tag *tag2)
 {
     tag_swap(tag1, tag2);
-    swap_tag_tags_smart(tag1, tag2);
+    tag_swap_tags_smart(tag1, tag2);
 }
 
 BitSet *tag_get_tags(struct tag *tag)
