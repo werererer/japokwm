@@ -126,13 +126,12 @@ void tag_focus_most_recent_container(struct tag *tag)
 {
     if (!tag)
         return;
-    struct monitor *m = tag_get_monitor(tag);
-    struct container *con = monitor_get_focused_container(m);
+    struct container *con = tag_get_focused_container(tag);
     if (!con) {
         tag_focus_first_container(tag);
     }
 
-    tag_this_focus_container(con);
+    tag_focus_container(tag, con);
 }
 
 struct container *get_container(struct tag *tag, int i)
