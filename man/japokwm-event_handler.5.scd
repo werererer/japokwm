@@ -1,7 +1,7 @@
 japokwm-event_handler(5)
 
-# NAME
-	Event, ev(singleton object accessible in init.lua)
+# Type
+	class Event
 # Description
 	Event handler for the event system.
 # Methods

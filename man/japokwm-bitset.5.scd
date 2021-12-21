@@ -1,12 +1,11 @@
 japokwm-bitset(5)
 
 # NAME
-	bitset
+	class Bitset
 # Description
 	A bitset is an array of bits that has the size of infinity. You can also
 	perform bitwise operations on bitsets.
 # Operations
-	; TODO: test this
 	a[i]
 		Returns the ith bit of bitset a.
 	
@@ -49,4 +48,3 @@ japokwm-bitset(5)
 	
 	BitSet \_not()
 		Performs a bitwise NOT operation on self.
-# Variables

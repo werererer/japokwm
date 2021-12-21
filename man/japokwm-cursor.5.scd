@@ -1,7 +1,7 @@
 japokwm-cursor(5)
 
 # NAME
-	cursor
+	class Cursor
 # Description
 	The cursor is the object that is used to interact with the screen.
 	It is a singleton object that is used to move the cursor around

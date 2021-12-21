@@ -38,7 +38,7 @@ void lua_load_cursor(lua_State *L)
             CONFIG_CURSOR);
 
     luaL_newlib(L, cursor_f);
-    lua_setglobal(L, "cursor");
+    lua_setglobal(L, "Cursor");
 }
 
 struct cursor *check_cursor(lua_State *L, int narg) {

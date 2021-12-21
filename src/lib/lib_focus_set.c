@@ -54,7 +54,7 @@ void lua_load_focus_set(lua_State *L)
             CONFIG_FOCUS_SET);
 
     luaL_newlib(L, focus_stack_f);
-    lua_setglobal(L, "Focus_stack");
+    lua_setglobal(L, "Focus_set");
 }
 
 struct focus_set *check_focus_set(lua_State *L, int narg)

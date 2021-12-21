@@ -1,7 +1,7 @@
 japokwm-cursor_mode(5)
 
-# NAME
-	cursor_mode
+# Type
+	enum Cursor_mode
 # Description
 	Enum for cursor mode.
 # Variables
