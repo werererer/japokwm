@@ -106,8 +106,6 @@ int get_tag_container_count(struct tag *tag);
 bool is_tag_empty(struct tag *tag);
 
 bool tag_has_no_visible_containers(struct tag *tag);
-void tag_focus_first_container(struct tag *tag);
-void focus_most_recent_container();
 struct container *get_container(struct tag *tag, int i);
 struct container *get_container_in_stack(struct tag *tag, int i);
 
@@ -140,6 +138,11 @@ void tag_update_name(struct tag *tag);
 void tag_update_names(GList *tags);
 struct container *tag_get_focused_container(struct tag *tag);
 
+void tag_focus_first_container(struct tag *tag);
+void tag_this_focus_most_recent_container();
+void tag_focus_most_recent_container(struct tag *tag);
+void tag_this_focus_container(struct container *con);
+void tag_focus_container(struct tag *tag, struct container *con);
 void tag_add_container_to_containers(struct tag *tag, int i, struct container *con);
 void tag_add_container_to_focus_stack(struct tag *tag, int i, struct container *con);
 void remove_container_from_stack(struct tag *tag, struct container *con);

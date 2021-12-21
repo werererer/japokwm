@@ -66,22 +66,22 @@ static void tagset_assign_tags(struct tag *tag, BitSet *tags)
     tag_set_tags(tag, tags);
 }
 
-void tagset_set_tags(struct tag *sel_ws, BitSet *tags)
+void tagset_set_tags(struct tag *sel_tag, BitSet *tags)
 {
     // we need to copy to not accidentially destroy the same thing we are
     // working with which can happen through assign_bitset
     BitSet *tags_copy = bitset_copy(tags);
 
-    tag_set_prev_tags(sel_ws, sel_ws->tags);
+    tag_set_prev_tags(sel_tag, sel_tag->tags);
 
-    tagset_tags_disconnect(sel_ws);
-    tagset_assign_tags(sel_ws, tags);
-    tagset_tags_connect(sel_ws);
-    tag_damage(sel_ws);
-    tagset_load_tags(sel_ws, sel_ws->tags);
-    update_reduced_focus_stack(sel_ws);
+    tagset_tags_disconnect(sel_tag);
+    tagset_assign_tags(sel_tag, tags);
+    tagset_tags_connect(sel_tag);
+    tag_damage(sel_tag);
+    tagset_load_tags(sel_tag, sel_tag->tags);
+    update_reduced_focus_stack(sel_tag);
     arrange();
-    focus_most_recent_container();
+    tag_focus_most_recent_container(sel_tag);
 
     bitset_destroy(tags_copy);
     ipc_event_tag();
@@ -323,7 +323,7 @@ void focus_tagset(struct tag *tag, BitSet *tags)
 
     tagset_move_sticky_containers(tag);
     arrange();
-    focus_most_recent_container();
+    tag_focus_most_recent_container(tag);
     root_damage_whole(m->root);
 
     struct seat *seat = input_manager_get_default_seat();

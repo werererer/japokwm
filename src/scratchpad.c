@@ -36,7 +36,7 @@ void move_to_scratchpad(struct container *con, int position)
 
     container_damage_whole(con);
     arrange();
-    focus_most_recent_container();
+    tag_focus_most_recent_container(tag);
 }
 
 void remove_container_from_scratchpad(struct container *con)
@@ -51,7 +51,7 @@ static void hide_container(struct container *con)
     struct container *sel = monitor_get_focused_container(m);
 
     if (!sel->on_scratchpad) {
-        focus_container(con);
+        tag_this_focus_container(con);
         lift_container(con);
         return;
     }
@@ -70,7 +70,7 @@ static void show_container(struct container *con)
     struct wlr_box center_box = get_center_box(m->geom);
     container_set_current_geom(con, &center_box);
 
-    focus_container(con);
+    tag_this_focus_container(con);
     lift_container(con);
     arrange();
 }
@@ -90,7 +90,7 @@ void show_scratchpad()
         struct wlr_box center_box = get_center_box(m->geom);
         container_set_current_geom(con, &center_box);
 
-        focus_container(con);
+        tag_this_focus_container(con);
         lift_container(con);
         arrange();
     } else {

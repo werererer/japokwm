@@ -132,7 +132,7 @@ void unmap_notifyx11(struct wl_listener *listener, void *data)
     remove_container_from_tile(con);
 
     arrange();
-    focus_most_recent_container();
+    tag_this_focus_most_recent_container();
 }
 
 void maprequestx11(struct wl_listener *listener, void *data)
@@ -205,7 +205,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
                     g_ptr_array_add(server.xwayland_popups, con);
                 } else {
                     con->on_top = true;
-                    focus_container(con);
+                    tag_this_focus_container(con);
                 }
 
                 con->has_border = false;
@@ -220,7 +220,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
     arrange();
     struct container *sel = monitor_get_focused_container(m);
-    focus_container(sel);
+    tag_this_focus_container(sel);
     struct seat *seat = input_manager_get_default_seat();
     wlr_xcursor_manager_set_cursor_image(seat->cursor->xcursor_mgr,
             "left_ptr", seat->cursor->wlr_cursor);

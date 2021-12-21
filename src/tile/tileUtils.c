@@ -242,7 +242,7 @@ void arrange_monitor(struct monitor *m)
 
     wlr_output_damage_add_whole(m->damage);
     update_reduced_focus_stack(tag);
-    focus_most_recent_container();
+    tag_focus_most_recent_container(tag);
 }
 
 void arrange_containers(

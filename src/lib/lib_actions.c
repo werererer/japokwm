@@ -280,7 +280,7 @@ int lib_view_or_tag(lua_State *L)
 int lib_toggle_view(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
-    focus_most_recent_container();
+    tag_this_focus_most_recent_container();
     struct container *sel = monitor_get_focused_container(m);
     lift_container(sel);
     arrange(false);
@@ -314,11 +314,11 @@ int lib_zoom(lua_State *L)
 
     // focus new master window
     struct container *con = get_container_in_stack(tag, 0);
-    focus_container(con);
+    tag_this_focus_container(con);
 
     struct layout *lt = get_layout_in_monitor(m);
     if (lt->options->arrange_by_focus) {
-        focus_most_recent_container();
+        tag_this_focus_most_recent_container();
         arrange();
     }
     return 0;

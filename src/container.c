@@ -431,49 +431,6 @@ void ack_configure(struct wl_listener *listener, void *data)
     /* NO-OP */
 }
 
-void focus_container(struct container *con)
-{
-    if (!con)
-        return;
-    if (!con->focusable)
-        return;
-    if (con->is_xwayland_popup)
-        return;
-    if (container_get_hidden(con))
-        return;
-
-    struct monitor *m = server_get_selected_monitor();
-    struct tag *tag = monitor_get_active_tag(m);
-
-    if (!container_viewable_on_monitor(m, con))
-        return;
-
-    struct container *sel = monitor_get_focused_container(m);
-
-    /* Put the new client atop the focus stack */
-    tag_repush_on_focus_stack(tag, con, 0);
-
-    struct container *new_sel = monitor_get_focused_container(m);
-
-    // it is a waste of resources to call unfocus and refocus when the
-    // focused container didn't change
-    if (sel != new_sel) {
-        call_on_unfocus_function(server.event_handler, sel);
-        call_on_focus_function(server.event_handler, con);
-    }
-
-    struct client *old_c = sel ? sel->client : NULL;
-    struct client *new_c = new_sel ? new_sel->client : NULL;
-    struct seat *seat = input_manager_get_default_seat();
-    focus_client(seat, old_c, new_c);
-
-    if (sel == new_sel)
-        return;
-
-    tag_update_names(server_get_tags());
-    ipc_event_tag();
-}
-
 void focus_on_stack(struct monitor *m, int i)
 {
     struct container *sel = monitor_get_focused_container(m);
@@ -484,7 +441,7 @@ void focus_on_stack(struct monitor *m, int i)
     if (sel->client->type == LAYER_SHELL) {
         struct tag *tag = monitor_get_active_tag(m);
         struct container *con = get_container(tag, 0);
-        focus_container(con);
+        tag_focus_container(tag, con);
         return;
     }
 
@@ -496,7 +453,7 @@ void focus_on_stack(struct monitor *m, int i)
         get_relative_item_in_list(visible_container_list, sel_index, i);
     g_ptr_array_unref(visible_container_list);
 
-    focus_container(con);
+    tag_focus_container(tag, con);
     lift_container(con);
 }
 
@@ -560,7 +517,7 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     g_ptr_array_unref(result_list);
 
     arrange();
-    focus_container(con);
+    tag_this_focus_container(con);
 }
 
 void swap_on_hidden_stack(struct monitor *m, int i)
@@ -620,7 +577,7 @@ void swap_on_hidden_stack(struct monitor *m, int i)
     g_ptr_array_unref(result_list);
 
     arrange();
-    focus_container(con);
+    tag_this_focus_container(con);
 }
 
 void lift_container(struct container *con)
@@ -1121,7 +1078,7 @@ void move_container_to_tag(struct container *con, struct tag *tag)
     container_damage_whole(con);
 
     arrange();
-    focus_most_recent_container();
+    tag_this_focus_most_recent_container();
 
     tag_update_names(server_get_tags());
     ipc_event_tag();
