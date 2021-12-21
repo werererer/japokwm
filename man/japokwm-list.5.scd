@@ -1,7 +1,7 @@
 japokwm-list(5)
 
 # Description
-	A list of container objects.
+	An immutable list of objects.
 # Functions
 # Methods
 	int find(con)

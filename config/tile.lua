@@ -76,10 +76,10 @@ end
 
 local function merge_boxes(box1, box2)
     if (box1 == nil) then
-        return action.deep_copy(box2)
+        return Action.deep_copy(box2)
     end
     if (box2 == nil) then
-        return action.deep_copy(box1)
+        return Action.deep_copy(box1)
     end
     local x1 = math.min(box1[X], box2[X])
     local y1 = math.min(box1[Y], box2[Y])
@@ -274,7 +274,7 @@ local function resize_all(lt_data_el, i, n, d)
     end
 
     local directions = Get_directions(d)
-    local layout_data_element = action.deep_copy(lt_data_el)
+    local layout_data_element = Action.deep_copy(lt_data_el)
 
     -- if Is_resize_locked(layout_data_element, o_layout_data_el, i, n, directions) then
     --     return layout_data_element
@@ -287,7 +287,7 @@ end
 
 
 local function get_layout_data_element_id(o_layout_data)
-    return math.max(math.min(info.get_this_container_count(), #o_layout_data), 1)
+    return math.max(math.min(Info.get_this_container_count(), #o_layout_data), 1)
 end
 
 -- returns 0 if not found

@@ -31,7 +31,6 @@ static const struct luaL_Reg list_f[] =
 
 static const struct luaL_Reg list_m[] = {
     {"find", lib_list_find},
-    {"get", lib_list_get},
     {"repush", lib_list_repush},
     {"swap", lib_list_swap},
     {NULL, NULL},
@@ -121,11 +120,11 @@ int lib_list_gc(lua_State *L)
 int lib_list_find(lua_State *L)
 {
     struct user_list *user_list = check_user_list(L, 1);
-    struct container *con = user_list->check_object(L, 2);
+    void *item = user_list->check_object(L, 2);
     lua_pop(L, 2);
 
     guint pos;
-    g_ptr_array_find(user_list->list, con, &pos);
+    g_ptr_array_find(user_list->list, item, &pos);
 
     lua_pushinteger(L, c_idx_to_lua_idx(pos));
     return 1;
@@ -133,9 +132,7 @@ int lib_list_find(lua_State *L)
 
 int lib_list_get(lua_State *L)
 {
-    const char *key = luaL_checkstring(L, -1); // convert lua to c index
     struct user_list *user_list = check_user_list(L, 1);
-    debug_print("key: %s\n", key);
 
     bool is_number = lua_isnumber(L, -1);
     if (!is_number) {
