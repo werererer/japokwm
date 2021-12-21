@@ -44,7 +44,7 @@ srcs = files(
     'xwayland.c',
     'bitset/bitset.c',
     'command/commands.c',
-    'lib/lib_actions.c',
+    'lib/lib_action.c',
     'lib/lib_bitset.c',
     'lib/lib_color.c',
     'lib/lib_container.c',

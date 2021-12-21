@@ -24,7 +24,6 @@ static const struct luaL_Reg layout_static_getter[] =
 
 static const struct luaL_Reg layout_static_setter[] =
 {
-    {"focused", lib_layout_get_focused},
     {NULL, NULL},
 };
 

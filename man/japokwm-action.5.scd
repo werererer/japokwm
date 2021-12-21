@@ -1,7 +1,7 @@
 japokwm-action(5)
 
-# NAME
-	action
+# Type
+	class Action
 # Description
 	A collection of functions to alter the state of the windowmanager.
 # Functions

@@ -1,7 +1,9 @@
 japokwm-opt(5)
 
-# NAME
-	opt
+# Type
+	class Options
+# Objects
+	opt(gl)
 # Description
 	define options for japokwm
 # Functions
