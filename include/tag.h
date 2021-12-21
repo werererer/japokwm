@@ -169,7 +169,8 @@ void tag_set_prev_tags(struct tag *tag, BitSet *tags);
 
 GArray *container_array2D_get_positions_array(GPtrArray2D *containers);
 GArray *container_array_get_positions_array(GPtrArray *containers);
-void tag_repush(GPtrArray *array, int i, int abs_index);
+void tag_repush_containers(GPtrArray *array, int i, int abs_index);
+void tag_swap_containers(GPtrArray *array, int i, int j);
 void tag_repush_tag(struct tag *tag, struct container *con, int new_pos);
 void tag_repush_on_focus_stack(struct tag *tag, struct container *con, int i);
 
