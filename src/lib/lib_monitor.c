@@ -17,7 +17,6 @@ static const struct luaL_Reg monitor_meta[] =
 
 static const struct luaL_Reg monitor_f[] =
 {
-    {"get_focused", lib_monitor_get_focused},
     {NULL, NULL},
 };
 
@@ -35,6 +34,7 @@ static const struct luaL_Reg monitor_setter[] =
 
 static const struct luaL_Reg monitor_getter[] =
 {
+    {"focused", lib_monitor_get_focused},
     {"root", lib_monitor_get_root},
     {"tag", lib_monitor_get_tag},
     {NULL, NULL},

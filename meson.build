@@ -68,6 +68,7 @@ if scdoc.found()
         'man/japokwm-info.5.scd',
         'man/japokwm-layout.5.scd',
         'man/japokwm-list.5.scd',
+        'man/japokwm-monitor.5.scd',
         'man/japokwm.1.scd',
         'man/japokwm.5.scd',
     ]
