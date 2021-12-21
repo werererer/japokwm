@@ -1,7 +1,7 @@
 japokwm-container(5)
 
-# NAME
-	container
+# Type
+	class Container
 # Description
 	Represents a window.
 # Static Variables

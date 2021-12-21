@@ -1,4 +1,4 @@
-#include "lib/lib_actions.h"
+#include "lib/lib_action.h"
 
 #include <inttypes.h>
 #include <lua.h>
@@ -87,7 +87,7 @@ void lua_load_action(lua_State *L)
             CONFIG_ACTION);
 
     luaL_newlib(L, action_f);
-    lua_setglobal(L, "action");
+    lua_setglobal(L, "Action");
 }
 
 int lib_arrange(lua_State *L)

@@ -152,13 +152,13 @@ void load_default_keybindings(struct options *options)
                 Container.focused:kill()
             end
             );
-    bind_key(options, "mod-S-Return", action.exec("/usr/bin/alacritty"));
-    bind_key(options, "mod-j", action.focus_on_stack(1));
-    bind_key(options, "mod-k", action.focus_on_stack(-1));
-    bind_key(options, "mod-Return", action.zoom());
-    bind_key(options, "mod-S-h", action.resize_main(-1/10));
-    bind_key(options, "mod-S-l", action.resize_main(1/10));
-    bind_key(options, "mod-p", action.exec("rofi -show run"));
+    bind_key(options, "mod-S-Return", Action.exec("/usr/bin/alacritty"));
+    bind_key(options, "mod-j", Action.focus_on_stack(1));
+    bind_key(options, "mod-k", Action.focus_on_stack(-1));
+    bind_key(options, "mod-Return", Action.zoom());
+    bind_key(options, "mod-S-h", Action.resize_main(-1/10));
+    bind_key(options, "mod-S-l", Action.resize_main(1/10));
+    bind_key(options, "mod-p", Action.exec("rofi -show run"));
 
     bind_key(options, "mod-S-1", 
             if Container.focused then
@@ -236,8 +236,8 @@ void load_default_keybindings(struct options *options)
 
     bind_key(options, "mod-t", Container.focused.property.floating = false);
 
-    bind_key(options, "mod-M1", action.move_resize(Cursor_mode.move));
-    bind_key(options, "mod-M2", action.move_resize(Cursor_mode.resize));
+    bind_key(options, "mod-M1", Action.move_resize(Cursor_mode.move));
+    bind_key(options, "mod-M2", Action.move_resize(Cursor_mode.resize));
     bind_key(options, "M1",
             local con = info.get_container_under_cursor()
             if con then
@@ -247,38 +247,38 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-a", Layout.focused:increase_n_master());
     bind_key(options, "mod-x", Layout.focused:decrease_n_master());
 
-    bind_key(options, "mod-1", action.view_or_tag(1));
-    bind_key(options, "mod-2", action.view_or_tag(2));
-    bind_key(options, "mod-3", action.view_or_tag(3));
-    bind_key(options, "mod-4", action.view_or_tag(4));
-    bind_key(options, "mod-5", action.view_or_tag(5));
-    bind_key(options, "mod-6", action.view_or_tag(6));
-    bind_key(options, "mod-7", action.view_or_tag(7));
-    bind_key(options, "mod-8", action.view_or_tag(8));
-    bind_key(options, "mod-9", action.view_or_tag(9));
+    bind_key(options, "mod-1", Action.view_or_tag(1));
+    bind_key(options, "mod-2", Action.view_or_tag(2));
+    bind_key(options, "mod-3", Action.view_or_tag(3));
+    bind_key(options, "mod-4", Action.view_or_tag(4));
+    bind_key(options, "mod-5", Action.view_or_tag(5));
+    bind_key(options, "mod-6", Action.view_or_tag(6));
+    bind_key(options, "mod-7", Action.view_or_tag(7));
+    bind_key(options, "mod-8", Action.view_or_tag(8));
+    bind_key(options, "mod-9", Action.view_or_tag(9));
 
     bind_key(options, "mod-b", tag.focused:toggle_bars());
     bind_key(options, "mod-m", tag.focused.stack[1]:focus());
 
-    bind_key(options, "mod-S-j", action.focus_on_hidden_stack(0));
-    bind_key(options, "mod-S-k", action.focus_on_hidden_stack(-1));
+    bind_key(options, "mod-S-j", Action.focus_on_hidden_stack(0));
+    bind_key(options, "mod-S-k", Action.focus_on_hidden_stack(-1));
 
-    bind_key(options, "mod-e", action.view(tag.focused:get_next_empty(Direction.right)));
+    bind_key(options, "mod-e", Action.view(tag.focused:get_next_empty(Direction.right)));
     bind_key(options, "mod-S-space", Layout.load(server.default_layout_ring:prev()));
     bind_key(options, "mod-space", Layout.load(server.default_layout_ring:next()));
 
     bind_key(options, "mod-minus",
             if Container.focused then
-                action.move_to_scratchpad(Container.focused)
+                Action.move_to_scratchpad(Container.focused)
             end
                 );
-    bind_key(options, "mod-S-minus", action.show_scratchpad());
+    bind_key(options, "mod-S-minus", Action.show_scratchpad());
 
-    bind_key(options, "mod-tab", action.swap_on_hidden_stack(0));
-    bind_key(options, "mod-S-tab", action.swap_on_hidden_stack(-1));
+    bind_key(options, "mod-tab", Action.swap_on_hidden_stack(0));
+    bind_key(options, "mod-S-tab", Action.swap_on_hidden_stack(-1));
 
-    bind_key(options, "mod-period", action.toggle_tag());
-    bind_key(options, "mod-S-period", action.toggle_tags());
+    bind_key(options, "mod-period", Action.toggle_tag());
+    bind_key(options, "mod-S-period", Action.toggle_tags());
 
     bind_key(options, "mod-0",
             Tag.focused.tags = 1 << Tag.focused:get_id()

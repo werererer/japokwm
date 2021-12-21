@@ -7,7 +7,7 @@
 #include <wlr/types/wlr_output_layout.h>
 
 #include "cursor.h"
-#include "lib/lib_actions.h"
+#include "lib/lib_action.h"
 #include "lib/lib_bitset.h"
 #include "lib/lib_color.h"
 #include "lib/lib_container.h"
