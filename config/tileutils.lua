@@ -30,7 +30,7 @@ function Is_resize_locked(layout_data_el, o_layout_data_el, i, n, directions)
         main_con = Deep_copy(Move_resize(main_con, 0, n, dir))
         local alt_con = Get_alternative_container(main_con, dir)
 
-        if info.is_container_not_in_master_limit(main_con) then
+        if Info.is_container_not_in_master_limit(main_con) then
             return true
         end
 
@@ -43,7 +43,7 @@ function Is_resize_locked(layout_data_el, o_layout_data_el, i, n, directions)
             c[WIDTH] = resize_containers[k][WIDTH] * alt_con[WIDTH]
             c[HEIGHT] = resize_containers[k][HEIGHT] * alt_con[HEIGHT]
 
-            if info.is_container_not_in_limit(c) then
+            if Info.is_container_not_in_limit(c) then
               return true
             end
         end
@@ -68,7 +68,7 @@ function Resize_container(container, n, d)
 end
 
 function Move_resize(container, nmove, nresize, d)
-    local con = action.deep_copy(container)
+    local con = Action.deep_copy(container)
     con = Move_container(con, nmove, d)
     con = Resize_container(con, nresize, d)
     return con
