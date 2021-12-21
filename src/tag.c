@@ -115,17 +115,24 @@ void tag_focus_first_container(struct tag *tag)
         return;
 }
 
-void focus_most_recent_container()
+void tag_this_focus_most_recent_container()
 {
     struct monitor *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
+    tag_focus_most_recent_container(tag);
+}
 
+void tag_focus_most_recent_container(struct tag *tag)
+{
+    if (!tag)
+        return;
+    struct monitor *m = tag_get_monitor(tag);
     struct container *con = monitor_get_focused_container(m);
     if (!con) {
         tag_focus_first_container(tag);
     }
 
-    focus_container(con);
+    tag_this_focus_container(con);
 }
 
 struct container *get_container(struct tag *tag, int i)
@@ -444,13 +451,13 @@ static void swap_tag_tags_smart(struct tag *tag1, struct tag *tag2)
 
 void tag_swap(struct tag *tag1, struct tag *tag2)
 {
-    GPtrArray *future_ws2_containers = g_ptr_array_new();
+    GPtrArray *future_tag2_containers = g_ptr_array_new();
     for (int i = 0; i < tag1->con_set->tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(tag1->con_set->tiled_containers, i);
         if (tag1->id != con->ws_id)
             continue;
 
-        g_ptr_array_add(future_ws2_containers, con);
+        g_ptr_array_add(future_tag2_containers, con);
     }
 
     for (int i = 0; i < tag2->con_set->tiled_containers->len; i++) {
@@ -462,19 +469,22 @@ void tag_swap(struct tag *tag1, struct tag *tag2)
         bitset_set(con->client->sticky_tags, con->ws_id);
     }
 
-    for (int i = 0; i < future_ws2_containers->len; i++) {
-        struct container *con = g_ptr_array_index(future_ws2_containers, i);
+    for (int i = 0; i < future_tag2_containers->len; i++) {
+        struct container *con = g_ptr_array_index(future_tag2_containers, i);
         con->ws_id = tag2->id;
         bitset_reset_all(con->client->sticky_tags);
         bitset_set(con->client->sticky_tags, con->ws_id);
     }
-    g_ptr_array_unref(future_ws2_containers);
+    g_ptr_array_unref(future_tag2_containers);
+
+    tag_focus_most_recent_container(tag1);
+    tag_focus_most_recent_container(tag2);
 }
 
-void tag_swap_smart(struct tag *tag, struct tag *ws2)
+void tag_swap_smart(struct tag *tag1, struct tag *tag2)
 {
-    tag_swap(tag, ws2);
-    swap_tag_tags_smart(tag, ws2);
+    tag_swap(tag1, tag2);
+    swap_tag_tags_smart(tag1, tag2);
 }
 
 BitSet *tag_get_tags(struct tag *tag)
@@ -618,6 +628,55 @@ static struct container *tag_get_local_focused_container(struct tag *tag)
     }
     return NULL;
 }
+
+void tag_this_focus_container(struct container *con)
+{
+    struct monitor *m = server_get_selected_monitor();
+    struct tag *tag = monitor_get_active_tag(m);
+    tag_focus_container(tag, con);
+}
+
+void tag_focus_container(struct tag *tag, struct container *con)
+{
+    if (!con)
+        return;
+    if (!con->focusable)
+        return;
+    if (con->is_xwayland_popup)
+        return;
+    if (container_get_hidden(con))
+        return;
+
+    struct monitor *m = tag_get_monitor(tag);
+    if (!container_viewable_on_monitor(m, con))
+        return;
+
+    struct container *sel = monitor_get_focused_container(m);
+
+    /* Put the new client atop the focus stack */
+    tag_repush_on_focus_stack(tag, con, 0);
+
+    struct container *new_sel = monitor_get_focused_container(m);
+
+    // it is a waste of resources to call unfocus and refocus when the
+    // focused container didn't change
+    if (sel != new_sel) {
+        call_on_unfocus_function(server.event_handler, sel);
+        call_on_focus_function(server.event_handler, con);
+    }
+
+    struct client *old_c = sel ? sel->client : NULL;
+    struct client *new_c = new_sel ? new_sel->client : NULL;
+    struct seat *seat = input_manager_get_default_seat();
+    focus_client(seat, old_c, new_c);
+
+    if (sel == new_sel)
+        return;
+
+    tag_update_names(server_get_tags());
+    ipc_event_tag();
+}
+
 
 void tag_update_name(struct tag *tag)
 {

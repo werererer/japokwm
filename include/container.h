@@ -78,7 +78,6 @@ void container_damage_part(struct container *con);
 void container_damage_whole(struct container *con);
 void container_fix_position_to_begin(struct container *con);
 void container_fix_position(struct container *con);
-void focus_container(struct container *con);
 void focus_on_hidden_stack(struct monitor *m, int i);
 void swap_on_hidden_stack(struct monitor *m, int i);
 void focus_on_stack(struct monitor *m, int i);

@@ -225,14 +225,14 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-C-S-7", Container.focused.tags:_xor(1 << 6));
     bind_key(options, "mod-C-S-8", Container.focused.tags:_xor(1 << 7));
 
-    bind_key(options, "mod-s 1", tag.focused:swap_smart(tag.get(1)));
-    bind_key(options, "mod-s 2", tag.focused:swap_smart(tag.get(2)));
-    bind_key(options, "mod-s 3", tag.focused:swap_smart(tag.get(3)));
-    bind_key(options, "mod-s 4", tag.focused:swap_smart(tag.get(4)));
-    bind_key(options, "mod-s 5", tag.focused:swap_smart(tag.get(5)));
-    bind_key(options, "mod-s 6", tag.focused:swap_smart(tag.get(6)));
-    bind_key(options, "mod-s 7", tag.focused:swap_smart(tag.get(7)));
-    bind_key(options, "mod-s 8", tag.focused:swap_smart(tag.get(8)));
+    bind_key(options, "mod-s 1", Tag.focused:swap_smart(Tag.get(1)));
+    bind_key(options, "mod-s 2", Tag.focused:swap_smart(Tag.get(2)));
+    bind_key(options, "mod-s 3", Tag.focused:swap_smart(Tag.get(3)));
+    bind_key(options, "mod-s 4", Tag.focused:swap_smart(Tag.get(4)));
+    bind_key(options, "mod-s 5", Tag.focused:swap_smart(Tag.get(5)));
+    bind_key(options, "mod-s 6", Tag.focused:swap_smart(Tag.get(6)));
+    bind_key(options, "mod-s 7", Tag.focused:swap_smart(Tag.get(7)));
+    bind_key(options, "mod-s 8", Tag.focused:swap_smart(Tag.get(8)));
 
     bind_key(options, "mod-t", Container.focused.property.floating = false);
 
@@ -281,7 +281,7 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-S-period", action.toggle_tags());
 
     bind_key(options, "mod-0",
-            tag.focused.tags = 1 << tag.focused:get_id()
+            Tag.focused.tags = 1 << Tag.focused.id
         );
     bind_key(options, "mod-S-0",
         local con = Container.focused

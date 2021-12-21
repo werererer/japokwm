@@ -191,7 +191,7 @@ void arrange_layers(struct monitor *m)
             if (layer_surface->current.keyboard_interactive && layer_surface->mapped) {
                 // Deactivate the focused client.
                 // TODO fix this NULL is not supported in focus_container
-                focus_container(NULL);
+                tag_this_focus_container(NULL);
                 wlr_seat_keyboard_notify_enter(seat->wlr_seat,
                         get_wlrsurface(c),
                         kb->keycodes, kb->num_keycodes,

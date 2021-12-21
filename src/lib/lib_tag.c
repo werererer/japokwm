@@ -162,8 +162,12 @@ int lib_tag_swap(lua_State *L)
     struct tag *tag = monitor_get_active_tag(m);
     tagset_reload(tag);
     arrange();
+
+    tag_focus_most_recent_container(tag1);
+    tag_focus_most_recent_container(tag2);
+
     tag_update_names(server_get_tags());
-    focus_most_recent_container();
+    tag_focus_most_recent_container(tag);
     root_damage_whole(m->root);
     ipc_event_tag();
     return 0;
@@ -183,8 +187,12 @@ int lib_tag_swap_smart(lua_State *L)
     struct tag *tag = monitor_get_active_tag(m);
     tagset_reload(tag);
     arrange();
+
+    tag_focus_most_recent_container(tag1);
+    tag_focus_most_recent_container(tag2);
+
     tag_update_names(server_get_tags());
-    focus_most_recent_container();
+    tag_this_focus_most_recent_container();
     root_damage_whole(m->root);
     ipc_event_tag();
     return 0;

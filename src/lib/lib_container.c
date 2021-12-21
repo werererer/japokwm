@@ -126,7 +126,7 @@ int lib_container_focus(lua_State *L)
     struct container *con = check_container(L, 1);
     lua_pop(L, 1);
 
-    focus_container(con);
+    tag_this_focus_container(con);
     return 0;
 }
 

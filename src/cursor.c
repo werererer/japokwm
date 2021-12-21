@@ -340,7 +340,7 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
         server.xy_container_is_locked = false;
     }
     if (!server.xy_container_is_locked) {
-        focus_container(focus_con);
+        tag_this_focus_container(focus_con);
     }
     server.old_xy_container = focus_con;
 }
