@@ -25,10 +25,9 @@ japokwm - tiling made easy
 
 # DESCRIPTION
 
-japokwm was created to create a tiling window manager where you can
-create new layouts as easily as possible. We have to thank everyone that created
-the wlroots library and the dwl project. Both of them made this project
-possible.
+japokwm is a tiling window manager where you can create new layouts as easily as
+possible. We have to thank everyone that created the wlroots library and the dwl
+project. Both of them made this project possible.
 
 You can run japokwm directly from a tty, or via a Wayland-compatible login manager.
 
