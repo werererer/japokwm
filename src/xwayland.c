@@ -57,8 +57,7 @@ void create_notifyx11(struct wl_listener *listener, void *data)
     LISTEN(&xwayland_surface->events.set_class, &c->set_app_id, client_handle_set_app_id);
     LISTEN(&xwayland_surface->events.request_activate, &c->activate, activatex11);
 
-    struct container *con = create_container(c, server_get_selected_monitor(), true);
-    con->scene_node = wlr_scene_surface_create(server.scene, con->client->surface.layer->surface);
+    create_container(c, server_get_selected_monitor(), true);
 }
 
 void destroy_notifyx11(struct wl_listener *listener, void *data)
