@@ -17,7 +17,12 @@ union surface_t {
 struct client {
     /* containers containing this client */
     struct container *con;
+
+    struct wlr_scene_tree *tree;
     union surface_t surface;
+    struct wlr_scene_node *surface_node;
+
+    struct wl_listener tree_destroy;
 
     struct monitor *m;
     struct wl_listener activate;

@@ -14,6 +14,8 @@
 #include "root.h"
 #include "tagset.h"
 
+static void tree_destroy_notify(struct wl_listener *listener, void *data);
+
 void create_notify_layer_shell(struct wl_listener *listener, void *data)
 {
     struct wlr_layer_surface_v1 *wlr_layer_surface = data;
@@ -27,15 +29,22 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     surface.layer = wlr_layer_surface;
     struct client *client = create_client(LAYER_SHELL, surface);
 
+    struct monitor *m = wlr_layer_surface->output->data;
+    client->m = m;
+    struct container *con = create_container(client, m, false);
+
+    client->tree = wlr_scene_tree_create(&server.scene->node);
+    assert(client->tree != NULL);
+
+    client->surface_node = wlr_scene_subsurface_tree_create(&client->tree->node, get_wlrsurface(client));
+    assert(client->surface_node != NULL);
+
     LISTEN(&wlr_layer_surface->surface->events.commit, &client->commit, commitlayersurfacenotify);
     LISTEN(&wlr_layer_surface->events.map, &client->map, map_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.unmap, &client->unmap, unmap_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.destroy, &client->destroy, destroy_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.new_popup, &client->new_popup, client_handle_new_popup);
-
-    struct monitor *m = wlr_layer_surface->output->data;
-    client->m = m;
-    struct container *con = create_container(client, m, false);
+    LISTEN(&client->tree->node.events.destroy, &client->tree_destroy, tree_destroy_notify);
 
     add_container_to_tile(con);
 
@@ -76,26 +85,7 @@ void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, destroy);
 
-    if (c->surface.layer->mapped)
-        unmap_layer_surface(c);
-    remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, c->con);
-
-    wl_list_remove(&c->destroy.link);
-    wl_list_remove(&c->map.link);
-    wl_list_remove(&c->unmap.link);
-    wl_list_remove(&c->new_popup.link);
-    wl_list_remove(&c->commit.link);
-
-    if (c->surface.layer->output) {
-        struct monitor *m = c->surface.layer->output->data;
-        arrange_layers(m);
-        c->surface.layer->output = NULL;
-    }
-
-    remove_container_from_tile(c->con);
-
-    destroy_container(c->con);
-    destroy_client(c);
+    wlr_scene_node_destroy(&c->tree->node);
 }
 
 void commitlayersurfacenotify(struct wl_listener *listener, void *data)
@@ -116,6 +106,33 @@ void commitlayersurfacenotify(struct wl_listener *listener, void *data)
         remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
         g_ptr_array_insert(get_layer_list(m, wlr_layer_surface->current.layer), 0, con);
     }
+}
+
+static void tree_destroy_notify(struct wl_listener *listener, void *data)
+{
+    struct client *c = wl_container_of(listener, c, tree_destroy);
+
+    if (c->surface.layer->mapped)
+        unmap_layer_surface(c);
+    remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, c->con);
+
+    wl_list_remove(&c->tree_destroy.link);
+    wl_list_remove(&c->destroy.link);
+    wl_list_remove(&c->map.link);
+    wl_list_remove(&c->unmap.link);
+    wl_list_remove(&c->new_popup.link);
+    wl_list_remove(&c->commit.link);
+
+    if (c->surface.layer->output) {
+        struct monitor *m = c->surface.layer->output->data;
+        arrange_layers(m);
+        c->surface.layer->output = NULL;
+    }
+
+    remove_container_from_tile(c->con);
+
+    destroy_container(c->con);
+    destroy_client(c);
 }
 
 bool layer_shell_is_bar(struct container *con)
