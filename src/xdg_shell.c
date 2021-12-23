@@ -40,8 +40,14 @@ void create_notify_xdg(struct wl_listener *listener, void *data)
      * client, either a toplevel (application window) or popup. */
     struct wlr_xdg_surface *xdg_surface = data;
 
-    if (xdg_surface->role != WLR_XDG_SURFACE_ROLE_TOPLEVEL)
+    if (xdg_surface->role == WLR_XDG_SURFACE_ROLE_POPUP) {
+        struct wlr_xdg_surface *parent = wlr_xdg_surface_from_wlr_surface(
+            xdg_surface->popup->parent);
+        struct wlr_scene_node *parent_node = parent->data;
+        xdg_surface->data = wlr_scene_xdg_surface_create(
+            parent_node, xdg_surface);
         return;
+    }
 
     union surface_t surface;
     surface.xdg = xdg_surface;
@@ -65,7 +71,8 @@ void create_notify_xdg(struct wl_listener *listener, void *data)
 
     LISTEN(&xdg_surface->events.new_popup, &c->new_popup, client_handle_new_popup);
 
-    create_container(c, server_get_selected_monitor(), true);
+    struct container *con = create_container(c, server_get_selected_monitor(), true);
+    con->scene_node = wlr_scene_xdg_surface_create(&server.scene->node, con->client->surface.xdg);
 }
 
 void destroy_notify(struct wl_listener *listener, void *data)

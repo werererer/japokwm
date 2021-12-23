@@ -24,6 +24,7 @@
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_output_v1.h>
+#include <wlr/types/wlr_scene.h>
 
 #include "layer_shell.h"
 #include "monitor.h"
@@ -329,8 +330,15 @@ int setup(struct server *server)
     /* If we don't provide a renderer, autocreate makes a GLES2 renderer for us.
      * The renderer is responsible for defining the various pixel formats it
      * supports for shared memory, this configures that for clients. */
-    drw = wlr_backend_get_renderer(server->backend);
-    wlr_renderer_init_wl_display(drw, server->wl_display);
+    server->renderer = wlr_renderer_autocreate(server->backend);
+    wlr_renderer_init_wl_display(server->renderer, server->wl_display);
+
+    /* Autocreates an allocator for us.
+     * The allocator is the bridge between the renderer and the backend. It
+     * handles the buffer creation, allowing wlroots to render onto the
+     * screen */
+     server->allocator = wlr_allocator_autocreate(server->backend,
+        server->renderer);
 
     /* This creates some hands-off wlroots interfaces. The compositor is
      * necessary for clients to allocate surfaces and the data device manager
@@ -338,7 +346,7 @@ int setup(struct server *server)
      * to dig your fingers in and play with their behavior if you want. Note that
      * the clients cannot set the selection directly without compositor approval,
      * see the setsel() function. */
-    server->compositor = wlr_compositor_create(server->wl_display, drw);
+    server->compositor = wlr_compositor_create(server->wl_display, server->renderer);
     wlr_export_dmabuf_manager_v1_create(server->wl_display);
     wlr_screencopy_manager_v1_create(server->wl_display);
     wlr_data_control_manager_v1_create(server->wl_display);
@@ -373,6 +381,15 @@ int setup(struct server *server)
     server->relative_pointer_mgr = wlr_relative_pointer_manager_v1_create(server->wl_display);
     /* wl_signal_add(&server.virtual_keyboard_mgr->events.new_virtual_keyboard, &new_virtual_keyboard); */
     init_event_handlers(server);
+
+    /* Create a scene graph. This is a wlroots abstraction that handles all
+     * rendering and damage tracking. All the compositor author needs to do
+     * is add things that should be rendered to the scene graph at the proper
+     * positions and then call wlr_scene_output_commit() to render a frame if
+     * necessary.
+     */
+    server->scene = wlr_scene_create();
+    wlr_scene_attach_output_layout(server->scene, server->output_layout);
 
     /*
      * Configures a seat, which is a single "seat" at which a user sits and

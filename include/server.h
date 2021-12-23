@@ -3,6 +3,7 @@
 #include <wayland-server.h>
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_virtual_pointer_v1.h>
+#include <wlr/render/allocator.h>
 #include <wlr/types/wlr_virtual_keyboard_v1.h>
 #include <wlr/xcursor.h>
 #include <wayland-server-core.h>
@@ -10,6 +11,7 @@
 #include <wlr/types/wlr_relative_pointer_v1.h>
 #include <glib.h>
 #include <pthread.h>
+#include <wlr/types/wlr_scene.h>
 
 #include "cursor.h"
 #include "layout.h"
@@ -24,6 +26,8 @@ struct server {
     struct wl_event_loop *wl_event_loop;
     struct wlr_backend *backend;
     struct wlr_compositor *compositor;
+    struct wlr_allocator *allocator;
+    struct wlr_renderer *renderer;
 
     struct wlr_xdg_shell *xdg_shell;
     struct wlr_layer_shell_v1 *layer_shell;
@@ -41,6 +45,8 @@ struct server {
 
     struct layout *default_layout;
     struct ring_buffer *default_layout_ring;
+
+    struct wlr_scene *scene;
 
     struct wlr_output_layout *output_layout;
     GPtrArray *keyboards;

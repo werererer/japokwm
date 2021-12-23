@@ -59,6 +59,9 @@ struct root *create_root(struct monitor *m, struct wlr_box geom)
 {
     struct root *root = calloc(1, sizeof(*root));
     root->m = m;
+    float color[4] = {0.0, 0.0, 0.0, 1.0};
+    root->root_rect = wlr_scene_rect_create(&server.scene->node, m->geom.width, m->geom.height, color);
+
     set_root_geom(root, geom);
     return root;
 }
@@ -77,12 +80,17 @@ static bool equals_anchor(const struct anchor *anchor, uint32_t anchor_value)
 
 void set_root_color(struct root *root, struct color color)
 {
+    float root_color[4];
+    color_to_wlr_color(root_color, color);
+    wlr_scene_rect_set_color(root->root_rect, root_color);
     root->color = color;
 }
 
 void set_root_geom(struct root *root, struct wlr_box geom)
 {
     root->geom = geom;
+
+    wlr_scene_rect_set_size(root->root_rect, geom.width, geom.height);
 }
 
 void root_damage_whole(struct root *root)

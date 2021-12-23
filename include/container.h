@@ -2,9 +2,10 @@
 #define CONTAINER_H
 
 #include <lua.h>
-#include <wlr/types/wlr_box.h>
+#include <wlr/util/box.h>
 #include <wlr/types/wlr_cursor.h>
 #include <glib.h>
+#include <wlr/types/wlr_scene.h>
 
 struct monitor;
 struct resize_constraints;
@@ -22,6 +23,8 @@ struct container_property {
 };
 
 struct container {
+    void *data;
+    struct wlr_scene_node *scene_node;
     GPtrArray *properties;
 
     // if this is set it will overwrite the other geometries

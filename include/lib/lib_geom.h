@@ -3,7 +3,7 @@
 
 #include <lua.h>
 #include <lauxlib.h>
-#include <wlr/types/wlr_box.h>
+#include <wlr/util/box.h>
 
 void create_lua_geometry(lua_State *L, struct wlr_box *geom);
 void lua_load_geom(lua_State *L);

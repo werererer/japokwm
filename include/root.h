@@ -1,8 +1,9 @@
 #ifndef ROOT_H
 #define ROOT_H
 
-#include <wlr/types/wlr_box.h>
+#include <wlr/util/box.h>
 #include <wlr/util/edges.h>
+#include <wlr/types/wlr_scene.h>
 #include "color.h"
 
 struct tag;
@@ -12,6 +13,7 @@ struct root {
     struct wlr_box geom;
     struct monitor *m;
     struct color color;
+    struct wlr_scene_rect *root_rect;
 };
 
 struct root *create_root(struct monitor *m, struct wlr_box geom);

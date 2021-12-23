@@ -40,6 +40,8 @@ void create_monitor(struct wl_listener *listener, void *data)
      * the user configure it. */
     wlr_output_set_mode(output, wlr_output_preferred_mode(output));
 
+    wlr_output_init_render(output, server.allocator, server.renderer);
+
     /* Allocates and configures monitor state using configured rules */
     struct monitor *m = output->data = calloc(1, sizeof(*m));
 
@@ -140,38 +142,45 @@ void create_output(struct wlr_backend *backend, void *data)
 int i = 0;
 static void handle_output_frame(struct wl_listener *listener, void *data)
 {
-    struct monitor *m = wl_container_of(listener, m, damage_frame);
-    // debug_print("frame: %i\n", i++);
+    struct monitor *m = wl_container_of(listener, m, frame);
+    struct wlr_scene *scene = server.scene;
 
-    /* NOOP */
+    struct wlr_scene_output *scene_output = wlr_scene_get_scene_output(scene, m->wlr_output);
+
+    /* Render the scene if needed and commit the output */
+    wlr_scene_output_commit(scene_output);
+
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    wlr_scene_output_send_frame_done(scene_output, &now);
 }
 
 int j = 0;
 static void handle_output_damage_frame(struct wl_listener *listener, void *data)
 {
-    struct monitor *m = wl_container_of(listener, m, damage_frame);
+    // struct monitor *m = wl_container_of(listener, m, damage_frame);
+    //
+    // if (!m->wlr_output->enabled) {
+    //     return;
+    // }
+    //
+    // /* Check if we can scan-out the primary view. */
+    // pixman_region32_t frame_damage;
+    // pixman_region32_init(&frame_damage);
+    // bool needs_frame;
+    // if (!wlr_output_damage_attach_render(m->damage, &needs_frame, &frame_damage)) {
+    //     goto damage_finish;
+    // }
+    //
+    // if (!needs_frame) {
+    //     wlr_output_rollback(m->wlr_output);
+    //     goto damage_finish;
+    // }
+    //
+    // render_monitor(m, &frame_damage);
 
-    if (!m->wlr_output->enabled) {
-        return;
-    }
-
-    /* Check if we can scan-out the primary view. */
-    pixman_region32_t frame_damage;
-    pixman_region32_init(&frame_damage);
-    bool needs_frame;
-    if (!wlr_output_damage_attach_render(m->damage, &needs_frame, &frame_damage)) {
-        goto damage_finish;
-    }
-
-    if (!needs_frame) {
-        wlr_output_rollback(m->wlr_output);
-        goto damage_finish;
-    }
-
-    render_monitor(m, &frame_damage);
-
-damage_finish:
-    pixman_region32_fini(&frame_damage);
+// damage_finish:
+//     pixman_region32_fini(&frame_damage);
 }
 
 static void handle_output_mode(struct wl_listener *listener, void *data)

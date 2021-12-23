@@ -219,7 +219,7 @@ void kill_client(struct client *c)
             wlr_xdg_toplevel_send_close(c->surface.xdg);
             break;
         case LAYER_SHELL:
-            wlr_layer_surface_v1_close(c->surface.layer);
+            wlr_layer_surface_v1_destroy(c->surface.layer);
             break;
         case X11_MANAGED:
         case X11_UNMANAGED:

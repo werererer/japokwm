@@ -6,7 +6,7 @@
 #include <sys/param.h>
 #include <wayland-util.h>
 #include <wlr/types/wlr_foreign_toplevel_management_v1.h>
-#include <wlr/types/wlr_box.h>
+#include <wlr/util/box.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include <stdlib.h>
 
@@ -325,6 +325,7 @@ void container_update_size(struct container *con)
             if (con->client->surface.xdg->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
                 wlr_xdg_toplevel_set_size(con->client->surface.xdg,
                         con_geom->width, con_geom->height);
+                wlr_scene_node_set_position(con->scene_node, con_geom->x, con_geom->y);
             }
             break;
         case LAYER_SHELL:
