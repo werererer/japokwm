@@ -282,7 +282,7 @@ int lib_toggle_view(lua_State *L)
     struct monitor *m = server_get_selected_monitor();
     tag_this_focus_most_recent_container();
     struct container *sel = monitor_get_focused_container(m);
-    lift_container(sel);
+    container_lift(sel);
     arrange(false);
     return 0;
 }

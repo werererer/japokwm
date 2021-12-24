@@ -232,7 +232,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 }
 
                 con->has_border = false;
-                lift_container(con);
+                container_lift(con);
                 container_set_floating(con, NULL, true);
                 container_set_floating_geom(con, &prefered_geom);
                 break;

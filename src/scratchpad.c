@@ -52,7 +52,7 @@ static void hide_container(struct container *con)
 
     if (!sel->on_scratchpad) {
         tag_this_focus_container(con);
-        lift_container(con);
+        container_lift(con);
         return;
     }
 
@@ -71,7 +71,7 @@ static void show_container(struct container *con)
     container_set_current_geom(con, &center_box);
 
     tag_this_focus_container(con);
-    lift_container(con);
+    container_lift(con);
     arrange();
 }
 
@@ -91,7 +91,7 @@ void show_scratchpad()
         container_set_current_geom(con, &center_box);
 
         tag_this_focus_container(con);
-        lift_container(con);
+        container_lift(con);
         arrange();
     } else {
         if (container_get_hidden(con)) {

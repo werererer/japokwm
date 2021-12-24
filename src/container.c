@@ -92,7 +92,7 @@ void container_property_set_floating(struct container_property *property, bool f
         container_set_hidden(con, false);
     }
 
-    lift_container(con);
+    container_lift(con);
     con->client->resized = true;
     container_damage_whole(con);
 }
@@ -519,7 +519,7 @@ void focus_on_stack(struct monitor *m, int i)
     g_ptr_array_unref(visible_container_list);
 
     tag_focus_container(tag, con);
-    lift_container(con);
+    container_lift(con);
 }
 
 
@@ -645,7 +645,7 @@ void swap_on_hidden_stack(struct monitor *m, int i)
     tag_this_focus_container(con);
 }
 
-void lift_container(struct container *con)
+void container_lift(struct container *con)
 {
     if (!con)
         return;

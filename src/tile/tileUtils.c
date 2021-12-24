@@ -359,6 +359,11 @@ void update_hidden_status_of_containers(struct monitor *m, GPtrArray *tiled_cont
         struct container *con = g_ptr_array_index(tiled_containers, i);
 
         bool is_hidden = i >= lt->n_tiled;
+        if (is_hidden) {
+            wlr_scene_node_set_enabled(con->client->scene_node, false);
+        } else {
+            wlr_scene_node_set_enabled(con->client->scene_node, true);
+        }
         container_set_hidden(con, is_hidden);
     }
 }
