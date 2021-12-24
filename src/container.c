@@ -132,10 +132,8 @@ void destroy_container(struct container *con)
 void container_update_borders(struct container *con)
 {
     if (!con->has_border) {
-        printf("has no border\n");
         return;
     }
-    printf("update border\n");
 
     double ox, oy;
     int w, h;
