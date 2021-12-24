@@ -361,7 +361,7 @@ inline struct tag *monitor_get_active_tag(struct monitor *m)
     return tag;
 }
 
-inline struct layout *get_layout_in_monitor(struct monitor *m)
+inline struct layout *monitor_get_active_layout(struct monitor *m)
 {
     if (!m)
         return NULL;

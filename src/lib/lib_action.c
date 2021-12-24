@@ -316,7 +316,7 @@ int lib_zoom(lua_State *L)
     struct container *con = get_container_in_stack(tag, 0);
     tag_this_focus_container(con);
 
-    struct layout *lt = get_layout_in_monitor(m);
+    struct layout *lt = monitor_get_active_layout(m);
     if (lt->options->arrange_by_focus) {
         tag_this_focus_most_recent_container();
         arrange();

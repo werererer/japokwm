@@ -47,7 +47,7 @@ BitSet *monitor_get_tags(struct monitor *m);
 struct monitor *output_to_monitor(struct wlr_output *output);
 struct monitor *xy_to_monitor(double x, double y);
 struct tag *monitor_get_active_tag(struct monitor *m);
-struct layout *get_layout_in_monitor(struct monitor *m);
+struct layout *monitor_get_active_layout(struct monitor *m);
 struct root *monitor_get_active_root(struct monitor *m);
 struct wlr_box monitor_get_active_geom(struct monitor *m);
 #endif /* MONITOR_H */

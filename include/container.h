@@ -1,6 +1,7 @@
 #ifndef CONTAINER_H
 #define CONTAINER_H
 
+#include "color.h"
 #include <lua.h>
 #include <wlr/util/box.h>
 #include <wlr/types/wlr_cursor.h>
@@ -22,6 +23,12 @@ struct container_property {
     struct container *con;
 };
 
+struct border {
+    struct wlr_scene_rect *scene_rect;
+    struct color color;
+    struct wlr_box geom;
+};
+
 struct container {
     void *data;
     GPtrArray *properties;
@@ -30,6 +37,8 @@ struct container {
     struct wlr_box global_geom;
     struct wlr_box prev_geom;
     struct client *client;
+
+    struct border borders[4];
 
     // tag id
     int ws_id;
@@ -51,6 +60,11 @@ struct container {
 struct container *create_container(struct client *c, struct monitor *m, bool has_border);
 
 void destroy_container(struct container *con);
+
+void container_update_borders(struct container *con);
+void container_setup_borders(struct container *con);
+void border_set_geometry(struct border *border, struct wlr_box geom);
+void border_set_color(struct border *border, struct color color);
 
 bool container_property_is_floating(struct container_property *property);
 struct wlr_box *container_property_get_floating_geom(struct container_property *property);

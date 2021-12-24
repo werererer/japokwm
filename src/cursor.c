@@ -452,7 +452,7 @@ void move_resize(struct cursor *cursor, int ui)
         return;
 
     struct monitor *m = container_get_monitor(server.grab_c);
-    struct layout *lt = get_layout_in_monitor(m);
+    struct layout *lt = monitor_get_active_layout(m);
     // all floating windows will be tiled. Thats why you can't make new windows
     // tiled
     if (lt->options->arrange_by_focus)

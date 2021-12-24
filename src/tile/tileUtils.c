@@ -293,7 +293,7 @@ static void arrange_container(struct container *con, struct monitor *m,
     if (container_get_hidden(con))
         return;
 
-    struct layout *lt = get_layout_in_monitor(m);
+    struct layout *lt = monitor_get_active_layout(m);
     struct wlr_box geom = get_nth_geom_in_layout(L, lt, root_geom, arrange_position);
     container_surround_gaps(&geom, inner_gap);
 
@@ -353,7 +353,7 @@ void container_update_size(struct container *con)
 
 void update_hidden_status_of_containers(struct monitor *m, GPtrArray *tiled_containers)
 {
-    struct layout *lt = get_layout_in_monitor(m);
+    struct layout *lt = monitor_get_active_layout(m);
 
     for (int i = 0; i < tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(tiled_containers, i);

@@ -25,6 +25,7 @@
 #include "rules/rule.h"
 #include "list_sets/focus_stack_set.h"
 #include "options.h"
+#include "color.h"
 
 static void add_container_to_tag(struct container *con, struct tag *tag);
 
@@ -126,6 +127,77 @@ void destroy_container(struct container *con)
 
     g_ptr_array_unref(con->properties);
     free(con);
+}
+
+void container_update_borders(struct container *con)
+{
+    if (!con->has_border) {
+        printf("has no border\n");
+        return;
+    }
+    printf("update border\n");
+
+    double ox, oy;
+    int w, h;
+    struct wlr_box *con_geom = container_get_current_geom(con);
+    int border_width = container_get_border_width(con);
+    ox = -border_width;
+    oy = -border_width;
+    struct monitor *m = container_get_monitor(con);
+    wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
+    w = con_geom->width;
+    h = con_geom->height;
+
+    struct wlr_box *borders = (struct wlr_box[NUMBER_OF_BORDERS]) {
+        {ox, oy, w + 2 * border_width, border_width},             /* top */
+            {ox, oy + border_width + h, w + 2 * border_width, border_width}, /* bottom */
+            {ox, oy + border_width, border_width, h},                 /* left */
+            {ox + border_width + w, oy + border_width, border_width, h},     /* right */
+    };
+
+    struct layout *lt = monitor_get_active_layout(m);
+    struct container *sel = monitor_get_focused_container(m);
+    const struct color color = (con == sel) ? lt->options->focus_color : lt->options->border_color;
+    for (int i = 0; i < NUMBER_OF_BORDERS; i++) {
+        border_set_geometry(&con->borders[i], borders[i]);
+        border_set_color(&con->borders[i], color);
+    }
+
+    // TODO: do we need this code?
+    // enum wlr_edges hidden_edges = WLR_EDGE_NONE;
+    // struct tag *tag = monitor_get_active_tag(m);
+    // struct layout *lt = tag_get_layout(tag);
+    // if (lt->options->smart_hidden_edges) {
+    //     if (tag->visible_con_set->tiled_containers->len <= 1) {
+    //         hidden_edges = get_hidden_edges(con, borders, lt->options->hidden_edges);
+    //     }
+    // } else {
+    //     hidden_edges = get_hidden_edges(con, borders, lt->options->hidden_edges);
+    // }
+}
+
+void container_setup_borders(struct container *con)
+{
+
+}
+
+void border_set_geometry(struct border *border, struct wlr_box geom)
+{
+    if (!border->scene_rect) {
+        return;
+    }
+
+    border->geom = geom;
+    wlr_scene_node_set_position(&border->scene_rect->node, geom.x, geom.y);
+    wlr_scene_rect_set_size(border->scene_rect, geom.width, geom.height);
+}
+
+void border_set_color(struct border *border, struct color border_color)
+{
+    border->color = border_color;
+    float color[4];
+    color_to_wlr_color(color, border_color);
+    wlr_scene_rect_set_color(border->scene_rect, color);
 }
 
 void add_container_to_tile(struct container *con)
@@ -410,6 +482,7 @@ void commit_notify(struct wl_listener *listener, void *data)
         return;
 
     struct container *con = c->con;
+    container_update_borders(con);
     if (con->is_on_tile) {
         container_damage_part(c->con);
     }
@@ -600,7 +673,7 @@ void repush(int pos1, int pos2)
 
     arrange();
 
-    struct layout *lt = get_layout_in_monitor(m);
+    struct layout *lt = monitor_get_active_layout(m);
     if (lt->options->arrange_by_focus) {
         arrange();
     }
