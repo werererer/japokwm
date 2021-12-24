@@ -1,5 +1,6 @@
 #include "xwayland.h"
 
+#include <assert.h>
 #include <stdlib.h>
 #include <wlr/util/log.h>
 
@@ -39,6 +40,25 @@ static void activatex11(struct wl_listener *listener, void *data)
         wlr_xwayland_surface_activate(c->surface.xwayland, true);
 }
 
+static void tree_destroy_notify(struct wl_listener *listener, void *data)
+{
+    struct client *c = wl_container_of(listener, c, tree_destroy);
+
+    struct container *con = c->con;
+    if (con->is_xwayland_popup) {
+        g_ptr_array_remove(server.xwayland_popups, con);
+    }
+    destroy_container(c->con);
+
+    wl_list_remove(&c->map.link);
+    wl_list_remove(&c->unmap.link);
+    wl_list_remove(&c->destroy.link);
+    wl_list_remove(&c->set_title.link);
+    wl_list_remove(&c->set_app_id.link);
+
+    destroy_client(c);
+}
+
 void create_notifyx11(struct wl_listener *listener, void *data)
 {
     struct wlr_xwayland_surface *xwayland_surface = data;
@@ -48,6 +68,9 @@ void create_notifyx11(struct wl_listener *listener, void *data)
     surface.xwayland = xwayland_surface;
     struct client *c = xwayland_surface->data = create_client(X11_MANAGED, surface);
     // set default value will be overriden on maprequest
+
+    c->tree = wlr_scene_tree_create(&server.scene->node);
+    assert(c->tree != NULL);
 
     /* Listen to the various events it can emit */
     LISTEN(&xwayland_surface->events.map, &c->map, maprequestx11);
@@ -64,20 +87,7 @@ void destroy_notifyx11(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, destroy);
 
-
-    struct container *con = c->con;
-    if (con->is_xwayland_popup) {
-        g_ptr_array_remove(server.xwayland_popups, con);
-    }
-    destroy_container(c->con);
-
-    wl_list_remove(&c->map.link);
-    wl_list_remove(&c->unmap.link);
-    wl_list_remove(&c->destroy.link);
-    wl_list_remove(&c->set_title.link);
-    wl_list_remove(&c->set_app_id.link);
-
-    destroy_client(c);
+    wlr_scene_node_destroy(c->surface_node);
 }
 
 void handle_xwayland_ready(struct wl_listener *listener, void *data)
@@ -149,6 +159,10 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
     add_container_to_tile(con);
     LISTEN(&xwayland_surface->surface->events.commit, &c->commit, commit_notify);
+
+    c->surface_node = wlr_scene_subsurface_tree_create(&c->tree->node, get_wlrsurface(c));
+    assert(c->surface_node != NULL);
+    LISTEN(&c->tree->node.events.destroy, &c->tree_destroy, tree_destroy_notify);
 
     struct wlr_box prefered_geom = (struct wlr_box) {
         .x = c->surface.xwayland->x, 
