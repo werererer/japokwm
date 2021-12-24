@@ -73,8 +73,6 @@ bool is_visual_visible_stack(struct tag *tag, struct container *con);
 bool container_intersects_with_monitor(struct container *con, struct monitor *m);
 
 GPtrArray *tagset_get_floating_list_copy(struct tag *tag);
-GPtrArray *tag_get_complete_stack_copy(struct tag *tag);
-GPtrArray *tag_get_stack_copy(struct tag *tag);
 GPtrArray *tag_get_tiled_list(struct tag *tag);
 GPtrArray *tag_get_tiled_list_copy(struct tag *tag);
 

@@ -214,7 +214,6 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
     wl_list_remove(&m->frame.link);
     wl_list_remove(&m->destroy.link);
 
-    struct tag *tag = monitor_get_active_tag(m);
     for (GList *iterator = server_get_tags(); iterator; iterator = iterator->next) {
         struct tag *tag = iterator->data;
         if (tag->m == m) {
@@ -225,22 +224,24 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
         }
     }
 
-    GPtrArray *stack_list = tag_get_complete_stack_copy(tag);
-    for (int i = 0; i < stack_list->len; i++) {
-        struct container *con = g_ptr_array_index(stack_list, i);
-
-        if (con->client->type == LAYER_SHELL && con->client->m  == m) {
-            // FIXME: this needs to be done so that instead of segfaulting when
-            // layer shell based programs are open it leaks the memory instead
-            // this seems to be a bug in wlroots or wayland
-            wl_list_remove(&con->client->commit.link);
-            wl_list_remove(&con->client->destroy.link);
-        }
-        if (con->client->m == m) {
-            con->client->m = NULL;
-        }
-    }
-    g_ptr_array_unref(stack_list);
+    // TODO: rewrite this
+    // struct tag *tag = monitor_get_active_tag(m);
+    // GPtrArray *stack_list = tag_get_complete_stack_copy(tag);
+    // for (int i = 0; i < stack_list->len; i++) {
+    //     struct container *con = g_ptr_array_index(stack_list, i);
+    //
+    //     if (con->client->type == LAYER_SHELL && con->client->m  == m) {
+    //         // FIXME: this needs to be done so that instead of segfaulting when
+    //         // layer shell based programs are open it leaks the memory instead
+    //         // this seems to be a bug in wlroots or wayland
+    //         wl_list_remove(&con->client->commit.link);
+    //         wl_list_remove(&con->client->destroy.link);
+    //     }
+    //     if (con->client->m == m) {
+    //         con->client->m = NULL;
+    //     }
+    // }
+    // g_ptr_array_unref(stack_list);
 
     for (GList *iterator = server_get_tags(); iterator; iterator = iterator->next) {
         struct tag *tag = iterator->data;
