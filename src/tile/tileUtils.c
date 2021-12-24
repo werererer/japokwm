@@ -321,12 +321,12 @@ void container_update_size(struct container *con)
     apply_bounds(con, *wlr_output_layout_get_box(server.output_layout, NULL));
 
     /* wlroots makes this a no-op if size hasn't changed */
+    wlr_scene_node_set_position(con->client->scene_node, con_geom->x, con_geom->y);
     switch (con->client->type) {
         case XDG_SHELL:
             if (con->client->surface.xdg->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
                 wlr_xdg_toplevel_set_size(con->client->surface.xdg,
                         con_geom->width, con_geom->height);
-                wlr_scene_node_set_position(con->client->scene_node, con_geom->x, con_geom->y);
             }
             break;
         case LAYER_SHELL:

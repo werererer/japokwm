@@ -21,6 +21,7 @@ struct client {
     struct wlr_scene_tree *tree;
     union surface_t surface;
     struct wlr_scene_node *scene_node;
+    struct wlr_scene_node *surface_node;
 
     struct wl_listener tree_destroy;
 

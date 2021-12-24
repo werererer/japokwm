@@ -169,8 +169,8 @@ void maprequestx11(struct wl_listener *listener, void *data)
     add_container_to_tile(con);
     LISTEN(&xwayland_surface->surface->events.commit, &c->commit, commit_notify);
 
-    c->scene_node = wlr_scene_subsurface_tree_create(&c->tree->node, get_wlrsurface(c));
-    assert(c->scene_node != NULL);
+    c->surface_node = wlr_scene_subsurface_tree_create(&c->tree->node, get_wlrsurface(c));
+    assert(c->surface_node != NULL);
     LISTEN(&c->tree->node.events.destroy, &c->tree_destroy, tree_destroy_notify);
 
     struct wlr_box prefered_geom = (struct wlr_box) {
