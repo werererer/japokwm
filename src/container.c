@@ -750,6 +750,7 @@ void container_set_hidden(struct container *con, bool b)
 {
     struct tag *tag = server_get_selected_tag();
     container_set_hidden_at_tag(con, b, tag);
+    wlr_scene_node_set_enabled(con->client->scene_node, !b);
 }
 
 void container_set_hidden_at_tag(struct container *con, bool b, struct tag *tag)

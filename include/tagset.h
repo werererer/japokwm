@@ -94,8 +94,8 @@ bool visible_on(struct monitor *m, BitSet *tags, struct container *con);
 bool tagset_exist_on(struct monitor *m, struct container *con);
 bool tagset_visible_on(struct monitor *m, struct container *con);
 
-void push_tagset(struct tag *tag, BitSet *tags);
-void focus_tagset(struct tag *tag, BitSet *tags);
+void tag_push_tags(struct tag *tag, BitSet *tags);
+void tag_focus_tags(struct tag *tag, BitSet *tags);
 
 void tagset_tags_reconnect(struct tag *tag);
 void tagset_tags_disconnect(struct tag *tag);
