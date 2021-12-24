@@ -24,7 +24,6 @@ struct container_property {
 
 struct container {
     void *data;
-    struct wlr_scene_node *scene_node;
     GPtrArray *properties;
 
     // if this is set it will overwrite the other geometries

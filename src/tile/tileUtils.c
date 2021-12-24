@@ -325,7 +325,7 @@ void container_update_size(struct container *con)
             if (con->client->surface.xdg->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
                 wlr_xdg_toplevel_set_size(con->client->surface.xdg,
                         con_geom->width, con_geom->height);
-                wlr_scene_node_set_position(con->scene_node, con_geom->x, con_geom->y);
+                wlr_scene_node_set_position(con->client->scene_node, con_geom->x, con_geom->y);
             }
             break;
         case LAYER_SHELL:

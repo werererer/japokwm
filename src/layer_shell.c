@@ -36,8 +36,8 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     client->tree = wlr_scene_tree_create(&server.scene->node);
     assert(client->tree != NULL);
 
-    client->surface_node = wlr_scene_subsurface_tree_create(&client->tree->node, get_wlrsurface(client));
-    assert(client->surface_node != NULL);
+    client->scene_node = wlr_scene_subsurface_tree_create(&client->tree->node, get_wlrsurface(client));
+    assert(client->scene_node != NULL);
 
     LISTEN(&wlr_layer_surface->surface->events.commit, &client->commit, commitlayersurfacenotify);
     LISTEN(&wlr_layer_surface->events.map, &client->map, map_layer_surface_notify);
