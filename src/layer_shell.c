@@ -27,24 +27,25 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
 
     union surface_t surface;
     surface.layer = wlr_layer_surface;
-    struct client *client = create_client(LAYER_SHELL, surface);
+    struct client *c = create_client(LAYER_SHELL, surface);
 
     struct monitor *m = wlr_layer_surface->output->data;
-    client->m = m;
-    struct container *con = create_container(client, m, false);
+    c->m = m;
+    struct container *con = create_container(c, m, false);
 
-    client->tree = wlr_scene_tree_create(&server.scene->node);
-    assert(client->tree != NULL);
+    c->tree = wlr_scene_tree_create(&server.scene->node);
+    assert(c->tree != NULL);
 
-    client->scene_node = wlr_scene_subsurface_tree_create(&client->tree->node, get_wlrsurface(client));
-    assert(client->scene_node != NULL);
+    c->scene_node = wlr_scene_subsurface_tree_create(&c->tree->node, get_wlrsurface(c));
+    assert(c->scene_node != NULL);
+    c->scene_node->data = c;
 
-    LISTEN(&wlr_layer_surface->surface->events.commit, &client->commit, commitlayersurfacenotify);
-    LISTEN(&wlr_layer_surface->events.map, &client->map, map_layer_surface_notify);
-    LISTEN(&wlr_layer_surface->events.unmap, &client->unmap, unmap_layer_surface_notify);
-    LISTEN(&wlr_layer_surface->events.destroy, &client->destroy, destroy_layer_surface_notify);
-    LISTEN(&wlr_layer_surface->events.new_popup, &client->new_popup, client_handle_new_popup);
-    LISTEN(&client->tree->node.events.destroy, &client->tree_destroy, tree_destroy_notify);
+    LISTEN(&wlr_layer_surface->surface->events.commit, &c->commit, commitlayersurfacenotify);
+    LISTEN(&wlr_layer_surface->events.map, &c->map, map_layer_surface_notify);
+    LISTEN(&wlr_layer_surface->events.unmap, &c->unmap, unmap_layer_surface_notify);
+    LISTEN(&wlr_layer_surface->events.destroy, &c->destroy, destroy_layer_surface_notify);
+    LISTEN(&wlr_layer_surface->events.new_popup, &c->new_popup, client_handle_new_popup);
+    LISTEN(&c->tree->node.events.destroy, &c->tree_destroy, tree_destroy_notify);
 
     add_container_to_tile(con);
 
