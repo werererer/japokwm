@@ -258,27 +258,21 @@ struct container *monitor_get_focused_container(struct monitor *m)
 
 struct container *xy_to_container(double x, double y)
 {
-    struct monitor *m = xy_to_monitor(x, y);
-    if (!m)
+    struct wlr_scene_node *node = wlr_scene_node_at(&server.scene->node, x, y, NULL, NULL);
+    if (!node)
+        return NULL;
+    if (node->type != WLR_SCENE_NODE_SURFACE)
         return NULL;
 
-    struct tag *tag = monitor_get_active_tag(m);
-    GPtrArray *stack_set = tag_get_complete_stack_copy(tag);
-    for (int i = 0; i < stack_set->len; i++) {
-        struct container *con = g_ptr_array_index(stack_set, i);
-        if (!con->focusable)
-            continue;
-        if (!container_viewable_on_monitor(m, con))
-            continue;
-        if (!wlr_box_contains_point(container_get_current_geom(con), x, y))
-            continue;
-
-        g_ptr_array_unref(stack_set);
-        return con;
+    /* Walk up the tree until we find a node with a data pointer. When done,
+     * we've found the node representing the view. */
+    while (node != NULL && node->data == NULL) {
+        node = node->parent;
     }
+    assert(node != NULL);
 
-    g_ptr_array_unref(stack_set);
-    return NULL;
+    struct client *c = node->data;
+    return c->con;
 }
 
 static void add_container_to_tag(struct container *con, struct tag *tag)

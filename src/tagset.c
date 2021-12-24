@@ -530,26 +530,29 @@ GPtrArray *tagset_get_hidden_list_copy(struct tag *tag)
 
 GPtrArray *tag_get_stack_copy(struct tag *tag)
 {
-    GPtrArray *tiled_copy = tag_get_tiled_list_copy(tag);
-    GPtrArray *floating_copy = list_create_filtered_sub_list(server.container_stack, container_is_floating);
-    wlr_list_cat(floating_copy, tiled_copy);
-    g_ptr_array_unref(tiled_copy);
-    return floating_copy;
+    // TODO: replace with wlr_scene code
+    // GPtrArray *tiled_copy = tag_get_tiled_list_copy(tag);
+    // GPtrArray *floating_copy = list_create_filtered_sub_list(server.container_stack, container_is_floating);
+    // wlr_list_cat(floating_copy, tiled_copy);
+    // g_ptr_array_unref(tiled_copy);
+    // return floating_copy;
+    return NULL;
 }
 
 GPtrArray *tag_get_complete_stack_copy(struct tag *tag)
 {
-    GPtrArray *array = g_ptr_array_new();
-    GPtrArray *stack_copy = tag_get_stack_copy(tag);
-
-    wlr_list_cat(array, server.layer_visual_stack_overlay);
-    wlr_list_cat(array, server.layer_visual_stack_top);
-    wlr_list_cat(array, stack_copy);
-    wlr_list_cat(array, server.layer_visual_stack_bottom);
-    wlr_list_cat(array, server.layer_visual_stack_background);
-
-    g_ptr_array_unref(stack_copy);
-    return array;
+    // TODO replace with wlr_scene code
+    // GPtrArray *array = g_ptr_array_new();
+    // GPtrArray *stack_copy = tag_get_stack_copy(tag);
+    //
+    // wlr_list_cat(array, server.layer_visual_stack_overlay);
+    // wlr_list_cat(array, server.layer_visual_stack_top);
+    // wlr_list_cat(array, stack_copy);
+    // wlr_list_cat(array, server.layer_visual_stack_bottom);
+    // wlr_list_cat(array, server.layer_visual_stack_background);
+    //
+    // g_ptr_array_unref(stack_copy);
+    return NULL;
 }
 
 void tag_id_to_tag(BitSet *dest, int ws_id)

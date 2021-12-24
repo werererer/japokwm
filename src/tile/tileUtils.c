@@ -35,19 +35,20 @@ void arrange()
         focus_layout(tag, tag->current_layout);
     }
 
-    for (int i = 0; i < server.container_stack->len; i++) {
-        struct container *con = g_ptr_array_index(server.container_stack, i);
-
-        if (!container_is_floating(con))
-            continue;
-
-        struct monitor *m = server_get_selected_monitor();
-        struct tag *tag = monitor_get_active_tag(m);
-        struct layout *lt = tag_get_layout(tag);
-        container_set_border_width(con, lt->options->float_border_px);
-        container_update_size(con);
-        container_set_hidden(con, false);
-    }
+    // TODO: replace with: wlr_scene_output_for_each_surface
+    // for (int i = 0; i < server.container_stack->len; i++) {
+    //     struct container *con = g_ptr_array_index(server.container_stack, i);
+    //
+    //     if (!container_is_floating(con))
+    //         continue;
+    //
+    //     struct monitor *m = server_get_selected_monitor();
+    //     struct tag *tag = monitor_get_active_tag(m);
+    //     struct layout *lt = tag_get_layout(tag);
+    //     container_set_border_width(con, lt->options->float_border_px);
+    //     container_update_size(con);
+    //     container_set_hidden(con, false);
+    // }
 
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);

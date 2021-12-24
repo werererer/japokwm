@@ -295,16 +295,17 @@ void client_handle_set_app_id(struct wl_listener *listener, void *data)
 
 void reset_floating_client_borders(int border_px)
 {
-    struct monitor *m = server_get_selected_monitor();
-    for (int i = 0; i < server.container_stack->len; i++) {
-        struct container *con = g_ptr_array_index(server.container_stack, i);
-        if (container_is_tiled(con)) {
-            continue;
-        }
-        if (!tagset_exist_on(m, con)) {
-            continue;
-        }
-        container_set_border_width(con, border_px);
-        container_damage_whole(con);
-    }
+    // TODO: refactor this function
+    // struct monitor *m = server_get_selected_monitor();
+    // for (int i = 0; i < server.container_stack->len; i++) {
+    //     struct container *con = g_ptr_array_index(server.container_stack, i);
+    //     if (container_is_tiled(con)) {
+    //         continue;
+    //     }
+    //     if (!tagset_exist_on(m, con)) {
+    //         continue;
+    //     }
+    //     container_set_border_width(con, border_px);
+    //     container_damage_whole(con);
+    // }
 }

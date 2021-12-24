@@ -75,6 +75,7 @@ void create_notify_xdg(struct wl_listener *listener, void *data)
     c->scene_node = wlr_scene_xdg_surface_create(&server.scene->node, con->client->surface.xdg);
     c->scene_node->data = c;
     xdg_surface->data = c->scene_node;
+    printf("create node: %p\n", c->scene_node);
 }
 
 void destroy_notify(struct wl_listener *listener, void *data)

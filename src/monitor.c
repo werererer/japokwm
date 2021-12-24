@@ -139,7 +139,6 @@ void create_output(struct wlr_backend *backend, void *data)
 /* #endif */
 }
 
-int i = 0;
 static void handle_output_frame(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, frame);
@@ -155,7 +154,6 @@ static void handle_output_frame(struct wl_listener *listener, void *data)
     wlr_scene_output_send_frame_done(scene_output, &now);
 }
 
-int j = 0;
 static void handle_output_damage_frame(struct wl_listener *listener, void *data)
 {
     // struct monitor *m = wl_container_of(listener, m, damage_frame);
