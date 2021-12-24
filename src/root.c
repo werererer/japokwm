@@ -91,6 +91,7 @@ void set_root_geom(struct root *root, struct wlr_box geom)
     root->geom = geom;
 
     wlr_scene_rect_set_size(root->root_rect, geom.width, geom.height);
+    wlr_scene_node_set_position(&root->root_rect->node, geom.x, geom.y);
 }
 
 void root_damage_whole(struct root *root)
