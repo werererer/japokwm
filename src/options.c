@@ -257,8 +257,8 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-8", Action.view_or_tag(8));
     bind_key(options, "mod-9", Action.view_or_tag(9));
 
-    bind_key(options, "mod-b", tag.focused:toggle_bars());
-    bind_key(options, "mod-m", tag.focused.stack[1]:focus());
+    bind_key(options, "mod-b", Tag.focused:toggle_bars());
+    bind_key(options, "mod-m", Tag.focused.stack[1]:focus());
 
     bind_key(options, "mod-S-j", Action.focus_on_hidden_stack(0));
     bind_key(options, "mod-S-k", Action.focus_on_hidden_stack(-1));

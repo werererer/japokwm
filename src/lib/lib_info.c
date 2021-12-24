@@ -108,7 +108,7 @@ int lib_get_root_area(lua_State *L)
 int lib_is_container_not_in_limit(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
+    struct layout *lt = monitor_get_active_layout(m);
 
     struct wlr_fbox geom = lua_togeometry(L);
     lua_pop(L, 1);
@@ -120,7 +120,7 @@ int lib_is_container_not_in_limit(lua_State *L)
 int lib_is_container_not_in_master_limit(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
-    struct layout *lt = get_layout_in_monitor(m);
+    struct layout *lt = monitor_get_active_layout(m);
 
     struct wlr_fbox geom = lua_togeometry(L);
     lua_pop(L, 1);

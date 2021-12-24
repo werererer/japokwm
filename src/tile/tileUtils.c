@@ -35,19 +35,20 @@ void arrange()
         focus_layout(tag, tag->current_layout);
     }
 
-    for (int i = 0; i < server.container_stack->len; i++) {
-        struct container *con = g_ptr_array_index(server.container_stack, i);
-
-        if (!container_is_floating(con))
-            continue;
-
-        struct monitor *m = server_get_selected_monitor();
-        struct tag *tag = monitor_get_active_tag(m);
-        struct layout *lt = tag_get_layout(tag);
-        container_set_border_width(con, lt->options->float_border_px);
-        container_update_size(con);
-        container_set_hidden(con, false);
-    }
+    // TODO: replace with: wlr_scene_output_for_each_surface
+    // for (int i = 0; i < server.container_stack->len; i++) {
+    //     struct container *con = g_ptr_array_index(server.container_stack, i);
+    //
+    //     if (!container_is_floating(con))
+    //         continue;
+    //
+    //     struct monitor *m = server_get_selected_monitor();
+    //     struct tag *tag = monitor_get_active_tag(m);
+    //     struct layout *lt = tag_get_layout(tag);
+    //     container_set_border_width(con, lt->options->float_border_px);
+    //     container_update_size(con);
+    //     container_set_hidden(con, false);
+    // }
 
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
@@ -292,7 +293,7 @@ static void arrange_container(struct container *con, struct monitor *m,
     if (container_get_hidden(con))
         return;
 
-    struct layout *lt = get_layout_in_monitor(m);
+    struct layout *lt = monitor_get_active_layout(m);
     struct wlr_box geom = get_nth_geom_in_layout(L, lt, root_geom, arrange_position);
     container_surround_gaps(&geom, inner_gap);
 
@@ -325,7 +326,7 @@ void container_update_size(struct container *con)
             if (con->client->surface.xdg->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
                 wlr_xdg_toplevel_set_size(con->client->surface.xdg,
                         con_geom->width, con_geom->height);
-                wlr_scene_node_set_position(con->scene_node, con_geom->x, con_geom->y);
+                wlr_scene_node_set_position(con->client->scene_node, con_geom->x, con_geom->y);
             }
             break;
         case LAYER_SHELL:
@@ -352,7 +353,7 @@ void container_update_size(struct container *con)
 
 void update_hidden_status_of_containers(struct monitor *m, GPtrArray *tiled_containers)
 {
-    struct layout *lt = get_layout_in_monitor(m);
+    struct layout *lt = monitor_get_active_layout(m);
 
     for (int i = 0; i < tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(tiled_containers, i);

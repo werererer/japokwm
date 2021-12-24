@@ -402,6 +402,7 @@ void tag_set_selected_monitor(struct tag *tag, struct monitor *m)
     if (tag->m)
         return;
     tag->m = m;
+    m->ws_id = tag->id;
 }
 
 void tag_set_current_monitor(struct tag *tag, struct monitor *m)
@@ -885,7 +886,8 @@ void add_container_to_layer_stack(struct tag *tag, struct container *con)
 
 void remove_container_from_stack(struct tag *tag, struct container *con)
 {
-    g_ptr_array_remove(server.container_stack, con);
+    // TODO: refactor me
+    // g_ptr_array_remove(server.container_stack, con);
 }
 
 void add_container_to_stack(struct tag *tag, struct container *con)
@@ -894,7 +896,8 @@ void add_container_to_stack(struct tag *tag, struct container *con)
         return;
     assert(con->client->type != LAYER_SHELL);
 
-    g_ptr_array_insert(server.container_stack, 0, con);
+    // TODO: refactor me
+    // g_ptr_array_insert(server.container_stack, 0, con);
 }
 
 void tag_remove_container(struct tag *tag, struct container *con)

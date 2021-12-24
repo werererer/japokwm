@@ -201,8 +201,6 @@ void init_server()
     server.layout_paths = create_default_layout_paths();
     server.tags = create_tags();
 
-    server.container_stack = g_ptr_array_new();
-
     server.event_handler = create_event_handler();
 
     server.previous_tag = 0;
@@ -229,8 +227,6 @@ void finalize_server()
     g_ptr_array_unref(server.config_paths);
     g_ptr_array_unref(server.user_data_paths);
     g_ptr_array_unref(server.layout_paths);
-
-    g_ptr_array_unref(server.container_stack);
 
     destroy_event_handler(server.event_handler);
     pthread_mutex_destroy(&lock_rendering_action);

@@ -20,7 +20,7 @@ void move_to_scratchpad(struct container *con, int position)
     // TODO: try to remove this
     container_set_floating(con, container_fix_position, false);
 
-    con->ws_id = INVALID_tag_ID;
+    con->ws_id = INVALID_TAG_ID;
     con->on_scratchpad = true;
 
     if (server.scratchpad->len== 0) {

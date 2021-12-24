@@ -30,7 +30,8 @@ typedef GPtrArray GPtrArray2D;
 #define NUM_CHARS 64
 #define NUM_DIGITS 9
 #define INVALID_POSITION -1
-#define INVALID_tag_ID -1
+#define INVALID_TAG_ID -1
+#define NUMBER_OF_BORDERS 4
 #define SWAP(a, b) do { \
     typeof(a) tmp = a; \
     a = b; \

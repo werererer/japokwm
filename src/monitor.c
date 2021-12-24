@@ -85,7 +85,9 @@ void create_monitor(struct wl_listener *listener, void *data)
         server_set_selected_monitor(m);
         init_utils(L);
     }
-    monitor_get_initial_tag(m, server_get_tags());
+    if (!is_first_monitor) {
+        monitor_get_initial_tag(m, server_get_tags());
+    }
 
     if (is_first_monitor) {
         load_config(L);
@@ -139,7 +141,6 @@ void create_output(struct wlr_backend *backend, void *data)
 /* #endif */
 }
 
-int i = 0;
 static void handle_output_frame(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, frame);
@@ -155,7 +156,6 @@ static void handle_output_frame(struct wl_listener *listener, void *data)
     wlr_scene_output_send_frame_done(scene_output, &now);
 }
 
-int j = 0;
 static void handle_output_damage_frame(struct wl_listener *listener, void *data)
 {
     // struct monitor *m = wl_container_of(listener, m, damage_frame);
@@ -194,15 +194,16 @@ static void handle_output_mode(struct wl_listener *listener, void *data)
 static void monitor_get_initial_tag(struct monitor *m, GList *tags)
 {
     struct tag *tag = find_next_unoccupied_tag(tags, get_tag(0));
+    printf("mon tag: %zu\n", tag->id);
 
     assert(tag != NULL);
 
     int ws_id = tag->id;
-    tag->m = m;
+    tag_set_selected_monitor(tag, m);
     BitSet *bitset = bitset_create();
     bitset_set(bitset, ws_id);
 
-    // monitor_focus_tags(m, ws, bitset);
+    monitor_focus_tags(m, tag, bitset);
 }
 
 void handle_destroy_monitor(struct wl_listener *listener, void *data)
@@ -273,6 +274,7 @@ void monitor_set_selected_tag(struct monitor *m, struct tag *tag)
     }
 
     m->ws_id = tag->id;
+    tag->m = m;
     tag_set_selected_monitor(tag, m);
 }
 
@@ -359,7 +361,7 @@ inline struct tag *monitor_get_active_tag(struct monitor *m)
     return tag;
 }
 
-inline struct layout *get_layout_in_monitor(struct monitor *m)
+inline struct layout *monitor_get_active_layout(struct monitor *m)
 {
     if (!m)
         return NULL;

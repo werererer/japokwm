@@ -34,6 +34,7 @@ static void getxdecomode(struct wl_listener *listener, void *data)
             WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
 }
 
+
 void create_notify_xdg(struct wl_listener *listener, void *data)
 {
     /* This event is raised when wlr_xdg_shell receives a new xdg surface from a
@@ -52,7 +53,7 @@ void create_notify_xdg(struct wl_listener *listener, void *data)
     union surface_t surface;
     surface.xdg = xdg_surface;
     /* Allocate a Client for this surface */
-    struct client *c = xdg_surface->data = create_client(XDG_SHELL, surface);
+    struct client *c = create_client(XDG_SHELL, surface);
 
     /* Tell the client not to try anything fancy */
     wlr_xdg_toplevel_set_tiled(c->surface.xdg, WLR_EDGE_TOP |
@@ -72,7 +73,16 @@ void create_notify_xdg(struct wl_listener *listener, void *data)
     LISTEN(&xdg_surface->events.new_popup, &c->new_popup, client_handle_new_popup);
 
     struct container *con = create_container(c, server_get_selected_monitor(), true);
-    con->scene_node = wlr_scene_xdg_surface_create(&server.scene->node, con->client->surface.xdg);
+    c->scene_node = wlr_scene_xdg_surface_create(&server.scene->node, con->client->surface.xdg);
+    c->scene_node->data = c;
+    xdg_surface->data = c->scene_node;
+    printf("create node: %p\n", c->scene_node);
+
+    float color[4] = {1.0, 0.0, 0.0, 1.0};
+    for (int i = 0; i < NUMBER_OF_BORDERS; i++) {
+        con->borders[i].scene_rect = wlr_scene_rect_create(c->scene_node, 10, 10, color);
+    }
+    container_update_borders(con);
 }
 
 void destroy_notify(struct wl_listener *listener, void *data)

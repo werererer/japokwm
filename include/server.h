@@ -86,8 +86,6 @@ struct server {
     GPtrArray *layer_visual_stack_top;
     GPtrArray *layer_visual_stack_overlay;
 
-    GPtrArray *container_stack;
-
     /* global event handlers */
     struct wl_listener new_output;
     struct wl_listener new_xdeco;
