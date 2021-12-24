@@ -578,13 +578,7 @@ void lift_container(struct container *con)
 {
     if (!con)
         return;
-    if (con->client->type == LAYER_SHELL)
-        return;
-
-    struct monitor *m = container_get_monitor(con);
-    struct tag *tag = monitor_get_active_tag(m);
-    remove_container_from_stack(tag, con);
-    add_container_to_stack(tag, con);
+    wlr_scene_node_raise_to_top(con->client->scene_node);
 }
 
 void repush(int pos1, int pos2)
