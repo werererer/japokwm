@@ -181,7 +181,7 @@ void monitor_focus_tags(struct monitor *m, struct tag *tag, BitSet *tags)
 
     tag_set_selected_monitor(tag, m);
 
-    push_tagset(tag, tags);
+    tag_push_tags(tag, tags);
 }
 
 void tag_write_to_focus_stacks(struct tag *tag)
@@ -294,7 +294,7 @@ static void restore_floating_containers(struct tag *tag)
     }
 }
 
-void focus_tagset(struct tag *tag, BitSet *tags)
+void tag_focus_tags(struct tag *tag, BitSet *tags)
 {
     if(!tag)
         return;
@@ -349,19 +349,19 @@ static void _set_previous_tagset(struct tag *tag)
     server.previous_tag = tag->id;
 }
 
-void push_tagset(struct tag *sel_ws, BitSet *tags)
+void tag_push_tags(struct tag *sel_tag, BitSet *tags)
 {
     // struct monitor *ws_m = tag_get_selected_monitor(sel_ws);
     // struct monitor *m = ws_m ? ws_m : server_get_selected_monitor();
     struct tag *tag = server_get_selected_tag();
-    if (tag != sel_ws) {
+    if (tag != sel_tag) {
         _set_previous_tagset(tag);
     }
-    if (tag == sel_ws) { 
-        tag_set_prev_tags(sel_ws, sel_ws->tags);
+    if (tag == sel_tag) { 
+        tag_set_prev_tags(sel_tag, sel_tag->tags);
     }
 
-    focus_tagset(sel_ws, tags);
+    tag_focus_tags(sel_tag, tags);
 }
 
 void tagset_focus_tag(struct tag *tag)
