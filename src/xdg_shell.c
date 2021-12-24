@@ -79,7 +79,7 @@ void create_notify_xdg(struct wl_listener *listener, void *data)
     printf("create node: %p\n", c->scene_node);
 
     float color[4] = {1.0, 0.0, 0.0, 1.0};
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < NUMBER_OF_BORDERS; i++) {
         con->borders[i].scene_rect = wlr_scene_rect_create(c->scene_node, 10, 10, color);
     }
     container_update_borders(con);

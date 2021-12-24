@@ -71,6 +71,8 @@ void create_notifyx11(struct wl_listener *listener, void *data)
 
     c->tree = wlr_scene_tree_create(&server.scene->node);
     assert(c->tree != NULL);
+    c->scene_node = &c->tree->node;
+    c->scene_node->data = c;
 
     /* Listen to the various events it can emit */
     LISTEN(&xwayland_surface->events.map, &c->map, maprequestx11);
@@ -80,7 +82,14 @@ void create_notifyx11(struct wl_listener *listener, void *data)
     LISTEN(&xwayland_surface->events.set_class, &c->set_app_id, client_handle_set_app_id);
     LISTEN(&xwayland_surface->events.request_activate, &c->activate, activatex11);
 
-    create_container(c, server_get_selected_monitor(), true);
+    struct container *con = create_container(c, server_get_selected_monitor(), true);
+
+    // we need to specify any color
+    float color[4] = {0.0, 0.0, 0.0, 1.0};
+    for (int i = 0; i < NUMBER_OF_BORDERS; i++) {
+        con->borders[i].scene_rect = wlr_scene_rect_create(c->scene_node, 0, 0, color);
+    }
+    container_update_borders(con);
 }
 
 void destroy_notifyx11(struct wl_listener *listener, void *data)
