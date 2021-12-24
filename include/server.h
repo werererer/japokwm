@@ -47,6 +47,7 @@ struct server {
     struct ring_buffer *default_layout_ring;
 
     struct wlr_scene *scene;
+    struct wlr_scene *hidden_scene;
 
     struct wlr_output_layout *output_layout;
     GPtrArray *keyboards;

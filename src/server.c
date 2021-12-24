@@ -387,6 +387,8 @@ int setup(struct server *server)
     server->scene = wlr_scene_create();
     wlr_scene_attach_output_layout(server->scene, server->output_layout);
 
+    server->hidden_scene = wlr_scene_create();
+
     /*
      * Configures a seat, which is a single "seat" at which a user sits and
      * operates the computer. This conceptually includes up to one keyboard,

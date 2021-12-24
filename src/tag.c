@@ -163,7 +163,7 @@ void destroy_tag(struct tag *tag)
 
     for (int i = 0; i < tag->con_set->tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(tag->con_set->tiled_containers, i);
-        if (con->ws_id != tag->id)
+        if (con->tag_id != tag->id)
             continue;
 
         struct client *c = con->client;
@@ -249,7 +249,7 @@ int get_tag_container_count(struct tag *tag)
     int count = 0;
     for (int i = 0; i < tag->con_set->tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(tag->con_set->tiled_containers, i);
-        if (con->ws_id == tag->id) {
+        if (con->tag_id == tag->id) {
             count++;
         }
     }
@@ -454,7 +454,7 @@ void tag_swap(struct tag *tag1, struct tag *tag2)
     GPtrArray *future_tag2_containers = g_ptr_array_new();
     for (int i = 0; i < tag1->con_set->tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(tag1->con_set->tiled_containers, i);
-        if (tag1->id != con->ws_id)
+        if (tag1->id != con->tag_id)
             continue;
 
         g_ptr_array_add(future_tag2_containers, con);
@@ -462,18 +462,18 @@ void tag_swap(struct tag *tag1, struct tag *tag2)
 
     for (int i = 0; i < tag2->con_set->tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(tag2->con_set->tiled_containers, i);
-        if (tag2->id != con->ws_id)
+        if (tag2->id != con->tag_id)
             continue;
-        con->ws_id = tag1->id;
+        con->tag_id = tag1->id;
         bitset_reset_all(con->client->sticky_tags);
-        bitset_set(con->client->sticky_tags, con->ws_id);
+        bitset_set(con->client->sticky_tags, con->tag_id);
     }
 
     for (int i = 0; i < future_tag2_containers->len; i++) {
         struct container *con = g_ptr_array_index(future_tag2_containers, i);
-        con->ws_id = tag2->id;
+        con->tag_id = tag2->id;
         bitset_reset_all(con->client->sticky_tags);
-        bitset_set(con->client->sticky_tags, con->ws_id);
+        bitset_set(con->client->sticky_tags, con->tag_id);
     }
     g_ptr_array_unref(future_tag2_containers);
 }
@@ -619,7 +619,7 @@ static struct container *tag_get_local_focused_container(struct tag *tag)
 
     for (int i = 0; i < length_of_composed_list(tag->visible_focus_set->focus_stack_lists); i++) {
         struct container *con = get_in_composed_list(tag->visible_focus_set->focus_stack_lists, i);
-        if (con->ws_id != tag->id)
+        if (con->tag_id != tag->id)
             continue;
         return con;
     }

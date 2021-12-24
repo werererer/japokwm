@@ -164,7 +164,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
 
     struct container *con = c->con;
-    con->ws_id = m->ws_id;
+    con->tag_id = m->ws_id;
 
     add_container_to_tile(con);
     LISTEN(&xwayland_surface->surface->events.commit, &c->commit, commit_notify);

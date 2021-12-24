@@ -41,7 +41,7 @@ struct container {
     struct border borders[4];
 
     // tag id
-    int ws_id;
+    int tag_id;
 
     bool is_exclusive;
     bool is_on_tile;

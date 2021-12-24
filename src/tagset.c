@@ -93,16 +93,25 @@ void tagset_load_tags()
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
 
-        struct tag *sel_ws = monitor_get_active_tag(m);
+        struct tag *sel_tag = monitor_get_active_tag(m);
 
-        if (!tag_is_damaged(sel_ws))
+        if (!tag_is_damaged(sel_tag))
             return;
 
-        struct container_set *dest = sel_ws->visible_con_set;
-        struct container_set *src = sel_ws->con_set;
+        struct container_set *dest = sel_tag->visible_con_set;
+        struct container_set *src = sel_tag->con_set;
 
         container_set_clear(dest);
         container_set_append(m, dest, src);
+        for (int i = 0; i < sel_tag->con_set->tiled_containers->len; i++) {
+            struct container *con = g_ptr_array_index(sel_tag->con_set->tiled_containers, i);
+
+            if (container_viewable_on_monitor(m, con)) {
+                wlr_scene_node_set_enabled(con->client->scene_node, true);
+            } else {
+                wlr_scene_node_set_enabled(con->client->scene_node, false);
+            }
+        }
     }
 }
 
@@ -300,8 +309,8 @@ void tag_focus_tags(struct tag *tag, BitSet *tags)
         return;
 
     BitSet *tags_copy = bitset_copy(tags);
-
     tagset_assign_tags(tag, tags_copy);
+    bitset_destroy(tags_copy);
 
     struct monitor *prev_m = server_get_selected_monitor();
     struct tag *prev_ws = monitor_get_active_tag(prev_m);
@@ -328,8 +337,6 @@ void tag_focus_tags(struct tag *tag, BitSet *tags)
 
     struct seat *seat = input_manager_get_default_seat();
     cursor_rebase(seat->cursor);
-
-    bitset_destroy(tags_copy);
 }
 
 void tag_write_to_tags(struct tag *tag)
@@ -550,7 +557,7 @@ bool tagset_contains_client(BitSet *tags, struct client *c)
 
     BitSet *bitset = bitset_create();
     struct container *con = c->con;
-    tag_id_to_tag(bitset, con->ws_id);
+    tag_id_to_tag(bitset, con->tag_id);
     bitset_and(bitset, tags);
     bool contains = bitset_any(bitset);
     bitset_destroy(bitset);
