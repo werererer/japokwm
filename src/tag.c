@@ -402,6 +402,7 @@ void tag_set_selected_monitor(struct tag *tag, struct monitor *m)
     if (tag->m)
         return;
     tag->m = m;
+    m->ws_id = tag->id;
 }
 
 void tag_set_current_monitor(struct tag *tag, struct monitor *m)
