@@ -68,7 +68,7 @@ void lua_load_bitset(lua_State *L)
             bitset_m,
             bitset_setter,
             bitset_getter,
-            CONFIG_BITSET_WITH_tag);
+            CONFIG_BITSET_WITH_TAG);
 
     create_class(L,
             bitset_meta,
@@ -110,8 +110,8 @@ BitSet *check_bitset(lua_State *L, int narg)
         ud = luaL_checkudata(L, narg, CONFIG_BITSET_GC);
     } else if (luaL_testudata(L, narg, CONFIG_BITSET_WITH_CONTAINER)) {
         ud = luaL_checkudata(L, narg, CONFIG_BITSET_WITH_CONTAINER);
-    } else if (luaL_testudata(L, narg, CONFIG_BITSET_WITH_tag)) {
-        ud = luaL_checkudata(L, narg, CONFIG_BITSET_WITH_tag);
+    } else if (luaL_testudata(L, narg, CONFIG_BITSET_WITH_TAG)) {
+        ud = luaL_checkudata(L, narg, CONFIG_BITSET_WITH_TAG);
     } else if (lua_isinteger(L, narg)) {
         int tags_dec = luaL_checkinteger(L, -1);
         lua_pop(L, 1);
@@ -135,7 +135,7 @@ void create_lua_bitset_with_tag(lua_State *L, BitSet *bitset)
     BitSet **user_bitset = lua_newuserdata(L, sizeof(BitSet *));
     *user_bitset = bitset;
 
-    luaL_setmetatable(L, CONFIG_BITSET_WITH_tag);
+    luaL_setmetatable(L, CONFIG_BITSET_WITH_TAG);
 }
 
 void create_lua_bitset_with_container(lua_State *L, BitSet *bitset)

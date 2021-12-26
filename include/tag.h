@@ -17,19 +17,19 @@ struct tagset;
 /* when an action should change the tag and the tagsets associated with it
  * you should use this macro.
  * NOTE: use to jump to the end of the current action*/
-#define DO_ACTION_LOCALLY(_ws, action) \
+#define DO_ACTION_LOCALLY(_tag, action) \
     do {\
-        struct container_set *con_set = _ws->con_set;\
+        struct container_set *con_set = _tag->con_set;\
         do {\
             action\
         } while (0);\
         \
         do {\
             struct monitor *m = container_get_monitor(con);\
-            struct tag *_ws = monitor_get_active_tag(m);\
-            if (!_ws)\
+            struct tag *_tag = monitor_get_active_tag(m);\
+            if (!_tag)\
                 continue;\
-            struct container_set *con_set = _ws->visible_con_set;\
+            struct container_set *con_set = _tag->visible_con_set;\
             action\
         } while (0);\
     } while (0)
@@ -37,9 +37,9 @@ struct tagset;
 #define DO_ACTION_GLOBALLY(tags, action) \
     do {\
         for (GList *_iter = tags; _iter; _iter = _iter->next) {\
-            struct tag *_ws = _iter->data;\
+            struct tag *_tag = _iter->data;\
             \
-            struct container_set *con_set = _ws->con_set;\
+            struct container_set *con_set = _tag->con_set;\
             do {\
                 action\
             } while (0);\
@@ -47,10 +47,10 @@ struct tagset;
         }\
         do {\
             struct monitor *m = container_get_monitor(con);\
-            struct tag *_ws = monitor_get_active_tag(m);\
-            if (!_ws)\
+            struct tag *_tag = monitor_get_active_tag(m);\
+            if (!_tag)\
                 continue;\
-            struct container_set *con_set = _ws->visible_con_set;\
+            struct container_set *con_set = _tag->visible_con_set;\
             action\
         } while (0);\
     } while (0)
@@ -112,8 +112,8 @@ struct container *tag_get_focused_container(struct tag *tag);
 
 struct tag *find_next_unoccupied_tag(GList *tags, struct tag *tag);
 struct tag *get_next_empty_tag(GList *tags, size_t i);
-struct tag *get_prev_empty_tag(GList *tags, size_t ws_id);
-struct tag *get_nearest_empty_tag(GList *tags, int ws_id);
+struct tag *get_prev_empty_tag(GList *tags, size_t tag_id);
+struct tag *get_nearest_empty_tag(GList *tags, int tag_id);
 
 struct layout *tag_get_layout(struct tag *tag);
 struct layout *tag_get_previous_layout(struct tag *tag);

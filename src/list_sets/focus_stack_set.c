@@ -73,7 +73,7 @@ static bool is_container_valid_to_append(
         )
 {
     struct tag *tag = tag_ptr;
-    if (src_con->ws_id != tag->id) {
+    if (src_con->tag_id != tag->id) {
         return false;
     }
 

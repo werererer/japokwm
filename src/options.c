@@ -348,11 +348,11 @@ int tag_get_new_position(struct tag *tag)
     if (func_ref == 0) {
         return 0;
     } else {
-        int ws_id = tag->id;
+        int tag_id = tag->id;
         bool is_focused = is_tag_the_selected_one(tag)
             && tag_get_monitor(tag) == server_get_selected_monitor();
         lua_rawgeti(L, LUA_REGISTRYINDEX, func_ref);
-        lua_pushinteger(L, ws_id);
+        lua_pushinteger(L, tag_id);
         lua_pushboolean(L, is_focused);
         lua_call_safe(L, 2, 1, 0);
         int i = luaL_checkinteger(L, -1);
@@ -368,11 +368,11 @@ int tag_get_new_focus_position(struct tag *tag)
     if (func_ref == 0) {
         return 0;
     } else {
-        int ws_id = tag->id;
+        int tag_id = tag->id;
         bool is_focused = is_tag_the_selected_one(tag)
             && tag_get_monitor(tag) == server_get_selected_monitor();
         lua_rawgeti(L, LUA_REGISTRYINDEX, func_ref);
-        lua_pushinteger(L, ws_id);
+        lua_pushinteger(L, tag_id);
         lua_pushboolean(L, is_focused);
         lua_call_safe(L, 2, 1, 0);
         int i = luaL_checkinteger(L, -1);

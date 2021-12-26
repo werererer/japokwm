@@ -83,7 +83,9 @@ void create_monitor(struct wl_listener *listener, void *data)
         server_set_selected_monitor(m);
         init_utils(L);
     }
-    monitor_get_initial_tag(m, server_get_tags());
+    if (!is_first_monitor) {
+        monitor_get_initial_tag(m, server_get_tags());
+    }
 
     if (is_first_monitor) {
         load_config(L);
@@ -188,12 +190,11 @@ static void monitor_get_initial_tag(struct monitor *m, GList *tags)
 
     assert(tag != NULL);
 
-    int ws_id = tag->id;
-    tag->m = m;
+    int tag_id = tag->id;
     BitSet *bitset = bitset_create();
-    bitset_set(bitset, ws_id);
+    bitset_set(bitset, tag_id);
 
-    // monitor_focus_tags(m, ws, bitset);
+    monitor_focus_tags(m, tag, bitset);
 }
 
 void handle_destroy_monitor(struct wl_listener *listener, void *data)
@@ -257,20 +258,20 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
 
 void monitor_set_selected_tag(struct monitor *m, struct tag *tag)
 {
-    int prev_ws_id = m->ws_id;
-    struct tag *prev_ws = get_tag(prev_ws_id);
-    if (prev_ws) {
-        prev_ws->m = NULL;
+    int prev_tag_id = m->tag_id;
+    struct tag *prev_tag = get_tag(prev_tag_id);
+    if (prev_tag) {
+        prev_tag->m = NULL;
     }
 
-    m->ws_id = tag->id;
+    m->tag_id = tag->id;
     tag_set_selected_monitor(tag, m);
 }
 
 BitSet *monitor_get_tags(struct monitor *m)
 {
-    struct tag *sel_ws = monitor_get_active_tag(m);
-    return sel_ws->tags;
+    struct tag *sel_tag = monitor_get_active_tag(m);
+    return sel_tag->tags;
 }
 
 void center_cursor_in_monitor(struct cursor *cursor, struct monitor *m)
@@ -342,7 +343,7 @@ inline struct tag *monitor_get_active_tag(struct monitor *m)
     if (!m)
         return NULL;
 
-    struct tag *tag = get_tag(m->ws_id);
+    struct tag *tag = get_tag(m->tag_id);
     // if this is not correct the whole application is in an undefined state
     if (tag && tag->m) {
         assert(tag->m == m);

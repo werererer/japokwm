@@ -79,8 +79,8 @@ void container_property_set_floating(struct container_property *property, bool f
     if (!container_property_is_floating(property)) {
         struct monitor *m = server_get_selected_monitor();
         if (container_get_monitor(con) != server_get_selected_monitor() || con->on_scratchpad) {
-            struct tag *sel_ws = monitor_get_active_tag(m);
-            container_set_tag_id(con, sel_ws->id);
+            struct tag *sel_tag = monitor_get_active_tag(m);
+            container_set_tag_id(con, sel_tag->id);
         }
 
         if (con->on_scratchpad) {
@@ -131,7 +131,7 @@ void destroy_container(struct container *con)
 void add_container_to_tile(struct container *con)
 {
     assert(!con->is_on_tile);
-    add_container_to_tag(con, get_tag(con->ws_id));
+    add_container_to_tag(con, get_tag(con->tag_id));
 
     struct monitor *m = container_get_monitor(con);
     if (m) {
@@ -151,7 +151,7 @@ void remove_container_from_tile(struct container *con)
     if (con->on_scratchpad)
         remove_container_from_scratchpad(con);
 
-    struct tag *tag = get_tag(con->ws_id);
+    struct tag *tag = get_tag(con->tag_id);
 
     tag_remove_container_from_focus_stack(tag, con);
 
@@ -966,7 +966,7 @@ struct monitor *container_get_monitor(struct container *con)
         return con->client->m;
     }
 
-    struct tag *tag = get_tag(con->ws_id);
+    struct tag *tag = get_tag(con->tag_id);
     if (!tag)
         return NULL;
 
@@ -1027,29 +1027,29 @@ bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *re
     return is_width_not_in_limit || is_height_not_in_limit;
 }
 
-void container_set_just_tag_id(struct container *con, int ws_id)
+void container_set_just_tag_id(struct container *con, int tag_id)
 {
-    if (con->ws_id == ws_id)
+    if (con->tag_id == tag_id)
         return;
 
     // TODO optimize this
-    struct tag *prev_ws = get_tag(con->ws_id);
-    con->ws_id = ws_id;
+    struct tag *prev_tag = get_tag(con->tag_id);
+    con->tag_id = tag_id;
 
-    tagset_reload(prev_ws);
-    struct tag *tag = get_tag(ws_id);
+    tagset_reload(prev_tag);
+    struct tag *tag = get_tag(tag_id);
     tagset_reload(tag);
 }
 
-void container_set_tag_id(struct container *con, int ws_id)
+void container_set_tag_id(struct container *con, int tag_id)
 {
     // TODO optimize this
-    struct tag *prev_ws = get_tag(con->ws_id);
-    con->ws_id = ws_id;
+    struct tag *prev_tag = get_tag(con->tag_id);
+    con->tag_id = tag_id;
     bitset_reset_all(con->client->sticky_tags);
-    bitset_set(con->client->sticky_tags, con->ws_id);
+    bitset_set(con->client->sticky_tags, con->tag_id);
 
-    tagset_reload(prev_ws);
+    tagset_reload(prev_tag);
 }
 
 void container_set_tag(struct container *con, struct tag *tag)
@@ -1058,7 +1058,7 @@ void container_set_tag(struct container *con, struct tag *tag)
         return;
     if (!tag)
         return;
-    if (con->ws_id == tag->id)
+    if (con->tag_id == tag->id)
         return;
 
     container_set_tag_id(con, tag->id);
@@ -1098,7 +1098,7 @@ bool container_is_bar(struct container *con)
 
 struct tag *container_get_tag(struct container *con)
 {
-    struct tag *tag = get_tag(con->ws_id);
+    struct tag *tag = get_tag(con->tag_id);
     return tag;
 }
 

@@ -69,7 +69,7 @@ struct layout;
 #define CONFIG_BITSET "japokwm.bitset"
 // this is the same as CONFIG_BITSET but also tells that the data field of the
 // bitset is of the type tag
-#define CONFIG_BITSET_WITH_tag "japokwm.bitset.tag"
+#define CONFIG_BITSET_WITH_TAG "japokwm.bitset.tag"
 #define CONFIG_BITSET_WITH_CONTAINER "japokwm.bitset.container"
 // this is the same as CONFIG_BITSET but lifetime is handle by lua
 #define CONFIG_BITSET_GC "japokwm.bitset_gc"

@@ -21,7 +21,7 @@ struct monitor {
     struct root *root;
     float scale;
 
-    int ws_id;
+    int tag_id;
 };
 
 struct monrule {

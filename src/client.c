@@ -162,20 +162,20 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
     }
 }
 
-void container_move_sticky_containers_current_ws(struct container *con)
+void container_move_sticky_containers_current_tag(struct container *con)
 {
     struct monitor *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     container_move_sticky_containers(con, tag->id);
 }
 
-void container_move_sticky_containers(struct container *con, int ws_id)
+void container_move_sticky_containers(struct container *con, int tag_id)
 {
     // // TODO: refactor this function
-    // struct tag *ws = get_tag(ws_id);
+    // struct tag *ws = get_tag(tag_id);
     // if (!bitset_test(con->client->sticky_tags, ws->id)) {
     //     if (bitset_any(con->client->sticky_tags)) {
-    //         container_set_just_tag_id(con, ws_id);
+    //         container_set_just_tag_id(con, tag_id);
     //         arrange();
     //         focus_most_recent_container();
     //         ipc_event_tag();
@@ -200,7 +200,7 @@ void client_setsticky(struct client *c, BitSet *tags)
 {
     bitset_assign_bitset(&c->sticky_tags, tags);
     struct container *con = c->con;
-    container_move_sticky_containers_current_ws(con);
+    container_move_sticky_containers_current_tag(con);
     ipc_event_tag();
 }
 

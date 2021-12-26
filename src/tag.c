@@ -163,7 +163,7 @@ void destroy_tag(struct tag *tag)
 
     for (int i = 0; i < tag->con_set->tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(tag->con_set->tiled_containers, i);
-        if (con->ws_id != tag->id)
+        if (con->tag_id != tag->id)
             continue;
 
         struct client *c = con->client;
@@ -196,11 +196,11 @@ bool tag_is_visible(struct tag *tag, struct monitor *m)
 {
     assert(tag != NULL);
 
-    struct tag *sel_ws = monitor_get_active_tag(m);
-    if (tag == sel_ws) {
+    struct tag *sel_tag = monitor_get_active_tag(m);
+    if (tag == sel_tag) {
         return true;
     }
-    if (bitset_test(sel_ws->tags, tag->id)) {
+    if (bitset_test(sel_tag->tags, tag->id)) {
         return true;
     }
     if (tag->current_m && !is_tag_empty(tag)) {
@@ -211,14 +211,14 @@ bool tag_is_visible(struct tag *tag, struct monitor *m)
 
 bool is_tag_extern(struct tag *tag)
 {
-    struct monitor *ws_m = tag_get_selected_monitor(tag);
-    if (!ws_m) {
+    struct monitor *tag_m = tag_get_selected_monitor(tag);
+    if (!tag_m) {
         return false;
     }
 
     struct monitor *sel_m = server_get_selected_monitor();
-    struct tag *sel_ws = monitor_get_active_tag(sel_m);
-    if (bitset_test(sel_ws->tags, tag->id) && sel_m != ws_m) {
+    struct tag *sel_tag = monitor_get_active_tag(sel_m);
+    if (bitset_test(sel_tag->tags, tag->id) && sel_m != tag_m) {
         return true;
     }
     return false;
@@ -227,8 +227,8 @@ bool is_tag_extern(struct tag *tag)
 bool is_tag_the_selected_one(struct tag *tag)
 {
     struct monitor *m = tag_get_monitor(tag);
-    struct tag *sel_ws = monitor_get_active_tag(m);
-    return sel_ws->id == tag->id && !is_tag_extern(tag);
+    struct tag *sel_tag = monitor_get_active_tag(m);
+    return sel_tag->id == tag->id && !is_tag_extern(tag);
 }
 
 bool tag_is_active(struct tag *tag)
@@ -236,9 +236,9 @@ bool tag_is_active(struct tag *tag)
     struct monitor *m = tag_get_monitor(tag);
     if (!m)
         return false;
-    struct tag *sel_ws = monitor_get_active_tag(m);
+    struct tag *sel_tag = monitor_get_active_tag(m);
 
-    return bitset_test(sel_ws->tags, tag->id);
+    return bitset_test(sel_tag->tags, tag->id);
 }
 
 int get_tag_container_count(struct tag *tag)
@@ -249,7 +249,7 @@ int get_tag_container_count(struct tag *tag)
     int count = 0;
     for (int i = 0; i < tag->con_set->tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(tag->con_set->tiled_containers, i);
-        if (con->ws_id == tag->id) {
+        if (con->tag_id == tag->id) {
             count++;
         }
     }
@@ -273,15 +273,15 @@ struct tag *find_next_unoccupied_tag(GList *tags, struct tag *tag)
     }
 }
 
-struct tag *get_next_empty_tag(GList *tags, size_t ws_id)
+struct tag *get_next_empty_tag(GList *tags, size_t tag_id)
 {
-    for (size_t i = ws_id; i < 8; i++) {
+    for (size_t i = tag_id; i < 8; i++) {
         struct tag *tag = get_tag(i);
         if (is_tag_empty(tag)) {
             return tag;
         }
     }
-    for (size_t i = ws_id-1; i >= 0; i--) {
+    for (size_t i = tag_id-1; i >= 0; i--) {
         struct tag *tag = get_tag(i);
         if (is_tag_empty(tag)) {
             return tag;
@@ -290,16 +290,16 @@ struct tag *get_next_empty_tag(GList *tags, size_t ws_id)
     return NULL;
 }
 
-struct tag *get_nearest_empty_tag(GList *tags, int ws_id)
+struct tag *get_nearest_empty_tag(GList *tags, int tag_id)
 {
-    struct tag *initial_tag = get_tag(ws_id);
+    struct tag *initial_tag = get_tag(tag_id);
     if (is_tag_empty(initial_tag)) {
         return initial_tag;
     }
 
     int tag_count = server_get_tag_count();
     struct tag *tag = NULL;
-    for (int i = 0, up_counter = ws_id+1, down_counter = ws_id-1;
+    for (int i = 0, up_counter = tag_id+1, down_counter = tag_id-1;
             i < tag_count;
             i++,up_counter++,down_counter--) {
 
@@ -324,15 +324,15 @@ struct tag *get_nearest_empty_tag(GList *tags, int ws_id)
 }
 
 
-struct tag *get_prev_empty_tag(GList *tags, size_t ws_id)
+struct tag *get_prev_empty_tag(GList *tags, size_t tag_id)
 {
-    for (size_t i = ws_id-1; i >= 0; i--) {
+    for (size_t i = tag_id-1; i >= 0; i--) {
         struct tag *tag = get_tag(i);
         if (is_tag_empty(tag)) {
             return tag;
         }
     }
-    for (size_t i = ws_id; i < 8; i++) {
+    for (size_t i = tag_id; i < 8; i++) {
         struct tag *tag = get_tag(i);
         if (is_tag_empty(tag)) {
             return tag;
@@ -402,6 +402,7 @@ void tag_set_selected_monitor(struct tag *tag, struct monitor *m)
     if (tag->m)
         return;
     tag->m = m;
+    tag->m->tag_id = tag->id;
 }
 
 void tag_set_current_monitor(struct tag *tag, struct monitor *m)
@@ -412,17 +413,17 @@ void tag_set_current_monitor(struct tag *tag, struct monitor *m)
 // swap everything but the bits at ws*->id
 static void tag_swap_supplementary_tags(
         struct tag *tag,
-        struct tag *ws2)
+        struct tag *tag2)
 {
-    bool prev_ws1_value = bitset_test(tag->tags, tag->id);
-    bool prev_ws1_ws2_value = bitset_test(tag->tags, ws2->id);
-    bool prev_ws2_value = bitset_test(ws2->tags, ws2->id);
-    bool prev_ws2_ws1_value = bitset_test(ws2->tags, tag->id);
-    bitset_swap(tag->tags, ws2->tags);
-    bitset_assign(tag->tags, tag->id, prev_ws1_value);
-    bitset_assign(tag->tags, ws2->id, prev_ws2_ws1_value);
-    bitset_assign(ws2->tags, ws2->id, prev_ws2_value);
-    bitset_assign(ws2->tags, tag->id, prev_ws1_ws2_value);
+    bool prev_tag1_value = bitset_test(tag->tags, tag->id);
+    bool prev_tag1_tag2_value = bitset_test(tag->tags, tag2->id);
+    bool prev_tag2_value = bitset_test(tag2->tags, tag2->id);
+    bool prev_tag2_tag1_value = bitset_test(tag2->tags, tag->id);
+    bitset_swap(tag->tags, tag2->tags);
+    bitset_assign(tag->tags, tag->id, prev_tag1_value);
+    bitset_assign(tag->tags, tag2->id, prev_tag2_tag1_value);
+    bitset_assign(tag2->tags, tag2->id, prev_tag2_value);
+    bitset_assign(tag2->tags, tag->id, prev_tag1_tag2_value);
 }
 /**
  * A helper function to make swapping tags more natural. This is just my
@@ -453,7 +454,7 @@ void tag_swap(struct tag *tag1, struct tag *tag2)
     GPtrArray *future_tag2_containers = g_ptr_array_new();
     for (int i = 0; i < tag1->con_set->tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(tag1->con_set->tiled_containers, i);
-        if (tag1->id != con->ws_id)
+        if (tag1->id != con->tag_id)
             continue;
 
         g_ptr_array_add(future_tag2_containers, con);
@@ -461,18 +462,18 @@ void tag_swap(struct tag *tag1, struct tag *tag2)
 
     for (int i = 0; i < tag2->con_set->tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(tag2->con_set->tiled_containers, i);
-        if (tag2->id != con->ws_id)
+        if (tag2->id != con->tag_id)
             continue;
-        con->ws_id = tag1->id;
+        con->tag_id = tag1->id;
         bitset_reset_all(con->client->sticky_tags);
-        bitset_set(con->client->sticky_tags, con->ws_id);
+        bitset_set(con->client->sticky_tags, con->tag_id);
     }
 
     for (int i = 0; i < future_tag2_containers->len; i++) {
         struct container *con = g_ptr_array_index(future_tag2_containers, i);
-        con->ws_id = tag2->id;
+        con->tag_id = tag2->id;
         bitset_reset_all(con->client->sticky_tags);
-        bitset_set(con->client->sticky_tags, con->ws_id);
+        bitset_set(con->client->sticky_tags, con->tag_id);
     }
     g_ptr_array_unref(future_tag2_containers);
 }
@@ -537,7 +538,7 @@ static int _load_layout(struct tag *tag, const char *layout_name)
 {
     struct layout *lt = create_layout(L);
 
-    lt->ws_id = tag->id;
+    lt->tag_id = tag->id;
     copy_layout_safe(lt, server.default_layout);
 
     lt->name = strdup(layout_name);
@@ -618,7 +619,7 @@ static struct container *tag_get_local_focused_container(struct tag *tag)
 
     for (int i = 0; i < length_of_composed_list(tag->visible_focus_set->focus_stack_lists); i++) {
         struct container *con = get_in_composed_list(tag->visible_focus_set->focus_stack_lists, i);
-        if (con->ws_id != tag->id)
+        if (con->tag_id != tag->id)
             continue;
         return con;
     }
@@ -679,11 +680,11 @@ void tag_update_name(struct tag *tag)
     struct layout *lt = tag_get_layout(tag);
     if (!lt)
         return;
-    int ws_id = tag->id;
+    int tag_id = tag->id;
 
     const char *default_name;
-    if (ws_id < lt->options->tag_names->len) {
-        default_name = g_ptr_array_index(lt->options->tag_names, ws_id);
+    if (tag_id < lt->options->tag_names->len) {
+        default_name = g_ptr_array_index(lt->options->tag_names, tag_id);
     } else {
         default_name = tag->name;
     }
@@ -702,12 +703,12 @@ void tag_update_name(struct tag *tag)
 
         name = app_id;
 
-        char ws_number[12];
-        char ws_name_number[12];
-        sprintf(ws_number, "%lu:", tag->id);
-        sprintf(ws_name_number, "%lu:", tag->id+1);
-        append_string(&num_name, ws_number);
-        append_string(&num_name, ws_name_number);
+        char tag_number[12];
+        char tag_name_number[12];
+        sprintf(tag_number, "%lu:", tag->id);
+        sprintf(tag_name_number, "%lu:", tag->id+1);
+        append_string(&num_name, tag_number);
+        append_string(&num_name, tag_name_number);
     }
 
     append_string(&num_name, name);

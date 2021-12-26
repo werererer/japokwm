@@ -474,9 +474,9 @@ integers
 	set a function that determins where new windows will be opened at in the
 	layout ++
 <where> ++
-	func: function(ws_id, is_focused) - the function that will be called ++
+	func: function(tag_id, is_focused) - the function that will be called ++
 	<where> ++
-		ws_id: integer - the tag on which that happens ++
+		tag_id: integer - the tag on which that happens ++
 		is_focused: bool - whether the tag is currently focused/visible
 	<return> ++
 		integer - the new entry position
@@ -485,9 +485,9 @@ integers
 	set a function that determins where new windows will land on the ++
 	focus_stack
 <where> ++
-	func: function(ws_id, is_focused) - the function that will be called ++
+	func: function(tag_id, is_focused) - the function that will be called ++
 	<where> ++
-		ws_id: integer - the tag on which that happens ++
+		tag_id: integer - the tag on which that happens ++
 		is_focused: bool - whether the tag is currently focused/visible
 	<return> ++
 		integer - the new entry position

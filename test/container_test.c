@@ -34,22 +34,22 @@ void test_visible_on()
     /* }; */
 
     /* con.m = &m0; */
-    /* con.client->ws_id = ws0->id; */
+    /* con.client->tag_id = ws0->id; */
     /* con.hidden = false; */
     /* ck_assert_int_eq(visible_on(&con, ws0), true); */
 
     /* con.m = &m1; */
-    /* con.client->ws_id = ws0->id; */
+    /* con.client->tag_id = ws0->id; */
     /* con.hidden = false; */
     /* ck_assert_int_eq(visible_on(&con, ws0), false); */
 
     /* con.m = &m0; */
-    /* con.client->ws_id = ws1->id; */
+    /* con.client->tag_id = ws1->id; */
     /* con.hidden = false; */
     /* ck_assert_int_eq(visible_on(&con, ws1), false); */
 
     /* con.m = &m1; */
-    /* con.client->ws_id = ws1->id; */
+    /* con.client->tag_id = ws1->id; */
     /* con.hidden = true; */
     /* ck_assert_int_eq(visible_on(&con, ws1), false); */
 }
@@ -83,22 +83,22 @@ void test_exist_on()
     /* }; */
 
     /* con.m = &m0; */
-    /* con.client->ws_id = ws0->id; */
+    /* con.client->tag_id = ws0->id; */
     /* con.hidden = true; */
     /* ck_assert_int_eq(exist_on(&con, ws0), true); */
 
     /* con.m = &m1; */
-    /* con.client->ws_id = ws0->id; */
+    /* con.client->tag_id = ws0->id; */
     /* con.hidden = false; */
     /* ck_assert_int_eq(exist_on(&con, ws0), false); */
 
     /* con.m = &m0; */
-    /* con.client->ws_id = ws1->id; */
+    /* con.client->tag_id = ws1->id; */
     /* con.hidden = false; */
     /* ck_assert_int_eq(exist_on(&con, ws1), false); */
 
     /* con.m = &m1; */
-    /* con.client->ws_id = ws1->id; */
+    /* con.client->tag_id = ws1->id; */
     /* con.hidden = false; */
     /* ck_assert_int_eq(exist_on(&con, ws1), true); */
 }

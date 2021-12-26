@@ -278,7 +278,7 @@ void arrange_containers(
 
         // // the monitor must be on the same monitor as it is tiled on else it is
         // // a bug
-        // printf("con: %i ws: %i monitor: %p\n", i, con->client->ws_id, container_get_monitor(con));
+        // printf("con: %i ws: %i monitor: %p\n", i, con->client->tag_id, container_get_monitor(con));
         // assert(container_get_monitor(con) == server_get_selected_monitor());
 
         struct monitor *m = tag_get_monitor(tag);

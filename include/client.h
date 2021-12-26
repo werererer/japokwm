@@ -46,8 +46,8 @@ struct client {
 struct client *create_client(enum shell shell_type, union surface_t surface);
 void destroy_client(struct client *c);
 
-void container_move_sticky_containers_current_ws(struct container *con);
-void container_move_sticky_containers(struct container *con, int ws_id);
+void container_move_sticky_containers_current_tag(struct container *con);
+void container_move_sticky_containers(struct container *con, int tag_id);
 
 void focus_client(struct seat *seat, struct client *old, struct client *c);
 void focus_surface(struct seat *seat, struct wlr_surface *surface);

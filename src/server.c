@@ -50,30 +50,30 @@ static void finalize_lists(struct server *server);
 static void finalize_timers(struct server *server);
 static void finalize_lua_api(struct server *server);
 
-static struct tag *handle_too_few_tags(uint32_t ws_id);
+static struct tag *handle_too_few_tags(uint32_t tag_id);
 
-static struct tag *handle_too_few_tags(uint32_t ws_id)
+static struct tag *handle_too_few_tags(uint32_t tag_id)
 {
     // no number has more than 11 digits when int is 32 bit long
     char name[12];
     // TODO explain why +1
-    snprintf(name, 12, "%d:%d", ws_id, c_idx_to_lua_idx(ws_id));
+    snprintf(name, 12, "%d:%d", tag_id, c_idx_to_lua_idx(tag_id));
 
-    struct tag *new_ws = create_tag(name, ws_id, server.default_layout);
-    int *ws_id_ptr = malloc(sizeof(*ws_id_ptr));
-    *ws_id_ptr = ws_id;
-    g_hash_table_insert(server.tags, ws_id_ptr, new_ws);
+    struct tag *new_tag = create_tag(name, tag_id, server.default_layout);
+    int *tag_id_ptr = malloc(sizeof(*tag_id_ptr));
+    *tag_id_ptr = tag_id;
+    g_hash_table_insert(server.tags, tag_id_ptr, new_tag);
     struct tag *tag = get_tag(0);
-    wlr_list_cat(new_ws->con_set->tiled_containers, tag->con_set->tiled_containers);
+    wlr_list_cat(new_tag->con_set->tiled_containers, tag->con_set->tiled_containers);
 
-    wlr_list_cat(new_ws->focus_set->focus_stack_layer_background, tag->focus_set->focus_stack_layer_background);
-    wlr_list_cat(new_ws->focus_set->focus_stack_layer_bottom, tag->focus_set->focus_stack_layer_bottom);
-    wlr_list_cat(new_ws->focus_set->focus_stack_layer_top, tag->focus_set->focus_stack_layer_top);
-    wlr_list_cat(new_ws->focus_set->focus_stack_layer_overlay, tag->focus_set->focus_stack_layer_overlay);
-    wlr_list_cat(new_ws->focus_set->focus_stack_on_top, tag->focus_set->focus_stack_on_top);
-    wlr_list_cat(new_ws->focus_set->focus_stack_normal, tag->focus_set->focus_stack_normal);
-    wlr_list_cat(new_ws->focus_set->focus_stack_not_focusable, tag->focus_set->focus_stack_not_focusable);
-    return new_ws;
+    wlr_list_cat(new_tag->focus_set->focus_stack_layer_background, tag->focus_set->focus_stack_layer_background);
+    wlr_list_cat(new_tag->focus_set->focus_stack_layer_bottom, tag->focus_set->focus_stack_layer_bottom);
+    wlr_list_cat(new_tag->focus_set->focus_stack_layer_top, tag->focus_set->focus_stack_layer_top);
+    wlr_list_cat(new_tag->focus_set->focus_stack_layer_overlay, tag->focus_set->focus_stack_layer_overlay);
+    wlr_list_cat(new_tag->focus_set->focus_stack_on_top, tag->focus_set->focus_stack_on_top);
+    wlr_list_cat(new_tag->focus_set->focus_stack_normal, tag->focus_set->focus_stack_normal);
+    wlr_list_cat(new_tag->focus_set->focus_stack_not_focusable, tag->focus_set->focus_stack_not_focusable);
+    return new_tag;
 }
 
 

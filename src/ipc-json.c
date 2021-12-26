@@ -121,8 +121,8 @@ json_object *ipc_json_describe_tagsets()
     json_object *array = json_object_new_array();
 
     struct monitor *sel_m = server_get_selected_monitor();
-    struct tag *sel_ws = monitor_get_active_tag(sel_m);
-    struct container *sel_con = tag_get_focused_container(sel_ws);
+    struct tag *sel_tag = monitor_get_active_tag(sel_m);
+    struct container *sel_con = tag_get_focused_container(sel_tag);
     for (GList *iterator = server_get_tags(); iterator; iterator = iterator->next) {
         struct tag *tag = iterator->data;
         struct monitor *m = tag_get_monitor(tag);
