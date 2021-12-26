@@ -20,12 +20,12 @@ void lua_load_bitset(lua_State *L);
         if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_TAG)) {\
             struct tag *tag = self->data;\
             tagset_set_tags(tag, self);\
-            return 0;\
+            continue;\
         }\
         if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_CONTAINER)) {\
             struct client *c = self->data;\
             client_setsticky(c, self);\
-            return 0;\
+            continue;\
         }\
         \
     } while (0)
