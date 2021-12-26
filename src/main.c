@@ -71,8 +71,6 @@ int main(int argc, char *argv[])
     while ((c = getopt_long(argc, argv, "h:c:p:s:v", long_options, &option_index)) != -1) {
         switch (c) {
             case 's':
-                startup_cmd = optarg;
-                break;
             case 'c':
                 server.config_file = optarg;
                 break;
