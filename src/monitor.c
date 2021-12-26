@@ -84,7 +84,7 @@ void create_monitor(struct wl_listener *listener, void *data)
         server_set_selected_monitor(m);
         init_utils(L);
     }
-    monitor_get_initial_tag(m, server_get_tags());
+    monitor_set_selected_tag(m, get_tag(0));
     assert(m->tag_id != INVALID_TAG_ID);
 
     if (is_first_monitor) {
@@ -190,6 +190,7 @@ static void monitor_get_initial_tag(struct monitor *m, GList *tags)
 
     assert(tag != NULL);
 
+    monitor_set_selected_tag(m, tag);
     int tag_id = tag->id;
     BitSet *bitset = bitset_create();
     bitset_set(bitset, tag_id);
@@ -334,10 +335,11 @@ static bool monitor_should_push_away(struct monitor *m, struct tag *tag)
 static void monitor_push_away(struct monitor *m, struct tag *tag)
 {
     struct monitor *old_m = tag->m;
+    struct tag *new_tag_for_old_m = find_next_unoccupied_tag(server_get_tags(), tag);
+
     monitor_remove_link_to_own_tag(old_m);
     monitor_create_link_to_tag(m, tag);
 
-    struct tag *new_tag_for_old_m = find_next_unoccupied_tag(server_get_tags(), tag);
     monitor_create_link_to_tag(old_m, new_tag_for_old_m);
 }
 
