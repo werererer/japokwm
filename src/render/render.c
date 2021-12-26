@@ -79,7 +79,6 @@ static bool intersects_with_output(struct monitor *m,
 static void output_for_each_surface_iterator(struct wlr_surface *surface, int sx, int sy, void *user_data)
 {
     struct surface_iterator_data *data = user_data;
-    struct monitor *m = data->m;
 
     if (!wlr_surface_has_buffer(surface))
         return;
@@ -91,9 +90,10 @@ static void output_for_each_surface_iterator(struct wlr_surface *surface, int sx
         .height = surface->current.height,
     };
 
-    if (!intersects_with_output(m, server.output_layout, &surface_box))
-        return;
-
+    // TODO: is this line needed? I wrote it once but it may be obsolete
+    // if (!intersects_with_output(m, server.output_layout, &surface_box))
+    //     return;
+    //
     data->user_iterator(data->m, surface, &surface_box, data->user_data);
 }
 
