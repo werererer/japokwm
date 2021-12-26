@@ -18,6 +18,7 @@ srcs = files(
     'color.c',
     'command.c',
     'container.c',
+    'subsurface.c',
     'cursor.c',
     'event_handler.c',
     'input_manager.c',

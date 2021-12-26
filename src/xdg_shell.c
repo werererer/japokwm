@@ -13,6 +13,7 @@
 #include "tile/tileUtils.h"
 #include "tag.h"
 #include "rules/rule.h"
+#include "subsurface.h"
 
 static void destroyxdeco(struct wl_listener *listener, void *data);
 static void getxdecomode(struct wl_listener *listener, void *data);
@@ -32,29 +33,6 @@ static void getxdecomode(struct wl_listener *listener, void *data)
     struct wlr_xdg_toplevel_decoration_v1 *wlr_deco = data;
     wlr_xdg_toplevel_decoration_v1_set_mode(wlr_deco,
             WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
-}
-
-static int i = 0;
-static void handle_subsurface_commit(struct wl_listener *listener, void *data)
-{
-    struct xdg_subsurface *xdg_subsurface = wl_container_of(listener, xdg_subsurface, commit);
-    printf("container: %p %i\n", xdg_subsurface->parent, i++);
-    container_damage_whole(xdg_subsurface->parent);
-}
-
-static void handle_new_subsurface(struct wl_listener *listener, void *data)
-{
-    struct client *c = wl_container_of(listener, c, new_subsurface);
-    struct wlr_subsurface *subsurface = data;
-    struct wlr_surface *surface = subsurface->surface;
-
-    struct xdg_subsurface *xdg_subsurface = calloc(1, sizeof(*subsurface));
-    xdg_subsurface->parent = c->con;
-    if (!subsurface) {
-        return;
-    }
-
-    LISTEN(&surface->events.commit, &xdg_subsurface->commit, handle_subsurface_commit);
 }
 
 void create_notify_xdg(struct wl_listener *listener, void *data)
