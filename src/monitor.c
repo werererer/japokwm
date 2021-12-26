@@ -43,6 +43,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     /* Allocates and configures monitor state using configured rules */
     struct monitor *m = output->data = calloc(1, sizeof(*m));
 
+    m->tag_id = INVALID_TAG_ID;
     m->wlr_output = output;
 
     /* damage tracking must be initialized before setting the tag because
@@ -83,9 +84,8 @@ void create_monitor(struct wl_listener *listener, void *data)
         server_set_selected_monitor(m);
         init_utils(L);
     }
-    if (!is_first_monitor) {
-        monitor_get_initial_tag(m, server_get_tags());
-    }
+    monitor_get_initial_tag(m, server_get_tags());
+    assert(m->tag_id != INVALID_TAG_ID);
 
     if (is_first_monitor) {
         load_config(L);
@@ -99,7 +99,7 @@ void create_monitor(struct wl_listener *listener, void *data)
         // reset all layouts
         for (GList *iterator = server_get_tags(); iterator; iterator = iterator->next) {
             struct tag *tag = iterator->data;
-            assert(tag->loaded_layouts->len == 0);
+            // assert(tag->loaded_layouts->len == 0);
             tag->current_layout = server.default_layout->name;
             tag->previous_layout = server.default_layout->name;
         }
@@ -256,16 +256,102 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
     server_set_selected_monitor(new_focused_monitor);
 }
 
-void monitor_set_selected_tag(struct monitor *m, struct tag *tag)
+static void monitor_remove_link_to_tag(struct monitor *m, struct tag *tag)
 {
-    int prev_tag_id = m->tag_id;
-    struct tag *prev_tag = get_tag(prev_tag_id);
-    if (prev_tag) {
-        prev_tag->m = NULL;
-    }
+    struct tag *old_tag = get_tag(m->tag_id);
+    tag_set_selected_monitor(old_tag, NULL);
+    m->tag_id = INVALID_TAG_ID;
+}
 
+void monitor_remove_link_to_own_tag(struct monitor *m)
+{
+    monitor_remove_link_to_tag(m, get_tag(m->tag_id));
+}
+
+static void monitor_create_link_to_tag(struct monitor *m, struct tag *tag)
+{
     m->tag_id = tag->id;
     tag_set_selected_monitor(tag, m);
+}
+
+static void monitor_reparent(struct monitor *m, struct tag *tag)
+{
+    monitor_remove_link_to_own_tag(m);
+    monitor_create_link_to_tag(m, tag);
+}
+
+static void monitor_swap_tags(struct monitor *m1, struct monitor *m2)
+{
+    struct tag *tag1 = get_tag(m1->tag_id);
+    struct tag *tag2 = get_tag(m2->tag_id);
+
+    monitor_create_link_to_tag(m1, tag2);
+    monitor_create_link_to_tag(m2, tag1);
+}
+
+static bool tag_has_a_link_to_any_monitor(struct tag *tag)
+{
+    return tag->m != NULL;
+}
+
+static bool monitor_is_corrupted(struct monitor *m)
+{
+    struct tag *tag = get_tag(m->tag_id);
+
+    // if we have no tag the monitor is not connected to any tag. therefore no
+    // connection back exist and the connection can't be corrupted.
+    if (!tag)
+        return false;
+
+    return m != tag->m;
+}
+
+static bool monitor_has_link_to_tag(struct monitor *m)
+{
+    return m->tag_id != INVALID_TAG_ID;
+}
+
+static bool monitor_should_swap_tag(struct monitor *m, struct tag *tag)
+{
+    if (!tag_has_a_link_to_any_monitor(tag))
+        return false;
+
+    if (!monitor_has_link_to_tag(m))
+        return false;
+
+    return true;
+}
+
+static bool monitor_should_push_away(struct monitor *m, struct tag *tag)
+{
+    if (!tag_has_a_link_to_any_monitor(tag))
+        return false;
+    if (monitor_has_link_to_tag(m))
+        return false;
+    return true;
+}
+
+static void monitor_push_away(struct monitor *m, struct tag *tag)
+{
+    struct monitor *old_m = tag->m;
+    monitor_remove_link_to_own_tag(old_m);
+    monitor_create_link_to_tag(m, tag);
+
+    struct tag *new_tag_for_old_m = find_next_unoccupied_tag(server_get_tags(), tag);
+    monitor_create_link_to_tag(old_m, new_tag_for_old_m);
+}
+
+void monitor_set_selected_tag(struct monitor *m, struct tag *tag)
+{
+    assert(!monitor_is_corrupted(m));
+
+    if (monitor_should_swap_tag(m, tag)) {
+        monitor_swap_tags(m, tag->m);
+    } else if (monitor_should_push_away(m, tag)) {
+        monitor_push_away(m, tag);
+    } else {
+        monitor_reparent(m, tag);
+    }
 }
 
 BitSet *monitor_get_tags(struct monitor *m)

@@ -399,10 +399,9 @@ struct monitor *tag_get_monitor(struct tag *tag)
 
 void tag_set_selected_monitor(struct tag *tag, struct monitor *m)
 {
-    if (tag->m)
+    if (!tag)
         return;
     tag->m = m;
-    tag->m->tag_id = tag->id;
 }
 
 void tag_set_current_monitor(struct tag *tag, struct monitor *m)

@@ -208,6 +208,14 @@ void init_server()
     server.previous_bitset = bitset_create();
 
     server_prohibit_reloading_config();
+
+    init_lua_api(&server);
+    init_error_file();
+
+    server.default_layout_ring = create_ring_buffer();
+    server_reset_layout_ring(server.default_layout_ring);
+
+    server.default_layout = create_layout(L);
 }
 
 void finalize_server()
@@ -311,14 +319,6 @@ void server_reset_layout_ring(struct ring_buffer *layout_ring)
 
 int setup(struct server *server)
 {
-    init_lua_api(server);
-    init_error_file();
-
-    server->default_layout_ring = create_ring_buffer();
-    server_reset_layout_ring(server->default_layout_ring);
-
-    server->default_layout = create_layout(L);
-
     load_lua_api(L);
     if (init_backend(server) != EXIT_SUCCESS) {
         return EXIT_FAILURE;

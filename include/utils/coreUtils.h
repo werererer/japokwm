@@ -30,7 +30,7 @@ typedef GPtrArray GPtrArray2D;
 #define NUM_CHARS 64
 #define NUM_DIGITS 9
 #define INVALID_POSITION -1
-#define INVALID_tag_ID -1
+#define INVALID_TAG_ID -1
 #define SWAP(a, b) do { \
     typeof(a) tmp = a; \
     a = b; \
@@ -60,6 +60,7 @@ int lower_bound(const void *key, const void *base,
 
 
 void debug_print(const char *fmt, ...);
+void print_trace();
 
 int cross_sum(int n, int base);
 
