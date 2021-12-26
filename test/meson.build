@@ -10,6 +10,7 @@ test_files = files(
     'utils/gapUtils_test.c',
     'utils/stringUtils_test.c',
     'tag_test.c',
+    'monitor_test.c',
     'scratchpad_test.c',
     'bitset_test.c',
     'keybinding_test.c',

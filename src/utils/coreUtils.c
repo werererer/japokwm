@@ -531,3 +531,23 @@ int c_idx_to_lua_idx(int c_idx)
 {
     return c_idx + 1;
 }
+
+void print_trace()
+{
+    int count = 30;
+    void *array[count];
+    char **strings;
+    int size, i;
+
+    size = backtrace (array, count);
+    strings = backtrace_symbols (array, size);
+    if (strings != NULL)
+    {
+
+        printf ("Obtained %d stack frames.\n", size);
+        for (i = 0; i < size; i++)
+            printf ("%s\n", strings[i]);
+    }
+
+    free (strings);
+}
