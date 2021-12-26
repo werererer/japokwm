@@ -34,6 +34,29 @@ static void getxdecomode(struct wl_listener *listener, void *data)
             WLR_XDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE);
 }
 
+static int i = 0;
+static void handle_subsurface_commit(struct wl_listener *listener, void *data)
+{
+    struct xdg_subsurface *xdg_subsurface = wl_container_of(listener, xdg_subsurface, commit);
+    printf("container: %p %i\n", xdg_subsurface->parent, i++);
+    container_damage_whole(xdg_subsurface->parent);
+}
+
+static void handle_new_subsurface(struct wl_listener *listener, void *data)
+{
+    struct client *c = wl_container_of(listener, c, new_subsurface);
+    struct wlr_subsurface *subsurface = data;
+    struct wlr_surface *surface = subsurface->surface;
+
+    struct xdg_subsurface *xdg_subsurface = calloc(1, sizeof(*subsurface));
+    xdg_subsurface->parent = c->con;
+    if (!subsurface) {
+        return;
+    }
+
+    LISTEN(&surface->events.commit, &xdg_subsurface->commit, handle_subsurface_commit);
+}
+
 void create_notify_xdg(struct wl_listener *listener, void *data)
 {
     /* This event is raised when wlr_xdg_shell receives a new xdg surface from a
@@ -59,6 +82,7 @@ void create_notify_xdg(struct wl_listener *listener, void *data)
     LISTEN(&xdg_surface->events.ack_configure, &c->ack_configure, ack_configure);
     LISTEN(&xdg_surface->events.unmap, &c->unmap, unmap_notify);
     LISTEN(&xdg_surface->events.destroy, &c->destroy, destroy_notify);
+    LISTEN(&xdg_surface->surface->events.new_subsurface, &c->new_subsurface, handle_new_subsurface);
 
     LISTEN(&xdg_surface->toplevel->events.set_title, &c->set_title, client_handle_set_title);
     LISTEN(&xdg_surface->toplevel->events.set_app_id, &c->set_app_id, client_handle_set_app_id);

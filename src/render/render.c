@@ -107,9 +107,15 @@ static void render_texture(struct wlr_output *wlr_output,
     pixman_region32_init(&damage);
     pixman_region32_union_rect(&damage, &damage, box->x, box->y, box->width, box->height);
     pixman_region32_intersect(&damage, &damage, output_damage);
-    if (!pixman_region32_not_empty(&damage))
+    if (!pixman_region32_not_empty(&damage)) {
+        printf("render region empty\n");
+        printf("width: %i\n", texture->width);
+        wlr_render_texture(renderer, texture, wlr_output->transform_matrix,
+                box->x, box->y, alpha);
         goto finish_damage;
+    }
 
+    printf("render texture\n");
     int nrects;
     pixman_box32_t *rects = pixman_region32_rectangles(&damage, &nrects);
     for (int i = 0; i < nrects; i++) {
@@ -132,6 +138,7 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
     struct wlr_texture *texture = wlr_surface_get_texture(surface);
     struct wlr_output *wlr_output = m->wlr_output;
 
+    printf("render surface iterator: %p\n", texture);
     if (!texture)
         return;
 
@@ -318,6 +325,14 @@ void output_surface_for_each_surface(struct monitor *m,
         output_for_each_surface_iterator, &data);
 }
 
+static void send_frame_done_func(struct wlr_surface *surface,
+    int sx, int sy, void *data)
+{
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    wlr_surface_send_frame_done(surface, &now);
+}
+
 static void render_stack(struct monitor *m, pixman_region32_t *output_damage)
 {
     /* Each subsequent window we render is rendered on top of the last. Because
@@ -344,9 +359,8 @@ static void render_stack(struct monitor *m, pixman_region32_t *output_damage)
         output_surface_for_each_surface(m, surface, obox.x, obox.y,
                 render_surface_iterator, &render_data);
 
-        struct timespec now;
-        clock_gettime(CLOCK_MONOTONIC, &now);
-        wlr_surface_send_frame_done(surface, &now);
+        wlr_surface_for_each_surface(surface,
+                send_frame_done_func, NULL);
     }
     g_ptr_array_unref(stack_list);
 }
