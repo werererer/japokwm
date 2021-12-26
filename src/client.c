@@ -134,6 +134,14 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
         }
     }
 
+    // the surface shall only be focused if the container is visible on the
+    // current monitor. Else the focus jumps left and right if we have multiple
+    // montiors.
+    if (!tagset_visible_on(server_get_selected_monitor(), c->con)) {
+        printf("not same tag return\n");
+        return;
+    }
+
     /* Update wlroots'c keyboard focus */
     if (!c) {
         /* struct wlr_seat *wlr_seat = seat->wlr_seat; */
