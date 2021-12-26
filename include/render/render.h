@@ -22,6 +22,11 @@ struct surface_iterator_data {
     double ox, oy;
 };
 
+struct render_texture_data {
+    pixman_region32_t *output_damage;
+    float alpha;
+};
+
 void render_monitor(struct monitor *m, pixman_region32_t *damage);
 void scale_box(struct wlr_box *box, float scale);
 void output_damage_surface(struct monitor *m, struct wlr_surface *surface,
