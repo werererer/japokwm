@@ -287,22 +287,16 @@ int lib_bitset_new(lua_State *L)
     create_lua_bitset_gc(L, bitset);
     return 1;
 }
-// methods
 
+// methods
 int lib_bitset_xor(lua_State *L)
 {
     BitSet *bitset = check_bitset(L, 2);
     lua_pop(L, 1);
 
     BitSet *self = check_bitset(L, 1);
-    printf("prev\n");
-    print_bitset(self);
-    printf("prev\n");
-    print_bitset(bitset);
     call_bitset_func(L, bitset_xor, self, bitset);
     lua_pop(L, 1);
-    printf("next\n");
-    print_bitset(self);
 
     return 0;
 }
