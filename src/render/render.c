@@ -123,22 +123,26 @@ finish_damage:
 }
 
 static void render_surface_iterator(struct monitor *m, struct wlr_surface *surface,
-        struct wlr_box box, pixman_region32_t *output_damage, float alpha)
+        struct wlr_box *box, void *data)
 {
+    struct render_texture_data *render_data = data;
+    float alpha = render_data->alpha;
+    pixman_region32_t *output_damage = render_data->output_damage;
+
     struct wlr_texture *texture = wlr_surface_get_texture(surface);
     struct wlr_output *wlr_output = m->wlr_output;
 
     if (!texture)
         return;
 
-    scale_box(&box, wlr_output->scale);
+    scale_box(box, wlr_output->scale);
 
     /* The client has a position in layout coordinates. If you have two displays,
      * one next to the other, both 1080p, a client on the rightmost display might
      * have layout coordinates of 2000,100. We need to translate that to
      * output-local coordinates, or (2000 - 1920). */
-    double ox = box.x;
-    double oy = box.y;
+    double ox = box->x;
+    double oy = box->y;
     wlr_output_layout_output_coords(server.output_layout, wlr_output, &ox, &oy);
 
     struct wlr_box obox = {
@@ -146,8 +150,8 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
          * part of the puzzle, dwl does not fully support HiDPI. */
         .x = ox,
         .y = oy,
-        .width = box.width,
-        .height = box.height
+        .width = box->width,
+        .height = box->height
     };
 
     render_texture(wlr_output, output_damage, texture, &obox, alpha);
@@ -299,6 +303,21 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
     }
 }
 
+void output_surface_for_each_surface(struct monitor *m,
+        struct wlr_surface *surface, double ox, double oy,
+        surface_iterator_func_t iterator, void *user_data) {
+    struct surface_iterator_data data = {
+        .user_iterator = iterator,
+        .user_data = user_data,
+        .m = m,
+        .ox = ox,
+        .oy = oy,
+    };
+
+    wlr_surface_for_each_surface(surface,
+        output_for_each_surface_iterator, &data);
+}
+
 static void render_stack(struct monitor *m, pixman_region32_t *output_damage)
 {
     /* Each subsequent window we render is rendered on top of the last. Because
@@ -318,7 +337,12 @@ static void render_stack(struct monitor *m, pixman_region32_t *output_damage)
         struct wlr_surface *surface = get_wlrsurface(con->client);
         struct wlr_box *con_geom = container_get_current_geom(con);
         struct wlr_box obox = *con_geom;
-        render_surface_iterator(m, surface, obox, output_damage, con->alpha);
+
+        struct render_texture_data render_data;
+        render_data.alpha = 1.0f;
+        render_data.output_damage = output_damage;
+        output_surface_for_each_surface(m, surface, obox.x, obox.y,
+                render_surface_iterator, &render_data);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
@@ -338,7 +362,12 @@ static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
         // instead
         obox.width = surface->current.width;
         obox.height = surface->current.height;
-        render_surface_iterator(m, surface, obox, output_damage, 1.0f);
+
+        struct render_texture_data render_data;
+        render_data.alpha = 1.0f;
+        render_data.output_damage = output_damage;
+        output_surface_for_each_surface(m, surface, obox.x, obox.y,
+                render_surface_iterator, &render_data);
 
         struct timespec now;
         clock_gettime(CLOCK_MONOTONIC, &now);
