@@ -31,6 +31,7 @@ static void handle_subsurface_destroy(struct wl_listener *listener, void *data)
 
 void handle_new_subsurface(struct wl_listener *listener, void *data)
 {
+    printf("new subsurface\n");
     struct client *c = wl_container_of(listener, c, new_subsurface);
     struct wlr_subsurface *subsurface = data;
     struct wlr_surface *surface = subsurface->surface;

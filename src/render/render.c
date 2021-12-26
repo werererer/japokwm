@@ -108,14 +108,9 @@ static void render_texture(struct wlr_output *wlr_output,
     pixman_region32_union_rect(&damage, &damage, box->x, box->y, box->width, box->height);
     pixman_region32_intersect(&damage, &damage, output_damage);
     if (!pixman_region32_not_empty(&damage)) {
-        printf("render region empty\n");
-        printf("width: %i\n", texture->width);
-        wlr_render_texture(renderer, texture, wlr_output->transform_matrix,
-                box->x, box->y, alpha);
         goto finish_damage;
     }
 
-    printf("render texture\n");
     int nrects;
     pixman_box32_t *rects = pixman_region32_rectangles(&damage, &nrects);
     for (int i = 0; i < nrects; i++) {
@@ -138,7 +133,6 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
     struct wlr_texture *texture = wlr_surface_get_texture(surface);
     struct wlr_output *wlr_output = m->wlr_output;
 
-    printf("render surface iterator: %p\n", texture);
     if (!texture)
         return;
 
