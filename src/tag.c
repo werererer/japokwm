@@ -197,6 +197,9 @@ bool tag_is_visible(struct tag *tag, struct monitor *m)
     assert(tag != NULL);
 
     struct tag *sel_tag = monitor_get_active_tag(m);
+    if (!sel_tag) {
+        return false;
+    }
     if (tag == sel_tag) {
         return true;
     }
