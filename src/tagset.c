@@ -75,7 +75,7 @@ void tagset_set_tags(struct tag *sel_tag, BitSet *tags)
     tag_set_prev_tags(sel_tag, sel_tag->tags);
 
     tagset_tags_disconnect(sel_tag);
-    tagset_assign_tags(sel_tag, tags);
+    tagset_assign_tags(sel_tag, tags_copy);
     tagset_tags_connect(sel_tag);
     tag_damage(sel_tag);
     tagset_load_tags(sel_tag, sel_tag->tags);
