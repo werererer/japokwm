@@ -8,12 +8,6 @@ typedef struct {
     struct wl_listener destroy;
 } Decoration;
 
-struct xdg_subsurface {
-    struct container *parent;
-
-    struct wl_listener commit;
-};
-
 void create_notify_xdg(struct wl_listener *listener, void *data);
 void destroy_notify(struct wl_listener *listener, void *data);
 void map_request(struct wl_listener *listener, void *data);

@@ -13,6 +13,7 @@
 #include "input_manager.h"
 #include "root.h"
 #include "tagset.h"
+#include "subsurface.h"
 
 void create_notify_layer_shell(struct wl_listener *listener, void *data)
 {
@@ -27,11 +28,12 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     surface.layer = wlr_layer_surface;
     struct client *client = create_client(LAYER_SHELL, surface);
 
-    LISTEN(&wlr_layer_surface->surface->events.commit, &client->commit, commitlayersurfacenotify);
+    LISTEN(&wlr_layer_surface->surface->events.commit, &client->commit, commit_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.map, &client->map, map_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.unmap, &client->unmap, unmap_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.destroy, &client->destroy, destroy_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.new_popup, &client->new_popup, client_handle_new_popup);
+    LISTEN(&wlr_layer_surface->surface->events.new_subsurface, &client->new_subsurface, handle_new_subsurface);
 
     struct monitor *m = wlr_layer_surface->output->data;
     client->m = m;
@@ -98,7 +100,7 @@ void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
     destroy_client(c);
 }
 
-void commitlayersurfacenotify(struct wl_listener *listener, void *data)
+void commit_layer_surface_notify(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, commit);
     struct wlr_layer_surface_v1 *wlr_layer_surface = c->surface.layer;
