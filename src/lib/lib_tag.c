@@ -117,19 +117,19 @@ int lib_tag_get_next_empty(lua_State *L)
     struct tag *tag = check_tag(L, 1);
     lua_pop(L, 1);
 
-    int ws_id = tag->id;
+    int tag_id = tag->id;
     switch (dir) {
         case WLR_DIRECTION_LEFT:
-            tag = get_prev_empty_tag(server_get_tags(), ws_id);
+            tag = get_prev_empty_tag(server_get_tags(), tag_id);
             break;
         case WLR_DIRECTION_RIGHT:
-            tag = get_next_empty_tag(server_get_tags(), ws_id);
+            tag = get_next_empty_tag(server_get_tags(), tag_id);
             break;
         default:
             if (dir & WLR_DIRECTION_LEFT && dir & WLR_DIRECTION_RIGHT) {
-                tag = get_nearest_empty_tag(server_get_tags(), ws_id);
+                tag = get_nearest_empty_tag(server_get_tags(), tag_id);
             } else {
-                tag = get_tag(ws_id);
+                tag = get_tag(tag_id);
             }
     }
 
@@ -139,10 +139,10 @@ int lib_tag_get_next_empty(lua_State *L)
 
 int lib_tag_get(lua_State *L)
 {
-    int ws_id = lua_idx_to_c_idx(luaL_checkinteger(L, -1));
+    int tag_id = lua_idx_to_c_idx(luaL_checkinteger(L, -1));
     lua_pop(L, 1);
 
-    struct tag *tag = get_tag(ws_id);
+    struct tag *tag = get_tag(tag_id);
     create_lua_tag(L, tag);
     return 1;
 }

@@ -40,7 +40,7 @@ struct layout {
     int lua_master_layout_data_ref;
     int lua_resize_data_ref;
 
-    int ws_id;
+    int tag_id;
 
     struct options *options;
 };

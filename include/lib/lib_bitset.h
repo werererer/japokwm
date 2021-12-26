@@ -17,7 +17,7 @@ void lua_load_bitset(lua_State *L);
 # define call_bitset_func(L, action, self, ...) \
     do {\
         action(self, ##__VA_ARGS__);\
-        if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_tag)) {\
+        if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_TAG)) {\
             struct tag *tag = self->data;\
             tagset_set_tags(tag, self);\
             return 0;\

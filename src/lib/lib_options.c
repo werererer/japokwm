@@ -364,8 +364,8 @@ int lib_create_tags(lua_State *L)
 
     size_t len = lua_rawlen(L, -1);
     for (int i = 0; i < len; i++) {
-        const char *ws_name = get_config_array_str(L, "tags", i+1);
-        g_ptr_array_add(tag_names, strdup(ws_name));
+        const char *tag_name = get_config_array_str(L, "tags", i+1);
+        g_ptr_array_add(tag_names, strdup(tag_name));
     }
     lua_pop(L, 1);
 

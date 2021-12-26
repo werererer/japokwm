@@ -169,8 +169,8 @@ int lib_container_set_sticky_restricted(lua_State *L) {
     struct container *con = check_container(L, 1);
     lua_pop(L, 1);
 
-    bool is_sticky_at_ws_id = bitset_test(con->client->sticky_tags, con->ws_id);
-    bitset_assign(bitset, con->ws_id, is_sticky_at_ws_id);
+    bool is_sticky_at_tag_id = bitset_test(con->client->sticky_tags, con->tag_id);
+    bitset_assign(bitset, con->tag_id, is_sticky_at_tag_id);
 
     client_setsticky(con->client, bitset);
     return 0;
@@ -207,7 +207,7 @@ int lib_container_toggle_add_sticky_restricted(lua_State *L) {
         return 0;
 
     bitset_xor(bitset, con->client->sticky_tags);
-    bitset_set(bitset, bitset_test(con->client->sticky_tags, con->ws_id));
+    bitset_set(bitset, bitset_test(con->client->sticky_tags, con->tag_id));
 
     if (!con)
         return 0;

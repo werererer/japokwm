@@ -30,7 +30,7 @@ struct container {
     struct client *client;
 
     // tag id
-    int ws_id;
+    int tag_id;
 
     bool is_exclusive;
     bool is_on_tile;
@@ -60,7 +60,7 @@ void remove_container_from_tile(struct container *con);
 
 struct container *monitor_get_focused_container(struct monitor *m);
 struct container *xy_to_container(double x, double y);
-struct container *get_container_on_focus_stack(int ws_id, int position);
+struct container *get_container_on_focus_stack(int tag_id, int position);
 
 struct wlr_box get_center_box(struct wlr_box ref);
 struct wlr_box get_centered_box(struct wlr_box box, struct wlr_box ref);
@@ -110,8 +110,8 @@ bool container_get_hidden_at_tag(struct container *con, struct tag *tag);
 void container_set_border_width(struct container *con, int border_width);
 int container_get_border_width(struct container *con);
 
-void container_set_just_tag_id(struct container *con, int ws_id);
-void container_set_tag_id(struct container *con, int ws_id);
+void container_set_just_tag_id(struct container *con, int tag_id);
+void container_set_tag_id(struct container *con, int tag_id);
 void container_set_tag(struct container *con, struct tag *tag);
 void move_container_to_tag(struct container *con, struct tag *tag);
 

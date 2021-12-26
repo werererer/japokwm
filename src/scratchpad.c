@@ -20,7 +20,7 @@ void move_to_scratchpad(struct container *con, int position)
     // TODO: try to remove this
     container_set_floating(con, container_fix_position, false);
 
-    con->ws_id = INVALID_tag_ID;
+    con->tag_id = INVALID_tag_ID;
     con->on_scratchpad = true;
 
     if (server.scratchpad->len== 0) {
@@ -83,7 +83,7 @@ void show_scratchpad()
     struct container *con = g_ptr_array_index(server.scratchpad, 0);
     struct monitor *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
-    bool visible_on_other_tag = !container_get_hidden(con) && tag->id != con->ws_id;
+    bool visible_on_other_tag = !container_get_hidden(con) && tag->id != con->tag_id;
     if (visible_on_other_tag) {
         container_set_tag_id(con, tag->id);
         container_set_floating(con, container_fix_position, true);

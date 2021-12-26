@@ -20,33 +20,33 @@
 #include "root.h"
 #include "server.h"
 
-static void tagset_assign_tag(struct tag *sel_ws, struct tag *tag, bool active);
-static void tagset_unset_tag(struct tag *sel_ws, struct tag *tag);
-static void tagset_set_tag(struct tag *sel_ws, struct tag *tag);
+static void tagset_assign_tag(struct tag *sel_tag, struct tag *tag, bool active);
+static void tagset_unset_tag(struct tag *sel_tag, struct tag *tag);
+static void tagset_set_tag(struct tag *sel_tag, struct tag *tag);
 static void tag_damage(struct tag *tag);
 static void tagset_assign_tags(struct tag *tag, BitSet *tags);
 
 static bool tag_is_damaged(struct tag *tag);
 
-static void tagset_tag_connect(struct tag *sel_ws, struct tag *tag);
+static void tagset_tag_connect(struct tag *sel_tag, struct tag *tag);
 
-static void tagset_assign_tag(struct tag *sel_ws, struct tag *tag, bool active)
+static void tagset_assign_tag(struct tag *sel_tag, struct tag *tag, bool active)
 {
-    if (!sel_ws)
+    if (!sel_tag)
         return;
-    int ws_id = tag->id;
-    bitset_assign(sel_ws->tags, ws_id, active);
-    tag_damage(sel_ws);
+    int tag_id = tag->id;
+    bitset_assign(sel_tag->tags, tag_id, active);
+    tag_damage(sel_tag);
 }
 
-static void tagset_unset_tag(struct tag *sel_ws, struct tag *tag)
+static void tagset_unset_tag(struct tag *sel_tag, struct tag *tag)
 {
-    tagset_assign_tag(sel_ws, tag, false);
+    tagset_assign_tag(sel_tag, tag, false);
 }
 
-static void tagset_set_tag(struct tag *sel_ws, struct tag *tag)
+static void tagset_set_tag(struct tag *sel_tag, struct tag *tag)
 {
-    tagset_assign_tag(sel_ws, tag, true);
+    tagset_assign_tag(sel_tag, tag, true);
 }
 
 static void tag_damage(struct tag *tag)
@@ -93,13 +93,13 @@ void tagset_load_tags()
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
 
-        struct tag *sel_ws = monitor_get_active_tag(m);
+        struct tag *sel_tag = monitor_get_active_tag(m);
 
-        if (!tag_is_damaged(sel_ws))
+        if (!tag_is_damaged(sel_tag))
             return;
 
-        struct container_set *dest = sel_ws->visible_con_set;
-        struct container_set *src = sel_ws->con_set;
+        struct container_set *dest = sel_tag->visible_con_set;
+        struct container_set *src = sel_tag->con_set;
 
         container_set_clear(dest);
         container_set_append(m, dest, src);
@@ -108,17 +108,17 @@ void tagset_load_tags()
 
 // remove all references from tag to tagset and bounce a tag back to
 // its original tagset or if already on it remove it from it
-static void tagset_tag_disconnect(struct tag *sel_ws, struct tag *tag)
+static void tagset_tag_disconnect(struct tag *sel_tag, struct tag *tag)
 {
-    if (!sel_ws)
+    if (!sel_tag)
         return;
     // ws->current_m = NULL;
 
-    struct monitor *ws_m = tag_get_selected_monitor(tag);
-    if (ws_m && ws_m != server_get_selected_monitor()) {
+    struct monitor *tag_m = tag_get_selected_monitor(tag);
+    if (tag_m && tag_m != server_get_selected_monitor()) {
         tag_set_current_monitor(tag, tag_get_selected_monitor(tag));
         // move the tag back
-        tagset_set_tag(sel_ws, tag);
+        tagset_set_tag(sel_tag, tag);
     }
 }
 
@@ -128,50 +128,50 @@ void tagset_tags_reconnect(struct tag *tag)
     tagset_tags_connect(tag);
 }
 
-void tagset_tags_disconnect(struct tag *sel_ws)
+void tagset_tags_disconnect(struct tag *sel_tag)
 {
-    if (!sel_ws)
+    if (!sel_tag)
         return;
 
-    tagset_tag_disconnect(sel_ws, sel_ws);
+    tagset_tag_disconnect(sel_tag, sel_tag);
 
-    for (GList *iter = g_hash_table_get_keys(sel_ws->tags->bytes);
+    for (GList *iter = g_hash_table_get_keys(sel_tag->tags->bytes);
             iter;
             iter = iter->next) {
-        int ws_id = *(int *) iter->data;
-        bool bit = g_hash_table_lookup(sel_ws->tags->bytes, &ws_id);
+        int tag_id = *(int *) iter->data;
+        bool bit = g_hash_table_lookup(sel_tag->tags->bytes, &tag_id);
 
         if (!bit)
             continue;
 
-        struct tag *tag = get_tag(ws_id);
-        tagset_tag_disconnect(sel_ws, tag);
+        struct tag *tag = get_tag(tag_id);
+        tagset_tag_disconnect(sel_tag, tag);
     }
 }
 
-static void tagset_tag_connect(struct tag *sel_ws, struct tag *tag)
+static void tagset_tag_connect(struct tag *sel_tag, struct tag *tag)
 {
-    tag_set_current_monitor(tag, tag_get_selected_monitor(sel_ws));
+    tag_set_current_monitor(tag, tag_get_selected_monitor(sel_tag));
 
-    if (sel_ws->id == tag->id) {
-        // ws->m = tag_get_monitor(sel_ws);
+    if (sel_tag->id == tag->id) {
+        // ws->m = tag_get_monitor(sel_tag);
     }
 }
 
-void tagset_tags_connect(struct tag *sel_ws)
+void tagset_tags_connect(struct tag *sel_tag)
 {
-    for (GList *iter = g_hash_table_get_keys(sel_ws->tags->bytes);
+    for (GList *iter = g_hash_table_get_keys(sel_tag->tags->bytes);
             iter;
             iter = iter->next) {
-        int ws_id = *(int *) iter->data;
-        bool bit = g_hash_table_lookup(sel_ws->tags->bytes, &ws_id);
+        int tag_id = *(int *) iter->data;
+        bool bit = g_hash_table_lookup(sel_tag->tags->bytes, &tag_id);
 
 
         if (!bit)
             continue;
 
-        struct tag *tag = get_tag(ws_id);
-        tagset_tag_connect(sel_ws, tag);
+        struct tag *tag = get_tag(tag_id);
+        tagset_tag_connect(sel_tag, tag);
     }
 }
 
@@ -304,15 +304,15 @@ void focus_tagset(struct tag *tag, BitSet *tags)
     tagset_assign_tags(tag, tags_copy);
 
     struct monitor *prev_m = server_get_selected_monitor();
-    struct tag *prev_ws = monitor_get_active_tag(prev_m);
+    struct tag *prev_tag = monitor_get_active_tag(prev_m);
 
-    struct monitor *ws_m = tag_get_selected_monitor(tag);
-    struct monitor *m = ws_m ? ws_m : server_get_selected_monitor();
+    struct monitor *tag_m = tag_get_selected_monitor(tag);
+    struct monitor *m = tag_m ? tag_m : server_get_selected_monitor();
     monitor_set_selected_tag(m, tag);
     server_set_selected_monitor(m);
 
-    if (prev_m == m && prev_ws != tag) {
-        tagset_tags_disconnect(prev_ws);
+    if (prev_m == m && prev_tag != tag) {
+        tagset_tags_disconnect(prev_tag);
     }
     tagset_tags_connect(tag);
     tag_damage(tag);
@@ -349,19 +349,17 @@ static void _set_previous_tagset(struct tag *tag)
     server.previous_tag = tag->id;
 }
 
-void push_tagset(struct tag *sel_ws, BitSet *tags)
+void push_tagset(struct tag *sel_tag, BitSet *tags)
 {
-    // struct monitor *ws_m = tag_get_selected_monitor(sel_ws);
-    // struct monitor *m = ws_m ? ws_m : server_get_selected_monitor();
     struct tag *tag = server_get_selected_tag();
-    if (tag != sel_ws) {
+    if (tag != sel_tag) {
         _set_previous_tagset(tag);
     }
-    if (tag == sel_ws) { 
-        tag_set_prev_tags(sel_ws, sel_ws->tags);
+    if (tag == sel_tag) { 
+        tag_set_prev_tags(sel_tag, sel_tag->tags);
     }
 
-    focus_tagset(sel_ws, tags);
+    focus_tagset(sel_tag, tags);
 }
 
 void tagset_focus_tag(struct tag *tag)
@@ -387,16 +385,16 @@ void tagset_toggle_add(struct monitor *m, BitSet *bitset)
 
 void tagset_focus_tags(struct tag *tag, struct BitSet *bitset)
 {
-    struct monitor *ws_m = tag_get_selected_monitor(tag);
-    ws_m = ws_m ? ws_m : server_get_selected_monitor();
-    monitor_focus_tags(ws_m, tag, bitset);
+    struct monitor *tag_m = tag_get_selected_monitor(tag);
+    tag_m = tag_m ? tag_m : server_get_selected_monitor();
+    monitor_focus_tags(tag_m, tag, bitset);
 }
 
-void tagset_reload(struct tag *sel_ws)
+void tagset_reload(struct tag *sel_tag)
 {
-    if (!sel_ws)
+    if (!sel_tag)
         return;
-    tag_damage(sel_ws);
+    tag_damage(sel_tag);
     tagset_load_tags();
 }
 
@@ -552,9 +550,9 @@ GPtrArray *tag_get_complete_stack_copy(struct tag *tag)
     return array;
 }
 
-void tag_id_to_tag(BitSet *dest, int ws_id)
+void tag_id_to_tag(BitSet *dest, int tag_id)
 {
-    bitset_set(dest, ws_id);
+    bitset_set(dest, tag_id);
 }
 
 bool tagset_contains_sticky_client(BitSet *tagset_tags, struct client *c)
@@ -574,7 +572,7 @@ bool tagset_contains_client(BitSet *tags, struct client *c)
 
     BitSet *bitset = bitset_create();
     struct container *con = c->con;
-    tag_id_to_tag(bitset, con->ws_id);
+    tag_id_to_tag(bitset, con->tag_id);
     bitset_and(bitset, tags);
     bool contains = bitset_any(bitset);
     bitset_destroy(bitset);
@@ -610,8 +608,8 @@ bool container_potentially_viewable_on_monitor(struct monitor *m,
 
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
-        struct tag *sel_ws = monitor_get_active_tag(m);
-        bool contains_client = tagset_contains_client(sel_ws->tags, con->client);
+        struct tag *sel_tag = monitor_get_active_tag(m);
+        bool contains_client = tagset_contains_client(sel_tag->tags, con->client);
         if (contains_client) {
             return true;
         }

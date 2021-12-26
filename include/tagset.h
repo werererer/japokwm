@@ -48,9 +48,9 @@ void tag_write_to_tags(struct tag *tag);
 
 void tagset_focus_tag(struct tag *tag);
 void tagset_toggle_add(struct monitor *m, BitSet *bitset);
-void tagset_set_tags(struct tag *sel_ws, BitSet *tags);
+void tagset_set_tags(struct tag *sel_tag, BitSet *tags);
 void tagset_focus_tags(struct tag *tag, struct BitSet *bitset);
-void tagset_reload(struct tag *sel_ws);
+void tagset_reload(struct tag *sel_tag);
 void tagset_move_sticky_containers(struct tag *tag);
 
 void tag_write_to_focus_stacks(struct tag *tag);
@@ -83,7 +83,7 @@ GPtrArray *tagset_get_global_floating_copy(struct tag *tag);
 GPtrArray *tagset_get_visible_list_copy(struct tag *tag);
 GPtrArray *tagset_get_hidden_list_copy(struct tag *tag);
 
-void tag_id_to_tag(BitSet *dest, int ws_id);
+void tag_id_to_tag(BitSet *dest, int tag_id);
 
 bool container_viewable_on_monitor(struct monitor *m,
         struct container *con);

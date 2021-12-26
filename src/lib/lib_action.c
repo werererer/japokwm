@@ -345,11 +345,11 @@ int lib_toggle_all_bars(lua_State *L)
         lua_pop(L, 1);
     }
 
-    struct tag *sel_ws = server_get_selected_tag();
+    struct tag *sel_tag = server_get_selected_tag();
 
     // toggle edges
     enum wlr_edges visible_edges = WLR_EDGE_NONE;
-    if (sel_ws->visible_bar_edges == WLR_EDGE_NONE) {
+    if (sel_tag->visible_bar_edges == WLR_EDGE_NONE) {
         visible_edges = edges;
     }
 
@@ -371,8 +371,8 @@ int lib_toggle_tags(lua_State *L)
 
 int lib_toggle_tag(lua_State *L)
 {
-    struct tag *prev_ws = get_tag(server.previous_tag);
-    tagset_focus_tag(prev_ws);
+    struct tag *prev_tag = get_tag(server.previous_tag);
+    tagset_focus_tag(prev_tag);
     return 0;
 }
 
