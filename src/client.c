@@ -301,8 +301,10 @@ void client_handle_set_app_id(struct wl_listener *listener, void *data)
     c->app_id = app_id;
 
     struct tag *tag = container_get_tag(c->con);
-    struct layout *lt = tag_get_layout(tag);
-    apply_rules(lt->options->rules, c->con);
+    if (tag) {
+        struct layout *lt = tag_get_layout(tag);
+        apply_rules(lt->options->rules, c->con);
+    }
 }
 
 void reset_floating_client_borders(int border_px)
