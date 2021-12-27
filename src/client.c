@@ -271,8 +271,10 @@ void client_handle_set_title(struct wl_listener *listener, void *data)
     c->title = title;
 
     struct tag *tag = container_get_tag(c->con);
-    struct layout *lt = tag_get_layout(tag);
-    apply_rules(lt->options->rules, c->con);
+    if (tag) {
+        struct layout *lt = tag_get_layout(tag);
+        apply_rules(lt->options->rules, c->con);
+    }
 }
 
 void client_handle_set_app_id(struct wl_listener *listener, void *data)
