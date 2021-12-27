@@ -83,12 +83,7 @@ static void output_for_each_surface_iterator(struct wlr_surface *surface, int sx
     if (!wlr_surface_has_buffer(surface))
         return;
 
-    struct wlr_box surface_box = {
-        .x = data->ox + sx + surface->sx,
-        .y = data->oy + sy + surface->sy,
-        .width = surface->current.width,
-        .height = surface->current.height,
-    };
+    struct wlr_box surface_box = data->render_box;
 
     // TODO: is this line needed? I wrote it once but it may be obsolete
     // if (!intersects_with_output(m, server.output_layout, &surface_box))
@@ -201,8 +196,7 @@ void output_damage_surface(struct monitor *m, struct wlr_surface *surface, struc
         .user_iterator = damage_surface_iterator,
         .user_data = &whole,
         .m = m,
-        .ox = ox,
-        .oy = oy,
+        .render_box = *geom,
     };
 
     wlr_surface_for_each_surface(surface, output_for_each_surface_iterator, &data);
@@ -305,14 +299,13 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
 }
 
 void output_surface_for_each_surface(struct monitor *m,
-        struct wlr_surface *surface, double ox, double oy,
+        struct wlr_surface *surface, struct wlr_box obox,
         surface_iterator_func_t iterator, void *user_data) {
     struct surface_iterator_data data = {
         .user_iterator = iterator,
         .user_data = user_data,
         .m = m,
-        .ox = ox,
-        .oy = oy,
+        .render_box = obox,
     };
 
     wlr_surface_for_each_surface(surface,
@@ -350,7 +343,7 @@ static void render_stack(struct monitor *m, pixman_region32_t *output_damage)
         struct render_texture_data render_data;
         render_data.alpha = 1.0f;
         render_data.output_damage = output_damage;
-        output_surface_for_each_surface(m, surface, obox.x, obox.y,
+        output_surface_for_each_surface(m, surface, obox,
                 render_surface_iterator, &render_data);
 
         wlr_surface_for_each_surface(surface,
@@ -374,7 +367,7 @@ static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
         struct render_texture_data render_data;
         render_data.alpha = 1.0f;
         render_data.output_damage = output_damage;
-        output_surface_for_each_surface(m, surface, obox.x, obox.y,
+        output_surface_for_each_surface(m, surface, obox,
                 render_surface_iterator, &render_data);
 
         struct timespec now;
