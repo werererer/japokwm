@@ -146,6 +146,9 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
     };
 
     render_texture(wlr_output, output_damage, texture, &obox, alpha);
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    wlr_surface_send_frame_done(surface, &now);
 }
 
 static void
@@ -340,9 +343,6 @@ static void render_stack(struct monitor *m, pixman_region32_t *output_damage)
         render_data.output_damage = output_damage;
         output_surface_for_each_surface(m, surface, obox,
                 render_surface_iterator, &render_data);
-
-        wlr_surface_for_each_surface(surface,
-                send_frame_done_func, NULL);
     }
     g_ptr_array_unref(stack_list);
 }
