@@ -323,7 +323,7 @@ static bool monitor_should_swap_tag(struct monitor *m, struct tag *tag)
     return true;
 }
 
-static bool monitor_should_push_away(struct monitor *m, struct tag *tag)
+static bool monitor_should_use_the_next_empty_tag(struct monitor *m, struct tag *tag)
 {
     if (!tag_has_a_link_to_any_monitor(tag))
         return false;
@@ -332,15 +332,10 @@ static bool monitor_should_push_away(struct monitor *m, struct tag *tag)
     return true;
 }
 
-static void monitor_push_away(struct monitor *m, struct tag *tag)
+static void monitor_use_the_next_empty_tag(struct monitor *m, struct tag *tag)
 {
-    struct monitor *old_m = tag->m;
-    struct tag *new_tag_for_old_m = find_next_unoccupied_tag(server_get_tags(), tag);
-
-    monitor_remove_link_to_own_tag(old_m);
-    monitor_create_link_to_tag(m, tag);
-
-    monitor_create_link_to_tag(old_m, new_tag_for_old_m);
+    struct tag *new_tag = find_next_unoccupied_tag(server_get_tags(), tag);
+    monitor_create_link_to_tag(m, new_tag);
 }
 
 void monitor_set_selected_tag(struct monitor *m, struct tag *tag)
@@ -349,8 +344,8 @@ void monitor_set_selected_tag(struct monitor *m, struct tag *tag)
 
     if (monitor_should_swap_tag(m, tag)) {
         monitor_swap_tags(m, tag->m);
-    } else if (monitor_should_push_away(m, tag)) {
-        monitor_push_away(m, tag);
+    } else if (monitor_should_use_the_next_empty_tag(m, tag)) {
+        monitor_use_the_next_empty_tag(m, tag);
     } else {
         monitor_reparent(m, tag);
     }
