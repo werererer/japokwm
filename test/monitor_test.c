@@ -52,8 +52,8 @@ void test2_monitor_set_selected_tag()
     assert_link_ok(&m1, NULL);
 
     monitor_set_selected_tag(&m1, tag0);
-    assert_link_ok(&m1, tag0);
-    assert_link_ok(&m0, tag1);
+    assert_link_ok(&m0, tag0);
+    assert_link_ok(&m1, tag1);
 }
 
 #define PREFIX "monitor"
