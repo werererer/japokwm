@@ -3,6 +3,7 @@ c_args = ['-I../include']
 
 test_files = files(
     'event_handler_test.c',
+    'client_test.c',
     'container_test.c',
     'stringop_test.c',
     'tile/tileUtils_test.c',
