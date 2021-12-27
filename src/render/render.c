@@ -84,11 +84,6 @@ static void output_for_each_surface_iterator(struct wlr_surface *surface, int sx
         return;
 
     struct wlr_box surface_box = data->render_box;
-
-    // TODO: is this line needed? I wrote it once but it may be obsolete
-    // if (!intersects_with_output(m, server.output_layout, &surface_box))
-    //     return;
-    //
     data->user_iterator(data->m, surface, &surface_box, data->user_data);
 }
 
@@ -341,7 +336,7 @@ static void render_stack(struct monitor *m, pixman_region32_t *output_damage)
         struct wlr_box obox = *con_geom;
 
         struct render_texture_data render_data;
-        render_data.alpha = 1.0f;
+        render_data.alpha = con->alpha;
         render_data.output_damage = output_damage;
         output_surface_for_each_surface(m, surface, obox,
                 render_surface_iterator, &render_data);
