@@ -134,6 +134,12 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
         }
     }
 
+    /* Update wlroots'c keyboard focus */
+    if (!c) {
+        /* struct wlr_seat *wlr_seat = seat->wlr_seat; */
+        wlr_seat_keyboard_notify_clear_focus(seat->wlr_seat);
+        return;
+    }
     // the surface shall only be focused if the container is visible on the
     // current monitor. Else the focus jumps left and right if we have multiple
     // montiors.
@@ -144,12 +150,6 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
         return;
     }
 
-    /* Update wlroots'c keyboard focus */
-    if (!c) {
-        /* struct wlr_seat *wlr_seat = seat->wlr_seat; */
-        wlr_seat_keyboard_notify_clear_focus(seat->wlr_seat);
-        return;
-    }
     /* Update wlroots'c keyboard focus */
     focus_surface(seat, get_wlrsurface(c));
 
