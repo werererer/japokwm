@@ -127,6 +127,7 @@ struct container *get_container_from_container_stack_position(int i);
 bool is_resize_not_in_limit(struct wlr_fbox *geom, struct resize_constraints *resize_constraints);
 bool container_is_bar(struct container *con);
 
+// this function may return NULL when a container is hidden
 struct tag *container_get_tag(struct container *con);
 bool container_is_floating(struct container *con);
 bool container_is_floating_and_visible(struct container *con);
