@@ -222,11 +222,14 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
         struct container *con = g_ptr_array_index(stack_list, i);
 
         if (con->client->type == LAYER_SHELL && con->client->m == m) {
+            // WARNING: the following code is dangerously bad
+            // HACK:
             // FIXME: this needs to be done so that instead of segfaulting when
             // layer shell based programs are open it leaks the memory instead
             // this seems to be a bug in wlroots or wayland
             wl_list_remove(&con->client->commit.link);
             wl_list_remove(&con->client->destroy.link);
+            con->tag_id = INVALID_TAG_ID;
         }
         if (con->client->m == m) {
             con->client->m = NULL;
