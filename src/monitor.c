@@ -221,7 +221,7 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
     for (int i = 0; i < stack_list->len; i++) {
         struct container *con = g_ptr_array_index(stack_list, i);
 
-        if (con->client->type == LAYER_SHELL && con->client->m  == m) {
+        if (con->client->type == LAYER_SHELL && con->client->m == m) {
             // FIXME: this needs to be done so that instead of segfaulting when
             // layer shell based programs are open it leaks the memory instead
             // this seems to be a bug in wlroots or wayland
