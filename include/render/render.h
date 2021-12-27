@@ -19,7 +19,7 @@ struct surface_iterator_data {
     struct monitor *m;
 
     /* Output-local coordinates. */
-    double ox, oy;
+    struct wlr_box render_box;
 };
 
 struct render_texture_data {
