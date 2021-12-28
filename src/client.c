@@ -258,7 +258,7 @@ void client_handle_set_title(struct wl_listener *listener, void *data)
             title = c->surface.xdg->toplevel->title;
             break;
         case LAYER_SHELL:
-            title = "test";
+            title = "";
             break;
         case X11_MANAGED:
         case X11_UNMANAGED:
