@@ -857,13 +857,8 @@ void container_set_floating_geom(struct container *con, struct wlr_box *geom)
     container_update_size(con);
 }
 
-struct wlr_box *container_get_tiled_geom(struct container *con)
+struct wlr_box *container_get_tiled_geom_at_tag(struct container *con, struct tag *tag)
 {
-    struct monitor *m = container_get_monitor(con);
-    struct tag *tag = monitor_get_active_tag(m);
-    if (!tag)
-        return NULL;
-
     struct container_property *property =
         g_ptr_array_index(con->properties, tag->id); 
 
@@ -875,6 +870,25 @@ struct wlr_box *container_get_tiled_geom(struct container *con)
     return geom;
 }
 
+struct wlr_box *container_get_tiled_geom(struct container *con)
+{
+    struct monitor *m = container_get_monitor(con);
+    struct tag *tag = monitor_get_active_tag(m);
+    if (!tag)
+        return NULL;
+
+    struct wlr_box *geom = container_get_tiled_geom_at_tag(con, tag);
+    return geom;
+}
+
+struct wlr_box *container_get_floating_geom_at_tag(struct container *con, struct tag *tag)
+{
+    struct container_property *property =
+        g_ptr_array_index(con->properties, tag->id); 
+
+    return container_property_get_floating_geom(property);
+}
+
 struct wlr_box *container_get_floating_geom(struct container *con)
 {
     struct monitor *m = container_get_monitor(con);
@@ -883,16 +897,12 @@ struct wlr_box *container_get_floating_geom(struct container *con)
         return NULL;
     }
 
-    struct container_property *property =
-        g_ptr_array_index(con->properties, tag->id); 
-
-    return container_property_get_floating_geom(property);
+    return container_get_floating_geom_at_tag(con, tag);
 }
 
-struct wlr_box *container_get_current_geom(struct container *con)
+struct wlr_box *container_get_current_geom_at_tag(struct container *con, struct tag *tag)
 {
     struct wlr_box *geom = NULL;
-    struct tag *tag = server_get_selected_tag();
     struct layout *lt = tag_get_layout(tag);
     if (container_is_unmanaged(con)) {
         geom = container_get_floating_geom(con);
@@ -903,6 +913,13 @@ struct wlr_box *container_get_current_geom(struct container *con)
     } else {
         geom = container_get_floating_geom(con);
     }
+    return geom;
+}
+
+struct wlr_box *container_get_current_geom(struct container *con)
+{
+    struct tag *tag = server_get_selected_tag();
+    struct wlr_box *geom = container_get_current_geom_at_tag(con, tag);
     return geom;
 }
 
