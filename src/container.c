@@ -737,7 +737,8 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
     if (!con)
         return;
 
-    struct wlr_box *con_geom = container_get_current_geom(con);
+    struct tag *con_tag = container_get_current_tag(server.grab_c);
+    struct wlr_box *con_geom = container_get_current_geom_at_tag(server.grab_c, con_tag);
     struct wlr_box geom = *con_geom;
     geom.x = cursor->x - offsetx;
     geom.y = cursor->y - offsety;
@@ -749,7 +750,7 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
         container_set_floating(con, container_fix_position, true);
         arrange();
     }
-    container_set_floating_geom(con, &geom);
+    container_set_floating_geom_at_tag(con, &geom, con_tag);
     struct monitor *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     struct layout *lt = tag_get_layout(tag);
@@ -1041,6 +1042,22 @@ int get_position_in_container_stack(struct container *con)
     guint position = 0;
     g_ptr_array_find(tag->con_set->tiled_containers, con, &position);
     return position;
+}
+
+struct tag *container_get_current_tag(struct container *con)
+{
+    container_get_monitor(con);
+    for (int i = 0; i < server.mons->len; i++) {
+        struct monitor *m = g_ptr_array_index(server.mons, i);
+
+        struct tag *tag = monitor_get_active_tag(m);
+        if (!tag)
+            continue;
+
+        if (bitset_test(tag->tags, con->tag_id))
+            return tag;
+    }
+    return NULL;
 }
 
 struct container *get_container_from_container_stack_position(int i)

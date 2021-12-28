@@ -29,7 +29,6 @@ struct container {
     struct wlr_box prev_geom;
     struct client *client;
 
-    // tag id
     int tag_id;
 
     bool is_exclusive;
@@ -132,6 +131,8 @@ int absolute_x_to_container_relative(struct wlr_box *geom, int x);
 int absolute_y_to_container_relative(struct wlr_box *geom, int y);
 int get_position_in_container_focus_stack(struct container *con);
 int get_position_in_container_stack(struct container *con);
+
+struct tag *container_get_current_tag(struct container *con);
 
 struct container *get_container_from_container_stack_position(int i);
 
