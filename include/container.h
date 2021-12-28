@@ -98,6 +98,12 @@ struct container_property *container_get_property_at_tag(
         struct container *con,
         struct tag *tag);
 
+void container_set_current_geom_at_tag(struct container *con,
+        struct wlr_box *geom, struct tag *tag);
+void container_set_tiled_geom_at_tag(struct container *con,
+        struct wlr_box *geom, struct tag *tag);
+void container_set_floating_geom_at_tag(struct container *con,
+        struct wlr_box *geom, struct tag *tag);
 void container_set_current_geom(struct container *con, struct wlr_box *geom);
 void container_set_tiled_geom(struct container *con, struct wlr_box *geom);
 void container_set_floating_geom(struct container *con, struct wlr_box *geom);
