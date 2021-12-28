@@ -839,10 +839,23 @@ void container_set_tiled_geom(struct container *con, struct wlr_box *geom)
     *con_geom = *geom;
 }
 
-void container_set_floating_geom(struct container *con, struct wlr_box *geom)
+void container_set_current_geom_at_tag(struct container *con,
+        struct wlr_box *geom, struct tag *tag)
+{
+    // TODO: implement me
+}
+
+void container_set_tiled_geom_at_tag(struct container *con,
+        struct wlr_box *geom, struct tag *tag)
+{
+    // TODO: implement me
+}
+
+void container_set_floating_geom_at_tag(struct container *con,
+        struct wlr_box *geom, struct tag *tag)
 {
     struct container_property *property =
-        container_get_property(con);
+        container_get_property_at_tag(con, tag);
 
     if (!property)
         return;
@@ -855,6 +868,12 @@ void container_set_floating_geom(struct container *con, struct wlr_box *geom)
     con->prev_geom = *con_geom;
     *con_geom = *geom;
     container_update_size(con);
+}
+
+void container_set_floating_geom(struct container *con, struct wlr_box *geom)
+{
+    struct tag *tag = server_get_selected_tag();
+    container_set_floating_geom_at_tag(con, geom, tag);
 }
 
 struct wlr_box *container_get_tiled_geom_at_tag(struct container *con, struct tag *tag)
