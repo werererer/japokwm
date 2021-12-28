@@ -194,7 +194,12 @@ void output_damage_surface(struct monitor *m, struct wlr_surface *surface, struc
         .user_iterator = damage_surface_iterator,
         .user_data = &whole,
         .m = m,
-        .render_box = *geom,
+        .render_box = {
+            .x = ox,
+            .y = oy,
+            .width = geom->width,
+            .height = geom->height,
+        },
     };
 
     wlr_surface_for_each_surface(surface, output_for_each_surface_iterator, &data);
