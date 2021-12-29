@@ -51,12 +51,12 @@ also counts as a reload.
 on the location.
 
 Another way to access things is through static methods and static variables of
-ceratin classes. For example, the Container class has a static variable called
+certain classes. For example, the Container class has a static variable called
 focused. With this you can access the focused container. e.g.:
 ```
 -- using a static variable
 local focused_container = Container.focused
--- using a static method also known as 
+-- using a static method
 local color_green = Color.new(0.0, 1.0, 0.0, 1.0)
 ```
 
