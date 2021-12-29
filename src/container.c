@@ -761,15 +761,7 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
 struct container_property *container_get_property(struct container *con)
 {
     struct tag *tag = container_get_current_tag(con);
-    if (!tag)
-        return NULL;
-    while (tag->id >= con->properties->len) {
-        struct container_property *property = create_container_property(con);
-        g_ptr_array_add(con->properties, property);
-    }
-
-    struct container_property *property =
-        g_ptr_array_index(con->properties, tag->id); 
+    struct container_property *property = container_get_property_at_tag(con, tag);
     return property;
 }
 
@@ -779,6 +771,11 @@ struct container_property *container_get_property_at_tag(
 {
     if (!tag)
         return NULL;
+    while (tag->id >= con->properties->len) {
+        struct container_property *property = create_container_property(con);
+        g_ptr_array_add(con->properties, property);
+    }
+
     struct container_property *property =
         g_ptr_array_index(con->properties, tag->id); 
     return property;
