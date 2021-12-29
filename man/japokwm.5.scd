@@ -29,8 +29,8 @@ e.g.: ~/.config/japokwm/layouts/foo/init.lua
 # ACCESS FEATURES
 We devide japokwm config files into 2 types. layout local and global config
 files. They differ in the following ways:
-- Global config are executed once per per reload. Starting the window manager
-  also counts as a reload.
+- Global config are executed once per per reload. Starting the window manager ++
+also counts as a reload.
 - Layout local config files are executed every time a layout is loaded
 - The objects that are accessible differ:
 	- Layout local config files:
