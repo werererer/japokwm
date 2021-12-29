@@ -6,7 +6,8 @@ use built-in static methods with it to change the behavior of your window manage
 change various settings. An example config is likely present in
 /etc/japokwm/init.lua for you to check out.
 
-Japokwm uses a oop system to order the features.
+Japokwm uses a oop system to order the features. That means there are multiple
+classes and objectes provided by the windowmanager.
 
 # GLOBAL CONFIG FILES
 japokwm searches for the *init.lua* file in the following locations, in this order:
@@ -79,7 +80,12 @@ when x = 0 you are at the left side of the screen. At x = 1 you are on ++
 everything you see when you don't have a window open
 
 *window* ++
-the container and the content you see in it
+an alias for container used *only* throughout the documentation
+
+*rule* ++
+TODO
 
 # LIST OF INTERESTING FEATURES THAT ARE HARD TO FIND ABOUT
 - scratchpad
+- monitor/container rules
+- japokmsg see man 1 japokmsg
