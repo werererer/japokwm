@@ -8,12 +8,12 @@ static const struct luaL_Reg cursor_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg cursor_f[] =
+static const struct luaL_Reg cursor_static_methods[] =
 {
     {NULL, NULL},
 };
 
-static const struct luaL_Reg cursor_m[] =
+static const struct luaL_Reg cursor_methods[] =
 {
     {NULL, NULL},
 };
@@ -31,13 +31,13 @@ static const struct luaL_Reg cursor_getter[] =
 void lua_load_cursor(lua_State *L)
 {
     create_class(L, cursor_meta,
-            cursor_f,
-            cursor_m,
+            cursor_static_methods,
+            cursor_methods,
             cursor_setter,
             cursor_getter,
             CONFIG_CURSOR);
 
-    luaL_newlib(L, cursor_f);
+    luaL_newlib(L, cursor_static_methods);
     lua_setglobal(L, "Cursor");
 }
 

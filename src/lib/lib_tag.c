@@ -38,14 +38,14 @@ static const struct luaL_Reg tag_static_setter[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg tag_f[] =
+static const struct luaL_Reg tag_static_methods[] =
 {
     {"get", lib_tag_get},
     {"get_next_empty", lib_tag_get_next_empty},
     {NULL, NULL},
 };
 
-static const struct luaL_Reg tag_m[] =
+static const struct luaL_Reg tag_methods[] =
 {
     {"get_id", lib_tag_get_id},
     {"swap", lib_tag_swap},
@@ -90,15 +90,15 @@ void lua_load_tag(lua_State *L)
 {
     create_class(L,
             tag_meta,
-            tag_f,
-            tag_m,
+            tag_static_methods,
+            tag_methods,
             tag_setter,
             tag_getter,
             CONFIG_tag);
 
     create_static_accessor(L,
             "Tag",
-            tag_f,
+            tag_static_methods,
             tag_static_setter,
             tag_static_getter);
 }
@@ -109,7 +109,7 @@ struct tag *check_tag(lua_State *L, int narg) {
     return (struct tag *)*ud;
 }
 
-// functions
+// static methods
 int lib_tag_get_next_empty(lua_State *L)
 {
     enum wlr_direction dir = luaL_checkinteger(L, -1);

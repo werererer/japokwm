@@ -11,7 +11,7 @@ static const struct luaL_Reg color_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg color_f[] =
+static const struct luaL_Reg color_static_methods[] =
 {
     {"new", lib_color_new},
     {NULL, NULL},
@@ -164,7 +164,7 @@ static const struct luaL_Reg color_static_getter[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg color_m[] =
+static const struct luaL_Reg color_methods[] =
 {
     {NULL, NULL},
 };
@@ -184,19 +184,19 @@ void lua_load_color(lua_State *L)
     // 
     create_class(L,
             color_meta,
-            color_f,
-            color_m,
+            color_static_methods,
+            color_methods,
             color_setter,
             color_getter,
             CONFIG_COLOR);
 
     create_static_accessor(L,
             "Color",
-            color_f,
+            color_static_methods,
             color_static_setter,
             color_static_getter);
 
-    luaL_newlib(L, color_f);
+    luaL_newlib(L, color_static_methods);
     lua_setglobal(L, "Color");
 }
 
@@ -215,7 +215,7 @@ static void create_lua_color(lua_State *L, struct color color)
     luaL_setmetatable(L, CONFIG_COLOR);
 }
 
-// functions
+// static methods
 int lib_color_new(lua_State *L)
 {
     float alpha = luaL_checknumber(L, -1);

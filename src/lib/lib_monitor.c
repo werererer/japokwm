@@ -15,12 +15,12 @@ static const struct luaL_Reg monitor_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg monitor_f[] =
+static const struct luaL_Reg monitor_static_methods[] =
 {
     {NULL, NULL},
 };
 
-static const struct luaL_Reg monitor_m[] =
+static const struct luaL_Reg monitor_methods[] =
 {
     {NULL, NULL},
 };
@@ -44,13 +44,13 @@ void lua_load_monitor(lua_State *L)
 {
     create_class(L,
             monitor_meta,
-            monitor_f,
-            monitor_m,
+            monitor_static_methods,
+            monitor_methods,
             monitor_setter,
             monitor_getter,
             CONFIG_MONITOR);
 
-    luaL_newlib(L, monitor_f);
+    luaL_newlib(L, monitor_static_methods);
     lua_setglobal(L, "Monitor");
 }
 
@@ -67,7 +67,7 @@ static void create_lua_monitor(lua_State *L, struct monitor *m) {
     luaL_setmetatable(L, CONFIG_MONITOR);
 }
 
-// functions
+// static methods
 int lib_monitor_get_focused(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();

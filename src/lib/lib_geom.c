@@ -8,12 +8,12 @@ static const struct luaL_Reg geom_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg geom_f[] =
+static const struct luaL_Reg geom_static_methods[] =
 {
     {NULL, NULL},
 };
 
-static const struct luaL_Reg geom_m[] = {
+static const struct luaL_Reg geom_methods[] = {
     {NULL, NULL},
 };
 
@@ -49,13 +49,13 @@ void lua_load_geom(lua_State *L)
 {
     create_class(L,
             geom_meta,
-            geom_f,
-            geom_m,
+            geom_static_methods,
+            geom_methods,
             geom_setter,
             geom_getter,
             CONFIG_GEOMETRY);
 
-    luaL_newlib(L, geom_f);
+    luaL_newlib(L, geom_static_methods);
     lua_setglobal(L, "Geom");
 }
 
@@ -66,7 +66,7 @@ struct wlr_box *check_geometry(lua_State *L, int argn)
     return (struct wlr_box *)*ud;
 }
 
-// functions
+// static methods
 // methods
 // getter
 int lib_geometry_get_x(lua_State *L)

@@ -14,13 +14,13 @@ static const struct luaL_Reg ring_buffer_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg ring_buffer_f[] =
+static const struct luaL_Reg ring_buffer_static_methods[] =
 {
     {"new", lib_ring_buffer_new},
     {NULL, NULL},
 };
 
-static const struct luaL_Reg ring_buffer_m[] =
+static const struct luaL_Reg ring_buffer_methods[] =
 {
     {"get", lib_ring_buffer_get},
     {"next", lib_ring_buffer_next},
@@ -42,20 +42,20 @@ void lua_load_ring_buffer(lua_State *L)
 {
     create_class(L,
             ring_buffer_meta,
-            ring_buffer_f,
-            ring_buffer_m,
+            ring_buffer_static_methods,
+            ring_buffer_methods,
             ring_buffer_setter,
             ring_buffer_getter,
             CONFIG_RING_BUFFER);
     create_class(L,
             ring_buffer_meta_gc,
-            ring_buffer_f,
-            ring_buffer_m,
+            ring_buffer_static_methods,
+            ring_buffer_methods,
             ring_buffer_setter,
             ring_buffer_getter,
             CONFIG_RING_BUFFER_GC);
 
-    luaL_newlib(L, ring_buffer_f);
+    luaL_newlib(L, ring_buffer_static_methods);
     lua_setglobal(L, "Ring");
 }
 
@@ -94,7 +94,7 @@ int lib_ring_buffer_gc(lua_State *L)
     destroy_ring_buffer(ring_buffer);
     return 0;
 }
-// functions
+// static methods
 int lib_ring_buffer_new(lua_State *L)
 {
     GPtrArray *names = g_ptr_array_new();

@@ -7,7 +7,7 @@ struct server;
 void create_lua_server(struct server *server);
 void lua_load_server(lua_State *L);
 
-// functions
+// static methods
 int lib_server_get_focused_tag(lua_State *L);
 int lib_server_get_tags(lua_State *L);
 int lib_server_quit(lua_State *L);

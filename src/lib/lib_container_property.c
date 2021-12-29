@@ -10,12 +10,12 @@ static const struct luaL_Reg container_property_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg container_property_f[] =
+static const struct luaL_Reg container_property_static_methods[] =
 {
     {NULL, NULL},
 };
 
-static const struct luaL_Reg container_property_m[] =
+static const struct luaL_Reg container_property_methods[] =
 {
     {NULL, NULL},
 };
@@ -38,13 +38,13 @@ void lua_load_container_property(lua_State *L)
 {
     create_class(L,
             container_property_meta,
-            container_property_f,
-            container_property_m,
+            container_property_static_methods,
+            container_property_methods,
             container_property_setter,
             container_property_getter,
             CONFIG_CONTAINER_PROPERTY);
 
-    luaL_newlib(L, container_property_f);
+    luaL_newlib(L, container_property_static_methods);
     lua_setglobal(L, "Container_property");
 }
 
@@ -64,7 +64,7 @@ void create_lua_container_property(lua_State *L, struct container_property *cont
     luaL_setmetatable(L, CONFIG_CONTAINER_PROPERTY);
 }
 
-// functions
+// static methods
 // methods
 // getter
 int lib_container_property_get_geometry(lua_State *L)

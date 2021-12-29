@@ -21,7 +21,7 @@ static const struct luaL_Reg container_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg container_f[] =
+static const struct luaL_Reg container_static_methods[] =
 {
     {NULL, NULL},
 };
@@ -37,7 +37,7 @@ static const struct luaL_Reg container_static_setter[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg container_m[] = {
+static const struct luaL_Reg container_methods[] = {
     {"focus", lib_container_focus},
     {"kill", lib_container_kill},
     {"toggle_add_sticky", lib_container_toggle_add_sticky},
@@ -81,15 +81,15 @@ void lua_load_container(lua_State *L)
 {
     create_class(L,
             container_meta,
-            container_f,
-            container_m,
+            container_static_methods,
+            container_methods,
             container_setter,
             container_getter,
             CONFIG_CONTAINER);
 
     create_static_accessor(L,
             "Container",
-            container_f,
+            container_static_methods,
             container_static_setter,
             container_static_getter);
 }

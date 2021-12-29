@@ -21,7 +21,7 @@ static const struct luaL_Reg info_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg info_f[] =
+static const struct luaL_Reg info_static_methods[] =
 {
     {"get_active_layout", lib_layout_get_layout_name},
     {"get_container_under_cursor", lib_get_container_under_cursor},
@@ -34,7 +34,7 @@ static const struct luaL_Reg info_f[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg info_m[] =
+static const struct luaL_Reg info_methods[] =
 {
     {NULL, NULL},
 };
@@ -53,13 +53,13 @@ void lua_load_info(lua_State *L)
 {
     create_class(L,
             info_meta,
-            info_f,
-            info_m,
+            info_static_methods,
+            info_methods,
             info_setter,
             info_getter,
             CONFIG_INFO);
 
-    luaL_newlib(L, info_f);
+    luaL_newlib(L, info_static_methods);
     lua_setglobal(L, "Info");
 }
 

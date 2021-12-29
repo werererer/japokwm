@@ -27,13 +27,13 @@ static const struct luaL_Reg bitset_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg bitset_f[] =
+static const struct luaL_Reg bitset_static_methods[] =
 {
     {"new", lib_bitset_new},
     {NULL, NULL},
 };
 
-static const struct luaL_Reg bitset_m[] =
+static const struct luaL_Reg bitset_methods[] =
 {
     {"_xor", lib_bitset_xor},
     {"_and", lib_bitset_and},
@@ -56,32 +56,32 @@ void lua_load_bitset(lua_State *L)
 {
     create_class(L,
             bitset_meta,
-            bitset_f,
-            bitset_m,
+            bitset_static_methods,
+            bitset_methods,
             bitset_setter,
             bitset_getter,
             CONFIG_BITSET);
 
     create_class(L,
             bitset_meta,
-            bitset_f,
-            bitset_m,
+            bitset_static_methods,
+            bitset_methods,
             bitset_setter,
             bitset_getter,
             CONFIG_BITSET_WITH_TAG);
 
     create_class(L,
             bitset_meta,
-            bitset_f,
-            bitset_m,
+            bitset_static_methods,
+            bitset_methods,
             bitset_setter,
             bitset_getter,
             CONFIG_BITSET_WITH_CONTAINER);
 
     create_class(L,
             bitset_meta,
-            bitset_f,
-            bitset_m,
+            bitset_static_methods,
+            bitset_methods,
             bitset_setter,
             bitset_getter,
             CONFIG_BITSET_GC);
@@ -89,7 +89,7 @@ void lua_load_bitset(lua_State *L)
     luaL_setfuncs(L, bitset_gc_meta, 0);
     lua_pop(L, 1);
 
-    luaL_newlib(L, bitset_f);
+    luaL_newlib(L, bitset_static_methods);
     lua_setglobal(L, "Bitset");
 }
 
@@ -279,7 +279,7 @@ int lib_bitset_tostring(lua_State *L)
     return 1;
 }
 
-// functions
+// static methods
 int lib_bitset_new(lua_State *L)
 {
     BitSet *bitset = bitset_create();

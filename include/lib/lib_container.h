@@ -12,7 +12,7 @@ void create_lua_container(lua_State *L, struct container *con);
 void lua_load_container(lua_State *L);
 struct container *check_container(lua_State *L, int argn);
 
-// functions
+// static methods
 int lib_container_is_equal(lua_State *L);
 int lib_container_focus(lua_State *L);
 

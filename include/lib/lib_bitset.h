@@ -41,7 +41,7 @@ int lib_bitset_meta_bnot(lua_State * L);
 int lib_bitset_gc(lua_State *L);
 int lib_bitset_tostring(lua_State *L);
 
-// functions
+// static methods
 int lib_bitset_new(lua_State *L);
 // methods
 int lib_bitset_and(lua_State *L);

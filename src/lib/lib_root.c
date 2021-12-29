@@ -9,12 +9,12 @@ static const struct luaL_Reg root_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg root_f[] =
+static const struct luaL_Reg root_static_methods[] =
 {
     {NULL, NULL},
 };
 
-static const struct luaL_Reg root_m[] =
+static const struct luaL_Reg root_methods[] =
 {
     {NULL, NULL},
 };
@@ -34,13 +34,13 @@ void lua_load_root(lua_State *L)
 {
     create_class(L,
             root_meta,
-            root_f,
-            root_m,
+            root_static_methods,
+            root_methods,
             root_setter,
             root_getter,
             CONFIG_ROOT);
 
-    luaL_newlib(L, root_f);
+    luaL_newlib(L, root_static_methods);
     lua_setglobal(L, "Root");
 }
 
@@ -58,7 +58,7 @@ void create_lua_root(lua_State *L, struct root *root)
     luaL_setmetatable(L, CONFIG_ROOT);
 }
 
-// functions
+// static methods
 // methods
 // getter
 // setter

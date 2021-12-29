@@ -11,12 +11,12 @@ static const struct luaL_Reg server_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg server_f[] =
+static const struct luaL_Reg server_static_methods[] =
 {
     {NULL, NULL},
 };
 
-static const struct luaL_Reg server_m[] =
+static const struct luaL_Reg server_methods[] =
 {
     {"get_tag", lib_server_get_tags},
     {"get_focused_tag", lib_server_get_focused_tag},
@@ -50,8 +50,8 @@ void lua_load_server(lua_State *L)
 {
     create_class(L,
             server_meta,
-            server_f,
-            server_m,
+            server_static_methods,
+            server_methods,
             server_setter,
             server_getter,
             CONFIG_SERVER);
@@ -59,7 +59,7 @@ void lua_load_server(lua_State *L)
     create_lua_server(&server);
     lua_setglobal(L, "server");
 
-    luaL_newlib(L, server_f);
+    luaL_newlib(L, server_static_methods);
     lua_setglobal(L, "Server");
 }
 
@@ -69,7 +69,7 @@ static struct server *check_server(lua_State *L) {
     return (struct server *)*ud;
 }
 
-// functions
+// static methods
 int lib_server_get_focused_tag(lua_State *L)
 {
     struct tag *tag = server_get_selected_tag();

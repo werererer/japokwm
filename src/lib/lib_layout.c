@@ -27,14 +27,14 @@ static const struct luaL_Reg layout_static_setter[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg layout_f[] =
+static const struct luaL_Reg layout_static_methods[] =
 {
     {"load", lib_layout_load},
     {"toggle", lib_layout_toggle},
     {NULL, NULL},
 };
 
-static const struct luaL_Reg layout_m[] = {
+static const struct luaL_Reg layout_methods[] = {
     {"decrease_n_master", lib_decrease_n_master},
     {"increase_n_master", lib_increase_n_master},
     {"set", lib_layout_set_layout},
@@ -86,15 +86,15 @@ void lua_load_layout(lua_State *L)
 {
     create_class(L,
             layout_meta,
-            layout_f,
-            layout_m,
+            layout_static_methods,
+            layout_methods,
             layout_setter,
             layout_getter,
             CONFIG_LAYOUT);
 
     create_static_accessor(L,
             "Layout",
-            layout_f,
+            layout_static_methods,
             layout_static_setter,
             layout_static_getter);
 }
@@ -106,7 +106,7 @@ struct layout *check_layout(lua_State *L, int argn)
     return (struct layout *)*ud;
 }
 
-// functions
+// static methods
 int lib_layout_load(lua_State *L)
 {
     const char *layout_name = luaL_checkstring(L, -1);

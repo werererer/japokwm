@@ -18,12 +18,12 @@ static const struct luaL_Reg list2D_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg list2D_f[] =
+static const struct luaL_Reg list2D_static_methods[] =
 {
     {NULL, NULL},
 };
 
-static const struct luaL_Reg list2D_m[] = {
+static const struct luaL_Reg list2D_methods[] = {
     {"find", lib_list2D_find},
     {"get", lib_list2D_get},
     {"repush", lib_list2D_repush},
@@ -56,13 +56,13 @@ void lua_load_list2D(lua_State *L)
 {
     create_class(L,
             list2D_meta,
-            list2D_f,
-            list2D_m,
+            list2D_static_methods,
+            list2D_methods,
             list2D_setter,
             list2D_getter,
             CONFIG_LIST2D);
 
-    luaL_newlib(L, list2D_f);
+    luaL_newlib(L, list2D_static_methods);
     lua_setglobal(L, "List2D");
 }
 
@@ -73,7 +73,7 @@ GPtrArray *check_list2D(lua_State *L, int argn)
     return (GPtrArray *)*ud;
 }
 
-// functions
+// static methods
 int lib_list2D_to_array(lua_State *L)
 {
     GPtrArray *array = check_list2D(L, 1);

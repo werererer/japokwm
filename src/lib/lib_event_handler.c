@@ -11,13 +11,13 @@ static const struct luaL_Reg event_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg event_f[] =
+static const struct luaL_Reg event_static_methods[] =
 {
     {"add_listener", lib_add_listener},
     {NULL, NULL},
 };
 
-static const struct luaL_Reg event_m[] =
+static const struct luaL_Reg event_methods[] =
 {
     {NULL, NULL},
 };
@@ -45,13 +45,13 @@ void lua_load_events(lua_State *L)
 {
     create_class(L,
             event_meta,
-            event_f,
-            event_m,
+            event_static_methods,
+            event_methods,
             event_setter,
             event_getter,
             CONFIG_EVENT);
 
-    luaL_newlib(L, event_f);
+    luaL_newlib(L, event_static_methods);
     lua_setglobal(L, "Event");
 }
 

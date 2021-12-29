@@ -66,8 +66,6 @@ srcs = files(
     'lib/lib_root.c',
     'lib/lib_tag.c',
     'lib/lib_container_property.c',
-    'lib/local_event_handler.c',
-    'lib/local_options.c',
     'lib/lib_container_list.c',
     'lib/lib_container_property_list.c',
     'ring_buffer.c',
