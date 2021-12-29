@@ -180,8 +180,6 @@ void monitor_focus_tags(struct monitor *m, struct tag *tag, BitSet *tags)
     assert(tags != NULL);
 
     push_tagset(tag, tags);
-
-    printf("monitor focus tags\n");
 }
 
 void tag_write_to_focus_stacks(struct tag *tag)
@@ -346,7 +344,6 @@ static void _set_previous_tagset(struct tag *tag)
         return;
 
     bitset_assign_bitset(&server.previous_bitset, tag->tags);
-    printf("set previous_tag: %zu\n", tag->id);
     server.previous_tag = tag->id;
 }
 

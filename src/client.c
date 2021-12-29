@@ -146,7 +146,6 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
     // FIXME: this is a workaround. We have to fix multimonitor support from
     // the ground up.
     if (!container_viewable_on_monitor(server_get_selected_monitor(), c->con)) {
-        printf("not same tag return\n");
         return;
     }
 
