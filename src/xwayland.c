@@ -151,7 +151,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     LISTEN(&xwayland_surface->surface->events.commit, &c->commit, commit_notify);
 
     struct wlr_box prefered_geom = (struct wlr_box) {
-        .x = c->surface.xwayland->x, 
+        .x = c->surface.xwayland->x,
         .y = c->surface.xwayland->y,
         .width = c->surface.xwayland->width,
         .height = c->surface.xwayland->height,
@@ -160,7 +160,8 @@ void maprequestx11(struct wl_listener *listener, void *data)
     struct wlr_xwayland_surface_size_hints *size_hints = 
         c->surface.xwayland->size_hints;
     if (size_hints) {
-        if (size_hints->width > MIN_CONTAINER_WIDTH && size_hints->height > MIN_CONTAINER_WIDTH) {
+        if (size_hints->width > MIN_CONTAINER_WIDTH
+                && size_hints->height > MIN_CONTAINER_WIDTH) {
             prefered_geom = (struct wlr_box) {
                 .x = size_hints->x,
                 .y = size_hints->y,
@@ -197,7 +198,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 debug_print("is unmanaged\n");
                 struct tag *tag = monitor_get_active_tag(m);
                 if (x11_is_popup_menu(c) || xwayland_surface->parent) {
-                    debug_print("is popup\n");
                     remove_in_composed_list(tag->focus_set->focus_stack_lists, cmp_ptr, con);
                     g_ptr_array_insert(tag->focus_set->focus_stack_normal, 0, con);
 
