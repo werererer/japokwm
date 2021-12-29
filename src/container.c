@@ -760,7 +760,7 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
 
 struct container_property *container_get_property(struct container *con)
 {
-    struct tag *tag = server_get_selected_tag();
+    struct tag *tag = container_get_current_tag(con);
     if (!tag)
         return NULL;
     while (tag->id >= con->properties->len) {
