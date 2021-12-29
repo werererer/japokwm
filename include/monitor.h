@@ -3,7 +3,7 @@
 #include <wayland-server.h>
 #include <wlr/types/wlr_box.h>
 #include <wlr/types/wlr_output_damage.h>
-
+#include "server.h"
 #include "bitset/bitset.h"
 
 struct cursor;
@@ -41,6 +41,11 @@ void transform_monitor(struct monitor *m, enum wl_output_transform transform);
 void update_monitor_geometries();
 
 void monitor_set_selected_tag(struct monitor *m, struct tag *tag);
+
+void handle_output_mgr_apply(struct wl_listener *listener, void *data);
+void handle_output_mgr_test(struct wl_listener *listener, void *data);
+
+void handle_output_mgr_apply_test(struct wlr_output_configuration_v1 *config, bool test);
 
 BitSet *monitor_get_tags(struct monitor *m);
 
