@@ -21,20 +21,24 @@ japokwm-opt(5)
 			<key>-<key>-...<key> <key>-<key>...<key> ... <key>-<key>...<key>
 		```
 		Examples:
-			- "mod-q s a mod-d"
-			- "mod-q mod-a g"
-			- "mod-q mod-a"
-			- "mod-q"
-		The simplest keybinding is the last one and means that if you press mod
-		and q at the same time you the function will be called.
-		Keybindings using a space inbetween blocks are chained keybindings. That
-		means in the keybinding mod-q mod-a you have to press first mod-q and
-		then mod-a.
-		If 2 Keybindings are defined where one has a longer chain than the other
-		one and the other being a subset of the first one you can execute the
-		other one by waiting a certain time when the requirement is fullfilled.
-		For example if you have mod-q mod-a and mod-a defined pressing mod-a and
-		waiting a certain amount of time will execute mod-q.
+			- mod-q s a mod-d
+			- mod-q mod-a g
+			- mod-q mod-a
+			- mod-q
+
+		The simplest keybinding is the last one and means that if you ++
+press mod and q at the same time you the function will be called.++
+++
+Keybindings using a space inbetween blocks are chained keybindings. That ++
+means in the keybinding *mod-q mod-a* you have to press first mod-q and ++
+then *mod-a*.++
+++
+If 2 Keybindings are defined where one has a longer chain than the other ++
+one and the other being a subset of the first one you can execute the ++
+other one by waiting a certain time when the requirement is fullfilled. ++
+++
+For example if you have *mod-q mod-a* and *mod-a* defined pressing *mod-a* and ++
+waiting a certain amount of time will execute *mod-q*.
 	
 	set_layout_constraints(constraints)
 		set the minimum ratio the slave can have
