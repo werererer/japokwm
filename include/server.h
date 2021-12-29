@@ -90,8 +90,8 @@ struct server {
     struct wl_listener new_xdg_surface;
     struct wl_listener new_layer_shell_surface;
     struct wl_listener new_pointer_constraint;
-	  struct wl_listener output_mgr_apply;
-	  struct wl_listener output_mgr_test;
+    struct wl_listener output_mgr_apply;
+    struct wl_listener output_mgr_test;
 
     // TODO: give them a more sensible name they are here to fix a bug for
     // sloppy focus
