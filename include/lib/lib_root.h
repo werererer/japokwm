@@ -9,7 +9,7 @@ struct root;
 void create_lua_root(lua_State *L, struct root *root);
 void lua_load_root(lua_State *L);
 
-// functions
+// static methods
 // methods
 int lib_root_get_area(lua_State *L);
 // getters

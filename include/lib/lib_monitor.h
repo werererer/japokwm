@@ -5,7 +5,7 @@
 
 void lua_load_monitor(lua_State *L);
 
-// functions
+// static methods
 int lib_monitor_get_focused(lua_State *L);
 // methods
 

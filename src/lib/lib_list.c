@@ -115,7 +115,7 @@ int lib_list_gc(lua_State *L)
     return 0;
 }
 
-// functions
+// static methods
 // methods
 int lib_list_find(lua_State *L)
 {

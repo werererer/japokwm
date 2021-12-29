@@ -94,7 +94,7 @@ int lib_ring_buffer_gc(lua_State *L)
     destroy_ring_buffer(ring_buffer);
     return 0;
 }
-// functions
+// static methods
 int lib_ring_buffer_new(lua_State *L)
 {
     GPtrArray *names = g_ptr_array_new();

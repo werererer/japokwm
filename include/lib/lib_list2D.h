@@ -11,7 +11,7 @@ void lua_load_list2D(lua_State *L);
 
 GPtrArray *check_list2D(lua_State *L, int argn);
 
-// functions
+// static methods
 int lib_list2D_to_array(lua_State *L);
 
 // methods

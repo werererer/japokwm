@@ -12,7 +12,7 @@ void create_lua_ring_buffer(lua_State *L, struct ring_buffer *ring_buffer);
 
 int lib_ring_buffer_gc(lua_State *L);
 
-// functions
+// static methods
 int lib_ring_buffer_new(lua_State *L);
 // methods
 int lib_ring_buffer_get(lua_State *L);

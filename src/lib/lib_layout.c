@@ -106,7 +106,7 @@ struct layout *check_layout(lua_State *L, int argn)
     return (struct layout *)*ud;
 }
 
-// functions
+// static methods
 int lib_layout_load(lua_State *L)
 {
     const char *layout_name = luaL_checkstring(L, -1);

@@ -10,7 +10,7 @@ void create_lua_layout(lua_State *L, struct layout *layout);
 void lua_init_layout(struct layout *layout);
 void lua_load_layout(lua_State *L);
 
-// functions
+// static methods
 int lib_layout_load(lua_State *L);
 int lib_layout_toggle(lua_State *L);
 // methods

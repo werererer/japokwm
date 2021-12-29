@@ -279,7 +279,7 @@ int lib_bitset_tostring(lua_State *L)
     return 1;
 }
 
-// functions
+// static methods
 int lib_bitset_new(lua_State *L)
 {
     BitSet *bitset = bitset_create();

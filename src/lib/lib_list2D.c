@@ -73,7 +73,7 @@ GPtrArray *check_list2D(lua_State *L, int argn)
     return (GPtrArray *)*ud;
 }
 
-// functions
+// static methods
 int lib_list2D_to_array(lua_State *L)
 {
     GPtrArray *array = check_list2D(L, 1);
