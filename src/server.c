@@ -470,6 +470,13 @@ void server_set_selected_monitor(struct monitor *m)
     server.selected_monitor = m;
 }
 
+void server_center_default_cursor_in_monitor(struct monitor *m)
+{
+    struct seat *seat = input_manager_get_default_seat();
+    struct cursor *cursor = seat->cursor;
+    center_cursor_in_monitor(cursor, m);
+}
+
 struct tag *server_get_selected_tag()
 {
     struct monitor *m = server_get_selected_monitor();
