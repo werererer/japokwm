@@ -880,8 +880,7 @@ struct wlr_box *container_get_tiled_geom_at_tag(struct container *con, struct ta
 
 struct wlr_box *container_get_tiled_geom(struct container *con)
 {
-    struct monitor *m = container_get_monitor(con);
-    struct tag *tag = monitor_get_active_tag(m);
+    struct tag *tag = container_get_current_tag(con);
     if (!tag)
         return NULL;
 
@@ -899,8 +898,7 @@ struct wlr_box *container_get_floating_geom_at_tag(struct container *con, struct
 
 struct wlr_box *container_get_floating_geom(struct container *con)
 {
-    struct monitor *m = container_get_monitor(con);
-    struct tag *tag = monitor_get_active_tag(m);
+    struct tag *tag = container_get_current_tag(con);
     if (!tag) {
         return NULL;
     }
@@ -926,7 +924,7 @@ struct wlr_box *container_get_current_geom_at_tag(struct container *con, struct 
 
 struct wlr_box *container_get_current_geom(struct container *con)
 {
-    struct tag *tag = server_get_selected_tag();
+    struct tag *tag = container_get_current_tag(con);
     struct wlr_box *geom = container_get_current_geom_at_tag(con, tag);
     return geom;
 }
@@ -1034,17 +1032,27 @@ int get_position_in_container_stack(struct container *con)
 
 struct tag *container_get_current_tag(struct container *con)
 {
-    container_get_monitor(con);
+    // why prioritize the selected monitor/therefore the selected tag
+    struct monitor *sel_m = server_get_selected_monitor();
+    struct tag *sel_tag = monitor_get_active_tag(sel_m);
+    if (tagset_exist_on(sel_m, con)) {
+        return sel_tag;
+    }
+
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
-
-        struct tag *tag = monitor_get_active_tag(m);
-        if (!tag)
+        // this prevents the selected monitor from being checked twice the it is
+        // just for optimization
+        if (m == sel_m) {
             continue;
+        }
 
-        if (bitset_test(tag->tags, con->tag_id))
+        if (tagset_exist_on(m, con)) {
+            struct tag *tag = monitor_get_active_tag(m);
             return tag;
+        }
     }
+
     return NULL;
 }
 
