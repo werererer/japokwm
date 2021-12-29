@@ -362,6 +362,7 @@ BitSet *monitor_get_tags(struct monitor *m)
 
 void center_cursor_in_monitor(struct cursor *cursor, struct monitor *m)
 {
+    printf("center cursor in monitor\n");
     if (!m)
         return;
 
@@ -398,9 +399,6 @@ void focus_monitor(struct monitor *m)
     if (server_get_selected_monitor() == m)
         return;
 
-    /* wlr_xwayland_set_seat(server.xwayland.wlr_xwayland, m->wlr_output.) */
-
-    // move floating containers over
     struct tag *tag = monitor_get_active_tag(m);
     tagset_focus_tags(tag, tag->tags);
     server_set_selected_monitor(m);

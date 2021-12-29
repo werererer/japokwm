@@ -131,6 +131,8 @@ bool server_is_keycombo(const char *key_combo_name);
 struct monitor *server_get_selected_monitor();
 void server_set_selected_monitor(struct monitor *m);
 
+void server_center_default_cursor_in_monitor(struct monitor *m);
+
 struct tag *server_get_selected_tag();
 struct layout *server_get_selected_layout();
 #endif /* SERVER_H */
