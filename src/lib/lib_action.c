@@ -36,7 +36,7 @@ static const struct luaL_Reg action_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg action_f[] =
+static const struct luaL_Reg action_static_methods[] =
 {
     {"arrange", lib_arrange},
     {"async_exec", lib_async_exec},
@@ -80,13 +80,13 @@ void lua_load_action(lua_State *L)
 {
     create_class(L,
             action_meta,
-            action_f,
+            action_static_methods,
             action_m,
             action_setter,
             action_getter,
             CONFIG_ACTION);
 
-    luaL_newlib(L, action_f);
+    luaL_newlib(L, action_static_methods);
     lua_setglobal(L, "Action");
 }
 

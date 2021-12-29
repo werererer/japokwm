@@ -11,7 +11,7 @@ static const struct luaL_Reg server_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg server_f[] =
+static const struct luaL_Reg server_static_methods[] =
 {
     {NULL, NULL},
 };
@@ -50,7 +50,7 @@ void lua_load_server(lua_State *L)
 {
     create_class(L,
             server_meta,
-            server_f,
+            server_static_methods,
             server_m,
             server_setter,
             server_getter,
@@ -59,7 +59,7 @@ void lua_load_server(lua_State *L)
     create_lua_server(&server);
     lua_setglobal(L, "server");
 
-    luaL_newlib(L, server_f);
+    luaL_newlib(L, server_static_methods);
     lua_setglobal(L, "Server");
 }
 

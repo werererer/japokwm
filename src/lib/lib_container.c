@@ -21,7 +21,7 @@ static const struct luaL_Reg container_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg container_f[] =
+static const struct luaL_Reg container_static_methods[] =
 {
     {NULL, NULL},
 };
@@ -81,7 +81,7 @@ void lua_load_container(lua_State *L)
 {
     create_class(L,
             container_meta,
-            container_f,
+            container_static_methods,
             container_m,
             container_setter,
             container_getter,
@@ -89,7 +89,7 @@ void lua_load_container(lua_State *L)
 
     create_static_accessor(L,
             "Container",
-            container_f,
+            container_static_methods,
             container_static_setter,
             container_static_getter);
 }

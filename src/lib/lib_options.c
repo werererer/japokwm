@@ -23,7 +23,7 @@ static const struct luaL_Reg options_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg options_f[] = 
+static const struct luaL_Reg options_static_methods[] = 
 {
     {"reload", lib_reload},
     {NULL, NULL},
@@ -90,13 +90,13 @@ void lua_load_options(lua_State *L)
 {
     create_class(L,
             options_meta,
-            options_f,
+            options_static_methods,
             options_m,
             options_setter,
             options_getter,
             CONFIG_OPTIONS);
 
-    luaL_newlib(L, options_f);
+    luaL_newlib(L, options_static_methods);
     lua_setglobal(L, "Options");
 }
 

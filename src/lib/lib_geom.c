@@ -8,7 +8,7 @@ static const struct luaL_Reg geom_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg geom_f[] =
+static const struct luaL_Reg geom_static_methods[] =
 {
     {NULL, NULL},
 };
@@ -49,13 +49,13 @@ void lua_load_geom(lua_State *L)
 {
     create_class(L,
             geom_meta,
-            geom_f,
+            geom_static_methods,
             geom_m,
             geom_setter,
             geom_getter,
             CONFIG_GEOMETRY);
 
-    luaL_newlib(L, geom_f);
+    luaL_newlib(L, geom_static_methods);
     lua_setglobal(L, "Geom");
 }
 
