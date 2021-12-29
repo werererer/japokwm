@@ -13,10 +13,10 @@ end
 
 layout:set(layout_data)
 event:add_listener("on_update", update)
+layout:set_linked_layouts({"three_columns"})
 layout:set_master_layout_data(
-{{{0, 0, 1, 1}}, {{0, 0, 0.5, 1}, {0.5, 0, 0.5, 1}}}
+{{{0, 0, 1, 1}}, {{0, 0, 1, 0.5}, {0, 0.5, 1, 0.5}}}
 )
-layout:set_linked_layouts({"tile"})
 opt.hidden_edges = Direction.all
 opt.inner_gaps = 0
 opt.outer_gaps = 0
