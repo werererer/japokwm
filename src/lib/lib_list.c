@@ -29,7 +29,7 @@ static const struct luaL_Reg list_static_methods[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg list_m[] = {
+static const struct luaL_Reg list_methods[] = {
     {"find", lib_list_find},
     {"repush", lib_list_repush},
     {"swap", lib_list_swap},
@@ -85,7 +85,7 @@ void lua_load_list(lua_State *L)
     create_class(L,
             list_meta,
             list_static_methods,
-            list_m,
+            list_methods,
             list_setter,
             list_getter,
             CONFIG_LIST);

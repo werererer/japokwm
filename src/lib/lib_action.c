@@ -61,7 +61,7 @@ static const struct luaL_Reg action_static_methods[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg action_m[] =
+static const struct luaL_Reg action_methods[] =
 {
     {NULL, NULL},
 };
@@ -81,7 +81,7 @@ void lua_load_action(lua_State *L)
     create_class(L,
             action_meta,
             action_static_methods,
-            action_m,
+            action_methods,
             action_setter,
             action_getter,
             CONFIG_ACTION);
