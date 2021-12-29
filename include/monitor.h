@@ -43,9 +43,9 @@ void update_monitor_geometries();
 
 void monitor_set_selected_tag(struct monitor *m, struct tag *tag);
 
-static void handle_output_mgr_apply(struct wl_listener *listener, void *data);
-static void handle_output_mgr_test(struct wl_listener *listener, void *data);
-static void handle_output_mgr_apply_test(struct wlr_output_configuration_v1 *config, bool test);
+void handle_output_mgr_apply(struct wl_listener *listener, void *data);
+void handle_output_mgr_test(struct wl_listener *listener, void *data);
+void handle_output_mgr_apply_test(struct wlr_output_configuration_v1 *config, bool test);
 
 BitSet *monitor_get_tags(struct monitor *m);
 
