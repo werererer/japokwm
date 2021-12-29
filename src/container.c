@@ -786,7 +786,7 @@ struct container_property *container_get_property_at_tag(
 
 void container_set_current_geom(struct container *con, struct wlr_box *geom)
 {
-    struct tag *tag = server_get_selected_tag();
+    struct tag *tag = container_get_current_tag(con);
     struct layout *lt = tag_get_layout(tag);
     if (container_is_tiled(con) || lt->options->arrange_by_focus) {
         container_set_tiled_geom(con, geom);
@@ -861,7 +861,7 @@ void container_set_floating_geom_at_tag(struct container *con,
 
 void container_set_floating_geom(struct container *con, struct wlr_box *geom)
 {
-    struct tag *tag = server_get_selected_tag();
+    struct tag *tag = container_get_current_tag(con);
     container_set_floating_geom_at_tag(con, geom, tag);
 }
 
@@ -973,8 +973,7 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
     }
     container_set_floating_geom(con, &geom);
 
-    struct monitor *m = server_get_selected_monitor();
-    struct tag *tag = monitor_get_active_tag(m);
+    struct tag *tag = container_get_current_tag(con);
     struct layout *lt = tag_get_layout(tag);
     container_set_border_width(con, lt->options->float_border_px);
 
