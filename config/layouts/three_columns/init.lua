@@ -44,6 +44,6 @@ local layout_data = {
 }
 
 layout:set(layout_data)
+layout:set_linked_layouts({"two_pane"})
 opt.resize_direction = Direction.right
 opt.hidden_edges = Direction.all
-opt.float_border_width = 14
