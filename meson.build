@@ -37,6 +37,7 @@ else
   add_project_arguments('-DDEBUG=0'.format(version), language: 'c')
 endif
 
+
 datadir = get_option('datadir')
 install_data(
     'japokwm.desktop',

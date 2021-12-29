@@ -8,6 +8,7 @@
 #include <wayland-server-core.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/types/wlr_relative_pointer_v1.h>
+#include <wlr/types/wlr_output_management_v1.h>
 #include <glib.h>
 #include <pthread.h>
 
@@ -38,6 +39,7 @@ struct server {
     struct wlr_relative_pointer_manager_v1 *relative_pointer_mgr;
     struct wlr_input_inhibit_manager *input_inhibitor_mgr;
     struct wlr_pointer_constraints_v1 *pointer_constraints;
+    struct wlr_output_manager_v1 *output_mgr;
 
     struct layout *default_layout;
     struct ring_buffer *default_layout_ring;
@@ -88,6 +90,8 @@ struct server {
     struct wl_listener new_xdg_surface;
     struct wl_listener new_layer_shell_surface;
     struct wl_listener new_pointer_constraint;
+    struct wl_listener output_mgr_apply;
+    struct wl_listener output_mgr_test;
 
     // TODO: give them a more sensible name they are here to fix a bug for
     // sloppy focus
