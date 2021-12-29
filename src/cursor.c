@@ -461,7 +461,8 @@ void move_resize(struct cursor *cursor, int ui)
     /* Float the window and tell motion_notify to grab it */
     container_set_floating(server.grab_c, container_fix_position, true);
 
-    struct wlr_box *grabc_geom = container_get_current_geom(server.grab_c);
+    struct tag *con_tag = container_get_current_tag(server.grab_c);
+    struct wlr_box *grabc_geom = container_get_current_geom_at_tag(server.grab_c, con_tag);
     struct wlr_cursor *wlr_cursor = cursor->wlr_cursor;
     switch (cursor->cursor_mode = ui) {
         case CURSOR_MOVE:

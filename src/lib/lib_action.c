@@ -254,6 +254,8 @@ int lib_view(lua_State *L)
     lua_pop(L, 1);
 
     tagset_focus_tags(tag, tag->tags);
+    struct monitor *m = tag_get_selected_monitor(tag);
+    server_center_default_cursor_in_monitor(m);
     return 0;
 }
 
@@ -272,6 +274,8 @@ int lib_view_or_tag(lua_State *L)
     } else {
         struct tag *tag = get_tag(i);
         tagset_focus_tag(tag);
+        struct monitor *m = tag_get_selected_monitor(tag);
+        server_center_default_cursor_in_monitor(m);
     }
     server_start_keycombo("_lib_view_or_tag_combo");
     return 0;

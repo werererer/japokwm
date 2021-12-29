@@ -737,7 +737,8 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
     if (!con)
         return;
 
-    struct wlr_box *con_geom = container_get_current_geom(con);
+    struct tag *con_tag = container_get_current_tag(server.grab_c);
+    struct wlr_box *con_geom = container_get_current_geom_at_tag(server.grab_c, con_tag);
     struct wlr_box geom = *con_geom;
     geom.x = cursor->x - offsetx;
     geom.y = cursor->y - offsety;
@@ -749,7 +750,7 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
         container_set_floating(con, container_fix_position, true);
         arrange();
     }
-    container_set_floating_geom(con, &geom);
+    container_set_floating_geom_at_tag(con, &geom, con_tag);
     struct monitor *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     struct layout *lt = tag_get_layout(tag);
@@ -759,7 +760,15 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
 
 struct container_property *container_get_property(struct container *con)
 {
-    struct tag *tag = server_get_selected_tag();
+    struct tag *tag = container_get_current_tag(con);
+    struct container_property *property = container_get_property_at_tag(con, tag);
+    return property;
+}
+
+struct container_property *container_get_property_at_tag(
+        struct container *con,
+        struct tag *tag)
+{
     if (!tag)
         return NULL;
     while (tag->id >= con->properties->len) {
@@ -772,20 +781,9 @@ struct container_property *container_get_property(struct container *con)
     return property;
 }
 
-struct container_property *container_get_property_at_tag(
-        struct container *con,
-        struct tag *tag)
-{
-    if (!tag)
-        return NULL;
-    struct container_property *property =
-        g_ptr_array_index(con->properties, tag->id); 
-    return property;
-}
-
 void container_set_current_geom(struct container *con, struct wlr_box *geom)
 {
-    struct tag *tag = server_get_selected_tag();
+    struct tag *tag = container_get_current_tag(con);
     struct layout *lt = tag_get_layout(tag);
     if (container_is_tiled(con) || lt->options->arrange_by_focus) {
         container_set_tiled_geom(con, geom);
@@ -839,10 +837,11 @@ void container_set_tiled_geom(struct container *con, struct wlr_box *geom)
     *con_geom = *geom;
 }
 
-void container_set_floating_geom(struct container *con, struct wlr_box *geom)
+void container_set_floating_geom_at_tag(struct container *con,
+        struct wlr_box *geom, struct tag *tag)
 {
     struct container_property *property =
-        container_get_property(con);
+        container_get_property_at_tag(con, tag);
 
     if (!property)
         return;
@@ -857,15 +856,16 @@ void container_set_floating_geom(struct container *con, struct wlr_box *geom)
     container_update_size(con);
 }
 
-struct wlr_box *container_get_tiled_geom(struct container *con)
+void container_set_floating_geom(struct container *con, struct wlr_box *geom)
 {
-    struct monitor *m = container_get_monitor(con);
-    struct tag *tag = monitor_get_active_tag(m);
-    if (!tag)
-        return NULL;
+    struct tag *tag = container_get_current_tag(con);
+    container_set_floating_geom_at_tag(con, geom, tag);
+}
 
+struct wlr_box *container_get_tiled_geom_at_tag(struct container *con, struct tag *tag)
+{
     struct container_property *property =
-        g_ptr_array_index(con->properties, tag->id); 
+        g_ptr_array_index(con->properties, tag->id);
 
     struct wlr_box *geom = &property->geom;
 
@@ -875,24 +875,37 @@ struct wlr_box *container_get_tiled_geom(struct container *con)
     return geom;
 }
 
-struct wlr_box *container_get_floating_geom(struct container *con)
+struct wlr_box *container_get_tiled_geom(struct container *con)
 {
-    struct monitor *m = container_get_monitor(con);
-    struct tag *tag = monitor_get_active_tag(m);
-    if (!tag) {
+    struct tag *tag = container_get_current_tag(con);
+    if (!tag)
         return NULL;
-    }
 
+    struct wlr_box *geom = container_get_tiled_geom_at_tag(con, tag);
+    return geom;
+}
+
+struct wlr_box *container_get_floating_geom_at_tag(struct container *con, struct tag *tag)
+{
     struct container_property *property =
         g_ptr_array_index(con->properties, tag->id); 
 
     return container_property_get_floating_geom(property);
 }
 
-struct wlr_box *container_get_current_geom(struct container *con)
+struct wlr_box *container_get_floating_geom(struct container *con)
+{
+    struct tag *tag = container_get_current_tag(con);
+    if (!tag) {
+        return NULL;
+    }
+
+    return container_get_floating_geom_at_tag(con, tag);
+}
+
+struct wlr_box *container_get_current_geom_at_tag(struct container *con, struct tag *tag)
 {
     struct wlr_box *geom = NULL;
-    struct tag *tag = server_get_selected_tag();
     struct layout *lt = tag_get_layout(tag);
     if (container_is_unmanaged(con)) {
         geom = container_get_floating_geom(con);
@@ -903,6 +916,13 @@ struct wlr_box *container_get_current_geom(struct container *con)
     } else {
         geom = container_get_floating_geom(con);
     }
+    return geom;
+}
+
+struct wlr_box *container_get_current_geom(struct container *con)
+{
+    struct tag *tag = container_get_current_tag(con);
+    struct wlr_box *geom = container_get_current_geom_at_tag(con, tag);
     return geom;
 }
 
@@ -950,8 +970,7 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
     }
     container_set_floating_geom(con, &geom);
 
-    struct monitor *m = server_get_selected_monitor();
-    struct tag *tag = monitor_get_active_tag(m);
+    struct tag *tag = container_get_current_tag(con);
     struct layout *lt = tag_get_layout(tag);
     container_set_border_width(con, lt->options->float_border_px);
 
@@ -1005,6 +1024,32 @@ int get_position_in_container_stack(struct container *con)
     guint position = 0;
     g_ptr_array_find(tag->con_set->tiled_containers, con, &position);
     return position;
+}
+
+struct tag *container_get_current_tag(struct container *con)
+{
+    // why prioritize the selected monitor/therefore the selected tag
+    struct monitor *sel_m = server_get_selected_monitor();
+    struct tag *sel_tag = monitor_get_active_tag(sel_m);
+    if (tagset_exist_on(sel_m, con)) {
+        return sel_tag;
+    }
+
+    for (int i = 0; i < server.mons->len; i++) {
+        struct monitor *m = g_ptr_array_index(server.mons, i);
+        // this prevents the selected monitor from being checked twice the it is
+        // just for optimization
+        if (m == sel_m) {
+            continue;
+        }
+
+        if (tagset_exist_on(m, con)) {
+            struct tag *tag = monitor_get_active_tag(m);
+            return tag;
+        }
+    }
+
+    return NULL;
 }
 
 struct container *get_container_from_container_stack_position(int i)
