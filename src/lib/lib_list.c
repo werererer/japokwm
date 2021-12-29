@@ -24,7 +24,7 @@ static const struct luaL_Reg list_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg list_f[] =
+static const struct luaL_Reg list_static_methods[] =
 {
     {NULL, NULL},
 };
@@ -84,13 +84,13 @@ void lua_load_list(lua_State *L)
 {
     create_class(L,
             list_meta,
-            list_f,
+            list_static_methods,
             list_m,
             list_setter,
             list_getter,
             CONFIG_LIST);
 
-    luaL_newlib(L, list_f);
+    luaL_newlib(L, list_static_methods);
     lua_setglobal(L, "List");
 }
 

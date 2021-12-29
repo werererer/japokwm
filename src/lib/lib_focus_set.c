@@ -12,7 +12,7 @@ static const struct luaL_Reg focus_stack_meta[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg focus_stack_f[] =
+static const struct luaL_Reg focus_stack_static_methods[] =
 {
     {NULL, NULL},
 };
@@ -47,13 +47,13 @@ void lua_load_focus_set(lua_State *L)
 {
     create_class(L,
             focus_stack_meta,
-            focus_stack_f,
+            focus_stack_static_methods,
             focus_stack_m,
             focus_stack_setter,
             focus_stack_getter,
             CONFIG_FOCUS_SET);
 
-    luaL_newlib(L, focus_stack_f);
+    luaL_newlib(L, focus_stack_static_methods);
     lua_setglobal(L, "Focus_set");
 }
 

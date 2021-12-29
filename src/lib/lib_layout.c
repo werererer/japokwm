@@ -27,7 +27,7 @@ static const struct luaL_Reg layout_static_setter[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg layout_f[] =
+static const struct luaL_Reg layout_static_methods[] =
 {
     {"load", lib_layout_load},
     {"toggle", lib_layout_toggle},
@@ -86,7 +86,7 @@ void lua_load_layout(lua_State *L)
 {
     create_class(L,
             layout_meta,
-            layout_f,
+            layout_static_methods,
             layout_m,
             layout_setter,
             layout_getter,
@@ -94,7 +94,7 @@ void lua_load_layout(lua_State *L)
 
     create_static_accessor(L,
             "Layout",
-            layout_f,
+            layout_static_methods,
             layout_static_setter,
             layout_static_getter);
 }

@@ -38,7 +38,7 @@ static const struct luaL_Reg tag_static_setter[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg tag_f[] =
+static const struct luaL_Reg tag_static_methods[] =
 {
     {"get", lib_tag_get},
     {"get_next_empty", lib_tag_get_next_empty},
@@ -90,7 +90,7 @@ void lua_load_tag(lua_State *L)
 {
     create_class(L,
             tag_meta,
-            tag_f,
+            tag_static_methods,
             tag_m,
             tag_setter,
             tag_getter,
@@ -98,7 +98,7 @@ void lua_load_tag(lua_State *L)
 
     create_static_accessor(L,
             "Tag",
-            tag_f,
+            tag_static_methods,
             tag_static_setter,
             tag_static_getter);
 }
