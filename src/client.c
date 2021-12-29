@@ -143,8 +143,6 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
     // the surface shall only be focused if the container is visible on the
     // current monitor. Else the focus jumps left and right if we have multiple
     // montiors.
-    // FIXME: this is a workaround. We have to fix multimonitor support from
-    // the ground up.
     if (!container_viewable_on_monitor(server_get_selected_monitor(), c->con)) {
         return;
     }
