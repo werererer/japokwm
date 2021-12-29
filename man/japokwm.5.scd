@@ -49,7 +49,7 @@ files. They differ in the following ways:
 	The objects opt and layout are either layout dependent or global depending
 on the location.
 
-Another way to access things are through static methods and static variables of
+Another way to access things is through static methods and static variables of
 ceratin classes. For example, the Container class has a static variable called
 focused. With this you can access the focused container. e.g.:
 ```
@@ -64,10 +64,7 @@ The best way is to think about what you want to do and then looking for classes
 which sound most useful. Just reading through the documentation may be too
 boring and you may remember nothing.
 
-# LIST OF INTERESTING FEATURES
-
-
-# Terminology
+# TERMINOLOGY
 *container* ++
 an array consisting of 4 floats where they represent the relative x, y, ++
 	width and height respectively
@@ -83,3 +80,6 @@ everything you see when you don't have a window open
 
 *window* ++
 the container and the content you see in it
+
+# LIST OF INTERESTING FEATURES THAT ARE HARD TO FIND ABOUT
+- scratchpad
