@@ -82,9 +82,6 @@ everything you see when you don't have a window open
 *window* ++
 an alias for container used *only* throughout the documentation
 
-*rule* ++
-TODO
-
 # LIST OF INTERESTING FEATURES THAT ARE HARD TO FIND ABOUT
 - scratchpad
 - monitor/container rules

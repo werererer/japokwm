@@ -438,7 +438,7 @@ struct rule *get_config_rule(lua_State *L)
     lua_getfield(L, -1, "class");
     const char *id = get_config_str(L, -1);
     lua_pop(L, 1);
-    lua_getfield(L, -1, "name");
+    lua_getfield(L, -1, "title");
     const char *title = get_config_str(L, -1);
     lua_pop(L, 1);
     lua_getfield(L, -1, "callback");
