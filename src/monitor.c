@@ -485,40 +485,40 @@ void handle_output_mgr_apply_test(
     bool output_ok = true;
 
     wl_list_for_each(config_head, &config->heads, link) {
-	    struct wlr_output *wlr_output = config_head->state.output;
+        struct wlr_output *wlr_output = config_head->state.output;
 
-	    wlr_output_enable(wlr_output, config_head->state.enabled);
+        wlr_output_enable(wlr_output, config_head->state.enabled);
 
-	    if (config_head->state.enabled) {
-			if (config_head->state.mode)
-				wlr_output_set_mode(wlr_output, config_head->state.mode);
-			else
-				wlr_output_set_custom_mode(wlr_output,
-						config_head->state.custom_mode.width,
-						config_head->state.custom_mode.height,
-						config_head->state.custom_mode.refresh);
+        if (config_head->state.enabled) {
+            if (config_head->state.mode)
+                wlr_output_set_mode(wlr_output, config_head->state.mode);
+            else
+		wlr_output_set_custom_mode(wlr_output,
+                        config_head->state.custom_mode.width,
+                        config_head->state.custom_mode.height,
+                        config_head->state.custom_mode.refresh);
 
-			wlr_output_layout_move(server.output_layout, wlr_output,
-					config_head->state.x, config_head->state.y);
-			wlr_output_set_transform(wlr_output, config_head->state.transform);
-			wlr_output_set_scale(wlr_output, config_head->state.scale);
-		}
+            wlr_output_layout_move(server.output_layout, wlr_output,
+                    config_head->state.x, config_head->state.y);
+            wlr_output_set_transform(wlr_output, config_head->state.transform);
+            wlr_output_set_scale(wlr_output, config_head->state.scale);
+        }
 
-		if (test) {
-			output_ok &= wlr_output_test(wlr_output);
+        if (test) {
+            output_ok &= wlr_output_test(wlr_output);
 			wlr_output_rollback(wlr_output);
-                } else{
+        } else{
 			output_ok &= wlr_output_commit(wlr_output);
-                }
-	}
-	if (output_ok) {
-		wlr_output_configuration_v1_send_succeeded(config);
-		if (!test)
-			update_monitor_geometries();
-	}else{
-		wlr_output_configuration_v1_send_failed(config);
-  }
-	wlr_output_configuration_v1_destroy(config);
+        }
+    }
+    if (output_ok) {
+        wlr_output_configuration_v1_send_succeeded(config);
+        if (!test)
+	    update_monitor_geometries();
+    }else{
+        wlr_output_configuration_v1_send_failed(config);
+    }
+    wlr_output_configuration_v1_destroy(config);
 }
 
 void handle_output_mgr_test(struct wl_listener *listener, void *data)
