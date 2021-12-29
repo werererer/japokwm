@@ -55,6 +55,7 @@ if scdoc.found()
     sh = find_program('sh', native: true)
     mandir = get_option('mandir')
     man_files = [
+        'man/japokmsg.1.scd',
         'man/japokwm-action.5.scd',
         'man/japokwm-bitset.5.scd',
         'man/japokwm-color.5.scd',
@@ -62,19 +63,19 @@ if scdoc.found()
         'man/japokwm-cursor.5.scd',
         'man/japokwm-cursor_mode.5.scd',
         'man/japokwm-direction.5.scd',
+        'man/japokwm-event_handler.5.scd',
         'man/japokwm-focus_set.5.scd',
         'man/japokwm-geom.5.scd',
-        'man/japokwm-event_handler.5.scd',
         'man/japokwm-info.5.scd',
         'man/japokwm-layout.5.scd',
         'man/japokwm-list.5.scd',
         'man/japokwm-monitor.5.scd',
         'man/japokwm-options.5.scd',
         'man/japokwm-output_transform.5.scd',
+        'man/japokwm-ring_buffer.5.scd',
         'man/japokwm-root.5.scd',
         'man/japokwm-server.5.scd',
         'man/japokwm-tag.5.scd',
-        'man/japokwm-ring_buffer.5.scd',
         'man/japokwm.1.scd',
         'man/japokwm.5.scd',
     ]
