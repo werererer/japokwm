@@ -49,7 +49,7 @@ void handle_output_mgr_apply_test(struct wlr_output_configuration_v1 *config, bo
 
 BitSet *monitor_get_tags(struct monitor *m);
 
-struct monitor *output_to_monitor(struct wlr_output *output);
+struct monitor *wlr_output_to_monitor(struct wlr_output *output);
 struct monitor *xy_to_monitor(double x, double y);
 struct tag *monitor_get_active_tag(struct monitor *m);
 struct layout *get_layout_in_monitor(struct monitor *m);

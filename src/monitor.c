@@ -418,7 +418,7 @@ void focus_monitor(struct monitor *m)
     server_set_selected_monitor(m);
 }
 
-struct monitor *output_to_monitor(struct wlr_output *output)
+struct monitor *wlr_output_to_monitor(struct wlr_output *output)
 {
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
