@@ -840,18 +840,6 @@ void container_set_tiled_geom(struct container *con, struct wlr_box *geom)
     *con_geom = *geom;
 }
 
-void container_set_current_geom_at_tag(struct container *con,
-        struct wlr_box *geom, struct tag *tag)
-{
-    // TODO: implement me
-}
-
-void container_set_tiled_geom_at_tag(struct container *con,
-        struct wlr_box *geom, struct tag *tag)
-{
-    // TODO: implement me
-}
-
 void container_set_floating_geom_at_tag(struct container *con,
         struct wlr_box *geom, struct tag *tag)
 {
@@ -880,7 +868,7 @@ void container_set_floating_geom(struct container *con, struct wlr_box *geom)
 struct wlr_box *container_get_tiled_geom_at_tag(struct container *con, struct tag *tag)
 {
     struct container_property *property =
-        g_ptr_array_index(con->properties, tag->id); 
+        g_ptr_array_index(con->properties, tag->id);
 
     struct wlr_box *geom = &property->geom;
 
