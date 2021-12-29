@@ -85,7 +85,6 @@ int main(int argc, char **argv) {
 
     static struct option long_options[] = {
         {"help", no_argument, NULL, 'h'},
-        {"pretty", no_argument, NULL, 'p'},
         {"quiet", no_argument, NULL, 'q'},
         {"config", required_argument, NULL, 'c'},
         {"socket", required_argument, NULL, 's'},
