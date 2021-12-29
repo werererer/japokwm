@@ -29,21 +29,35 @@ e.g.: ~/.config/japokwm/layouts/foo/init.lua
 We devide japokwm config files into 2 types. layout local and global config
 files. They differ in the following ways:
 - Global config are executed once per per reload. Starting the window manager
-also counts as a reload.
-- Layout local config are executed every time a layout is loaded
+  also counts as a reload.
+- Layout local config files are executed every time a layout is loaded
 - The objects that are accessible differ:
 	- Layout local config files:
-		- 
+		- event
+			- object of class Event
+		- opt
+			- object of class Options
+		- layout
+			- object of class Layout
 	- Global config files:
-		gl
+		- event
+			- object of class Event
+		- opt
+			- object of class Options
+		- layout
+			- object of class Layout
+	The objects opt and layout are either layout dependent or global depending
+on the location.
 
 Another way to access things are through static methods and static variables of
 ceratin classes. For example, the Container class has a static variable called
 focused. With this you can access the focused container. e.g.:
+```
 -- using a static variable
 local focused_container = Container.focused
 -- using a static method also known as 
 local color_green = Color.new(0.0, 1.0, 0.0, 1.0)
+```
 
 # HOW TO READ DOCUMENTATION
 The best way is to think about what you want to do and then looking for classes
