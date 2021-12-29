@@ -337,7 +337,6 @@ int setup(struct server *server)
     drw = wlr_backend_get_renderer(server->backend);
     wlr_renderer_init_wl_display(drw, server->wl_display);
 
-
     /* This creates some hands-off wlroots interfaces. The compositor is
      * necessary for clients to allocate surfaces and the data device manager
      * handles the clipboard. Each of these wlroots interfaces has room for you
