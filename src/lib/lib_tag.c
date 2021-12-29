@@ -109,7 +109,7 @@ struct tag *check_tag(lua_State *L, int narg) {
     return (struct tag *)*ud;
 }
 
-// functions
+// static methods
 int lib_tag_get_next_empty(lua_State *L)
 {
     enum wlr_direction dir = luaL_checkinteger(L, -1);

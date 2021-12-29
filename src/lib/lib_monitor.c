@@ -67,7 +67,7 @@ static void create_lua_monitor(lua_State *L, struct monitor *m) {
     luaL_setmetatable(L, CONFIG_MONITOR);
 }
 
-// functions
+// static methods
 int lib_monitor_get_focused(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();

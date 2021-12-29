@@ -66,7 +66,7 @@ struct wlr_box *check_geometry(lua_State *L, int argn)
     return (struct wlr_box *)*ud;
 }
 
-// functions
+// static methods
 // methods
 // getter
 int lib_geometry_get_x(lua_State *L)

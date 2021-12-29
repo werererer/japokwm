@@ -10,7 +10,7 @@ void lua_load_container_property(lua_State *L);
 void create_lua_container_property(lua_State *L, struct container_property *container_property);
 struct container_property *check_container_property(lua_State *L, int narg);
 
-// functions
+// static methods
 // methods
 // getter
 int lib_container_property_get_floating(lua_State *L);

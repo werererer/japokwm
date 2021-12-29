@@ -215,7 +215,7 @@ static void create_lua_color(lua_State *L, struct color color)
     luaL_setmetatable(L, CONFIG_COLOR);
 }
 
-// functions
+// static methods
 int lib_color_new(lua_State *L)
 {
     float alpha = luaL_checknumber(L, -1);

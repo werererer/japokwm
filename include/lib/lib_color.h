@@ -4,7 +4,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 
-// functions
+// static methods
 void lua_load_color(lua_State *L);
 int lib_color_new(lua_State *L);
 

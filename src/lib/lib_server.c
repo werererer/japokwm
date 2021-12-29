@@ -69,7 +69,7 @@ static struct server *check_server(lua_State *L) {
     return (struct server *)*ud;
 }
 
-// functions
+// static methods
 int lib_server_get_focused_tag(lua_State *L)
 {
     struct tag *tag = server_get_selected_tag();

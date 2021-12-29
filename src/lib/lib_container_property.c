@@ -64,7 +64,7 @@ void create_lua_container_property(lua_State *L, struct container_property *cont
     luaL_setmetatable(L, CONFIG_CONTAINER_PROPERTY);
 }
 
-// functions
+// static methods
 // methods
 // getter
 int lib_container_property_get_geometry(lua_State *L)

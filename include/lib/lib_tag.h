@@ -13,7 +13,7 @@ void lua_load_tag(lua_State *L);
 
 struct tag *check_tag(lua_State *L, int narg);
 
-// functions
+// static methods
 int lib_tag_get_next_empty(lua_State *L);
 int lib_tag_get(lua_State *L);
 

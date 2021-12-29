@@ -9,7 +9,7 @@ void create_lua_geometry(lua_State *L, struct wlr_box *geom);
 void lua_load_geom(lua_State *L);
 struct wlr_box *check_geometry(lua_State *L, int argn);
 
-// functions
+// static methods
 // methods
 // getter
 int lib_geometry_get_x(lua_State *L);

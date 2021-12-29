@@ -58,7 +58,7 @@ void create_lua_root(lua_State *L, struct root *root)
     luaL_setmetatable(L, CONFIG_ROOT);
 }
 
-// functions
+// static methods
 // methods
 // getter
 // setter
