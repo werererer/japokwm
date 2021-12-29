@@ -362,7 +362,6 @@ BitSet *monitor_get_tags(struct monitor *m)
 
 void center_cursor_in_monitor(struct cursor *cursor, struct monitor *m)
 {
-    printf("center cursor in monitor\n");
     if (!m)
         return;
 
