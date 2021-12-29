@@ -17,7 +17,7 @@ static const struct luaL_Reg event_static_methods[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg event_m[] =
+static const struct luaL_Reg event_methods[] =
 {
     {NULL, NULL},
 };
@@ -46,7 +46,7 @@ void lua_load_events(lua_State *L)
     create_class(L,
             event_meta,
             event_static_methods,
-            event_m,
+            event_methods,
             event_setter,
             event_getter,
             CONFIG_EVENT);

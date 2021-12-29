@@ -14,7 +14,7 @@ static const struct luaL_Reg root_static_methods[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg root_m[] =
+static const struct luaL_Reg root_methods[] =
 {
     {NULL, NULL},
 };
@@ -35,7 +35,7 @@ void lua_load_root(lua_State *L)
     create_class(L,
             root_meta,
             root_static_methods,
-            root_m,
+            root_methods,
             root_setter,
             root_getter,
             CONFIG_ROOT);

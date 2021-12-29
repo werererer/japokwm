@@ -15,7 +15,7 @@ static const struct luaL_Reg container_property_static_methods[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg container_property_m[] =
+static const struct luaL_Reg container_property_methods[] =
 {
     {NULL, NULL},
 };
@@ -39,7 +39,7 @@ void lua_load_container_property(lua_State *L)
     create_class(L,
             container_property_meta,
             container_property_static_methods,
-            container_property_m,
+            container_property_methods,
             container_property_setter,
             container_property_getter,
             CONFIG_CONTAINER_PROPERTY);

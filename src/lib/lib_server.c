@@ -16,7 +16,7 @@ static const struct luaL_Reg server_static_methods[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg server_m[] =
+static const struct luaL_Reg server_methods[] =
 {
     {"get_tag", lib_server_get_tags},
     {"get_focused_tag", lib_server_get_focused_tag},
@@ -51,7 +51,7 @@ void lua_load_server(lua_State *L)
     create_class(L,
             server_meta,
             server_static_methods,
-            server_m,
+            server_methods,
             server_setter,
             server_getter,
             CONFIG_SERVER);

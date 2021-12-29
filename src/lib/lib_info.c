@@ -34,7 +34,7 @@ static const struct luaL_Reg info_static_methods[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg info_m[] =
+static const struct luaL_Reg info_methods[] =
 {
     {NULL, NULL},
 };
@@ -54,7 +54,7 @@ void lua_load_info(lua_State *L)
     create_class(L,
             info_meta,
             info_static_methods,
-            info_m,
+            info_methods,
             info_setter,
             info_getter,
             CONFIG_INFO);

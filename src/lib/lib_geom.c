@@ -13,7 +13,7 @@ static const struct luaL_Reg geom_static_methods[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg geom_m[] = {
+static const struct luaL_Reg geom_methods[] = {
     {NULL, NULL},
 };
 
@@ -50,7 +50,7 @@ void lua_load_geom(lua_State *L)
     create_class(L,
             geom_meta,
             geom_static_methods,
-            geom_m,
+            geom_methods,
             geom_setter,
             geom_getter,
             CONFIG_GEOMETRY);

@@ -13,7 +13,7 @@ static const struct luaL_Reg cursor_static_methods[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg cursor_m[] =
+static const struct luaL_Reg cursor_methods[] =
 {
     {NULL, NULL},
 };
@@ -32,7 +32,7 @@ void lua_load_cursor(lua_State *L)
 {
     create_class(L, cursor_meta,
             cursor_static_methods,
-            cursor_m,
+            cursor_methods,
             cursor_setter,
             cursor_getter,
             CONFIG_CURSOR);

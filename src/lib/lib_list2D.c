@@ -23,7 +23,7 @@ static const struct luaL_Reg list2D_static_methods[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg list2D_m[] = {
+static const struct luaL_Reg list2D_methods[] = {
     {"find", lib_list2D_find},
     {"get", lib_list2D_get},
     {"repush", lib_list2D_repush},
@@ -57,7 +57,7 @@ void lua_load_list2D(lua_State *L)
     create_class(L,
             list2D_meta,
             list2D_static_methods,
-            list2D_m,
+            list2D_methods,
             list2D_setter,
             list2D_getter,
             CONFIG_LIST2D);

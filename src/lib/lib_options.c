@@ -29,7 +29,7 @@ static const struct luaL_Reg options_static_methods[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg options_m[] =
+static const struct luaL_Reg options_methods[] =
 {
     {"add_mon_rule", lib_add_mon_rule},
     {"add_rule", lib_add_rule},
@@ -91,7 +91,7 @@ void lua_load_options(lua_State *L)
     create_class(L,
             options_meta,
             options_static_methods,
-            options_m,
+            options_methods,
             options_setter,
             options_getter,
             CONFIG_OPTIONS);

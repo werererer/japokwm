@@ -34,7 +34,7 @@ static const struct luaL_Reg layout_static_methods[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg layout_m[] = {
+static const struct luaL_Reg layout_methods[] = {
     {"decrease_n_master", lib_decrease_n_master},
     {"increase_n_master", lib_increase_n_master},
     {"set", lib_layout_set_layout},
@@ -87,7 +87,7 @@ void lua_load_layout(lua_State *L)
     create_class(L,
             layout_meta,
             layout_static_methods,
-            layout_m,
+            layout_methods,
             layout_setter,
             layout_getter,
             CONFIG_LAYOUT);

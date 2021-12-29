@@ -20,7 +20,7 @@ static const struct luaL_Reg monitor_static_methods[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg monitor_m[] =
+static const struct luaL_Reg monitor_methods[] =
 {
     {NULL, NULL},
 };
@@ -45,7 +45,7 @@ void lua_load_monitor(lua_State *L)
     create_class(L,
             monitor_meta,
             monitor_static_methods,
-            monitor_m,
+            monitor_methods,
             monitor_setter,
             monitor_getter,
             CONFIG_MONITOR);

@@ -33,7 +33,7 @@ static const struct luaL_Reg bitset_static_methods[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg bitset_m[] =
+static const struct luaL_Reg bitset_methods[] =
 {
     {"_xor", lib_bitset_xor},
     {"_and", lib_bitset_and},
@@ -57,7 +57,7 @@ void lua_load_bitset(lua_State *L)
     create_class(L,
             bitset_meta,
             bitset_static_methods,
-            bitset_m,
+            bitset_methods,
             bitset_setter,
             bitset_getter,
             CONFIG_BITSET);
@@ -65,7 +65,7 @@ void lua_load_bitset(lua_State *L)
     create_class(L,
             bitset_meta,
             bitset_static_methods,
-            bitset_m,
+            bitset_methods,
             bitset_setter,
             bitset_getter,
             CONFIG_BITSET_WITH_TAG);
@@ -73,7 +73,7 @@ void lua_load_bitset(lua_State *L)
     create_class(L,
             bitset_meta,
             bitset_static_methods,
-            bitset_m,
+            bitset_methods,
             bitset_setter,
             bitset_getter,
             CONFIG_BITSET_WITH_CONTAINER);
@@ -81,7 +81,7 @@ void lua_load_bitset(lua_State *L)
     create_class(L,
             bitset_meta,
             bitset_static_methods,
-            bitset_m,
+            bitset_methods,
             bitset_setter,
             bitset_getter,
             CONFIG_BITSET_GC);

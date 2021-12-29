@@ -164,7 +164,7 @@ static const struct luaL_Reg color_static_getter[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg color_m[] =
+static const struct luaL_Reg color_methods[] =
 {
     {NULL, NULL},
 };
@@ -185,7 +185,7 @@ void lua_load_color(lua_State *L)
     create_class(L,
             color_meta,
             color_static_methods,
-            color_m,
+            color_methods,
             color_setter,
             color_getter,
             CONFIG_COLOR);

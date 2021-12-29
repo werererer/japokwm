@@ -45,7 +45,7 @@ static const struct luaL_Reg tag_static_methods[] =
     {NULL, NULL},
 };
 
-static const struct luaL_Reg tag_m[] =
+static const struct luaL_Reg tag_methods[] =
 {
     {"get_id", lib_tag_get_id},
     {"swap", lib_tag_swap},
@@ -91,7 +91,7 @@ void lua_load_tag(lua_State *L)
     create_class(L,
             tag_meta,
             tag_static_methods,
-            tag_m,
+            tag_methods,
             tag_setter,
             tag_getter,
             CONFIG_tag);
