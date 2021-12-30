@@ -2,7 +2,7 @@ japokmsg(1)
 
 # NAME
 
-japokmsg - Send messages to a running instance of sway over the IPC socket.
+japokmsg - Send messages to a running instance of japokwm over the IPC socket.
 
 # SYNOPSIS
 
@@ -12,9 +12,6 @@ japokmsg [options...] [command]
 
 *-h, --help*
 	Show help message and quit.
-
-*-p, --pretty*
-	Use pretty output even when not using a tty.
 
 *-q, --quiet*
 	Sends the IPC message but does not print the response from japokwm.
