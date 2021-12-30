@@ -4,8 +4,7 @@ japokwm-property(5)
 	can only be accessed via a container object
 # Description
 	The property of a container object.
-# Functions
-# Methods
+# Static Methods
 # Variables
 	bool floating = False
 		True if the container is floating, False if not.

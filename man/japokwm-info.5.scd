@@ -4,7 +4,7 @@ japokwm-info(5)
 	class Info
 # Description
 	Access information about the window manager.
-# Functions
+# Static Methods
 	layout get_active_layout()
 		Returns the name of the currently active layout.
 	container get_container_under_cursor()

@@ -4,25 +4,25 @@ japokwm-opt(5)
 	class Options
 # Description
 	define options for japokwm
-# Functions
+# Static Methods
 	reload() - reload japokwm config file
 # Methods
 	add_mon_rule(table)
 		add rules for monitors ++
-		the table $1 has the following keys:
+the table $1 has the following keys:
 			- output
 				- string
-					- lua code that is executed when the
-					output matches
+					- lua code that is executed when the ++
+output matches
 			- callback
 				- function
 					- function that is called when the rule is matched
-		if output is empty the rule will always match
 
+		if output is empty the rule will always match
 
 	add_rule(table)
 		add rules for windows ++
-		the table $1 has the following keys:
+the table $1 has the following keys:
 			- title
 				- string
 					- lua code that is executed when the title matches
@@ -32,6 +32,7 @@ japokwm-opt(5)
 			- callback
 				- function
 					- function that is called when the rule is matched
+
 		if title and class are empty the rule will always match
 
 	bind_key(string, function)
@@ -106,12 +107,12 @@ waiting a certain amount of time will execute *mod-q*.
 		the gaps between the windows.
 
 	int mod = 1
-		the modifier that replaces "m" in a keybinding string.The values
+		the modifier that replaces "mod" in a keybinding string.The values
 		can be either:
-		- 1: replacing "m" with "Alt_L"
-		- 2: replacing "m" with "Num_Lock"
-		- 3: replacing "m" with "ISO_Level3_Shift"
-		- 4: replacing "m" with "Super_L"
+		- 1: replacing "mod" with "Alt_L"
+		- 2: replacing "mod" with "Num_Lock"
+		- 3: replacing "mod" with "ISO_Level3_Shift"
+		- 4: replacing "mod" with "Super_L"
 	
 	int outer_gaps = 0
 		the gaps between the windows and the edge of the screen.
