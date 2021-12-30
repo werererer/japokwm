@@ -1,19 +1,27 @@
 japokwm-cheatsheet(5)
 
 # Description
+These are the default keybindings japokwm will assign loosely ordered by
+importance.
+
+# Keybindings
 mod-S-q
+	quit the window managerx
 	server:quit()
 
 mod-r
 	opt.reload()
 
+mod-S-Return
+	Action.exec("/usr/bin/alacritty")
+
+mod-p
+	Action.exec("rofi -show run")
+
 mod-S-c
 	if Container.focused then
 		Container.focused:kill()
 	end
-
-mod-S-Return
-	Action.exec("/usr/bin/alacritty")
 
 mod-j
 	Action.focus_on_stack(1)
@@ -24,14 +32,62 @@ mod-k
 mod-Return
 	Action.zoom()
 
+mod-t
+	Container.focused.property.floating = false
+
+mod-M1
+	Action.move_resize(Cursor_mode.move)
+
+mod-M2
+	Action.move_resize(Cursor_mode.resize)
+
+M1
+	local con = Info.get_container_under_cursor()
+	if con then
+		con:focus()
+	end
+
 mod-S-h
 	Action.resize_main(-1/10)
 
 mod-S-l
 	Action.resize_main(1/10)
 
-mod-p
-	Action.exec("rofi -show run")
+mod-1
+	Action.view_or_tag(1)
+
+mod-2
+	Action.view_or_tag(2)
+
+mod-3
+	Action.view_or_tag(3)
+
+mod-4
+	Action.view_or_tag(4)
+
+mod-5
+	Action.view_or_tag(5)
+
+mod-6
+	Action.view_or_tag(6)
+
+mod-7
+	Action.view_or_tag(7)
+
+mod-8
+	Action.view_or_tag(8)
+
+mod-9
+	Action.view_or_tag(9)
+
+mod-S-j
+	Action.focus_on_hidden_stack(0)
+
+mod-S-k
+	Action.focus_on_hidden_stack(-1)
+
+mod-b
+	Tag.focused:toggle_bars()
 
 mod-S-1
 	if Container.focused then
@@ -153,65 +209,14 @@ mod-s 7
 mod-s 8
 	Tag.focused:swap_smart(Tag.get(8))
 
-mod-t
-	Container.focused.property.floating = false
-
-mod-M1
-	Action.move_resize(Cursor_mode.move)
-
-mod-M2
-	Action.move_resize(Cursor_mode.resize)
-
-M1
-	local con = Info.get_container_under_cursor()
-	if con then
-		con:focus()
-	end
-
 mod-a
 	Layout.focused:increase_n_master()
 
 mod-x
 	Layout.focused:decrease_n_master()
 
-mod-1
-	Action.view_or_tag(1)
-
-mod-2
-	Action.view_or_tag(2)
-
-mod-3
-	Action.view_or_tag(3)
-
-mod-4
-	Action.view_or_tag(4)
-
-mod-5
-	Action.view_or_tag(5)
-
-mod-6
-	Action.view_or_tag(6)
-
-mod-7
-	Action.view_or_tag(7)
-
-mod-8
-	Action.view_or_tag(8)
-
-mod-9
-	Action.view_or_tag(9)
-
-mod-b
-	Tag.focused:toggle_bars()
-
 mod-m
 	Tag.focused.stack[1]:focus()
-
-mod-S-j
-	Action.focus_on_hidden_stack(0)
-
-mod-S-k
-	Action.focus_on_hidden_stack(-1)
 
 mod-e
 	Action.view(tag.focused:get_next_empty(Direction.right))
