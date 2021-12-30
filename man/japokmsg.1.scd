@@ -2,7 +2,7 @@ japokmsg(1)
 
 # NAME
 
-japokmsg - Send messages to a running instance of sway over the IPC socket.
+japokmsg - Send messages to a running instance of japokwm over the IPC socket.
 
 # SYNOPSIS
 
@@ -30,7 +30,7 @@ japokmsg [options...] [command]
 	Print the version (of japokmsg) and quit.
 
 # Command
-	The command is just lua code that will be executed by japokwm. The scope is
-	Layout local.
+The command is just lua code that will be executed by japokwm. The scope is
+Layout local.
 
 *japokwm*(5)

@@ -7,18 +7,17 @@ japokwm-opt(5)
 # Functions
 	reload() - reload japokwm config file
 # Methods
-	add_mon_rule(table)
+	add_mon_rule(table) ++
 		add rules for monitors ++
 		the table $1 has the following keys:
-			- output
-				- string
-					- lua code that is executed when the
-					output matches
-			- callback
-				- function
-					- function that is called when the rule is matched
+- output
+	- string
+		- lua code that is executed when the
+		output matches
+- callback
+	- function
+		- function that is called when the rule is matched
 		if output is empty the rule will always match
-
 
 	add_rule(table)
 		add rules for windows ++
