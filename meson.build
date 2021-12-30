@@ -55,6 +55,7 @@ if scdoc.found()
     sh = find_program('sh', native: true)
     mandir = get_option('mandir')
     man_files = [
+        'man/japokwm-cheatsheet.5.scd',
         'man/japokmsg.1.scd',
         'man/japokwm-action.5.scd',
         'man/japokwm-bitset.5.scd',
