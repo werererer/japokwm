@@ -3,7 +3,7 @@
 #include "client.h"
 #include "container.h"
 #include "list_sets/container_stack_set.h"
-#include "monitor.h"
+#include "output.h"
 #include "root.h"
 #include "server.h"
 #include "tagset.h"

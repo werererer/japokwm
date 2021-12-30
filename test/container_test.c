@@ -1,6 +1,6 @@
 #include <glib.h>
 
-#include "monitor.h"
+#include "output.h"
 #include "container.h"
 #include "tag.h"
 #include "utils/coreUtils.h"

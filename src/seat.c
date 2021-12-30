@@ -7,7 +7,7 @@
 #include <wlr/types/wlr_primary_selection.h>
 #include <wlr/util/log.h>
 
-#include "monitor.h"
+#include "output.h"
 #include "container.h"
 #include "server.h"
 #include "utils/coreUtils.h"

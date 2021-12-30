@@ -9,7 +9,7 @@
 #include "utils/parseConfigUtils.h"
 #include "stringop.h"
 #include "tag.h"
-#include "monitor.h"
+#include "output.h"
 
 const char *mods[8] = {"Shift_L", "Caps_Lock", "Control_L", "Alt_L", "", "", "Super_L", "ISO_Level3_Shift"};
 const char *modkeys[4] = {"Alt_L", "Num_Lock", "ISO_Level3_Shift", "Super_L"};

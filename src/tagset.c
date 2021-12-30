@@ -12,7 +12,7 @@
 #include "utils/parseConfigUtils.h"
 #include "tile/tileUtils.h"
 #include "ipc-server.h"
-#include "monitor.h"
+#include "output.h"
 #include "cursor.h"
 #include "scratchpad.h"
 #include "list_sets/focus_stack_set.h"

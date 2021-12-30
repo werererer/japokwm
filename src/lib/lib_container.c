@@ -3,7 +3,7 @@
 #include "bitset/bitset.h"
 #include "client.h"
 #include "container.h"
-#include "monitor.h"
+#include "output.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "translationLayer.h"

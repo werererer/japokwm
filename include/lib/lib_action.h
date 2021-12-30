@@ -4,7 +4,7 @@
 #include <lauxlib.h>
 #include <stdint.h>
 
-#include "monitor.h"
+#include "output.h"
 #include "client.h"
 
 void lua_load_action(lua_State *L);

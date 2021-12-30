@@ -22,7 +22,7 @@
 #include "lib/lib_layout.h"
 #include "lib/lib_list.h"
 #include "lib/lib_list2D.h"
-#include "lib/lib_monitor.h"
+#include "lib/lib_output.h"
 #include "lib/lib_options.h"
 #include "lib/lib_output_transform.h"
 #include "lib/lib_ring_buffer.h"

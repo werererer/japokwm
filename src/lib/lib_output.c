@@ -1,9 +1,9 @@
-#include "lib/lib_monitor.h"
+#include "lib/lib_output.h"
 
 #include <lauxlib.h>
 #include <lua.h>
 
-#include "monitor.h"
+#include "output.h"
 #include "server.h"
 #include "translationLayer.h"
 #include "server.h"

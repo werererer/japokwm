@@ -3,7 +3,7 @@
 #include <lauxlib.h>
 
 #include "container.h"
-#include "monitor.h"
+#include "output.h"
 #include "seat.h"
 #include "server.h"
 #include "tile/tileUtils.h"

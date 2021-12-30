@@ -1,7 +1,7 @@
 #ifndef MON_RULE_H
 #define MON_RULE_H
 
-#include "monitor.h"
+#include "output.h"
 
 struct mon_rule {
     char *output_name;

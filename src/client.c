@@ -14,7 +14,7 @@
 #include "ipc-server.h"
 #include "tag.h"
 #include "scratchpad.h"
-#include "monitor.h"
+#include "output.h"
 #include "tagset.h"
 #include "rules/rule.h"
 #include "server.h"

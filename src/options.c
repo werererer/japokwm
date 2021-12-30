@@ -4,7 +4,7 @@
 #include <glib.h>
 
 #include "client.h"
-#include "monitor.h"
+#include "output.h"
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"

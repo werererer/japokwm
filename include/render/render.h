@@ -2,7 +2,7 @@
 #define RENDER_H
 #include "utils/coreUtils.h"
 #include "client.h"
-#include "monitor.h"
+#include "output.h"
 #include <wayland-util.h>
 #include <wlr/types/wlr_matrix.h>
 #include <wlr/render/wlr_texture.h>

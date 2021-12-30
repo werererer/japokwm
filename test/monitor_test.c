@@ -2,7 +2,7 @@
 #include <glib.h>
 
 #include "tag.h"
-#include "monitor.h"
+#include "output.h"
 #include "server.h"
 
 void assert_link_ok(struct monitor *m, struct tag *tag)

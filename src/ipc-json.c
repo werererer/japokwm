@@ -14,7 +14,7 @@
 #include "container.h"
 #include "client.h"
 #include "tag.h"
-#include "monitor.h"
+#include "output.h"
 #include "utils/coreUtils.h"
 #include "stringop.h"
 

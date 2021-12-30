@@ -8,7 +8,7 @@
 
 #include "client.h"
 #include "container.h"
-#include "monitor.h"
+#include "output.h"
 #include "render/render.h"
 #include "root.h"
 #include "server.h"

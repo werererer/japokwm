@@ -3,7 +3,7 @@
 #include "list_sets/container_stack_set.h"
 #include "list_sets/focus_stack_set.h"
 #include "tag.h"
-#include "monitor.h"
+#include "output.h"
 #include "stringop.h"
 
 #include <assert.h>
@@ -26,7 +26,7 @@
 #include <wlr/types/wlr_xdg_output_v1.h>
 
 #include "layer_shell.h"
-#include "monitor.h"
+#include "output.h"
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "xdg_shell.h"

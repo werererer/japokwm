@@ -5,7 +5,7 @@
 #include "list_sets/list_set.h"
 #include "server.h"
 #include "tag.h"
-#include "monitor.h"
+#include "output.h"
 #include "tagset.h"
 
 struct container_set *create_container_set()

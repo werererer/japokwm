@@ -1,7 +1,7 @@
 #include "lib/lib_layout.h"
 
 #include "layout.h"
-#include "monitor.h"
+#include "output.h"
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "tag.h"

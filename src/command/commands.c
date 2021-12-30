@@ -10,7 +10,7 @@
 #include <wlr/backend/x11.h>
 #include <wlr/util/log.h>
 
-#include "monitor.h"
+#include "output.h"
 #include "command.h"
 #include "server.h"
 #include "utils/parseConfigUtils.h"

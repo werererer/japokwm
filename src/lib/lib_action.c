@@ -12,7 +12,7 @@
 #include "container.h"
 #include "ipc-server.h"
 #include "list_sets/container_stack_set.h"
-#include "monitor.h"
+#include "output.h"
 #include "popup.h"
 #include "root.h"
 #include "server.h"

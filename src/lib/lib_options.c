@@ -4,7 +4,7 @@
 #include "ipc-server.h"
 #include "keybinding.h"
 #include "lib/lib_color.h"
-#include "monitor.h"
+#include "output.h"
 #include "rules/mon_rule.h"
 #include "rules/rule.h"
 #include "server.h"

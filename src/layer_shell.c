@@ -4,7 +4,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "monitor.h"
+#include "output.h"
 #include "popup.h"
 #include "server.h"
 #include "container.h"

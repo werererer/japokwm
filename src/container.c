@@ -12,7 +12,7 @@
 #include "list_sets/list_set.h"
 #include "popup.h"
 #include "server.h"
-#include "monitor.h"
+#include "output.h"
 #include "tile/tileUtils.h"
 #include "render/render.h"
 #include "options.h"

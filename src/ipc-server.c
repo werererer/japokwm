@@ -24,7 +24,7 @@
 #include "tag.h"
 #include "client.h"
 #include "command.h"
-#include "monitor.h"
+#include "output.h"
 #include "root.h"
 
 static int ipc_socket = -1;

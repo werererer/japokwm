@@ -6,7 +6,7 @@
 
 #include "container.h"
 #include "keybinding.h"
-#include "monitor.h"
+#include "output.h"
 #include "popup.h"
 #include "render/render.h"
 #include "seat.h"

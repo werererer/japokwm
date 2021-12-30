@@ -9,7 +9,7 @@
 #include "client.h"
 #include "ipc-server.h"
 #include "list_sets/container_stack_set.h"
-#include "monitor.h"
+#include "output.h"
 #include "server.h"
 #include "utils/parseConfigUtils.h"
 #include "tile/tileUtils.h"

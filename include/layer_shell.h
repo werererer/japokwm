@@ -3,7 +3,7 @@
 
 #include <wayland-server.h>
 #include "client.h"
-#include "monitor.h"
+#include "output.h"
 #include "tag.h"
 
 struct edge {
