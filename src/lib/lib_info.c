@@ -65,7 +65,7 @@ void lua_load_info(lua_State *L)
 
 int lib_get_this_container_count(lua_State *L)
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
 
     int i = get_slave_container_count(tag) + 1;
@@ -91,7 +91,7 @@ int lib_get_container_under_cursor(lua_State *L)
 
 int lib_get_root_area(lua_State *L)
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct root *root = m->root;
     lua_createtable(L, 1, 0);
     lua_pushinteger(L, root->geom.x);
@@ -107,7 +107,7 @@ int lib_get_root_area(lua_State *L)
 
 int lib_is_container_not_in_limit(lua_State *L)
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct layout *lt = get_layout_in_monitor(m);
 
     struct wlr_fbox geom = lua_togeometry(L);
@@ -119,7 +119,7 @@ int lib_is_container_not_in_limit(lua_State *L)
 
 int lib_is_container_not_in_master_limit(lua_State *L)
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct layout *lt = get_layout_in_monitor(m);
 
     struct wlr_fbox geom = lua_togeometry(L);

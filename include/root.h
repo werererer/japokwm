@@ -10,11 +10,11 @@ struct tag;
 struct root {
     /* window area(area where windows can tile) */
     struct wlr_box geom;
-    struct monitor *m;
+    struct output *m;
     struct color color;
 };
 
-struct root *create_root(struct monitor *m, struct wlr_box geom);
+struct root *create_root(struct output *m, struct wlr_box geom);
 void destroy_root(struct root *root);
 /* set the are where windows can be placed in respect to layershell based
  * programs which occupie space

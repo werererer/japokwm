@@ -5,7 +5,7 @@
 #include "output.h"
 #include "server.h"
 
-void assert_link_ok(struct monitor *m, struct tag *tag)
+void assert_link_ok(struct output *m, struct tag *tag)
 {
     if (!tag)
         return;
@@ -17,8 +17,8 @@ void test_monitor_set_selected_tag()
 {
     init_server();
 
-    struct monitor m0 = {.tag_id = INVALID_TAG_ID};
-    struct monitor m1 = {.tag_id = INVALID_TAG_ID};
+    struct output m0 = {.tag_id = INVALID_TAG_ID};
+    struct output m1 = {.tag_id = INVALID_TAG_ID};
 
     struct tag *tag0 = get_tag(0);
     struct tag *tag1 = get_tag(1);
@@ -40,8 +40,8 @@ void test2_monitor_set_selected_tag()
 {
     init_server();
 
-    struct monitor m0 = {.tag_id = INVALID_TAG_ID};
-    struct monitor m1 = {.tag_id = INVALID_TAG_ID};
+    struct output m0 = {.tag_id = INVALID_TAG_ID};
+    struct output m1 = {.tag_id = INVALID_TAG_ID};
 
     struct tag *tag0 = get_tag(0);
     struct tag *tag1 = get_tag(1);

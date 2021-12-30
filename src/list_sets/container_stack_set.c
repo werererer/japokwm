@@ -29,7 +29,7 @@ static bool is_container_valid_to_append(
         struct container *src_con
         )
 {
-    struct monitor *m = monitor_ptr;
+    struct output *m = monitor_ptr;
     if (tagset_exist_on(m, src_con)) {
         return true;
     }
@@ -46,7 +46,7 @@ void container_set_write_to_parent(
 }
 
 void container_set_append(
-        struct monitor *m,
+        struct output *m,
         struct container_set *dest,
         struct container_set *src)
 {

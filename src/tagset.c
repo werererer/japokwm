@@ -91,7 +91,7 @@ void tagset_set_tags(struct tag *sel_tag, BitSet *tags)
 void tagset_load_tags()
 {
     for (int i = 0; i < server.mons->len; i++) {
-        struct monitor *m = g_ptr_array_index(server.mons, i);
+        struct output *m = g_ptr_array_index(server.mons, i);
 
         struct tag *sel_tag = monitor_get_active_tag(m);
 
@@ -114,7 +114,7 @@ static void tagset_tag_disconnect(struct tag *sel_tag, struct tag *tag)
         return;
     // ws->current_m = NULL;
 
-    struct monitor *tag_m = tag_get_selected_monitor(tag);
+    struct output *tag_m = tag_get_selected_monitor(tag);
     if (tag_m && tag_m != server_get_selected_monitor()) {
         tag_set_current_monitor(tag, tag_get_selected_monitor(tag));
         // move the tag back
@@ -175,7 +175,7 @@ void tagset_tags_connect(struct tag *sel_tag)
     }
 }
 
-void monitor_focus_tags(struct monitor *m, struct tag *tag, BitSet *tags)
+void monitor_focus_tags(struct output *m, struct tag *tag, BitSet *tags)
 {
     assert(tags != NULL);
 
@@ -192,7 +192,7 @@ void tag_write_to_focus_stacks(struct tag *tag)
 
 bool is_reduced_focus_stack(struct tag *tag, struct container *con)
 {
-    struct monitor *m = tag_get_monitor(tag);
+    struct output *m = tag_get_monitor(tag);
     bool viewable = container_viewable_on_monitor(m, con);
     bool visible = visible_on(m, tag->tags, con);
     if (viewable || visible) {
@@ -208,7 +208,7 @@ bool _is_reduced_focus_stack(
         )
 {
     struct tag *tag = tag_ptr;
-    struct monitor *m = tag_get_monitor(tag);
+    struct output *m = tag_get_monitor(tag);
     bool viewable = container_viewable_on_monitor(m, con);
     bool visible = exist_on(m, tag->tags, con);
     if (viewable || visible) {
@@ -229,7 +229,7 @@ void update_reduced_focus_stack(struct tag *tag)
 
 bool is_local_focus_stack(struct tag *tag, struct container *con)
 {
-    struct monitor *m = tag_get_monitor(tag);
+    struct output *m = tag_get_monitor(tag);
     if (!container_is_managed(con)) {
         return false;
     }
@@ -252,7 +252,7 @@ bool _is_local_focus_stack(
 
 bool is_visual_visible_stack(struct tag *tag, struct container *con)
 {
-    struct monitor *m = tag_get_monitor(tag);
+    struct output *m = tag_get_monitor(tag);
     if (container_potentially_viewable_on_monitor(m, con)) {
         return true;
     }
@@ -301,11 +301,11 @@ void focus_tagset(struct tag *tag, BitSet *tags)
 
     tagset_assign_tags(tag, tags_copy);
 
-    struct monitor *prev_m = server_get_selected_monitor();
+    struct output *prev_m = server_get_selected_monitor();
     struct tag *prev_tag = monitor_get_active_tag(prev_m);
 
-    struct monitor *tag_m = tag_get_selected_monitor(tag);
-    struct monitor *m = tag_m ? tag_m : server_get_selected_monitor();
+    struct output *tag_m = tag_get_selected_monitor(tag);
+    struct output *m = tag_m ? tag_m : server_get_selected_monitor();
     monitor_set_selected_tag(m, tag);
     server_set_selected_monitor(m);
 
@@ -367,7 +367,7 @@ void tagset_focus_tag(struct tag *tag)
     bitset_destroy(tags);
 }
 
-void tagset_toggle_add(struct monitor *m, BitSet *bitset)
+void tagset_toggle_add(struct output *m, BitSet *bitset)
 {
     if (!m)
         return;
@@ -383,7 +383,7 @@ void tagset_toggle_add(struct monitor *m, BitSet *bitset)
 
 void tagset_focus_tags(struct tag *tag, struct BitSet *bitset)
 {
-    struct monitor *tag_m = tag_get_selected_monitor(tag);
+    struct output *tag_m = tag_get_selected_monitor(tag);
     tag_m = tag_m ? tag_m : server_get_selected_monitor();
     monitor_focus_tags(tag_m, tag, bitset);
 }
@@ -396,7 +396,7 @@ void tagset_reload(struct tag *sel_tag)
     tagset_load_tags();
 }
 
-bool container_intersects_with_monitor(struct container *con, struct monitor *m)
+bool container_intersects_with_monitor(struct container *con, struct output *m)
 {
     if (!con)
         return false;
@@ -577,7 +577,7 @@ bool tagset_contains_client(BitSet *tags, struct client *c)
     return contains;
 }
 
-bool container_viewable_on_monitor(struct monitor *m, struct container *con)
+bool container_viewable_on_monitor(struct output *m, struct container *con)
 {
     if (container_is_hidden(con))
         return false;
@@ -590,7 +590,7 @@ bool container_viewable_on_monitor(struct monitor *m, struct container *con)
 }
 
 // TODO refactor this function
-bool container_potentially_viewable_on_monitor(struct monitor *m,
+bool container_potentially_viewable_on_monitor(struct output *m,
         struct container *con)
 {
     struct tag *tag = monitor_get_active_tag(m);
@@ -605,7 +605,7 @@ bool container_potentially_viewable_on_monitor(struct monitor *m,
         return false;
 
     for (int i = 0; i < server.mons->len; i++) {
-        struct monitor *m = g_ptr_array_index(server.mons, i);
+        struct output *m = g_ptr_array_index(server.mons, i);
         struct tag *sel_tag = monitor_get_active_tag(m);
         bool contains_client = tagset_contains_client(sel_tag->tags, con->client);
         if (contains_client) {
@@ -615,7 +615,7 @@ bool container_potentially_viewable_on_monitor(struct monitor *m,
     return false;
 }
 
-bool visible_on(struct monitor *m, BitSet *tags, struct container *con)
+bool visible_on(struct output *m, BitSet *tags, struct container *con)
 {
     if (!con)
         return false;
@@ -625,13 +625,13 @@ bool visible_on(struct monitor *m, BitSet *tags, struct container *con)
     return exist_on(m, tags, con);
 }
 
-bool exist_on(struct monitor *m, BitSet *tags, struct container *con)
+bool exist_on(struct output *m, BitSet *tags, struct container *con)
 {
     if (!con)
         return false;
     if (!tags)
         return false;
-    struct monitor *con_m = container_get_monitor(con);
+    struct output *con_m = container_get_monitor(con);
     if (!con_m) {
         return false;
     }
@@ -651,7 +651,7 @@ bool exist_on(struct monitor *m, BitSet *tags, struct container *con)
     return contains_client;
 }
 
-bool tagset_exist_on(struct monitor *m, struct container *con)
+bool tagset_exist_on(struct output *m, struct container *con)
 {
     if (!m)
         return false;
@@ -661,7 +661,7 @@ bool tagset_exist_on(struct monitor *m, struct container *con)
     return exist_on(m, tag->tags, con);
 }
 
-bool tagset_visible_on(struct monitor *m, struct container *con)
+bool tagset_visible_on(struct output *m, struct container *con)
 {
     if (!m)
         return false;

@@ -77,7 +77,7 @@ void container_property_set_floating(struct container_property *property, bool f
     property->floating = floating;
     struct container *con = property->con;
     if (!container_property_is_floating(property)) {
-        struct monitor *m = server_get_selected_monitor();
+        struct output *m = server_get_selected_monitor();
         if (container_get_monitor(con) != server_get_selected_monitor() || con->on_scratchpad) {
             struct tag *sel_tag = monitor_get_active_tag(m);
             container_set_tag_id(con, sel_tag->id);
@@ -96,7 +96,7 @@ void container_property_set_floating(struct container_property *property, bool f
     container_damage_whole(con);
 }
 
-struct container *create_container(struct client *c, struct monitor *m, bool has_border)
+struct container *create_container(struct client *c, struct output *m, bool has_border)
 {
     struct container *con = calloc(1, sizeof(*con));
     con->client = c;
@@ -133,7 +133,7 @@ void add_container_to_tile(struct container *con)
     assert(!con->is_on_tile);
     add_container_to_tag(con, get_tag(con->tag_id));
 
-    struct monitor *m = container_get_monitor(con);
+    struct output *m = container_get_monitor(con);
     if (m) {
         struct event_handler *ev = server.event_handler;
         call_create_container_function(ev, get_position_in_container_focus_stack(con));
@@ -174,7 +174,7 @@ void remove_container_from_tile(struct container *con)
     ipc_event_tag();
 }
 
-void container_damage_borders(struct container *con, struct monitor *m, struct wlr_box *geom)
+void container_damage_borders(struct container *con, struct output *m, struct wlr_box *geom)
 {
     if (!con)
         return;
@@ -211,7 +211,7 @@ static void damage_container_area(struct container *con, struct wlr_box *geom,
         bool whole)
 {
     for (int i = 0; i < server.mons->len; i++) {
-        struct monitor *m = g_ptr_array_index(server.mons, i);
+        struct output *m = g_ptr_array_index(server.mons, i);
         output_damage_surface(m, get_wlrsurface(con->client), geom, whole);
         container_damage_borders(con, m, geom);
     }
@@ -246,7 +246,7 @@ void container_damage_whole(struct container *con)
     container_damage(con, true);
 }
 
-struct container *monitor_get_focused_container(struct monitor *m)
+struct container *monitor_get_focused_container(struct output *m)
 {
     if (!m)
         return NULL;
@@ -258,7 +258,7 @@ struct container *monitor_get_focused_container(struct monitor *m)
 
 struct container *xy_to_container(double x, double y)
 {
-    struct monitor *m = xy_to_monitor(x, y);
+    struct output *m = xy_to_monitor(x, y);
     if (!m)
         return NULL;
 
@@ -286,7 +286,7 @@ static void add_container_to_tag(struct container *con, struct tag *tag)
     if (!tag || !con)
         return;
 
-    struct monitor *m = tag_get_monitor(tag);
+    struct output *m = tag_get_monitor(tag);
     set_container_monitor(con, m);
     switch (con->client->type) {
         case LAYER_SHELL:
@@ -356,7 +356,7 @@ struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box ref)
     return b;
 }
 
-struct wlr_box get_monitor_local_box(struct wlr_box box, struct monitor *m)
+struct wlr_box get_monitor_local_box(struct wlr_box box, struct output *m)
 {
     double x = box.x;
     double y = box.y;
@@ -431,7 +431,7 @@ void ack_configure(struct wl_listener *listener, void *data)
     /* NO-OP */
 }
 
-void focus_on_stack(struct monitor *m, int i)
+void focus_on_stack(struct output *m, int i)
 {
     struct container *sel = monitor_get_focused_container(m);
 
@@ -459,7 +459,7 @@ void focus_on_stack(struct monitor *m, int i)
 
 
 // TODO refactor
-void focus_on_hidden_stack(struct monitor *m, int i)
+void focus_on_hidden_stack(struct output *m, int i)
 {
     struct container *sel = monitor_get_focused_container(m);
 
@@ -520,7 +520,7 @@ void focus_on_hidden_stack(struct monitor *m, int i)
     tag_this_focus_container(con);
 }
 
-void swap_on_hidden_stack(struct monitor *m, int i)
+void swap_on_hidden_stack(struct output *m, int i)
 {
     struct container *sel = monitor_get_focused_container(m);
 
@@ -587,7 +587,7 @@ void lift_container(struct container *con)
     if (con->client->type == LAYER_SHELL)
         return;
 
-    struct monitor *m = container_get_monitor(con);
+    struct output *m = container_get_monitor(con);
     struct tag *tag = monitor_get_active_tag(m);
     remove_container_from_stack(tag, con);
     add_container_to_stack(tag, con);
@@ -595,7 +595,7 @@ void lift_container(struct container *con)
 
 void repush(int pos1, int pos2)
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     GPtrArray *tiled_containers = tag_get_tiled_list_copy(tag);
 
@@ -623,7 +623,7 @@ void container_fix_position_to_begin(struct container *con)
     if (!con)
         return;
 
-    struct monitor *m = container_get_monitor(con);
+    struct output *m = container_get_monitor(con);
 
     if (!m)
         return;
@@ -643,7 +643,7 @@ void container_fix_position(struct container *con)
     if (!con)
         return;
 
-    struct monitor *m = container_get_monitor(con);
+    struct output *m = container_get_monitor(con);
 
     if (!m)
         return;
@@ -675,7 +675,7 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
     if (container_is_floating(con) == floating)
         return;
 
-    struct monitor *m = container_get_monitor(con);
+    struct output *m = container_get_monitor(con);
     if (!m)
         m = server_get_selected_monitor();
 
@@ -702,7 +702,7 @@ void container_set_hidden_at_tag(struct container *con, bool b, struct tag *tag)
     property->hidden = b;
 }
 
-void set_container_monitor(struct container *con, struct monitor *m)
+void set_container_monitor(struct container *con, struct output *m)
 {
     assert(m != NULL);
     if (!con)
@@ -751,7 +751,7 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
         arrange();
     }
     container_set_floating_geom_at_tag(con, &geom, con_tag);
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     struct layout *lt = tag_get_layout(tag);
     container_set_border_width(con, lt->options->float_border_px);
@@ -977,7 +977,7 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
     container_damage(con, true);
 }
 
-struct monitor *container_get_monitor(struct container *con)
+struct output *container_get_monitor(struct container *con)
 {
     if (!con)
         return NULL;
@@ -989,7 +989,7 @@ struct monitor *container_get_monitor(struct container *con)
     if (!tag)
         return NULL;
 
-    struct monitor *m = tag_get_monitor(tag);
+    struct output *m = tag_get_monitor(tag);
     return m;
 }
 
@@ -1008,7 +1008,7 @@ int get_position_in_container_focus_stack(struct container *con)
     if (!con)
         return INVALID_POSITION;
 
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     int position = find_in_composed_list(tag->visible_focus_set->focus_stack_visible_lists, cmp_ptr, con);
     return position;
@@ -1019,7 +1019,7 @@ int get_position_in_container_stack(struct container *con)
     if (!con)
         return INVALID_POSITION;
 
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     guint position = 0;
     g_ptr_array_find(tag->con_set->tiled_containers, con, &position);
@@ -1029,14 +1029,14 @@ int get_position_in_container_stack(struct container *con)
 struct tag *container_get_current_tag(struct container *con)
 {
     // why prioritize the selected monitor/therefore the selected tag
-    struct monitor *sel_m = server_get_selected_monitor();
+    struct output *sel_m = server_get_selected_monitor();
     struct tag *sel_tag = monitor_get_active_tag(sel_m);
     if (tagset_exist_on(sel_m, con)) {
         return sel_tag;
     }
 
     for (int i = 0; i < server.mons->len; i++) {
-        struct monitor *m = g_ptr_array_index(server.mons, i);
+        struct output *m = g_ptr_array_index(server.mons, i);
         // this prevents the selected monitor from being checked twice the it is
         // just for optimization
         if (m == sel_m) {
@@ -1054,7 +1054,7 @@ struct tag *container_get_current_tag(struct container *con)
 
 struct container *get_container_from_container_stack_position(int i)
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     struct container *con = get_container(tag, i);
     return con;
@@ -1158,7 +1158,7 @@ bool container_is_floating_and_visible(struct container *con)
     bool is_floating = container_is_floating(con);
     if (!is_floating)
         return false;
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     bool intersects = container_intersects_with_monitor(con, m);
     if (!intersects)
         return false;
@@ -1212,7 +1212,7 @@ bool container_exists(struct container *con)
 
 bool container_potentially_visible(struct container *con)
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     bool potentially_visible = container_potentially_viewable_on_monitor(m, con);
     return potentially_visible;
 }

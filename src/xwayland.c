@@ -140,7 +140,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     /* Called when the surface is mapped, or ready to display on-screen. */
     struct client *c = wl_container_of(listener, c, map);
     struct wlr_xwayland_surface *xwayland_surface = c->surface.xwayland;
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
 
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
 
@@ -173,7 +173,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
 
     struct wlr_box tmp;
     if (!wlr_box_intersection(&tmp, &m->geom, &prefered_geom)) {
-        struct monitor *xym = xy_to_monitor(prefered_geom.x, prefered_geom.y);
+        struct output *xym = xy_to_monitor(prefered_geom.x, prefered_geom.y);
         if (xym) {
             struct wlr_fbox rel_geom = get_relative_box(prefered_geom, xym->geom);
             prefered_geom = get_absolute_box(rel_geom, m->geom);

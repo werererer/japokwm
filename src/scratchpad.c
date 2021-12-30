@@ -16,7 +16,7 @@ void move_to_scratchpad(struct container *con, int position)
         remove_container_from_scratchpad(con);
     }
 
-    struct monitor *m = container_get_monitor(con);
+    struct output *m = container_get_monitor(con);
     // TODO: try to remove this
     container_set_floating(con, container_fix_position, false);
 
@@ -47,7 +47,7 @@ void remove_container_from_scratchpad(struct container *con)
 
 static void hide_container(struct container *con)
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct container *sel = monitor_get_focused_container(m);
 
     if (!sel->on_scratchpad) {
@@ -61,7 +61,7 @@ static void hide_container(struct container *con)
 
 static void show_container(struct container *con)
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
 
     container_set_hidden(con, false);
@@ -81,7 +81,7 @@ void show_scratchpad()
         return;
 
     struct container *con = g_ptr_array_index(server.scratchpad, 0);
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     bool visible_on_other_tag = !container_get_hidden(con) && tag->id != con->tag_id;
     if (visible_on_other_tag) {

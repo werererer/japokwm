@@ -20,7 +20,7 @@ void destroy_mon_rule(struct mon_rule *mon_rule)
     free(mon_rule);
 }
 
-void apply_mon_rule(struct mon_rule *mon_rule, struct monitor *m)
+void apply_mon_rule(struct mon_rule *mon_rule, struct output *m)
 {
     if (mon_rule->lua_func_ref <= 0)
         return;
@@ -33,7 +33,7 @@ void apply_mon_rule(struct mon_rule *mon_rule, struct monitor *m)
     }
 }
 
-void apply_mon_rules(GPtrArray *mon_rules, struct monitor *m)
+void apply_mon_rules(GPtrArray *mon_rules, struct output *m)
 {
     for (int i = 0; i < mon_rules->len; i++) {
         struct mon_rule *mon_rule = g_ptr_array_index(mon_rules, i);

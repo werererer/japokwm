@@ -24,13 +24,13 @@
 #include "list_sets/focus_stack_set.h"
 #include "tagset.h"
 
-static void arrange_container(struct container *con, struct monitor *m,
+static void arrange_container(struct container *con, struct output *m,
         int arrange_position, struct wlr_box root_geom, int inner_gap);
 
 void arrange()
 {
     for (int i = 0; i < server.mons->len; i++) {
-        struct monitor *m = g_ptr_array_index(server.mons, i);
+        struct output *m = g_ptr_array_index(server.mons, i);
         struct tag *tag = monitor_get_active_tag(m);
         focus_layout(tag, tag->current_layout);
     }
@@ -41,7 +41,7 @@ void arrange()
         if (!container_is_floating(con))
             continue;
 
-        struct monitor *m = server_get_selected_monitor();
+        struct output *m = server_get_selected_monitor();
         struct tag *tag = monitor_get_active_tag(m);
         struct layout *lt = tag_get_layout(tag);
         container_set_border_width(con, lt->options->float_border_px);
@@ -50,7 +50,7 @@ void arrange()
     }
 
     for (int i = 0; i < server.mons->len; i++) {
-        struct monitor *m = g_ptr_array_index(server.mons, i);
+        struct output *m = g_ptr_array_index(server.mons, i);
         arrange_monitor(m);
     }
 }
@@ -220,7 +220,7 @@ int get_container_area_count(struct tag *tag)
     return get_slave_container_count(tag) + 1;
 }
 
-void arrange_monitor(struct monitor *m)
+void arrange_monitor(struct output *m)
 {
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     struct wlr_box active_geom = monitor_get_active_geom(m);
@@ -281,12 +281,12 @@ void arrange_containers(
         // printf("con: %i ws: %i monitor: %p\n", i, con->client->tag_id, container_get_monitor(con));
         // assert(container_get_monitor(con) == server_get_selected_monitor());
 
-        struct monitor *m = tag_get_monitor(tag);
+        struct output *m = tag_get_monitor(tag);
         arrange_container(con, m, i, root_geom, actual_inner_gap);
     }
 }
 
-static void arrange_container(struct container *con, struct monitor *m,
+static void arrange_container(struct container *con, struct output *m,
         int arrange_position, struct wlr_box root_geom, int inner_gap)
 {
     if (container_get_hidden(con))
@@ -329,7 +329,7 @@ void container_update_size(struct container *con)
             break;
         case LAYER_SHELL:
             {
-                struct monitor *m = container_get_monitor(con);
+                struct output *m = container_get_monitor(con);
                 int width = m->geom.width;
                 int height = m->geom.height;
                 if (con->client->surface.layer->current.desired_width > 0)
@@ -349,7 +349,7 @@ void container_update_size(struct container *con)
     }
 }
 
-void update_hidden_status_of_containers(struct monitor *m, GPtrArray *tiled_containers)
+void update_hidden_status_of_containers(struct output *m, GPtrArray *tiled_containers)
 {
     struct layout *lt = get_layout_in_monitor(m);
 

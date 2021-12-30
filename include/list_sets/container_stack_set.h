@@ -6,7 +6,7 @@
 #include "utils/coreUtils.h"
 
 struct tagset;
-struct monitor;
+struct output;
 
 /*
  * list_set is used by tagsets and tags to hold all containers on them
@@ -22,7 +22,7 @@ void container_set_write_to_parent(
         struct container_set *parent,
         struct container_set *child);
 void container_set_append(
-        struct monitor *m,
+        struct output *m,
         struct container_set *dest,
         struct container_set *src);
 void container_set_clear(struct container_set *list_set);

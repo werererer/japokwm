@@ -200,7 +200,7 @@ int lib_container_toggle_add_sticky_restricted(lua_State *L) {
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     struct container *con = get_container(tag, i);
     if (!con)
@@ -231,7 +231,7 @@ int lib_container_kill(lua_State *L)
 
 // getter
 int lib_container_get_focused(lua_State *L) {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct container *con = monitor_get_focused_container(m);
 
     create_lua_container(L, con);

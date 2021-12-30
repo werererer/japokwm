@@ -72,7 +72,7 @@ static void emit_signal(GPtrArray *func_refs, int narg)
 
 void call_update_function(struct event_handler *ev, int n)
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     struct layout *lt = tag_get_layout(tag);
 

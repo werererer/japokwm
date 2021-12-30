@@ -6,8 +6,8 @@
 #include "tag.h"
 
 json_object *ipc_json_describe_tagsets();
-json_object *ipc_json_describe_tag(const char *name, bool is_selected, struct monitor *m);
-json_object *ipc_json_describe_selected_container(struct monitor *m);
+json_object *ipc_json_describe_tag(const char *name, bool is_selected, struct output *m);
+json_object *ipc_json_describe_selected_container(struct output *m);
 json_object *ipc_json_describe_bar_config();
 
 #endif

@@ -27,7 +27,7 @@
 static void handle_output_damage_frame(struct wl_listener *listener, void *data);
 static void handle_output_frame(struct wl_listener *listener, void *data);
 static void handle_output_mode(struct wl_listener *listener, void *data);
-static void monitor_get_initial_tag(struct monitor *m, GList *tags);
+static void monitor_get_initial_tag(struct output *m, GList *tags);
 static void prepare_output(struct wlr_output_configuration_head_v1 *config_head, struct wlr_output *wlr_output);
 static void check_succeed(struct wlr_output_configuration_v1 *config, bool output_ok, bool test);
 static bool output_test(struct wlr_output *wlr_output, bool output_ok, bool test);
@@ -45,7 +45,7 @@ void create_monitor(struct wl_listener *listener, void *data)
     wlr_output_set_mode(output, wlr_output_preferred_mode(output));
 
     /* Allocates and configures monitor state using configured rules */
-    struct monitor *m = output->data = calloc(1, sizeof(*m));
+    struct output *m = output->data = calloc(1, sizeof(*m));
 
     m->tag_id = INVALID_TAG_ID;
     m->wlr_output = output;
@@ -146,7 +146,7 @@ void create_output(struct wlr_backend *backend, void *data)
 int i = 0;
 static void handle_output_frame(struct wl_listener *listener, void *data)
 {
-    struct monitor *m = wl_container_of(listener, m, damage_frame);
+    struct output *m = wl_container_of(listener, m, damage_frame);
     // debug_print("frame: %i\n", i++);
 
     /* NOOP */
@@ -155,7 +155,7 @@ static void handle_output_frame(struct wl_listener *listener, void *data)
 int j = 0;
 static void handle_output_damage_frame(struct wl_listener *listener, void *data)
 {
-    struct monitor *m = wl_container_of(listener, m, damage_frame);
+    struct output *m = wl_container_of(listener, m, damage_frame);
 
     if (!m->wlr_output->enabled) {
         return;
@@ -182,13 +182,13 @@ damage_finish:
 
 static void handle_output_mode(struct wl_listener *listener, void *data)
 {
-    struct monitor *m = wl_container_of(listener, m, mode);
+    struct output *m = wl_container_of(listener, m, mode);
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     arrange_monitor(m);
     arrange_layers(m);
 }
 
-static void monitor_get_initial_tag(struct monitor *m, GList *tags)
+static void monitor_get_initial_tag(struct output *m, GList *tags)
 {
     struct tag *tag = find_next_unoccupied_tag(tags, get_tag(0));
 
@@ -204,7 +204,7 @@ static void monitor_get_initial_tag(struct monitor *m, GList *tags)
 
 void handle_destroy_monitor(struct wl_listener *listener, void *data)
 {
-    struct monitor *m = wl_container_of(listener, m, destroy);
+    struct output *m = wl_container_of(listener, m, destroy);
 
     wl_list_remove(&m->mode.link);
     wl_list_remove(&m->frame.link);
@@ -260,35 +260,35 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
         return;
     }
 
-    struct monitor *new_focused_monitor = g_ptr_array_index(server.mons, 0);
+    struct output *new_focused_monitor = g_ptr_array_index(server.mons, 0);
     server_set_selected_monitor(new_focused_monitor);
 }
 
-static void monitor_remove_link_to_tag(struct monitor *m, struct tag *tag)
+static void monitor_remove_link_to_tag(struct output *m, struct tag *tag)
 {
     struct tag *old_tag = get_tag(m->tag_id);
     tag_set_selected_monitor(old_tag, NULL);
     m->tag_id = INVALID_TAG_ID;
 }
 
-void monitor_remove_link_to_own_tag(struct monitor *m)
+void monitor_remove_link_to_own_tag(struct output *m)
 {
     monitor_remove_link_to_tag(m, get_tag(m->tag_id));
 }
 
-static void monitor_create_link_to_tag(struct monitor *m, struct tag *tag)
+static void monitor_create_link_to_tag(struct output *m, struct tag *tag)
 {
     m->tag_id = tag->id;
     tag_set_selected_monitor(tag, m);
 }
 
-static void monitor_reparent(struct monitor *m, struct tag *tag)
+static void monitor_reparent(struct output *m, struct tag *tag)
 {
     monitor_remove_link_to_own_tag(m);
     monitor_create_link_to_tag(m, tag);
 }
 
-static void monitor_swap_tags(struct monitor *m1, struct monitor *m2)
+static void monitor_swap_tags(struct output *m1, struct output *m2)
 {
     struct tag *tag1 = get_tag(m1->tag_id);
     struct tag *tag2 = get_tag(m2->tag_id);
@@ -302,7 +302,7 @@ static bool tag_has_a_link_to_any_monitor(struct tag *tag)
     return tag->m != NULL;
 }
 
-static bool monitor_is_corrupted(struct monitor *m)
+static bool monitor_is_corrupted(struct output *m)
 {
     struct tag *tag = get_tag(m->tag_id);
 
@@ -314,12 +314,12 @@ static bool monitor_is_corrupted(struct monitor *m)
     return m != tag->m;
 }
 
-static bool monitor_has_link_to_tag(struct monitor *m)
+static bool monitor_has_link_to_tag(struct output *m)
 {
     return m->tag_id != INVALID_TAG_ID;
 }
 
-static bool monitor_should_swap_tag(struct monitor *m, struct tag *tag)
+static bool monitor_should_swap_tag(struct output *m, struct tag *tag)
 {
     if (!tag_has_a_link_to_any_monitor(tag))
         return false;
@@ -330,7 +330,7 @@ static bool monitor_should_swap_tag(struct monitor *m, struct tag *tag)
     return true;
 }
 
-static bool monitor_should_use_the_next_empty_tag(struct monitor *m, struct tag *tag)
+static bool monitor_should_use_the_next_empty_tag(struct output *m, struct tag *tag)
 {
     if (!tag_has_a_link_to_any_monitor(tag))
         return false;
@@ -339,13 +339,13 @@ static bool monitor_should_use_the_next_empty_tag(struct monitor *m, struct tag 
     return true;
 }
 
-static void monitor_use_the_next_empty_tag(struct monitor *m, struct tag *tag)
+static void monitor_use_the_next_empty_tag(struct output *m, struct tag *tag)
 {
     struct tag *new_tag = find_next_unoccupied_tag(server_get_tags(), tag);
     monitor_create_link_to_tag(m, new_tag);
 }
 
-void monitor_set_selected_tag(struct monitor *m, struct tag *tag)
+void monitor_set_selected_tag(struct output *m, struct tag *tag)
 {
     assert(!monitor_is_corrupted(m));
 
@@ -358,13 +358,13 @@ void monitor_set_selected_tag(struct monitor *m, struct tag *tag)
     }
 }
 
-BitSet *monitor_get_tags(struct monitor *m)
+BitSet *monitor_get_tags(struct output *m)
 {
     struct tag *sel_tag = monitor_get_active_tag(m);
     return sel_tag->tags;
 }
 
-void center_cursor_in_monitor(struct cursor *cursor, struct monitor *m)
+void center_cursor_in_monitor(struct cursor *cursor, struct output *m)
 {
     if (!m)
         return;
@@ -374,14 +374,14 @@ void center_cursor_in_monitor(struct cursor *cursor, struct monitor *m)
     wlr_cursor_warp(cursor->wlr_cursor, NULL, xcenter, ycenter);
 }
 
-void scale_monitor(struct monitor *m, float scale)
+void scale_monitor(struct output *m, float scale)
 {
     struct wlr_output *output = m->wlr_output;
     m->scale = scale;
     wlr_output_set_scale(output, scale);
 }
 
-void transform_monitor(struct monitor *m, enum wl_output_transform transform)
+void transform_monitor(struct output *m, enum wl_output_transform transform)
 {
     struct wlr_output *output = m->wlr_output;
     wlr_output_set_transform(output, transform);
@@ -392,7 +392,7 @@ void update_monitor_geometries()
     struct wlr_output_configuration_v1 *config = wlr_output_configuration_v1_create();
     
     for (int i = 0; i < server.mons->len; i++) {
-        struct monitor *m = g_ptr_array_index(server.mons, i);
+        struct output *m = g_ptr_array_index(server.mons, i);
         struct wlr_output_configuration_head_v1 *config_head = wlr_output_configuration_head_v1_create(config, m->wlr_output);
 
         arrange_layers(m);
@@ -407,7 +407,7 @@ void update_monitor_geometries()
     wlr_output_manager_v1_set_configuration(server.output_mgr, config);
 }
 
-void focus_monitor(struct monitor *m)
+void focus_monitor(struct output *m)
 {
     if (!m)
         return;
@@ -419,10 +419,10 @@ void focus_monitor(struct monitor *m)
     server_set_selected_monitor(m);
 }
 
-struct monitor *wlr_output_to_monitor(struct wlr_output *output)
+struct output *wlr_output_to_monitor(struct wlr_output *output)
 {
     for (int i = 0; i < server.mons->len; i++) {
-        struct monitor *m = g_ptr_array_index(server.mons, i);
+        struct output *m = g_ptr_array_index(server.mons, i);
         if (m->wlr_output == output) {
             return m;
         }
@@ -431,13 +431,13 @@ struct monitor *wlr_output_to_monitor(struct wlr_output *output)
     return NULL;
 }
 
-struct monitor *xy_to_monitor(double x, double y)
+struct output *xy_to_monitor(double x, double y)
 {
     struct wlr_output *o = wlr_output_layout_output_at(server.output_layout, x, y);
     return o ? o->data : NULL;
 }
 
-inline struct tag *monitor_get_active_tag(struct monitor *m)
+inline struct tag *monitor_get_active_tag(struct output *m)
 {
     if (!m)
         return NULL;
@@ -450,7 +450,7 @@ inline struct tag *monitor_get_active_tag(struct monitor *m)
     return tag;
 }
 
-inline struct layout *get_layout_in_monitor(struct monitor *m)
+inline struct layout *get_layout_in_monitor(struct output *m)
 {
     if (!m)
         return NULL;
@@ -459,13 +459,13 @@ inline struct layout *get_layout_in_monitor(struct monitor *m)
     return lt;
 }
 
-struct root *monitor_get_active_root(struct monitor *m)
+struct root *monitor_get_active_root(struct output *m)
 {
     struct root *root = m->root;
     return root;
 }
 
-struct wlr_box monitor_get_active_geom(struct monitor *m)
+struct wlr_box monitor_get_active_geom(struct output *m)
 {
     struct tag *tag = monitor_get_active_tag(m);
     struct wlr_box geom = tag_get_active_geom(tag);

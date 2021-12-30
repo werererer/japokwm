@@ -24,7 +24,7 @@
 
 struct wlr_renderer *drw;
 
-static void render_stack(struct monitor *m, pixman_region32_t *output_damage);
+static void render_stack(struct output *m, pixman_region32_t *output_damage);
 static void scissor_output(struct wlr_output *output, pixman_box32_t *rect);
 static void render_texture(struct wlr_output *wlr_output,
         pixman_region32_t *output_damage, struct wlr_texture *texture,
@@ -32,7 +32,7 @@ static void render_texture(struct wlr_output *wlr_output,
 
 /* _box.x and .y are expected to be layout-local
    _box.width and .height are expected to be output-buffer-local */
-void render_rect(struct monitor *m, pixman_region32_t *output_damage,
+void render_rect(struct output *m, pixman_region32_t *output_damage,
         const struct wlr_box *_box, const struct color color) {
     struct wlr_output *wlr_output = m->wlr_output;
     struct wlr_renderer *renderer =
@@ -63,7 +63,7 @@ void render_rect(struct monitor *m, pixman_region32_t *output_damage,
     }
 }
 
-static bool intersects_with_output(struct monitor *m,
+static bool intersects_with_output(struct output *m,
         struct wlr_output_layout *output_layout, struct wlr_box *surface_box)
 {
         /* Since the surface_box's x- and y-coordinates are already output local,
@@ -113,7 +113,7 @@ finish_damage:
     pixman_region32_fini(&damage);
 }
 
-static void render_surface_iterator(struct monitor *m, struct wlr_surface *surface,
+static void render_surface_iterator(struct output *m, struct wlr_surface *surface,
         struct wlr_box *box, void *data)
 {
     struct render_texture_data *render_data = data;
@@ -152,7 +152,7 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
 }
 
 static void
-damage_surface_iterator(struct monitor *m, struct wlr_surface *surface,
+damage_surface_iterator(struct output *m, struct wlr_surface *surface,
         struct wlr_box *box, void *user_data)
 {
     struct wlr_output *wlr_output = m->wlr_output;
@@ -181,7 +181,7 @@ damage_surface_iterator(struct monitor *m, struct wlr_surface *surface,
     }
 }
 
-void output_damage_surface(struct monitor *m, struct wlr_surface *surface, struct wlr_box *geom, bool whole)
+void output_damage_surface(struct output *m, struct wlr_surface *surface, struct wlr_box *geom, bool whole)
 {
     assert(m != NULL);
     if (!m->wlr_output->enabled)
@@ -227,7 +227,7 @@ static void scissor_output(struct wlr_output *output, pixman_box32_t *rect)
 // TODO refactor the name it doesn't represent what this does perfectly
 static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *borders, enum wlr_edges hidden_edges)
 {
-    struct monitor *m = container_get_monitor(con);
+    struct output *m = container_get_monitor(con);
 
     enum wlr_edges containers_hidden_edges = WLR_EDGE_NONE;
     struct wlr_box *con_geom = container_get_current_geom(con);
@@ -257,7 +257,7 @@ static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *bo
     return containers_hidden_edges;
 }
 
-static void render_borders(struct container *con, struct monitor *m, pixman_region32_t *output_damage)
+static void render_borders(struct container *con, struct output *m, pixman_region32_t *output_damage)
 {
     if (!con->has_border)
         return;
@@ -301,7 +301,7 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
     }
 }
 
-void output_surface_for_each_surface(struct monitor *m,
+void output_surface_for_each_surface(struct output *m,
         struct wlr_surface *surface, struct wlr_box obox,
         surface_iterator_func_t iterator, void *user_data) {
     struct surface_iterator_data data = {
@@ -323,7 +323,7 @@ static void send_frame_done_func(struct wlr_surface *surface,
     wlr_surface_send_frame_done(surface, &now);
 }
 
-static void render_stack(struct monitor *m, pixman_region32_t *output_damage)
+static void render_stack(struct output *m, pixman_region32_t *output_damage)
 {
     /* Each subsequent window we render is rendered on top of the last. Because
      * our stacking list is ordered front-to-back, we iterate over it backwards. */
@@ -352,7 +352,7 @@ static void render_stack(struct monitor *m, pixman_region32_t *output_damage)
     g_ptr_array_unref(stack_list);
 }
 
-static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
+static void render_popups(struct output *m, pixman_region32_t *output_damage)
 {
     for (int i = 0; i < server.popups->len; i++) {
         struct xdg_popup *popup = g_ptr_array_index(server.popups, i);
@@ -377,7 +377,7 @@ static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
 }
 
 static void clear_frame(
-        struct monitor *m,
+        struct output *m,
         struct color color,
         pixman_region32_t *damage)
 {
@@ -397,7 +397,7 @@ static void clear_frame(
     }
 }
 
-void render_monitor(struct monitor *m, pixman_region32_t *damage)
+void render_monitor(struct output *m, pixman_region32_t *damage)
 {
     pthread_mutex_lock(&lock_rendering_action);
     /* Begin the renderer (calls glViewport and some other GL sanity checks) */

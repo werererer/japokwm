@@ -117,7 +117,7 @@ void tag_focus_first_container(struct tag *tag)
 
 void tag_this_focus_most_recent_container()
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     tag_focus_most_recent_container(tag);
 }
@@ -187,12 +187,12 @@ bool is_tag_occupied(struct tag *tag)
 {
     assert(tag);
 
-    struct monitor *m = tag_get_monitor(tag);
+    struct output *m = tag_get_monitor(tag);
     bool is_occupied = (m != NULL) && tag_is_visible(tag, m);
     return is_occupied;
 }
 
-bool tag_is_visible(struct tag *tag, struct monitor *m)
+bool tag_is_visible(struct tag *tag, struct output *m)
 {
     assert(tag != NULL);
 
@@ -214,12 +214,12 @@ bool tag_is_visible(struct tag *tag, struct monitor *m)
 
 bool is_tag_extern(struct tag *tag)
 {
-    struct monitor *tag_m = tag_get_selected_monitor(tag);
+    struct output *tag_m = tag_get_selected_monitor(tag);
     if (!tag_m) {
         return false;
     }
 
-    struct monitor *sel_m = server_get_selected_monitor();
+    struct output *sel_m = server_get_selected_monitor();
     struct tag *sel_tag = monitor_get_active_tag(sel_m);
     if (bitset_test(sel_tag->tags, tag->id) && sel_m != tag_m) {
         return true;
@@ -229,14 +229,14 @@ bool is_tag_extern(struct tag *tag)
 
 bool is_tag_the_selected_one(struct tag *tag)
 {
-    struct monitor *m = tag_get_monitor(tag);
+    struct output *m = tag_get_monitor(tag);
     struct tag *sel_tag = monitor_get_active_tag(m);
     return sel_tag->id == tag->id && !is_tag_extern(tag);
 }
 
 bool tag_is_active(struct tag *tag)
 {
-    struct monitor *m = tag_get_monitor(tag);
+    struct output *m = tag_get_monitor(tag);
     if (!m)
         return false;
     struct tag *sel_tag = monitor_get_active_tag(m);
@@ -368,7 +368,7 @@ struct layout *tag_get_previous_layout(struct tag *tag)
 
 struct root *tag_get_root(struct tag *tag)
 {
-    struct monitor *m = tag_get_monitor(tag);
+    struct output *m = tag_get_monitor(tag);
     struct root *root = monitor_get_active_root(m);
     return root;
 }
@@ -381,13 +381,13 @@ struct wlr_box tag_get_active_geom(struct tag *tag)
     return geom;
 }
 
-struct monitor *tag_get_selected_monitor(struct tag *tag)
+struct output *tag_get_selected_monitor(struct tag *tag)
 {
     assert(tag != NULL);
     return tag->m;
 }
 
-struct monitor *tag_get_monitor(struct tag *tag)
+struct output *tag_get_monitor(struct tag *tag)
 {
     assert(tag != NULL);
 
@@ -400,14 +400,14 @@ struct monitor *tag_get_monitor(struct tag *tag)
     return NULL;
 }
 
-void tag_set_selected_monitor(struct tag *tag, struct monitor *m)
+void tag_set_selected_monitor(struct tag *tag, struct output *m)
 {
     if (!tag)
         return;
     tag->m = m;
 }
 
-void tag_set_current_monitor(struct tag *tag, struct monitor *m)
+void tag_set_current_monitor(struct tag *tag, struct output *m)
 {
     tag->current_m = m;
 }
@@ -630,7 +630,7 @@ static struct container *tag_get_local_focused_container(struct tag *tag)
 
 void tag_this_focus_container(struct container *con)
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     tag_focus_container(tag, con);
 }
@@ -646,7 +646,7 @@ void tag_focus_container(struct tag *tag, struct container *con)
     if (container_get_hidden(con))
         return;
 
-    struct monitor *m = tag_get_monitor(tag);
+    struct output *m = tag_get_monitor(tag);
     if (!container_viewable_on_monitor(m, con))
         return;
 
@@ -938,7 +938,7 @@ static int get_in_container_stack(struct container *con)
     if (!con)
         return INVALID_POSITION;
 
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     guint position = 0;
     g_ptr_array_find(tag->con_set->tiled_containers, con, &position);

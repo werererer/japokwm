@@ -170,7 +170,7 @@ void seat_configure_xcursor(struct seat *seat) {
     }
 
     for (int i = 0; i < server.mons->len; ++i) {
-        struct monitor *m = g_ptr_array_index(server.mons, i);
+        struct output *m = g_ptr_array_index(server.mons, i);
         struct wlr_output *output = m->wlr_output;
         bool result =
             wlr_xcursor_manager_load(seat->cursor->xcursor_mgr,

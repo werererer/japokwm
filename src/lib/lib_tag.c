@@ -158,7 +158,7 @@ int lib_tag_swap(lua_State *L)
 
     tag_swap(tag1, tag2);
 
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     tagset_reload(tag);
     arrange();
@@ -185,7 +185,7 @@ int lib_tag_swap_smart(lua_State *L)
 
     tag_swap_smart(tag1, tag2);
 
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     tagset_reload(tag);
     arrange();

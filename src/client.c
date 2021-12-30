@@ -129,7 +129,7 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
             unfocus_client(old);
             struct container *old_con = old->con;
             struct wlr_box *geom = container_get_current_geom(old_con);
-            struct monitor *m = container_get_monitor(old_con);
+            struct output *m = container_get_monitor(old_con);
             container_damage_borders(old_con, m, geom);
         }
     }
@@ -151,7 +151,7 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
     focus_surface(seat, get_wlrsurface(c));
 
     struct container *con = c->con;
-    struct monitor *m = container_get_monitor(con);
+    struct output *m = container_get_monitor(con);
     struct wlr_box *geom = container_get_current_geom(con);
     container_damage_borders(con, m, geom);
 
@@ -171,7 +171,7 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
 
 void container_move_sticky_containers_current_tag(struct container *con)
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     container_move_sticky_containers(con, tag->id);
 }
@@ -241,7 +241,7 @@ void client_handle_new_popup(struct wl_listener *listener, void *data)
     struct wlr_xdg_popup *xdg_popup = data;
 
     struct container *con = client->con;
-    struct monitor *m = container_get_monitor(con);
+    struct output *m = container_get_monitor(con);
     create_popup(m, xdg_popup, container_get_current_geom(con), con);
 }
 
@@ -306,7 +306,7 @@ void client_handle_set_app_id(struct wl_listener *listener, void *data)
 
 void reset_floating_client_borders(int border_px)
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     for (int i = 0; i < server.container_stack->len; i++) {
         struct container *con = g_ptr_array_index(server.container_stack, i);
         if (container_is_tiled(con)) {

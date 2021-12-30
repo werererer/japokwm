@@ -9,7 +9,7 @@
 struct client;
 struct container;
 struct tag;
-struct monitor;
+struct output;
 
 /* A tagset consists of a list_set, a struct to hold all relevant containers,
  * information on which monitor it belongs to and the list of tags it
@@ -42,12 +42,12 @@ struct monitor;
 /* this creates a tagset with reference count of 1. Calling focus_tagset
  * afterwards also adds a ref counter of 1 therefore use focus_tagset_no_ref
  * instead.  */
-void monitor_focus_tags(struct monitor *m, struct tag *tag, BitSet *tags);
+void monitor_focus_tags(struct output *m, struct tag *tag, BitSet *tags);
 
 void tag_write_to_tags(struct tag *tag);
 
 void tagset_focus_tag(struct tag *tag);
-void tagset_toggle_add(struct monitor *m, BitSet *bitset);
+void tagset_toggle_add(struct output *m, BitSet *bitset);
 void tagset_set_tags(struct tag *sel_tag, BitSet *tags);
 void tagset_focus_tags(struct tag *tag, struct BitSet *bitset);
 void tagset_reload(struct tag *sel_tag);
@@ -70,7 +70,7 @@ bool _is_local_focus_stack(
 
 bool is_visual_visible_stack(struct tag *tag, struct container *con);
 
-bool container_intersects_with_monitor(struct container *con, struct monitor *m);
+bool container_intersects_with_monitor(struct container *con, struct output *m);
 
 GPtrArray *tagset_get_floating_list_copy(struct tag *tag);
 GPtrArray *tag_get_complete_stack_copy(struct tag *tag);
@@ -85,16 +85,16 @@ GPtrArray *tagset_get_hidden_list_copy(struct tag *tag);
 
 void tag_id_to_tag(BitSet *dest, int tag_id);
 
-bool container_viewable_on_monitor(struct monitor *m,
+bool container_viewable_on_monitor(struct output *m,
         struct container *con);
-bool container_potentially_viewable_on_monitor(struct monitor *m,
+bool container_potentially_viewable_on_monitor(struct output *m,
         struct container *con);
-bool exist_on(struct monitor *m, BitSet *tags, struct container *con);
+bool exist_on(struct output *m, BitSet *tags, struct container *con);
 bool tagset_contains_client(BitSet *tags, struct client *c);
-bool visible_on(struct monitor *m, BitSet *tags, struct container *con);
+bool visible_on(struct output *m, BitSet *tags, struct container *con);
 
-bool tagset_exist_on(struct monitor *m, struct container *con);
-bool tagset_visible_on(struct monitor *m, struct container *con);
+bool tagset_exist_on(struct output *m, struct container *con);
+bool tagset_visible_on(struct output *m, struct container *con);
 
 void push_tagset(struct tag *tag, BitSet *tags);
 void focus_tagset(struct tag *tag, BitSet *tags);

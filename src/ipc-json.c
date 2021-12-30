@@ -120,12 +120,12 @@ json_object *ipc_json_describe_tagsets()
 {
     json_object *array = json_object_new_array();
 
-    struct monitor *sel_m = server_get_selected_monitor();
+    struct output *sel_m = server_get_selected_monitor();
     struct tag *sel_tag = monitor_get_active_tag(sel_m);
     struct container *sel_con = tag_get_focused_container(sel_tag);
     for (GList *iterator = server_get_tags(); iterator; iterator = iterator->next) {
         struct tag *tag = iterator->data;
-        struct monitor *m = tag_get_monitor(tag);
+        struct output *m = tag_get_monitor(tag);
 
         if (!m)
             continue;
@@ -147,7 +147,7 @@ json_object *ipc_json_describe_tagsets()
 
         // for the second monitor
         if (is_tag_extern(tag)) {
-            struct monitor *selected_monitor = tag_get_selected_monitor(tag);
+            struct output *selected_monitor = tag_get_selected_monitor(tag);
             char *hidden_name = strdup(tag->name);
             add_infix(&hidden_name, "(", ")");
             json_object *tagset_object = ipc_json_describe_tag(hidden_name, false, selected_monitor);
@@ -320,7 +320,7 @@ json_object *ipc_json_describe_bar_config() {
 }
 
 
-json_object *ipc_json_describe_tag(const char *name, bool is_active_tag, struct monitor *m)
+json_object *ipc_json_describe_tag(const char *name, bool is_active_tag, struct output *m)
 {
     struct wlr_box box;
     box = m->geom;
@@ -358,7 +358,7 @@ json_object *ipc_json_describe_tag(const char *name, bool is_active_tag, struct 
     return object;
 }
 
-json_object *ipc_json_describe_monitor(struct monitor *m)
+json_object *ipc_json_describe_monitor(struct output *m)
 {
     json_object *object = ipc_json_create_node(
             3, m->wlr_output->name, false, NULL, &m->geom);
@@ -381,7 +381,7 @@ json_object *ipc_json_describe_container(struct container *con)
     return object;
 }
 
-json_object *ipc_json_describe_selected_container(struct monitor *m)
+json_object *ipc_json_describe_selected_container(struct output *m)
 {
     json_object *root_object = ipc_json_create_node(1, "root", false, NULL, NULL);
     json_object *root_children = json_object_new_array();
@@ -392,7 +392,7 @@ json_object *ipc_json_describe_selected_container(struct monitor *m)
     json_object *monitor_children;
     json_object_object_get_ex(monitor_object, "nodes", &monitor_children);
 
-    struct monitor *sel_m = server_get_selected_monitor();
+    struct output *sel_m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(sel_m);
     json_object *tag_object = ipc_json_describe_tag(tag->name, true, sel_m);
     json_object_array_add(monitor_children, tag_object);

@@ -19,7 +19,7 @@ struct client {
     struct container *con;
     union surface_t surface;
 
-    struct monitor *m;
+    struct output *m;
     struct wl_listener activate;
     struct wl_listener commit;
     struct wl_listener configure;

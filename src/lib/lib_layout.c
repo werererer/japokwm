@@ -112,7 +112,7 @@ int lib_layout_load(lua_State *L)
     const char *layout_name = luaL_checkstring(L, -1);
     lua_pop(L, 1);
 
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     push_layout(tag, strdup(layout_name));
 

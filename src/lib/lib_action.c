@@ -153,7 +153,7 @@ int lib_resize_main(lua_State *L)
     float n = luaL_checknumber(L, -1);
     lua_pop(L, 1);
 
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     struct layout *lt = tag_get_layout(tag);
     enum wlr_edges dir = lt->options->resize_dir;
@@ -217,7 +217,7 @@ int lib_focus_on_stack(lua_State *L)
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
 
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     focus_on_stack(m, i);
     return 0;
 }
@@ -226,7 +226,7 @@ int lib_focus_on_hidden_stack(lua_State *L)
 {
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     focus_on_hidden_stack(m, i);
     return 0;
 }
@@ -254,7 +254,7 @@ int lib_view(lua_State *L)
     lua_pop(L, 1);
 
     tagset_focus_tags(tag, tag->tags);
-    struct monitor *m = tag_get_selected_monitor(tag);
+    struct output *m = tag_get_selected_monitor(tag);
     server_center_default_cursor_in_monitor(m);
     return 0;
 }
@@ -274,7 +274,7 @@ int lib_view_or_tag(lua_State *L)
     } else {
         struct tag *tag = get_tag(i);
         tagset_focus_tag(tag);
-        struct monitor *m = tag_get_selected_monitor(tag);
+        struct output *m = tag_get_selected_monitor(tag);
         server_center_default_cursor_in_monitor(m);
     }
     server_start_keycombo("_lib_view_or_tag_combo");
@@ -283,7 +283,7 @@ int lib_view_or_tag(lua_State *L)
 
 int lib_toggle_view(lua_State *L)
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     tag_this_focus_most_recent_container();
     struct container *sel = monitor_get_focused_container(m);
     lift_container(sel);
@@ -293,7 +293,7 @@ int lib_toggle_view(lua_State *L)
 
 int lib_zoom(lua_State *L)
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
 
     struct container *sel = monitor_get_focused_container(m);
 
@@ -332,7 +332,7 @@ int lib_swap_on_hidden_stack(lua_State *L)
 {
     int i = luaL_checkinteger(L, -1);
     lua_pop(L, 1);
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     swap_on_hidden_stack(m, i);
     return 0;
 }
@@ -366,7 +366,7 @@ int lib_toggle_all_bars(lua_State *L)
 
 int lib_toggle_tags(lua_State *L)
 {
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     BitSet *bitset = bitset_copy(tag->prev_tags);
     tagset_set_tags(tag, bitset);

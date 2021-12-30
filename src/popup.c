@@ -17,7 +17,7 @@
 
 static void popup_handle_new_popup(struct wl_listener *listener, void *data);
 static void popup_handle_new_subpopup(struct wl_listener *listener, void *data);
-struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popup,
+struct xdg_popup *create_popup(struct output *m, struct wlr_xdg_popup *xdg_popup,
         struct wlr_box *parent_geom, struct container* toplevel);
 static void destroy_popup(struct xdg_popup *xdg_popup);
 static void popup_handle_commit(struct wl_listener *listener, void *data);
@@ -25,7 +25,7 @@ static void popup_handle_map(struct wl_listener *listener, void *data);
 static void popup_handle_unmap(struct wl_listener *listener, void *data);
 static void popup_damage(struct xdg_popup *xdg_popup, bool whole);
 
-struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popup,
+struct xdg_popup *create_popup(struct output *m, struct wlr_xdg_popup *xdg_popup,
         struct wlr_box *parent_geom, struct container* toplevel)
 {
     struct xdg_popup *popup = xdg_popup->base->data = calloc(1, sizeof(*popup));
@@ -95,7 +95,7 @@ static void popup_damage(struct xdg_popup *xdg_popup, bool whole)
 
     struct wlr_xdg_popup *popup = xdg_popup->xdg;
     struct wlr_surface *surface = popup->base->surface;
-    struct monitor *m = xdg_popup->m;
+    struct output *m = xdg_popup->m;
 
     output_damage_surface(m, surface, &xdg_popup->geom, whole);
 }

@@ -326,7 +326,7 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
         return;
     }
 
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct container *sel = monitor_get_focused_container(m);
     struct tag *tag = monitor_get_active_tag(m);
     struct layout *lt = tag_get_layout(tag);
@@ -356,7 +356,7 @@ void motion_notify(struct cursor *cursor, uint32_t time_msec,
             dx, dy, dx_unaccel, dy_unaccel);
 
     if (!cursor->active_constraint) {
-        struct monitor *m = server_get_selected_monitor();
+        struct output *m = server_get_selected_monitor();
         struct container *sel_con = monitor_get_focused_container(m);
         if (sel_con) {
             cursor->active_constraint = wlr_pointer_constraints_v1_constraint_for_surface(
@@ -421,7 +421,7 @@ void handle_cursor_button(struct wl_listener *listener, void *data)
                         "left_ptr", cursor->wlr_cursor);
                 cursor->cursor_mode = CURSOR_NORMAL;
                 /* Drop the window off on its new monitor */
-                struct monitor *m = xy_to_monitor(cursor->wlr_cursor->x,
+                struct output *m = xy_to_monitor(cursor->wlr_cursor->x,
                         cursor->wlr_cursor->y);
                 focus_monitor(m);
                 return;
@@ -451,7 +451,7 @@ void move_resize(struct cursor *cursor, int ui)
     if (server.grab_c->client->type == LAYER_SHELL)
         return;
 
-    struct monitor *m = container_get_monitor(server.grab_c);
+    struct output *m = container_get_monitor(server.grab_c);
     struct layout *lt = get_layout_in_monitor(m);
     // all floating windows will be tiled. Thats why you can't make new windows
     // tiled
@@ -545,7 +545,7 @@ static void warp_to_constraint_cursor_hint(struct cursor *cursor)
         double sx = constraint->current.cursor_hint.x;
         double sy = constraint->current.cursor_hint.y;
 
-        struct monitor *m = server_get_selected_monitor();
+        struct output *m = server_get_selected_monitor();
         struct container *con = monitor_get_focused_container(m);
         struct wlr_box *con_geom = container_get_current_geom(con);
         double lx = sx + con_geom->x - m->geom.x;
@@ -584,7 +584,7 @@ void handle_constraint_destroy(struct wl_listener *listener, void *data) {
 static void check_constraint_region(struct cursor *cursor) {
     struct wlr_pointer_constraint_v1 *constraint = cursor->active_constraint;
     pixman_region32_t *region = &constraint->region;
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct container *con = monitor_get_focused_container(m);
     if (cursor->active_confine_requires_warp && con) {
         cursor->active_confine_requires_warp = false;
@@ -685,7 +685,7 @@ void handle_new_pointer_constraint(struct wl_listener *listener, void *data)
     constraint->destroy.notify = handle_constraint_destroy;
     wl_signal_add(&wlr_constraint->events.destroy, &constraint->destroy);
 
-    struct monitor *m = server_get_selected_monitor();
+    struct output *m = server_get_selected_monitor();
     struct container *con = monitor_get_focused_container(m);
     if (con) {
         struct wlr_surface *surface = get_wlrsurface(con->client);

@@ -55,7 +55,7 @@ static const struct anchors anchors = {
 };
 
 
-struct root *create_root(struct monitor *m, struct wlr_box geom)
+struct root *create_root(struct output *m, struct wlr_box geom)
 {
     struct root *root = calloc(1, sizeof(*root));
     root->m = m;
@@ -89,7 +89,7 @@ void root_damage_whole(struct root *root)
 {
     if (!root)
         return;
-    struct monitor *m = root->m;
+    struct output *m = root->m;
     struct wlr_box geom = get_monitor_local_box(root->geom, m);
     wlr_output_damage_add_box(m->damage, &geom);
 }
@@ -131,7 +131,7 @@ void bars_update_visiblitiy(struct tag *tag)
         container_set_hidden_at_tag(con, !is_visible, tag);
     }
 
-    struct monitor *m = tag_get_monitor(tag);
+    struct output *m = tag_get_monitor(tag);
     arrange_layers(m);
 }
 

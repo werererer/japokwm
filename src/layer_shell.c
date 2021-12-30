@@ -20,7 +20,7 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     struct wlr_layer_surface_v1 *wlr_layer_surface = data;
 
     if (!wlr_layer_surface->output) {
-        struct monitor *m = server_get_selected_monitor();
+        struct output *m = server_get_selected_monitor();
         wlr_layer_surface->output = m->wlr_output;
     }
 
@@ -35,7 +35,7 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     LISTEN(&wlr_layer_surface->events.new_popup, &client->new_popup, client_handle_new_popup);
     LISTEN(&wlr_layer_surface->surface->events.new_subsurface, &client->new_subsurface, handle_new_subsurface);
 
-    struct monitor *m = wlr_layer_surface->output->data;
+    struct output *m = wlr_layer_surface->output->data;
     client->m = m;
     struct container *con = create_container(client, m, false);
 
@@ -89,7 +89,7 @@ void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
     wl_list_remove(&c->commit.link);
 
     if (c->surface.layer->output) {
-        struct monitor *m = c->surface.layer->output->data;
+        struct output *m = c->surface.layer->output->data;
         arrange_layers(m);
         c->surface.layer->output = NULL;
     }
@@ -109,7 +109,7 @@ void commit_layer_surface_notify(struct wl_listener *listener, void *data)
     if (!wlr_output)
         return;
 
-    struct monitor *m = wlr_output->data;
+    struct output *m = wlr_output->data;
     arrange_layers(m);
     struct container *con = c->con;
     container_damage_part(con);
@@ -135,7 +135,7 @@ bool layer_shell_is_bar(struct container *con)
     return is_exclusive && (is_anchord_on_one_edge || is_anchord_on_three_edges);
 }
 
-GPtrArray *get_layer_list(struct monitor *m, enum zwlr_layer_shell_v1_layer layer)
+GPtrArray *get_layer_list(struct output *m, enum zwlr_layer_shell_v1_layer layer)
 {
     GPtrArray *layer_list = NULL;
     switch (layer) {
@@ -155,7 +155,7 @@ GPtrArray *get_layer_list(struct monitor *m, enum zwlr_layer_shell_v1_layer laye
     return layer_list;
 }
 
-void arrange_layers(struct monitor *m)
+void arrange_layers(struct output *m)
 {
     if (!m)
         return;
@@ -204,7 +204,7 @@ void arrange_layers(struct monitor *m)
     }
 }
 
-void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_area, bool exclusive)
+void arrangelayer(struct output *m, GPtrArray *array, struct wlr_box *usable_area, bool exclusive)
 {
     struct wlr_box full_area = m->geom;
 

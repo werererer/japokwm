@@ -25,7 +25,7 @@ struct tagset;
         } while (0);\
         \
         do {\
-            struct monitor *m = container_get_monitor(con);\
+            struct output *m = container_get_monitor(con);\
             struct tag *_tag = monitor_get_active_tag(m);\
             if (!_tag)\
                 continue;\
@@ -46,7 +46,7 @@ struct tagset;
             \
         }\
         do {\
-            struct monitor *m = container_get_monitor(con);\
+            struct output *m = container_get_monitor(con);\
             struct tag *_tag = monitor_get_active_tag(m);\
             if (!_tag)\
                 continue;\
@@ -66,9 +66,9 @@ struct tag {
     BitSet *tags;
     BitSet *prev_tags;
     // the monitor the tag is locked to
-    struct monitor *m;
+    struct output *m;
     // the monitor the tag is currently on
-    struct monitor *current_m;
+    struct output *current_m;
 
     bool is_loaded;
 
@@ -97,7 +97,7 @@ void update_tags(GList *tags, GPtrArray *tag_names);
 void update_tag_ids(GPtrArray *tags);
 
 bool is_tag_occupied(struct tag *tag);
-bool tag_is_visible(struct tag *tag, struct monitor *m);
+bool tag_is_visible(struct tag *tag, struct output *m);
 bool is_tag_the_selected_one(struct tag *tag);
 bool is_tag_extern(struct tag *tag);
 bool tag_is_active(struct tag *tag);
@@ -120,10 +120,10 @@ struct layout *tag_get_previous_layout(struct tag *tag);
 struct root *tag_get_root(struct tag *tag);
 struct wlr_box tag_get_active_geom(struct tag *tag);
 
-struct monitor *tag_get_selected_monitor(struct tag *tag);
-struct monitor *tag_get_monitor(struct tag *tag);
-void tag_set_selected_monitor(struct tag *tag, struct monitor *m);
-void tag_set_current_monitor(struct tag *tag, struct monitor *m);
+struct output *tag_get_selected_monitor(struct tag *tag);
+struct output *tag_get_monitor(struct tag *tag);
+void tag_set_selected_monitor(struct tag *tag, struct output *m);
+void tag_set_current_monitor(struct tag *tag, struct output *m);
 void tag_swap(struct tag *tag1, struct tag *tag2);
 void tag_swap_smart(struct tag *tag1, struct tag *tag2);
 

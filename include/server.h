@@ -68,7 +68,7 @@ struct server {
     int previous_tag;
     BitSet *previous_bitset;
 
-    struct monitor *selected_monitor;
+    struct output *selected_monitor;
 
     GPtrArray *mons;
     GPtrArray *popups;
@@ -132,10 +132,10 @@ bool server_is_config_reloading_prohibited();
 void server_start_keycombo(const char *key_combo_name);
 bool server_is_keycombo(const char *key_combo_name);
 
-struct monitor *server_get_selected_monitor();
-void server_set_selected_monitor(struct monitor *m);
+struct output *server_get_selected_monitor();
+void server_set_selected_monitor(struct output *m);
 
-void server_center_default_cursor_in_monitor(struct monitor *m);
+void server_center_default_cursor_in_monitor(struct output *m);
 
 struct tag *server_get_selected_tag();
 struct layout *server_get_selected_layout();
