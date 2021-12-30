@@ -1,9 +1,5 @@
 japokwm(1)
 
-# NAME
-
-japokwm - tiling made easy
-
 # SYNOPSIS
 
 *japokwm* [options...] [command]
