@@ -4,7 +4,7 @@ japokwm-action(5)
 	class Action
 # Description
 	A collection of functions to alter the state of the windowmanager.
-# Functions
+# Static Methods
 	void arrange()
 		Forces the windowmanager to arrange the windows now.
 	

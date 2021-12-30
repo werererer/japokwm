@@ -33,7 +33,7 @@ japokwm-bitset(5)
 		...(0)00000000 00000000 00000001 00000000, where the first byte is at
 		position 0 (as you can see in the parentheses), then we would print:
 		"(2)00000001".
-# Functions
+# Static Methods
 	BitSet new()
 		Creates a new bitset.
 # Methods

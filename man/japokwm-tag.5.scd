@@ -5,7 +5,7 @@ japokwm-tag(5)
 # Description
 	The tag is an extension of workspaces. You can select select multiple
 	tags at the same tame.
-# Functions
+# Static Methods
 	Tag get(int)
 		Get the tag at the index $1.
 	Tag get_next_empty(int, Direction)

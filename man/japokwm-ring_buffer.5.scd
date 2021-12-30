@@ -4,7 +4,7 @@ japokwm-ring_buffer(5)
 	class Ring
 # Description
 	A ring buffer is a fixed-size buffer that stores a sequence of strings.
-# Functions
+# Static Methods
 	Ring new(string[])
 		Create a new ring buffer.
 # Methods

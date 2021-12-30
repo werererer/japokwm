@@ -4,8 +4,6 @@ japokwm-server(5)
 	class Server
 # Description
 	A collection of functions to alter the state of the windowmanager.
-# Functions
-
 # Methods
 	Tag get_tag(int)
 		Get the tag at position $1

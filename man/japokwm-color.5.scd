@@ -1,14 +1,13 @@
 japokwm-color(5)
 
 # Type
-	enum Color
+	class Color
 # Description
 	Represents a color of the form rgba.
-# Functions
+# Static Methods
 	color new(r, g, b, a)
 		Creates a new color object.
-# Methods
-# Variables
+# Static Variables
 	AQUA = new color(0, 1, 1, 1)
 		The color aqua.
 	AQUAMARINE = new color(0.498, 1, 0.83, 1)

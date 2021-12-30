@@ -4,7 +4,7 @@ japokwm-geom(5)
 	class Geom
 # Description
 	A collection of functions to alter the state of the windowmanager.
-# Functions
+# Static Methods
 # Methods
 # Variables
 	int x = current x position

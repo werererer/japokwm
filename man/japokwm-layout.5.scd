@@ -4,7 +4,7 @@ japokwm-layout(5)
 	class Layout
 # Description
 	Modify the layout of the windows in the current tag.
-# Functions
+# Static Methods
 	void load(string)
 		Load the layout at the directory with the name $1.
 	void toggle()

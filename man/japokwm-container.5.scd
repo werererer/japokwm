@@ -7,7 +7,7 @@ japokwm-container(5)
 # Static Variables
 	container focused = focused container
 		returns the focused container
-# Functions
+# Static Methods
 # Methods
 	void focus()
 		Focuses this container.
