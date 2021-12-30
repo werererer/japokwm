@@ -5,7 +5,6 @@ japokwm(1)
 *japokwm* [options...] [command]
 
 # OPTIONS
-
 *-h, --help*
 	Show help message and quit.
 
@@ -18,6 +17,11 @@ japokwm(1)
 
 *-v, --version*
 	Show the version number and quit.
+
+# WORTHWHILE READ
+
+If you want to start using japokwm right away without any configuration, ++
+read japokwm-cheatsheet(5)
 
 # DESCRIPTION
 
