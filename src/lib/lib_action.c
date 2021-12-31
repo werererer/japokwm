@@ -253,9 +253,15 @@ int lib_view(lua_State *L)
     struct tag *tag = check_tag(L, 1);
     lua_pop(L, 1);
 
+    struct monitor *old_sel_m = server_get_selected_monitor();
+
     tagset_focus_tags(tag, tag->tags);
     struct monitor *m = tag_get_selected_monitor(tag);
-    server_center_default_cursor_in_monitor(m);
+
+    // we only want to center the cursor if the monitor changes
+    if (m != old_sel_m) {
+        server_center_default_cursor_in_monitor(m);
+    }
     return 0;
 }
 
@@ -273,9 +279,15 @@ int lib_view_or_tag(lua_State *L)
         tagset_focus_tag(tag);
     } else {
         struct tag *tag = get_tag(i);
+
+        struct monitor *old_sel_m = server_get_selected_monitor();
         tagset_focus_tag(tag);
         struct monitor *m = tag_get_selected_monitor(tag);
-        server_center_default_cursor_in_monitor(m);
+
+        // we only want to center the cursor if the monitor changes
+        if (m != old_sel_m) {
+            server_center_default_cursor_in_monitor(m);
+        }
     }
     server_start_keycombo("_lib_view_or_tag_combo");
     return 0;
