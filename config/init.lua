@@ -1,6 +1,14 @@
 -- This file can be completely empty. If so then the default configuration will
 -- be used.
 
+opt.tags = {"0:1", "1:2", "2:3", "3:4", "4:5", "5:6", "6:7", "7:8"}
+-- This is a beta feature
+opt.automatic_tag_naming = false
+
+opt.border_color = Color.new(0.0, 0.0, 1.0, 1.0)
+opt.focus_color = Color.new(1.0, 0.0, 0.0, 1.0)
+opt.root_color = Color.new(0.3, 0.3, 0.3, 1.0)
+
 -- mod key of 1 = alt if you want to use super use 4
 opt.mod = 1
 
