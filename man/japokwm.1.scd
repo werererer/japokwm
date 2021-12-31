@@ -54,6 +54,8 @@ All layouts are searched in the following locations:
 . $XDG_CONFIG_HOME/japokwm/layouts
 . ~/.config/japokwm/layouts (suggested location)
 . /etc/japokwm/layouts
+. /usr/local/share/japokwm/layouts
+. /usr/share/japokwm/layouts
 
 If you want to create a layout named foo you need to create a directory called
 foo in either of these locations. Then you need to create the file init.lua in 

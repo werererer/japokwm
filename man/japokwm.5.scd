@@ -72,6 +72,8 @@ directories(the first has the most priority):
 . $XDG_CONFIG_HOME/japokwm/layouts/
 . ~/.config/japokwm/layouts/ (suggested location)
 . /etc/japokwm/layouts/
+. /usr/local/share/japokwm/layouts
+. /usr/share/japokwm/layouts
 A layout must be in a directory holding the name of the layout. In there you
 have to place a init.lua. You can find examples in /etc/japokwm/layouts/ or man
 1 japokwm.++
