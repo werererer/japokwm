@@ -25,7 +25,6 @@ enum atom_name {
 
 struct xwayland {
     struct wlr_xwayland *wlr_xwayland;
-    struct wlr_xcursor_manager *xcursor_manager;
 
     xcb_atom_t atoms[ATOM_LAST];
 };

@@ -9,18 +9,21 @@
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"
-#include "workspace.h"
+#include "tag.h"
 
 struct layout *create_layout(lua_State *L)
 {
-    struct layout *lt = calloc(1, sizeof(struct layout));
-    lt->nmaster = 1;
+    struct layout *lt = calloc(1, sizeof(*lt));
     *lt = (struct layout) {
-        .symbol = "",
+        .current_max_area = -1,
+        .name = "two_pane",
         .n_area = 1,
-        .nmaster = 1,
-        .options = get_default_options(),
+        .n_master = 1,
     };
+    lt->linked_layouts = g_ptr_array_new();
+    lt->linked_loaded_layouts = g_ptr_array_new();
+
+    lt->options = create_options();
 
     lua_get_default_master_layout_data(L);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_master_layout_data_ref);
@@ -29,10 +32,10 @@ struct layout *create_layout(lua_State *L)
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_resize_data_ref);
 
     lua_get_default_layout_data(L);
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_copy_data_ref);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_original_copy_data_ref);
 
-    lua_createtable(L, 0, 0);
-    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_ref);
+    lua_get_default_layout_data(L);
+    lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_layout_copy_data_ref);
 
     lua_get_default_resize_function(L);
     lua_ref_safe(L, LUA_REGISTRYINDEX, &lt->lua_resize_function_ref);
@@ -42,6 +45,11 @@ struct layout *create_layout(lua_State *L)
 
 void destroy_layout(struct layout *lt)
 {
+    destroy_options(lt->options);
+
+    g_ptr_array_unref(lt->linked_layouts);
+    g_ptr_array_unref(lt->linked_loaded_layouts);
+
     free(lt);
 }
 
@@ -55,10 +63,90 @@ void lua_copy_table(lua_State *L, int *ref)
     return;
 }
 
+// This function represents something like that
+// function Deep_copy(orig)
+//     local orig_type = type(orig)
+//     local copy
+//     if orig_type == 'table' then
+//         copy = {}
+//         for orig_key, orig_value in next, orig, nil do
+//             copy[Deep_copy(orig_key)] = Deep_copy(orig_value)
+//         end
+//         setmetatable(copy, Deep_copy(getmetatable(orig)))
+//     else -- number, string, boolean, etc
+//         copy = orig
+//     end
+//     return copy
+// end
+//
+int deep_copy_table(lua_State *L)
+{
+    // this function takes one argument
+    // [table]
+    if (lua_istable(L, 1)) {
+        // local copy = {}
+        lua_createtable(L, 0, 0);
+        // [table, copy]
+
+        // lenght of the original table
+
+        // first key
+        lua_pushnil(L);
+        while (lua_next(L, 1) != 0) {
+            // [table, copy, k, v]
+            // we need to keep a key for lua_next to work so make a copy of it
+            lua_pushvalue(L, -2);
+            // [table, copy, k, v, k]
+
+            // get copied key
+            lua_pushcfunction(L, deep_copy_table);
+            // [table, copy, k, v, k, cfunc]
+            lua_insert(L, -2);
+            // [table, copy, k, v, cfunc, k]
+            lua_call_safe(L, 1, 1, 0);
+            // [table, copy, k, v, copied_k]
+            lua_insert(L, -2);
+            // [table, copy, k, copied_k, v]
+
+            // get copied value
+            lua_pushcfunction(L, deep_copy_table);
+            // [table, copy, k, copied_k, v, cfunc]
+            lua_insert(L, -2);
+            // [table, copy, k, copied_k, cfunc, v]
+            lua_call_safe(L, 1, 1, 0);
+            // [table, copy, k, copied_k, copied_v]
+            lua_settable(L, 2);
+
+            // we need to keep a key else lua_next won't work
+            // [table, copy, k]
+        }
+
+        // [table, copy]
+        if (lua_getmetatable(L, 1) == 1) {
+            // [table, copy, metatable]
+            // get copied value
+            lua_pushcfunction(L, deep_copy_table);
+            // [table, copy, metatable, cfunc]
+            lua_insert(L, -2);
+            // [table, copy, cfunc, metatable]
+            lua_call_safe(L, 1, 1, 0);
+            // [table, copy, metatable_copy]
+            lua_setmetatable(L, -2);
+            // [table, copy]
+        }
+        // [table, copy]
+        return 1;
+    } else {
+        // we only copy tables here ;)
+        return 1;
+    }
+    return 1;
+}
+
 void lua_copy_table_safe(lua_State *L, int *ref)
 {
     assert(lua_istable(L, -1));
-    lua_getglobal_safe(L, "Deep_copy");
+    lua_pushcfunction(L, deep_copy_table);
     lua_insert(L, -2);
     lua_call_safe(L, 1, 1, 0);
 
@@ -89,8 +177,8 @@ struct resize_constraints lua_toresize_constrains(lua_State *L)
 
 bool is_same_layout(struct layout layout, struct layout layout2)
 {
-    const char *c = layout.symbol;
-    const char *c2 = layout2.symbol;
+    const char *c = layout.name;
+    const char *c2 = layout2.name;
     // same string means same layout
     return strcmp(c, c2) != 0;
 }
@@ -145,7 +233,7 @@ void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt)
         lua_ref_safe(L, LUA_REGISTRYINDEX, &dest_lt->lua_resize_function_ref);
     }
 
-    copy_options(&dest_lt->options, &src_lt->options);
+    copy_options(dest_lt->options, src_lt->options);
 
     return;
 }
@@ -189,12 +277,12 @@ int cmp_layout(const void *ptr1, const void *ptr2)
 {
     const struct layout *lt1 = ptr1;
     const struct layout *lt2 = ptr2;
-    return strcmp(lt1->symbol, lt2->symbol) == 0;
+    return strcmp(lt1->name, lt2->name) == 0;
 }
 
 int cmp_layout_to_string(const void *ptr1, const void *symbol_ptr)
 {
     const struct layout *lt1 = ptr1;
     const char *symbol = symbol_ptr;
-    return strcmp(lt1->symbol, symbol) == 0;
+    return strcmp(lt1->name, symbol) == 0;
 }

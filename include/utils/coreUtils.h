@@ -30,7 +30,12 @@ typedef GPtrArray GPtrArray2D;
 #define NUM_CHARS 64
 #define NUM_DIGITS 9
 #define INVALID_POSITION -1
-#define INVALID_WORKSPACE_ID -1
+#define INVALID_TAG_ID -1
+#define SWAP(a, b) do { \
+    typeof(a) tmp = a; \
+    a = b; \
+    b = tmp; \
+} while (0)
 
 #define MIN_CONTAINER_WIDTH 30
 #define MIN_CONTAINER_HEIGHT 30
@@ -55,6 +60,7 @@ int lower_bound(const void *key, const void *base,
 
 
 void debug_print(const char *fmt, ...);
+void print_trace();
 
 int cross_sum(int n, int base);
 
@@ -98,6 +104,7 @@ void lua_get_default_resize_data(lua_State *L);
 
 void list_clear(GPtrArray *array, void (*destroy_func)(void *));
 void wlr_list_cat(GPtrArray *dest, GPtrArray *src);
+void list_insert(GPtrArray *array, int i, void *item);
 
 /* return true on success and false on failure */
 bool list_remove(GPtrArray *array, int (*compare)(const void *, const void *), const void *cmp_to);
@@ -115,8 +122,8 @@ GPtrArray2D *lists_copy_structure(GPtrArray2D *src);
 int cmp_int(const void *ptr1, const void *ptr2);
 int cmp_ptr(const void *ptr1, const void *ptr2);
 int cmp_str(const void *s1, const void *s2);
+int cmp_strptr(const void *s1, const void *s2);
 
-void lua_tocolor(float dest_color[static 4]);
 // like lua_ref but override the old value if *ref > 0
 void lua_ref_safe(lua_State *L, int t, int *ref);
 
@@ -136,4 +143,8 @@ void *get_relative_item_in_composed_list(GPtrArray *arrays, int i, int j);
 
 int exec(const char *cmd);
 bool is_approx_equal(double a, double b, double error_range);
+
+int lua_idx_to_c_idx(int lua_idx);
+int c_idx_to_lua_idx(int c_idx);
+
 #endif /* COREUTILS */

@@ -1,7 +1,7 @@
 # japokwm <img src="japokwm_logo.png" width="50" height="50">
 [![CircleCI](https://github.com/werererer/japokwm/actions/workflows/Test.yml/badge.svg)](https://github.com/werererer/japokwm/actions/workflows/Test.yml)
 
-Japokwm is a dynamic tiling wayland compositor where you are able to create new layouts without the hassle of editing the source code. You just give it information about where windows go and it will handle stuff such as resizing all by itself --- Join the official subreddit www.reddit.com/r/japokwm.
+Japokwm is a dynamic tiling wayland compositor where you are able to create new layouts without the hassle of editing the source code. You just give it information about where windows go and it will handle stuff such as resizing all by itself --- Join the official subreddit www.reddit.com/r/japokwm or the [Discord channel](https://discord.gg/WpGjAU393M).
 ## Features:
 - Gaps!
 - Damage Tracking
@@ -10,7 +10,7 @@ Japokwm is a dynamic tiling wayland compositor where you are able to create new 
 - Layout specific configs
 - a client to control the windowmanager from the terminal - japokmsg based on
   swaymsg
-- a dwm based tagging system instead of normal(boring) workspaces
+- a dwm based tagging system instead of normal(boring) tags
 
 ## Download
   [AUR](https://aur.archlinux.org/packages/japokwm-git)

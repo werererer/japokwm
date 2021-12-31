@@ -1,0 +1,151 @@
+#ifndef COLOR_H
+#define COLOR_H
+
+struct color {
+    float red;
+    float green;
+    float blue;
+    float alpha;
+};
+
+void color_to_wlr_color(float *dest_wlr_color, struct color color);
+
+#define AQUA (struct color) {.red = 0.0f, .green = 1.0f, .blue = 1.0f, .alpha = 1.0f}
+#define AQUAMARINE (struct color) {.red = 0.489f, .green = 1.0f, .blue = 0.83f, .alpha = 1.0f}
+#define AZURE (struct color) {.red = 0.0f, .green = 1.0f, .blue = 1.0f, .alpha = 1.0f}
+#define BEIGE (struct color) {.red = 0.75f, .green = 0.75f, .blue = 0.75f, .alpha = 1.0f}
+#define BISQUE (struct color) {.red = 1.0f, .green = 0.894f, .blue = 0.769f, .alpha = 1.0f}
+#define BLACK (struct color) {.red = 0.0f, .green = 0.0f, .blue = 0.0f, .alpha = 1.0f}
+#define BLANCHEDALMOND (struct color) {.red = 1.0f, .green = 0.937f, .blue = 0.835f, .alpha = 1.0f}
+#define BLUE (struct color) {.red = 0.0f, .green = 0.0f, .blue = 1.0f, .alpha = 1.0f}
+#define BLUEVIOLET (struct color) {.red = 0.5f, .green = 0.5f, .blue = 1.0f, .alpha = 1.0f}
+#define BROWN (struct color) {.red = 0.647f, .green = 0.165f, .blue = 0.165f, .alpha = 1.0f}
+#define BURLYWOOD (struct color) {.red = 0.871f, .green = 0.722f, .blue = 0.529f, .alpha = 1.0f}
+#define CADETBLUE (struct color) {.red = 0.373f, .green = 0.62f, .blue = 0.627f, .alpha = 1.0f}
+#define CHARTREUSE (struct color) {.red = 0.498f, .green = 1.0f, .blue = 0.0f, .alpha = 1.0f}
+#define CHOCOLATE (struct color) {.red = 0.8f, .green = 0.4f, .blue = 0.0f, .alpha = 1.0f}
+#define CORAL (struct color) {.red = 1.0f, .green = 0.5f, .blue = 0.31f, .alpha = 1.0f}
+#define CORNSILK (struct color) {.red = 1.0f, .green = 0.97f, .blue = 0.863f, .alpha = 1.0f}
+#define CRIMSON (struct color) {.red = 0.863f, .green = 0.078f, .blue = 0.235f, .alpha = 1.0f}
+#define DARKBLUE (struct color) {.red = 0.0f, .green = 0.0f, .blue = 0.5f, .alpha = 1.0f}
+#define DARKCYAN (struct color) {.red = 0.0f, .green = 0.545f, .blue = 0.545f, .alpha = 1.0f}
+#define DARKGOLDENROD (struct color) {.red = 0.722f, .green = 0.525f, .blue = 0.043f, .alpha = 1.0f}
+#define DARKGRAY (struct color) {.red = 0.663f, .green = 0.663f, .blue = 0.663f, .alpha = 1.0f}
+#define DARKGREEN (struct color) {.red = 0.0f, .green = 0.392f, .blue = 0.0f, .alpha = 1.0f}
+#define DARKKHAKI (struct color) {.red = 0.741f, .green = 0.718f, .blue = 0.420f, .alpha = 1.0f}
+#define DARKMAGENTA (struct color) {.red = 0.545f, .green = 0.0f, .blue = 0.545f, .alpha = 1.0f}
+#define DARKOLIVEGREEN (struct color) {.red = 0.333f, .green = 0.420f, .blue = 0.184f, .alpha = 1.0f}
+#define DARKORANGE (struct color) {.red = 1.0f, .green = 0.549f, .blue = 0.0f, .alpha = 1.0f}
+#define DARKORCHID (struct color) {.red = 0.6f, .green = 0.196f, .blue = 0.8f, .alpha = 1.0f}
+#define DARKRED (struct color) {.red = 0.545f, .green = 0.0f, .blue = 0.0f, .alpha = 1.0f}
+#define DARKSALMON (struct color) {.red = 0.914f, .green = 0.588f, .blue = 0.478f, .alpha = 1.0f}
+#define DARKSEAGREEN (struct color) {.red = 0.561f, .green = 0.737f, .blue = 0.561f, .alpha = 1.0f}
+#define DARKSLATEBLUE (struct color) {.red = 0.282f, .green = 0.239f, .blue = 0.545f, .alpha = 1.0f}
+#define DARKSLATEGRAY (struct color) {.red = 0.184f, .green = 0.310f, .blue = 0.310f, .alpha = 1.0f}
+#define DARKTURQUOISE (struct color) {.red = 0.0f, .green = 0.808f, .blue = 0.820f, .alpha = 1.0f}
+#define DARKVIOLET (struct color) {.red = 0.580f, .green = 0.0f, .blue = 0.827f, .alpha = 1.0f}
+#define DEEPPINK (struct color) {.red = 1.0f, .green = 0.078f, .blue = 0.576f, .alpha = 1.0f}
+#define DEEPSKYBLUE (struct color) {.red = 0.0f, .green = 0.749f, .blue = 1.0f, .alpha = 1.0f}
+#define DIMGRAY (struct color) {.red = 0.412f, .green = 0.412f, .blue = 0.412f, .alpha = 1.0f}
+#define DODGERBLUE (struct color) {.red = 0.118f, .green = 0.565f, .blue = 1.0f, .alpha = 1.0f}
+#define FIREBRICK (struct color) {.red = 0.698f, .green = 0.133f, .blue = 0.133f, .alpha = 1.0f}
+#define FLORALWHITE (struct color) {.red = 1.0f, .green = 0.98f, .blue = 0.941f, .alpha = 1.0f}
+#define FORESTGREEN (struct color) {.red = 0.133f, .green = 0.545f, .blue = 0.133f, .alpha = 1.0f}
+#define FUCHSIA (struct color) {.red = 1.0f, .green = 0.0f, .blue = 1.0f, .alpha = 1.0f}
+#define GAINSBORO (struct color) {.red = 0.863f, .green = 0.863f, .blue = 0.863f, .alpha = 1.0f}
+#define GHOSTWHITE (struct color) {.red = 0.973f, .green = 0.973f, .blue = 1.0f, .alpha = 1.0f}
+#define GOLD (struct color) {.red = 1.0f, .green = 0.843f, .blue = 0.0f, .alpha = 1.0f}
+#define GOLDENROD (struct color) {.red = 0.855f, .green = 0.647f, .blue = 0.125f, .alpha = 1.0f}
+#define GRAY (struct color) {.red = 0.502f, .green = 0.502f, .blue = 0.502f, .alpha = 1.0f}
+#define GREEN (struct color) {.red = 0.0f, .green = 0.502f, .blue = 0.0f, .alpha = 1.0f}
+#define GREENYELLOW (struct color) {.red = 0.678f, .green = 1.0f, .blue = 0.184f, .alpha = 1.0f}
+#define HONEYDEW (struct color) {.red = 0.941f, .green = 1.0f, .blue = 0.941f, .alpha = 1.0f}
+#define HOTPINK (struct color) {.red = 1.0f, .green = 0.412f, .blue = 0.706f, .alpha = 1.0f}
+#define INDIANRED (struct color) {.red = 0.804f, .green = 0.361f, .blue = 0.361f, .alpha = 1.0f}
+#define INDIGO (struct color) {.red = 0.294f, .green = 0.0f, .blue = 0.510f, .alpha = 1.0f}
+#define IVORY (struct color) {.red = 1.0f, .green = 1.0f, .blue = 0.941f, .alpha = 1.0f}
+#define KHAKI (struct color) {.red = 0.941f, .green = 0.902f, .blue = 0.549f, .alpha = 1.0f}
+#define LAVENDER (struct color) {.red = 0.902f, .green = 0.902f, .blue = 0.980f, .alpha = 1.0f}
+#define LAVENDERBLUSH (struct color) {.red = 1.0f, .green = 0.941f, .blue = 0.961f, .alpha = 1.0f}
+#define LAWNGREEN (struct color) {.red = 0.486f, .green = 0.988f, .blue = 0.0f, .alpha = 1.0f}
+#define LEMONCHIFFON (struct color) {.red = 1.0f, .green = 0.980f, .blue = 0.804f, .alpha = 1.0f}
+#define LIGHTBLUE (struct color) {.red = 0.678f, .green = 0.847f, .blue = 0.902f, .alpha = 1.0f}
+#define LIGHTCORAL (struct color) {.red = 0.941f, .green = 0.502f, .blue = 0.502f, .alpha = 1.0f}
+#define LIGHTCYAN (struct color) {.red = 0.878f, .green = 1.0f, .blue = 1.0f, .alpha = 1.0f}
+#define LIGHTGOLDENRODYELLOW (struct color) {.red = 0.980f, .green = 0.980f, .blue = 0.824f, .alpha = 1.0f}
+#define LIGHTGRAY (struct color) {.red = 0.827f, .green = 0.827f, .blue = 0.827f, .alpha = 1.0f}
+#define LIGHTGREEN (struct color) {.red = 0.565f, .green = 0.933f, .blue = 0.565f, .alpha = 1.0f}
+#define LIGHTPINK (struct color) {.red = 1.0f, .green = 0.714f, .blue = 0.757f, .alpha = 1.0f}
+#define LIGHTSALMON (struct color) {.red = 1.0f, .green = 0.627f, .blue = 0.478f, .alpha = 1.0f}
+#define LIGHTSEAGREEN (struct color) {.red = 0.125f, .green = 0.698f, .blue = 0.667f, .alpha = 1.0f}
+#define LIGHTSKYBLUE (struct color) {.red = 0.529f, .green = 0.808f, .blue = 0.980f, .alpha = 1.0f}
+#define LIGHTSLATEGRAY (struct color) {.red = 0.467f, .green = 0.533f, .blue = 0.600f, .alpha = 1.0f}
+#define LIGHTSTEELBLUE (struct color) {.red = 0.690f, .green = 0.769f, .blue = 0.871f, .alpha = 1.0f}
+#define LIGHTYELLOW (struct color) {.red = 1.0f, .green = 1.0f, .blue = 0.878f, .alpha = 1.0f}
+#define LIME (struct color) {.red = 0.0f, .green = 1.0f, .blue = 0.0f, .alpha = 1.0f}
+#define LIMEGREEN (struct color) {.red = 0.196f, .green = 0.804f, .blue = 0.196f, .alpha = 1.0f}
+#define LINEN (struct color) {.red = 0.980f, .green = 0.941f, .blue = 0.902f, .alpha = 1.0f}
+#define MAGENTA (struct color) {.red = 1.0f, .green = 0.0f, .blue = 1.0f, .alpha = 1.0f}
+#define MAROON (struct color) {.red = 0.502f, .green = 0.0f, .blue = 0.0f, .alpha = 1.0f}
+#define MEDIUMAQUAMARINE (struct color) {.red = 0.400f, .green = 0.804f, .blue = 0.667f, .alpha = 1.0f}
+#define MEDIUMBLUE (struct color) {.red = 0.0f, .green = 0.0f, .blue = 0.804f, .alpha = 1.0f}
+#define MEDIUMORCHID (struct color) {.red = 0.729f, .green = 0.333f, .blue = 0.827f, .alpha = 1.0f}
+#define MEDIUMPURPLE (struct color) {.red = 0.576f, .green = 0.439f, .blue = 0.859f, .alpha = 1.0f}
+#define MEDIUMSEAGREEN (struct color) {.red = 0.235f, .green = 0.702f, .blue = 0.443f, .alpha = 1.0f}
+#define MEDIUMSLATEBLUE (struct color) {.red = 0.482f, .green = 0.408f, .blue = 0.933f, .alpha = 1.0f}
+#define MEDIUMSPRINGGREEN (struct color) {.red = 0.0f, .green = 0.980f, .blue = 0.604f, .alpha = 1.0f}
+#define MEDIUMTURQUOISE (struct color) {.red = 0.282f, .green = 0.820f, .blue = 0.800f, .alpha = 1.0f}
+#define MEDIUMVIOLETRED (struct color) {.red = 0.780f, .green = 0.082f, .blue = 0.522f, .alpha = 1.0f}
+#define MIDNIGHTBLUE (struct color) {.red = 0.098f, .green = 0.098f, .blue = 0.439f, .alpha = 1.0f}
+#define MINTCREAM (struct color) {.red = 0.961f, .green = 1.0f, .blue = 0.980f, .alpha = 1.0f}
+#define MISTYROSE (struct color) {.red = 1.0f, .green = 0.894f, .blue = 0.882f, .alpha = 1.0f}
+#define MOCCASIN (struct color) {.red = 1.0f, .green = 0.894f, .blue = 0.710f, .alpha = 1.0f}
+#define NAVAJOWHITE (struct color) {.red = 1.0f, .green = 0.871f, .blue = 0.678f, .alpha = 1.0f}
+#define NAVY (struct color) {.red = 0.0f, .green = 0.0f, .blue = 0.502f, .alpha = 1.0f}
+#define OLDLACE (struct color) {.red = 0.992f, .green = 0.961f, .blue = 0.902f, .alpha = 1.0f}
+#define OLIVE (struct color) {.red = 0.502f, .green = 0.502f, .blue = 0.0f, .alpha = 1.0f}
+#define OLIVEDRAB (struct color) {.red = 0.420f, .green = 0.557f, .blue = 0.137f, .alpha = 1.0f}
+#define ORANGE (struct color) {.red = 1.0f, .green = 0.647f, .blue = 0.0f, .alpha = 1.0f}
+#define ORANGERED (struct color) {.red = 1.0f, .green = 0.271f, .blue = 0.0f, .alpha = 1.0f}
+#define ORCHID (struct color) {.red = 0.855f, .green = 0.439f, .blue = 0.839f, .alpha = 1.0f}
+#define PALEGOLDENROD (struct color) {.red = 0.933f, .green = 0.910f, .blue = 0.667f, .alpha = 1.0f}
+#define PALEGREEN (struct color) {.red = 0.596f, .green = 0.984f, .blue = 0.596f, .alpha = 1.0f}
+#define PALETURQUOISE (struct color) {.red = 0.686f, .green = 0.933f, .blue = 0.933f, .alpha = 1.0f}
+#define PALEVIOLETRED (struct color) {.red = 0.859f, .green = 0.439f, .blue = 0.576f, .alpha = 1.0f}
+#define PAPAYAWHIP (struct color) {.red = 1.0f, .green = 0.937f, .blue = 0.835f, .alpha = 1.0f}
+#define PEACHPUFF (struct color) {.red = 1.0f, .green = 0.855f, .blue = 0.725f, .alpha = 1.0f}
+#define PERU (struct color) {.red = 0.804f, .green = 0.522f, .blue = 0.247f, .alpha = 1.0f}
+#define PINK (struct color) {.red = 1.0f, .green = 0.753f, .blue = 0.796f, .alpha = 1.0f}
+#define PLUM (struct color) {.red = 0.867f, .green = 0.627f, .blue = 0.867f, .alpha = 1.0f}
+#define POWDERBLUE (struct color) {.red = 0.690f, .green = 0.878f, .blue = 0.902f, .alpha = 1.0f}
+#define PURPLE (struct color) {.red = 0.502f, .green = 0.0f, .blue = 0.502f, .alpha = 1.0f}
+#define RED (struct color) {.red = 1.0f, .green = 0.0f, .blue = 0.0f, .alpha = 1.0f}
+#define ROSYBROWN (struct color) {.red = 0.737f, .green = 0.561f, .blue = 0.561f, .alpha = 1.0f}
+#define ROYALBLUE (struct color) {.red = 0.255f, .green = 0.412f, .blue = 0.882f, .alpha = 1.0f}
+#define SADDLEBROWN (struct color) {.red = 0.545f, .green = 0.271f, .blue = 0.075f, .alpha = 1.0f}
+#define SALMON (struct color) {.red = 0.980f, .green = 0.502f, .blue = 0.447f, .alpha = 1.0f}
+#define SANDYBROWN (struct color) {.red = 0.957f, .green = 0.643f, .blue = 0.376f, .alpha = 1.0f}
+#define SEAGREEN (struct color) {.red = 0.180f, .green = 0.545f, .blue = 0.341f, .alpha = 1.0f}
+#define SEASHELL (struct color) {.red = 1.0f, .green = 0.961f, .blue = 0.933f, .alpha = 1.0f}
+#define SIENNA (struct color) {.red = 0.627f, .green = 0.322f, .blue = 0.176f, .alpha = 1.0f}
+#define SILVER (struct color) {.red = 0.753f, .green = 0.753f, .blue = 0.753f, .alpha = 1.0f}
+#define SKYBLUE (struct color) {.red = 0.529f, .green = 0.808f, .blue = 0.922f, .alpha = 1.0f}
+#define SLATEBLUE (struct color) {.red = 0.416f, .green = 0.353f, .blue = 0.804f, .alpha = 1.0f}
+#define SLATEGRAY (struct color) {.red = 0.439f, .green = 0.502f, .blue = 0.565f, .alpha = 1.0f}
+#define SLATEGREY (struct color) {.red = 0.439f, .green = 0.502f, .blue = 0.565f, .alpha = 1.0f}
+#define SNOW (struct color) {.red = 1.0f, .green = 0.980f, .blue = 0.980f, .alpha = 1.0f}
+#define SPRINGGREEN (struct color) {.red = 0.0f, .green = 1.0f, .blue = 0.498f, .alpha = 1.0f}
+#define STEELBLUE (struct color) {.red = 0.275f, .green = 0.510f, .blue = 0.706f, .alpha = 1.0f}
+#define TAN (struct color) {.red = 0.824f, .green = 0.706f, .blue = 0.549f, .alpha = 1.0f}
+#define TEAL (struct color) {.red = 0.0f, .green = 0.502f, .blue = 0.502f, .alpha = 1.0f}
+#define THISTLE (struct color) {.red = 0.847f, .green = 0.749f, .blue = 0.847f, .alpha = 1.0f}
+#define TOMATO (struct color) {.red = 1.0f, .green = 0.388f, .blue = 0.278f, .alpha = 1.0f}
+#define TURQUOISE (struct color) {.red = 0.251f, .green = 0.878f, .blue = 0.816f, .alpha = 1.0f}
+#define VIOLET (struct color) {.red = 0.933f, .green = 0.510f, .blue = 0.933f, .alpha = 1.0f}
+#define WHEAT (struct color) {.red = 0.961f, .green = 0.871f, .blue = 0.702f, .alpha = 1.0f}
+#define WHITE (struct color) {.red = 1.0f, .green = 1.0f, .blue = 1.0f, .alpha = 1.0f}
+#define WHITESMOKE (struct color) {.red = 0.961f, .green = 0.961f, .blue = 0.961f, .alpha = 1.0f}
+#define YELLOW (struct color) {.red = 1.0f, .green = 1.0f, .blue = 0.0f, .alpha = 1.0f}
+#define YELLOWGREEN (struct color) {.red = 0.604f, .green = 0.804f, .blue = 0.196f, .alpha = 1.0f}
+
+#endif /* COLOR_H */

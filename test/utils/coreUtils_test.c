@@ -1,6 +1,8 @@
 #include <glib.h>
 #include <stdlib.h>
 
+#include "glib.h"
+
 #include "utils/coreUtils.h"
 
 void dir_exists_test()
@@ -248,6 +250,23 @@ void lower_bound_test()
     int key6 = -100;
     int low6 = lower_bound(&key6, base, 6, sizeof(int), cmp_int);
     g_assert_cmpint(low6, ==, -1);
+}
+
+void test_list_insert()
+{
+    GPtrArray *list = g_ptr_array_new();
+    char *i = "0";
+    char *j = "1";
+    char *k = "2";
+    g_ptr_array_insert(list, -1, i);
+    g_ptr_array_insert(list, 100, j);
+    g_ptr_array_insert(list, 1, k);
+
+    g_assert_cmpstr(g_ptr_array_index(list, 0), ==, i);
+    g_assert_cmpstr(g_ptr_array_index(list, 1), ==, j);
+    g_assert_cmpstr(g_ptr_array_index(list, 2), ==, k);
+
+    g_ptr_array_unref(list);
 }
 
 #define PREFIX "coreUtils"

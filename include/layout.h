@@ -6,11 +6,11 @@
 #include <lauxlib.h>
 #include "options.h"
 
-#include "layout_set.h"
-
 struct layout {
-    const char *symbol;
+    const char *name;
 
+    // this is an option set by the user
+    int current_max_area;
     /* number of all windows in layout even if they are invisible). Note that
      * floating windows don't belong to the layout and are thereby not counted */
     int n_all;
@@ -29,18 +29,20 @@ struct layout {
     // the absolute amount of master windows
     int n_master_abs;
     // the amount master windows
-    int nmaster;
+    int n_master;
     int lua_resize_function_ref;
     int lua_layout_ref;
     int lua_layout_copy_data_ref;
     int lua_layout_original_copy_data_ref;
+    GPtrArray *linked_layouts;
+    GPtrArray *linked_loaded_layouts;
 
     int lua_master_layout_data_ref;
     int lua_resize_data_ref;
 
-    int ws_id;
+    int tag_id;
 
-    struct options options;
+    struct options *options;
 };
 
 struct layout *create_layout(lua_State *L);
@@ -56,6 +58,8 @@ struct resize_constraints lua_toresize_constrains(lua_State *L);
 void copy_layout(struct layout *dest_lt, struct layout *src_lt);
 // copy layout and override all references with the given ones
 void copy_layout_safe(struct layout *dest_lt, struct layout *src_lt);
+
+int deep_copy_table(lua_State *L);
 
 int cmp_layout(const void *ptr1, const void *ptr2);
 int cmp_layout_to_string(const void *ptr1, const void *symbol_ptr);

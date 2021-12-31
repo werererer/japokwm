@@ -13,31 +13,33 @@
 #include "input_manager.h"
 #include "root.h"
 #include "tagset.h"
+#include "subsurface.h"
 
 void create_notify_layer_shell(struct wl_listener *listener, void *data)
 {
     struct wlr_layer_surface_v1 *wlr_layer_surface = data;
 
     if (!wlr_layer_surface->output) {
-        wlr_layer_surface->output = selected_monitor->wlr_output;
+        struct monitor *m = server_get_selected_monitor();
+        wlr_layer_surface->output = m->wlr_output;
     }
 
     union surface_t surface;
     surface.layer = wlr_layer_surface;
     struct client *client = create_client(LAYER_SHELL, surface);
 
-    LISTEN(&wlr_layer_surface->surface->events.commit, &client->commit, commitlayersurfacenotify);
+    LISTEN(&wlr_layer_surface->surface->events.commit, &client->commit, commit_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.map, &client->map, map_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.unmap, &client->unmap, unmap_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.destroy, &client->destroy, destroy_layer_surface_notify);
-    LISTEN(&wlr_layer_surface->events.new_popup, &client->new_popup, popup_handle_new_popup);
-    LISTEN(&wlr_layer_surface->events.destroy, &client->new_popup, popup_handle_new_popup);
+    LISTEN(&wlr_layer_surface->events.new_popup, &client->new_popup, client_handle_new_popup);
+    LISTEN(&wlr_layer_surface->surface->events.new_subsurface, &client->new_subsurface, handle_new_subsurface);
 
     struct monitor *m = wlr_layer_surface->output->data;
     client->m = m;
     struct container *con = create_container(client, m, false);
-    enum zwlr_layer_shell_v1_layer layer = wlr_layer_surface->client_pending.layer;
-    g_ptr_array_add(get_layer_list(m, layer), con);
+
+    add_container_to_tile(con);
 
     // Temporarily set the layer's current state to client_pending
     // so that we can easily arrange it
@@ -52,7 +54,7 @@ void map_layer_surface_notify(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, map);
     /* wlr_surface_send_enter(get_wlrsurface(c), c->surface.layer->output); */
     /* motion_notify(0); */
-    add_container_to_tile(c->con);
+    debug_print("length of layer stack: %i\n", server.layer_visual_stack_bottom->len);
 }
 
 void unmap_layer_surface(struct client *c)
@@ -68,8 +70,8 @@ void unmap_layer_surface_notify(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, unmap);
     unmap_layer_surface(c);
-    remove_container_from_tile(c->con);
     container_damage_whole(c->con);
+
 }
 
 void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
@@ -80,24 +82,25 @@ void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
         unmap_layer_surface(c);
     remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, c->con);
 
-    wl_list_remove(&c->commit.link);
+    wl_list_remove(&c->destroy.link);
     wl_list_remove(&c->map.link);
     wl_list_remove(&c->unmap.link);
-    wl_list_remove(&c->destroy.link);
     wl_list_remove(&c->new_popup.link);
+    wl_list_remove(&c->commit.link);
 
     if (c->surface.layer->output) {
         struct monitor *m = c->surface.layer->output->data;
-        if (m)
-            arrange_layers(m);
+        arrange_layers(m);
         c->surface.layer->output = NULL;
     }
+
+    remove_container_from_tile(c->con);
 
     destroy_container(c->con);
     destroy_client(c);
 }
 
-void commitlayersurfacenotify(struct wl_listener *listener, void *data)
+void commit_layer_surface_notify(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, commit);
     struct wlr_layer_surface_v1 *wlr_layer_surface = c->surface.layer;
@@ -154,6 +157,9 @@ GPtrArray *get_layer_list(struct monitor *m, enum zwlr_layer_shell_v1_layer laye
 
 void arrange_layers(struct monitor *m)
 {
+    if (!m)
+        return;
+
     struct wlr_box usable_area = m->geom;
     uint32_t layers_above_shell[] = {
         ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
@@ -166,10 +172,8 @@ void arrange_layers(struct monitor *m)
     arrangelayer(m, server.layer_visual_stack_bottom, &usable_area, true);
     arrangelayer(m, server.layer_visual_stack_background, &usable_area, true);
 
-    if (memcmp(&usable_area, &m->root->geom, sizeof(struct wlr_box))) {
-        m->root->geom = usable_area;
-        arrange(m);
-    }
+    set_root_geom(m->root, usable_area);
+    arrange();
 
     // Arrange non-exlusive surfaces from top->bottom
     arrangelayer(m, server.layer_visual_stack_overlay, &usable_area, false);
@@ -188,8 +192,8 @@ void arrange_layers(struct monitor *m)
             struct wlr_layer_surface_v1 *layer_surface = c->surface.layer;
             if (layer_surface->current.keyboard_interactive && layer_surface->mapped) {
                 // Deactivate the focused client.
-                // TODO fix this
-                focus_container(NULL);
+                // TODO fix this NULL is not supported in focus_container
+                tag_this_focus_container(NULL);
                 wlr_seat_keyboard_notify_enter(seat->wlr_seat,
                         get_wlrsurface(c),
                         kb->keycodes, kb->num_keycodes,
@@ -207,7 +211,7 @@ void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_ar
     for (int i = 0; i < array->len; i++) {
         struct container *con = g_ptr_array_index(array, i);
 
-        if (!tagset_visible_on(monitor_get_active_tagset(m), con))
+        if (!tagset_visible_on(m, con))
             continue;
 
         struct wlr_layer_surface_v1 *wlr_layer_surface = con->client->surface.layer;

@@ -20,6 +20,10 @@ struct keyboard {
     struct wl_listener modifiers;
     struct wl_listener key;
     struct wl_listener destroy;
+
+    struct wl_event_source *key_repeat_source;
+
+    char *repeat_binding;
 };
 
 typedef uint32_t xkb_keysym_t;
@@ -27,7 +31,7 @@ typedef uint32_t xkb_keysym_t;
 void cleanupkeyboard(struct wl_listener *listener, void *data);
 void create_keyboard(struct seat *seat, struct seat_device *device);
 void destroy_keyboard(struct keyboard *kb);
-void keypress(struct wl_listener *listener, void *data);
+void handle_key_event(struct wl_listener *listener, void *data);
 void keypressmod(struct wl_listener *listener, void *data);
 
 #endif /* KEYBOARD_H */

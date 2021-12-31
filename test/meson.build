@@ -2,16 +2,20 @@
 c_args = ['-I../include']
 
 test_files = files(
-    'tagset_test.c',
+    'event_handler_test.c',
+    'client_test.c',
     'container_test.c',
+    'stringop_test.c',
     'tile/tileUtils_test.c',
     'utils/coreUtils_test.c',
     'utils/gapUtils_test.c',
     'utils/stringUtils_test.c',
-    'workspace_test.c',
+    'tag_test.c',
+    'monitor_test.c',
     'scratchpad_test.c',
     'bitset_test.c',
-    'keybinding_test.c'
+    'keybinding_test.c',
+    'layout_test.c'
     )
 
 foreach test_file: test_files

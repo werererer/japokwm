@@ -76,10 +76,10 @@ end
 
 local function merge_boxes(box1, box2)
     if (box1 == nil) then
-        return Deep_copy(box2)
+        return Action.deep_copy(box2)
     end
     if (box2 == nil) then
-        return Deep_copy(box1)
+        return Action.deep_copy(box1)
     end
     local x1 = math.min(box1[X], box2[X])
     local y1 = math.min(box1[Y], box2[Y])
@@ -174,26 +174,26 @@ local function get_cissor_container_right(alpha_area)
 end
 
 local function get_opposite_direction(dir)
-    if dir == info.direction.left then
-        return info.direction.right
-    elseif dir == info.direction.right then
-        return info.direction.left
-    elseif dir == info.direction.top then
-        return info.direction.bottom
-    elseif dir == info.direction.bottom then
-        return info.direction.top
+    if dir == Direction.left then
+        return Direction.right
+    elseif dir == Direction.right then
+        return Direction.left
+    elseif dir == Direction.top then
+        return Direction.bottom
+    elseif dir == Direction.bottom then
+        return Direction.top
     end
 end
 
 local function get_cissor_container(alpha_area, dir)
     local area = nil
-    if dir == info.direction.left then
+    if dir == Direction.left then
         area = get_cissor_container_left(alpha_area)
-    elseif dir == info.direction.right then
+    elseif dir == Direction.right then
         area = get_cissor_container_right(alpha_area)
-    elseif dir == info.direction.top then
+    elseif dir == Direction.top then
         area = get_cissor_container_top(alpha_area)
-    elseif dir == info.direction.bottom then
+    elseif dir == Direction.bottom then
         area = get_cissor_container_bottom(alpha_area)
     end
     return area
@@ -230,9 +230,9 @@ end
 
 local function get_alpha_area_from_container(con, dir)
     local area = nil
-    if dir == info.direction.left or dir == info.direction.right then
+    if dir == Direction.left or dir == Direction.right then
         area = get_alpha_container_horizontal(con)
-    elseif dir == info.direction.top or dir == info.direction.bottom then
+    elseif dir == Direction.top or dir == Direction.bottom then
         area = get_alpha_container_vertical(con)
     end
     return area
@@ -248,7 +248,7 @@ local function is_invalid(con)
     return false
 end
 
-local function apply_resize_function(lt_data_el, o_lt_data_el, i, n, directions)
+local function apply_resize_function(lt_data_el, i, n, directions)
     for x = 1,#directions do
         local dir = directions[x]
 
@@ -268,25 +268,26 @@ local function apply_resize_function(lt_data_el, o_lt_data_el, i, n, directions)
 end
 
 -- TODO refactor and simplify
-local function resize_all(lt_data_el, o_layout_data_el, i, n, d)
+local function resize_all(lt_data_el, i, n, d)
     if i > #lt_data_el then
         return lt_data_el
     end
 
     local directions = Get_directions(d)
-    local layout_data_element = Deep_copy(lt_data_el)
+    local layout_data_element = Action.deep_copy(lt_data_el)
 
     -- if Is_resize_locked(layout_data_element, o_layout_data_el, i, n, directions) then
     --     return layout_data_element
     -- end
 
-    apply_resize_function(layout_data_element, o_layout_data_el, i, n, directions)
+    apply_resize_function(layout_data_element, i, n, directions)
 
     return layout_data_element
 end
 
+
 local function get_layout_data_element_id(o_layout_data)
-    return math.max(math.min(info.get_this_container_count(), #o_layout_data), 1)
+    return math.max(math.min(Info.get_this_container_count(), #o_layout_data), 1)
 end
 
 -- returns 0 if not found
@@ -302,20 +303,18 @@ local function get_layout_element(layout_data_element_id, resize_data)
     return 0
 end
 
-function Resize_main_all(layout_data, o_layout_data, resize_data, n, direction)
-    local layout_data_element_id = get_layout_data_element_id(o_layout_data)
-    local layout_id = get_layout_element(layout_data_element_id, resize_data)
+function Resize_main_all(lt, n, direction)
+    local layout_data_element_id = get_layout_data_element_id(lt.o_layout_data)
+    local layout_id = get_layout_element(layout_data_element_id, lt.resize_data)
     if layout_id == 0 then
-        return layout_data
+        return lt.layout_data
     end
 
-    local resize_element = resize_data[layout_id]
-    for i=1,#resize_element do
-        local id = resize_element[i]
-        if id <= #o_layout_data then
-            -- local id = 5
-            layout_data[id] = resize_all(layout_data[id], o_layout_data[id], 1, n, direction)
+    local resize_element = lt.resize_data[layout_id]
+    for _,id in ipairs(resize_element) do
+        if id <= #lt.o_layout_data then
+            lt.layout_data[id] = resize_all(lt.layout_data[id], 1, n, direction)
         end
     end
-    return layout_data
+    return lt.layout_data
 end

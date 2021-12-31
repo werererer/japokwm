@@ -1,11 +1,14 @@
 #ifndef BITSET_H
 #define BITSET_H
 
+/* this data struct acts as an infinite list like you may know from haskell. We
+ * need this data struct so that the user can create new tags lazily.*/
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#include "glib.h"
+#include <glib.h>
 
 /****************** DEFINTIIONS ******************/
 
@@ -22,35 +25,50 @@ typedef void (*bit_operator_t)(bool*, const bool*);
 
 /****************** STRUCTURES ******************/
 
+/*
+ * This is an infinit data structure. That means it has no start and no end and
+ * you can get the value of any index you want at any time and set each value.
+ * The data structure ensures that we don't waste memory by doing such
+ * operations.
+ * */
 typedef struct BitSet {
-    GPtrArray *bits;
-    size_t size;
+    GHashTable *bytes;
+    // you should set it to the parent
+    void *data;
+    int low;
+    int high;
 } BitSet;
 
 /****************** INTERFACE ******************/
 
 /* Setup */
-BitSet *bitset_create(size_t minimum_number_of_bits);
+BitSet *bitset_create();
+BitSet *bitset_create_with_data(void *data);
 
 BitSet* bitset_copy(BitSet* source);
 // both dest and source must be initialized
 void bitset_assign_bitset(BitSet** dest, BitSet* source);
+// note the it reverses the bitset from the bitset up to end-1 because it is
+// most of the time nicer to write according to python
+void bitset_reverse(BitSet *bitset, int start, int end);
 int bitset_swap(BitSet* destination, BitSet* source);
+int bitset_equals(BitSet* bitset1, BitSet* bitset2);
 
 void bitset_destroy(BitSet* bitset);
 
 /* Factory */
 BitSet *bitset_from_value(uint64_t value);
+BitSet *bitset_from_value_reversed(uint64_t value);
 
 /* Logical Operations */
 int byte_wise_operation(BitSet* destination,
                                                 const BitSet* source,
                                                 bit_operator_t byte_operation);
 
-int bitset_and(BitSet* destination, const BitSet* source);
-int bitset_or(BitSet* destination, const BitSet* source);
-int bitset_xor(BitSet* destination, const BitSet* source);
-int bitset_flip(BitSet* bitset);
+int bitset_and(BitSet* destination, BitSet* source);
+int bitset_or(BitSet* destination, BitSet* source);
+int bitset_xor(BitSet* destination, BitSet* source);
+int bitset_flip(BitSet* bitset, int start, int end);
 
 /* Access */
 int bitset_set(BitSet* bitset, size_t index);
@@ -58,37 +76,22 @@ int bitset_reset(BitSet* bitset, size_t index);
 int bitset_assign(BitSet* bitset, size_t index, bool value);
 int bitset_toggle(BitSet* bitset, size_t index);
 
-int bitset_test(const BitSet* bitset, size_t index);
-const uint8_t* byte_const_get(const BitSet* bitset, size_t index);
-uint8_t* byte_get(BitSet* bitset, size_t index);
+int bitset_test(BitSet* bitset, size_t index);
+const bool byte_const_get(BitSet* bitset, size_t index);
 
 int bitset_msb(BitSet* bitset);
-int bitset_lsb(BitSet* bitset);
 
 int bitset_reset_all(BitSet* bitset);
 int bitset_set_all(BitSet* bitset);
 int bitset_set_all_to_mask(BitSet* bitset, uint8_t mask);
 void bitset_clear(BitSet* bitset);
 
-/* Size Management */
-int bitset_push(BitSet* bitset, bool value);
-int bitset_push_one(BitSet* bitset);
-int bitset_push_zero(BitSet* bitset);
-void bitset_pop(BitSet* bitset);
-
-/* Capacity Management */
-void bitset_reserve(BitSet* bitset, size_t minimum_number_of_bits);
-void bitset_grow(BitSet* bitset);
-void bitset_shrink(BitSet* bitset);
-
 /* Information */
-size_t bitset_capacity(const BitSet* bitset);
-size_t bitset_size_in_bytes(const BitSet* bitset);
-
 int bitset_count(BitSet* bitset);
 int bitset_all(BitSet* bitset);
 int bitset_any(BitSet* bitset);
 int bitset_none(BitSet* bitset);
+char *bitset_to_string(BitSet* bitset);
 
 /* Debugging */
 void print_bitset(BitSet *bitset);
@@ -99,25 +102,15 @@ void print_bitset(BitSet *bitset);
 #define LAST_BIT_MASK(value) (1ULL << LAST_BIT_INDEX(value))
 #define LAST_BIT(value) \
     ((value & LAST_BIT_MASK(value)) >> LAST_BIT_INDEX(value))
+#define FIRST_BIT(value) value & 1
 
 #define CEIL(x) ((x == ((int)(x))) ? x : ((int)(x)) + 1)
 #define BITS_TO_BYTES(bits) CEIL((bits) / 8.0)
-
-/* Popcount Masks */
-#define POPCOUNT_MASK1 0x55
-#define POPCOUNT_MASK2 0x33
-#define POPCOUNT_MASK3 0x0F
-
-uint8_t _byte_popcount(uint8_t value);
-
-int _bitset_increment_size(BitSet* bitset);
+#define DEFAULT_ALLOCATED_BYTES 1
+#define DEFAULT_NUMBER_OF_BITS 8
 
 void _bit_and(bool* first, const bool* second);
 void _bit_or(bool* first, const bool* second);
 void _bit_xor(bool* first, const bool* second);
-
-size_t _byte_index(size_t index);
-uint8_t _bitset_index(size_t index);
-uint8_t _bitset_offset(size_t index);
 
 #endif /* BITSET_H */

@@ -8,12 +8,12 @@
 #include "keybinding.h"
 #include "monitor.h"
 #include "popup.h"
+#include "render/render.h"
 #include "seat.h"
 #include "server.h"
 #include "tile/tileUtils.h"
-#include "workspace.h"
+#include "tag.h"
 
-static struct container *grabc = NULL;
 static int offsetx, offsety;
 
 // TODO refactor this function
@@ -132,7 +132,7 @@ static int hide_notify(void *data) {
 
 struct cursor *create_cursor(struct seat *seat)
 {
-    struct cursor *cursor = calloc(1, sizeof(struct cursor));
+    struct cursor *cursor = calloc(1, sizeof(*cursor));
 
     struct wlr_cursor *wlr_cursor = wlr_cursor_create();
     cursor->wlr_cursor = wlr_cursor;
@@ -146,6 +146,7 @@ struct cursor *create_cursor(struct seat *seat)
             hide_notify, cursor);
 
     cursor->xcursor_mgr = wlr_xcursor_manager_create(NULL, 24);
+    wlr_xcursor_manager_load(cursor->xcursor_mgr, 1);
 
     /*
      * wlr_cursor *only* displays an image on screen. It does not move around
@@ -177,16 +178,9 @@ struct cursor *create_cursor(struct seat *seat)
 
 void destroy_cursor(struct cursor *cursor)
 {
-    wl_list_remove(&cursor->axis.link);
-    wl_list_remove(&cursor->button.link);
-    wl_list_remove(&cursor->frame.link);
-    wl_list_remove(&cursor->motion.link);
-    wl_list_remove(&cursor->motion_absolute.link);
+    wlr_xcursor_manager_destroy(cursor->xcursor_mgr);
 
-    wl_list_remove(&cursor->request_set_cursor.link);
-    wl_list_remove(&cursor->image_surface_destroy.link);
-
-    wl_list_remove(&cursor->constraint_commit.link);
+    wlr_cursor_destroy(cursor->wlr_cursor);
 
     free(cursor);
 }
@@ -254,11 +248,11 @@ static bool handle_move_resize(struct cursor *cursor)
     struct wlr_cursor *wlr_cursor = cursor->wlr_cursor;
     switch (cursor_mode) {
         case CURSOR_MOVE:
-            move_container(grabc, wlr_cursor, offsetx, offsety);
+            move_container(server.grab_c, wlr_cursor, offsetx, offsety);
             return true;
             break;
         case CURSOR_RESIZE:
-            resize_container(grabc, wlr_cursor, 0, 0);
+            resize_container(server.grab_c, wlr_cursor, 0, 0);
             return true;
             break;
         default:
@@ -325,27 +319,30 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
 
     pointer_focus(cursor->seat, final_focus_surface, sx, sy, time);
 
-    if (focus_con) {
-        struct container *sel = get_focused_container(selected_monitor);
-        struct workspace *ws = monitor_get_active_workspace(selected_monitor);
-        if (!ws->layout->options.sloppy_focus)
-            return;
-        if (popups_exist())
-            return;
-        if (xwayland_popups_exist())
-            return;
-
-        if (focus_con != sel) {
-            server.xy_container_is_locked = true;
-        }
-        if (server.old_xy_container != focus_con) {
-            server.xy_container_is_locked = false;
-        }
-        if (!server.xy_container_is_locked) {
-            focus_container(focus_con);
-        }
-        server.old_xy_container = focus_con;
+    if (!focus_con) {
+        return;
     }
+    if (is_popup_under_cursor) {
+        return;
+    }
+
+    struct monitor *m = server_get_selected_monitor();
+    struct container *sel = monitor_get_focused_container(m);
+    struct tag *tag = monitor_get_active_tag(m);
+    struct layout *lt = tag_get_layout(tag);
+    if (!lt->options->sloppy_focus) {
+        return;
+    }
+    if (focus_con != sel) {
+        server.xy_container_is_locked = true;
+    }
+    if (server.old_xy_container != focus_con) {
+        server.xy_container_is_locked = false;
+    }
+    if (!server.xy_container_is_locked) {
+        tag_this_focus_container(focus_con);
+    }
+    server.old_xy_container = focus_con;
 }
 
 void motion_notify(struct cursor *cursor, uint32_t time_msec,
@@ -359,7 +356,8 @@ void motion_notify(struct cursor *cursor, uint32_t time_msec,
             dx, dy, dx_unaccel, dy_unaccel);
 
     if (!cursor->active_constraint) {
-        struct container *sel_con = get_focused_container(selected_monitor);
+        struct monitor *m = server_get_selected_monitor();
+        struct container *sel_con = monitor_get_focused_container(m);
         if (sel_con) {
             cursor->active_constraint = wlr_pointer_constraints_v1_constraint_for_surface(
                     server.pointer_constraints, get_wlrsurface(sel_con->client), wlr_seat);
@@ -409,7 +407,9 @@ void handle_cursor_button(struct wl_listener *listener, void *data)
                 struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat->wlr_seat);
                 int mods = wlr_keyboard_get_modifiers(kb);
 
-                handle_keybinding(mods, sym);
+                char *bind = mod_to_keybinding(mods, sym);
+                handle_keyboard_key(bind);
+                free(bind);
                 break;
             }
         case WLR_BUTTON_RELEASED:
@@ -421,7 +421,6 @@ void handle_cursor_button(struct wl_listener *listener, void *data)
                         "left_ptr", cursor->wlr_cursor);
                 cursor->cursor_mode = CURSOR_NORMAL;
                 /* Drop the window off on its new monitor */
-                debug_print("handle_cursor_button\n");
                 struct monitor *m = xy_to_monitor(cursor->wlr_cursor->x,
                         cursor->wlr_cursor->y);
                 focus_monitor(m);
@@ -446,23 +445,24 @@ void handle_cursor_button(struct wl_listener *listener, void *data)
 
 void move_resize(struct cursor *cursor, int ui)
 {
-    grabc = xy_to_container(cursor->wlr_cursor->x, cursor->wlr_cursor->y);
-    if (!grabc)
+    server.grab_c = xy_to_container(cursor->wlr_cursor->x, cursor->wlr_cursor->y);
+    if (!server.grab_c)
         return;
-    if (grabc->client->type == LAYER_SHELL)
+    if (server.grab_c->client->type == LAYER_SHELL)
         return;
 
-    struct monitor *m = container_get_monitor(grabc);
+    struct monitor *m = container_get_monitor(server.grab_c);
     struct layout *lt = get_layout_in_monitor(m);
     // all floating windows will be tiled. Thats why you can't make new windows
     // tiled
-    if (lt->options.arrange_by_focus)
+    if (lt->options->arrange_by_focus)
         return;
 
     /* Float the window and tell motion_notify to grab it */
-    container_set_floating(grabc, container_fix_position, true);
+    container_set_floating(server.grab_c, container_fix_position, true);
 
-    struct wlr_box *grabc_geom = container_get_current_geom(grabc);
+    struct tag *con_tag = container_get_current_tag(server.grab_c);
+    struct wlr_box *grabc_geom = container_get_current_geom_at_tag(server.grab_c, con_tag);
     struct wlr_cursor *wlr_cursor = cursor->wlr_cursor;
     switch (cursor->cursor_mode = ui) {
         case CURSOR_MOVE:
@@ -545,11 +545,8 @@ static void warp_to_constraint_cursor_hint(struct cursor *cursor)
         double sx = constraint->current.cursor_hint.x;
         double sy = constraint->current.cursor_hint.y;
 
-        /* struct sway_view *view = view_from_wlr_surface(constraint->surface); */
-        /* struct sway_container *con = view->container; */
-
-        struct monitor *m = selected_monitor;
-        struct container *con = get_focused_container(m);
+        struct monitor *m = server_get_selected_monitor();
+        struct container *con = monitor_get_focused_container(m);
         struct wlr_box *con_geom = container_get_current_geom(con);
         double lx = sx + con_geom->x - m->geom.x;
         double ly = sy + con_geom->x - m->geom.y;
@@ -587,7 +584,8 @@ void handle_constraint_destroy(struct wl_listener *listener, void *data) {
 static void check_constraint_region(struct cursor *cursor) {
     struct wlr_pointer_constraint_v1 *constraint = cursor->active_constraint;
     pixman_region32_t *region = &constraint->region;
-    struct container *con = get_focused_container(selected_monitor);
+    struct monitor *m = server_get_selected_monitor();
+    struct container *con = monitor_get_focused_container(m);
     if (cursor->active_confine_requires_warp && con) {
         cursor->active_confine_requires_warp = false;
         struct wlr_box *con_geom = container_get_current_geom(con);
@@ -677,8 +675,7 @@ void handle_new_pointer_constraint(struct wl_listener *listener, void *data)
     struct wlr_pointer_constraint_v1 *wlr_constraint = data;
     struct seat *seat = wlr_constraint->seat->data;
 
-    struct pointer_constraint *constraint =
-        calloc(1, sizeof(struct pointer_constraint));
+    struct pointer_constraint *constraint = calloc(1, sizeof(*constraint));
     constraint->cursor = seat->cursor;
     constraint->wlr_constraint = wlr_constraint;
 
@@ -688,7 +685,8 @@ void handle_new_pointer_constraint(struct wl_listener *listener, void *data)
     constraint->destroy.notify = handle_constraint_destroy;
     wl_signal_add(&wlr_constraint->events.destroy, &constraint->destroy);
 
-    struct container *con = get_focused_container(selected_monitor);
+    struct monitor *m = server_get_selected_monitor();
+    struct container *con = monitor_get_focused_container(m);
     if (con) {
         struct wlr_surface *surface = get_wlrsurface(con->client);
         if (surface == wlr_constraint->surface) {

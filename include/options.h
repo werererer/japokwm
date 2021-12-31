@@ -7,11 +7,11 @@
 #include <glib.h>
 #include "event_handler.h"
 
-#define BLACK {0.0f, 0.0f, 0.0f, 1.0f}
-#define WHITE {1.0f, 1.0f, 1.0f, 1.0f}
-#define RED {1.0f, 0.0f, 0.0f, 1.0f}
-#define GREEN {0.0f, 1.0f, 0.0f, 1.0f}
-#define BLUE {0.0f, 0.0f, 1.0f, 1.0f}
+#include "color.h"
+
+struct tag;
+struct keybinding;
+struct layout;
 
 enum hidden_edge_borders {
     NONE,
@@ -33,12 +33,12 @@ struct options {
     int tile_border_px;
     int float_border_px;
     int modkey;
-    float root_color[4];
-    float border_color[4];
-    float focus_color[4];
-    float text_color[4];
-    float sel_overlay_color[4];
-    float sel_text_color[4];
+    struct color root_color;
+    struct color border_color;
+    struct color focus_color;
+    struct color text_color;
+    struct color sel_overlay_color;
+    struct color sel_text_color;
 
     struct resize_constraints layout_constraints;
     struct resize_constraints master_constraints;
@@ -55,20 +55,28 @@ struct options {
     int outer_gap;
 
     bool arrange_by_focus;
-    int resize_dir;
-
-    struct event_handler *event_handler;
+    enum wlr_edges resize_dir;
 
     enum wlr_edges hidden_edges;
     bool smart_hidden_edges;
-    bool automatic_workspace_naming;
+    bool automatic_tag_naming;
 
     GPtrArray *keybindings;
+
+    int new_position_func_ref;
+    int new_focus_position_func_ref;
 };
 
-struct options get_default_options();
-void load_default_keybindings();
+struct options *create_options();
+void destroy_options(struct options *options);
+void options_reset(struct options *options);
+void load_default_keybindings(struct options *options);
 GPtrArray *create_tagnames();
 void copy_options(struct options *dest_option, struct options *src_option);
+
+void options_add_keybinding(struct options *options, struct keybinding *keybinding);
+
+int tag_get_new_position(struct tag *tag);
+int tag_get_new_focus_position(struct tag *tag);
 
 #endif /* OPTIONS_H */

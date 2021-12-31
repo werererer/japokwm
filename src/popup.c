@@ -15,8 +15,9 @@
 #include "utils/coreUtils.h"
 #include "xdg-shell-protocol.h"
 
+static void popup_handle_new_popup(struct wl_listener *listener, void *data);
 static void popup_handle_new_subpopup(struct wl_listener *listener, void *data);
-static struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popup,
+struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popup,
         struct wlr_box *parent_geom, struct container* toplevel);
 static void destroy_popup(struct xdg_popup *xdg_popup);
 static void popup_handle_commit(struct wl_listener *listener, void *data);
@@ -24,11 +25,10 @@ static void popup_handle_map(struct wl_listener *listener, void *data);
 static void popup_handle_unmap(struct wl_listener *listener, void *data);
 static void popup_damage(struct xdg_popup *xdg_popup, bool whole);
 
-static struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popup,
+struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popup,
         struct wlr_box *parent_geom, struct container* toplevel)
 {
-    struct xdg_popup *popup = xdg_popup->base->data =
-        calloc(1, sizeof(struct xdg_popup));
+    struct xdg_popup *popup = xdg_popup->base->data = calloc(1, sizeof(*popup));
     popup->xdg = xdg_popup;
     popup->toplevel = toplevel;
 
@@ -46,14 +46,12 @@ static struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *x
     popup->geom.height = popup->xdg->geometry.height;
     popup->m = m;
 
-    popup->map.notify = popup_handle_map;
-    wl_signal_add(&popup->xdg->base->events.map, &popup->map);
-    popup->unmap.notify = popup_handle_unmap;
-    wl_signal_add(&popup->xdg->base->events.unmap, &popup->unmap);
-    popup->new_popup.notify = popup_handle_new_subpopup;
-    wl_signal_add(&popup->xdg->base->events.new_popup, &popup->new_popup);
-    popup->destroy.notify = popup_handle_destroy;
-    wl_signal_add(&popup->xdg->base->events.destroy, &popup->destroy);
+    LISTEN(&popup->xdg->base->events.map, &popup->map, popup_handle_map);
+    LISTEN(&popup->xdg->base->events.unmap, &popup->unmap, popup_handle_unmap);
+    LISTEN(&popup->xdg->base->events.new_popup, &popup->new_popup, popup_handle_new_popup);
+    LISTEN(&popup->xdg->base->events.destroy, &popup->destroy, popup_handle_destroy);
+
+    g_ptr_array_insert(server.popups, 0, popup);
     return popup;
 }
 
@@ -102,28 +100,14 @@ static void popup_damage(struct xdg_popup *xdg_popup, bool whole)
     output_damage_surface(m, surface, &xdg_popup->geom, whole);
 }
 
-void popup_handle_new_popup(struct wl_listener *listener, void *data)
-{
-    struct client *client = wl_container_of(listener, client, new_popup);
-    struct wlr_xdg_popup *xdg_popup = data;
-
-    struct container *con = client->con;
-    struct monitor *m = container_get_monitor(con);
-    if (m != selected_monitor)
-        return;
-    struct xdg_popup *popup = create_popup(m, xdg_popup, container_get_current_geom(con), con);
-    g_ptr_array_insert(server.popups, 0, popup);
-}
-
-static void popup_handle_new_subpopup(struct wl_listener *listener, void *data)
+static void popup_handle_new_popup(struct wl_listener *listener, void *data)
 {
     struct xdg_popup *parent_popup =
         wl_container_of(listener, parent_popup, new_popup);
     struct wlr_xdg_popup *xdg_popup = data;
 
-    struct xdg_popup *popup = create_popup(parent_popup->m, xdg_popup,
+    create_popup(parent_popup->m, xdg_popup,
             &parent_popup->geom, parent_popup->toplevel);
-    g_ptr_array_insert(server.popups, 0, popup);
 }
 
 void popup_handle_destroy(struct wl_listener *listener, void *data)

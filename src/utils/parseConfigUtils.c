@@ -11,17 +11,20 @@
 #include <execinfo.h>
 #include <sys/stat.h>
 #include <libnotify/notify.h>
-#include <pthread.h>
 #include <fts.h>
 
+#include "tile/tileUtils.h"
 #include "options.h"
 #include "server.h"
 #include "utils/writeFile.h"
 #include "stringop.h"
 #include "utils/coreUtils.h"
 #include "rules/mon_rule.h"
-#include "workspace.h"
+#include "tag.h"
 #include "rules/rule.h"
+#include "translationLayer.h"
+#include "ipc-server.h"
+#include "tagset.h"
 
 static const char *plugin_relative_paths[] = {
     "autoload",
@@ -32,20 +35,17 @@ static const char *config_file = "init.lua";
 static const char *error_file = "init.err";
 static int error_fd = -1;
 
-static int load_file(lua_State *L, const char *file);
-
 // returns 0 upon success and 1 upon failure
-static int load_file(lua_State *L, const char *file)
+int load_file(lua_State *L, const char *file)
 {
-    printf("load file: %s\n", file);
     if (!file_exists(file)) {
         return EXIT_FAILURE;
     }
 
     if (luaL_loadfile(L, file)) {
         const char *errmsg = luaL_checkstring(L, -1);
-        lua_pop(L, 1);
         handle_error(errmsg);
+        lua_pop(L, 1);
         return EXIT_FAILURE;
     }
 
@@ -63,10 +63,29 @@ GPtrArray *create_default_config_paths()
     return config_paths;
 }
 
-char *get_config_file(const char *file)
+GPtrArray *create_default_user_data_paths()
 {
-    for (size_t i = 0; i < server.config_paths->len; ++i) {
-        char *path = strdup(g_ptr_array_index(server.config_paths, i));
+    GPtrArray *user_data_paths = g_ptr_array_new();
+    g_ptr_array_add(user_data_paths, "/usr/local/share/japokwm");
+    g_ptr_array_add(user_data_paths, "/usr/share/japokwm");
+    return user_data_paths;
+}
+
+GPtrArray *create_default_layout_paths()
+{
+    GPtrArray *layout_paths = g_ptr_array_new();
+    g_ptr_array_add(layout_paths, "$XDG_CONFIG_HOME/japokwm/");
+    g_ptr_array_add(layout_paths, "$HOME/.config/japokwm/");
+    g_ptr_array_add(layout_paths, "/etc/japokwm/");
+    g_ptr_array_add(layout_paths, "/usr/local/share/japokwm");
+    g_ptr_array_add(layout_paths, "/usr/share/japokwm");
+    return layout_paths;
+}
+
+char *get_config_file(GPtrArray *paths, const char *file)
+{
+    for (size_t i = 0; i < paths->len; ++i) {
+        char *path = strdup(g_ptr_array_index(paths, i));
         join_path(&path, file);
         expand_path(&path);
         if (file_exists(path))
@@ -78,12 +97,12 @@ char *get_config_file(const char *file)
 
 char *get_config_layout_path()
 {
-    return get_config_file("layouts");
+    return get_config_file(server.layout_paths, "layouts");
 }
 
-char *get_config_dir(const char *file)
+char *get_config_dir(GPtrArray *paths, const char *file)
 {
-    char *abs_file = get_config_file(file);
+    char *abs_file = get_config_file(paths, file);
     if (!abs_file)
         return NULL;
 
@@ -110,7 +129,10 @@ void append_to_lua_path(lua_State *L, const char *path)
 
 static int load_plugin_paths(lua_State *L)
 {
-    char *base_path = get_config_dir(config_file);
+    char *base_path = get_config_dir(server.config_paths, config_file);
+    if (!base_path) {
+        return 1;
+    }
     for (int i = 0; i < LENGTH(plugin_relative_paths); i++) {
         char *base = strdup(base_path);
         const char *path = plugin_relative_paths[i];
@@ -127,7 +149,7 @@ static int load_plugin_paths(lua_State *L)
 // returns 0 upon success and 1 upon failure
 static int load_default_config(lua_State *L)
 {
-    char *file_path = get_config_file(config_file);
+    char *file_path = get_config_file(server.config_paths, config_file);
     if (!file_path)
         return EXIT_FAILURE;
 
@@ -141,6 +163,8 @@ static int load_default_config(lua_State *L)
 int load_config(lua_State *L)
 {
     int success = 0;
+    init_global_config_variables(L);
+
     if (server.config_file != NULL && strcmp(server.config_file, "") != 0) {
         debug_print("load file\n");
         success = load_file(L, server.config_file);
@@ -153,17 +177,46 @@ int load_config(lua_State *L)
 
 void load_default_lua_config(lua_State *L)
 {
-    server.default_layout->options = get_default_options();
-    remove_loaded_layouts(server.workspaces);
-    load_default_keybindings();
+    options_reset(server.default_layout->options);
+
+    list_clear(server.default_layout->options->tag_names, NULL);
+    GPtrArray *tagnames = server.default_layout->options->tag_names;
+    g_ptr_array_add(tagnames, "0:1");
+    g_ptr_array_add(tagnames, "1:2");
+    g_ptr_array_add(tagnames, "2:3");
+    g_ptr_array_add(tagnames, "3:4");
+    server.default_layout->name = "";
+    load_tags(server_get_tags(), tagnames);
+
+    bitset_set(server.previous_bitset, server.previous_tag);
+
+    tags_remove_loaded_layouts(server_get_tags());
+
+    // FIXME: you have to reconnect your tags because tags may have
+    // been destroyed that belong to the tagset this may lead to segfaults
+    for (int i = 0; i < server_get_tag_count(); i++) {
+        struct tag *tag = get_tag(i);
+        set_default_layout(tag);
+    }
+
+    for (int i = 0; i < server.mons->len; i++) {
+        struct monitor *m = g_ptr_array_index(server.mons, i);
+        struct tag *tag = monitor_get_active_tag(m);
+        tagset_focus_tags(tag, tag->prev_tags);
+    }
+
+    ipc_event_tag();
+
+    arrange();
 }
 
 // returns 0 upon success and 1 upon failure
 int init_utils(lua_State *L)
 {
+    init_global_config_variables(L);
     load_plugin_paths(L);
     const char *tile_file = "tile.lua";
-    char *config_dir = get_config_dir(tile_file);
+    char *config_dir = get_config_dir(server.user_data_paths, tile_file);
 
     if (!config_dir)
         return EXIT_FAILURE;
@@ -185,7 +238,17 @@ int init_utils(lua_State *L)
 
 void init_error_file()
 {
-    char *ef_dir = get_config_dir(config_file);
+    char *ef_dir = NULL;
+    if (server.custom_path) {
+        if (file_exists(server.custom_path)) {
+            ef_dir = strdup(server.custom_path);
+        } else {
+            ef_dir = strdup(server.error_path);
+        }
+    } else {
+        ef_dir = strdup(server.error_path);
+    }
+
     mkdir(ef_dir, 0777);
     char *ef = strdup(ef_dir);
     join_path(&ef, error_file);
@@ -196,6 +259,7 @@ void init_error_file()
 
 void close_error_file()
 {
+    assert(error_fd >= 0);
     close(error_fd);
     error_fd = -1;
 }
@@ -205,8 +269,8 @@ int lua_call_safe(lua_State *L, int nargs, int nresults, int msgh)
     int lua_status = lua_pcall(L, nargs, nresults, msgh);
     if (lua_status != LUA_OK) {
         const char *errmsg = luaL_checkstring(L, -1);
-        lua_pop(L, 1);
         handle_error(errmsg);
+        lua_pop(L, 1);
     }
     return lua_status;
 }
@@ -227,24 +291,59 @@ int lua_getglobal_safe(lua_State *L, const char *name)
 static void *_notify_msg(void *arg)
 {
     char *msg = arg;
+    strip_whitespace(msg);
+    if (strcmp(msg, "") == 0) {
+        goto exit_cleanup;
+    }
+
     notify_init(msg);
-    NotifyNotification* n = notify_notification_new ("Error in config file", 
+    NotifyNotification* n = notify_notification_new("Japokwm.message: ", 
             msg,
             0);
-    notify_notification_set_timeout(n, 10000); // 10 seconds
+    notify_notification_set_timeout(n, 6000); // 6 seconds
 
-    if (!notify_notification_show(n, 0)) 
+    /* NOTE: this causes a lot of thread warnings in valgrind's helgrind tool. I
+     * am pretty sure that this application is not of fault(or I hope so :O)
+     * because similiar errors can be reproduced by calling
+     * `valgrind -tool=helgrind notify-send "test"`. Btw I also tested this by
+     * removing the thread that calls this function with the same errors
+     * reappearing */
+    if (!notify_notification_show(n, 0))
     {
         printf("showing notification failed!\n");
     }
+
+exit_cleanup:
+    free(msg);
     return NULL;
 }
 
 void notify_msg(const char *msg)
 {
+    if (!msg)
+        return;
+    // we need to call this in a thread because sometimes notifications hang or
+    // so I experienced.
     pthread_t thread;
-    pthread_create(&thread, NULL, _notify_msg, (char *)msg);
+    pthread_create(&thread, NULL, _notify_msg, strdup(msg));
     pthread_detach(thread);
+}
+
+void write_to_error_file(const char *msg)
+{
+    if (error_fd < 0)
+        return;
+
+    write_to_file(error_fd, msg);
+}
+
+void write_line_to_error_file(const char *msg)
+{
+    if (error_fd < 0)
+        return;
+
+    write_to_file(error_fd, msg);
+    write_to_file(error_fd, "\n");
 }
 
 void handle_error(const char *msg)
@@ -254,13 +353,27 @@ void handle_error(const char *msg)
     printf("%s\n", msg);
     load_default_lua_config(L);
 
-    debug_print("error_fd: %i\n", error_fd);
+    // if error file not initialized
+    if (error_fd < 0)
+        return;
+
+    write_line_to_error_file(msg);
+}
+
+void handle_warning(void *user_data, const char *msg, int i)
+{
+    notify_msg(msg);
+
+    char *final_message = g_strconcat("WARNING: ", msg, "\n", NULL);
+    printf("%s", final_message);
+
     // if error file not initialized
     if (error_fd < 0)
         return;
 
     write_to_file(error_fd, msg);
     write_to_file(error_fd, "\n");
+    free(final_message);
 }
 
 const char *get_config_str(lua_State *L, int idx)
@@ -325,7 +438,7 @@ struct rule *get_config_rule(lua_State *L)
     lua_getfield(L, -1, "class");
     const char *id = get_config_str(L, -1);
     lua_pop(L, 1);
-    lua_getfield(L, -1, "name");
+    lua_getfield(L, -1, "title");
     const char *title = get_config_str(L, -1);
     lua_pop(L, 1);
     lua_getfield(L, -1, "callback");

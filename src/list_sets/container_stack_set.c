@@ -4,11 +4,13 @@
 #include "container.h"
 #include "list_sets/list_set.h"
 #include "server.h"
-#include "workspace.h"
+#include "tag.h"
+#include "monitor.h"
+#include "tagset.h"
 
 struct container_set *create_container_set()
 {
-    struct container_set *con_set = calloc(1, sizeof(struct container_set));
+    struct container_set *con_set = calloc(1, sizeof(*con_set));
 
     con_set->tiled_containers = g_ptr_array_new();
 
@@ -17,21 +19,21 @@ struct container_set *create_container_set()
 
 void destroy_container_set(struct container_set *con_set)
 {
-    g_ptr_array_free(con_set->tiled_containers, FALSE);
+    g_ptr_array_unref(con_set->tiled_containers);
     free(con_set);
 }
 
 static bool is_container_valid_to_append(
-        struct workspace *ws,
+        void *monitor_ptr,
         GPtrArray *src_list,
         struct container *src_con
         )
 {
-    if (src_con->client->ws_id != ws->id) {
-        return false;
+    struct monitor *m = monitor_ptr;
+    if (tagset_exist_on(m, src_con)) {
+        return true;
     }
-
-    return true;
+    return false;
 }
 
 void container_set_write_to_parent(
@@ -44,7 +46,7 @@ void container_set_write_to_parent(
 }
 
 void container_set_append(
-        struct workspace *ws,
+        struct monitor *m,
         struct container_set *dest,
         struct container_set *src)
 {
@@ -52,7 +54,7 @@ void container_set_append(
             dest->tiled_containers,
             src->tiled_containers,
             is_container_valid_to_append,
-            ws);
+            m);
 }
 
 void container_set_clear(struct container_set *list_set)

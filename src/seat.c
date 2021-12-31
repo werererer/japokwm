@@ -29,12 +29,10 @@ void handle_set_primary_selection(struct wl_listener *listener, void *data)
 
 struct seat *create_seat(const char *seat_name)
 {
-    struct seat *seat = calloc(1, sizeof(struct seat));
+    struct seat *seat = calloc(1, sizeof(*seat));
 
     seat->wlr_seat = wlr_seat_create(server.wl_display, seat_name);
     seat->wlr_seat->data = seat;
-
-    g_ptr_array_add(server.input_manager->seats, seat);
 
     seat->cursor = create_cursor(seat);
 
@@ -52,9 +50,9 @@ struct seat *create_seat(const char *seat_name)
 
 void destroy_seat(struct seat *seat)
 {
-    g_ptr_array_remove(server.input_manager->seats, seat);
+    destroy_cursor(seat->cursor);
 
-    g_ptr_array_free(seat->devices, false);
+    g_ptr_array_unref(seat->devices);
 
     free(seat);
 }
@@ -198,11 +196,6 @@ static void seat_configure_pointer(struct seat *seat,
     if ((seat->wlr_seat->capabilities & WL_SEAT_CAPABILITY_POINTER) == 0) {
         seat_configure_xcursor(seat);
     }
-    /* wlr_cursor_attach_input_device(seat->cursor->wlr_cursor, */
-    /*     seat_device->input_device->wlr_device); */
-    /* seat_apply_input_config(seat, seat_device); */
-    /* wl_event_source_timer_update( */
-    /*         seat->cursor->hide_source, cursor_get_timeout(seat->cursor)); */
 }
 
 static void seat_configure_keyboard(struct seat *seat,
@@ -246,7 +239,7 @@ void seat_add_device(struct seat *seat, struct input_device *input_device) {
     }
 
     struct seat_device *seat_device =
-        calloc(1, sizeof(struct seat_device));
+        calloc(1, sizeof(*seat_device));
     if (!seat_device) {
         printf("could not allocate seat device");
         return;

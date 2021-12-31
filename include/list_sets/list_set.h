@@ -3,14 +3,15 @@
 
 #include <stdlib.h>
 #include <glib.h>
+#include <wayland-client-core.h>
 
 #include "utils/coreUtils.h"
 
-struct workspace;
+struct tag;
 struct container;
 
 typedef bool is_condition_t(
-        struct workspace *ws,
+        void *arg,
         GPtrArray *src_list,
         struct container *con
         );
@@ -33,16 +34,18 @@ void lists_append_list_under_condition(
         GPtrArray2D *dest,
         GPtrArray2D *src,
         is_condition_t condition,
-        struct workspace *ws
+        struct tag *tag
         );
 void list_append_list_under_condition(
         GPtrArray *dest,
         GPtrArray *src,
         is_condition_t is_condition,
-        struct workspace *ws
+        void *arg
         );
-void sub_list_write_to_parent_list(GPtrArray2D *parent, GPtrArray2D *child);
+GPtrArray *list2D_flatten(GPtrArray2D *dest);
+void sub_list_write_to_parent_list2D(GPtrArray2D *parent, GPtrArray2D *child);
 void sub_list_write_to_parent_list1D(GPtrArray *parent, GPtrArray *child);
+void sub_list_write_to_parent_list(GPtrArray2D *parent, GPtrArray *child);
 void lists_clear(GPtrArray2D *lists);
 
 #endif /* LIST_SET_H */

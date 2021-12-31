@@ -332,3 +332,18 @@ void append_string(char **dest, const char *src)
     *dest = realloc(*dest, len);
     strcat(*dest, src);
 }
+
+char *join_string(const char *strings[], size_t len, const char *delimiter)
+{
+    char *result = strdup("");
+    for (int i = 0; i < len; i++) {
+        const char *binding_atom = strings[i];
+        append_string(&result, binding_atom);
+
+        int high = len-1;
+        if (i < high) {
+            append_string(&result, delimiter);
+        }
+    }
+    return result;
+}

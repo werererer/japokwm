@@ -12,16 +12,18 @@
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"
 #include "ipc-server.h"
-#include "workspace.h"
+#include "tag.h"
 #include "scratchpad.h"
 #include "monitor.h"
 #include "tagset.h"
+#include "rules/rule.h"
+#include "server.h"
 
 struct client *create_client(enum shell shell_type, union surface_t surface)
 {
-    struct client *c = calloc(1, sizeof(struct client));
+    struct client *c = calloc(1, sizeof(*c));
 
-    c->sticky_workspaces = bitset_create(server.workspaces->len);
+    c->sticky_tags = bitset_create_with_data(c);
     c->type = shell_type;
     c->surface = surface;
 
@@ -30,6 +32,7 @@ struct client *create_client(enum shell shell_type, union surface_t surface)
 
 void destroy_client(struct client *c)
 {
+    bitset_destroy(c->sticky_tags);
     free(c);
 }
 
@@ -92,8 +95,9 @@ static void unfocus_client(struct client *c)
             {
                 // unfocus x11 parent surface
                 struct wlr_xwayland_surface *xwayland_surface = c->surface.xwayland;
-                while (xwayland_surface->parent)
+                while (xwayland_surface->parent) {
                     xwayland_surface = xwayland_surface->parent;
+                }
                 wlr_xwayland_surface_activate(xwayland_surface, false);
             }
             break;
@@ -116,11 +120,18 @@ void focus_surface(struct seat *seat, struct wlr_surface *surface)
 
 void focus_client(struct seat *seat, struct client *old, struct client *c)
 {
-    struct wlr_surface *old_surface = get_base_wlrsurface(old);
     struct wlr_surface *new_surface = get_base_wlrsurface(c);
-    if (old_surface != new_surface) {
-        cursor_constrain(seat->cursor, NULL);
-        unfocus_client(old);
+
+    if (old) {
+        struct wlr_surface *old_surface = get_wlrsurface(old);
+        if (old_surface != new_surface) {
+            cursor_constrain(seat->cursor, NULL);
+            unfocus_client(old);
+            struct container *old_con = old->con;
+            struct wlr_box *geom = container_get_current_geom(old_con);
+            struct monitor *m = container_get_monitor(old_con);
+            container_damage_borders(old_con, m, geom);
+        }
     }
 
     /* Update wlroots'c keyboard focus */
@@ -129,8 +140,20 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
         wlr_seat_keyboard_notify_clear_focus(seat->wlr_seat);
         return;
     }
+    // the surface shall only be focused if the container is visible on the
+    // current monitor. Else the focus jumps left and right if we have multiple
+    // montiors.
+    if (!container_viewable_on_monitor(server_get_selected_monitor(), c->con)) {
+        return;
+    }
+
     /* Update wlroots'c keyboard focus */
     focus_surface(seat, get_wlrsurface(c));
+
+    struct container *con = c->con;
+    struct monitor *m = container_get_monitor(con);
+    struct wlr_box *geom = container_get_current_geom(con);
+    container_damage_borders(con, m, geom);
 
     /* Activate the new client */
     switch (c->type) {
@@ -146,50 +169,46 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
     }
 }
 
-void container_move_sticky_containers_current_ws(struct container *con)
+void container_move_sticky_containers_current_tag(struct container *con)
 {
-    struct monitor *m = selected_monitor;
-    struct workspace *ws = monitor_get_active_workspace(m);
-    container_move_sticky_containers(con, ws->id);
+    struct monitor *m = server_get_selected_monitor();
+    struct tag *tag = monitor_get_active_tag(m);
+    container_move_sticky_containers(con, tag->id);
 }
 
-void container_move_sticky_containers(struct container *con, int ws_id)
+void container_move_sticky_containers(struct container *con, int tag_id)
 {
-    // TODO: refactor this function
-    struct workspace *ws = get_workspace(ws_id);
-    if (!bitset_test(con->client->sticky_workspaces, ws->id)) {
-        if (bitset_any(con->client->sticky_workspaces)) {
-            for (int i = 0; i < con->client->sticky_workspaces->size; i++) {
-                if (bitset_test(con->client->sticky_workspaces, i)) {
-                    container_set_just_workspace_id(con, i);
-                    arrange();
-                    focus_most_recent_container(ws);
-                    ipc_event_workspace();
-                }
-            }
-        } else {
-            move_to_scratchpad(con, 0);
-            return;
-        }
-        return;
-    }
-    if (con->on_scratchpad) {
-        return;
-    }
-
-    if (workspace_sticky_contains_client(ws, con->client)) {
-        container_set_just_workspace_id(con, ws->id);
-    } else if (bitset_none(con->client->sticky_workspaces)) {
-        move_to_scratchpad(con, 0);
-    }
+    // // TODO: refactor this function
+    // struct tag *ws = get_tag(tag_id);
+    // if (!bitset_test(con->client->sticky_tags, ws->id)) {
+    //     if (bitset_any(con->client->sticky_tags)) {
+    //         container_set_just_tag_id(con, tag_id);
+    //         arrange();
+    //         focus_most_recent_container();
+    //         ipc_event_tag();
+    //     } else {
+    //         move_to_scratchpad(con, 0);
+    //         return;
+    //     }
+    //     return;
+    // }
+    // if (con->on_scratchpad) {
+    //     return;
+    // }
+    //
+    // if (tag_sticky_contains_client(ws, con->client)) {
+    //     container_set_just_tag_id(con, ws->id);
+    // } else if (bitset_none(con->client->sticky_tags)) {
+    //     move_to_scratchpad(con, 0);
+    // }
 }
 
-void client_setsticky(struct client *c, BitSet *workspaces)
+void client_setsticky(struct client *c, BitSet *tags)
 {
-    bitset_assign_bitset(&c->sticky_workspaces, workspaces);
+    bitset_assign_bitset(&c->sticky_tags, tags);
     struct container *con = c->con;
-    container_move_sticky_containers_current_ws(con);
-    ipc_event_workspace();
+    container_move_sticky_containers_current_tag(con);
+    ipc_event_tag();
 }
 
 float calc_ratio(float width, float height)
@@ -216,6 +235,16 @@ void kill_client(struct client *c)
     }
 }
 
+void client_handle_new_popup(struct wl_listener *listener, void *data)
+{
+    struct client *client = wl_container_of(listener, client, new_popup);
+    struct wlr_xdg_popup *xdg_popup = data;
+
+    struct container *con = client->con;
+    struct monitor *m = container_get_monitor(con);
+    create_popup(m, xdg_popup, container_get_current_geom(con), con);
+}
+
 void client_handle_set_title(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, set_title);
@@ -226,7 +255,7 @@ void client_handle_set_title(struct wl_listener *listener, void *data)
             title = c->surface.xdg->toplevel->title;
             break;
         case LAYER_SHELL:
-            title = "test";
+            title = "";
             break;
         case X11_MANAGED:
         case X11_UNMANAGED:
@@ -237,7 +266,12 @@ void client_handle_set_title(struct wl_listener *listener, void *data)
         title = "broken";
 
     c->title = title;
-    ipc_event_window();
+
+    struct tag *tag = container_get_tag(c->con);
+    if (tag) {
+        struct layout *lt = tag_get_layout(tag);
+        apply_rules(lt->options->rules, c->con);
+    }
 }
 
 void client_handle_set_app_id(struct wl_listener *listener, void *data)
@@ -262,30 +296,26 @@ void client_handle_set_app_id(struct wl_listener *listener, void *data)
         app_id = "broken";
 
     c->app_id = app_id;
-}
 
-void reset_tiled_client_borders(int border_px)
-{
-    for (int i = 0; i < server.normal_clients->len; i++) {
-        struct client *c = g_ptr_array_index(server.normal_clients, i);
-        struct tagset *tagset = selected_monitor->tagset;
-        if (!tagset_exist_on(tagset, c->con))
-            continue;
-        if (container_is_floating(c->con))
-            continue;
-        container_set_border_width(c->con, border_px);
+    struct tag *tag = container_get_tag(c->con);
+    if (tag) {
+        struct layout *lt = tag_get_layout(tag);
+        apply_rules(lt->options->rules, c->con);
     }
 }
 
 void reset_floating_client_borders(int border_px)
 {
-    for (int i = 0; i < server.normal_clients->len; i++) {
-        struct client *c = g_ptr_array_index(server.normal_clients, i);
-        struct tagset *tagset = selected_monitor->tagset;
-        if (!tagset_exist_on(tagset, c->con))
+    struct monitor *m = server_get_selected_monitor();
+    for (int i = 0; i < server.container_stack->len; i++) {
+        struct container *con = g_ptr_array_index(server.container_stack, i);
+        if (container_is_tiled(con)) {
             continue;
-        if (!container_is_floating(c->con))
+        }
+        if (!tagset_exist_on(m, con)) {
             continue;
-        container_set_border_width(c->con, border_px);
+        }
+        container_set_border_width(con, border_px);
+        container_damage_whole(con);
     }
 }

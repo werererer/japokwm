@@ -21,7 +21,7 @@
 #include "ipc-json.h"
 #include "ipc-server.h"
 #include "server.h"
-#include "workspace.h"
+#include "tag.h"
 #include "client.h"
 #include "command.h"
 #include "monitor.h"
@@ -39,7 +39,7 @@ static const char ipc_magic[] = {'i', '3', '-', 'i', 'p', 'c'};
 enum ipc_command_type {
     // i3 command types - see i3's I3_REPLY_TYPE constants
     IPC_COMMAND = 0,
-    IPC_GET_WORKSPACES = 1,
+    IPC_GET_TAGS = 1,
     IPC_SUBSCRIBE = 2,
     IPC_GET_OUTPUTS = 3,
     IPC_GET_TREE = 4,
@@ -57,7 +57,7 @@ enum ipc_command_type {
     IPC_GET_SEATS = 101,
 
     // Events sent from sway to clients. Events have the highest bits set.
-    IPC_EVENT_WORKSPACE = ((1<<31) | 0),
+    IPC_EVENT_TAG = ((1<<31) | 0),
     IPC_EVENT_OUTPUT = ((1<<31) | 1),
     IPC_EVENT_MODE = ((1<<31) | 2),
     IPC_EVENT_WINDOW = ((1<<31) | 3),
@@ -124,7 +124,7 @@ void ipc_init(struct wl_event_loop *wl_event_loop) {
     }
 
     // Set SWAY IPC socket path so that waybar automatically shows
-    // workspaces(tags)
+    // tags(tags)
     setenv("SWAYSOCK", ipc_sockaddr->sun_path, 1);
     setenv("JAPOKWMSOCK", ipc_sockaddr->sun_path, 1);
 
@@ -287,8 +287,8 @@ static void ipc_send_event(const char *json_string, enum ipc_command_type event)
     }
 }
 
-void ipc_event_workspace() {
-    ipc_send_event("", IPC_EVENT_WORKSPACE);
+void ipc_event_tag() {
+    ipc_send_event("", IPC_EVENT_TAG);
 }
 
 int ipc_client_handle_writable(int client_fd, uint32_t mask, void *data) {
@@ -404,7 +404,7 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
             free(results);
             goto exit_cleanup;
         }
-        case IPC_GET_WORKSPACES:
+        case IPC_GET_TAGS:
             {
                 json_object *array;
 
@@ -429,9 +429,24 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
                 for (size_t i = 0; i < json_object_array_length(request); i++) {
                     const char *event_type = json_object_get_string(json_object_array_get_idx(request, i));
                     if (strcmp(event_type, "workspace") == 0) {
-                        client->subscribed_events |= event_mask(IPC_EVENT_WORKSPACE);
+                        client->subscribed_events |= event_mask(IPC_EVENT_TAG);
+                    } else if (strcmp(event_type, "barconfig_update") == 0) {
+                        client->subscribed_events |= event_mask(IPC_EVENT_BARCONFIG_UPDATE);
+                    } else if (strcmp(event_type, "bar_state_update") == 0) {
+                        client->subscribed_events |= event_mask(IPC_EVENT_BAR_STATE_UPDATE);
+                    } else if (strcmp(event_type, "mode") == 0) {
+                        client->subscribed_events |= event_mask(IPC_EVENT_MODE);
+                    } else if (strcmp(event_type, "shutdown") == 0) {
+                        client->subscribed_events |= event_mask(IPC_EVENT_SHUTDOWN);
                     } else if (strcmp(event_type, "window") == 0) {
                         client->subscribed_events |= event_mask(IPC_EVENT_WINDOW);
+                    } else if (strcmp(event_type, "binding") == 0) {
+                        client->subscribed_events |= event_mask(IPC_EVENT_BINDING);
+                    } else if (strcmp(event_type, "tick") == 0) {
+                        client->subscribed_events |= event_mask(IPC_EVENT_TICK);
+                        is_tick = true;
+                    } else if (strcmp(event_type, "input") == 0) {
+                        client->subscribed_events |= event_mask(IPC_EVENT_INPUT);
                     } else {
                         const char msg[] = "{\"success\": false}";
                         ipc_send_reply(client, payload_type, msg, strlen(msg));
@@ -454,7 +469,7 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
 
         case IPC_GET_TREE:
             {
-                struct monitor *m = selected_monitor;
+                struct monitor *m = server_get_selected_monitor();
                 json_object *tree = ipc_json_describe_selected_container(m);
                 const char *json_string = json_object_to_json_string(tree);
 
@@ -462,6 +477,31 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
                 json_object_put(tree);
                 goto exit_cleanup;
             }
+
+        case IPC_GET_BAR_CONFIG:
+            {
+                if (!buf[0]) {
+                    // Send list of configured bar IDs
+                    json_object *bars = json_object_new_array();
+                    // for (int i = 0; i < config->bars->length; ++i) {
+                    //     struct bar_config *bar = config->bars->items[i];
+                    //     json_object_array_add(bars, json_object_new_string(bar->id));
+                    // }
+                    const char *json_string = json_object_to_json_string(bars);
+                    ipc_send_reply(client, payload_type, json_string,
+                            (uint32_t)strlen(json_string));
+                    json_object_put(bars); // free
+                } else {
+                    // Send particular bar's details
+                    json_object *json = ipc_json_describe_bar_config();
+                    const char *json_string = json_object_to_json_string(json);
+                    ipc_send_reply(client, payload_type, json_string,
+                            (uint32_t)strlen(json_string));
+                    json_object_put(json); // free
+                }
+                goto exit_cleanup;
+            }
+
 
         default:
             printf("Unknown IPC command type %x\n", payload_type);

@@ -118,7 +118,7 @@ static void handle_new_input(struct wl_listener *listener, void *data)
     struct input_manager *input_manager = wl_container_of(listener, input_manager, new_input);
     struct wlr_input_device *device = data;
 
-    struct input_device *input_device = calloc(1, sizeof(struct input_device));
+    struct input_device *input_device = calloc(1, sizeof(*input_device));
     device->data = input_device;
 
     input_device->wlr_device = device;
@@ -192,7 +192,7 @@ static void handle_new_virtual_pointer(struct wl_listener *listener, void *data)
         input_manager_seat_from_wlr_seat(event->suggested_seat) :
         input_manager_get_default_seat();
 
-    struct input_device *input_device = calloc(1, sizeof(struct input_device));
+    struct input_device *input_device = calloc(1, sizeof(*input_device));
     device->data = input_device;
 
     input_device->is_virtual = true;
@@ -211,12 +211,17 @@ static void handle_new_virtual_pointer(struct wl_listener *listener, void *data)
     }
 }
 
+static void _destroy_seat(void *seat)
+{
+    destroy_seat(seat);
+}
+
 struct input_manager *create_input_manager()
 {
-    struct input_manager *input_manager = calloc(1, sizeof(struct input_manager));
+    struct input_manager *input_manager = calloc(1, sizeof(*input_manager));
 
     input_manager->devices = g_ptr_array_new();
-    input_manager->seats = g_ptr_array_new();
+    input_manager->seats = g_ptr_array_new_with_free_func(_destroy_seat);
 
     LISTEN(&server.backend->events.new_input, &input_manager->new_input,
             handle_new_input);
@@ -246,12 +251,8 @@ struct input_manager *create_input_manager()
 
 void destroy_input_manager(struct input_manager *input_manager)
 {
-    wl_list_remove(&input_manager->new_input.link);
-    wl_list_remove(&input_manager->inhibit_activate.link);
-    wl_list_remove(&input_manager->inhibit_deactivate.link);
-    wl_list_remove(&input_manager->keyboard_shortcuts_inhibit_new_inhibitor.link);
-    wl_list_remove(&input_manager->new_virtual_keyboard.link);
-    wl_list_remove(&input_manager->new_virtual_pointer.link);
+    g_ptr_array_unref(input_manager->seats);
+
     free(input_manager);
 }
 

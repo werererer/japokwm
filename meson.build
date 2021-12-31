@@ -37,6 +37,7 @@ else
   add_project_arguments('-DDEBUG=0'.format(version), language: 'c')
 endif
 
+
 datadir = get_option('datadir')
 install_data(
     'japokwm.desktop',
@@ -54,6 +55,28 @@ if scdoc.found()
     sh = find_program('sh', native: true)
     mandir = get_option('mandir')
     man_files = [
+        'man/japokwm-cheatsheet.5.scd',
+        'man/japokmsg.1.scd',
+        'man/japokwm-action.5.scd',
+        'man/japokwm-bitset.5.scd',
+        'man/japokwm-color.5.scd',
+        'man/japokwm-container.5.scd',
+        'man/japokwm-cursor.5.scd',
+        'man/japokwm-cursor_mode.5.scd',
+        'man/japokwm-direction.5.scd',
+        'man/japokwm-event_handler.5.scd',
+        'man/japokwm-focus_set.5.scd',
+        'man/japokwm-geom.5.scd',
+        'man/japokwm-info.5.scd',
+        'man/japokwm-layout.5.scd',
+        'man/japokwm-list.5.scd',
+        'man/japokwm-monitor.5.scd',
+        'man/japokwm-options.5.scd',
+        'man/japokwm-output_transform.5.scd',
+        'man/japokwm-ring_buffer.5.scd',
+        'man/japokwm-root.5.scd',
+        'man/japokwm-server.5.scd',
+        'man/japokwm-tag.5.scd',
         'man/japokwm.1.scd',
         'man/japokwm.5.scd',
     ]
@@ -74,6 +97,56 @@ if scdoc.found()
         )
     endforeach
 endif
+
+bash_comp = dependency('bash-completion', required: false)
+fish_comp = dependency('fish', required: false)
+
+if get_option('zsh-completions')
+    zsh_files = files(
+        'completions/zsh/_japokwm',
+        'completions/zsh/_japokmsg',
+    )
+    zsh_install_dir = join_paths(datadir, 'zsh', 'site-functions')
+
+    install_data(zsh_files, install_dir: zsh_install_dir)
+endif
+
+if get_option('bash-completions')
+    bash_files = files(
+        'completions/bash/japokwm',
+        'completions/bash/japokmsg',
+    )
+
+    if bash_comp.found()
+        bash_install_dir = bash_comp.get_variable(
+            pkgconfig: 'completionsdir',
+            pkgconfig_define: ['datadir', datadir]
+        )
+    else
+        bash_install_dir = join_paths(datadir, 'bash-completion', 'completions')
+    endif
+
+    install_data(bash_files, install_dir: bash_install_dir)
+endif
+
+if get_option('fish-completions')
+    fish_files = files(
+        'completions/fish/japokwm.fish',
+        'completions/fish/japokmsg.fish',
+    )
+
+    if fish_comp.found()
+        fish_install_dir = fish_comp.get_variable(
+            pkgconfig: 'completionsdir',
+            pkgconfig_define: ['datadir', datadir]
+        )
+    else
+        fish_install_dir = join_paths(datadir, 'fish', 'vendor_completions.d')
+    endif
+
+    install_data(fish_files, install_dir: fish_install_dir)
+endif
+
 
 commonSrcs = files(
   'common/stringop.c'

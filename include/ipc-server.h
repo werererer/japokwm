@@ -7,6 +7,6 @@ void ipc_init(struct wl_event_loop *wl_event_loop);
 
 struct sockaddr_un *ipc_user_sockaddr(void);
 
-void ipc_event_workspace();
+void ipc_event_tag();
 void ipc_event_window();
 #endif

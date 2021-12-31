@@ -1,15 +1,10 @@
 japokwm(1)
 
-# NAME
-
-japokwm - tiling made easy
-
 # SYNOPSIS
 
 *japokwm* [options...] [command]
 
 # OPTIONS
-
 *-h, --help*
 	Show help message and quit.
 
@@ -23,18 +18,22 @@ japokwm - tiling made easy
 *-v, --version*
 	Show the version number and quit.
 
+# WORTHWHILE READ
+
+If you want to start using japokwm right away without any configuration, ++
+read japokwm-cheatsheet(5)
+
 # DESCRIPTION
 
-japokwm was created to create a tiling window manager where you can
-create new layouts as easily as possible. We have to thank everyone that created
-the wlroots library and the dwl project. Both of them made this project
-possible.
+japokwm is a tiling window manager where you can create new layouts as easily as
+possible. We have to thank everyone that created the wlroots library and the dwl
+project. Both of them made this project possible.
 
 You can run japokwm directly from a tty, or via a Wayland-compatible login manager.
 
 # CONFIGURATION
 
-japokwm searches for a the init.lua in the following locations, in this order:
+japokwm searches for the init.lua file in the following locations, in this order:
 
 . $XDG_CONFIG_HOME/japokwm
 . ~/.config/japokwm (suggested location)
@@ -55,6 +54,8 @@ All layouts are searched in the following locations:
 . $XDG_CONFIG_HOME/japokwm/layouts
 . ~/.config/japokwm/layouts (suggested location)
 . /etc/japokwm/layouts
+. /usr/local/share/japokwm/layouts
+. /usr/share/japokwm/layouts
 
 If you want to create a layout named foo you need to create a directory called
 foo in either of these locations. Then you need to create the file init.lua in 
@@ -76,7 +77,7 @@ local layout_data = {
 	},
 }
 
-layout.set("foo", layout_data)
+layout:set(layout_data)
 ```
 Now add the new layout to the layouts array in ~/.config/japokwm/init.lua: ++
 Replace:

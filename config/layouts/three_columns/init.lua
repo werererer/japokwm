@@ -43,6 +43,7 @@ local layout_data = {
     }
 }
 
-layout.set(layout_data)
-l.config.set_resize_direction(info.direction.right)
-l.config.set_hidden_edges(info.direction.all)
+layout:set(layout_data)
+layout:set_linked_layouts({"two_pane"})
+opt.resize_direction = Direction.right
+opt.hidden_edges = Direction.all

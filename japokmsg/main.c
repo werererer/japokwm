@@ -85,7 +85,6 @@ int main(int argc, char **argv) {
 
     static struct option long_options[] = {
         {"help", no_argument, NULL, 'h'},
-        {"pretty", no_argument, NULL, 'p'},
         {"quiet", no_argument, NULL, 'q'},
         {"config", required_argument, NULL, 'c'},
         {"socket", required_argument, NULL, 's'},
@@ -166,7 +165,6 @@ int main(int argc, char **argv) {
     uint32_t len = strlen(command);
     char *resp = ipc_single_command(socketfd, type, command, &len);
 
-    printf("works\n");
     // pretty print the json
     json_object *obj = json_tokener_parse(resp);
     if (obj == NULL) {

@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 
 #include "utils/parseConfigUtils.h"
+#include "ring_buffer.h"
 
 struct lua_State *L;
 
@@ -39,8 +40,28 @@ void wlr_list_cat(GPtrArray *dest, GPtrArray *src)
     }
 }
 
+void list_insert(GPtrArray *array, int i, void *item)
+{
+    if (array->len <= 0) {
+        g_ptr_array_add(array, item);
+        return;
+    }
+    if (i >= array->len) {
+        g_ptr_array_add(array, item);
+        return;
+    }
+    if (i < 0) {
+        g_ptr_array_insert(array, 0, item);
+        return;
+    }
+
+    g_ptr_array_insert(array, i, item);
+}
+
 void list_clear(GPtrArray *array, void (*destroy_func)(void *))
 {
+    if (array->len <= 0)
+        return;
     for (int i = array->len-1; i >= 0; i--) {
         void *item = g_ptr_array_index(array, i);
         if (destroy_func) {
@@ -103,7 +124,16 @@ int cmp_ptr(const void *ptr1, const void *ptr2)
 
 int cmp_str(const void *s1, const void *s2)
 {
-    return strcmp(s1, s2);
+    const char *str1 = s1;
+    const char *str2 = s2;
+    return strcmp(str1, str2);
+}
+
+int cmp_strptr(const void *s1, const void *s2)
+{
+    const char *str1 = *(const char **)s1;
+    const char *str2 = *(const char **)s2;
+    return strcmp(str1, str2);
 }
 
 int find_in_composed_list(GPtrArray *lists,
@@ -275,7 +305,7 @@ void lua_get_default_layout_data(lua_State *L)
 
 void lua_get_default_resize_function(lua_State *L)
 {
-    lua_getglobal_safe(L, "Resize_main_all");
+    lua_getglobal(L, "Resize_main_all");
 }
 
 void lua_get_default_master_layout_data(lua_State *L)
@@ -374,15 +404,6 @@ void lua_get_default_resize_data(lua_State *L)
     }
 }
 
-void lua_tocolor(float dest_color[static 4])
-{
-    for (int i = 0; i < 4; i++) {
-        lua_rawgeti(L, -1, i+1);
-        dest_color[i] = luaL_checknumber(L, -1);
-        lua_pop(L, 1);
-    }
-}
-
 int exec(const char *cmd)
 {
     int ret_val = 0;
@@ -460,26 +481,6 @@ GPtrArray *get_list_at_i_in_composed_list(GPtrArray *arrays, int i)
     return NULL;
 }
 
-int relative_index_to_absolute_index(int i, int j, int length)
-{
-    if (length <= 0)
-        return INVALID_POSITION;
-
-    int new_position = (i + j) % length;
-    while (new_position < 0)
-        new_position += length;
-
-    return new_position;
-}
-
-static void *get_relative_item(GPtrArray *list, 
-        void *(*get_item)(GPtrArray *, int i),
-        int (*length_of)(GPtrArray *), int i, int j)
-{
-    int new_position = relative_index_to_absolute_index(i, j, length_of(list));
-    return get_item(list, new_position);
-}
-
 void *get_relative_item_in_list(GPtrArray *array, int i, int j)
 {
     return get_relative_item(array, get_on_list, length_of_list, i, j);
@@ -519,4 +520,34 @@ int length_of_composed_list(GPtrArray *array)
         length += list->len;
     }
     return length;
+}
+
+int lua_idx_to_c_idx(int lua_idx)
+{
+    return lua_idx - 1;
+}
+
+int c_idx_to_lua_idx(int c_idx)
+{
+    return c_idx + 1;
+}
+
+void print_trace()
+{
+    int count = 30;
+    void *array[count];
+    char **strings;
+    int size, i;
+
+    size = backtrace (array, count);
+    strings = backtrace_symbols (array, size);
+    if (strings != NULL)
+    {
+
+        printf ("Obtained %d stack frames.\n", size);
+        for (i = 0; i < size; i++)
+            printf ("%s\n", strings[i]);
+    }
+
+    free (strings);
 }

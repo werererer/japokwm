@@ -7,7 +7,7 @@
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "container.h"
-#include "workspace.h"
+#include "tag.h"
 
 static int find_insert_position(
         GPtrArray *src_list,
@@ -55,17 +55,27 @@ void list_append_list_under_condition(
         GPtrArray *dest,
         GPtrArray *src,
         is_condition_t is_condition,
-        struct workspace *ws
+        void *arg
         )
 {
     for (int i = 0; i < src->len; i++) {
         struct container *src_con = g_ptr_array_index(src, i);
 
-        if (!is_condition(ws, src, src_con))
+        if (!is_condition(arg, src, src_con))
             continue;
 
         add_to_list(dest, src, src_con);
     }
+}
+
+GPtrArray *list2D_flatten(GPtrArray2D *dest)
+{
+    GPtrArray *new = g_ptr_array_new();
+    for (int i = 0; i < dest->len; i++) {
+        void *item = g_ptr_array_index(new, i);
+        g_ptr_array_add(new, item);
+    }
+    return new;
 }
 
 GPtrArray *list_create_sub_list(GPtrArray *list, int start, int end)
@@ -115,7 +125,7 @@ GPtrArray *list_create_filtered_sub_list_with_order(
         GPtrArray *visible_global_floating_list_copy = 
             list_create_filtered_sub_list(list, arg_is_condition); 
         wlr_list_cat(final_list, visible_global_floating_list_copy);
-        g_ptr_array_free(visible_global_floating_list_copy, FALSE);
+        g_ptr_array_unref(visible_global_floating_list_copy);
     }
 
     return final_list;
@@ -149,7 +159,7 @@ void lists_append_list_under_condition(
         GPtrArray2D *dest,
         GPtrArray2D *src,
         is_condition_t is_condition,
-        struct workspace *ws
+        struct tag *tag
         )
 {
     assert(src->len == dest->len);
@@ -157,11 +167,11 @@ void lists_append_list_under_condition(
     for (int i = 0; i < dest->len; i++) {
         GPtrArray *dest_list = g_ptr_array_index(dest, i);
         GPtrArray *src_list = g_ptr_array_index(src, i);
-        list_append_list_under_condition(dest_list, src_list, is_condition, ws);
+        list_append_list_under_condition(dest_list, src_list, is_condition, tag);
     }
 }
 
-static GArray *child_lists_get_positions_array(GPtrArray2D *child, GPtrArray2D *parent)
+static GArray *child_lists_get_positions_array2D(GPtrArray2D *child, GPtrArray2D *parent)
 {
     GArray *positions = g_array_new(false, false, sizeof(int));
     for (int i = 0; i < length_of_composed_list(child); i++) {
@@ -172,7 +182,18 @@ static GArray *child_lists_get_positions_array(GPtrArray2D *child, GPtrArray2D *
     return positions;
 }
 
-static GArray *child_list_get_positions_array(GPtrArray *child, GPtrArray *parent)
+static GArray *child_list_get_positions_array(GPtrArray *child, GPtrArray2D *parent)
+{
+    GArray *positions = g_array_new(false, false, sizeof(int));
+    for (int i = 0; i < child->len; i++) {
+        struct container *con = g_ptr_array_index(child, i);
+        int position = find_in_composed_list(parent, cmp_ptr, con);
+        g_array_append_val(positions, position);
+    }
+    return positions;
+}
+
+static GArray *child_list_get_positions_array1D(GPtrArray *child, GPtrArray *parent)
 {
     GArray *positions = g_array_new(false, false, sizeof(int));
     for (int i = 0; i < child->len; i++) {
@@ -185,10 +206,10 @@ static GArray *child_list_get_positions_array(GPtrArray *child, GPtrArray *paren
 }
 
 
-void sub_list_write_to_parent_list(GPtrArray2D *parent,
+void sub_list_write_to_parent_list2D(GPtrArray2D *parent,
         GPtrArray2D *child)
 {
-    GArray *positions = child_lists_get_positions_array(child, parent);
+    GArray *positions = child_lists_get_positions_array2D(child, parent);
 
     GArray *prev_positions = g_array_copy(positions);
     g_array_sort(prev_positions, cmp_int);
@@ -203,14 +224,36 @@ void sub_list_write_to_parent_list(GPtrArray2D *parent,
         set_in_composed_list(parent, prev_position, prev_con);
     }
 
-    g_ptr_array_free(parent_containers, false);
-    g_array_free(prev_positions, false);
-    g_array_free(positions, false);
+    g_ptr_array_unref(parent_containers);
+    g_array_unref(prev_positions);
+    g_array_unref(positions);
+}
+
+void sub_list_write_to_parent_list(GPtrArray2D *parent, GPtrArray *child)
+{
+    GArray *positions = child_list_get_positions_array(child, parent);
+
+    GArray *prev_positions = g_array_copy(positions);
+    g_array_sort(prev_positions, cmp_int);
+
+    GPtrArray *parent_containers = g_ptr_array_new();
+    lists_cat_to_list(parent_containers, parent);
+
+    for (int i = 0; i < prev_positions->len; i++) {
+        int prev_position = g_array_index(prev_positions, int, i);
+        int position = g_array_index(positions, int, i);
+        struct container *prev_con = g_ptr_array_index(parent_containers, position);
+        set_in_composed_list(parent, prev_position, prev_con);
+    }
+
+    g_ptr_array_unref(parent_containers);
+    g_array_unref(prev_positions);
+    g_array_unref(positions);
 }
 
 void sub_list_write_to_parent_list1D(GPtrArray *parent, GPtrArray *child)
 {
-    GArray *positions = child_list_get_positions_array(child, parent);
+    GArray *positions = child_list_get_positions_array1D(child, parent);
 
     GArray *prev_positions = g_array_copy(positions);
     g_array_sort(prev_positions, cmp_int);
@@ -225,9 +268,9 @@ void sub_list_write_to_parent_list1D(GPtrArray *parent, GPtrArray *child)
         g_ptr_array_index(parent, prev_position) = prev_con;
     }
 
-    g_ptr_array_free(parent_containers, false);
-    g_array_free(prev_positions, false);
-    g_array_free(positions, false);
+    g_ptr_array_unref(parent_containers);
+    g_array_unref(prev_positions);
+    g_array_unref(positions);
 }
 
 void lists_clear(GPtrArray2D *lists)

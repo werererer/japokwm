@@ -4,7 +4,7 @@
 #include <wayland-server.h>
 #include "client.h"
 #include "monitor.h"
-#include "workspace.h"
+#include "tag.h"
 
 struct edge {
     uint32_t singular_anchor;
@@ -17,7 +17,7 @@ struct edge {
 void map_layer_surface_notify(struct wl_listener *listener, void *data);
 void unmap_layer_surface_notify(struct wl_listener *listener, void *data);
 void destroy_layer_surface_notify(struct wl_listener *listener, void *data);
-void commitlayersurfacenotify(struct wl_listener *listener, void *data);
+void commit_layer_surface_notify(struct wl_listener *listener, void *data);
 void create_notify_layer_shell(struct wl_listener *listener, void *data);
 void arrange_layers(struct monitor *m);
 void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_area, bool exclusive);

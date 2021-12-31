@@ -1,271 +1,301 @@
 #include "translationLayer.h"
 
 #include <lauxlib.h>
+#include <libnotify/notify.h>
 #include <lua.h>
 #include <wayland-server-protocol.h>
 #include <wlr/types/wlr_output_layout.h>
 
 #include "cursor.h"
-#include "lib/actions/lib_actions.h"
-#include "lib/actions/lib_container.h"
-#include "lib/config/lib_config.h"
-#include "lib/config/local_config.h"
-#include "lib/event_handler/lib_event_handler.h"
-#include "lib/layout/lib_layout.h"
-#include "lib/info/lib_info.h"
-#include "lib/event_handler/local_event_handler.h"
-#include "lib/monitor/lib_monitor.h"
+#include "lib/lib_action.h"
+#include "lib/lib_bitset.h"
+#include "lib/lib_color.h"
+#include "lib/lib_container.h"
+#include "lib/lib_container_property.h"
+#include "lib/lib_cursor.h"
+#include "lib/lib_cursor_mode.h"
+#include "lib/lib_direction.h"
+#include "lib/lib_event_handler.h"
+#include "lib/lib_focus_set.h"
+#include "lib/lib_geom.h"
+#include "lib/lib_info.h"
+#include "lib/lib_layout.h"
+#include "lib/lib_list.h"
+#include "lib/lib_list2D.h"
+#include "lib/lib_monitor.h"
+#include "lib/lib_options.h"
+#include "lib/lib_output_transform.h"
+#include "lib/lib_ring_buffer.h"
+#include "lib/lib_root.h"
+#include "lib/lib_server.h"
+#include "lib/lib_tag.h"
+#include "lib/local_event_handler.h"
+#include "lib/local_options.h"
+#include "server.h"
+#include "stringop.h"
+#include "utils/coreUtils.h"
+#include "utils/parseConfigUtils.h"
+#include "utils/parseConfigUtils.h"
+#include "tag.h"
 
-static const struct luaL_Reg action[] =
+const struct luaL_Reg meta[] = 
 {
-    {"arrange", lib_arrange},
-    {"create_output", lib_create_output},
-    {"decrease_nmaster", lib_decrease_nmaster},
-    {"exec", lib_exec},
-    {"focus_container", lib_focus_container},
-    {"focus_on_hidden_stack", lib_focus_on_hidden_stack},
-    {"focus_on_stack", lib_focus_on_stack},
-    {"increase_nmaster", lib_increase_nmaster},
-    {"kill", lib_kill},
-    {"load_layout", lib_load_layout},
-    {"load_layout_in_set", lib_load_layout_in_set},
-    {"load_next_layout_in_set", lib_load_next_layout_in_set},
-    {"load_prev_layout_in_set", lib_load_prev_layout_in_set},
-    {"move_container_to_workspace", lib_move_container_to_workspace},
-    {"move_resize", lib_move_resize},
-    {"move_to_scratchpad", lib_move_to_scratchpad},
-    {"quit", lib_quit},
-    {"repush", lib_repush},
-    {"resize_main", lib_resize_main},
-    {"set_floating", lib_set_floating},
-    {"set_nmaster", lib_set_nmaster},
-    {"show_scratchpad", lib_show_scratchpad},
-    {"swap_workspace", lib_swap_workspace},
-    {"tag_view", lib_tag_view},
-    {"toggle_bars", lib_toggle_bars},
-    {"toggle_floating", lib_toggle_floating},
-    {"toggle_layout", lib_toggle_layout},
-    {"toggle_view", lib_toggle_view},
-    {"toggle_workspace", lib_toggle_workspace},
-    {"view", lib_view},
-    {"zoom", lib_zoom},
+    {"__index", get_lua_value},
+    {"__newindex", set_lua_value},
     {NULL, NULL},
 };
 
-static const struct luaL_Reg container[] =
+/* set a lua value
+ * */
+int set_lua_value(lua_State *L)
 {
-    {"set_alpha", container_set_alpha},
-    {"set_ratio", container_set_ratio},
-    {"set_sticky", container_set_sticky},
-    {"set_sticky_restricted", container_set_sticky_restricted},
-    {"toggle_add_sticky", container_toggle_add_sticky},
-    {"toggle_add_sticky_restricted", container_toggle_add_sticky_restricted},
-    {NULL, NULL},
-};
+    // [table, key, value]
+    const char *key = luaL_checkstring(L, -2);
 
-static const struct luaL_Reg event[] =
-{
-    {"add_listener", lib_add_listener},
-    {NULL, NULL},
-};
+    lua_getmetatable(L, -3); {
+        // [table, key, value, meta]
+        lua_pushstring(L, "setter");
+        // [table, key, value, meta, "setter"]
+        lua_gettable(L, -2);
+        // [table, key, value, meta, (table)meta."setter"]
+        lua_pushstring(L, key);
+        // [table, key, value, meta, (table)meta."setter", key]
+        lua_gettable(L, -2);
+        // [table, key, value, meta, (table)meta."setter", (value)meta."setter".key]
+        if (lua_isnil(L, -1)) {
+            lua_pop(L, 6);
 
-static const struct luaL_Reg localevent[] =
-{
-    {"add_listener", local_add_listener},
-    {NULL, NULL},
-};
+            luaL_where(L, 1);
+            const char *where = luaL_checkstring(L, -1);
+            char *res = g_strconcat(
+                    where,
+                    key,
+                    " can't be set. Adding new values to lib tables is illegal",
+                    NULL);
+            // from here on using the variable that was on the stack may
+            // lead to segfaults because lua may garbage collect them
+            lua_pop(L, 1);
+            lua_pushstring(L, res);
+            lua_warning(L, res, false);
+            free(res);
+            // lua_error(L);
+            return 0;
+        }
+        lua_pop(L, 2);
+        // [table, key, value, meta]
+        lua_pushstring(L, "setter");
+        // [table, key, value, meta, "setter"]
+        lua_gettable(L, -2); {
+            // [table, key, value, meta, (table)meta."setter"]
+            lua_pushstring(L, key);
+            // [table, key, value, meta, (table)meta."setter", key]
+            lua_gettable(L, -2); {
 
-static const struct luaL_Reg info[] =
-{
-    {"get_active_layout", lib_get_active_layout},
-    {"get_container_under_cursor", lib_get_container_under_cursor},
-    {"get_n_tiled", lib_get_n_tiled},
-    {"get_next_empty_workspace", lib_get_next_empty_workspace},
-    {"get_nmaster", lib_get_nmaster},
-    {"get_previous_layout", lib_get_previous_layout},
-    {"get_root_area", lib_get_root_area},
-    {"get_this_container_count", lib_get_this_container_count},
-    {"get_workspace", lib_get_workspace},
-    {"is_container_not_in_limit", lib_is_container_not_in_limit},
-    {"is_container_not_in_master_limit", lib_is_container_not_in_master_limit},
-    {"stack_position_to_position", lib_stack_position_to_position},
-    {"this_container_position", lib_this_container_position},
-    {NULL, NULL},
-};
+                // [table, key, value, meta, (table)meta."setter",
+                // (cfunction)meta."setter".key]
+                lua_pushvalue(L, -6);
+                // [table, key, value, meta, (table)meta."setter",
+                // (cfunction)meta."setter".key, table]
+                lua_pushvalue(L, -5);
+                // [table, key, value, meta, (table)meta."setter",
+                // (cfunction)meta."setter".key, table, value]
+                lua_pcall(L, 2, 0, 0);
+                // [table, key, value, meta, (table)meta."setter"]
 
-static const struct luaL_Reg config[] = 
-{
-    {"add_mon_rule", lib_add_mon_rule},
-    {"add_rule", lib_add_rule},
-    {"bind_key", lib_bind_key},
-    {"create_layout_set", lib_create_layout_set},
-    {"create_workspaces", lib_create_workspaces},
-    {"reload", lib_reload},
-    {"set_arrange_by_focus", lib_set_arrange_by_focus},
-    {"set_automatic_workspace_naming", lib_set_automatic_workspace_naming},
-    {"set_border_color", lib_set_border_color},
-    {"set_default_layout", lib_set_default_layout},
-    {"set_float_borderpx", lib_set_float_borderpx},
-    {"set_focus_color", lib_set_focus_color},
-    {"set_hidden_edges", lib_set_hidden_edges},
-    {"set_inner_gaps", lib_set_inner_gaps},
-    {"set_layout_constraints", lib_set_layout_constraints},
-    {"set_master_constraints", lib_set_master_constraints},
-    {"set_master_layout_data", lib_set_master_layout_data},
-    {"set_mod", lib_set_mod},
-    {"set_outer_gaps", lib_set_outer_gaps},
-    {"set_repeat_delay", lib_set_repeat_delay},
-    {"set_repeat_rate", lib_set_repeat_rate},
-    {"set_resize_data", lib_set_resize_data},
-    {"set_resize_direction", lib_set_resize_direction},
-    {"set_resize_function", lib_set_resize_function},
-    {"set_root_color", lib_set_root_color},
-    {"set_sloppy_focus", lib_set_sloppy_focus},
-    {"set_smart_hidden_edges", lib_set_smart_hidden_edges},
-    {"set_tile_borderpx", lib_set_tile_borderpx},
-    {NULL, NULL},
-};
+            } lua_pop(L, 1);
+            // [table, key, value, meta]
 
-static const struct luaL_Reg localconfig[] =
-{
-    {"set_arrange_by_focus", local_set_arrange_by_focus},
-    {"set_border_color", local_set_border_color},
-    {"set_float_borderpx", local_set_float_borderpx},
-    {"set_focus_color", local_set_focus_color},
-    {"set_hidden_edges", local_set_hidden_edges},
-    {"set_inner_gaps", local_set_inner_gaps},
-    {"set_layout_constraints", local_set_layout_constraints},
-    {"set_master_constraints", local_set_master_constraints},
-    {"set_master_layout_data", local_set_master_layout_data},
-    {"set_outer_gaps", local_set_outer_gaps},
-    {"set_resize_data", local_set_resize_data},
-    {"set_resize_direction", local_set_resize_direction},
-    {"set_resize_function", local_set_resize_function},
-    {"set_sloppy_focus", local_set_sloppy_focus},
-    {"set_smart_hidden_edges", local_set_smart_hidden_edges},
-    {"set_tile_borderpx", local_set_tile_borderpx},
-    {NULL, NULL},
-};
+            lua_pop(L, 1);
+            // [table, key, value]
 
-static const struct luaL_Reg layout[] =
-{
-    {"set", lib_set_layout},
-    {NULL, NULL},
-};
+        } lua_pop(L, 1);
+        // [table, key]
+    } lua_pop(L, 1);
+    // [table]
 
-static const struct luaL_Reg monitor[] = 
-{
-    {"set_scale", lib_set_scale},
-    {"set_transform", lib_set_transform},
-    {NULL, NULL},
-};
+    lua_pop(L, 1);
+    // []
 
-static void load_info(lua_State *L)
-{
-    luaL_newlib(L, info);
-
-    lua_createtable(L, 0, 0);
-    lua_createtable(L, 0, 0);
-
-    lua_pushinteger(L, CURSOR_NORMAL);
-    lua_setfield(L, -2 ,"normal");
-
-    lua_pushinteger(L, CURSOR_MOVE);
-    lua_setfield(L, -2 ,"move");
-
-    lua_pushinteger(L, CURSOR_RESIZE);
-    lua_setfield(L, -2 ,"resize");
-
-    lua_setfield(L, -2 ,"mode");
-    lua_setfield(L, -2 ,"cursor");
-
-    lua_createtable(L, 0, 0);
-
-    lua_createtable(L, 0, 0);
-
-    lua_pushinteger(L, WL_OUTPUT_TRANSFORM_NORMAL);
-    lua_setfield(L, -2 ,"normal");
-
-    lua_pushinteger(L, WL_OUTPUT_TRANSFORM_90);
-    lua_setfield(L, -2 ,"rotate_90");
-
-    lua_pushinteger(L, WL_OUTPUT_TRANSFORM_180);
-    lua_setfield(L, -2 ,"rotate_180");
-
-    lua_pushinteger(L, WL_OUTPUT_TRANSFORM_270);
-    lua_setfield(L, -2 ,"rotate_270");
-
-    lua_pushinteger(L, WL_OUTPUT_TRANSFORM_FLIPPED);
-    lua_setfield(L, -2 ,"flipp");
-
-    lua_pushinteger(L, WL_OUTPUT_TRANSFORM_FLIPPED_90);
-    lua_setfield(L, -2 ,"flipp_90");
-
-    lua_pushinteger(L, WL_OUTPUT_TRANSFORM_FLIPPED_180);
-    lua_setfield(L, -2 ,"flipp_180");
-
-    lua_pushinteger(L, WL_OUTPUT_TRANSFORM_FLIPPED_270);
-    lua_setfield(L, -2 ,"flipp_270");
-
-    lua_setfield(L, -2 ,"transform");
-
-    lua_setfield(L, -2 ,"monitor");
-
-    lua_createtable(L, 0, 0);
-
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "none");
-
-    lua_pushinteger(L, WLR_DIRECTION_UP | WLR_DIRECTION_DOWN |
-            WLR_DIRECTION_LEFT | WLR_DIRECTION_RIGHT);
-    lua_setfield(L, -2, "all");
-
-    lua_pushinteger(L, WLR_DIRECTION_DOWN);
-    lua_setfield(L, -2, "bottom");
-
-    lua_pushinteger(L, WLR_DIRECTION_UP);
-    lua_setfield(L, -2, "top");
-
-    lua_pushinteger(L, WLR_DIRECTION_LEFT);
-    lua_setfield(L, -2, "left");
-
-    lua_pushinteger(L, WLR_DIRECTION_RIGHT);
-    lua_setfield(L, -2, "right");
-
-    lua_setfield(L, -2, "direction");
-
-    lua_setglobal(L, "info");
+    return 0;
 }
+
+/* this is very bad code I know... I returns the metatable after going through
+ * the getter function */
+int get_lua_value(lua_State *L)
+{
+    // [table, key]
+    const char *key = luaL_checkstring(L, -1);
+
+    // call functions if available
+    lua_getmetatable(L, -2);
+    // [table, key, meta]
+    lua_pushstring(L, key);
+    // [table, key, meta, key]
+    lua_gettable(L, -2);
+    // [table, key, meta, (cfunction|NULL)meta.key]
+    if (!lua_isnil(L, -1)) {
+        lua_insert(L, -3);
+        // [(cfunction|NULL)meta.key, table, key]
+        lua_pop(L, 2);
+        // [(cfunction|NULL)meta.key]
+        return 1;
+    }
+    lua_pop(L, 2);
+    // [table, key]
+
+    lua_getmetatable(L, -2);
+    // [table, key, meta]
+
+    lua_pushstring(L, "getter");
+    // [table, key, meta, "getter"]
+    lua_gettable(L, -2);
+    // [table, key, meta, (table)meta."getter"]
+    lua_pushstring(L, key);
+    // [table, key, meta, (table)meta."getter", key]
+    lua_gettable(L, -2);
+    // [table, key, meta, (table)meta."getter", (cfunc)meta."getter".key]
+    lua_pushvalue(L, -5);
+    // [table, key, meta, (table)meta."getter", (cfunc)meta."getter".key, table]
+    lua_pcall(L, 1, 1, 0);
+    // [table, key, meta, (table)meta."getter", retval]
+    lua_insert(L, -5);
+    // [retval, table, key, meta, (table)meta."getter".key]
+    lua_pop(L, 4);
+    // [retval]
+    return 1;
+}
+
+// function to convert a lua value to a string
+static const char *lua_value_to_string(lua_State *L, int index)
+{
+    if (lua_isboolean(L, index)) {
+        lua_pushstring(L, lua_toboolean(L, index) ? "1" : "0");
+    } else if (lua_isnumber(L, index)) {
+        lua_pushstring(L, lua_tostring(L, index));
+    } else if (lua_isstring(L, index)) {
+        lua_pushvalue(L, index);
+    } else if (lua_isnil(L, index)) {
+        lua_pushliteral(L, "nil");
+    } else if (lua_isuserdata(L, index)) {
+        lua_getmetatable(L, index);
+        lua_pushstring(L, "__tostring");
+        lua_gettable(L, -2);
+        if (lua_isfunction(L, -1)) {
+            lua_pushvalue(L, index);
+            lua_pcall(L, 1, 1, 0);
+        } else {
+            lua_pushliteral(L, "userdata");
+        }
+    } else if (lua_istable(L, index)) {
+        // convert the table to string recursively using this function and push
+        // the result on the lua stack
+        char *res = strdup("");
+        append_string(&res, "{");
+
+        lua_pushnil(L);
+        while (lua_next(L, -2) != 0) {
+            const char *value = lua_value_to_string(L, -1);
+            append_string(&res, value);
+            // pop value from stack
+            lua_pop(L, 1);
+
+            // checks whether we are at the last element of the table
+            lua_pushvalue(L, -1);
+            if (lua_next(L, -3) != 0) {
+                append_string(&res, ", ");
+                // pop the value/key from the stack
+                lua_pop(L, 2);
+            }
+        }
+
+        append_string(&res, "}");
+        lua_pushstring(L, res);
+        free(res);
+    } else if (lua_isfunction(L, index)) {
+        lua_pushliteral(L, "function");
+    } else if (lua_islightuserdata(L, index)) {
+        lua_pushliteral(L, "lightuserdata");
+    } else {
+        lua_pushliteral(L, "unknown");
+    }
+
+    const char *str = luaL_checkstring(L, -1);
+    lua_pop(L, 1);
+    return str;
+}
+
+// replace lua print statement with notify-send
+static int l_print(lua_State *L) {
+    int nargs = lua_gettop(L);
+
+    char *msg = strdup("");
+    for (int i=1; i <= nargs; i++) {
+        const char *string = lua_value_to_string(L, i);
+
+        if (string == NULL) {
+            const char *errmsg = luaL_checkstring(L, -1);
+            handle_error(errmsg);
+            lua_pop(L, 1);
+            return 0;
+        }
+
+        append_string(&msg, string);
+    }
+    notify_msg(msg);
+    write_line_to_error_file(msg);
+
+    free(msg);
+
+    return 0;
+}
+
+static const struct luaL_Reg mylib [] = {
+    {"print", l_print},
+    {NULL, NULL}
+};
 
 void load_lua_api(lua_State *L)
 {
     luaL_openlibs(L);
 
-    luaL_newlib(L, action);
-    lua_setglobal(L, "action");
+    lua_getglobal(L, "_G");
+    luaL_setfuncs(L, mylib, 0);
+    lua_pop(L, 1);
 
-    luaL_newlib(L, container);
-    lua_setglobal(L, "container");
+    lua_load_action(L);
+    lua_load_bitset(L);
+    lua_load_color(L);
+    lua_load_container(L);
+    lua_load_container_property(L);
+    lua_load_cursor(L);
+    lua_load_cursor_mode(L);
+    lua_load_direction(L);
+    lua_load_events(L);
+    lua_load_focus_set(L);
+    lua_load_geom(L);
+    lua_load_info(L);
+    lua_load_layout(L);
+    lua_load_list(L);
+    lua_load_list2D(L);
+    lua_load_monitor(L);
+    lua_load_options(L);
+    lua_load_output_transform(L);
+    lua_load_ring_buffer(L);
+    lua_load_root(L);
+    lua_load_server(L);
+    lua_load_tag(L);
+}
 
-    luaL_newlib(L, event);
-    lua_setglobal(L, "event");
+void init_global_config_variables(lua_State *L)
+{
+    lua_init_events(server.event_handler);
+    lua_init_options(server.default_layout->options);
+    lua_init_layout(server.default_layout);
+}
 
-    lua_createtable(L, 0, 0);
-    luaL_newlib(L, localevent);
-    lua_setfield(L, -2, "event");
-
-    luaL_newlib(L, localconfig);
-    lua_setfield(L, -2, "config");
-    lua_setglobal(L, "l");
-
-    load_info(L);
-
-    luaL_newlib(L, config);
-    lua_setglobal(L, "config");
-
-    luaL_newlib(L, layout);
-    lua_setglobal(L, "layout");
-
-    luaL_newlib(L, monitor);
-    lua_setglobal(L, "monitor");
+void init_local_config_variables(lua_State *L, struct layout *lt)
+{
+    lua_init_events(server.event_handler);
+    lua_init_options(lt->options);
+    lua_init_layout(lt);
 }
