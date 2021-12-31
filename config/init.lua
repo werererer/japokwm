@@ -42,7 +42,7 @@ layout:set_master_layout_data(
 )
 
 -- You can define which layouts are switch to by default here
-local layouts = {"three_columns", "two_pane", "user1"}
+local layouts = {"three_columns", "two_pane", "monocle"}
 server.default_layout_ring = Ring.new(layouts)
 opt.default_layout = layouts[1]
 
