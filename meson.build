@@ -1,4 +1,4 @@
-project('japokwm', 'c', version: '0.3')
+project('japokwm', 'c', version: '0.4')
 pkg = import('pkgconfig')
 
 wayland_scanner = find_program('wayland-scanner', native: true)
