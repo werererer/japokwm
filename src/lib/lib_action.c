@@ -96,25 +96,38 @@ int lib_arrange(lua_State *L)
     return 0;
 }
 
+struct function_data {
+    int lua_func_ref;
+    int lua_callback_ref;
+};
+
 static void *_call(void *arg)
 {
     lua_State *thread = lua_newthread(L);
-    int *ref = arg;
+    struct function_data *data = arg;
+    int func_ref = data->lua_func_ref;
+    int callback_ref = data->lua_callback_ref;
 
-    lua_rawgeti(thread, LUA_REGISTRYINDEX, *ref);
+    lua_rawgeti(thread, LUA_REGISTRYINDEX, func_ref);
     lua_call_safe(thread, 0, 0, 0);
 
-    luaL_unref(thread, LUA_REGISTRYINDEX, *ref);
-    free(ref);
+    luaL_unref(thread, LUA_REGISTRYINDEX, func_ref);
+
+    lua_rawgeti(thread, LUA_REGISTRYINDEX, callback_ref);
+    lua_call_safe(thread, 0, 0, 0);
+
+    luaL_unref(thread, LUA_REGISTRYINDEX, callback_ref);
     return NULL;
 }
 
 int lib_async_exec(lua_State *L)
 {
     pthread_t thread;
-    int *func_ref = calloc(1, sizeof(int));
-    *func_ref = luaL_ref(L, LUA_REGISTRYINDEX);
-    pthread_create(&thread, NULL, _call, func_ref);
+    struct function_data *data = malloc(sizeof(struct function_data));
+    data->lua_callback_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    data->lua_func_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+
+    pthread_create(&thread, NULL, _call, data);
     pthread_detach(thread);
     return 0;
 }
