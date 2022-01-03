@@ -169,6 +169,7 @@ deps = [\
     dependency('libnotify'),
     dependency('threads'),
     dependency('libinput'),
+    dependency('libuv'),
     ]
 
 # meson.add_install_script('install.sh')

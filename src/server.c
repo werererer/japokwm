@@ -24,6 +24,7 @@
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_output_v1.h>
+#include <uv.h>
 
 #include "layer_shell.h"
 #include "monitor.h"
@@ -297,6 +298,7 @@ static void run(char *startup_cmd)
      * frame events at the refresh rate, and so on. */
 
     int i = 0;
+    // while (uv_run(uv_default_loop(), UV_RUN_DEFAULT)) {
     while (true) {
         printf("run: %i\n", i++);
         wl_display_flush_clients(server.wl_display);
