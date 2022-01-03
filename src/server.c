@@ -300,7 +300,10 @@ static void run(char *startup_cmd)
     while (true) {
         printf("run: %i\n", i++);
         wl_display_flush_clients(server.wl_display);
+        printf("flushed\n");
+        // this is the event loop :(
         wl_event_loop_dispatch(server.wl_event_loop, -1);
+        printf("end\n");
     }
 
     if (startup_cmd) {
