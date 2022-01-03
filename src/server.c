@@ -295,7 +295,13 @@ static void run(char *startup_cmd)
      * compositor. Starting the backend rigged up all of the necessary event
      * loop configuration to listen to libinput events, DRM events, generate
      * frame events at the refresh rate, and so on. */
-    wl_display_run(server.wl_display);
+
+    int i = 0;
+    while (true) {
+        printf("run: %i\n", i++);
+        wl_display_flush_clients(server.wl_display);
+        wl_event_loop_dispatch(server.wl_event_loop, -1);
+    }
 
     if (startup_cmd) {
         kill(startup_pid, SIGTERM);
