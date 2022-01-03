@@ -388,8 +388,8 @@ int setup(struct server *server)
     server->input_manager = create_input_manager();
     struct seat *seat = create_seat("seat0");
     g_ptr_array_add(server->input_manager->seats, seat);
-    
-   server->output_mgr=wlr_output_manager_v1_create(server->wl_display); 
+
+    server->output_mgr = wlr_output_manager_v1_create(server->wl_display); 
     wl_signal_add(&server->output_mgr->events.apply, &server->output_mgr_apply);
     wl_signal_add(&server->output_mgr->events.test, &server->output_mgr_test);
 
