@@ -28,6 +28,13 @@ static void popup_damage(struct xdg_popup *xdg_popup, bool whole);
 struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popup,
         struct wlr_box *parent_geom, struct container* toplevel)
 {
+    // the parent geometry may not exist we just ignore this request in that
+    // case
+    // Else we might encounter UB
+    if (!parent_geom) {
+        return NULL;
+    }
+
     struct xdg_popup *popup = xdg_popup->base->data = calloc(1, sizeof(*popup));
     popup->xdg = xdg_popup;
     popup->toplevel = toplevel;
