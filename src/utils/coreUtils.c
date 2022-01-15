@@ -405,10 +405,9 @@ void lua_get_default_resize_data(lua_State *L)
     }
 }
 
-void *_exec(void *data)
+static void reap_dead_child(int signum)
 {
-    wait(NULL);
-    return NULL;
+    waitpid(-1, NULL, WNOHANG);
 }
 
 int exec(const char *cmd)
@@ -419,9 +418,7 @@ int exec(const char *cmd)
         setsid();
         ret_val = execl("/bin/sh", "/bin/sh", "-c", cmd, (void *)NULL);
     } else {
-        pthread_t thread;
-        pthread_create(&thread, NULL, _exec, NULL);
-        pthread_detach(thread);
+        signal(SIGCHLD, reap_dead_child);
     }
 
     return ret_val;
