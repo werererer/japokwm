@@ -299,6 +299,7 @@ static void run(char *startup_cmd)
 
     int i = 0;
     while (server.uv_loop->stop_flag == 0) {
+        uv_run(server.uv_loop, UV_RUN_NOWAIT);
         printf("run: %i\n", i++);
         wl_display_flush_clients(server.wl_display);
         printf("flushed\n");
@@ -332,9 +333,15 @@ void server_reset_layout_ring(struct ring_buffer *layout_ring)
     g_ptr_array_add(layout_ring->names, strdup("monocle"));
 }
 
+static void _the_end(struct uv_async_s *data)
+{
+    printf("the end\n");
+}
+
 int setup(struct server *server)
 {
     server->uv_loop = uv_default_loop();
+    uv_async_init(uv_default_loop(), &server->async_handler, _the_end);
 
     load_lua_api(L);
     if (init_backend(server) != EXIT_SUCCESS) {

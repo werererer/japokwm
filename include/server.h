@@ -23,6 +23,7 @@
 
 struct server {
     uv_loop_t *uv_loop;
+    uv_async_t async_handler;
 
     struct wl_display *wl_display;
     struct wl_event_loop *wl_event_loop;

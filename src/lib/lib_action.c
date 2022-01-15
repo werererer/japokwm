@@ -116,7 +116,11 @@ static void *_call(void *arg)
     lua_rawgeti(thread, LUA_REGISTRYINDEX, callback_ref);
     lua_call_safe(thread, 0, 0, 0);
 
+
     luaL_unref(thread, LUA_REGISTRYINDEX, callback_ref);
+
+    uv_async_send(&server.async_handler);
+
     return NULL;
 }
 
