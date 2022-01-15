@@ -11,6 +11,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <wait.h>
 
 #include "utils/parseConfigUtils.h"
 #include "ring_buffer.h"
@@ -404,6 +405,11 @@ void lua_get_default_resize_data(lua_State *L)
     }
 }
 
+static void reap_dead_child(int signum)
+{
+    wait(NULL);
+}
+
 int exec(const char *cmd)
 {
     int ret_val = 0;
@@ -411,6 +417,8 @@ int exec(const char *cmd)
     if (fork() == 0) {
         setsid();
         ret_val = execl("/bin/sh", "/bin/sh", "-c", cmd, (void *)NULL);
+    } else {
+        signal(SIGCHLD, reap_dead_child);
     }
 
     return ret_val;
