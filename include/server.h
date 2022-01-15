@@ -1,5 +1,6 @@
 #ifndef SERVER_H
 #define SERVER_H
+#include <uv.h>
 #include <wayland-server.h>
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_virtual_pointer_v1.h>
@@ -21,6 +22,8 @@
 #include "bitset/bitset.h"
 
 struct server {
+    uv_loop_t *uv_loop;
+
     struct wl_display *wl_display;
     struct wl_event_loop *wl_event_loop;
     struct wlr_backend *backend;
