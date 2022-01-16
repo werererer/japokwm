@@ -333,8 +333,12 @@ void server_reset_layout_ring(struct ring_buffer *layout_ring)
     g_ptr_array_add(layout_ring->names, strdup("monocle"));
 }
 
-static void _the_end(struct uv_async_s *arg)
+static void _async_handler_function(struct uv_async_s *arg)
 {
+    // struct function_data *func_data = data->data;
+    // printf("the end\n");
+    // free(func_data->output);
+
     struct function_data *data = arg->data;
 
     lua_State *L = data->L;
@@ -342,7 +346,8 @@ static void _the_end(struct uv_async_s *arg)
     printf("the end %d\n", func_ref);
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, func_ref);
-    lua_call_safe(L, 0, 0, 0);
+    lua_pushstring(L, data->output);
+    lua_call_safe(L, 1, 0, 0);
     luaL_unref(L, LUA_REGISTRYINDEX, func_ref);
 
     free(data);
@@ -351,7 +356,7 @@ static void _the_end(struct uv_async_s *arg)
 int setup(struct server *server)
 {
     server->uv_loop = uv_default_loop();
-    uv_async_init(uv_default_loop(), &server->async_handler, _the_end);
+    uv_async_init(uv_default_loop(), &server->async_handler, _async_handler_function);
 
     load_lua_api(L);
     if (init_backend(server) != EXIT_SUCCESS) {

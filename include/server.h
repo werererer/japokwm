@@ -118,6 +118,7 @@ struct function_data {
     lua_State *L;
     int lua_func_ref;
     char *cmd;
+    char *output;
 };
 
 extern struct server server;

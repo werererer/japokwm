@@ -96,11 +96,6 @@ int lib_arrange(lua_State *L)
     return 0;
 }
 
-static void _the_end(struct uv_async_s *data)
-{
-    printf("the end\n");
-}
-
 static void *_call(void *arg)
 {
     struct function_data *data = arg;
@@ -113,8 +108,10 @@ static void *_call(void *arg)
         exit(1);
     }
 
+    data->output = strdup("");
     /* Read the output a line at a time - output it. */
     while (fgets(path, sizeof(path), fp) != NULL) {
+        append_string(&data->output, path);
         printf("%s", path);
     }
 
