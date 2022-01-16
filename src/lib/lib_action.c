@@ -121,8 +121,6 @@ static void *_call(void *arg)
     server.async_handler.data = data;
     uv_async_send(&server.async_handler);
     printf("dispatch\n");
-    wl_display_flush_clients(server.wl_display);
-    // wl_event_loop_dispatch_idle(server.wl_event_loop);
 
     return NULL;
 }

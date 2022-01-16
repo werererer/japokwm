@@ -250,6 +250,30 @@ void finalize_server()
     pthread_mutex_destroy(&lock_rendering_action);
 }
 
+static void run_event_loop() {
+    int pfd_size = 2;
+    struct pollfd pfds[pfd_size];
+
+    pfds[0].fd = wl_event_loop_get_fd(server.wl_event_loop);
+    pfds[0].events = POLLIN;
+
+    pfds[1].fd = uv_backend_fd(server.uv_loop);
+    pfds[1].events = POLLIN;
+
+    while (server.uv_loop->stop_flag == 0) {
+        wl_display_flush_clients(server.wl_display);
+
+        /* poll waits for any event of either the wayland event loop or the
+         * libuv event loop and only if one emits an event we continue */
+        poll(pfds, pfd_size, -1);
+
+        // TODO: we can probably run this more efficiently
+        uv_run(server.uv_loop, UV_RUN_NOWAIT);
+        wl_event_loop_dispatch(server.wl_event_loop, 0);
+    }
+}
+
+
 static void run(char *startup_cmd)
 {
     pid_t startup_pid = -1;
@@ -293,36 +317,8 @@ static void run(char *startup_cmd)
             execl("/bin/sh", "/bin/sh", "-c", startup_cmd, (void *)NULL);
         }
     }
-    /* Run the Wayland event loop. This does not return until you exit the
-     * compositor. Starting the backend rigged up all of the necessary event
-     * loop configuration to listen to libinput events, DRM events, generate
-     * frame events at the refresh rate, and so on. */
 
-    int i = 0;
-
-    int pollsize = 2;
-    struct pollfd pfds[pollsize];
-
-    pfds[0].fd = wl_event_loop_get_fd(server.wl_event_loop);
-    pfds[0].events = POLLIN;
-
-    pfds[1].fd = uv_backend_fd(server.uv_loop);
-    pfds[1].events = POLLIN;
-
-    while (server.uv_loop->stop_flag == 0) {
-        uv_run(server.uv_loop, UV_RUN_NOWAIT);
-        // printf("run: %i\n", i++);
-        wl_display_flush_clients(server.wl_display);
-        int s = poll(pfds, pollsize, -1);
-        // printf("flushed\n");
-        // this is the event loop :(
-        printf("here: %i\n", i++);
-        wl_event_loop_dispatch(server.wl_event_loop, 0);
-        printf("i: %i\n", s);
-
-        printf("end\n");
-        // printf("end\n");
-    }
+    run_event_loop();
 
     if (startup_cmd) {
         kill(startup_pid, SIGTERM);
