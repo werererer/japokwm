@@ -105,7 +105,7 @@ static void *_call(void *arg)
     FILE *fp = popen(cmd, "r");
     if (fp == NULL) {
         printf("Failed to run command\n" );
-        exit(1);
+        return NULL;
     }
 
     data->output = strdup("");
@@ -120,6 +120,9 @@ static void *_call(void *arg)
 
     server.async_handler.data = data;
     uv_async_send(&server.async_handler);
+    printf("dispatch\n");
+    wl_display_flush_clients(server.wl_display);
+    // wl_event_loop_dispatch_idle(server.wl_event_loop);
 
     return NULL;
 }

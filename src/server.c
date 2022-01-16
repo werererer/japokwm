@@ -7,7 +7,9 @@
 #include "stringop.h"
 
 #include <assert.h>
+#include <poll.h>
 #include <unistd.h>
+#include <uv.h>
 #include <wait.h>
 #include <wayland-client.h>
 #include <wlr/types/wlr_data_control_v1.h>
@@ -24,7 +26,6 @@
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_output_v1.h>
-#include <uv.h>
 
 #include "layer_shell.h"
 #include "monitor.h"
@@ -297,14 +298,29 @@ static void run(char *startup_cmd)
      * loop configuration to listen to libinput events, DRM events, generate
      * frame events at the refresh rate, and so on. */
 
-    // int i = 0;
+    int i = 0;
+
+    int pollsize = 2;
+    struct pollfd pfds[pollsize];
+
+    pfds[0].fd = wl_event_loop_get_fd(server.wl_event_loop);
+    pfds[0].events = POLLIN;
+
+    pfds[1].fd = uv_backend_fd(server.uv_loop);
+    pfds[1].events = POLLIN;
+
     while (server.uv_loop->stop_flag == 0) {
         uv_run(server.uv_loop, UV_RUN_NOWAIT);
         // printf("run: %i\n", i++);
         wl_display_flush_clients(server.wl_display);
+        int s = poll(pfds, pollsize, -1);
         // printf("flushed\n");
         // this is the event loop :(
-        wl_event_loop_dispatch(server.wl_event_loop, -1);
+        printf("here: %i\n", i++);
+        wl_event_loop_dispatch(server.wl_event_loop, 0);
+        printf("i: %i\n", s);
+
+        printf("end\n");
         // printf("end\n");
     }
 
@@ -356,6 +372,7 @@ static void _async_handler_function(struct uv_async_s *arg)
 int setup(struct server *server)
 {
     server->uv_loop = uv_default_loop();
+    
     uv_async_init(uv_default_loop(), &server->async_handler, _async_handler_function);
 
     load_lua_api(L);
