@@ -22,6 +22,7 @@
 #include "bitset/bitset.h"
 
 struct server {
+    bool is_running;
     uv_loop_t *uv_loop;
     uv_async_t async_handler;
 
@@ -128,6 +129,7 @@ void init_server();
 void finalize_server();
 
 int start_server(char *startup_cmd);
+void server_terminate(struct server *server);
 int stop_server();
 
 void server_reset_layout_ring(struct ring_buffer *layout_ring);

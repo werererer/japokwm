@@ -250,6 +250,14 @@ void finalize_server()
     pthread_mutex_destroy(&lock_rendering_action);
 }
 
+void server_terminate(struct server *server)
+{
+    server->is_running = false;
+    wl_display_terminate(server->wl_display);
+    uv_loop_close(server->uv_loop);
+}
+
+
 static void run_event_loop() {
     int pfd_size = 2;
     struct pollfd pfds[pfd_size];
@@ -260,7 +268,8 @@ static void run_event_loop() {
     pfds[1].fd = uv_backend_fd(server.uv_loop);
     pfds[1].events = POLLIN;
 
-    while (server.uv_loop->stop_flag == 0) {
+    server.is_running = 1;
+    while (server.is_running) {
         wl_display_flush_clients(server.wl_display);
 
         /* poll waits for any event of either the wayland event loop or the
