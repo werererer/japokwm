@@ -114,6 +114,12 @@ struct server {
 #endif
 };
 
+struct function_data {
+    lua_State *L;
+    int lua_func_ref;
+    char *cmd;
+};
+
 extern struct server server;
 extern pthread_mutex_t lock_rendering_action;
 

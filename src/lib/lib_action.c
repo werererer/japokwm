@@ -96,29 +96,32 @@ int lib_arrange(lua_State *L)
     return 0;
 }
 
-struct function_data {
-    int lua_func_ref;
-    int lua_callback_ref;
-};
+static void _the_end(struct uv_async_s *data)
+{
+    printf("the end\n");
+}
 
 static void *_call(void *arg)
 {
-    lua_State *thread = lua_newthread(L);
     struct function_data *data = arg;
-    int func_ref = data->lua_func_ref;
-    int callback_ref = data->lua_callback_ref;
 
-    lua_rawgeti(thread, LUA_REGISTRYINDEX, func_ref);
-    lua_call_safe(thread, 0, 0, 0);
+    char path[1024] ;
+    const char *cmd = data->cmd;
+    FILE *fp = popen(cmd, "r");
+    if (fp == NULL) {
+        printf("Failed to run command\n" );
+        exit(1);
+    }
 
-    luaL_unref(thread, LUA_REGISTRYINDEX, func_ref);
+    /* Read the output a line at a time - output it. */
+    while (fgets(path, sizeof(path), fp) != NULL) {
+        printf("%s", path);
+    }
 
-    lua_rawgeti(thread, LUA_REGISTRYINDEX, callback_ref);
-    lua_call_safe(thread, 0, 0, 0);
+    /* close */
+    pclose(fp);
 
-
-    luaL_unref(thread, LUA_REGISTRYINDEX, callback_ref);
-
+    server.async_handler.data = data;
     uv_async_send(&server.async_handler);
 
     return NULL;
@@ -128,8 +131,11 @@ int lib_async_exec(lua_State *L)
 {
     pthread_t thread;
     struct function_data *data = malloc(sizeof(struct function_data));
-    data->lua_callback_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+
     data->lua_func_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    data->cmd = strdup(luaL_checkstring(L, 1));
+    lua_pop(L, 1);
+    data->L = L;
 
     pthread_create(&thread, NULL, _call, data);
     pthread_detach(thread);

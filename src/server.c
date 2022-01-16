@@ -297,15 +297,15 @@ static void run(char *startup_cmd)
      * loop configuration to listen to libinput events, DRM events, generate
      * frame events at the refresh rate, and so on. */
 
-    int i = 0;
+    // int i = 0;
     while (server.uv_loop->stop_flag == 0) {
         uv_run(server.uv_loop, UV_RUN_NOWAIT);
-        printf("run: %i\n", i++);
+        // printf("run: %i\n", i++);
         wl_display_flush_clients(server.wl_display);
-        printf("flushed\n");
+        // printf("flushed\n");
         // this is the event loop :(
         wl_event_loop_dispatch(server.wl_event_loop, -1);
-        printf("end\n");
+        // printf("end\n");
     }
 
     if (startup_cmd) {
@@ -333,9 +333,19 @@ void server_reset_layout_ring(struct ring_buffer *layout_ring)
     g_ptr_array_add(layout_ring->names, strdup("monocle"));
 }
 
-static void _the_end(struct uv_async_s *data)
+static void _the_end(struct uv_async_s *arg)
 {
-    printf("the end\n");
+    struct function_data *data = arg->data;
+
+    lua_State *L = data->L;
+    int func_ref = data->lua_func_ref;
+    printf("the end %d\n", func_ref);
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, func_ref);
+    lua_call_safe(L, 0, 0, 0);
+    luaL_unref(L, LUA_REGISTRYINDEX, func_ref);
+
+    free(data);
 }
 
 int setup(struct server *server)
