@@ -177,6 +177,9 @@ static GArray *child_lists_get_positions_array2D(GPtrArray2D *child, GPtrArray2D
     for (int i = 0; i < length_of_composed_list(child); i++) {
         struct container *con = get_in_composed_list(child, i);
         int position = find_in_composed_list(parent, cmp_ptr, con);
+        if (position == -1) {
+            continue;
+        }
         g_array_append_val(positions, position);
     }
     return positions;
@@ -188,6 +191,9 @@ static GArray *child_list_get_positions_array(GPtrArray *child, GPtrArray2D *par
     for (int i = 0; i < child->len; i++) {
         struct container *con = g_ptr_array_index(child, i);
         int position = find_in_composed_list(parent, cmp_ptr, con);
+        if (position == -1) {
+            continue;
+        }
         g_array_append_val(positions, position);
     }
     return positions;
@@ -205,7 +211,6 @@ static GArray *child_list_get_positions_array1D(GPtrArray *child, GPtrArray *par
     return positions;
 }
 
-
 void sub_list_write_to_parent_list2D(GPtrArray2D *parent,
         GPtrArray2D *child)
 {
@@ -220,6 +225,7 @@ void sub_list_write_to_parent_list2D(GPtrArray2D *parent,
     for (int i = 0; i < prev_positions->len; i++) {
         int prev_position = g_array_index(prev_positions, int, i);
         int position = g_array_index(positions, int, i);
+        printf("parent_containers->len: %i postion: %i\n", parent_containers->len, position);
         struct container *prev_con = g_ptr_array_index(parent_containers, position);
         set_in_composed_list(parent, prev_position, prev_con);
     }
