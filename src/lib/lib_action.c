@@ -120,7 +120,6 @@ static void *_call(void *arg)
 
     server.async_handler.data = data;
     uv_async_send(&server.async_handler);
-    printf("dispatch\n");
 
     return NULL;
 }
@@ -409,7 +408,6 @@ int lib_toggle_tags(lua_State *L)
 int lib_toggle_tag(lua_State *L)
 {
     struct tag *prev_tag = get_tag(server.previous_tag);
-    printf("server prev tag: %i\n", server.previous_tag);
     tagset_focus_tag(prev_tag);
     return 0;
 }
