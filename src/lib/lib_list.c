@@ -19,8 +19,9 @@ struct user_list {
 
 static const struct luaL_Reg list_meta[] =
 {
-    {"__index", lib_list_get},
     {"__gc", lib_list_gc},
+    {"__index", lib_list_get},
+    {"__len", lib_list_len},
     {NULL, NULL},
 };
 
@@ -152,6 +153,13 @@ int lib_list_get(lua_State *L)
 
     void *con = g_ptr_array_index(user_list->list, i);
     user_list->create_lua_object(L, con);
+    return 1;
+}
+
+int lib_list_len(lua_State *L)
+{
+    struct user_list *user_list = check_user_list(L, 1);
+    lua_pushinteger(L, user_list->list->len);
     return 1;
 }
 
