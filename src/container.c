@@ -74,6 +74,8 @@ void container_property_set_floating_geom(struct container_property *property,
 
 void container_property_set_floating(struct container_property *property, bool floating)
 {
+    if (!property)
+        return;
     property->floating = floating;
     struct container *con = property->con;
     if (!container_property_is_floating(property)) {
