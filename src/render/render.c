@@ -358,11 +358,11 @@ static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
         struct xdg_popup *popup = g_ptr_array_index(server.popups, i);
         struct wlr_surface *surface = popup->xdg->base->surface;
 
-        struct wlr_box obox = popup->geom;
         // popups are weird and require to use the dimensions of the surface
         // instead
-        obox.width = surface->current.width;
-        obox.height = surface->current.height;
+        popup->geom.width = surface->current.width;
+        popup->geom.height = surface->current.height;
+        struct wlr_box obox = popup->geom;
 
         struct render_texture_data render_data;
         render_data.alpha = 1.0f;
