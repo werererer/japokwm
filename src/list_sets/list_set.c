@@ -225,7 +225,6 @@ void sub_list_write_to_parent_list2D(GPtrArray2D *parent,
     for (int i = 0; i < prev_positions->len; i++) {
         int prev_position = g_array_index(prev_positions, int, i);
         int position = g_array_index(positions, int, i);
-        printf("parent_containers->len: %i postion: %i\n", parent_containers->len, position);
         struct container *prev_con = g_ptr_array_index(parent_containers, position);
         set_in_composed_list(parent, prev_position, prev_con);
     }
