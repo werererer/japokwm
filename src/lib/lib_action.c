@@ -39,7 +39,6 @@ static const struct luaL_Reg action_meta[] =
 static const struct luaL_Reg action_static_methods[] =
 {
     {"arrange", lib_arrange},
-    {"async_exec", lib_async_exec},
     {"create_output", lib_create_output},
     {"deep_copy", lib_deep_copy},
     {"exec", lib_exec},
@@ -119,17 +118,26 @@ static void *_call(void *arg)
     pclose(fp);
 
     server.async_handler.data = data;
+    if (data->lua_func_ref == -1) {
+        return NULL;
+    }
     uv_async_send(&server.async_handler);
 
     return NULL;
 }
 
-int lib_async_exec(lua_State *L)
+int lib_exec(lua_State *L)
 {
     pthread_t thread;
     struct function_data *data = malloc(sizeof(struct function_data));
 
-    data->lua_func_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    if (lua_gettop(L) == 2) {
+        lua_isfunction(L, -1);
+        data->lua_func_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    } else {
+        data->lua_func_ref = -1;
+    }
+
     data->cmd = strdup(luaL_checkstring(L, 1));
     lua_pop(L, 1);
     data->L = L;
@@ -222,13 +230,6 @@ int lib_start_keycombo(lua_State *L)
     lua_pop(L, 1);
 
     server_start_keycombo(key_combo_name);
-    return 0;
-}
-
-int lib_exec(lua_State *L)
-{
-    const char *cmd = luaL_checkstring(L, -1);
-    exec(cmd);
     return 0;
 }
 
