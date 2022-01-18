@@ -8,18 +8,17 @@ japokwm-action(5)
 	void arrange()
 		Forces the windowmanager to arrange the windows now.
 	
-	*experimental*++
-void async_exec(function)
-		Executes the function in another thread.
-	
 	void create_output()
 		Creates a new output.
 	
 	void deep_copy(table)
 		Creates a deep copy of the table.
 	
-	void exec(string)
-		Executes the string in the shell.
+	void exec(string) ++
+void exec(string, function(output))
+		Executes the string in the shell asynchronously. If $2 is given, the
+		function is called with the output of the command as argument
+		synchronized.
 	
 	void focus_on_hidden_stack(int)
 		Focuses the window at the hidden stack in position $1.
