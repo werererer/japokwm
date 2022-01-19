@@ -370,7 +370,7 @@ void motion_notify(struct cursor *cursor, uint32_t time_msec,
         struct wlr_box *con_geom = container_get_current_geom(con);
         double sx;
         double sy;
-        if (con) {
+        if (con && con_geom) {
             sx = cursor->wlr_cursor->x - con_geom->x;
             sy = cursor->wlr_cursor->y - con_geom->y;
         } else {

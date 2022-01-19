@@ -897,6 +897,9 @@ struct wlr_box *container_get_floating_geom_at_tag(struct container *con, struct
 
 struct wlr_box *container_get_floating_geom(struct container *con)
 {
+    if (!con)
+        return NULL;
+
     struct tag *tag = container_get_current_tag(con);
     if (!tag) {
         return NULL;
@@ -907,6 +910,11 @@ struct wlr_box *container_get_floating_geom(struct container *con)
 
 struct wlr_box *container_get_current_geom_at_tag(struct container *con, struct tag *tag)
 {
+    if (!con)
+        return NULL;
+    if (!tag)
+        return NULL;
+
     struct wlr_box *geom = NULL;
     struct layout *lt = tag_get_layout(tag);
     if (container_is_unmanaged(con)) {
