@@ -2,7 +2,7 @@
 #define CONTAINER_H
 
 #include <lua.h>
-#include <wlr/types/wlr_box.h>
+#include <wlr/util/box.h>
 #include <wlr/types/wlr_cursor.h>
 #include <glib.h>
 

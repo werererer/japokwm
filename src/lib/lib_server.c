@@ -94,7 +94,7 @@ int lib_server_quit(lua_State *L)
 {
     struct server *server = check_server(L);
     lua_pop(L, 1);
-    wl_display_terminate(server->wl_display);
+    server_terminate(server);
     return 0;
 }
 

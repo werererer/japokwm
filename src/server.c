@@ -7,7 +7,9 @@
 #include "stringop.h"
 
 #include <assert.h>
+#include <poll.h>
 #include <unistd.h>
+#include <uv.h>
 #include <wait.h>
 #include <wayland-client.h>
 #include <wlr/types/wlr_data_control_v1.h>
@@ -24,6 +26,7 @@
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_output_v1.h>
+#include <wlr/render/allocator.h>
 
 #include "layer_shell.h"
 #include "monitor.h"
@@ -248,6 +251,39 @@ void finalize_server()
     pthread_mutex_destroy(&lock_rendering_action);
 }
 
+void server_terminate(struct server *server)
+{
+    server->is_running = false;
+    wl_display_terminate(server->wl_display);
+    uv_loop_close(server->uv_loop);
+}
+
+
+static void run_event_loop() {
+    int pfd_size = 2;
+    struct pollfd pfds[pfd_size];
+
+    pfds[0].fd = wl_event_loop_get_fd(server.wl_event_loop);
+    pfds[0].events = POLLIN;
+
+    pfds[1].fd = uv_backend_fd(server.uv_loop);
+    pfds[1].events = POLLIN;
+
+    server.is_running = 1;
+    while (server.is_running) {
+        wl_display_flush_clients(server.wl_display);
+
+        /* poll waits for any event of either the wayland event loop or the
+         * libuv event loop and only if one emits an event we continue */
+        poll(pfds, pfd_size, -1);
+
+        // TODO: we can probably run this more efficiently
+        uv_run(server.uv_loop, UV_RUN_NOWAIT);
+        wl_event_loop_dispatch(server.wl_event_loop, 0);
+    }
+}
+
+
 static void run(char *startup_cmd)
 {
     pid_t startup_pid = -1;
@@ -291,11 +327,8 @@ static void run(char *startup_cmd)
             execl("/bin/sh", "/bin/sh", "-c", startup_cmd, (void *)NULL);
         }
     }
-    /* Run the Wayland event loop. This does not return until you exit the
-     * compositor. Starting the backend rigged up all of the necessary event
-     * loop configuration to listen to libinput events, DRM events, generate
-     * frame events at the refresh rate, and so on. */
-    wl_display_run(server.wl_display);
+
+    run_event_loop();
 
     if (startup_cmd) {
         kill(startup_pid, SIGTERM);
@@ -322,8 +355,32 @@ void server_reset_layout_ring(struct ring_buffer *layout_ring)
     g_ptr_array_add(layout_ring->names, strdup("monocle"));
 }
 
+static void _async_handler_function(struct uv_async_s *arg)
+{
+    // struct function_data *func_data = data->data;
+    // printf("the end\n");
+    // free(func_data->output);
+
+    struct function_data *data = arg->data;
+
+    lua_State *L = data->L;
+    int func_ref = data->lua_func_ref;
+    printf("the end %d\n", func_ref);
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, func_ref);
+    lua_pushstring(L, data->output);
+    lua_call_safe(L, 1, 0, 0);
+    luaL_unref(L, LUA_REGISTRYINDEX, func_ref);
+
+    free(data);
+}
+
 int setup(struct server *server)
 {
+    server->uv_loop = uv_default_loop();
+
+    uv_async_init(uv_default_loop(), &server->async_handler, _async_handler_function);
+
     load_lua_api(L);
     if (init_backend(server) != EXIT_SUCCESS) {
         return EXIT_FAILURE;
@@ -334,8 +391,11 @@ int setup(struct server *server)
     /* If we don't provide a renderer, autocreate makes a GLES2 renderer for us.
      * The renderer is responsible for defining the various pixel formats it
      * supports for shared memory, this configures that for clients. */
-    drw = wlr_backend_get_renderer(server->backend);
-    wlr_renderer_init_wl_display(drw, server->wl_display);
+    server->renderer = wlr_renderer_autocreate(server->backend);
+
+    wlr_renderer_init_wl_display(server->renderer, server->wl_display);
+
+    server->allocator = wlr_allocator_autocreate(server->backend, server->renderer);
 
     /* This creates some hands-off wlroots interfaces. The compositor is
      * necessary for clients to allocate surfaces and the data device manager
@@ -343,7 +403,7 @@ int setup(struct server *server)
      * to dig your fingers in and play with their behavior if you want. Note that
      * the clients cannot set the selection directly without compositor approval,
      * see the setsel() function. */
-    server->compositor = wlr_compositor_create(server->wl_display, drw);
+    server->compositor = wlr_compositor_create(server->wl_display, server->renderer);
     wlr_export_dmabuf_manager_v1_create(server->wl_display);
     wlr_screencopy_manager_v1_create(server->wl_display);
     wlr_data_control_manager_v1_create(server->wl_display);
@@ -388,8 +448,8 @@ int setup(struct server *server)
     server->input_manager = create_input_manager();
     struct seat *seat = create_seat("seat0");
     g_ptr_array_add(server->input_manager->seats, seat);
-    
-   server->output_mgr=wlr_output_manager_v1_create(server->wl_display); 
+
+    server->output_mgr = wlr_output_manager_v1_create(server->wl_display); 
     wl_signal_add(&server->output_mgr->events.apply, &server->output_mgr_apply);
     wl_signal_add(&server->output_mgr->events.test, &server->output_mgr_test);
 

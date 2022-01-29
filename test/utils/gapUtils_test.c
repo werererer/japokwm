@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <glib.h>
-#include <wlr/types/wlr_box.h>
+#include <wlr/util/box.h>
 #include <wlr/util/edges.h>
 
 #include "utils/coreUtils.h"

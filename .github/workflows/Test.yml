@@ -16,6 +16,7 @@ jobs:
                 pacman -Sy --noconfirm
                 pacman -S --noconfirm base-devel
                 pacman -S --noconfirm glib2
+                pacman -S --noconfirm libuv
                 pacman -S --noconfirm meson
                 pacman -S --noconfirm wlroots
                 pacman -S --noconfirm lua

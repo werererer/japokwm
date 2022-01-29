@@ -22,7 +22,9 @@ japokwm-tag(5)
 		Toggle the visibility of the bars.
 # Variables
 	bars bars
-		The bars of the windowmanager.
+		The bars of the tag.
+	Bitset tags
+		The visible tags from the tag.
 	Focus_set focus_set
 		The focus set of the windowmanager.
 	Container[] focus_stack

@@ -163,12 +163,13 @@ deps = [\
     wayland_client,
     wayland_protos,
     dependency('pixman-1'),
-    dependency('wlroots', version: ['>=0.14' ,'< 0.15']),
+    dependency('wlroots', version: ['>=0.15' ,'< 0.16']),
     dependency('x11'),
     dependency('json-c'),
     dependency('libnotify'),
     dependency('threads'),
     dependency('libinput'),
+    dependency('libuv'),
     ]
 
 # meson.add_install_script('install.sh')

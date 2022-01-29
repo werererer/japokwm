@@ -39,7 +39,6 @@ static const struct luaL_Reg action_meta[] =
 static const struct luaL_Reg action_static_methods[] =
 {
     {"arrange", lib_arrange},
-    {"async_exec", lib_async_exec},
     {"create_output", lib_create_output},
     {"deep_copy", lib_deep_copy},
     {"exec", lib_exec},
@@ -98,23 +97,52 @@ int lib_arrange(lua_State *L)
 
 static void *_call(void *arg)
 {
-    lua_State *thread = lua_newthread(L);
-    int *ref = arg;
+    struct function_data *data = arg;
 
-    lua_rawgeti(thread, LUA_REGISTRYINDEX, *ref);
-    lua_call_safe(thread, 0, 0, 0);
+    char path[1024] ;
+    const char *cmd = data->cmd;
+    FILE *fp = popen(cmd, "r");
+    if (fp == NULL) {
+        printf("Failed to run command\n" );
+        return NULL;
+    }
 
-    luaL_unref(thread, LUA_REGISTRYINDEX, *ref);
-    free(ref);
+    data->output = strdup("");
+    /* Read the output a line at a time - output it. */
+    while (fgets(path, sizeof(path), fp) != NULL) {
+        append_string(&data->output, path);
+        printf("%s", path);
+    }
+
+    /* close */
+    pclose(fp);
+
+    server.async_handler.data = data;
+    if (data->lua_func_ref == -1) {
+        return NULL;
+    }
+    uv_async_send(&server.async_handler);
+
     return NULL;
 }
 
-int lib_async_exec(lua_State *L)
+int lib_exec(lua_State *L)
 {
     pthread_t thread;
-    int *func_ref = calloc(1, sizeof(int));
-    *func_ref = luaL_ref(L, LUA_REGISTRYINDEX);
-    pthread_create(&thread, NULL, _call, func_ref);
+    struct function_data *data = malloc(sizeof(struct function_data));
+
+    if (lua_gettop(L) == 2) {
+        lua_isfunction(L, -1);
+        data->lua_func_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+    } else {
+        data->lua_func_ref = -1;
+    }
+
+    data->cmd = strdup(luaL_checkstring(L, 1));
+    lua_pop(L, 1);
+    data->L = L;
+
+    pthread_create(&thread, NULL, _call, data);
     pthread_detach(thread);
     return 0;
 }
@@ -202,13 +230,6 @@ int lib_start_keycombo(lua_State *L)
     lua_pop(L, 1);
 
     server_start_keycombo(key_combo_name);
-    return 0;
-}
-
-int lib_exec(lua_State *L)
-{
-    const char *cmd = luaL_checkstring(L, -1);
-    exec(cmd);
     return 0;
 }
 
@@ -388,7 +409,6 @@ int lib_toggle_tags(lua_State *L)
 int lib_toggle_tag(lua_State *L)
 {
     struct tag *prev_tag = get_tag(server.previous_tag);
-    printf("server prev tag: %i\n", server.previous_tag);
     tagset_focus_tag(prev_tag);
     return 0;
 }

@@ -111,7 +111,11 @@ void focus_surface(struct seat *seat, struct wlr_surface *surface)
     assert(surface != NULL);
 
     struct wlr_seat *wlr_seat = seat->wlr_seat;
+
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(wlr_seat);
+    // wlr_seat_get_keyboard can actually fail
+    if (!kb)
+        return;
 
     /* Have a client, so focus its top-level wlr_surface */
     wlr_seat_keyboard_notify_enter(wlr_seat, surface, kb->keycodes,
@@ -226,7 +230,7 @@ void kill_client(struct client *c)
             wlr_xdg_toplevel_send_close(c->surface.xdg);
             break;
         case LAYER_SHELL:
-            wlr_layer_surface_v1_close(c->surface.layer);
+            wlr_layer_surface_v1_destroy(c->surface.layer);
             break;
         case X11_MANAGED:
         case X11_UNMANAGED:

@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <wlr/backend/libinput.h>
-#include <wlr/types/wlr_box.h>
+#include <wlr/util/box.h>
 #include <wlr/types/wlr_output.h>
 #include <xkbcommon/xkbcommon.h>
 #include <string.h>

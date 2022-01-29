@@ -1,5 +1,6 @@
 #ifndef SERVER_H
 #define SERVER_H
+#include <uv.h>
 #include <wayland-server.h>
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_virtual_pointer_v1.h>
@@ -21,10 +22,16 @@
 #include "bitset/bitset.h"
 
 struct server {
+    bool is_running;
+    uv_loop_t *uv_loop;
+    uv_async_t async_handler;
+
     struct wl_display *wl_display;
     struct wl_event_loop *wl_event_loop;
     struct wlr_backend *backend;
     struct wlr_compositor *compositor;
+    struct wlr_renderer *renderer;
+    struct wlr_allocator *allocator;
 
     struct wlr_xdg_shell *xdg_shell;
     struct wlr_layer_shell_v1 *layer_shell;
@@ -110,6 +117,13 @@ struct server {
 #endif
 };
 
+struct function_data {
+    lua_State *L;
+    int lua_func_ref;
+    char *cmd;
+    char *output;
+};
+
 extern struct server server;
 extern pthread_mutex_t lock_rendering_action;
 
@@ -117,6 +131,7 @@ void init_server();
 void finalize_server();
 
 int start_server(char *startup_cmd);
+void server_terminate(struct server *server);
 int stop_server();
 
 void server_reset_layout_ring(struct ring_buffer *layout_ring);

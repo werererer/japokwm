@@ -13,6 +13,7 @@ void create_lua_list(
 void lua_load_list(lua_State *L);
 
 int lib_list_gc(lua_State *L);
+int lib_list_len(lua_State *L);
 // static methods
 int lib_list_to_array(lua_State *L);
 // methods

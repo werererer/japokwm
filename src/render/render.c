@@ -22,8 +22,6 @@
 #include "tag.h"
 #include "tagset.h"
 
-struct wlr_renderer *drw;
-
 static void render_stack(struct monitor *m, pixman_region32_t *output_damage);
 static void scissor_output(struct wlr_output *output, pixman_box32_t *rect);
 static void render_texture(struct wlr_output *wlr_output,
@@ -35,8 +33,7 @@ static void render_texture(struct wlr_output *wlr_output,
 void render_rect(struct monitor *m, pixman_region32_t *output_damage,
         const struct wlr_box *_box, const struct color color) {
     struct wlr_output *wlr_output = m->wlr_output;
-    struct wlr_renderer *renderer =
-        wlr_backend_get_renderer(wlr_output->backend);
+    struct wlr_renderer *renderer = server.renderer;
 
     struct wlr_box box;
     memcpy(&box, _box, sizeof(struct wlr_box));
@@ -91,7 +88,7 @@ static void render_texture(struct wlr_output *wlr_output,
         pixman_region32_t *output_damage, struct wlr_texture *texture,
         const struct wlr_box *box, float alpha)
 {
-    struct wlr_renderer *renderer = wlr_backend_get_renderer(wlr_output->backend);
+    struct wlr_renderer *renderer = server.renderer;
 
     pixman_region32_t damage;
     pixman_region32_init(&damage);
@@ -207,7 +204,7 @@ void output_damage_surface(struct monitor *m, struct wlr_surface *surface, struc
 
 static void scissor_output(struct wlr_output *output, pixman_box32_t *rect)
 {
-    struct wlr_renderer *renderer = wlr_backend_get_renderer(output->backend);
+    struct wlr_renderer *renderer = server.renderer;
 
     struct wlr_box box = {
         .x = rect->x1,
@@ -358,11 +355,11 @@ static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
         struct xdg_popup *popup = g_ptr_array_index(server.popups, i);
         struct wlr_surface *surface = popup->xdg->base->surface;
 
-        struct wlr_box obox = popup->geom;
         // popups are weird and require to use the dimensions of the surface
         // instead
-        obox.width = surface->current.width;
-        obox.height = surface->current.height;
+        popup->geom.width = surface->current.width;
+        popup->geom.height = surface->current.height;
+        struct wlr_box obox = popup->geom;
 
         struct render_texture_data render_data;
         render_data.alpha = 1.0f;
@@ -381,7 +378,7 @@ static void clear_frame(
         struct color color,
         pixman_region32_t *damage)
 {
-    struct wlr_renderer *renderer = wlr_backend_get_renderer(server.backend);
+    struct wlr_renderer *renderer = server.renderer;
 
     /* // debug stuff */
     /* float color2[4] = {0.4f, 0.1f, 0.0f, 1.0f}; */
@@ -401,7 +398,7 @@ void render_monitor(struct monitor *m, pixman_region32_t *damage)
 {
     pthread_mutex_lock(&lock_rendering_action);
     /* Begin the renderer (calls glViewport and some other GL sanity checks) */
-    wlr_renderer_begin(drw, m->wlr_output->width, m->wlr_output->height);
+    wlr_renderer_begin(server.renderer, m->wlr_output->width, m->wlr_output->height);
 
     clear_frame(m, m->root->color, damage);
     render_stack(m, damage);
@@ -413,13 +410,13 @@ void render_monitor(struct monitor *m, pixman_region32_t *damage)
      * reason, wlroots provides a software fallback, which we ask it to render
      * here. wlr_cursor handles configuring hardware vs software cursors for you,
      * and this function is a no-op when hardware cursors are in use. */
-    struct wlr_renderer *renderer = wlr_backend_get_renderer(server.backend);
+    struct wlr_renderer *renderer = server.renderer;
     wlr_renderer_scissor(renderer, NULL);
     wlr_output_render_software_cursors(m->wlr_output, damage);
 
     /* Conclude rendering and swap the buffers, showing the final frame
      * on-screen. */
-    wlr_renderer_end(drw);
+    wlr_renderer_end(renderer);
 
     wlr_output_commit(m->wlr_output);
     pthread_mutex_unlock(&lock_rendering_action);
