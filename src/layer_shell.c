@@ -110,7 +110,6 @@ void commit_layer_surface_notify(struct wl_listener *listener, void *data)
         return;
 
     struct monitor *m = wlr_output->data;
-    arrange_layers(m);
     struct container *con = c->con;
     container_damage_part(con);
 
