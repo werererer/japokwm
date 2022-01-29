@@ -1,7 +1,7 @@
 #ifndef ROOT_H
 #define ROOT_H
 
-#include <wlr/types/wlr_box.h>
+#include <wlr/util/box.h>
 #include <wlr/util/edges.h>
 #include "color.h"
 

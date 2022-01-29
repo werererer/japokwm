@@ -1,7 +1,7 @@
 #ifndef POPUP_H
 #define POPUP_H
 #include <wayland-server.h>
-#include <wlr/types/wlr_box.h>
+#include <wlr/util/box.h>
 #include <wlr/types/wlr_xdg_shell.h>
 #include "client.h"
 

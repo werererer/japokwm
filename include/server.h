@@ -30,6 +30,8 @@ struct server {
     struct wl_event_loop *wl_event_loop;
     struct wlr_backend *backend;
     struct wlr_compositor *compositor;
+    struct wlr_renderer *renderer;
+    struct wlr_allocator *allocator;
 
     struct wlr_xdg_shell *xdg_shell;
     struct wlr_layer_shell_v1 *layer_shell;

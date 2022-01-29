@@ -44,7 +44,7 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     // Temporarily set the layer's current state to client_pending
     // so that we can easily arrange it
     struct wlr_layer_surface_v1_state old_state = wlr_layer_surface->current;
-    wlr_layer_surface->current = wlr_layer_surface->client_pending;
+    wlr_layer_surface->current = wlr_layer_surface->pending;
     arrange_layers(m);
     wlr_layer_surface->current = old_state;
 }
@@ -272,7 +272,7 @@ void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_ar
             box.y -= state->margin.bottom;
         }
         if (box.width < 0 || box.height < 0) {
-            wlr_layer_surface_v1_close(wlr_layer_surface);
+            wlr_layer_surface_v1_destroy(wlr_layer_surface);
             continue;
         }
         // TODO: is that correct?

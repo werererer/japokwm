@@ -43,6 +43,8 @@ void create_monitor(struct wl_listener *listener, void *data)
      * the user configure it. */
     wlr_output_set_mode(output, wlr_output_preferred_mode(output));
 
+    wlr_output_init_render(output, server.allocator, server.renderer);
+
     /* Allocates and configures monitor state using configured rules */
     struct monitor *m = output->data = calloc(1, sizeof(*m));
 

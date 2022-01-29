@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <wlr/types/wlr_box.h>
+#include <wlr/util/box.h>
 
 #include "utils/stringUtils.h"
 #include "render/render.h"
