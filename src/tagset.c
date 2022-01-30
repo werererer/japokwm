@@ -19,6 +19,7 @@
 #include "list_sets/container_stack_set.h"
 #include "root.h"
 #include "server.h"
+#include "layer_shell.h"
 
 static void tagset_assign_tag(struct tag *sel_tag, struct tag *tag, bool active);
 static void tagset_unset_tag(struct tag *sel_tag, struct tag *tag);
@@ -80,7 +81,7 @@ void tagset_set_tags(struct tag *sel_tag, BitSet *tags)
     tag_damage(sel_tag);
     tagset_load_tags(sel_tag, sel_tag->tags);
     update_reduced_focus_stack(sel_tag);
-    arrange();
+    arrange_layers(server_get_selected_monitor());
     tag_focus_most_recent_container(sel_tag);
 
     bitset_destroy(tags_copy);
@@ -320,7 +321,7 @@ void focus_tagset(struct tag *tag, BitSet *tags)
     ipc_event_tag();
 
     tagset_move_sticky_containers(tag);
-    arrange();
+    arrange_layers(server_get_selected_monitor());
     tag_focus_most_recent_container(tag);
     root_damage_whole(m->root);
 
