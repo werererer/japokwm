@@ -1038,7 +1038,7 @@ int get_position_in_container_stack(struct container *con)
 
 struct tag *container_get_current_tag(struct container *con)
 {
-    // why prioritize the selected monitor/therefore the selected tag
+    // we prioritize the selected monitor/therefore the selected tag
     struct monitor *sel_m = server_get_selected_monitor();
     struct tag *sel_tag = monitor_get_active_tag(sel_m);
     if (tagset_exist_on(sel_m, con)) {
@@ -1047,8 +1047,8 @@ struct tag *container_get_current_tag(struct container *con)
 
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
-        // this prevents the selected monitor from being checked twice the it is
-        // just for optimization
+        // this prevents the selected monitor from being checked twice to
+        // improve performance
         if (m == sel_m) {
             continue;
         }
