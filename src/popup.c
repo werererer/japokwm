@@ -142,6 +142,10 @@ struct wlr_surface *get_popup_surface_under_cursor(struct cursor *cursor, double
 
     struct wlr_surface *surface = NULL;
     struct wlr_box *con_geom = container_get_current_geom(con);
+    // when the container is on the tag -1 it won't have a geometry
+    if (!con_geom)
+        return NULL;
+
     switch (con->client->type) {
         case XDG_SHELL:
             surface = wlr_xdg_surface_surface_at(
