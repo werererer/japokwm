@@ -10,12 +10,19 @@ struct monitor;
 struct resize_constraints;
 struct tag;
 
+struct direction_value {
+    int top;
+    int bottom;
+    int left;
+    int right;
+};
+
 struct container_property {
     // geometry on each layout
     struct wlr_box geom;
     struct wlr_box floating_geom;
     /* layout-relative, includes border */
-    int border_width;
+    struct direction_value border_width;
     bool floating;
     bool hidden;
     struct container *con;
@@ -38,7 +45,10 @@ struct container {
     bool has_border;
     bool on_scratchpad;
     bool on_top;
-    bool is_unmanaged;
+
+    struct direction_value border_width;
+    struct direction_value padding;
+    struct direction_value margin;
 
     // height = ratio * width
     float ratio;
@@ -110,11 +120,18 @@ struct wlr_box *container_get_tiled_geom(struct container *con);
 struct wlr_box *container_get_floating_geom(struct container *con);
 struct wlr_box *container_get_current_geom(struct container *con);
 
+struct wlr_box container_content_geometry_to_box(struct container *con,
+        struct wlr_box geom);
+struct wlr_box container_box_to_content_geometry(struct container *con,
+        struct wlr_box geom);
+
 bool container_get_hidden(struct container *con);
 bool container_get_hidden_at_tag(struct container *con, struct tag *tag);
 
-void container_set_border_width(struct container *con, int border_width);
-int container_get_border_width(struct container *con);
+struct direction_value direction_value_uniform(int value);
+
+void container_set_border_width(struct container *con, struct direction_value border_width);
+struct direction_value container_get_border_width(struct container *con);
 
 void container_set_just_tag_id(struct container *con, int tag_id);
 void container_set_tag_id(struct container *con, int tag_id);

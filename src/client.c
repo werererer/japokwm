@@ -319,7 +319,7 @@ void reset_floating_client_borders(int border_px)
         if (!tagset_exist_on(m, con)) {
             continue;
         }
-        container_set_border_width(con, border_px);
+        container_set_border_width(con, direction_value_uniform(border_px));
         container_damage_whole(con);
     }
 }

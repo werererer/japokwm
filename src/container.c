@@ -756,7 +756,7 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
     struct monitor *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     struct layout *lt = tag_get_layout(tag);
-    container_set_border_width(con, lt->options->float_border_px);
+    container_set_border_width(con, direction_value_uniform(lt->options->float_border_px));
     container_damage(con, true);
 }
 
@@ -864,6 +864,16 @@ void container_set_floating_geom(struct container *con, struct wlr_box *geom)
     container_set_floating_geom_at_tag(con, geom, tag);
 }
 
+struct direction_value direction_value_uniform(int value)
+{
+    return (struct direction_value){
+        .bottom = value,
+        .top = value,
+        .left = value,
+        .right = value,
+    };
+}
+
 struct wlr_box *container_get_tiled_geom_at_tag(struct container *con, struct tag *tag)
 {
     struct container_property *property =
@@ -936,6 +946,32 @@ struct wlr_box *container_get_current_geom(struct container *con)
     return geom;
 }
 
+struct wlr_box container_content_geometry_to_box(struct container *con,
+        struct wlr_box geom)
+{
+    struct direction_value borders = container_get_border_width(con);
+    struct wlr_box box_geom = {
+        .x = geom.x + borders.left,
+        .y = geom.y + borders.top,
+        .width = geom.width - borders.left - borders.right,
+        .height = geom.height - borders.top - borders.bottom,
+    };
+    return box_geom;
+}
+
+struct wlr_box container_box_to_content_geometry(struct container *con,
+        struct wlr_box geom)
+{
+    struct direction_value borders = container_get_border_width(con);
+    struct wlr_box content_geom = {
+        .x = geom.x + borders.left,
+        .y = geom.y + borders.top,
+        .width = geom.width - borders.left - borders.right,
+        .height = geom.height - borders.top - borders.bottom,
+    };
+    return content_geom;
+}
+
 bool container_get_hidden(struct container *con)
 {
     struct container_property *property = container_get_property(con);
@@ -944,19 +980,23 @@ bool container_get_hidden(struct container *con)
     return property->hidden;
 }
 
-void container_set_border_width(struct container *con, int border_width)
+void container_set_border_width(struct container *con, struct direction_value border_width)
 {
+    if (!con)
+        return;
+
     struct container_property *property = container_get_property(con);
     if (!property)
         return;
+
     property->border_width = border_width;
 }
 
-int container_get_border_width(struct container *con)
+struct direction_value container_get_border_width(struct container *con)
 {
     struct container_property *property = container_get_property(con);
     if (!property)
-        return 0;
+        return direction_value_uniform(0);
     return property->border_width;
 }
 
