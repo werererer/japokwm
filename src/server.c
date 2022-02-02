@@ -214,8 +214,6 @@ void init_server()
 
     server.previous_tag = 0;
     server.previous_bitset = bitset_create();
-    server.tmp_bitset = bitset_create();
-    server.local_tmp_bitset = bitset_create();
 
     server_prohibit_reloading_config();
 
@@ -235,8 +233,11 @@ void finalize_server()
 
     finalize_lists(&server);
 
-    bitset_destroy(server.tmp_bitset);
     bitset_destroy(server.previous_bitset);
+
+    // NOTE: these bitsets are created lazily, so they may be NULL but that is
+    // ok since bitset_destroy handles this case.
+    bitset_destroy(server.tmp_bitset);
     bitset_destroy(server.local_tmp_bitset);
 
     g_ptr_array_unref(server.mons);
@@ -552,24 +553,31 @@ void server_center_default_cursor_in_monitor(struct monitor *m)
 
 BitSet *server_bitset_get_tmp()
 {
+    if (!server.tmp_bitset) {
+        server.tmp_bitset = bitset_create();
+    }
     return server.tmp_bitset;
 }
 
 BitSet *server_bitset_get_tmp_copy(BitSet *bitset)
 {
-    BitSet *tmp = server.tmp_bitset;
+    BitSet *tmp = server_bitset_get_tmp();
     bitset_assign_bitset(&tmp, bitset);
     return tmp;
 }
 
 BitSet *server_bitset_get_local_tmp()
 {
+    if (!server.local_tmp_bitset) {
+        server.local_tmp_bitset = bitset_create();
+    }
+
     return server.local_tmp_bitset;
 }
 
 BitSet *server_bitset_get_local_tmp_copy(BitSet *bitset)
 {
-    BitSet *tmp = server.local_tmp_bitset;
+    BitSet *tmp = server_bitset_get_local_tmp();
     bitset_assign_bitset(&tmp, bitset);
     return tmp;
 }

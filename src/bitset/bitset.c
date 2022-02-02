@@ -88,6 +88,8 @@ int bitset_swap(BitSet* destination, BitSet* source)
 }
 
 void bitset_destroy(BitSet* bitset) {
+    if (!bitset)
+        return;
     g_hash_table_unref(bitset->bytes);
     free(bitset);
 }
