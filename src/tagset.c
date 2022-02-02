@@ -71,12 +71,12 @@ void tagset_set_tags(struct tag *sel_tag, BitSet *tags)
 {
     // we need to copy to not accidentially destroy the same thing we are
     // working with which can happen through assign_bitset
-    BitSet *tmp = server_bitset_get_tmp_copy(sel_tag->tags);
+    BitSet *tags_copy = server_bitset_get_tmp_copy(tags);
 
     tag_set_prev_tags(sel_tag, sel_tag->tags);
 
     tagset_tags_disconnect(sel_tag);
-    tagset_assign_tags(sel_tag, tmp);
+    tagset_assign_tags(sel_tag, tags_copy);
     tagset_tags_connect(sel_tag);
     tag_damage(sel_tag);
     tagset_load_tags(sel_tag, sel_tag->tags);
