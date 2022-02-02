@@ -7,6 +7,7 @@
 #include "stringop.h"
 #include "utils/stringUtils.h"
 #include "utils/coreUtils.h"
+#include "server.h"
 
 /****************** INTERFACE ******************/
 
@@ -61,14 +62,13 @@ void bitset_assign_bitset(BitSet** dest, BitSet* source)
 
 void bitset_reverse(BitSet *bitset, int start, int end)
 {
-    BitSet *bitset_tmp = bitset_copy(bitset);
+    BitSet *bitset_tmp = server_bitset_get_local_tmp_copy(bitset);
     for (int i = start; i < end; i++) {
         int high = end - 1;
         int reverse_i = high - i;
         bool b = bitset_test(bitset_tmp, reverse_i);
         bitset_assign(bitset, i, b);
     }
-    bitset_destroy(bitset_tmp);
 }
 
 int bitset_swap(BitSet* destination, BitSet* source)
@@ -80,7 +80,7 @@ int bitset_swap(BitSet* destination, BitSet* source)
     if (destination == NULL) return BITSET_ERROR;
     if (source == NULL) return BITSET_ERROR;
 
-    BitSet *tmp = bitset_copy(destination);
+    BitSet *tmp = server_bitset_get_local_tmp_copy(destination);
     bitset_assign_bitset(&destination, source);
     bitset_assign_bitset(&source, tmp);
 

@@ -76,6 +76,11 @@ struct server {
     BitSet *previous_bitset;
     // a global bitset to hold temporary values useful to improve performance
     struct BitSet *tmp_bitset;
+    // this variable ought to be only used by bitset.c everything other is
+    // UB so be careful.
+    // We have this to avoid calling malloc/free too often thus improving
+    // performance.
+    struct BitSet *local_tmp_bitset;
 
     struct monitor *selected_monitor;
 
@@ -154,7 +159,15 @@ void server_set_selected_monitor(struct monitor *m);
 
 void server_center_default_cursor_in_monitor(struct monitor *m);
 
-BitSet *server_get_tmp_bitset();
+/* This set of functions can be used everywhere except for bitset.c. If you do
+ * it is UB */
+BitSet *server_bitset_get_tmp();
+BitSet *server_bitset_get_tmp_copy(BitSet *bitset);
+
+/* The functions are only allowed to be called from bitset.c and offer a slight
+ * performance boost */
+BitSet *server_bitset_get_local_tmp();
+BitSet *server_bitset_get_local_tmp_copy(BitSet *bitset);
 
 struct tag *server_get_selected_tag();
 struct layout *server_get_selected_layout();

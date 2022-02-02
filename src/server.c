@@ -215,6 +215,7 @@ void init_server()
     server.previous_tag = 0;
     server.previous_bitset = bitset_create();
     server.tmp_bitset = bitset_create();
+    server.local_tmp_bitset = bitset_create();
 
     server_prohibit_reloading_config();
 
@@ -236,6 +237,7 @@ void finalize_server()
 
     bitset_destroy(server.tmp_bitset);
     bitset_destroy(server.previous_bitset);
+    bitset_destroy(server.local_tmp_bitset);
 
     g_ptr_array_unref(server.mons);
     g_ptr_array_unref(server.popups);
@@ -548,9 +550,28 @@ void server_center_default_cursor_in_monitor(struct monitor *m)
     center_cursor_in_monitor(cursor, m);
 }
 
-BitSet *server_get_tmp_bitset()
+BitSet *server_bitset_get_tmp()
 {
     return server.tmp_bitset;
+}
+
+BitSet *server_bitset_get_tmp_copy(BitSet *bitset)
+{
+    BitSet *tmp = server.tmp_bitset;
+    bitset_assign_bitset(&tmp, bitset);
+    return tmp;
+}
+
+BitSet *server_bitset_get_local_tmp()
+{
+    return server.local_tmp_bitset;
+}
+
+BitSet *server_bitset_get_local_tmp_copy(BitSet *bitset)
+{
+    BitSet *tmp = server.local_tmp_bitset;
+    bitset_assign_bitset(&tmp, bitset);
+    return tmp;
 }
 
 struct tag *server_get_selected_tag()
