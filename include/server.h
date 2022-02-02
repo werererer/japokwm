@@ -74,6 +74,8 @@ struct server {
 
     int previous_tag;
     BitSet *previous_bitset;
+    // a global bitset to hold temporary values useful to improve performance
+    struct BitSet *tmp_bitset;
 
     struct monitor *selected_monitor;
 
@@ -151,6 +153,8 @@ struct monitor *server_get_selected_monitor();
 void server_set_selected_monitor(struct monitor *m);
 
 void server_center_default_cursor_in_monitor(struct monitor *m);
+
+BitSet *server_get_tmp_bitset();
 
 struct tag *server_get_selected_tag();
 struct layout *server_get_selected_layout();

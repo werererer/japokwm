@@ -214,6 +214,7 @@ void init_server()
 
     server.previous_tag = 0;
     server.previous_bitset = bitset_create();
+    server.tmp_bitset = bitset_create();
 
     server_prohibit_reloading_config();
 
@@ -233,6 +234,7 @@ void finalize_server()
 
     finalize_lists(&server);
 
+    bitset_destroy(server.tmp_bitset);
     bitset_destroy(server.previous_bitset);
 
     g_ptr_array_unref(server.mons);
@@ -544,6 +546,11 @@ void server_center_default_cursor_in_monitor(struct monitor *m)
     struct seat *seat = input_manager_get_default_seat();
     struct cursor *cursor = seat->cursor;
     center_cursor_in_monitor(cursor, m);
+}
+
+BitSet *server_get_tmp_bitset()
+{
+    return server.tmp_bitset;
 }
 
 struct tag *server_get_selected_tag()

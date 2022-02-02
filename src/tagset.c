@@ -556,10 +556,10 @@ void tag_id_to_tag(BitSet *dest, int tag_id)
 
 bool tagset_contains_sticky_client(BitSet *tagset_tags, struct client *c)
 {
-    BitSet *bitset = bitset_copy(c->sticky_tags);
-    bitset_and(bitset, tagset_tags);
-    bool contains = bitset_any(bitset);
-    bitset_destroy(bitset);
+    BitSet *tmp = server_get_tmp_bitset();
+    bitset_assign_bitset(&tmp, tagset_tags);
+    bitset_and(tmp, tagset_tags);
+    bool contains = bitset_any(tmp);
     return contains;
 }
 
