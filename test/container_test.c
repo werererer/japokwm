@@ -23,8 +23,10 @@ void test_container_box_to_content_geometry()
         .height = 80,
     };
     struct monitor m;
-    struct client c;
-    c.sticky_tags = bitset_create();
+    struct client c = {
+        .sticky_tags = bitset_create(),
+    };
+
     struct container *con = create_container(&c, &m, true);
     container_set_border_width(con, direction_value_uniform(10));
     struct wlr_box result = container_box_to_content_geometry(con, box);
@@ -32,6 +34,8 @@ void test_container_box_to_content_geometry()
     g_assert_cmpint(result.y, ==, content_box.y);
     g_assert_cmpint(result.width, ==, content_box.width);
     g_assert_cmpint(result.height, ==, content_box.height);
+
+    bitset_destroy(c.sticky_tags);
 }
 
 void test_container_content_geometry_to_box()
@@ -50,8 +54,9 @@ void test_container_content_geometry_to_box()
         .height = 80,
     };
     struct monitor m;
-    struct client c;
-    c.sticky_tags = bitset_create();
+    struct client c = {
+        .sticky_tags = bitset_create(),
+    };
     struct container *con = create_container(&c, &m, true);
     container_set_border_width(con, direction_value_uniform(10));
     struct wlr_box result = container_content_geometry_to_box(con, content_box);
