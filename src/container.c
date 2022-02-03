@@ -922,8 +922,20 @@ struct wlr_box container_get_floating_geom(struct container *con)
 
 struct wlr_box container_get_current_geom_at_tag(struct container *con, struct tag *tag)
 {
-    struct wlr_box content_geom = container_get_current_content_geom_at_tag(con, tag);
-    struct wlr_box geom = container_content_geometry_to_box(con, content_geom);
+    if (!con)
+        return (struct wlr_box){0};
+    if (!tag)
+        return (struct wlr_box){0};
+
+    struct wlr_box geom;
+    struct layout *lt = tag_get_layout(tag);
+    if (container_is_unmanaged(con)) {
+        geom = container_get_floating_geom_at_tag(con, tag);
+    } else if (container_is_tiled(con) || (lt && lt->options->arrange_by_focus)) {
+        geom = container_get_tiled_geom_at_tag(con, tag);
+    } else {
+        geom = container_get_floating_geom_at_tag(con, tag);
+    }
     return geom;
 }
 
@@ -950,20 +962,8 @@ struct wlr_box container_get_floating_content_geom_at_tag(struct container *con,
 
 struct wlr_box container_get_current_content_geom_at_tag(struct container *con, struct tag *tag)
 {
-    if (!con)
-        return (struct wlr_box){0};
-    if (!tag)
-        return (struct wlr_box){0};
-
-    struct wlr_box geom;
-    struct layout *lt = tag_get_layout(tag);
-    if (container_is_unmanaged(con)) {
-        geom = container_get_floating_content_geom_at_tag(con, tag);
-    } else if (container_is_tiled(con) || (lt && lt->options->arrange_by_focus)) {
-        geom = container_get_tiled_content_geom_at_tag(con, tag);
-    } else {
-        geom = container_get_floating_content_geom_at_tag(con, tag);
-    }
+    struct wlr_box box_geom = container_get_current_geom_at_tag(con, tag);
+    struct wlr_box geom = container_box_to_content_geometry(con, box_geom);
     return geom;
 }
 

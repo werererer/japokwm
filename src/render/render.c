@@ -328,7 +328,7 @@ static void render_stack(struct monitor *m, pixman_region32_t *output_damage)
          * xdg_surface's toplevel and popups. */
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
-        struct wlr_box obox = container_get_current_geom(con);
+        struct wlr_box obox = container_get_current_content_geom(con);
 
         struct render_texture_data render_data;
         render_data.alpha = con->alpha;

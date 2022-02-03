@@ -310,7 +310,7 @@ void container_update_size(struct container *con)
 {
     con->client->resized = true;
 
-    struct wlr_box con_geom = container_get_current_geom(con);
+    struct wlr_box con_geom = container_get_current_content_geom(con);
     apply_bounds(con, *wlr_output_layout_get_box(server.output_layout, NULL));
 
     /* wlroots makes this a no-op if size hasn't changed */
