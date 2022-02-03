@@ -51,6 +51,7 @@ struct container {
     struct direction_value border_width;
     struct direction_value padding;
     struct direction_value margin;
+    enum wlr_edges hidden_edges;
 
     // height = ratio * width
     float ratio;
@@ -119,6 +120,9 @@ void container_set_floating_geom(struct container *con, struct wlr_box geom);
 void container_set_current_content_geom(struct container *con, struct wlr_box geom);
 void container_set_tiled_content_geom(struct container *con, struct wlr_box geom);
 void container_set_floating_content_geom(struct container *con, struct wlr_box geom);
+
+void container_set_hidden_edges(struct container *con, enum wlr_edges edges);
+enum wlr_edges container_get_hidden_edges(struct container *con);
 
 struct wlr_box container_get_tiled_geom_at_tag(struct container *con, struct tag *tag);
 struct wlr_box container_get_floating_geom_at_tag(struct container *con, struct tag *tag);

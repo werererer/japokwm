@@ -885,6 +885,16 @@ void container_set_floating_content_geom(struct container *con, struct wlr_box g
     container_set_floating_geom(con, box_geom);
 }
 
+void container_set_hidden_edges(struct container *con, enum wlr_edges edges)
+{
+    con->hidden_edges = edges;
+}
+
+enum wlr_edges container_get_hidden_edges(struct container *con)
+{
+    return con->hidden_edges;
+}
+
 struct direction_value direction_value_uniform(int value)
 {
     return (struct direction_value){
@@ -1001,33 +1011,43 @@ struct wlr_box container_get_current_content_geom(struct container *con)
 struct wlr_box container_get_current_border_geom(struct container *con, enum wlr_edges dir)
 {
     struct wlr_box geom = container_get_current_geom(con);
+    enum wlr_edges hidden_edges = container_get_hidden_edges(con);
+    printf("hidden_edges: %i\n", hidden_edges);
     switch (dir) {
         case WLR_EDGE_TOP:
             {
-                struct direction_value d = container_get_border_width(con);
-                geom.height = d.top;
+                if (!(hidden_edges & WLR_EDGE_TOP)) {
+                    struct direction_value d = container_get_border_width(con);
+                    geom.height = d.top;
+                }
                 break;
             }
         case WLR_EDGE_BOTTOM:
             {
-                struct direction_value d = container_get_border_width(con);
-                geom.y += geom.height - d.bottom;
-                geom.height = d.bottom;
+                if (!(hidden_edges & WLR_EDGE_BOTTOM)) {
+                    struct direction_value d = container_get_border_width(con);
+                    geom.y += geom.height - d.bottom;
+                    geom.height = d.bottom;
+                }
                 break;
             }
             break;
         case WLR_EDGE_LEFT:
             {
-                struct direction_value d = container_get_border_width(con);
-                geom.width = d.left;
+                if (!(hidden_edges & WLR_EDGE_LEFT)) {
+                    struct direction_value d = container_get_border_width(con);
+                    geom.width = d.left;
+                }
                 break;
             }
             break;
         case WLR_EDGE_RIGHT:
             {
-                struct direction_value d = container_get_border_width(con);
-                geom.x += geom.width - d.right;
-                geom.width = d.right;
+                if (!(hidden_edges & WLR_EDGE_RIGHT)) {
+                    struct direction_value d = container_get_border_width(con);
+                    geom.x += geom.width - d.right;
+                    geom.width = d.right;
+                }
                 break;
             }
             break;
@@ -1041,12 +1061,22 @@ struct wlr_box container_content_geometry_to_box(struct container *con,
         struct wlr_box geom)
 {
     struct direction_value borders = container_get_border_width(con);
-    struct wlr_box box_geom = {
-        .x = geom.x - borders.left,
-        .y = geom.y - borders.top,
-        .width = geom.width + borders.left + borders.right,
-        .height = geom.height + borders.top + borders.bottom,
-    };
+    enum wlr_edges hidden_edges = container_get_hidden_edges(con);
+    struct wlr_box box_geom = geom;
+    if (!(hidden_edges & WLR_EDGE_LEFT)) {
+        box_geom.x -= borders.left;
+        box_geom.width += borders.left;
+    }
+    if (!(hidden_edges & WLR_EDGE_RIGHT)) {
+        box_geom.width += borders.right;
+    }
+    if (!(hidden_edges & WLR_EDGE_TOP)) {
+        box_geom.y -= borders.top;
+        box_geom.height += borders.top;
+    }
+    if (!(hidden_edges & WLR_EDGE_BOTTOM)) {
+        box_geom.height += borders.bottom;
+    }
     return box_geom;
 }
 
@@ -1054,12 +1084,22 @@ struct wlr_box container_box_to_content_geometry(struct container *con,
         struct wlr_box geom)
 {
     struct direction_value borders = container_get_border_width(con);
-    struct wlr_box content_geom = {
-        .x = geom.x + borders.left,
-        .y = geom.y + borders.top,
-        .width = geom.width - borders.left - borders.right,
-        .height = geom.height - borders.top - borders.bottom,
-    };
+    enum wlr_edges hidden_edges = container_get_hidden_edges(con);
+    struct wlr_box content_geom = geom;
+    if (!(hidden_edges & WLR_EDGE_LEFT)) {
+        content_geom.x += borders.left;
+        content_geom.width -= borders.left;
+    }
+    if (!(hidden_edges & WLR_EDGE_RIGHT)) {
+        content_geom.width -= borders.right;
+    }
+    if (!(hidden_edges & WLR_EDGE_TOP)) {
+        content_geom.y += borders.top;
+        content_geom.height -= borders.top;
+    }
+    if (!(hidden_edges & WLR_EDGE_BOTTOM)) {
+        content_geom.height -= borders.bottom;
+    }
     return content_geom;
 }
 
