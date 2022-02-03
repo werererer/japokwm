@@ -178,33 +178,25 @@ void remove_container_from_tile(struct container *con)
 
 void container_damage_borders(struct container *con, struct monitor *m, struct wlr_box geom)
 {
-    // TODO: rewrite this function
-    // if (!con)
-    //     return;
-    // if (!m)
-    //     return;
-    //
-    // int border_width = container_get_border_width(con);
-    // double ox = geom->x - border_width;
-    // double oy = geom->y - border_width;
-    // wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
-    // int w = geom->width;
-    // int h = geom->height;
-    //
-    // struct wlr_box *borders;
-    // borders = (struct wlr_box[4]) {
-    //     {ox, oy, w + 2 * border_width, border_width},             /* top */
-    //         {ox, oy + border_width, border_width, h},                 /* left */
-    //         {ox + border_width + w, oy + border_width, border_width, h},     /* right */
-    //         {ox, oy + border_width + h, w + 2 * border_width, border_width}, /* bottom */
-    // };
-    //
-    // pthread_mutex_lock(&lock_rendering_action);
-    // for (int i = 0; i < 4; i++) {
-    //     scale_box(&borders[i], m->wlr_output->scale);
-    //     wlr_output_damage_add_box(m->damage, &borders[i]);
-    // }
-    // pthread_mutex_unlock(&lock_rendering_action);
+    if (!con)
+        return;
+    if (!m)
+        return;
+
+    struct wlr_box *borders;
+    borders = (struct wlr_box[4]) {
+        container_get_current_border_geom(con, WLR_EDGE_TOP),
+        container_get_current_border_geom(con, WLR_EDGE_LEFT),
+        container_get_current_border_geom(con, WLR_EDGE_RIGHT),
+        container_get_current_border_geom(con, WLR_EDGE_BOTTOM),
+    };
+
+    pthread_mutex_lock(&lock_rendering_action);
+    for (int i = 0; i < 4; i++) {
+        scale_box(&borders[i], m->wlr_output->scale);
+        wlr_output_damage_add_box(m->damage, &borders[i]);
+    }
+    pthread_mutex_unlock(&lock_rendering_action);
 }
 
 static void damage_container_area(struct container *con, struct wlr_box geom,
