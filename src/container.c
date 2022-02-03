@@ -873,6 +873,48 @@ struct direction_value direction_value_uniform(int value)
 
 struct wlr_box container_get_tiled_geom_at_tag(struct container *con, struct tag *tag)
 {
+    struct wlr_box content_geom = container_get_tiled_content_geom_at_tag(con, tag);
+    struct wlr_box geom = container_content_geometry_to_box(con, content_geom);
+    return geom;
+}
+
+struct wlr_box container_get_tiled_geom(struct container *con)
+{
+    struct wlr_box content_geom = container_get_tiled_content_geom(con);
+    struct wlr_box geom = container_content_geometry_to_box(con, content_geom);
+    return geom;
+}
+
+struct wlr_box container_get_floating_geom_at_tag(struct container *con, struct tag *tag)
+{
+    struct wlr_box content_geom = container_get_floating_content_geom_at_tag(con, tag);
+    struct wlr_box geom = container_content_geometry_to_box(con, content_geom);
+    return geom;
+}
+
+struct wlr_box container_get_floating_geom(struct container *con)
+{
+    struct wlr_box content_geom = container_get_floating_content_geom(con);
+    struct wlr_box geom = container_content_geometry_to_box(con, content_geom);
+    return geom;
+}
+
+struct wlr_box container_get_current_geom_at_tag(struct container *con, struct tag *tag)
+{
+    struct wlr_box content_geom = container_get_current_content_geom_at_tag(con, tag);
+    struct wlr_box geom = container_content_geometry_to_box(con, content_geom);
+    return geom;
+}
+
+struct wlr_box container_get_current_geom(struct container *con)
+{
+    struct wlr_box content_geom = container_get_current_content_geom(con);
+    struct wlr_box geom = container_content_geometry_to_box(con, content_geom);
+    return geom;
+}
+
+struct wlr_box container_get_tiled_content_geom_at_tag(struct container *con, struct tag *tag)
+{
     struct container_property *property =
         g_ptr_array_index(con->properties, tag->id);
 
@@ -881,41 +923,19 @@ struct wlr_box container_get_tiled_geom_at_tag(struct container *con, struct tag
     if (con->client->type == LAYER_SHELL) {
         geom = con->global_geom;
     }
+
     return geom;
 }
 
-struct wlr_box container_get_tiled_geom(struct container *con)
-{
-    struct tag *tag = container_get_current_tag(con);
-    if (!tag)
-        return (struct wlr_box){0};
-
-    struct wlr_box geom = container_get_tiled_geom_at_tag(con, tag);
-    return geom;
-}
-
-struct wlr_box container_get_floating_geom_at_tag(struct container *con, struct tag *tag)
+struct wlr_box container_get_floating_content_geom_at_tag(struct container *con, struct tag *tag)
 {
     struct container_property *property =
-        g_ptr_array_index(con->properties, tag->id); 
+        g_ptr_array_index(con->properties, tag->id);
 
     return container_property_get_floating_geom(property);
 }
 
-struct wlr_box container_get_floating_geom(struct container *con)
-{
-    if (!con)
-        return (struct wlr_box){0};
-
-    struct tag *tag = container_get_current_tag(con);
-    if (!tag) {
-        return (struct wlr_box){0};
-    }
-
-    return container_get_floating_geom_at_tag(con, tag);
-}
-
-struct wlr_box container_get_current_geom_at_tag(struct container *con, struct tag *tag)
+struct wlr_box container_get_current_content_geom_at_tag(struct container *con, struct tag *tag)
 {
     if (!con)
         return (struct wlr_box){0};
@@ -925,21 +945,39 @@ struct wlr_box container_get_current_geom_at_tag(struct container *con, struct t
     struct wlr_box geom;
     struct layout *lt = tag_get_layout(tag);
     if (container_is_unmanaged(con)) {
-        geom = container_get_floating_geom(con);
-    // TODO: lt may be NULL maybe we should wrap lt->options->arrange_by_focus
-    // in a funciton?
+        geom = container_get_floating_content_geom_at_tag(con, tag);
     } else if (container_is_tiled(con) || (lt && lt->options->arrange_by_focus)) {
-        geom = container_get_tiled_geom(con);
+        geom = container_get_tiled_content_geom_at_tag(con, tag);
     } else {
-        geom = container_get_floating_geom(con);
+        geom = container_get_floating_content_geom_at_tag(con, tag);
     }
     return geom;
 }
 
-struct wlr_box container_get_current_geom(struct container *con)
+struct wlr_box container_get_tiled_content_geom(struct container *con)
 {
     struct tag *tag = container_get_current_tag(con);
-    struct wlr_box geom = container_get_current_geom_at_tag(con, tag);
+    if (!tag)
+        return (struct wlr_box){0};
+
+    struct wlr_box geom = container_get_tiled_content_geom_at_tag(con, tag);
+    return geom;
+}
+
+struct wlr_box container_get_floating_content_geom(struct container *con)
+{
+    struct tag *tag = container_get_current_tag(con);
+    if (!tag)
+        return (struct wlr_box){0};
+
+    struct wlr_box geom = container_get_floating_content_geom_at_tag(con, tag);
+    return geom;
+}
+
+struct wlr_box container_get_current_content_geom(struct container *con)
+{
+    struct tag *tag = container_get_current_tag(con);
+    struct wlr_box geom = container_get_current_content_geom_at_tag(con, tag);
     return geom;
 }
 

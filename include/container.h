@@ -121,6 +121,13 @@ struct wlr_box container_get_tiled_geom(struct container *con);
 struct wlr_box container_get_floating_geom(struct container *con);
 struct wlr_box container_get_current_geom(struct container *con);
 
+struct wlr_box container_get_tiled_content_geom_at_tag(struct container *con, struct tag *tag);
+struct wlr_box container_get_floating_content_geom_at_tag(struct container *con, struct tag *tag);
+struct wlr_box container_get_current_content_geom_at_tag(struct container *con, struct tag *tag);
+struct wlr_box container_get_tiled_content_geom(struct container *con);
+struct wlr_box container_get_floating_content_geom(struct container *con);
+struct wlr_box container_get_current_content_geom(struct container *con);
+
 struct wlr_box container_content_geometry_to_box(struct container *con,
         struct wlr_box geom);
 struct wlr_box container_box_to_content_geometry(struct container *con,
