@@ -7,6 +7,13 @@
 #include "server.h"
 #include "client.h"
 
+static void assert_wlr_box_equal(struct wlr_box box1, struct wlr_box box2) {
+    g_assert_cmpint(box1.x, ==, box2.x);
+    g_assert_cmpint(box1.y, ==, box2.y);
+    g_assert_cmpint(box1.width, ==, box2.width);
+    g_assert_cmpint(box1.height, ==, box2.height);
+}
+
 void test_container_box_to_content_geometry()
 {
     init_server();
@@ -36,6 +43,59 @@ void test_container_box_to_content_geometry()
     g_assert_cmpint(result.height, ==, content_box.height);
 
     bitset_destroy(c.sticky_tags);
+}
+
+void test_container_get_current_border_geom()
+{
+    init_server();
+    struct wlr_box box = {
+        .x = 0,
+        .y = 0,
+        .width = 100,
+        .height = 100,
+    };
+    struct wlr_box border_left = {
+        .x = 0,
+        .y = 0,
+        .width = 10,
+        .height = 100,
+    };
+    struct wlr_box border_right = {
+        .x = 90,
+        .y = 0,
+        .width = 10,
+        .height = 100,
+    };
+    struct wlr_box border_top = {
+        .x = 0,
+        .y = 0,
+        .width = 100,
+        .height = 10,
+    };
+    struct wlr_box border_bottom = {
+        .x = 0,
+        .y = 90,
+        .width = 100,
+        .height = 10,
+    };
+    struct monitor m;
+    struct client c = {
+        .sticky_tags = bitset_create(),
+    };
+
+    struct container *con = create_container(&c, &m, true);
+    container_set_current_geom(con, box);
+    container_set_border_width(con, direction_value_uniform(10));
+
+    struct wlr_box left = container_get_current_border_geom(con, WLR_EDGE_LEFT);
+    struct wlr_box right = container_get_current_border_geom(con, WLR_EDGE_RIGHT);
+    struct wlr_box top = container_get_current_border_geom(con, WLR_EDGE_TOP);
+    struct wlr_box bottom = container_get_current_border_geom(con, WLR_EDGE_BOTTOM);
+
+    assert_wlr_box_equal(left, border_left);
+    assert_wlr_box_equal(right, border_right);
+    assert_wlr_box_equal(top, border_top);
+    assert_wlr_box_equal(bottom, border_bottom);
 }
 
 void test_container_content_geometry_to_box()
@@ -287,6 +347,7 @@ int main(int argc, char **argv)
     g_test_init(&argc, &argv, NULL);
 
     add_test(test_container_box_to_content_geometry);
+    add_test(test_container_get_current_border_geom);
     add_test(test_container_content_geometry_to_box);
     add_test(test_container_current_geom);
     add_test(test_container_floating_content_geom);
