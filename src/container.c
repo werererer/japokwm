@@ -887,7 +887,10 @@ void container_set_floating_content_geom(struct container *con, struct wlr_box g
 
 void container_set_hidden_edges(struct container *con, enum wlr_edges edges)
 {
+    if (con->hidden_edges == edges)
+        return;
     con->hidden_edges = edges;
+    container_update_size(con);
 }
 
 enum wlr_edges container_get_hidden_edges(struct container *con)
@@ -1003,8 +1006,9 @@ struct wlr_box container_get_floating_content_geom(struct container *con)
 
 struct wlr_box container_get_current_content_geom(struct container *con)
 {
-    struct wlr_box content_geom = container_get_current_geom(con);
-    struct wlr_box geom = container_box_to_content_geometry(con, content_geom);
+    struct wlr_box box_geom = container_get_current_geom(con);
+    struct wlr_box geom = container_box_to_content_geometry(con, box_geom);
+    printf("con: %p x: %i\n", con, geom.x);
     return geom;
 }
 
@@ -1012,7 +1016,6 @@ struct wlr_box container_get_current_border_geom(struct container *con, enum wlr
 {
     struct wlr_box geom = container_get_current_geom(con);
     enum wlr_edges hidden_edges = container_get_hidden_edges(con);
-    printf("hidden_edges: %i\n", hidden_edges);
     switch (dir) {
         case WLR_EDGE_TOP:
             {

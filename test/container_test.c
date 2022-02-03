@@ -29,6 +29,30 @@ void test_container_box_to_content_geometry()
         .width = 80,
         .height = 80,
     };
+    struct wlr_box left_border_hidden_content_box = {
+        .x = 0,
+        .y = 10,
+        .width = 90,
+        .height = 80,
+    };
+    struct wlr_box right_border_hidden_content_box = {
+        .x = 10,
+        .y = 10,
+        .width = 90,
+        .height = 80,
+    };
+    struct wlr_box top_border_hidden_content_box = {
+        .x = 10,
+        .y = 0,
+        .width = 80,
+        .height = 90,
+    };
+    struct wlr_box bottom_border_hidden_content_box = {
+        .x = 10,
+        .y = 10,
+        .width = 80,
+        .height = 90,
+    };
     struct monitor m;
     struct client c = {
         .sticky_tags = bitset_create(),
@@ -37,10 +61,23 @@ void test_container_box_to_content_geometry()
     struct container *con = create_container(&c, &m, true);
     container_set_border_width(con, direction_value_uniform(10));
     struct wlr_box result = container_box_to_content_geometry(con, box);
-    g_assert_cmpint(result.x, ==, content_box.x);
-    g_assert_cmpint(result.y, ==, content_box.y);
-    g_assert_cmpint(result.width, ==, content_box.width);
-    g_assert_cmpint(result.height, ==, content_box.height);
+    assert_wlr_box_equal(result, content_box);
+
+    con->hidden_edges = WLR_EDGE_LEFT;
+    result = container_box_to_content_geometry(con, box);
+    assert_wlr_box_equal(result, left_border_hidden_content_box);
+
+    con->hidden_edges = WLR_EDGE_RIGHT;
+    result = container_box_to_content_geometry(con, box);
+    assert_wlr_box_equal(result, right_border_hidden_content_box);
+
+    con->hidden_edges = WLR_EDGE_TOP;
+    result = container_box_to_content_geometry(con, box);
+    assert_wlr_box_equal(result, top_border_hidden_content_box);
+
+    con->hidden_edges = WLR_EDGE_BOTTOM;
+    result = container_box_to_content_geometry(con, box);
+    assert_wlr_box_equal(result, bottom_border_hidden_content_box);
 
     bitset_destroy(c.sticky_tags);
 }
@@ -113,6 +150,30 @@ void test_container_content_geometry_to_box()
         .width = 80,
         .height = 80,
     };
+    struct wlr_box left_border_hidden_content_box = {
+        .x = 0,
+        .y = 10,
+        .width = 90,
+        .height = 80,
+    };
+    struct wlr_box right_border_hidden_content_box = {
+        .x = 10,
+        .y = 10,
+        .width = 90,
+        .height = 80,
+    };
+    struct wlr_box top_border_hidden_content_box = {
+        .x = 10,
+        .y = 0,
+        .width = 80,
+        .height = 90,
+    };
+    struct wlr_box bottom_border_hidden_content_box = {
+        .x = 10,
+        .y = 10,
+        .width = 80,
+        .height = 90,
+    };
     struct monitor m;
     struct client c = {
         .sticky_tags = bitset_create(),
@@ -124,6 +185,22 @@ void test_container_content_geometry_to_box()
     g_assert_cmpint(result.y, ==, box.y);
     g_assert_cmpint(result.width, ==, box.width);
     g_assert_cmpint(result.height, ==, box.height);
+
+    con->hidden_edges = WLR_EDGE_LEFT;
+    result = container_content_geometry_to_box(con, left_border_hidden_content_box);
+    assert_wlr_box_equal(result, box);
+
+    con->hidden_edges = WLR_EDGE_RIGHT;
+    result = container_content_geometry_to_box(con, right_border_hidden_content_box);
+    assert_wlr_box_equal(result, box);
+
+    con->hidden_edges = WLR_EDGE_TOP;
+    result = container_content_geometry_to_box(con, top_border_hidden_content_box);
+    assert_wlr_box_equal(result, box);
+
+    con->hidden_edges = WLR_EDGE_BOTTOM;
+    result = container_content_geometry_to_box(con, bottom_border_hidden_content_box);
+    assert_wlr_box_equal(result, box);
 
     free(con);
     bitset_destroy(c.sticky_tags);
