@@ -275,7 +275,7 @@ void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_ar
             continue;
         }
         // TODO: is that correct?
-        container_set_current_geom(con, &box);
+        container_set_current_geom(con, box);
 
         if (state->exclusive_zone > 0)
             apply_exclusive(usable_area, state->anchor, state->exclusive_zone,

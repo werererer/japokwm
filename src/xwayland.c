@@ -186,7 +186,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 con->on_top = false;
                 if (x11_wants_floating(con->client)) {
                     container_set_floating(con, container_fix_position, true);
-                    container_set_floating_geom(con, &prefered_geom);
+                    container_set_floating_geom(con, prefered_geom);
                 }
                 break;
             }
@@ -211,7 +211,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 con->has_border = false;
                 lift_container(con);
                 container_set_floating(con, NULL, true);
-                container_set_floating_geom(con, &prefered_geom);
+                container_set_floating_geom(con, prefered_geom);
                 break;
             }
         default:

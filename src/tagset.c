@@ -287,7 +287,7 @@ static void restore_floating_containers(struct tag *tag)
         return;
     for (int i = 0; i < floating_list->len; i++) {
         struct container *con = g_ptr_array_index(floating_list, i);
-        struct wlr_box *con_geom = container_get_current_geom(con);
+        struct wlr_box con_geom = container_get_current_geom(con);
         container_set_current_geom(con, con_geom);
     }
 }
@@ -398,8 +398,8 @@ bool container_intersects_with_monitor(struct container *con, struct monitor *m)
         return false;
 
     struct wlr_box tmp_geom;
-    struct wlr_box *geom = container_get_current_geom(con);
-    return wlr_box_intersection(&tmp_geom, geom, &m->geom);
+    struct wlr_box geom = container_get_current_geom(con);
+    return wlr_box_intersection(&tmp_geom, &geom, &m->geom);
 }
 
 GPtrArray *tagset_get_global_floating_copy(struct tag *tag)

@@ -66,6 +66,6 @@ int lib_root_get_area(lua_State *L)
 {
     struct root *root = check_root(L, 1);
     lua_pop(L, 1);
-    create_lua_geometry(L, &root->geom);
+    create_lua_geometry(L, root->geom);
     return 1;
 }

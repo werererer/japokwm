@@ -38,6 +38,7 @@ struct container {
 
     int tag_id;
 
+    bool is_unmanaged;
     bool is_exclusive;
     bool is_on_tile;
     bool is_xwayland_popup;
@@ -60,8 +61,8 @@ struct container *create_container(struct client *c, struct monitor *m, bool has
 void destroy_container(struct container *con);
 
 bool container_property_is_floating(struct container_property *property);
-struct wlr_box *container_property_get_floating_geom(struct container_property *property);
-void container_property_set_floating_geom(struct container_property *property, struct wlr_box *geom);
+struct wlr_box container_property_get_floating_geom(struct container_property *property);
+void container_property_set_floating_geom(struct container_property *property, struct wlr_box geom);
 void container_property_set_floating(struct container_property *property, bool floating);
 
 void add_container_to_tile(struct container *con);
@@ -82,7 +83,7 @@ void ack_configure(struct wl_listener *listener, void *data);
 void apply_bounds(struct container *con, struct wlr_box bbox);
 void commit_notify(struct wl_listener *listener, void *data);
 void configure_notify(struct wl_listener *listener, void *data);
-void container_damage_borders(struct container *con, struct monitor *m, struct wlr_box *geom);
+void container_damage_borders(struct container *con, struct monitor *m, struct wlr_box geom);
 void container_damage_part(struct container *con);
 void container_damage_whole(struct container *con);
 void container_fix_position_to_begin(struct container *con);
@@ -108,17 +109,17 @@ struct container_property *container_get_property_at_tag(
         struct tag *tag);
 
 void container_set_floating_geom_at_tag(struct container *con,
-        struct wlr_box *geom, struct tag *tag);
-void container_set_current_geom(struct container *con, struct wlr_box *geom);
-void container_set_tiled_geom(struct container *con, struct wlr_box *geom);
-void container_set_floating_geom(struct container *con, struct wlr_box *geom);
+        struct wlr_box geom, struct tag *tag);
+void container_set_current_geom(struct container *con, struct wlr_box geom);
+void container_set_tiled_geom(struct container *con, struct wlr_box geom);
+void container_set_floating_geom(struct container *con, struct wlr_box geom);
 
-struct wlr_box *container_get_tiled_geom_at_tag(struct container *con, struct tag *tag);
-struct wlr_box *container_get_floating_geom_at_tag(struct container *con, struct tag *tag);
-struct wlr_box *container_get_current_geom_at_tag(struct container *con, struct tag *tag);
-struct wlr_box *container_get_tiled_geom(struct container *con);
-struct wlr_box *container_get_floating_geom(struct container *con);
-struct wlr_box *container_get_current_geom(struct container *con);
+struct wlr_box container_get_tiled_geom_at_tag(struct container *con, struct tag *tag);
+struct wlr_box container_get_floating_geom_at_tag(struct container *con, struct tag *tag);
+struct wlr_box container_get_current_geom_at_tag(struct container *con, struct tag *tag);
+struct wlr_box container_get_tiled_geom(struct container *con);
+struct wlr_box container_get_floating_geom(struct container *con);
+struct wlr_box container_get_current_geom(struct container *con);
 
 struct wlr_box container_content_geometry_to_box(struct container *con,
         struct wlr_box geom);
@@ -140,8 +141,8 @@ void move_container_to_tag(struct container *con, struct tag *tag);
 
 struct monitor *container_get_monitor(struct container *con);
 
-int absolute_x_to_container_relative(struct wlr_box *geom, int x);
-int absolute_y_to_container_relative(struct wlr_box *geom, int y);
+int absolute_x_to_container_relative(struct wlr_box geom, int x);
+int absolute_y_to_container_relative(struct wlr_box geom, int y);
 int get_position_in_container_focus_stack(struct container *con);
 int get_position_in_container_stack(struct container *con);
 

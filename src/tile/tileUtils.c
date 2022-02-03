@@ -44,7 +44,7 @@ void arrange()
         struct monitor *m = server_get_selected_monitor();
         struct tag *tag = monitor_get_active_tag(m);
         struct layout *lt = tag_get_layout(tag);
-        container_set_border_width(con, lt->options->float_border_px);
+        container_set_border_width(con, direction_value_uniform(lt->options->float_border_px));
         container_update_size(con);
         container_set_hidden(con, false);
     }
@@ -297,16 +297,16 @@ static void arrange_container(struct container *con, struct monitor *m,
     container_surround_gaps(&geom, inner_gap);
 
     if (container_is_floating(con)) {
-        container_set_border_width(con, lt->options->float_border_px);
+        container_set_border_width(con, direction_value_uniform(lt->options->float_border_px));
     } else {
-        container_set_border_width(con, lt->options->tile_border_px);
+        container_set_border_width(con, direction_value_uniform(lt->options->tile_border_px));
     }
 
     // since gaps are halfed we need to multiply it by 2
     // int border_width = container_get_border_width(con);
     container_surround_gaps(&geom, 2*lt->options->tile_border_px);
 
-    container_set_tiled_geom(con, &geom);
+    container_set_tiled_geom(con, geom);
     container_update_size(con);
 }
 
@@ -314,9 +314,7 @@ void container_update_size(struct container *con)
 {
     con->client->resized = true;
 
-    struct wlr_box *con_geom = container_get_current_geom(con);
-    if (!con_geom)
-        return;
+    struct wlr_box con_geom = container_get_current_geom(con);
     apply_bounds(con, *wlr_output_layout_get_box(server.output_layout, NULL));
 
     /* wlroots makes this a no-op if size hasn't changed */
@@ -324,7 +322,7 @@ void container_update_size(struct container *con)
         case XDG_SHELL:
             if (con->client->surface.xdg->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
                 wlr_xdg_toplevel_set_size(con->client->surface.xdg,
-                        con_geom->width, con_geom->height);
+                        con_geom.width, con_geom.height);
             }
             break;
         case LAYER_SHELL:
@@ -344,8 +342,8 @@ void container_update_size(struct container *con)
         case X11_UNMANAGED:
         case X11_MANAGED:
             wlr_xwayland_surface_configure(con->client->surface.xwayland,
-                    con_geom->x, con_geom->y, con_geom->width,
-                    con_geom->height);
+                    con_geom.x, con_geom.y, con_geom.width,
+                    con_geom.height);
     }
 }
 

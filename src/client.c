@@ -132,7 +132,7 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
             cursor_constrain(seat->cursor, NULL);
             unfocus_client(old);
             struct container *old_con = old->con;
-            struct wlr_box *geom = container_get_current_geom(old_con);
+            struct wlr_box geom = container_get_current_geom(old_con);
             struct monitor *m = container_get_monitor(old_con);
             container_damage_borders(old_con, m, geom);
         }
@@ -156,7 +156,7 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
 
     struct container *con = c->con;
     struct monitor *m = container_get_monitor(con);
-    struct wlr_box *geom = container_get_current_geom(con);
+    struct wlr_box geom = container_get_current_geom(con);
     container_damage_borders(con, m, geom);
 
     /* Activate the new client */

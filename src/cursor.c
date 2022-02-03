@@ -367,12 +367,12 @@ void motion_notify(struct cursor *cursor, uint32_t time_msec,
     // Only apply pointer constraints to real pointer input.
     if (cursor->active_constraint && device->type == WLR_INPUT_DEVICE_POINTER) {
         struct container *con = xy_to_container(cursor->wlr_cursor->x, cursor->wlr_cursor->y);
-        struct wlr_box *con_geom = container_get_current_geom(con);
+        struct wlr_box con_geom = container_get_current_geom(con);
         double sx;
         double sy;
-        if (con && con_geom) {
-            sx = cursor->wlr_cursor->x - con_geom->x;
-            sy = cursor->wlr_cursor->y - con_geom->y;
+        if (con) {
+            sx = cursor->wlr_cursor->x - con_geom.x;
+            sy = cursor->wlr_cursor->y - con_geom.y;
         } else {
             sx = cursor->wlr_cursor->x;
             sy = cursor->wlr_cursor->y;
@@ -462,7 +462,7 @@ void move_resize(struct cursor *cursor, int ui)
     container_set_floating(server.grab_c, container_fix_position, true);
 
     struct tag *con_tag = container_get_current_tag(server.grab_c);
-    struct wlr_box *grabc_geom = container_get_current_geom_at_tag(server.grab_c, con_tag);
+    struct wlr_box grabc_geom = container_get_current_geom_at_tag(server.grab_c, con_tag);
     struct wlr_cursor *wlr_cursor = cursor->wlr_cursor;
     switch (cursor->cursor_mode = ui) {
         case CURSOR_MOVE:
@@ -474,8 +474,8 @@ void move_resize(struct cursor *cursor, int ui)
             /* Doesn't work for X11 output - the next absolute motion event
              * returns the cursor to where it started */
             wlr_cursor_warp_closest(wlr_cursor, NULL,
-                    grabc_geom->x + grabc_geom->width,
-                    grabc_geom->y + grabc_geom->height);
+                    grabc_geom.x + grabc_geom.width,
+                    grabc_geom.y + grabc_geom.height);
             wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
                     "bottom_right_corner", wlr_cursor);
             break;
@@ -547,9 +547,9 @@ static void warp_to_constraint_cursor_hint(struct cursor *cursor)
 
         struct monitor *m = server_get_selected_monitor();
         struct container *con = monitor_get_focused_container(m);
-        struct wlr_box *con_geom = container_get_current_geom(con);
-        double lx = sx + con_geom->x - m->geom.x;
-        double ly = sy + con_geom->x - m->geom.y;
+        struct wlr_box con_geom = container_get_current_geom(con);
+        double lx = sx + con_geom.x - m->geom.x;
+        double ly = sy + con_geom.x - m->geom.y;
 
         wlr_cursor_warp(cursor->wlr_cursor, NULL, lx, ly);
 
@@ -588,10 +588,10 @@ static void check_constraint_region(struct cursor *cursor) {
     struct container *con = monitor_get_focused_container(m);
     if (cursor->active_confine_requires_warp && con) {
         cursor->active_confine_requires_warp = false;
-        struct wlr_box *con_geom = container_get_current_geom(con);
+        struct wlr_box con_geom = container_get_current_geom(con);
 
-        double sx = cursor->wlr_cursor->x - con_geom->x;
-        double sy = cursor->wlr_cursor->y - con_geom->x;
+        double sx = cursor->wlr_cursor->x - con_geom.x;
+        double sy = cursor->wlr_cursor->y - con_geom.x;
 
         if (!pixman_region32_contains_point(region,
                 floor(sx), floor(sy), NULL)) {
@@ -602,8 +602,8 @@ static void check_constraint_region(struct cursor *cursor) {
                 double sy = (boxes[0].y1 + boxes[0].y2) / 2.;
 
                 wlr_cursor_warp_closest(cursor->wlr_cursor, NULL,
-                    sx + con_geom->x,
-                    sy + con_geom->x);
+                    sx + con_geom.x,
+                    sy + con_geom.x);
 
                 cursor_rebase(cursor);
             }

@@ -68,7 +68,7 @@ static void show_container(struct container *con)
     container_set_tag_id(con, tag->id);
     container_set_floating(con, container_fix_position, true);
     struct wlr_box center_box = get_center_box(m->geom);
-    container_set_current_geom(con, &center_box);
+    container_set_current_geom(con, center_box);
 
     tag_this_focus_container(con);
     lift_container(con);
@@ -88,7 +88,7 @@ void show_scratchpad()
         container_set_tag_id(con, tag->id);
         container_set_floating(con, container_fix_position, true);
         struct wlr_box center_box = get_center_box(m->geom);
-        container_set_current_geom(con, &center_box);
+        container_set_current_geom(con, center_box);
 
         tag_this_focus_container(con);
         lift_container(con);

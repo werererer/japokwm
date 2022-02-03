@@ -227,26 +227,26 @@ static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *bo
     struct monitor *m = container_get_monitor(con);
 
     enum wlr_edges containers_hidden_edges = WLR_EDGE_NONE;
-    struct wlr_box *con_geom = container_get_current_geom(con);
+    struct wlr_box con_geom = container_get_current_geom(con);
     // int border_width = container_get_border_width(con);
     // hide edges if needed
     if (hidden_edges & WLR_EDGE_LEFT) {
-        if (con_geom->x == m->root->geom.x) {
+        if (con_geom.x == m->root->geom.x) {
             containers_hidden_edges |= WLR_EDGE_LEFT;
         }
     }
     if (hidden_edges & WLR_EDGE_RIGHT) {
-        if (is_approx_equal(con_geom->x + con_geom->width, m->root->geom.x + m->root->geom.width, 3)) {
+        if (is_approx_equal(con_geom.x + con_geom.width, m->root->geom.x + m->root->geom.width, 3)) {
             containers_hidden_edges |= WLR_EDGE_RIGHT;
         }
     }
     if (hidden_edges & WLR_EDGE_TOP) {
-        if (con_geom->y == m->root->geom.y) {
+        if (con_geom.y == m->root->geom.y) {
             containers_hidden_edges |= WLR_EDGE_TOP;
         }
     }
     if (hidden_edges & WLR_EDGE_BOTTOM) {
-        if (is_approx_equal(con_geom->y + con_geom->height, m->root->geom.y + m->root->geom.height, 3)) {
+        if (is_approx_equal(con_geom.y + con_geom.height, m->root->geom.y + m->root->geom.height, 3)) {
             containers_hidden_edges |= WLR_EDGE_BOTTOM;
         }
     }
@@ -256,46 +256,47 @@ static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *bo
 
 static void render_borders(struct container *con, struct monitor *m, pixman_region32_t *output_damage)
 {
-    if (!con->has_border)
-        return;
-
-    double ox, oy;
-    int w, h;
-    struct wlr_box *con_geom = container_get_current_geom(con);
-    int border_width = container_get_border_width(con);
-    ox = con_geom->x - border_width;
-    oy = con_geom->y - border_width;
-    wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
-    w = con_geom->width;
-    h = con_geom->height;
-
-    struct wlr_box *borders = (struct wlr_box[4]) {
-        {ox, oy, w + 2 * border_width, border_width},             /* top */
-            {ox, oy + border_width + h, w + 2 * border_width, border_width}, /* bottom */
-            {ox, oy + border_width, border_width, h},                 /* left */
-            {ox + border_width + w, oy + border_width, border_width, h},     /* right */
-    };
-
-    enum wlr_edges hidden_edges = WLR_EDGE_NONE;
-    struct tag *tag = monitor_get_active_tag(m);
-    struct layout *lt = tag_get_layout(tag);
-    if (lt->options->smart_hidden_edges) {
-        if (tag->visible_con_set->tiled_containers->len <= 1) {
-            hidden_edges = get_hidden_edges(con, borders, lt->options->hidden_edges);
-        }
-    } else {
-        hidden_edges = get_hidden_edges(con, borders, lt->options->hidden_edges);
-    }
-
-    /* Draw window borders */
-    struct container *sel = monitor_get_focused_container(m);
-    const struct color color = (con == sel) ? lt->options->focus_color : lt->options->border_color;
-    for (int i = 0; i < 4; i++) {
-        if ((hidden_edges & (1 << i)) == 0) {
-            scale_box(&borders[i], m->wlr_output->scale);
-            render_rect(m, output_damage, &borders[i], color);
-        }
-    }
+    // TODO: reimplement me
+    // if (!con->has_border)
+    //     return;
+    //
+    // double ox, oy;
+    // int w, h;
+    // struct wlr_box con_geom = container_get_current_geom(con);
+    // int border_width = container_get_border_width(con);
+    // ox = con_geom->x - border_width;
+    // oy = con_geom->y - border_width;
+    // wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
+    // w = con_geom->width;
+    // h = con_geom->height;
+    //
+    // struct wlr_box *borders = (struct wlr_box[4]) {
+    //     {ox, oy, w + 2 * border_width, border_width},             /* top */
+    //         {ox, oy + border_width + h, w + 2 * border_width, border_width}, /* bottom */
+    //         {ox, oy + border_width, border_width, h},                 /* left */
+    //         {ox + border_width + w, oy + border_width, border_width, h},     /* right */
+    // };
+    //
+    // enum wlr_edges hidden_edges = WLR_EDGE_NONE;
+    // struct tag *tag = monitor_get_active_tag(m);
+    // struct layout *lt = tag_get_layout(tag);
+    // if (lt->options->smart_hidden_edges) {
+    //     if (tag->visible_con_set->tiled_containers->len <= 1) {
+    //         hidden_edges = get_hidden_edges(con, borders, lt->options->hidden_edges);
+    //     }
+    // } else {
+    //     hidden_edges = get_hidden_edges(con, borders, lt->options->hidden_edges);
+    // }
+    //
+    // /* Draw window borders */
+    // struct container *sel = monitor_get_focused_container(m);
+    // const struct color color = (con == sel) ? lt->options->focus_color : lt->options->border_color;
+    // for (int i = 0; i < 4; i++) {
+    //     if ((hidden_edges & (1 << i)) == 0) {
+    //         scale_box(&borders[i], m->wlr_output->scale);
+    //         render_rect(m, output_damage, &borders[i], color);
+    //     }
+    // }
 }
 
 void output_surface_for_each_surface(struct monitor *m,
@@ -337,8 +338,7 @@ static void render_stack(struct monitor *m, pixman_region32_t *output_damage)
          * xdg_surface's toplevel and popups. */
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
-        struct wlr_box *con_geom = container_get_current_geom(con);
-        struct wlr_box obox = *con_geom;
+        struct wlr_box obox = container_get_current_geom(con);
 
         struct render_texture_data render_data;
         render_data.alpha = con->alpha;
