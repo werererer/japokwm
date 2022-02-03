@@ -302,10 +302,6 @@ static void arrange_container(struct container *con, struct monitor *m,
         container_set_border_width(con, direction_value_uniform(lt->options->tile_border_px));
     }
 
-    // since gaps are halfed we need to multiply it by 2
-    // int border_width = container_get_border_width(con);
-    container_surround_gaps(&geom, 2*lt->options->tile_border_px);
-
     container_set_tiled_geom(con, geom);
     container_update_size(con);
 }

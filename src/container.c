@@ -981,6 +981,47 @@ struct wlr_box container_get_current_content_geom(struct container *con)
     return geom;
 }
 
+struct wlr_box container_get_current_border_geom(struct container *con, enum wlr_edges dir)
+{
+    struct wlr_box geom = container_get_current_geom(con);
+    switch (dir) {
+        case WLR_EDGE_TOP:
+            {
+                struct direction_value d = container_get_border_width(con);
+                geom.y = geom.y - d.top;
+                geom.height = d.top;
+                break;
+            }
+        case WLR_EDGE_BOTTOM:
+            {
+                struct direction_value d = container_get_border_width(con);
+                geom.y += geom.height;
+                geom.height = d.bottom;
+                break;
+            }
+            break;
+        case WLR_EDGE_LEFT:
+            {
+                struct direction_value d = container_get_border_width(con);
+                geom.x = geom.x - d.left;
+                geom.width = d.left;
+                break;
+            }
+            break;
+        case WLR_EDGE_RIGHT:
+            {
+                struct direction_value d = container_get_border_width(con);
+                geom.x += geom.width;
+                geom.width = d.right;
+                break;
+            }
+            break;
+        default:
+            break;
+    }
+    return geom;
+}
+
 struct wlr_box container_content_geometry_to_box(struct container *con,
         struct wlr_box geom)
 {

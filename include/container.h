@@ -4,6 +4,7 @@
 #include <lua.h>
 #include <wlr/util/box.h>
 #include <wlr/types/wlr_cursor.h>
+#include <wlr/util/edges.h>
 #include <glib.h>
 
 struct monitor;
@@ -127,6 +128,8 @@ struct wlr_box container_get_current_content_geom_at_tag(struct container *con, 
 struct wlr_box container_get_tiled_content_geom(struct container *con);
 struct wlr_box container_get_floating_content_geom(struct container *con);
 struct wlr_box container_get_current_content_geom(struct container *con);
+
+struct wlr_box container_get_current_border_geom(struct container *con, enum wlr_edges dir);
 
 struct wlr_box container_content_geometry_to_box(struct container *con,
         struct wlr_box geom);
