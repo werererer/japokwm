@@ -212,13 +212,14 @@ static void damage_container_area(struct container *con, struct wlr_box geom,
 static void container_damage(struct container *con, bool whole)
 {
     for (int i = 0; i < server.mons->len; i++) {
-        struct wlr_box con_geom = container_get_current_geom(con);
+        struct wlr_box con_geom = container_get_current_content_geom(con);
         damage_container_area(con, con_geom, whole);
     }
 
     struct client *c = con->client;
     if (c->resized || c->moved_tag) {
-        damage_container_area(con, con->prev_geom, whole);
+        struct wlr_box content_geom = container_box_to_content_geometry(con, con->prev_geom);
+        damage_container_area(con, content_geom, whole);
         c->resized = false;
         c->moved_tag = false;
     }
