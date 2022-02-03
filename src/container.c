@@ -383,17 +383,16 @@ void apply_bounds(struct container *con, struct wlr_box box)
     con_geom.width = MAX(MIN_CONTAINER_WIDTH, con_geom.width);
     con_geom.height = MAX(MIN_CONTAINER_HEIGHT, con_geom.height);
 
-    // TODO: fix this part
-    // int border_width = container_get_border_width(con);
-    //
-    // if (con_geom->x >= box.x + box.width)
-    //     con_geom->x = box.x + box.width - con_geom->width;
-    // if (con_geom->y >= box.y + box.height)
-    //     con_geom->y = box.y + box.height - con_geom->height;
-    // if (con_geom->x + con_geom->width + 2 * border_width <= box.x)
-    //     con_geom->x = box.x;
-    // if (con_geom->y + con_geom->height + 2 * border_width <= box.y)
-    //     con_geom->y = box.y;
+    struct direction_value bw = container_get_border_width(con);
+
+    if (con_geom.x >= box.x + box.width)
+        con_geom.x = box.x + box.width - con_geom.width;
+    if (con_geom.y >= box.y + box.height)
+        con_geom.y = box.y + box.height - con_geom.height;
+    if (con_geom.x + con_geom.width + bw.left + bw.right <= box.x)
+        con_geom.x = box.x;
+    if (con_geom.y + con_geom.height + bw.top + bw.bottom <= box.y)
+        con_geom.y = box.y;
 
     container_set_current_geom(con, con_geom);
 }
