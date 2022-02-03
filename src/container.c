@@ -1043,10 +1043,10 @@ struct wlr_box container_content_geometry_to_box(struct container *con,
 {
     struct direction_value borders = container_get_border_width(con);
     struct wlr_box box_geom = {
-        .x = geom.x + borders.left,
-        .y = geom.y + borders.top,
-        .width = geom.width - borders.left - borders.right,
-        .height = geom.height - borders.top - borders.bottom,
+        .x = geom.x - borders.left,
+        .y = geom.y - borders.top,
+        .width = geom.width + borders.left + borders.right,
+        .height = geom.height + borders.top + borders.bottom,
     };
     return box_geom;
 }
@@ -1190,7 +1190,8 @@ struct tag *container_get_current_tag(struct container *con)
         }
     }
 
-    return NULL;
+    struct tag *tag = container_get_tag(con);
+    return tag;
 }
 
 struct container *get_container_from_container_stack_position(int i)

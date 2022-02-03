@@ -5,6 +5,61 @@
 #include "tag.h"
 #include "utils/coreUtils.h"
 #include "server.h"
+#include "client.h"
+
+void test_container_box_to_content_geometry()
+{
+    init_server();
+    struct wlr_box box = {
+        .x = 0,
+        .y = 0,
+        .width = 100,
+        .height = 100,
+    };
+    struct wlr_box content_box = {
+        .x = 10,
+        .y = 10,
+        .width = 80,
+        .height = 80,
+    };
+    struct monitor m;
+    struct client c;
+    c.sticky_tags = bitset_create();
+    struct container *con = create_container(&c, &m, true);
+    container_set_border_width(con, direction_value_uniform(10));
+    struct wlr_box result = container_box_to_content_geometry(con, box);
+    g_assert_cmpint(result.x, ==, content_box.x);
+    g_assert_cmpint(result.y, ==, content_box.y);
+    g_assert_cmpint(result.width, ==, content_box.width);
+    g_assert_cmpint(result.height, ==, content_box.height);
+}
+
+void test_container_content_geometry_to_box()
+{
+    init_server();
+    struct wlr_box box = {
+        .x = 0,
+        .y = 0,
+        .width = 100,
+        .height = 100,
+    };
+    struct wlr_box content_box = {
+        .x = 10,
+        .y = 10,
+        .width = 80,
+        .height = 80,
+    };
+    struct monitor m;
+    struct client c;
+    c.sticky_tags = bitset_create();
+    struct container *con = create_container(&c, &m, true);
+    container_set_border_width(con, direction_value_uniform(10));
+    struct wlr_box result = container_content_geometry_to_box(con, content_box);
+    g_assert_cmpint(result.x, ==, box.x);
+    g_assert_cmpint(result.y, ==, box.y);
+    g_assert_cmpint(result.width, ==, box.width);
+    g_assert_cmpint(result.height, ==, box.height);
+}
 
 void test_visible_on()
 {
@@ -136,6 +191,8 @@ int main(int argc, char **argv)
     setbuf(stdout, NULL);
     g_test_init(&argc, &argv, NULL);
 
+    add_test(test_container_box_to_content_geometry);
+    add_test(test_container_content_geometry_to_box);
     add_test(test_visible_on);
 
     return g_test_run();

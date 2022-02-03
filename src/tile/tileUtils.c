@@ -264,12 +264,12 @@ void arrange_containers(
 
     if (lt->options->smart_hidden_edges) {
         if (tiled_containers->len <= 1) {
-            container_add_gaps(&root_geom, -lt->options->tile_border_px,
-                    lt->options->hidden_edges);
+            // container_add_gaps(&root_geom, -lt->options->tile_border_px,
+            //         lt->options->hidden_edges);
         }
     } else {
-        container_add_gaps(&root_geom, -lt->options->tile_border_px,
-                lt->options->hidden_edges);
+        // container_add_gaps(&root_geom, -lt->options->tile_border_px,
+        //         lt->options->hidden_edges);
     }
 
     // debug_print("tiled containers len: %i\n", tiled_containers->len);
