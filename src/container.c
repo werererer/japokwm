@@ -394,7 +394,7 @@ void apply_bounds(struct container *con, struct wlr_box box)
     if (con_geom.y + con_geom.height + bw.top + bw.bottom <= box.y)
         con_geom.y = box.y;
 
-    container_set_current_geom(con, con_geom);
+    container_set_current_content_geom(con, con_geom);
 }
 
 void commit_notify(struct wl_listener *listener, void *data)
