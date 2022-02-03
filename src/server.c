@@ -224,6 +224,17 @@ void init_server()
     server_reset_layout_ring(server.default_layout_ring);
 
     server.default_layout = create_layout(L);
+
+    load_lua_api(L);
+    if (init_backend(&server) != EXIT_SUCCESS) {
+        return;
+    }
+
+    ipc_init(server.wl_event_loop);
+
+    /* Creates an output layout, which a wlroots utility for working with an
+     * arrangement of screens in a physical layout. */
+    server.output_layout = wlr_output_layout_create();
 }
 
 void finalize_server()
@@ -386,13 +397,6 @@ int setup(struct server *server)
 
     uv_async_init(uv_default_loop(), &server->async_handler, _async_handler_function);
 
-    load_lua_api(L);
-    if (init_backend(server) != EXIT_SUCCESS) {
-        return EXIT_FAILURE;
-    }
-
-    ipc_init(server->wl_event_loop);
-
     /* If we don't provide a renderer, autocreate makes a GLES2 renderer for us.
      * The renderer is responsible for defining the various pixel formats it
      * supports for shared memory, this configures that for clients. */
@@ -419,9 +423,6 @@ int setup(struct server *server)
     wlr_idle_create(server->wl_display);
     wlr_idle_inhibit_v1_create(server->wl_display);
 
-    /* Creates an output layout, which a wlroots utility for working with an
-     * arrangement of screens in a physical layout. */
-    server->output_layout = wlr_output_layout_create();
     wlr_xdg_output_manager_v1_create(server->wl_display, server->output_layout);
 
     /* Set up the xdg-shell. The xdg-shell is a
