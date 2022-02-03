@@ -45,7 +45,7 @@ void arrange()
         struct tag *tag = monitor_get_active_tag(m);
         struct layout *lt = tag_get_layout(tag);
         container_set_border_width(con, direction_value_uniform(lt->options->float_border_px));
-        container_update_size(con);
+        // container_update_size(con);
         container_set_hidden(con, false);
     }
 
@@ -311,7 +311,7 @@ void container_update_size(struct container *con)
     con->client->resized = true;
 
     struct wlr_box con_geom = container_get_current_content_geom(con);
-    apply_bounds(con, *wlr_output_layout_get_box(server.output_layout, NULL));
+    con_geom = apply_bounds(con, *wlr_output_layout_get_box(server.output_layout, NULL));
 
     /* wlroots makes this a no-op if size hasn't changed */
     switch (con->client->type) {

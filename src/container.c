@@ -96,6 +96,8 @@ void container_property_set_floating(struct container_property *property, bool f
     lift_container(con);
     con->client->resized = true;
     container_damage_whole(con);
+
+    container_update_size(con);
 }
 
 struct container *create_container(struct client *c, struct monitor *m, bool has_border)
@@ -176,7 +178,7 @@ void remove_container_from_tile(struct container *con)
     ipc_event_tag();
 }
 
-void container_damage_borders(struct container *con, struct monitor *m, struct wlr_box geom)
+void container_damage_borders_at_monitor(struct container *con, struct monitor *m)
 {
     if (!con)
         return;
@@ -199,14 +201,25 @@ void container_damage_borders(struct container *con, struct monitor *m, struct w
     pthread_mutex_unlock(&lock_rendering_action);
 }
 
+void container_damage_borders(struct container *con)
+{
+    if (!con)
+        return;
+
+    for (int i = 0; i < server.mons->len; i++) {
+        struct monitor *m = g_ptr_array_index(server.mons, i);
+        container_damage_borders_at_monitor(con, m);
+    }
+}
+
 static void damage_container_area(struct container *con, struct wlr_box geom,
         bool whole)
 {
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
         output_damage_surface(m, get_wlrsurface(con->client), &geom, whole);
-        container_damage_borders(con, m, geom);
     }
+    container_damage_borders(con);
 }
 
 static void container_damage(struct container *con, bool whole)
@@ -218,8 +231,7 @@ static void container_damage(struct container *con, bool whole)
 
     struct client *c = con->client;
     if (c->resized || c->moved_tag) {
-        struct wlr_box content_geom = container_box_to_content_geometry(con, con->prev_geom);
-        damage_container_area(con, content_geom, whole);
+        damage_container_area(con, con->prev_geom, whole);
         c->resized = false;
         c->moved_tag = false;
     }
@@ -377,7 +389,7 @@ struct wlr_fbox lua_togeometry(lua_State *L)
     return geom;
 }
 
-void apply_bounds(struct container *con, struct wlr_box box)
+struct wlr_box apply_bounds(struct container *con, struct wlr_box box)
 {
     /* set minimum possible */
     struct wlr_box con_geom = container_get_current_content_geom(con);
@@ -396,6 +408,7 @@ void apply_bounds(struct container *con, struct wlr_box box)
         con_geom.y = box.y;
 
     container_set_current_content_geom(con, con_geom);
+    return con_geom;
 }
 
 void commit_notify(struct wl_listener *listener, void *data)
@@ -744,6 +757,8 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
     struct tag *tag = monitor_get_active_tag(m);
     struct layout *lt = tag_get_layout(tag);
     container_set_border_width(con, direction_value_uniform(lt->options->float_border_px));
+
+    con->client->resized = true;
     container_damage(con, true);
 }
 
@@ -844,8 +859,6 @@ void container_set_floating_geom_at_tag(struct container *con,
 
     con->prev_geom = *con_geom;
     *con_geom = geom;
-    // TODO: do we need that?
-    // container_update_size(con);
 }
 
 void container_set_floating_geom(struct container *con, struct wlr_box geom)
@@ -1102,13 +1115,15 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
         container_set_floating(con, container_fix_position, true);
         arrange();
     }
-    container_set_floating_geom(con, geom);
 
+    container_damage_borders(con);
+
+    container_set_floating_geom(con, geom);
     struct tag *tag = container_get_current_tag(con);
     struct layout *lt = tag_get_layout(tag);
     container_set_border_width(con, direction_value_uniform(lt->options->float_border_px));
 
-    container_damage(con, true);
+    container_update_size(con);
 }
 
 struct monitor *container_get_monitor(struct container *con)
