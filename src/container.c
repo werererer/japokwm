@@ -379,7 +379,7 @@ struct wlr_fbox lua_togeometry(lua_State *L)
 void apply_bounds(struct container *con, struct wlr_box box)
 {
     /* set minimum possible */
-    struct wlr_box con_geom = container_get_current_geom(con);
+    struct wlr_box con_geom = container_get_current_content_geom(con);
     con_geom.width = MAX(MIN_CONTAINER_WIDTH, con_geom.width);
     con_geom.height = MAX(MIN_CONTAINER_HEIGHT, con_geom.height);
 
@@ -772,18 +772,62 @@ struct container_property *container_get_property_at_tag(
 
 void container_set_current_geom(struct container *con, struct wlr_box geom)
 {
-    struct tag *tag = container_get_current_tag(con);
-    struct layout *lt = tag_get_layout(tag);
-    if (container_is_tiled(con) || lt->options->arrange_by_focus) {
-        container_set_tiled_geom(con, geom);
-    } else {
-        container_set_floating_geom(con, geom);
-    }
+    struct wlr_box content_geom = container_box_to_content_geometry(con, geom);
+    container_set_current_content_geom(con, content_geom);
 }
 
 void container_set_tiled_geom(struct container *con, struct wlr_box geom)
 {
-    struct wlr_box con_geom = container_get_tiled_geom(con);
+    struct wlr_box content_geom = container_box_to_content_geometry(con, geom);
+    container_set_tiled_content_geom(con, content_geom);
+}
+
+void container_set_floating_geom_at_tag(struct container *con,
+        struct wlr_box geom, struct tag *tag)
+{
+    struct wlr_box content_geom = container_box_to_content_geometry(con, geom);
+    container_set_floating_content_geom_at_tag(con, content_geom, tag);
+}
+
+void container_set_floating_geom(struct container *con, struct wlr_box geom)
+{
+    struct wlr_box content_geom = container_box_to_content_geometry(con, geom);
+    container_set_floating_content_geom(con, content_geom);
+}
+
+void container_set_floating_content_geom_at_tag(struct container *con,
+        struct wlr_box geom, struct tag *tag)
+{
+    struct container_property *property =
+        container_get_property_at_tag(con, tag);
+
+    if (!property)
+        return;
+
+    struct wlr_box *con_geom = &property->floating_geom;
+    if (con->client->type == LAYER_SHELL) {
+        con_geom = &con->global_geom;
+    }
+
+    con->prev_geom = *con_geom;
+    *con_geom = geom;
+    container_update_size(con);
+}
+
+void container_set_current_content_geom(struct container *con, struct wlr_box geom)
+{
+    struct tag *tag = container_get_current_tag(con);
+    struct layout *lt = tag_get_layout(tag);
+    if (container_is_tiled(con) || lt->options->arrange_by_focus) {
+        container_set_tiled_content_geom(con, geom);
+    } else {
+        container_set_floating_content_geom(con, geom);
+    }
+}
+
+void container_set_tiled_content_geom(struct container *con, struct wlr_box geom)
+{
+    struct wlr_box con_geom = container_get_tiled_content_geom(con);
 
     if (con->client->type == LAYER_SHELL) {
         con_geom = con->global_geom;
@@ -828,29 +872,10 @@ void container_set_tiled_geom(struct container *con, struct wlr_box geom)
     property->geom = geom;
 }
 
-void container_set_floating_geom_at_tag(struct container *con,
-        struct wlr_box geom, struct tag *tag)
-{
-    struct container_property *property =
-        container_get_property_at_tag(con, tag);
-
-    if (!property)
-        return;
-
-    struct wlr_box *con_geom = &property->floating_geom;
-    if (con->client->type == LAYER_SHELL) {
-        con_geom = &con->global_geom;
-    }
-
-    con->prev_geom = *con_geom;
-    *con_geom = geom;
-    container_update_size(con);
-}
-
-void container_set_floating_geom(struct container *con, struct wlr_box geom)
+void container_set_floating_content_geom(struct container *con, struct wlr_box geom)
 {
     struct tag *tag = container_get_current_tag(con);
-    container_set_floating_geom_at_tag(con, geom, tag);
+    container_set_floating_content_geom_at_tag(con, geom, tag);
 }
 
 struct direction_value direction_value_uniform(int value)
