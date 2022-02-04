@@ -49,8 +49,6 @@ struct container {
     bool on_top;
 
     struct direction_value border_width;
-    struct direction_value padding;
-    struct direction_value margin;
     enum wlr_edges hidden_edges;
 
     // height = ratio * width

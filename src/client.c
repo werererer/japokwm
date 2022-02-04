@@ -164,6 +164,7 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
         case X11_MANAGED:
         case X11_UNMANAGED:
             wlr_xwayland_surface_activate(c->surface.xwayland, true);
+            wlr_xwayland_surface_restack(c->surface.xwayland, NULL, XCB_STACK_MODE_ABOVE);
             break;
         default:
             break;
