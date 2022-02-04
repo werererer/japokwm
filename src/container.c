@@ -193,7 +193,6 @@ void container_damage_borders_at_monitor(struct container *con, struct monitor *
         container_get_current_border_geom(con, WLR_EDGE_BOTTOM),
     };
 
-    pthread_mutex_lock(&lock_rendering_action);
     for (int i = 0; i < 4; i++) {
         struct wlr_box border = borders[i];
         double ox = border.x;
@@ -208,7 +207,6 @@ void container_damage_borders_at_monitor(struct container *con, struct monitor *
         scale_box(&obox, m->wlr_output->scale);
         wlr_output_damage_add_box(m->damage, &obox);
     }
-    pthread_mutex_unlock(&lock_rendering_action);
 }
 
 void container_damage_borders(struct container *con)

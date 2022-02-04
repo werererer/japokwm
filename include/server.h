@@ -132,7 +132,6 @@ struct function_data {
 };
 
 extern struct server server;
-extern pthread_mutex_t lock_rendering_action;
 
 void init_server();
 void finalize_server();
