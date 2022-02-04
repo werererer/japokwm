@@ -284,8 +284,18 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
     const struct color color = (con == sel) ? lt->options->focus_color : lt->options->border_color;
     for (int i = 0; i < 4; i++) {
         if ((hidden_edges & (1 << i)) == 0) {
-            scale_box(&borders[i], m->wlr_output->scale);
-            render_rect(m, output_damage, &borders[i], color);
+            struct wlr_box border = borders[i];
+            double ox = border.x;
+            double oy = border.y;
+            wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
+            struct wlr_box obox = {
+                .x = ox,
+                .y = oy,
+                .width = border.width,
+                .height = border.height,
+            };
+            scale_box(&obox, m->wlr_output->scale);
+            render_rect(m, output_damage, &obox, color);
         }
     }
 }
@@ -293,6 +303,7 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
 void output_surface_for_each_surface(struct monitor *m,
         struct wlr_surface *surface, struct wlr_box obox,
         surface_iterator_func_t iterator, void *user_data) {
+
     struct surface_iterator_data data = {
         .user_iterator = iterator,
         .user_data = user_data,

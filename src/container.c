@@ -195,8 +195,18 @@ void container_damage_borders_at_monitor(struct container *con, struct monitor *
 
     pthread_mutex_lock(&lock_rendering_action);
     for (int i = 0; i < 4; i++) {
-        scale_box(&borders[i], m->wlr_output->scale);
-        wlr_output_damage_add_box(m->damage, &borders[i]);
+        struct wlr_box border = borders[i];
+        double ox = border.x;
+        double oy = border.y;
+        wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
+        struct wlr_box obox = {
+            .x = ox,
+            .y = oy,
+            .width = border.width,
+            .height = border.height,
+        };
+        scale_box(&obox, m->wlr_output->scale);
+        wlr_output_damage_add_box(m->damage, &obox);
     }
     pthread_mutex_unlock(&lock_rendering_action);
 }

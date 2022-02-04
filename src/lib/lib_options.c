@@ -197,6 +197,7 @@ int lib_set_outer_gaps(lua_State *L)
     struct options *options = check_options(L, 1);
     lua_pop(L, 1);
 
+    printf("set outer gaps\n");
     options->outer_gap = outer_gap;
     return 0;
 }
