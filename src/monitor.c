@@ -37,13 +37,13 @@ void create_monitor(struct wl_listener *listener, void *data)
      * monitor) becomes available. */
     struct wlr_output *output = data;
 
+    wlr_output_init_render(output, server.allocator, server.renderer);
+
     /* The mode is a tuple of (width, height, refresh rate), and each
      * monitor supports only a specific set of modes. We just pick the
      * monitor's preferred mode; a more sophisticated compositor would let
      * the user configure it. */
     wlr_output_set_mode(output, wlr_output_preferred_mode(output));
-
-    wlr_output_init_render(output, server.allocator, server.renderer);
 
     /* Allocates and configures monitor state using configured rules */
     struct monitor *m = output->data = calloc(1, sizeof(*m));
