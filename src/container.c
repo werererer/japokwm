@@ -837,6 +837,12 @@ void container_set_tiled_geom(struct container *con, struct wlr_box geom)
     }
 
     con->prev_geom = con_geom;
+
+    if (con->client->type == LAYER_SHELL) {
+        con->global_geom = geom;
+        return;
+    }
+
     struct container_property *property = container_get_property(con);
     if (!property)
         return;
@@ -1008,7 +1014,6 @@ struct wlr_box container_get_current_content_geom(struct container *con)
 {
     struct wlr_box box_geom = container_get_current_geom(con);
     struct wlr_box geom = container_box_to_content_geometry(con, box_geom);
-    printf("con: %p x: %i\n", con, geom.x);
     return geom;
 }
 

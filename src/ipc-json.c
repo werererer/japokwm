@@ -369,8 +369,6 @@ json_object *ipc_json_describe_monitor(struct monitor *m)
 
 json_object *ipc_json_describe_container(struct container *con)
 {
-    if (!con)
-        return NULL;
     struct wlr_box geom = container_get_current_geom(con);
     json_object *object = ipc_json_create_node(
             5, con ? con->client->title : NULL, true, NULL,

@@ -262,16 +262,6 @@ void arrange_containers(
      * inner_gap. */
     container_surround_gaps(&root_geom, -actual_inner_gap);
 
-    if (lt->options->smart_hidden_edges) {
-        if (tiled_containers->len <= 1) {
-            // container_add_gaps(&root_geom, -lt->options->tile_border_px,
-            //         lt->options->hidden_edges);
-        }
-    } else {
-        // container_add_gaps(&root_geom, -lt->options->tile_border_px,
-        //         lt->options->hidden_edges);
-    }
-
     // debug_print("tiled containers len: %i\n", tiled_containers->len);
     for (int i = 0; i < tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(tiled_containers, i);

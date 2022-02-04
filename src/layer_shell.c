@@ -276,6 +276,11 @@ void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_ar
         }
         // TODO: is that correct?
         container_set_current_geom(con, box);
+        struct wlr_box current_geom = container_get_current_geom(con);
+        printf("con.geom.x: %i\n", current_geom.x);
+        printf("con.geom.y: %i\n", current_geom.y);
+        printf("con.geom.width: %i\n", current_geom.width);
+        printf("con.geom.height: %i\n", current_geom.height);
 
         if (state->exclusive_zone > 0)
             apply_exclusive(usable_area, state->anchor, state->exclusive_zone,

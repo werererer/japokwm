@@ -18,7 +18,6 @@
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "utils/gapUtils.h"
-#include "layer_shell.h"
 #include "tag.h"
 #include "tagset.h"
 
