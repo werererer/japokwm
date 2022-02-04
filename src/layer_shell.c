@@ -156,6 +156,7 @@ GPtrArray *get_layer_list(struct monitor *m, enum zwlr_layer_shell_v1_layer laye
 
 void arrange_layers(struct monitor *m)
 {
+    printf("arrange layers\n");
     if (!m)
         return;
 

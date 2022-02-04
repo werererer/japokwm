@@ -187,6 +187,7 @@ static void handle_output_mode(struct wl_listener *listener, void *data)
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
     arrange_monitor(m);
     arrange_layers(m);
+    arrange();
 }
 
 static void monitor_get_initial_tag(struct monitor *m, GList *tags)
