@@ -180,7 +180,7 @@ static void init_event_handlers(struct server *server)
 
 static void finalize_event_handlers(struct server *server)
 {
-    // TODO: write that one
+    destroy_event_handler(server->event_handler);
 }
 
 void init_server()
@@ -241,6 +241,7 @@ void finalize_server()
     g_ptr_array_unref(server.named_key_combos);
 
     finalize_lists(&server);
+    finalize_event_handlers(&server);
 
     bitset_destroy(server.previous_bitset);
 
@@ -260,8 +261,6 @@ void finalize_server()
     g_ptr_array_unref(server.layout_paths);
 
     g_ptr_array_unref(server.container_stack);
-
-    destroy_event_handler(server.event_handler);
 }
 
 void server_terminate(struct server *server)
@@ -388,7 +387,7 @@ static void _async_handler_function(struct uv_async_s *arg)
     free(data);
 }
 
-int setup(struct server *server)
+int setup_server(struct server *server)
 {
     server->uv_loop = uv_default_loop();
 
@@ -465,7 +464,7 @@ int setup(struct server *server)
 
 int start_server(char *startup_cmd)
 {
-    if (setup(&server)) {
+    if (setup_server(&server)) {
         printf("failed to setup japokwm\n");
         return EXIT_FAILURE;
     }
