@@ -857,6 +857,7 @@ void container_set_floating_geom_at_tag(struct container *con,
 
     if (!property)
         return;
+    printf("set floating geom at tag\n");
 
     struct wlr_box *con_geom = &property->floating_geom;
     if (con->client->type == LAYER_SHELL) {
@@ -1334,6 +1335,8 @@ bool container_is_bar(struct container *con)
 
 struct tag *container_get_tag(struct container *con)
 {
+    if (!con)
+        return NULL;
     struct tag *tag = get_tag(con->tag_id);
     return tag;
 }

@@ -212,6 +212,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 lift_container(con);
                 container_set_floating(con, NULL, true);
                 container_set_floating_geom(con, prefered_geom);
+                container_update_size(con);
                 break;
             }
         default:
