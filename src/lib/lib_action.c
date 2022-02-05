@@ -99,7 +99,7 @@ static void *_call(void *arg)
 {
     struct function_data *data = arg;
 
-    char path[1024] ;
+    char path[1024];
     const char *cmd = data->cmd;
     FILE *fp = popen(cmd, "r");
     if (fp == NULL) {
