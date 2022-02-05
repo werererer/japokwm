@@ -187,6 +187,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 if (x11_wants_floating(con->client)) {
                     container_set_floating(con, container_fix_position, true);
                     container_set_floating_geom(con, prefered_geom);
+                    container_update_size(con);
                 }
                 break;
             }
