@@ -1144,6 +1144,10 @@ struct direction_value container_get_border_width(struct container *con)
     struct container_property *property = container_get_property(con);
     if (!property)
         return direction_value_uniform(0);
+    struct tag *tag = server_get_selected_tag();
+    struct layout *lt = tag_get_layout(tag);
+    if (lt && lt->options->arrange_by_focus)
+        return direction_value_uniform(0);
     return property->border_width;
 }
 
