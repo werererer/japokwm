@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     setbuf(stdout, NULL);
 #endif
 
-	/* If nobody is reading the status output, don't terminate */
+    /* If nobody is reading the status output, don't terminate */
     struct sigaction sigint_action = {.sa_handler = SIG_IGN};
     sigaction(SIGPIPE, &sigint_action, NULL);
 
