@@ -71,7 +71,7 @@ void unmap_layer_surface_notify(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, unmap);
     unmap_layer_surface(c);
     container_damage_whole(c->con);
-
+    arrange_layers(c->m);
 }
 
 void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
