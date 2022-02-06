@@ -14,6 +14,7 @@
 #include "bitset/bitset.h"
 #include "lib/lib_bitset.h"
 #include "lib/lib_container_property_list.h"
+#include "server.h"
 
 static const struct luaL_Reg container_meta[] =
 {

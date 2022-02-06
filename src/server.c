@@ -74,6 +74,17 @@ static struct tag *handle_too_few_tags(uint32_t tag_id)
     wlr_list_cat(new_tag->focus_set->focus_stack_on_top, tag->focus_set->focus_stack_on_top);
     wlr_list_cat(new_tag->focus_set->focus_stack_normal, tag->focus_set->focus_stack_normal);
     wlr_list_cat(new_tag->focus_set->focus_stack_not_focusable, tag->focus_set->focus_stack_not_focusable);
+
+    wlr_list_cat(new_tag->visible_con_set->tiled_containers, tag->visible_con_set->tiled_containers);
+
+    wlr_list_cat(new_tag->visible_focus_set->focus_stack_layer_background, tag->visible_focus_set->focus_stack_layer_background);
+    wlr_list_cat(new_tag->visible_focus_set->focus_stack_layer_bottom, tag->visible_focus_set->focus_stack_layer_bottom);
+    wlr_list_cat(new_tag->visible_focus_set->focus_stack_layer_top, tag->visible_focus_set->focus_stack_layer_top);
+    wlr_list_cat(new_tag->visible_focus_set->focus_stack_layer_overlay, tag->visible_focus_set->focus_stack_layer_overlay);
+    wlr_list_cat(new_tag->visible_focus_set->focus_stack_on_top, tag->visible_focus_set->focus_stack_on_top);
+    wlr_list_cat(new_tag->visible_focus_set->focus_stack_normal, tag->visible_focus_set->focus_stack_normal);
+    wlr_list_cat(new_tag->visible_focus_set->focus_stack_not_focusable, tag->visible_focus_set->focus_stack_not_focusable);
+
     return new_tag;
 }
 

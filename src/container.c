@@ -1325,10 +1325,30 @@ void move_container_to_tag(struct container *con, struct tag *tag)
     con->client->moved_tag = true;
     container_damage_whole(con);
 
+    struct tag *old_tag = container_get_current_tag(con);
+
+    printf("old tag new con: %p\n", tag_get_focused_container(tag));
+    printf("tag new con: %p\n", tag_get_focused_container(tag));
+
     arrange();
-    tag_this_focus_most_recent_container();
+    tagset_reload(tag);
+
+    update_reduced_focus_stack(old_tag);
+    update_reduced_focus_stack(tag);
+    tag_focus_most_recent_container(old_tag);
+    tag_focus_most_recent_container(tag);
+
+    tagset_reload(old_tag);
+    tagset_reload(tag);
+    tag_focus_most_recent_container(old_tag);
+    tag_focus_most_recent_container(tag);
 
     tag_update_names(server_get_tags());
+    tag_focus_most_recent_container(old_tag);
+    tag_focus_most_recent_container(tag);
+    tagset_reload(old_tag);
+    tagset_reload(tag);
+
     ipc_event_tag();
 }
 

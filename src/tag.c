@@ -113,6 +113,8 @@ void tag_focus_first_container(struct tag *tag)
     struct container *con = g_ptr_array_index(tag->visible_con_set->tiled_containers, 0);
     if (!con)
         return;
+
+    tag_focus_container(tag, con);
 }
 
 void tag_this_focus_most_recent_container()
@@ -129,6 +131,7 @@ void tag_focus_most_recent_container(struct tag *tag)
     struct container *con = tag_get_focused_container(tag);
     if (!con) {
         tag_focus_first_container(tag);
+        return;
     }
 
     tag_focus_container(tag, con);
@@ -647,9 +650,6 @@ void tag_focus_container(struct tag *tag, struct container *con)
         return;
 
     struct monitor *m = tag_get_monitor(tag);
-    if (!container_viewable_on_monitor(m, con))
-        return;
-
     struct container *sel = monitor_get_focused_container(m);
 
     /* Put the new client atop the focus stack */
@@ -685,10 +685,14 @@ void tag_update_name(struct tag *tag)
     int tag_id = tag->id;
 
     const char *default_name;
+    // no number has more than 11 digits when int is 32 bit long
+    char number_tmp[12];
     if (tag_id < lt->options->tag_names->len) {
         default_name = g_ptr_array_index(lt->options->tag_names, tag_id);
     } else {
-        default_name = tag->name;
+        // TODO explain why +1
+        snprintf(number_tmp, 12, "%d:%d", tag_id, c_idx_to_lua_idx(tag_id));
+        default_name = number_tmp;
     }
     struct container *con = tag_get_local_focused_container(tag);
 
