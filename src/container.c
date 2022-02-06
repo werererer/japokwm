@@ -1297,6 +1297,11 @@ void container_set_tag_id(struct container *con, int tag_id)
     bitset_reset_all(con->client->sticky_tags);
     bitset_set(con->client->sticky_tags, con->tag_id);
 
+    struct tag *tag = get_tag(tag_id);
+    if (!tag_get_monitor(tag)) {
+        tag_set_current_monitor(tag, server_get_selected_monitor());
+    }
+
     tagset_reload(prev_tag);
 }
 
