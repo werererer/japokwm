@@ -148,7 +148,6 @@ int i = 0;
 static void handle_output_frame(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, damage_frame);
-    // debug_print("frame: %i\n", i++);
 
     /* NOOP */
 }
@@ -185,7 +184,6 @@ static void handle_output_mode(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, mode);
     m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
-    arrange_monitor(m);
     arrange_layers(m);
 }
 
@@ -489,8 +487,8 @@ void handle_output_mgr_apply_test(
         struct wlr_output *wlr_output = config_head->state.output;
 
         wlr_output_enable(wlr_output, config_head->state.enabled);
-       prepare_output(config_head, wlr_output);
-       output_ok = output_test(wlr_output, output_ok, test);
+        prepare_output(config_head, wlr_output);
+        output_ok = output_test(wlr_output, output_ok, test);
     }
     check_succeed(config, output_ok, test);
     wlr_output_configuration_v1_destroy(config);
@@ -499,7 +497,7 @@ void handle_output_mgr_apply_test(
 void handle_output_mgr_test(struct wl_listener *listener, void *data)
 {
     struct wlr_output_configuration_v1 *config = data;
-  handle_output_mgr_apply_test(config, true);
+    handle_output_mgr_apply_test(config, true);
 }
 
 static void prepare_output(
