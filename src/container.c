@@ -1386,16 +1386,11 @@ bool container_is_floating(struct container *con)
     return container_property_is_floating(property);
 }
 
-bool container_is_floating_and_visible(struct container *con)
+bool container_is_viewable_on_own_monitor(struct container *con)
 {
-    bool is_floating = container_is_floating(con);
-    if (!is_floating)
-        return false;
     struct monitor *m = server_get_selected_monitor();
-    bool intersects = container_intersects_with_monitor(con, m);
-    if (!intersects)
-        return false;
-    return true;
+    bool viewable = container_viewable_on_monitor(m, con);
+    return viewable;
 }
 
 bool container_is_floating_on_tag(struct container *con, struct tag *tag)

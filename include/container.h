@@ -172,7 +172,7 @@ bool container_is_bar(struct container *con);
 // this function may return NULL when a container is hidden
 struct tag *container_get_tag(struct container *con);
 bool container_is_floating(struct container *con);
-bool container_is_floating_and_visible(struct container *con);
+bool container_is_viewable_on_own_monitor(struct container *con);
 bool container_is_floating_on_tag(struct container *con, struct tag *tag);
 bool container_is_tiled(struct container *con);
 bool container_is_tiled_and_visible(struct container *con);

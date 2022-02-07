@@ -407,12 +407,10 @@ GPtrArray *tagset_get_global_floating_copy(struct tag *tag)
     struct layout *lt = tag_get_layout(tag);
 
     GPtrArray *conditions = g_ptr_array_new();
-    g_ptr_array_add(conditions, container_is_tiled_and_visible);
-    g_ptr_array_add(conditions, container_is_floating_and_visible);
+    g_ptr_array_add(conditions, container_is_viewable_on_own_monitor);
 
     GPtrArray *visible_global_floating_list_copy = NULL;
     if (lt->options->arrange_by_focus) {
-        // TODO: FIXME
         visible_global_floating_list_copy =
             list_create_filtered_sub_list_with_order(
                 tag->focus_set->focus_stack_normal,
