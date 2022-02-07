@@ -52,26 +52,27 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
 void map_layer_surface_notify(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, map);
-    /* wlr_surface_send_enter(get_wlrsurface(c), c->surface.layer->output); */
-    /* motion_notify(0); */
-    debug_print("length of layer stack: %i\n", server.layer_visual_stack_bottom->len);
+    arrange_layers(c->m);
 }
 
 void unmap_layer_surface(struct client *c)
 {
-    /* struct container *sel_container = get_focused_container(selected_monitor); */
-    /* c->surface.layer->mapped = 0; */
-    /* if (get_wlrsurface(c) == server.seat->keyboard_state.focused_surface) */
-    /*     focus_container(sel_container, FOCUS_NOOP); */
-    /* motion_notify(0); */
+    struct container *con = c->con;
+    struct tag *tag = server_get_selected_tag();
+    struct container *sel_con = tag_get_focused_container(tag);
+    c->surface.layer->mapped = 0;
+    if (con == sel_con) {
+        tag_this_focus_container(sel_con);
+    }
+    arrange_layers(c->m);
 }
 
 void unmap_layer_surface_notify(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, unmap);
     unmap_layer_surface(c);
-    container_damage_whole(c->con);
     arrange_layers(c->m);
+    container_damage_whole(c->con);
 }
 
 void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
@@ -112,7 +113,6 @@ void commit_layer_surface_notify(struct wl_listener *listener, void *data)
     struct monitor *m = wlr_output->data;
     struct container *con = c->con;
     container_damage_part(con);
-    arrange_layers(m);
 
     if (c->surface.layer->current.layer != wlr_layer_surface->current.layer) {
         remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
@@ -204,19 +204,6 @@ void arrange_layers(struct monitor *m)
     }
 }
 
-static bool wlr_box_is_equal(struct wlr_box box1, struct wlr_box box2)
-{
-    if (box1.x != box2.x)
-        return false;
-    if (box1.y != box2.y)
-        return false;
-    if (box1.width != box2.width)
-        return false;
-    if (box1.height != box2.height)
-        return false;
-    return true;
-}
-
 void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_area, bool exclusive)
 {
     struct wlr_box full_area = m->geom;
@@ -288,17 +275,14 @@ void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_ar
             wlr_layer_surface_v1_destroy(wlr_layer_surface);
             continue;
         }
-
-        struct wlr_box prev_geom = container_get_current_geom(con);
+        // TODO: is that correct?
         container_set_current_geom(con, box);
+
         if (state->exclusive_zone > 0)
             apply_exclusive(usable_area, state->anchor, state->exclusive_zone,
                     state->margin.top, state->margin.right,
                     state->margin.bottom, state->margin.left);
-
-        if (!wlr_box_is_equal(prev_geom, container_get_current_geom(con))) {
-            wlr_layer_surface_v1_configure(wlr_layer_surface, box.width, box.height);
-        }
+        wlr_layer_surface_v1_configure(wlr_layer_surface, box.width, box.height);
     }
 }
 
