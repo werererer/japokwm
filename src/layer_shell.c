@@ -52,7 +52,10 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
 void map_layer_surface_notify(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, map);
-    arrange_layers(c->m);
+    struct container *con = c->con;
+    struct monitor *m = container_get_monitor(con);
+    arrange_layers(m);
+    printf("map\n");
 }
 
 void unmap_layer_surface(struct client *c)
@@ -64,7 +67,8 @@ void unmap_layer_surface(struct client *c)
     if (con == sel_con) {
         tag_this_focus_container(sel_con);
     }
-    arrange_layers(c->m);
+    struct monitor *m = container_get_monitor(con);
+    arrange_layers(m);
 }
 
 void unmap_layer_surface_notify(struct wl_listener *listener, void *data)
@@ -109,6 +113,8 @@ void commit_layer_surface_notify(struct wl_listener *listener, void *data)
 
     if (!wlr_output)
         return;
+
+    arrange_layers(c->m);
 
     struct monitor *m = wlr_output->data;
     struct container *con = c->con;
@@ -204,85 +210,171 @@ void arrange_layers(struct monitor *m)
     }
 }
 
+void layer_shell_arrange_exclusive_container(
+        struct monitor *m,
+        struct container *con,
+        bool exclusive,
+        struct wlr_box *usable_area,
+        struct wlr_box full_area)
+{
+    if (!tagset_visible_on(m, con))
+        return;
+
+    struct wlr_layer_surface_v1 *wlr_layer_surface = con->client->surface.layer;
+    struct wlr_layer_surface_v1_state *state = &wlr_layer_surface->current;
+    bool is_exclusive = (state->exclusive_zone > 0);
+    if (exclusive != is_exclusive)
+        return;
+
+    const uint32_t both_horiz = ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT
+        | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
+    const uint32_t both_vert = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP
+        | ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
+    struct wlr_box bounds = state->exclusive_zone == -1 ? full_area : *usable_area;
+    struct wlr_box box = {
+        .width = state->desired_width,
+        .height = state->desired_height
+    };
+
+    // Horizontal axis
+    if ((state->anchor & both_horiz) && box.width == 0) {
+        box.x = bounds.x;
+        box.width = bounds.width;
+    } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT)) {
+        box.x = bounds.x;
+    } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT)) {
+        box.x = bounds.x + (bounds.width - box.width);
+    } else {
+        box.x = bounds.x + ((bounds.width / 2) - (box.width / 2));
+    }
+    // Vertical axis
+    if ((state->anchor & both_vert) && box.height == 0) {
+        box.y = bounds.y;
+        box.height = bounds.height;
+    } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP)) {
+        box.y = bounds.y;
+    } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM)) {
+        box.y = bounds.y + (bounds.height - box.height);
+    } else {
+        box.y = bounds.y + ((bounds.height / 2) - (box.height / 2));
+    }
+    // Margin
+    if ((state->anchor & both_horiz) == both_horiz) {
+        box.x += state->margin.left;
+        box.width -= state->margin.left + state->margin.right;
+    } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT)) {
+        box.x += state->margin.left;
+    } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT)) {
+        box.x -= state->margin.right;
+    }
+    if ((state->anchor & both_vert) == both_vert) {
+        box.y += state->margin.top;
+        box.height -= state->margin.top + state->margin.bottom;
+    } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP)) {
+        box.y += state->margin.top;
+    } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM)) {
+        box.y -= state->margin.bottom;
+    }
+    if (box.width < 0 || box.height < 0) {
+        wlr_layer_surface_v1_destroy(wlr_layer_surface);
+        return;
+    }
+    // TODO: is that correct?
+    container_set_current_geom(con, box);
+
+    if (state->exclusive_zone > 0)
+        apply_exclusive(usable_area, state->anchor, state->exclusive_zone,
+                state->margin.top, state->margin.right,
+                state->margin.bottom, state->margin.left);
+    wlr_layer_surface_v1_configure(wlr_layer_surface, box.width, box.height);
+}
+
+void layer_shell_arrange_container(
+        struct monitor *m,
+        struct container *con,
+        bool exclusive,
+        struct wlr_box *usable_area,
+        struct wlr_box full_area)
+{
+    if (!tagset_visible_on(m, con))
+        return;
+
+    struct wlr_layer_surface_v1 *wlr_layer_surface = con->client->surface.layer;
+    struct wlr_layer_surface_v1_state *state = &wlr_layer_surface->current;
+    bool is_exclusive = (state->exclusive_zone > 0);
+    if (exclusive != is_exclusive)
+        return;
+
+    const uint32_t both_horiz = ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT
+        | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
+    const uint32_t both_vert = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP
+        | ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
+    struct wlr_box bounds = state->exclusive_zone == -1 ? full_area : *usable_area;
+    struct wlr_box box = {
+        .width = state->desired_width,
+        .height = state->desired_height
+    };
+
+    // Horizontal axis
+    if ((state->anchor & both_horiz) && box.width == 0) {
+        box.x = bounds.x;
+        box.width = bounds.width;
+    } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT)) {
+        box.x = bounds.x;
+    } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT)) {
+        box.x = bounds.x + (bounds.width - box.width);
+    } else {
+        box.x = bounds.x + ((bounds.width / 2) - (box.width / 2));
+    }
+    // Vertical axis
+    if ((state->anchor & both_vert) && box.height == 0) {
+        box.y = bounds.y;
+        box.height = bounds.height;
+    } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP)) {
+        box.y = bounds.y;
+    } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM)) {
+        box.y = bounds.y + (bounds.height - box.height);
+    } else {
+        box.y = bounds.y + ((bounds.height / 2) - (box.height / 2));
+    }
+    // Margin
+    if ((state->anchor & both_horiz) == both_horiz) {
+        box.x += state->margin.left;
+        box.width -= state->margin.left + state->margin.right;
+    } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT)) {
+        box.x += state->margin.left;
+    } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT)) {
+        box.x -= state->margin.right;
+    }
+    if ((state->anchor & both_vert) == both_vert) {
+        box.y += state->margin.top;
+        box.height -= state->margin.top + state->margin.bottom;
+    } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP)) {
+        box.y += state->margin.top;
+    } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM)) {
+        box.y -= state->margin.bottom;
+    }
+    if (box.width < 0 || box.height < 0) {
+        wlr_layer_surface_v1_destroy(wlr_layer_surface);
+        return;
+    }
+    // TODO: is that correct?
+    container_set_current_geom(con, box);
+
+    if (state->exclusive_zone > 0)
+        apply_exclusive(usable_area, state->anchor, state->exclusive_zone,
+                state->margin.top, state->margin.right,
+                state->margin.bottom, state->margin.left);
+    wlr_layer_surface_v1_configure(wlr_layer_surface, box.width, box.height);
+}
+
 void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_area, bool exclusive)
 {
     struct wlr_box full_area = m->geom;
 
     for (int i = 0; i < array->len; i++) {
         struct container *con = g_ptr_array_index(array, i);
-
-        if (!tagset_visible_on(m, con))
-            continue;
-
-        struct wlr_layer_surface_v1 *wlr_layer_surface = con->client->surface.layer;
-        struct wlr_layer_surface_v1_state *state = &wlr_layer_surface->current;
-        struct wlr_box bounds;
-        struct wlr_box box = {
-            .width = state->desired_width,
-            .height = state->desired_height
-        };
-        const uint32_t both_horiz = ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT
-            | ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT;
-        const uint32_t both_vert = ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP
-            | ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM;
-
-        bool is_exclusive = (state->exclusive_zone > 0);
-        if (exclusive != is_exclusive)
-            continue;
-
-        bounds = state->exclusive_zone == -1 ? full_area : *usable_area;
-
-        // Horizontal axis
-        if ((state->anchor & both_horiz) && box.width == 0) {
-            box.x = bounds.x;
-            box.width = bounds.width;
-        } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT)) {
-            box.x = bounds.x;
-        } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT)) {
-            box.x = bounds.x + (bounds.width - box.width);
-        } else {
-            box.x = bounds.x + ((bounds.width / 2) - (box.width / 2));
-        }
-        // Vertical axis
-        if ((state->anchor & both_vert) && box.height == 0) {
-            box.y = bounds.y;
-            box.height = bounds.height;
-        } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP)) {
-            box.y = bounds.y;
-        } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM)) {
-            box.y = bounds.y + (bounds.height - box.height);
-        } else {
-            box.y = bounds.y + ((bounds.height / 2) - (box.height / 2));
-        }
-        // Margin
-        if ((state->anchor & both_horiz) == both_horiz) {
-            box.x += state->margin.left;
-            box.width -= state->margin.left + state->margin.right;
-        } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT)) {
-            box.x += state->margin.left;
-        } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT)) {
-            box.x -= state->margin.right;
-        }
-        if ((state->anchor & both_vert) == both_vert) {
-            box.y += state->margin.top;
-            box.height -= state->margin.top + state->margin.bottom;
-        } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP)) {
-            box.y += state->margin.top;
-        } else if ((state->anchor & ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM)) {
-            box.y -= state->margin.bottom;
-        }
-        if (box.width < 0 || box.height < 0) {
-            wlr_layer_surface_v1_destroy(wlr_layer_surface);
-            continue;
-        }
-        // TODO: is that correct?
-        container_set_current_geom(con, box);
-
-        if (state->exclusive_zone > 0)
-            apply_exclusive(usable_area, state->anchor, state->exclusive_zone,
-                    state->margin.top, state->margin.right,
-                    state->margin.bottom, state->margin.left);
-        wlr_layer_surface_v1_configure(wlr_layer_surface, box.width, box.height);
+        layer_shell_arrange_container(m, con, exclusive, usable_area, full_area);
     }
 }
 

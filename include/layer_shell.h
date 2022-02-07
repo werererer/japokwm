@@ -21,6 +21,12 @@ void commit_layer_surface_notify(struct wl_listener *listener, void *data);
 void create_notify_layer_shell(struct wl_listener *listener, void *data);
 void arrange_layers(struct monitor *m);
 void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_area, bool exclusive);
+void layer_shell_arrange_container(
+        struct monitor *m,
+        struct container *con,
+        bool exclusive,
+        struct wlr_box *usable_area,
+        struct wlr_box full_area);
 void apply_exclusive(struct wlr_box *usable_area,
         uint32_t anchor, int32_t exclusive,
         int32_t margin_top, int32_t margin_right,
