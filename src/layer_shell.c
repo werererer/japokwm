@@ -114,7 +114,10 @@ void commit_layer_surface_notify(struct wl_listener *listener, void *data)
     if (!wlr_output)
         return;
 
-    arrange_layers(c->m);
+    struct wlr_layer_surface_v1 *layer_surface = c->surface.layer;
+    if (layer_surface->current.committed != 0) {
+        arrange_layers(c->m);
+    }
 
     struct monitor *m = wlr_output->data;
     struct container *con = c->con;
