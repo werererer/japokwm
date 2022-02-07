@@ -112,6 +112,7 @@ void commit_layer_surface_notify(struct wl_listener *listener, void *data)
     struct monitor *m = wlr_output->data;
     struct container *con = c->con;
     container_damage_part(con);
+    arrange_layers(m);
 
     if (c->surface.layer->current.layer != wlr_layer_surface->current.layer) {
         remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
@@ -160,10 +161,6 @@ void arrange_layers(struct monitor *m)
         return;
 
     struct wlr_box usable_area = m->geom;
-    uint32_t layers_above_shell[] = {
-        ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
-        ZWLR_LAYER_SHELL_V1_LAYER_TOP,
-    };
 
     // Arrange exclusive surfaces from top->bottom
     arrangelayer(m, server.layer_visual_stack_overlay, &usable_area, true);
@@ -182,6 +179,10 @@ void arrange_layers(struct monitor *m)
 
     struct seat *seat = input_manager_get_default_seat();
     struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat->wlr_seat);
+    uint32_t layers_above_shell[] = {
+        ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
+        ZWLR_LAYER_SHELL_V1_LAYER_TOP,
+    };
     // Find topmost keyboard interactive layer, if such a layer exists
     for (size_t i = 0; i < LENGTH(layers_above_shell); i++) {
         GPtrArray *layer_list = get_layer_list(m, layers_above_shell[i]);
@@ -192,7 +193,7 @@ void arrange_layers(struct monitor *m)
             if (layer_surface->current.keyboard_interactive && layer_surface->mapped) {
                 // Deactivate the focused client.
                 // TODO fix this NULL is not supported in focus_container
-                tag_this_focus_container(NULL);
+                tag_this_focus_container(con);
                 wlr_seat_keyboard_notify_enter(seat->wlr_seat,
                         get_wlrsurface(c),
                         kb->keycodes, kb->num_keycodes,
@@ -201,6 +202,19 @@ void arrange_layers(struct monitor *m)
             }
         }
     }
+}
+
+static bool wlr_box_is_equal(struct wlr_box box1, struct wlr_box box2)
+{
+    if (box1.x != box2.x)
+        return false;
+    if (box1.y != box2.y)
+        return false;
+    if (box1.width != box2.width)
+        return false;
+    if (box1.height != box2.height)
+        return false;
+    return true;
 }
 
 void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_area, bool exclusive)
@@ -274,14 +288,17 @@ void arrangelayer(struct monitor *m, GPtrArray *array, struct wlr_box *usable_ar
             wlr_layer_surface_v1_destroy(wlr_layer_surface);
             continue;
         }
-        // TODO: is that correct?
-        container_set_current_geom(con, box);
 
+        struct wlr_box prev_geom = container_get_current_geom(con);
+        container_set_current_geom(con, box);
         if (state->exclusive_zone > 0)
             apply_exclusive(usable_area, state->anchor, state->exclusive_zone,
                     state->margin.top, state->margin.right,
                     state->margin.bottom, state->margin.left);
-        wlr_layer_surface_v1_configure(wlr_layer_surface, box.width, box.height);
+
+        if (!wlr_box_is_equal(prev_geom, container_get_current_geom(con))) {
+            wlr_layer_surface_v1_configure(wlr_layer_surface, box.width, box.height);
+        }
     }
 }
 
