@@ -104,7 +104,6 @@ void commit_layer_surface_notify(struct wl_listener *listener, void *data)
     if (!wlr_output)
         return;
 
-    struct monitor *m = wlr_output->data;
     struct container *con = c->con;
     struct wlr_layer_surface_v1 *layer_surface = c->surface.layer;
     bool layer_changed = false;
@@ -113,7 +112,7 @@ void commit_layer_surface_notify(struct wl_listener *listener, void *data)
         layer_changed = c->layer != layer_surface->current.layer;
         if (layer_changed) {
             remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
-            g_ptr_array_insert(get_layer_list(m, wlr_layer_surface->current.layer), 0, con);
+            add_container_to_layer_stack(con);
         }
         c->mapped = layer_surface->mapped;
         printf("here\n");
@@ -138,7 +137,7 @@ bool layer_shell_is_bar(struct container *con)
     return is_exclusive && (is_anchord_on_one_edge || is_anchord_on_three_edges);
 }
 
-GPtrArray *get_layer_list(struct monitor *m, enum zwlr_layer_shell_v1_layer layer)
+GPtrArray *get_layer_list(enum zwlr_layer_shell_v1_layer layer)
 {
     GPtrArray *layer_list = NULL;
     switch (layer) {
@@ -189,7 +188,7 @@ void arrange_layers(struct monitor *m)
     };
     // Find topmost keyboard interactive layer, if such a layer exists
     for (size_t i = 0; i < LENGTH(layers_above_shell); i++) {
-        GPtrArray *layer_list = get_layer_list(m, layers_above_shell[i]);
+        GPtrArray *layer_list = get_layer_list(layers_above_shell[i]);
         for (int j = layer_list->len-1; j >= 0; j--) {
             struct container *con = g_ptr_array_index(layer_list, j);
             struct client *c = con->client;

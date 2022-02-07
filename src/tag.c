@@ -21,6 +21,7 @@
 #include "tagset.h"
 #include "root.h"
 #include "translationLayer.h"
+#include "layer_shell.h"
 
 static void update_tags_id(GPtrArray *tags)
 {
@@ -868,27 +869,15 @@ void tag_remove_container_from_visual_stack_layer(struct tag *tag, struct contai
 
 void tag_add_container_to_visual_stack_layer(struct tag *tag, struct container *con)
 {
-    add_container_to_layer_stack(tag, con);
+    add_container_to_layer_stack(con);
 }
 
-void add_container_to_layer_stack(struct tag *tag, struct container *con)
+void add_container_to_layer_stack(struct container *con)
 {
     assert(con->client->type == LAYER_SHELL);
 
-    switch (con->client->surface.layer->current.layer) {
-        case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
-            g_ptr_array_insert(server.layer_visual_stack_background, 0, con);
-            break;
-        case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
-            g_ptr_array_insert(server.layer_visual_stack_bottom, 0, con);
-            break;
-        case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
-            g_ptr_array_insert(server.layer_visual_stack_top, 0, con);
-            break;
-        case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
-            g_ptr_array_insert(server.layer_visual_stack_overlay, 0, con);
-            break;
-    }
+    con->client->layer = con->client->surface.layer->current.layer;
+    g_ptr_array_insert(get_layer_list(con->client->layer), 0, con);
     return;
 }
 

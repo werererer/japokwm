@@ -34,6 +34,6 @@ void apply_exclusive(struct wlr_box *usable_area,
 
 bool layer_shell_is_bar(struct container *con);
 
-GPtrArray *get_layer_list(struct monitor *m, enum zwlr_layer_shell_v1_layer layer);
+GPtrArray *get_layer_list(enum zwlr_layer_shell_v1_layer layer);
 
 #endif /* LAYER_SHELL_H */
