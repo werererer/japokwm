@@ -81,7 +81,7 @@ void tagset_set_tags(struct tag *sel_tag, BitSet *tags)
     tag_damage(sel_tag);
     tagset_load_tags(sel_tag, sel_tag->tags);
     update_reduced_focus_stack(sel_tag);
-    arrange_layers(server_get_selected_monitor());
+    arrange();
     tag_focus_most_recent_container(sel_tag);
 
     ipc_event_tag();
@@ -319,7 +319,7 @@ void focus_tagset(struct tag *tag, BitSet *tags)
     ipc_event_tag();
 
     tagset_move_sticky_containers(tag);
-    arrange_layers(server_get_selected_monitor());
+    arrange();
     tag_focus_most_recent_container(tag);
     root_damage_whole(m->root);
 

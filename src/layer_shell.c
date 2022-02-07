@@ -45,17 +45,11 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     // so that we can easily arrange it
     struct wlr_layer_surface_v1_state old_state = wlr_layer_surface->current;
     wlr_layer_surface->current = wlr_layer_surface->pending;
-    arrange_layers(m);
     wlr_layer_surface->current = old_state;
 }
 
 void map_layer_surface_notify(struct wl_listener *listener, void *data)
 {
-    struct client *c = wl_container_of(listener, c, map);
-    struct container *con = c->con;
-    struct monitor *m = container_get_monitor(con);
-    arrange_layers(m);
-    printf("map\n");
 }
 
 void unmap_layer_surface(struct client *c)
@@ -67,15 +61,12 @@ void unmap_layer_surface(struct client *c)
     if (con == sel_con) {
         tag_this_focus_container(sel_con);
     }
-    struct monitor *m = container_get_monitor(con);
-    arrange_layers(m);
 }
 
 void unmap_layer_surface_notify(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, unmap);
     unmap_layer_surface(c);
-    arrange_layers(c->m);
     container_damage_whole(c->con);
 }
 
@@ -94,8 +85,6 @@ void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
     wl_list_remove(&c->commit.link);
 
     if (c->surface.layer->output) {
-        struct monitor *m = c->surface.layer->output->data;
-        arrange_layers(m);
         c->surface.layer->output = NULL;
     }
 
@@ -115,7 +104,9 @@ void commit_layer_surface_notify(struct wl_listener *listener, void *data)
         return;
 
     struct wlr_layer_surface_v1 *layer_surface = c->surface.layer;
-    if (layer_surface->current.committed != 0) {
+    if (layer_surface->current.committed != 0 ||
+            c->mapped != layer_surface->mapped) {
+        c->mapped = layer_surface->mapped;
         arrange_layers(c->m);
     }
 
@@ -282,13 +273,13 @@ void layer_shell_arrange_exclusive_container(
         wlr_layer_surface_v1_destroy(wlr_layer_surface);
         return;
     }
-    // TODO: is that correct?
-    container_set_current_geom(con, box);
 
-    if (state->exclusive_zone > 0)
+    container_set_current_geom(con, box);
+    if (state->exclusive_zone > 0) {
         apply_exclusive(usable_area, state->anchor, state->exclusive_zone,
                 state->margin.top, state->margin.right,
                 state->margin.bottom, state->margin.left);
+    }
     wlr_layer_surface_v1_configure(wlr_layer_surface, box.width, box.height);
 }
 
