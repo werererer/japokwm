@@ -394,7 +394,8 @@ void update_monitor_geometries()
 
     for (int i = 0; i < server.mons->len; i++) {
         struct monitor *m = g_ptr_array_index(server.mons, i);
-        struct wlr_output_configuration_head_v1 *config_head = wlr_output_configuration_head_v1_create(config, m->wlr_output);
+        struct wlr_output_configuration_head_v1 *config_head =
+            wlr_output_configuration_head_v1_create(config, m->wlr_output);
 
         arrange_layers(m);
         config_head->state.enabled = m->wlr_output->enabled;
