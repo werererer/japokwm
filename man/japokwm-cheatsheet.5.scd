@@ -219,7 +219,14 @@ mod-m
 	Tag.focused.stack[1]:focus()
 
 mod-e
-	Action.view(tag.focused:get_next_empty(Direction.right))
+	Action.view(Tag.focused:get_next_empty(Direction.right))
+
+mod-S-e
+	local con = Container.focused ++
+if not con then ++
+	return ++
+end ++
+con.tag = Tag.get_next_empty(Tag.focused, Direction.horizontal)
 
 mod-S-space
 	Layout.load(server.default_layout_ring:prev())
