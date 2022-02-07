@@ -5,6 +5,7 @@
 #include <lauxlib.h>
 
 #include "bitset/bitset.h"
+#include "tag.h"
 
 struct tag_tags;
 
@@ -16,15 +17,16 @@ void lua_load_bitset(lua_State *L);
 
 # define call_bitset_func(L, action, self, ...) \
     do {\
-        action(self, ##__VA_ARGS__);\
+        BitSet *self_copy = server_bitset_get_tmp_copy(self);\
+        action(self_copy, ##__VA_ARGS__);\
         if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_TAG)) {\
             struct tag *tag = self->data;\
-            tagset_set_tags(tag, self);\
+            tagset_set_tags(tag, self_copy);\
             continue;\
         }\
         if (luaL_testudata(L, 1, CONFIG_BITSET_WITH_CONTAINER)) {\
             struct client *c = self->data;\
-            client_setsticky(c, self);\
+            client_setsticky(c, self_copy);\
             continue;\
         }\
         \
