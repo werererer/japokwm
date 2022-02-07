@@ -96,6 +96,7 @@ void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
 
 void commit_layer_surface_notify(struct wl_listener *listener, void *data)
 {
+    printf("commit layer shell\n");
     struct client *c = wl_container_of(listener, c, commit);
     struct wlr_layer_surface_v1 *wlr_layer_surface = c->surface.layer;
     struct wlr_output *wlr_output = wlr_layer_surface->output;
@@ -103,21 +104,23 @@ void commit_layer_surface_notify(struct wl_listener *listener, void *data)
     if (!wlr_output)
         return;
 
+    struct monitor *m = wlr_output->data;
+    struct container *con = c->con;
     struct wlr_layer_surface_v1 *layer_surface = c->surface.layer;
+    bool layer_changed = false;
     if (layer_surface->current.committed != 0 ||
             c->mapped != layer_surface->mapped) {
+        layer_changed = c->layer != layer_surface->current.layer;
+        if (layer_changed) {
+            remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
+            g_ptr_array_insert(get_layer_list(m, wlr_layer_surface->current.layer), 0, con);
+        }
         c->mapped = layer_surface->mapped;
+        printf("here\n");
         arrange_layers(c->m);
     }
 
-    struct monitor *m = wlr_output->data;
-    struct container *con = c->con;
     container_damage_part(con);
-
-    if (c->surface.layer->current.layer != wlr_layer_surface->current.layer) {
-        remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
-        g_ptr_array_insert(get_layer_list(m, wlr_layer_surface->current.layer), 0, con);
-    }
 }
 
 bool layer_shell_is_bar(struct container *con)
@@ -157,6 +160,7 @@ GPtrArray *get_layer_list(struct monitor *m, enum zwlr_layer_shell_v1_layer laye
 
 void arrange_layers(struct monitor *m)
 {
+    printf("arrange layers\n");
     if (!m)
         return;
 

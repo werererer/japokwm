@@ -270,16 +270,6 @@ static bool _is_visual_visible_stack(
     return is_visible;
 }
 
-void tagset_move_sticky_containers(struct tag *tag)
-{
-    GPtrArray *list = list_create_filtered_sub_list(tag->con_set->tiled_containers, container_exists);
-    for (int i = 0; i < list->len; i++) {
-        struct container *con = g_ptr_array_index(list, i);
-        container_move_sticky_containers(con, tag->id);
-    }
-    g_ptr_array_unref(list);
-}
-
 static void restore_floating_containers(struct tag *tag)
 {
     GPtrArray *floating_list = tagset_get_floating_list_copy(tag);
@@ -318,7 +308,6 @@ void focus_tagset(struct tag *tag, BitSet *tags)
     update_reduced_focus_stack(tag);
     ipc_event_tag();
 
-    tagset_move_sticky_containers(tag);
     arrange();
     tag_focus_most_recent_container(tag);
     root_damage_whole(m->root);

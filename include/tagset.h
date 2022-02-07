@@ -51,7 +51,6 @@ void tagset_toggle_add(struct monitor *m, BitSet *bitset);
 void tagset_set_tags(struct tag *sel_tag, BitSet *tags);
 void tagset_focus_tags(struct tag *tag, struct BitSet *bitset);
 void tagset_reload(struct tag *sel_tag);
-void tagset_move_sticky_containers(struct tag *tag);
 
 void tag_write_to_focus_stacks(struct tag *tag);
 bool is_reduced_focus_stack(struct tag *tag, struct container *con);

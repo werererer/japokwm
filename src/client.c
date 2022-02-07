@@ -171,45 +171,9 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
     }
 }
 
-void container_move_sticky_containers_current_tag(struct container *con)
-{
-    struct monitor *m = server_get_selected_monitor();
-    struct tag *tag = monitor_get_active_tag(m);
-    container_move_sticky_containers(con, tag->id);
-}
-
-void container_move_sticky_containers(struct container *con, int tag_id)
-{
-    // // TODO: refactor this function
-    // struct tag *ws = get_tag(tag_id);
-    // if (!bitset_test(con->client->sticky_tags, ws->id)) {
-    //     if (bitset_any(con->client->sticky_tags)) {
-    //         container_set_just_tag_id(con, tag_id);
-    //         arrange();
-    //         focus_most_recent_container();
-    //         ipc_event_tag();
-    //     } else {
-    //         move_to_scratchpad(con, 0);
-    //         return;
-    //     }
-    //     return;
-    // }
-    // if (con->on_scratchpad) {
-    //     return;
-    // }
-    //
-    // if (tag_sticky_contains_client(ws, con->client)) {
-    //     container_set_just_tag_id(con, ws->id);
-    // } else if (bitset_none(con->client->sticky_tags)) {
-    //     move_to_scratchpad(con, 0);
-    // }
-}
-
 void client_setsticky(struct client *c, BitSet *tags)
 {
     bitset_assign_bitset(&c->sticky_tags, tags);
-    struct container *con = c->con;
-    container_move_sticky_containers_current_tag(con);
     ipc_event_tag();
 }
 

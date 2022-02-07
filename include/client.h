@@ -3,6 +3,7 @@
 #include <X11/Xlib.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
 #include <wlr/xwayland.h>
+#include <wlr/types/wlr_surface.h>
 
 #include "bitset/bitset.h"
 #include "seat.h"
@@ -37,6 +38,11 @@ struct client {
     const char *app_id;
     BitSet *sticky_tags;
 
+    // only use this variable if this client is a layer shell client
+    // represents:
+    // enum zwlr_layer_surface_v1_layer layer;
+    int layer;
+
     // used to determine what to damage
     bool resized;
     bool moved_tag;
@@ -48,9 +54,6 @@ struct client {
 
 struct client *create_client(enum shell shell_type, union surface_t surface);
 void destroy_client(struct client *c);
-
-void container_move_sticky_containers_current_tag(struct container *con);
-void container_move_sticky_containers(struct container *con, int tag_id);
 
 void focus_client(struct seat *seat, struct client *old, struct client *c);
 void focus_surface(struct seat *seat, struct wlr_surface *surface);
