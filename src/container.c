@@ -1101,6 +1101,9 @@ struct wlr_box container_box_to_content_geometry(struct container *con,
 {
     struct direction_value borders = container_get_border_width(con);
     enum wlr_edges hidden_edges = container_get_hidden_edges(con);
+    if (!con->has_border) {
+        return geom;
+    }
     struct wlr_box content_geom = geom;
     if (!(hidden_edges & WLR_EDGE_LEFT)) {
         content_geom.x += borders.left;

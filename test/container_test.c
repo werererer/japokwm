@@ -79,6 +79,12 @@ void test_container_box_to_content_geometry()
     result = container_box_to_content_geometry(con, box);
     assert_wlr_box_equal(result, bottom_border_hidden_content_box);
 
+    con->hidden_edges = WLR_EDGE_NONE;
+    con->has_border = false;
+    result = container_box_to_content_geometry(con, box);
+    assert_wlr_box_equal(result, box);
+
+    destroy_container(con);
     bitset_destroy(c.sticky_tags);
 }
 
