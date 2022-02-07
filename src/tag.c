@@ -936,8 +936,6 @@ void tag_set_tags(struct tag *tag, BitSet *tags)
 
 void tag_set_prev_tags(struct tag *tag, struct BitSet *tags)
 {
-    printf("tag prev:");
-    print_bitset(tags);
     bitset_assign_bitset(&tag->prev_tags, tags);
 }
 
