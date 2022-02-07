@@ -96,7 +96,6 @@ void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
 
 void commit_layer_surface_notify(struct wl_listener *listener, void *data)
 {
-    printf("commit layer shell\n");
     struct client *c = wl_container_of(listener, c, commit);
     struct wlr_layer_surface_v1 *wlr_layer_surface = c->surface.layer;
     struct wlr_output *wlr_output = wlr_layer_surface->output;
@@ -115,7 +114,6 @@ void commit_layer_surface_notify(struct wl_listener *listener, void *data)
             add_container_to_layer_stack(con);
         }
         c->mapped = layer_surface->mapped;
-        printf("here\n");
         arrange_layers(c->m);
     }
 
@@ -159,7 +157,6 @@ GPtrArray *get_layer_list(enum zwlr_layer_shell_v1_layer layer)
 
 void arrange_layers(struct monitor *m)
 {
-    printf("arrange layers\n");
     if (!m)
         return;
 

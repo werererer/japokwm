@@ -402,7 +402,6 @@ int lib_toggle_tags(lua_State *L)
     struct monitor *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
     BitSet *prev_tags_copy = server_bitset_get_tmp_copy(tag->prev_tags);
-    print_bitset(prev_tags_copy);
     tagset_set_tags(tag, prev_tags_copy);
     return 0;
 }
