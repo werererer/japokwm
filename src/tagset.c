@@ -279,6 +279,7 @@ static void restore_floating_containers(struct tag *tag)
         struct container *con = g_ptr_array_index(floating_list, i);
         struct wlr_box con_geom = container_get_current_geom(con);
         container_set_current_geom(con, con_geom);
+        container_update_size(con);
     }
 }
 
