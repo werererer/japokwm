@@ -308,7 +308,7 @@ void focus_tagset(struct tag *tag, BitSet *tags)
     update_reduced_focus_stack(tag);
     ipc_event_tag();
 
-    arrange();
+    arrange_layers(m);
     tag_focus_most_recent_container(tag);
     root_damage_whole(m->root);
 
