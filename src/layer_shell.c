@@ -78,6 +78,8 @@ void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
         unmap_layer_surface(c);
     remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, c->con);
 
+    arrange_layers(c->m);
+
     wl_list_remove(&c->destroy.link);
     wl_list_remove(&c->map.link);
     wl_list_remove(&c->unmap.link);
