@@ -264,12 +264,11 @@ void load_default_keybindings(struct options *options)
     bind_key(options, "mod-S-k", Action.focus_on_hidden_stack(-1));
 
     bind_key(options, "mod-e", Action.view(Tag.focused:get_next_empty(Direction.right)));
-    bind_key(options, "mod-S-e", function()
+    bind_key(options, "mod-S-e", 
         local con = Container.focused
         if con then
             con.tag = Tag.get_next_empty(Tag.focused, Direction.horizontal)
-        end
-    end);
+        end);
     bind_key(options, "mod-S-space", Layout.load(server.default_layout_ring:prev()));
     bind_key(options, "mod-space", Layout.load(server.default_layout_ring:next()));
 
