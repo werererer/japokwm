@@ -304,7 +304,7 @@ struct tag *get_nearest_empty_tag(GList *tags, int tag_id)
         return initial_tag;
     }
 
-    int tag_count = server_get_tag_count();
+    int tag_count = 8;
     struct tag *tag = NULL;
     for (int i = 0, up_counter = tag_id+1, down_counter = tag_id-1;
             i < tag_count;
