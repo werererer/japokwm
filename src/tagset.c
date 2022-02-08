@@ -339,9 +339,6 @@ void push_tagset(struct tag *sel_tag, BitSet *tags)
     if (tag != sel_tag) {
         _set_previous_tagset(tag);
     }
-    if (tag == sel_tag) { 
-        tag_set_prev_tags(sel_tag, sel_tag->tags);
-    }
 
     focus_tagset(sel_tag, tags);
 }
