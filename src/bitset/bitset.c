@@ -56,16 +56,8 @@ void bitset_assign_bitset(BitSet** dest, BitSet* source)
     if (*dest == source) {
         return;
     }
+    g_hash_table_remove_all((*dest)->bytes);
     g_hash_table_foreach(source->bytes, assign_bits, *dest);
-    BitSet *dest_ptr = *dest;
-    for (int i = dest_ptr->low; i < source->low; i++) {
-        g_hash_table_remove(dest_ptr->bytes, &i);
-    }
-    for (int i = source->high+1; i <= dest_ptr->high; i++) {
-        g_hash_table_remove(dest_ptr->bytes, &i);
-    }
-    dest_ptr->low = source->low;
-    dest_ptr->high = source->high;
 }
 
 void bitset_reverse(BitSet *bitset, int start, int end)
