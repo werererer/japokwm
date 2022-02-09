@@ -6,8 +6,9 @@
 #include <string.h>
 #include <assert.h>
 
-#include "container.h"
 #include "client.h"
+#include "container.h"
+#include "cursor.h"
 #include "list_sets/container_stack_set.h"
 #include "list_sets/list_set.h"
 #include "popup.h"
@@ -25,6 +26,9 @@
 #include "rules/rule.h"
 #include "list_sets/focus_stack_set.h"
 #include "options.h"
+#include "lib/lib_container.h"
+#include "lib/lib_layout.h"
+#include "lib/lib_geom.h"
 
 static void add_container_to_tag(struct container *con, struct tag *tag);
 
@@ -1182,6 +1186,24 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
     container_update_size(con);
 }
 
+void resize_container_in_layout(struct container *con, struct wlr_box geom)
+{
+    struct tag *tag = container_get_tag(con);
+    struct layout *lt = tag_get_layout(tag);
+
+    lua_getglobal(L, "Resize_container_in_layout");
+    create_lua_layout(L, lt);
+    lua_pushinteger(L, 1);
+    create_lua_geometry(L, geom);
+
+    if (lua_call_safe(L, 3, 1, 0) != LUA_OK) {
+        return;
+    }
+
+    lua_copy_table_safe(L, &lt->lua_layout_copy_data_ref);
+    arrange();
+}
+
 struct monitor *container_get_monitor(struct container *con)
 {
     if (!con)
@@ -1358,6 +1380,125 @@ void move_container_to_tag(struct container *con, struct tag *tag)
     tagset_reload(tag);
 
     ipc_event_tag();
+}
+
+static int get_distance_squared(int x1, int y1, int x2, int y2)
+{
+    int dx = x1 - x2;
+    int dy = y1 - y2;
+    return dx * dx + dy * dy;
+}
+
+static bool is_coordinate_inside_container(struct container *con, int x, int y)
+{
+    struct wlr_box box = container_get_current_geom(con);
+    return wlr_box_contains_point(&box, x, y);
+}
+
+static int minimum_of_four(int a, int b, int c, int d)
+{
+    int min = a;
+    if (b < min)
+        min = b;
+    if (c < min)
+        min = c;
+    if (d < min)
+        min = d;
+    return min;
+}
+
+static enum wlr_edges geometry_get_nearest_edge_from_point(
+        struct container *con,
+        int x,
+        int y
+        )
+{
+    struct wlr_box left_geom = container_get_current_border_geom(con, WLR_EDGE_LEFT);
+    struct wlr_box right_geom = container_get_current_border_geom(con, WLR_EDGE_RIGHT);
+    struct wlr_box top_geom = container_get_current_border_geom(con, WLR_EDGE_TOP);
+    struct wlr_box bottom_geom = container_get_current_border_geom(con, WLR_EDGE_BOTTOM);
+
+    struct wlr_box box = container_get_current_geom(con);
+    if (!wlr_box_contains_point(&box, x, y)) {
+        // this false and shouldn't happen
+        assert(false);
+        return WLR_EDGE_NONE;
+    }
+
+    int left_edge_distance_squared = get_distance_squared(x, 0, left_geom.x + left_geom.width, 0);
+    int right_edge_distance_squared = get_distance_squared(x, 0, right_geom.x, 0);
+    int top_edge_distance_squared = get_distance_squared(0, y, 0, top_geom.y + top_geom.height);
+    int bottom_edge_distance_squared = get_distance_squared(0, y, 0, bottom_geom.y);
+
+    int min = minimum_of_four(left_edge_distance_squared,
+            right_edge_distance_squared, top_edge_distance_squared,
+            bottom_edge_distance_squared);
+
+    if (min == left_edge_distance_squared) {
+        printf("left\n");
+        return WLR_EDGE_LEFT;
+    } else if (min == right_edge_distance_squared) {
+        printf("right\n");
+        return WLR_EDGE_RIGHT;
+    } else if (min == top_edge_distance_squared) {
+        printf("top\n");
+        return WLR_EDGE_TOP;
+    } else if (min == bottom_edge_distance_squared) {
+        printf("bottom\n");
+        return WLR_EDGE_BOTTOM;
+    } else {
+        assert(false);
+        return WLR_EDGE_NONE;
+    }
+    // TODO: finish this
+    return WLR_EDGE_NONE;
+}
+
+void container_resize_with_cursor(struct cursor *cursor)
+{
+    int cursor_x = cursor->wlr_cursor->x;
+    int cursor_y = cursor->wlr_cursor->y;
+    struct wlr_cursor *wlr_cursor = cursor->wlr_cursor;
+    struct container *con = xy_to_container(cursor_x, cursor_y);
+    if (!con)
+        return;
+    enum wlr_edges edge = geometry_get_nearest_edge_from_point(con, cursor_x, cursor_y);
+    struct wlr_box border = container_get_current_border_geom(con, edge);
+    wlr_cursor_warp_closest(cursor->wlr_cursor, NULL,
+            border.x + (double)border.width / 2,
+            cursor->wlr_cursor->y);
+    switch (edge) {
+        case WLR_EDGE_LEFT:
+            printf("left\n");
+            wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
+                    "left_side", wlr_cursor);
+            break;
+        case WLR_EDGE_RIGHT:
+            printf("right\n");
+            wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
+                    "right_side", wlr_cursor);
+            break;
+        case WLR_EDGE_TOP:
+            printf("top\n");
+            wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
+                    "top_side", wlr_cursor);
+            break;
+        case WLR_EDGE_BOTTOM:
+            wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
+                    "bottom_side", wlr_cursor);
+            break;
+        default:
+            break;
+    }
+    cursor->cursor_mode = CURSOR_RESIZE_IN_LAYOUT;
+
+    struct wlr_box test_geom = {
+        .x = 0,
+        .y = 0,
+        .width = 100,
+        .height = 100,
+    };
+    resize_container_in_layout(con, test_geom);
 }
 
 bool container_is_bar(struct container *con)

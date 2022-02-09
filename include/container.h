@@ -10,6 +10,7 @@
 struct monitor;
 struct resize_constraints;
 struct tag;
+struct cursor;
 
 struct direction_value {
     int top;
@@ -102,6 +103,7 @@ void container_set_hidden(struct container *con, bool b);
 void container_set_hidden_at_tag(struct container *con, bool b, struct tag *tag);
 void set_container_monitor(struct container *con, struct monitor *m);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
+void resize_container_in_layout(struct container *con, struct wlr_box geom);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
 
 struct container_property *container_get_property(struct container *con);
@@ -154,6 +156,7 @@ void container_set_just_tag_id(struct container *con, int tag_id);
 void container_set_tag_id(struct container *con, int tag_id);
 void container_set_tag(struct container *con, struct tag *tag);
 void move_container_to_tag(struct container *con, struct tag *tag);
+void container_resize_with_cursor(struct cursor *cursor);
 
 struct monitor *container_get_monitor(struct container *con);
 

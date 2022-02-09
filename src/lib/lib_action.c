@@ -318,6 +318,9 @@ int lib_view_or_tag(lua_State *L)
 int lib_resize_with_cursor(lua_State *L)
 {
     printf("resize with cursor\n");
+    struct seat *seat = input_manager_get_default_seat();
+    struct cursor *cursor = seat->cursor;
+    container_resize_with_cursor(cursor);
     return 0;
 }
 

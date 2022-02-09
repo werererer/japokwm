@@ -11,7 +11,8 @@ struct seat_device;
 enum cursor_mode {
     CURSOR_NORMAL,
     CURSOR_MOVE,
-    CURSOR_RESIZE
+    CURSOR_RESIZE,
+    CURSOR_RESIZE_IN_LAYOUT
 };
 
 struct cursor {

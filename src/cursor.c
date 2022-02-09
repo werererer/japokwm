@@ -255,6 +255,9 @@ static bool handle_move_resize(struct cursor *cursor)
             resize_container(server.grab_c, wlr_cursor, 0, 0);
             return true;
             break;
+        case CURSOR_RESIZE_IN_LAYOUT:
+            printf("resize in layout: [%f,%f]\n", wlr_cursor->x, wlr_cursor->y);
+            break;
         default:
             break;
     }
@@ -433,6 +436,9 @@ void handle_cursor_button(struct wl_listener *listener, void *data)
         return;
     }
     if (cursor->cursor_mode == CURSOR_MOVE) {
+        return;
+    }
+    if (cursor->cursor_mode == CURSOR_RESIZE_IN_LAYOUT) {
         return;
     }
 

@@ -248,11 +248,81 @@ local function is_invalid(con)
     return false
 end
 
+-- return an array of the new directions
+local function get_transform_directions(con, new_geom)
+    local directions = {}
+    -- left
+    if con[X] > new_geom[X] then
+        directions[#directions] = con[X] - new_geom[X]
+    end
+    -- right
+    directions[2] = 0
+    if con[X] + con[WIDTH] < new_geom[X] + new_geom[WIDTH] then
+        directions[#directions] = new_geom[X] + new_geom[WIDTH] - (con[X] + con[WIDTH])
+    end
+    -- top
+    directions[3] = 0
+    if con[Y] > new_geom[Y] then
+        directions[#directions] = con[Y] - new_geom[Y]
+    end
+    -- bottom
+    directions[4] = 0
+    if con[Y] + con[HEIGHT] < new_geom[Y] + new_geom[HEIGHT] then
+        directions[#directions] = new_geom[Y] + new_geom[HEIGHT] - (con[Y] + con[HEIGHT])
+    end
+    return directions
+end
+
+local function geometry_to_alpha_area(geom, dir)
+    print("geometry to alpha_area")
+    print("direction", dir)
+    local new_geom = {}
+    if dir == Direction.left or dir == Direction.right then
+        print("horizontal")
+        new_geom[X] = geom[X]
+        new_geom[WIDTH] = geom[WIDTH]
+        new_geom[Y] = 0
+        new_geom[HEIGHT] = 1
+    elseif dir == Direction.bottom or dir == Direction.top then
+        print("vertical")
+        new_geom[X] = 0
+        new_geom[WIDTH] = 1
+        new_geom[Y] = geom[Y]
+        new_geom[HEIGHT] = geom[HEIGHT]
+    end
+    print("done")
+    return new_geom
+end
+
+local function apply_resize_function_with_geometry(lt_data_el, i, new_geom)
+    local old_geom = lt_data_el[i]
+    local transform_directions = get_transform_directions(old_geom, new_geom)
+    for x = 1,#transform_directions do
+        local dir = transform_directions[x]
+
+        local old_alpha_area = get_alpha_area_from_container(old_geom, dir)
+        local new_alpha_area = geometry_to_alpha_area(new_geom, dir)
+        print("new_geom: ", new_geom[X], new_geom[Y], new_geom[WIDTH], new_geom[HEIGHT])
+        print("new alpha area:", new_alpha_area[X], new_alpha_area[Y], new_alpha_area[WIDTH], new_alpha_area[HEIGHT])
+
+        local old_beta_area = get_beta_area(old_alpha_area, dir)
+        local new_beta_area = get_beta_area(new_alpha_area, dir)
+        local old_unaffected_area = get_unaffected_area(old_alpha_area, dir)
+
+        if is_invalid(new_alpha_area) or is_invalid(new_beta_area) then
+            return
+        end
+
+        apply_resize(lt_data_el, old_unaffected_area, old_alpha_area, new_alpha_area, old_beta_area, new_beta_area)
+    end
+end
+
 local function apply_resize_function(lt_data_el, i, n, directions)
+    local old_geom = lt_data_el[i]
     for x = 1,#directions do
         local dir = directions[x]
 
-        local old_alpha_area = get_alpha_area_from_container(lt_data_el[i], dir)
+        local old_alpha_area = get_alpha_area_from_container(old_geom, dir)
         local new_alpha_area = Move_resize(old_alpha_area, 0, n, dir)
 
         local old_beta_area = get_beta_area(old_alpha_area, dir)
@@ -303,33 +373,7 @@ local function get_layout_element(layout_data_element_id, resize_data)
     return 0
 end
 
--- return an array of the new directions
-local function get_transform_directions(con, new_geom)
-    local directions = {}
-    -- left
-    directions[1] = 0
-    if con[X] > new_geom[X] then
-        directions[1] = con[X] - new_geom[X]
-    end
-    -- right
-    directions[2] = 0
-    if con[X] + con[WIDTH] < new_geom[X] + new_geom[WIDTH] then
-        directions[2] = new_geom[X] + new_geom[WIDTH] - (con[X] + con[WIDTH])
-    end
-    -- top
-    directions[3] = 0
-    if con[Y] > new_geom[Y] then
-        directions[3] = con[Y] - new_geom[Y]
-    end
-    -- bottom
-    directions[4] = 0
-    if con[Y] + con[HEIGHT] < new_geom[Y] + new_geom[HEIGHT] then
-        directions[4] = new_geom[Y] + new_geom[HEIGHT] - (con[Y] + con[HEIGHT])
-    end
-    return directions
-end
-
-local transform_direction_get_directions(transform_direction)
+local function transform_direction_get_directions(transform_direction)
     local directions = 0
     if transform_direction[1] ~= 0 then
         directions = directions + Direction.left
@@ -347,15 +391,24 @@ local transform_direction_get_directions(transform_direction)
 end
 
 -- i: position of the element inside the layout
-function Resize_container(lt, i, new_geom)
+function Resize_container_in_layout(lt, i, new_geom)
     if i <= 0 then
         return lt.layout_data
     end
-
+    --
     -- resize_all()
-    local con = lt.layout_data[i]
-    local transform_directions = get_transform_directions(con, new_geom)
-    local directions = transform_direction_get_directions(transform_directions)
+    local local_layout_data = lt.layout_data[2]
+    local con = local_layout_data[i]
+    length = #lt.layout_data
+
+    local new_lua_geom = {}
+    new_lua_geom[X] = new_geom.x
+    new_lua_geom[Y] = new_geom.y
+    new_lua_geom[WIDTH] = new_geom.width
+    new_lua_geom[HEIGHT] = new_geom.height
+
+    local transform_directions = get_transform_directions(con, new_lua_geom)
+    local direction = transform_direction_get_directions(transform_directions)
 
     local layout_data_element_id = get_layout_data_element_id(lt.o_layout_data)
     local layout_id = get_layout_element(layout_data_element_id, lt.resize_data)
@@ -366,9 +419,10 @@ function Resize_container(lt, i, new_geom)
     local resize_element = lt.resize_data[layout_id]
     for _,id in ipairs(resize_element) do
         if id <= #lt.o_layout_data then
-            lt.layout_data[id] = resize_all(lt.layout_data[id], i, n, direction)
+            apply_resize_function_with_geometry(lt.layout_data[id], i, new_lua_geom)
         end
     end
+    print(lt)
     return lt.layout_data
 end
 
