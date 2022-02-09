@@ -56,6 +56,7 @@ static const struct luaL_Reg action_static_methods[] =
     {"toggle_tag", lib_toggle_tag},
     {"view", lib_view},
     {"view_or_tag", lib_view_or_tag},
+    {"resize_with_cursor", lib_resize_with_cursor},
     {"zoom", lib_zoom},
     {NULL, NULL},
 };
@@ -311,6 +312,12 @@ int lib_view_or_tag(lua_State *L)
         }
     }
     server_start_keycombo("_lib_view_or_tag_combo");
+    return 0;
+}
+
+int lib_resize_with_cursor(lua_State *L)
+{
+    printf("resize with cursor\n");
     return 0;
 }
 

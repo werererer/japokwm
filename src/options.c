@@ -243,6 +243,7 @@ void load_default_keybindings(struct options *options)
             if con then
                 con:focus()
             end);
+    bind_key(options, "mod-S-M2", Action.resize_with_cursor());
 
     bind_key(options, "mod-a", Layout.focused:increase_n_master());
     bind_key(options, "mod-x", Layout.focused:decrease_n_master());

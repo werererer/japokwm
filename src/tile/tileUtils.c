@@ -45,7 +45,7 @@ void arrange()
         struct tag *tag = monitor_get_active_tag(m);
         struct layout *lt = tag_get_layout(tag);
         container_set_border_width(con, direction_value_uniform(lt->options->float_border_px));
-        // container_update_size(con);
+        container_update_size(con);
         container_set_hidden(con, false);
     }
 

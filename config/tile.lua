@@ -303,6 +303,75 @@ local function get_layout_element(layout_data_element_id, resize_data)
     return 0
 end
 
+-- return an array of the new directions
+local function get_transform_directions(con, new_geom)
+    local directions = {}
+    -- left
+    directions[1] = 0
+    if con[X] > new_geom[X] then
+        directions[1] = con[X] - new_geom[X]
+    end
+    -- right
+    directions[2] = 0
+    if con[X] + con[WIDTH] < new_geom[X] + new_geom[WIDTH] then
+        directions[2] = new_geom[X] + new_geom[WIDTH] - (con[X] + con[WIDTH])
+    end
+    -- top
+    directions[3] = 0
+    if con[Y] > new_geom[Y] then
+        directions[3] = con[Y] - new_geom[Y]
+    end
+    -- bottom
+    directions[4] = 0
+    if con[Y] + con[HEIGHT] < new_geom[Y] + new_geom[HEIGHT] then
+        directions[4] = new_geom[Y] + new_geom[HEIGHT] - (con[Y] + con[HEIGHT])
+    end
+    return directions
+end
+
+local transform_direction_get_directions(transform_direction)
+    local directions = 0
+    if transform_direction[1] ~= 0 then
+        directions = directions + Direction.left
+    end
+    if transform_direction[2] ~= 0 then
+        directions = directions + Direction.right
+    end
+    if transform_direction[3] ~= 0 then
+        directions = directions + Direction.top
+    end
+    if transform_direction[4] ~= 0 then
+        directions = directions + Direction.bottom
+    end
+    return directions
+end
+
+-- i: position of the element inside the layout
+function Resize_container(lt, i, new_geom)
+    if i <= 0 then
+        return lt.layout_data
+    end
+
+    -- resize_all()
+    local con = lt.layout_data[i]
+    local transform_directions = get_transform_directions(con, new_geom)
+    local directions = transform_direction_get_directions(transform_directions)
+
+    local layout_data_element_id = get_layout_data_element_id(lt.o_layout_data)
+    local layout_id = get_layout_element(layout_data_element_id, lt.resize_data)
+    if layout_id == 0 then
+        return lt.layout_data
+    end
+
+    local resize_element = lt.resize_data[layout_id]
+    for _,id in ipairs(resize_element) do
+        if id <= #lt.o_layout_data then
+            lt.layout_data[id] = resize_all(lt.layout_data[id], i, n, direction)
+        end
+    end
+    return lt.layout_data
+end
+
 function Resize_main_all(lt, n, direction)
     local layout_data_element_id = get_layout_data_element_id(lt.o_layout_data)
     local layout_id = get_layout_element(layout_data_element_id, lt.resize_data)
