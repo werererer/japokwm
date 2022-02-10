@@ -1186,14 +1186,71 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
     container_update_size(con);
 }
 
+void container_resize_in_layout(
+        struct container *con,
+        struct wlr_cursor *cursor,
+        int offsetx,
+        int offsety,
+        enum wlr_edges grabbed_edges)
+{
+    if (!con)
+        return;
+    if (con->on_scratchpad)
+        return;
+    if (container_is_floating(con))
+        return;
+
+    struct wlr_box geom = container_get_current_geom(con);
+
+    // geom.width = absolute_x_to_container_relative(geom, cursor->x - offsetx);
+    // geom.height = absolute_y_to_container_relative(geom, cursor->y - offsety);
+    int cursor_x = cursor->x - offsetx;
+    int cursor_y = cursor->y - offsety;
+    int dx = cursor_x - geom.x;
+    int dy = cursor_y - geom.y;
+    printf("prev geom: %d %d %d %d\n", geom.x, geom.y, geom.width, geom.height);
+    if (grabbed_edges == WLR_EDGE_LEFT) {
+        printf("edge left\n");
+        geom.x = cursor_x;
+        geom.width -= dx;
+    }
+    if (grabbed_edges == WLR_EDGE_TOP) {
+        printf("edge top\n");
+        geom.y = cursor->y;
+        geom.height -= dy;
+    }
+    if (grabbed_edges == WLR_EDGE_RIGHT) {
+        printf("edge right\n");
+        geom.width = cursor_x - geom.x;
+    }
+    if (grabbed_edges == WLR_EDGE_BOTTOM) {
+        printf("edge bottom\n");
+        geom.height = cursor_y - geom.y;
+    }
+
+    // struct wlr_box test_geom = {
+    //     .x = 300,
+    //     .y = 300,
+    //     .width = 100,
+    //     .height = 100,
+    // };
+
+    printf("new geom: %d %d %d %d\n", geom.x, geom.y, geom.width, geom.height);
+    resize_container_in_layout(con, geom);
+    struct wlr_box res = container_get_current_geom(con);
+    printf("result geom: %d %d %d %d\n", res.x, res.y, res.width, res.height);
+}
+
 void resize_container_in_layout(struct container *con, struct wlr_box geom)
 {
     struct tag *tag = container_get_tag(con);
     struct layout *lt = tag_get_layout(tag);
 
+    int position = get_position_in_container_stack(con);
+    printf("position: %i\n", position);
     lua_getglobal(L, "Resize_container_in_layout");
     create_lua_layout(L, lt);
-    lua_pushinteger(L, 1);
+    lua_pushinteger(L, c_idx_to_lua_idx(position));
     create_lua_geometry(L, geom);
 
     if (lua_call_safe(L, 3, 1, 0) != LUA_OK) {
@@ -1492,13 +1549,8 @@ void container_resize_with_cursor(struct cursor *cursor)
     }
     cursor->cursor_mode = CURSOR_RESIZE_IN_LAYOUT;
 
-    struct wlr_box test_geom = {
-        .x = 0,
-        .y = 0,
-        .width = 100,
-        .height = 100,
-    };
-    resize_container_in_layout(con, test_geom);
+    server.grab_c = con;
+    server.grabbed_edges = edge;
 }
 
 bool container_is_bar(struct container *con)

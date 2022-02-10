@@ -256,7 +256,7 @@ static bool handle_move_resize(struct cursor *cursor)
             return true;
             break;
         case CURSOR_RESIZE_IN_LAYOUT:
-            printf("resize in layout: [%f,%f]\n", wlr_cursor->x, wlr_cursor->y);
+            container_resize_in_layout(server.grab_c, wlr_cursor, 0, 0, server.grabbed_edges);
             break;
         default:
             break;

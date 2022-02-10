@@ -252,19 +252,19 @@ end
 local function get_transform_directions(con, new_geom)
     local directions = {}
     -- left
-    if new_geom[X] < con[X] then
+    if new_geom[X] ~= con[X] then
         directions[#directions+1] = Direction.left
     end
     -- right
-    if new_geom[WIDTH] < con[WIDTH] then
+    if new_geom[WIDTH] ~= con[WIDTH] then
         directions[#directions+1] = Direction.right
     end
     -- top
-    if new_geom[Y] < con[Y] then
+    if new_geom[Y] ~= con[Y] then
         directions[#directions+1] = Direction.top
     end
     -- bottom
-    if new_geom[HEIGHT] < con[HEIGHT] then
+    if new_geom[HEIGHT] ~= con[HEIGHT] then
         directions[#directions+1] = Direction.bottom
     end
     return directions
@@ -398,7 +398,6 @@ function Resize_container_in_layout(lt, i, new_geom)
     new_lua_geom[HEIGHT] = new_geom.height
 
     local mon_geom = Monitor.focused.root.geom
-    print("mon_geom", mon_geom.x, mon_geom.y, mon_geom.width, mon_geom.height)
     local mon_geom_transfered = {}
     mon_geom_transfered[X] = mon_geom.x
     mon_geom_transfered[Y] = mon_geom.y
@@ -421,6 +420,8 @@ function Resize_container_in_layout(lt, i, new_geom)
             apply_resize_function_with_geometry(lt.layout_data[id], i, new_lua_geom)
         end
     end
+    -- we have to add this to prevent rounding errors when resizing
+    local_layout_data[i] = new_lua_geom
     return lt.layout_data
 end
 

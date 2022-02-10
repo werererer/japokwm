@@ -116,6 +116,7 @@ struct server {
     bool prohibit_reload_config;
 
     struct container *grab_c;
+    enum wlr_edges grabbed_edges;
 #if JAPOKWM_HAS_XWAYLAND
     struct xwayland xwayland;
     struct wl_listener xwayland_ready;

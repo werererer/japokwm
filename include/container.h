@@ -156,6 +156,12 @@ void container_set_just_tag_id(struct container *con, int tag_id);
 void container_set_tag_id(struct container *con, int tag_id);
 void container_set_tag(struct container *con, struct tag *tag);
 void move_container_to_tag(struct container *con, struct tag *tag);
+void container_resize_in_layout(
+        struct container *con,
+        struct wlr_cursor *cursor,
+        int offsetx,
+        int offsety,
+        enum wlr_edges grabbed_edges);
 void container_resize_with_cursor(struct cursor *cursor);
 
 struct monitor *container_get_monitor(struct container *con);
