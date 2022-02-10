@@ -287,6 +287,9 @@ local function geometry_to_alpha_area(geom, dir)
 end
 
 local function apply_resize_function_with_geometry(lt_data_el, i, new_geom)
+    if i > #lt_data_el then
+        return
+    end
     local old_geom = lt_data_el[i]
     local transform_directions = get_transform_directions(old_geom, new_geom)
     for x = 1,#transform_directions do
@@ -382,14 +385,22 @@ end
 
 -- i: position of the element inside the layout
 function Resize_container_in_layout(lt, i, new_geom)
+    local layout_data_element_id = get_layout_data_element_id(lt.o_layout_data)
+    local layout_id = get_layout_element(layout_data_element_id, lt.resize_data)
+    if layout_id <= 0 then
+        print("return")
+        return lt.layout_data
+    end
     if i <= 0 then
         return lt.layout_data
     end
     --
+    print("i" .. i)
     -- resize_all()
-    local local_layout_data = lt.layout_data[2]
+    local local_layout_data = lt.layout_data[layout_data_element_id]
     local con = local_layout_data[i]
     length = #lt.layout_data
+    print("length" .. length)
 
     local new_lua_geom = {}
     new_lua_geom[X] = new_geom.x
