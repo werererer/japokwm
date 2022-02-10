@@ -254,61 +254,46 @@ local function get_transform_directions(con, new_geom)
     -- left
     if new_geom[X] < con[X] then
         directions[#directions+1] = Direction.left
-        print("left")
     end
     -- right
     if new_geom[WIDTH] < con[WIDTH] then
         directions[#directions+1] = Direction.right
-        print("right")
     end
     -- top
     if new_geom[Y] < con[Y] then
         directions[#directions+1] = Direction.top
-        print("top")
     end
     -- bottom
     if new_geom[HEIGHT] < con[HEIGHT] then
         directions[#directions+1] = Direction.bottom
-        print("bottom")
     end
-    print("directions len: ", #directions)
     return directions
 end
 
 local function geometry_to_alpha_area(geom, dir)
-    print("geometry to alpha_area")
-    print("direction", dir)
     local new_geom = {}
     if dir == Direction.left or dir == Direction.right then
-        print("horizontal")
         new_geom[X] = geom[X]
         new_geom[WIDTH] = geom[WIDTH]
         new_geom[Y] = 0
         new_geom[HEIGHT] = 1
     elseif dir == Direction.bottom or dir == Direction.top then
-        print("vertical")
         new_geom[X] = 0
         new_geom[WIDTH] = 1
         new_geom[Y] = geom[Y]
         new_geom[HEIGHT] = geom[HEIGHT]
     end
-    print("done")
     return new_geom
 end
 
 local function apply_resize_function_with_geometry(lt_data_el, i, new_geom)
     local old_geom = lt_data_el[i]
     local transform_directions = get_transform_directions(old_geom, new_geom)
-    print("old_geom", old_geom[X], " ", old_geom[Y], " ", old_geom[WIDTH], " ", old_geom[HEIGHT])
-    print("new_geom", new_geom[X], " ", new_geom[Y], " ", new_geom[WIDTH], " ", new_geom[HEIGHT])
-    print("transform directions len: ", #transform_directions)
     for x = 1,#transform_directions do
         local dir = transform_directions[x]
 
         local old_alpha_area = get_alpha_area_from_container(old_geom, dir)
         local new_alpha_area = geometry_to_alpha_area(new_geom, dir)
-        print("new_geom: ", new_geom[X], " ", new_geom[Y], " ", new_geom[WIDTH], " ", new_geom[HEIGHT])
-        print("new alpha area:", new_alpha_area[X], " ", new_alpha_area[Y], " ", new_alpha_area[WIDTH], " ", new_alpha_area[HEIGHT])
 
         local old_beta_area = get_beta_area(old_alpha_area, dir)
         local new_beta_area = get_beta_area(new_alpha_area, dir)
@@ -318,7 +303,6 @@ local function apply_resize_function_with_geometry(lt_data_el, i, new_geom)
             return
         end
 
-        print("apply resize")
         apply_resize(lt_data_el, old_unaffected_area, old_alpha_area, new_alpha_area, old_beta_area, new_beta_area)
     end
 end
@@ -408,10 +392,19 @@ function Resize_container_in_layout(lt, i, new_geom)
     length = #lt.layout_data
 
     local new_lua_geom = {}
-    new_lua_geom[X] = 0
-    new_lua_geom[Y] = 0
-    new_lua_geom[WIDTH] = 0.4
-    new_lua_geom[HEIGHT] = 0.5
+    new_lua_geom[X] = new_geom.x
+    new_lua_geom[Y] = new_geom.y
+    new_lua_geom[WIDTH] = new_geom.width
+    new_lua_geom[HEIGHT] = new_geom.height
+
+    local mon_geom = Monitor.focused.root.geom
+    print("mon_geom", mon_geom.x, mon_geom.y, mon_geom.width, mon_geom.height)
+    local mon_geom_transfered = {}
+    mon_geom_transfered[X] = mon_geom.x
+    mon_geom_transfered[Y] = mon_geom.y
+    mon_geom_transfered[WIDTH] = mon_geom.width
+    mon_geom_transfered[HEIGHT] = mon_geom.height
+    abs_container_to_relative(new_lua_geom, mon_geom_transfered)
 
     local transform_directions = get_transform_directions(con, new_lua_geom)
     local direction = transform_direction_get_directions(transform_directions)
@@ -428,7 +421,6 @@ function Resize_container_in_layout(lt, i, new_geom)
             apply_resize_function_with_geometry(lt.layout_data[id], i, new_lua_geom)
         end
     end
-    print(lt)
     return lt.layout_data
 end
 
