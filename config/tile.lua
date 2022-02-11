@@ -10,16 +10,8 @@ function round(num, n)
     return math.floor(num * mult + 0.5) / mult
 end
 
-function round_1_5(num)
-    return round(num, 2)
-end
-
 function round_2(num)
     return round(num, 2)
-end
-
-function round_3(num)
-    return round(num, 3)
 end
 
 local function create_container(x, y, width, height)
@@ -271,10 +263,13 @@ local function get_alpha_area_from_container(con, dir)
 end
 
 local function is_invalid(con)
-    if con[WIDTH] < 0 then
+    if con == nil then
         return true
     end
-    if con[HEIGHT] < 0 then
+    if con[WIDTH] < 0.01 then
+        return true
+    end
+    if con[HEIGHT] < 0.01 then
         return true
     end
     return false
@@ -331,10 +326,7 @@ local function apply_resize_function_with_geometry(lt_data_el, i, new_geom)
         return
     end
     local old_geom = lt_data_el[i]
-    print("old_geom: x: ", old_geom[X], " y: ", old_geom[Y], " w: ", old_geom[WIDTH], " h: ", old_geom[HEIGHT])
-    print("new_geom: x: ", new_geom[X], " y: ", new_geom[Y], " w: ", new_geom[WIDTH], " h: ", new_geom[HEIGHT])
     local transform_directions = get_transform_directions(old_geom, new_geom)
-    print("transform_directions", transform_directions)
     for x = 1,#transform_directions do
         local dir = transform_directions[x]
 
@@ -453,12 +445,7 @@ function Resize_container_in_layout(lt, i, new_geom)
     mon_geom_transfered[HEIGHT] = mon_geom.height
     abs_container_to_relative(new_lua_geom, mon_geom_transfered)
 
-    local resize_element = lt.resize_data[layout_id]
-    for _,id in ipairs(resize_element) do
-        if id <= #lt.o_layout_data then
-            apply_resize_function_with_geometry(lt.layout_data[id], i, new_lua_geom)
-        end
-    end
+    apply_resize_function_with_geometry(lt.layout_data[layout_data_element_id], i, new_lua_geom)
     return lt.layout_data
 end
 
