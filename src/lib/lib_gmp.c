@@ -2,7 +2,7 @@
 
 #include "translationLayer.h"
 
-#define ROUNDING_METHOD MPFR_RNDN
+#define ROUNDING_METHOD MPFR_RNDF
 
 static const struct luaL_Reg gmp_meta[] =
 {

@@ -1211,27 +1211,21 @@ void container_resize_in_layout(
         printf("edge left\n");
         int dx = (cursor_x) - geom.x;
         geom.x = cursor_x;
-        resize_container_in_layout(con, geom);
         geom.width -= dx;
-        resize_container_in_layout(con, geom);
     }
     if (grabbed_edges == WLR_EDGE_TOP) {
         printf("edge top\n");
         int dy = (cursor_y) - geom.y;
         geom.y = cursor_y;
-        resize_container_in_layout(con, geom);
         geom.height -= dy;
-        resize_container_in_layout(con, geom);
     }
     if (grabbed_edges == WLR_EDGE_RIGHT) {
         printf("edge right\n");
         geom.width = cursor_x - geom.x;
-        resize_container_in_layout(con, geom);
     }
     if (grabbed_edges == WLR_EDGE_BOTTOM) {
         printf("edge bottom\n");
         geom.height = cursor_y - geom.y;
-        resize_container_in_layout(con, geom);
     }
 
     // struct wlr_box test_geom = {
@@ -1241,8 +1235,7 @@ void container_resize_in_layout(
     //     .height = 100,
     // };
 
-    printf("new geom: %d %d %d %d\n", geom.x, geom.y, geom.width, geom.height);
-    // resize_container_in_layout(con, geom);
+    resize_container_in_layout(con, geom);
     struct wlr_box res = container_get_current_geom(con);
     printf("result geom: %d %d %d %d\n", res.x, res.y, res.width, res.height);
 }
