@@ -6,6 +6,11 @@ static const struct luaL_Reg gmp_meta[] =
 {
     {"__gc", lib_gmp_gc},
     {"__tostring", lib_gmp_tostring},
+    {"__add", lib_gmp_add},
+    {"__sub", lib_gmp_sub},
+    {"__mul", lib_gmp_mul},
+    {"__div", lib_gmp_div},
+    {"__pow", lib_gmp_pow},
     {NULL, NULL},
 };
 
@@ -90,6 +95,67 @@ int lib_gmp_tostring(lua_State *L)
     return 1;
 }
 
+int lib_gmp_add(lua_State *L)
+{
+    mpfr_ptr n1 = check_gmp(L, 1);
+    mpfr_ptr n2 = check_gmp(L, 2);
+
+    mpfr_t n3;
+    mpfr_init(n3);
+    mpfr_add(n3, n1, n2, GMP_RNDN);
+    create_lua_gmp(L, n3);
+
+    return 1;
+}
+
+int lib_gmp_sub(lua_State *L)
+{
+    mpfr_ptr n1 = check_gmp(L, 1);
+    mpfr_ptr n2 = check_gmp(L, 2);
+
+    mpfr_t n3;
+    mpfr_init(n3);
+    mpfr_sub(n3, n1, n2, GMP_RNDN);
+    create_lua_gmp(L, n3);
+    return 1;
+}
+
+int lib_gmp_mul(lua_State *L)
+{
+    mpfr_ptr n1 = check_gmp(L, 1);
+    mpfr_ptr n2 = check_gmp(L, 2);
+
+    mpfr_t n3;
+    mpfr_init(n3);
+    mpfr_mul(n3, n1, n2, GMP_RNDN);
+    create_lua_gmp(L, n3);
+    return 1;
+}
+
+int lib_gmp_div(lua_State *L)
+{
+    mpfr_ptr n1 = check_gmp(L, 1);
+    mpfr_ptr n2 = check_gmp(L, 2);
+
+    mpfr_t n3;
+    mpfr_init(n3);
+    mpfr_div(n3, n1, n2, GMP_RNDN);
+    create_lua_gmp(L, n3);
+    return 1;
+}
+
+int lib_gmp_pow(lua_State *L)
+{
+    mpfr_ptr n1 = check_gmp(L, 1);
+    mpfr_ptr n2 = check_gmp(L, 2);
+
+    mpfr_t n3;
+    mpfr_init(n3);
+    mpfr_pow(n3, n1, n2, GMP_RNDN);
+    create_lua_gmp(L, n3);
+    return 1;
+}
+
 int lib_gmp_new(lua_State *L)
 {
     double n = luaL_checknumber(L, 1);
@@ -102,5 +168,3 @@ int lib_gmp_new(lua_State *L)
 
     return 1;
 }
-
-
