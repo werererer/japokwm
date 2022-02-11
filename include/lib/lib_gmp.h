@@ -17,6 +17,8 @@ int lib_gmp_sub(lua_State *L);
 int lib_gmp_mul(lua_State *L);
 int lib_gmp_div(lua_State *L);
 int lib_gmp_pow(lua_State *L);
+int lib_gmp_lt(lua_State *L);
+int lib_gmp_le(lua_State *L);
 
 mpfr_ptr check_gmp(lua_State *L, int argn);
 

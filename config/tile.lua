@@ -39,8 +39,8 @@ local function create_container(x, y, width, height)
 end
 
 local function get_area_at_zero(area)
-    local x = 0
-    local y = 0
+    local x = Gmp.new(0)
+    local y = Gmp.new(0)
     local width = area[WIDTH]
     local height = area[HEIGHT]
     local con = create_container(x, y, width, height)
@@ -412,30 +412,21 @@ function Resize_container_in_layout(lt, i, new_geom)
     print("length" .. length)
 
     local new_lua_geom = {}
-    new_lua_geom[X] = new_geom.x
-    new_lua_geom[Y] = new_geom.y
-    new_lua_geom[WIDTH] = new_geom.width
-    new_lua_geom[HEIGHT] = new_geom.height
+    new_lua_geom[X] = Gmp.new(new_geom.x)
+    new_lua_geom[Y] = Gmp.new(new_geom.y)
+    new_lua_geom[WIDTH] = Gmp.new(new_geom.width)
+    new_lua_geom[HEIGHT] = Gmp.new(new_geom.height)
 
     local mon_geom = Monitor.focused.root.geom
     local mon_geom_transfered = {}
-    mon_geom_transfered[X] = mon_geom.x
-    mon_geom_transfered[Y] = mon_geom.y
-    mon_geom_transfered[WIDTH] = mon_geom.width
-    mon_geom_transfered[HEIGHT] = mon_geom.height
+    mon_geom_transfered[X] = Gmp.new(mon_geom.x)
+    mon_geom_transfered[Y] = Gmp.new(mon_geom.y)
+    mon_geom_transfered[WIDTH] = Gmp.new(mon_geom.width)
+    mon_geom_transfered[HEIGHT] = Gmp.new(mon_geom.height)
     print("mon_geom: x:" .. mon_geom.x .. " y:" .. mon_geom.y .. " width:" .. mon_geom.width .. " height:" .. mon_geom.height)
-    print("pref: ", (new_lua_geom[X] + new_lua_geom[WIDTH])/mon_geom.width)
+    print("pref: ", (new_lua_geom[X] + new_lua_geom[WIDTH])/mon_geom_transfered[WIDTH])
     abs_container_to_relative(new_lua_geom, mon_geom_transfered)
     print("next: ", new_lua_geom[X] + new_lua_geom[WIDTH])
-
-    local transform_directions = get_transform_directions(con, new_lua_geom)
-    local direction = transform_direction_get_directions(transform_directions)
-
-    local layout_data_element_id = get_layout_data_element_id(lt.o_layout_data)
-    local layout_id = get_layout_element(layout_data_element_id, lt.resize_data)
-    if layout_id == 0 then
-        return lt.layout_data
-    end
 
     local resize_element = lt.resize_data[layout_id]
     for _,id in ipairs(resize_element) do

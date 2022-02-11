@@ -11,6 +11,8 @@ static const struct luaL_Reg gmp_meta[] =
     {"__mul", lib_gmp_mul},
     {"__div", lib_gmp_div},
     {"__pow", lib_gmp_pow},
+    {"__lt", lib_gmp_lt},
+    {"__le", lib_gmp_le},
     {NULL, NULL},
 };
 
@@ -153,6 +155,24 @@ int lib_gmp_pow(lua_State *L)
     mpfr_init(n3);
     mpfr_pow(n3, n1, n2, GMP_RNDN);
     create_lua_gmp(L, n3);
+    return 1;
+}
+
+int lib_gmp_lt(lua_State *L)
+{
+    mpfr_ptr n1 = check_gmp(L, 1);
+    mpfr_ptr n2 = check_gmp(L, 2);
+
+    lua_pushboolean(L, mpfr_less_p(n1, n2));
+    return 1;
+}
+
+int lib_gmp_le(lua_State *L)
+{
+    mpfr_ptr n1 = check_gmp(L, 1);
+    mpfr_ptr n2 = check_gmp(L, 2);
+
+    lua_pushboolean(L, mpfr_lessequal_p(n1, n2));
     return 1;
 }
 
