@@ -5,6 +5,15 @@ local Y<const> = 2
 local WIDTH<const> = 3
 local HEIGHT<const> = 4
 
+function round(num, n)
+    local mult = 10^(n or 0)
+    return math.floor(num * mult + 0.5) / mult
+end
+
+function round_2(num)
+    return round(num, 2)
+end
+
 -- val is between 0 and 1 and represents how far
 local function abs_container_to_relative(con, ref_area)
     con[X] = con[X] / ref_area[WIDTH] - ref_area[X]
@@ -414,7 +423,10 @@ function Resize_container_in_layout(lt, i, new_geom)
     mon_geom_transfered[Y] = mon_geom.y
     mon_geom_transfered[WIDTH] = mon_geom.width
     mon_geom_transfered[HEIGHT] = mon_geom.height
+    print("mon_geom: x:" .. mon_geom.x .. " y:" .. mon_geom.y .. " width:" .. mon_geom.width .. " height:" .. mon_geom.height)
+    print("pref: ", (new_lua_geom[X] + new_lua_geom[WIDTH])/mon_geom.width)
     abs_container_to_relative(new_lua_geom, mon_geom_transfered)
+    print("next: ", new_lua_geom[X] + new_lua_geom[WIDTH])
 
     local transform_directions = get_transform_directions(con, new_lua_geom)
     local direction = transform_direction_get_directions(transform_directions)
@@ -431,8 +443,6 @@ function Resize_container_in_layout(lt, i, new_geom)
             apply_resize_function_with_geometry(lt.layout_data[id], i, new_lua_geom)
         end
     end
-    -- we have to add this to prevent rounding errors when resizing
-    local_layout_data[i] = new_lua_geom
     return lt.layout_data
 end
 
