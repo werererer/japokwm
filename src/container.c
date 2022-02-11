@@ -1206,25 +1206,20 @@ void container_resize_in_layout(
     // geom.height = absolute_y_to_container_relative(geom, cursor->y - offsety);
     int cursor_x = cursor->x - offsetx;
     int cursor_y = cursor->y - offsety;
-    printf("prev geom: %d %d %d %d\n", geom.x, geom.y, geom.width, geom.height);
     if (grabbed_edges == WLR_EDGE_LEFT) {
-        printf("edge left\n");
         int dx = (cursor_x) - geom.x;
         geom.x = cursor_x;
         geom.width -= dx;
     }
     if (grabbed_edges == WLR_EDGE_TOP) {
-        printf("edge top\n");
         int dy = (cursor_y) - geom.y;
         geom.y = cursor_y;
         geom.height -= dy;
     }
     if (grabbed_edges == WLR_EDGE_RIGHT) {
-        printf("edge right\n");
         geom.width = cursor_x - geom.x;
     }
     if (grabbed_edges == WLR_EDGE_BOTTOM) {
-        printf("edge bottom\n");
         geom.height = cursor_y - geom.y;
     }
 
@@ -1236,8 +1231,6 @@ void container_resize_in_layout(
     // };
 
     resize_container_in_layout(con, geom);
-    struct wlr_box res = container_get_current_geom(con);
-    printf("result geom: %d %d %d %d\n", res.x, res.y, res.width, res.height);
 }
 
 void resize_container_in_layout(struct container *con, struct wlr_box geom)
@@ -1246,7 +1239,6 @@ void resize_container_in_layout(struct container *con, struct wlr_box geom)
     struct layout *lt = tag_get_layout(tag);
 
     int position = get_position_in_container_stack(con);
-    printf("position: %i\n", position);
     lua_getglobal(L, "Resize_container_in_layout");
     create_lua_layout(L, lt);
     lua_pushinteger(L, c_idx_to_lua_idx(position));

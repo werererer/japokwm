@@ -243,7 +243,7 @@ static int l_print(lua_State *L) {
         append_string(&msg, string);
     }
     printf("%s\n", msg);
-    notify_msg(msg);
+    // notify_msg(msg);
     write_line_to_error_file(msg);
 
     free(msg);
