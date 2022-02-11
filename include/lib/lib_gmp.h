@@ -9,6 +9,10 @@
 void lua_load_gmp(lua_State *L);
 int lib_gmp_new(lua_State *L);
 
-struct color check_gmp(lua_State *L, int narg);
+// meta
+int lib_gmp_gc(lua_State *L);
+int lib_gmp_tostring(lua_State *L);
+
+mpfr_ptr check_gmp(lua_State *L, int argn);
 
 #endif
