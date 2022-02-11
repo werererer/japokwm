@@ -19,6 +19,8 @@ static const struct luaL_Reg gmp_meta[] =
 static const struct luaL_Reg gmp_static_methods[] =
 {
     {"new", lib_gmp_new},
+    {"max", lib_gmp_max},
+    {"min", lib_gmp_min},
     {NULL, NULL},
 };
 
@@ -44,6 +46,7 @@ static const struct luaL_Reg gmp_setter[] =
 
 static const struct luaL_Reg gmp_getter[] =
 {
+    {"value", lib_gmp_get_value},
     {NULL, NULL},
 };
 
@@ -176,6 +179,7 @@ int lib_gmp_le(lua_State *L)
     return 1;
 }
 
+// static methods
 int lib_gmp_new(lua_State *L)
 {
     double n = luaL_checknumber(L, 1);
@@ -186,5 +190,37 @@ int lib_gmp_new(lua_State *L)
     mpfr_set_d(num, n, GMP_RNDN);
     create_lua_gmp(L, num);
 
+    return 1;
+}
+
+int lib_gmp_max(lua_State *L)
+{
+    mpfr_ptr n1 = check_gmp(L, 1);
+    mpfr_ptr n2 = check_gmp(L, 2);
+
+    mpfr_t n3;
+    mpfr_init(n3);
+    mpfr_max(n3, n1, n2, GMP_RNDN);
+    create_lua_gmp(L, n3);
+    return 1;
+}
+
+int lib_gmp_min(lua_State *L)
+{
+    mpfr_ptr n1 = check_gmp(L, 1);
+    mpfr_ptr n2 = check_gmp(L, 2);
+
+    mpfr_t n3;
+    mpfr_init(n3);
+    mpfr_min(n3, n1, n2, GMP_RNDN);
+    create_lua_gmp(L, n3);
+    return 1;
+}
+
+// getter
+int lib_gmp_get_value(lua_State *L)
+{
+    mpfr_ptr n = check_gmp(L, 1);
+    lua_pushnumber(L, mpfr_get_d(n, GMP_RNDN));
     return 1;
 }
