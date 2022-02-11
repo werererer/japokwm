@@ -412,7 +412,9 @@ function Resize_container_in_layout(lt, i, new_geom)
     mon_geom_transfered[Y] = Gmp.new(mon_geom.y)
     mon_geom_transfered[WIDTH] = Gmp.new(mon_geom.width)
     mon_geom_transfered[HEIGHT] = Gmp.new(mon_geom.height)
+    print("prev: ", (new_lua_geom[X]+new_lua_geom[WIDTH])/mon_geom_transfered[WIDTH])
     abs_container_to_relative(new_lua_geom, mon_geom_transfered)
+    print("new: ", new_lua_geom[X]+new_lua_geom[WIDTH])
 
     local resize_element = lt.resize_data[layout_id]
     for _,id in ipairs(resize_element) do

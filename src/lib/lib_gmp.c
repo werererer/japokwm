@@ -2,6 +2,8 @@
 
 #include "translationLayer.h"
 
+#define ROUNDING_METHOD MPFR_RNDN
+
 static const struct luaL_Reg gmp_meta[] =
 {
     {"__gc", lib_gmp_gc},
@@ -78,7 +80,7 @@ static void create_lua_gmp(lua_State *L, mpfr_t num)
 {
     mpfr_ptr mpfr = (mpfr_ptr)lua_newuserdata(L, sizeof(mpfr_t));
     mpfr_init2(mpfr, mpfr_get_prec(num));
-    mpfr_set(mpfr, num, GMP_RNDN);
+    mpfr_set(mpfr, num, ROUNDING_METHOD);
 
     luaL_setmetatable(L, CONFIG_GMP);
 }
@@ -107,7 +109,7 @@ int lib_gmp_add(lua_State *L)
 
     mpfr_t n3;
     mpfr_init(n3);
-    mpfr_add(n3, n1, n2, GMP_RNDN);
+    mpfr_add(n3, n1, n2, ROUNDING_METHOD);
     create_lua_gmp(L, n3);
 
     return 1;
@@ -120,7 +122,7 @@ int lib_gmp_sub(lua_State *L)
 
     mpfr_t n3;
     mpfr_init(n3);
-    mpfr_sub(n3, n1, n2, GMP_RNDN);
+    mpfr_sub(n3, n1, n2, ROUNDING_METHOD);
     create_lua_gmp(L, n3);
     return 1;
 }
@@ -132,7 +134,7 @@ int lib_gmp_mul(lua_State *L)
 
     mpfr_t n3;
     mpfr_init(n3);
-    mpfr_mul(n3, n1, n2, GMP_RNDN);
+    mpfr_mul(n3, n1, n2, ROUNDING_METHOD);
     create_lua_gmp(L, n3);
     return 1;
 }
@@ -144,7 +146,7 @@ int lib_gmp_div(lua_State *L)
 
     mpfr_t n3;
     mpfr_init(n3);
-    mpfr_div(n3, n1, n2, GMP_RNDN);
+    mpfr_div(n3, n1, n2, ROUNDING_METHOD);
     create_lua_gmp(L, n3);
     return 1;
 }
@@ -156,7 +158,7 @@ int lib_gmp_pow(lua_State *L)
 
     mpfr_t n3;
     mpfr_init(n3);
-    mpfr_pow(n3, n1, n2, GMP_RNDN);
+    mpfr_pow(n3, n1, n2, ROUNDING_METHOD);
     create_lua_gmp(L, n3);
     return 1;
 }
@@ -187,7 +189,7 @@ int lib_gmp_new(lua_State *L)
 
     mpfr_t num;
     mpfr_init(num);
-    mpfr_set_d(num, n, GMP_RNDN);
+    mpfr_set_d(num, n, ROUNDING_METHOD);
     create_lua_gmp(L, num);
 
     return 1;
@@ -200,7 +202,7 @@ int lib_gmp_max(lua_State *L)
 
     mpfr_t n3;
     mpfr_init(n3);
-    mpfr_max(n3, n1, n2, GMP_RNDN);
+    mpfr_max(n3, n1, n2, ROUNDING_METHOD);
     create_lua_gmp(L, n3);
     return 1;
 }
@@ -212,7 +214,7 @@ int lib_gmp_min(lua_State *L)
 
     mpfr_t n3;
     mpfr_init(n3);
-    mpfr_min(n3, n1, n2, GMP_RNDN);
+    mpfr_min(n3, n1, n2, ROUNDING_METHOD);
     create_lua_gmp(L, n3);
     return 1;
 }
@@ -221,6 +223,6 @@ int lib_gmp_min(lua_State *L)
 int lib_gmp_get_value(lua_State *L)
 {
     mpfr_ptr n = check_gmp(L, 1);
-    lua_pushnumber(L, mpfr_get_d(n, GMP_RNDN));
+    lua_pushnumber(L, mpfr_get_d(n, ROUNDING_METHOD));
     return 1;
 }
