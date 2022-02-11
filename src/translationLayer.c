@@ -18,6 +18,7 @@
 #include "lib/lib_event_handler.h"
 #include "lib/lib_focus_set.h"
 #include "lib/lib_geom.h"
+#include "lib/lib_gmp.h"
 #include "lib/lib_info.h"
 #include "lib/lib_layout.h"
 #include "lib/lib_list.h"
@@ -274,6 +275,7 @@ void load_lua_api(lua_State *L)
     lua_load_events(L);
     lua_load_focus_set(L);
     lua_load_geom(L);
+    lua_load_gmp(L);
     lua_load_info(L);
     lua_load_layout(L);
     lua_load_list(L);

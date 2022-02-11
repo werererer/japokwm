@@ -170,6 +170,7 @@ deps = [\
     dependency('threads'),
     dependency('libinput'),
     dependency('libuv'),
+    dependency('mpfr'),
     ]
 
 # meson.add_install_script('install.sh')

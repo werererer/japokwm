@@ -48,6 +48,7 @@ srcs = files(
     'lib/lib_action.c',
     'lib/lib_bitset.c',
     'lib/lib_color.c',
+    'lib/lib_gmp.c',
     'lib/lib_container.c',
     'lib/lib_cursor.c',
     'lib/lib_cursor_mode.c',
