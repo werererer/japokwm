@@ -97,7 +97,9 @@ void lua_get_default_master_layout_data(lua_State *L);
 /*
  * create a lua table that looks like this:
  * {
- *   {2, 3, 4, 5, 6, 7, 8, 9}
+ *   {
+ *     {2, 3, 4, 5, 6, 7, 8, 9}
+ *   }
  * }
  */
 void lua_get_default_resize_data(lua_State *L);

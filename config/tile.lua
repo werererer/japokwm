@@ -266,10 +266,10 @@ local function is_invalid(con)
     if con == nil then
         return true
     end
-    if con[WIDTH] < 0.01 then
+    if con[WIDTH] <= 0.1 then
         return true
     end
-    if con[HEIGHT] < 0.01 then
+    if con[HEIGHT] <= 0.1 then
         return true
     end
     return false
@@ -284,22 +284,18 @@ local function get_transform_directions(con, new_geom)
     local directions = {}
     -- left
     if not is_approx_equal(new_geom[X], con[X]) then
-        print("left")
         directions[#directions+1] = Direction.left
     end
     -- right
     if not is_approx_equal(new_geom[X] + new_geom[WIDTH], con[X] + con[WIDTH]) then
-        print("right")
         directions[#directions+1] = Direction.right
     end
     -- top
     if not is_approx_equal(new_geom[Y], con[Y]) then
-        print("top")
         directions[#directions+1] = Direction.top
     end
     -- bottom
     if not is_approx_equal(new_geom[Y] + new_geom[HEIGHT], con[Y] + con[HEIGHT]) then
-        print("bottom")
         directions[#directions+1] = Direction.bottom
     end
     return directions
@@ -327,6 +323,7 @@ local function apply_resize_function_with_geometry(lt_data_el, i, new_geom)
     end
     local old_geom = lt_data_el[i]
     local transform_directions = get_transform_directions(old_geom, new_geom)
+
     for x = 1,#transform_directions do
         local dir = transform_directions[x]
 
@@ -390,11 +387,14 @@ end
 
 -- returns 0 if not found
 local function get_layout_element(layout_data_element_id, resize_data)
-    for j=1,#resize_data do
-        local resize_data_element = resize_data[j]
-        for h=1, #resize_data[j] do
-            if layout_data_element_id == resize_data_element[h] then
-                return j
+    for i =1, #resize_data do
+        local resize_container_data = resize_data[i]
+        for j=1,#resize_container_data do
+            local resize_data_element = resize_container_data[j]
+            for h=1, #resize_data_element do
+                if layout_data_element_id == resize_data_element[h] then
+                    return j
+                end
             end
         end
     end
@@ -456,7 +456,8 @@ function Resize_main_all(lt, n, direction)
         return lt.layout_data
     end
 
-    local resize_element = lt.resize_data[layout_id]
+    local resize_container_data = lt.resize_data[1]
+    local resize_element = resize_container_data[layout_id]
     for _,id in ipairs(resize_element) do
         if id <= #lt.o_layout_data then
             lt.layout_data[id] = resize_all(lt.layout_data[id], 1, n, direction)

@@ -396,10 +396,14 @@ void lua_get_default_resize_data(lua_State *L)
     {
         lua_createtable(L, 1, 0);
         {
-            for (int i = 1; i < 10; i++) {
-                lua_pushinteger(L, i+1);
-                lua_rawseti(L, -2, i);
+            lua_createtable(L, 1, 0);
+            {
+                for (int i = 1; i < 10; i++) {
+                    lua_pushinteger(L, i+1);
+                    lua_rawseti(L, -2, i);
+                }
             }
+            lua_rawseti(L, -2, 1);
         }
         lua_rawseti(L, -2, 1);
     }
