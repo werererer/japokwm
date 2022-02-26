@@ -408,6 +408,8 @@ void handle_cursor_button(struct wl_listener *listener, void *data)
                 /* get modifiers */
                 struct seat *seat = input_manager_get_default_seat();
                 struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat->wlr_seat);
+                if (!kb)
+                    return;
                 int mods = wlr_keyboard_get_modifiers(kb);
 
                 char *bind = mod_to_keybinding(mods, sym);
