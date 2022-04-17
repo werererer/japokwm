@@ -387,13 +387,16 @@ end
 
 -- returns 0 if not found
 local function get_layout_element(layout_data_element_id, resize_data)
-    for i =1, #resize_data do
-        local resize_container_data = resize_data[i]
-        for j=1,#resize_container_data do
-            local resize_data_element = resize_container_data[j]
-            for h=1, #resize_data_element do
-                if layout_data_element_id == resize_data_element[h] then
-                    return j
+    -- iterate for each element of resize_data if the key is an integer
+    for k, v in pairs(resize_data) do
+        if type(k) == "number" then
+            local resize_container_data = resize_data[k]
+            for j=1,#resize_container_data do
+                local resize_data_element = resize_container_data[j]
+                for h=1, #resize_data_element do
+                    if layout_data_element_id == resize_data_element[h] then
+                        return j
+                    end
                 end
             end
         end

@@ -119,5 +119,8 @@ local layout_data = {
 }
 
 layout:set(layout_data)
--- opt.set_resize_data = {{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}}
+local resize_groups = {}
+resize_groups[1] = {{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}}
+layout:set_resize_data(resize_groups)
 opt.resize_direction = Direction.all
+print("works")
