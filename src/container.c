@@ -864,15 +864,7 @@ void container_set_tiled_geom(struct container *con, struct wlr_box geom)
     if (!property)
         return;
 
-    struct monitor *m = container_get_monitor(con);
-    struct wlr_box m_geom = monitor_get_active_geom(m);
-    printf("final geom:\n");
-    printf("geom.x: %f\n", scale_integer_to_percent(geom.x));
-    printf("geom.y: %f\n", scale_integer_to_percent(geom.y));
-    printf("geom.width: %f\n", scale_integer_to_percent(geom.width));
-    printf("geom.height: %f\n", scale_integer_to_percent(geom.height));
-
-    property->geom = get_absolute_box(geom, m_geom);
+    property->geom = geom;
 }
 
 void container_set_floating_geom_at_tag(struct container *con,
@@ -945,8 +937,11 @@ struct wlr_box container_get_tiled_geom_at_tag(struct container *con, struct tag
     struct container_property *property =
         g_ptr_array_index(con->properties, tag->id);
 
-    struct wlr_box geom = property->geom;
+    struct wlr_box rel_geom = property->geom;
+    struct monitor *m = container_get_monitor(con);
+    struct wlr_box m_geom = monitor_get_active_geom(m);
 
+    struct wlr_box geom = get_absolute_box(rel_geom, m_geom);
     if (con->client->type == LAYER_SHELL) {
         geom = con->global_geom;
     }
@@ -1214,12 +1209,17 @@ void container_resize_in_layout(
     if (container_is_floating(con))
         return;
 
-    struct wlr_box geom = container_get_current_geom(con);
+    struct container_property *property = container_get_property(con);
+    struct wlr_box geom = property->geom;
+    // struct wlr_box geom = container_get_current_geom(con);
+    printf("geom: %d %d %d %d\n", geom.x, geom.y, geom.width, geom.height);
 
     // geom.width = absolute_x_to_container_relative(geom, cursor->x - offsetx);
     // geom.height = absolute_y_to_container_relative(geom, cursor->y - offsety);
-    int cursor_x = cursor->x - offsetx;
-    int cursor_y = cursor->y - offsety;
+    struct monitor *m = xy_to_monitor(cursor->x, cursor->y);
+    struct wlr_box m_geom = monitor_get_active_geom(m);
+    int cursor_x = (cursor->x - offsetx)/m_geom.width*PERCENT_TO_INTEGER_SCALE;
+    int cursor_y = (cursor->y - offsety)/m_geom.height*PERCENT_TO_INTEGER_SCALE;
     if (grabbed_edges == WLR_EDGE_LEFT) {
         int dx = (cursor_x) - geom.x;
         geom.x = cursor_x;
@@ -1236,14 +1236,15 @@ void container_resize_in_layout(
     if (grabbed_edges == WLR_EDGE_BOTTOM) {
         geom.height = cursor_y - geom.y;
     }
+    printf("new geom: %d %d %d %d\n", geom.x, geom.y, geom.width, geom.height);
 
     // struct wlr_box test_geom = {
-    //     .x = 300,
-    //     .y = 300,
-    //     .width = 100,
-    //     .height = 100,
+    //     .x = 2000,
+    //     .y = 2000,
+    //     .width = 8000,
+    //     .height = 8000,
     // };
-
+    printf("grabbed edges: %d\n", grabbed_edges);
     resize_container_in_layout(con, geom);
 }
 

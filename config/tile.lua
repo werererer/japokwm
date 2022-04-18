@@ -440,12 +440,11 @@ function Resize_container_in_layout(lt, i, new_geom)
     new_lua_geom[WIDTH] = new_geom.width
     new_lua_geom[HEIGHT] = new_geom.height
 
-    local mon_geom = Monitor.focused.root.geom
     local mon_geom_transfered = {}
-    mon_geom_transfered[X] = mon_geom.x
-    mon_geom_transfered[Y] = mon_geom.y
-    mon_geom_transfered[WIDTH] = mon_geom.width
-    mon_geom_transfered[HEIGHT] = mon_geom.height
+    mon_geom_transfered[X] = 0
+    mon_geom_transfered[Y] = 0
+    mon_geom_transfered[WIDTH] = 10000
+    mon_geom_transfered[HEIGHT] = 10000
     abs_container_to_relative(new_lua_geom, mon_geom_transfered)
 
     apply_resize_function_with_geometry(lt.layout_data[layout_data_element_id], i, new_lua_geom)
