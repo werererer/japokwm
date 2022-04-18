@@ -115,8 +115,8 @@ static void update_layout_counters(struct tag *tag)
     lt->n_hidden = lt->n_all - lt->n_visible;
 }
 
-static struct wlr_fbox lua_unbox_layout_geom(lua_State *L, int i) {
-    struct wlr_fbox geom;
+static struct wlr_box lua_unbox_layout_geom(lua_State *L, int i) {
+    struct wlr_box geom;
 
     if (luaL_len(L, -1) < i) {
         printf("ERROR: index to high: index %i len %lli", i, luaL_len(L, -1));
@@ -125,16 +125,16 @@ static struct wlr_fbox lua_unbox_layout_geom(lua_State *L, int i) {
     lua_rawgeti(L, -1, i);
 
     lua_rawgeti(L, -1, 1);
-    geom.x = luaL_checknumber(L, -1);
+    geom.x = scale_percent_to_integer(luaL_checknumber(L, -1));
     lua_pop(L, 1);
     lua_rawgeti(L, -1, 2);
-    geom.y = luaL_checknumber(L, -1);
+    geom.y = scale_percent_to_integer(luaL_checknumber(L, -1));
     lua_pop(L, 1);
     lua_rawgeti(L, -1, 3);
-    geom.width = luaL_checknumber(L, -1);
+    geom.width = scale_percent_to_integer(luaL_checknumber(L, -1));
     lua_pop(L, 1);
     lua_rawgeti(L, -1, 4);
-    geom.height = luaL_checknumber(L, -1);
+    geom.height = scale_percent_to_integer(luaL_checknumber(L, -1));
     lua_pop(L, 1);
 
     lua_pop(L, 1);
@@ -154,12 +154,12 @@ static void apply_nmaster_layout(struct wlr_box *box, struct layout *lt, int pos
     g = MAX(MIN(len, g), 1);
     lua_rawgeti(L, -1, g);
     int k = MIN(position, g);
-    struct wlr_fbox geom = lua_unbox_layout_geom(L, k);
+    struct wlr_box geom = lua_unbox_layout_geom(L, k);
     lua_pop(L, 1);
     lua_pop(L, 1);
 
     struct wlr_box obox = get_absolute_box(geom, *box);
-    memcpy(box, &obox, sizeof(struct wlr_box));
+    *box = obox;
 }
 
 static struct wlr_box get_nth_geom_in_layout(lua_State *L, struct layout *lt, 
@@ -169,10 +169,8 @@ static struct wlr_box get_nth_geom_in_layout(lua_State *L, struct layout *lt,
     int n = MAX(0, arrange_position+1 - lt->n_master) + 1;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_ref);
-    struct wlr_fbox rel_geom = lua_unbox_layout_geom(L, n);
+    struct wlr_box box = lua_unbox_layout_geom(L, n);
     lua_pop(L, 1);
-
-    struct wlr_box box = get_absolute_box(rel_geom, root_geom);
 
     // TODO fix this function, hard to read
     apply_nmaster_layout(&box, lt, arrange_position+1);

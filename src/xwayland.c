@@ -175,7 +175,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     if (!wlr_box_intersection(&tmp, &m->geom, &prefered_geom)) {
         struct monitor *xym = xy_to_monitor(prefered_geom.x, prefered_geom.y);
         if (xym) {
-            struct wlr_fbox rel_geom = get_relative_box(prefered_geom, xym->geom);
+            struct wlr_box rel_geom = get_relative_box(prefered_geom, xym->geom);
             prefered_geom = get_absolute_box(rel_geom, m->geom);
         }
     }

@@ -22,6 +22,8 @@ struct direction_value {
 struct container_property {
     // geometry on each layout
     struct wlr_box geom;
+    // 10000 = 100% that means 1 = 0.01%
+    struct wlr_box relative_geom;
     struct wlr_box floating_geom;
     /* layout-relative, includes border */
     struct direction_value border_width;
@@ -75,8 +77,8 @@ struct container *get_container_on_focus_stack(int tag_id, int position);
 
 struct wlr_box get_center_box(struct wlr_box ref);
 struct wlr_box get_centered_box(struct wlr_box box, struct wlr_box ref);
-struct wlr_box get_absolute_box(struct wlr_fbox ref, struct wlr_box box);
-struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box ref);
+struct wlr_box get_absolute_box(struct wlr_box ref, struct wlr_box box);
+struct wlr_box get_relative_box(struct wlr_box box, struct wlr_box ref);
 struct wlr_box get_monitor_local_box(struct wlr_box box, struct monitor *m);
 struct wlr_fbox lua_togeometry(lua_State *L);
 

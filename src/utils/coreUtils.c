@@ -563,3 +563,13 @@ void print_trace()
 
     free (strings);
 }
+
+int scale_percent_to_integer(float percent)
+{
+    return (int)(percent * PERCENT_TO_INTEGER_SCALE);
+}
+
+float scale_integer_to_percent(int integer)
+{
+    return (float)integer / PERCENT_TO_INTEGER_SCALE;
+}

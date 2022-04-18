@@ -350,23 +350,23 @@ struct wlr_box get_centered_box(struct wlr_box box, struct wlr_box ref)
         };
 }
 
-struct wlr_box get_absolute_box(struct wlr_fbox ref, struct wlr_box box)
+struct wlr_box get_absolute_box(struct wlr_box ref, struct wlr_box box)
 {
     struct wlr_box b;
-    b.x = ref.x * box.width + box.x;
-    b.y = ref.y * box.height + box.y;
-    b.width = box.width * ref.width;
-    b.height = box.height * ref.height;
+    b.x = scale_integer_to_percent(ref.x) * box.width + box.x;
+    b.y = scale_integer_to_percent(ref.y) * box.height + box.y;
+    b.width = scale_integer_to_percent(ref.width) * box.width;
+    b.height = scale_integer_to_percent(ref.height) * box.height;
     return b;
 }
 
-struct wlr_fbox get_relative_box(struct wlr_box box, struct wlr_box ref)
+struct wlr_box get_relative_box(struct wlr_box box, struct wlr_box ref)
 {
-    struct wlr_fbox b;
-    b.x = (float)box.x / ref.width;
-    b.y = (float)box.y / ref.height;
-    b.width = (float)box.width / ref.width;
-    b.height = (float)box.height / ref.height;
+    struct wlr_box b;
+    b.x = scale_percent_to_integer((float)box.x / ref.width);
+    b.y = scale_percent_to_integer((float)box.y / ref.height);
+    b.width = scale_percent_to_integer((float)box.width / ref.width);
+    b.height = scale_percent_to_integer((float)box.height / ref.height);
     return b;
 }
 
@@ -401,10 +401,15 @@ struct wlr_fbox lua_togeometry(lua_State *L)
     return geom;
 }
 
+// TODO: look if this function is still needed
 struct wlr_box apply_bounds(struct container *con, struct wlr_box box)
 {
     /* set minimum possible */
     struct wlr_box con_geom = container_get_current_content_geom(con);
+
+    if (container_is_tiled(con))
+        return con_geom;
+
     con_geom.width = MAX(MIN_CONTAINER_WIDTH, con_geom.width);
     con_geom.height = MAX(MIN_CONTAINER_HEIGHT, con_geom.height);
 
@@ -858,7 +863,16 @@ void container_set_tiled_geom(struct container *con, struct wlr_box geom)
     struct container_property *property = container_get_property(con);
     if (!property)
         return;
-    property->geom = geom;
+
+    struct monitor *m = container_get_monitor(con);
+    struct wlr_box m_geom = monitor_get_active_geom(m);
+    printf("final geom:\n");
+    printf("geom.x: %f\n", scale_integer_to_percent(geom.x));
+    printf("geom.y: %f\n", scale_integer_to_percent(geom.y));
+    printf("geom.width: %f\n", scale_integer_to_percent(geom.width));
+    printf("geom.height: %f\n", scale_integer_to_percent(geom.height));
+
+    property->geom = get_absolute_box(geom, m_geom);
 }
 
 void container_set_floating_geom_at_tag(struct container *con,

@@ -29,6 +29,7 @@ typedef GPtrArray GPtrArray2D;
 #define MAXLEN 15
 #define NUM_CHARS 64
 #define NUM_DIGITS 9
+#define PERCENT_TO_INTEGER_SCALE 10000
 #define INVALID_POSITION -1
 #define INVALID_TAG_ID -1
 #define SWAP(a, b) do { \
@@ -148,5 +149,8 @@ bool is_approx_equal(double a, double b, double error_range);
 
 int lua_idx_to_c_idx(int lua_idx);
 int c_idx_to_lua_idx(int c_idx);
+
+int scale_percent_to_integer(float percent);
+float scale_integer_to_percent(int integer);
 
 #endif /* COREUTILS */
