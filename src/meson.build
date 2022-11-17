@@ -26,6 +26,7 @@ srcs = files(
     'ipc-server.c',
     'keybinding.c',
     'keyboard.c',
+    'tablet.c',
     'layer_shell.c',
     'layout.c',
     'main.c',

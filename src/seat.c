@@ -213,6 +213,19 @@ static void seat_configure_keyboard(struct seat *seat,
     /* } */
 }
 
+static void seat_configure_tablet_tool(struct seat *seat,
+		struct seat_device *device) {
+	if (!device->tablet) {
+		device->tablet = sway_tablet_create(seat, device);
+	}
+	sway_configure_tablet(device->tablet);
+    // TODO we only need this
+	wlr_cursor_attach_input_device(seat->cursor->cursor,
+		device->input_device->wlr_device);
+	// seat_apply_input_config(seat, sway_device);
+}
+
+
 void seat_configure_device(struct seat *seat,
         struct input_device *input_device) {
     struct seat_device *seat_device = seat_get_device(seat, input_device);
@@ -227,6 +240,9 @@ void seat_configure_device(struct seat *seat,
         case WLR_INPUT_DEVICE_KEYBOARD:
             seat_configure_keyboard(seat, seat_device);
             break;
+		case WLR_INPUT_DEVICE_TABLET_TOOL:
+			seat_configure_tablet_tool(seat, seat_device);
+			break;
         default:
             break;
     }

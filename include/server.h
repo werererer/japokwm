@@ -10,6 +10,7 @@
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/types/wlr_relative_pointer_v1.h>
 #include <wlr/types/wlr_output_management_v1.h>
+#include <wlr/types/wlr_tablet_v2.h>
 #include <glib.h>
 #include <pthread.h>
 
@@ -47,6 +48,7 @@ struct server {
     struct wlr_input_inhibit_manager *input_inhibitor_mgr;
     struct wlr_pointer_constraints_v1 *pointer_constraints;
     struct wlr_output_manager_v1 *output_mgr;
+    struct wlr_tablet_manager_v2 *tablet_mgr;
 
     struct layout *default_layout;
     struct ring_buffer *default_layout_ring;

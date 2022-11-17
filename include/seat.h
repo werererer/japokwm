@@ -21,6 +21,7 @@ struct seat_device {
     struct seat *seat;
     struct input_device *input_device;
     struct keyboard *keyboard;
+	struct sway_tablet *tablet;
 };
 
 struct pointer_constraint {

@@ -187,6 +187,7 @@ static void init_event_handlers(struct server *server)
     LISTEN(&server->output_mgr->events.apply, &server->output_mgr_apply, handle_output_mgr_apply);
     LISTEN(&server->output_mgr->events.test, &server->output_mgr_test, handle_output_mgr_test);
 
+    server->tablet_mgr = wlr_tablet_v2_create(server->wl_display);
 }
 
 static void finalize_event_handlers(struct server *server)
