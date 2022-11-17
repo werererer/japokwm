@@ -221,9 +221,18 @@ static void seat_configure_tablet_tool(struct seat *seat,
     }
     configure_tablet(device->tablet);
     // TODO we only need this
+    printf("attach tablet\n");
     wlr_cursor_attach_input_device(seat->cursor->wlr_cursor,
         device->input_device->wlr_device);
     // seat_apply_input_config(seat, sway_device);
+}
+
+static void seat_configure_tablet_pad(struct seat *seat,
+        struct seat_device *device) {
+    if (!device->tablet_pad) {
+        device->tablet_pad = tablet_pad_create(seat, device);
+    }
+    configure_tablet_pad(device->tablet_pad);
 }
 
 
@@ -243,6 +252,9 @@ void seat_configure_device(struct seat *seat,
             break;
         case WLR_INPUT_DEVICE_TABLET_TOOL:
             seat_configure_tablet_tool(seat, seat_device);
+            break;
+        case WLR_INPUT_DEVICE_TABLET_PAD:
+            seat_configure_tablet_pad(seat, seat_device);
             break;
         default:
             break;

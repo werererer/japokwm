@@ -23,7 +23,8 @@ struct seat_device {
     struct seat *seat;
     struct input_device *input_device;
     struct keyboard *keyboard;
-	struct tablet *tablet;
+    struct tablet *tablet;
+    struct tablet_pad *tablet_pad;
 };
 
 struct pointer_constraint {

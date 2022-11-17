@@ -21,7 +21,6 @@ static void handle_pad_tablet_destroy(struct wl_listener *listener, void *data) 
 
 static void attach_tablet_pad(struct tablet_pad *tablet_pad,
         struct tablet *tablet) {
-    
     printf( "Attaching tablet pad \"%s\" to tablet tool \"%s\"",
         tablet_pad->seat_device->input_device->wlr_device->name,
         tablet->seat_device->input_device->wlr_device->name);
