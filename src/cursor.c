@@ -172,6 +172,8 @@ struct cursor *create_cursor(struct seat *seat)
     LISTEN(&seat->wlr_seat->events.request_set_cursor, &cursor->request_set_cursor, handle_set_cursor);
 
     wl_list_init(&cursor->constraint_commit.link);
+    wl_list_init(&cursor->tablets);
+    wl_list_init(&cursor->tablet_pads);
 
     return cursor;
 }

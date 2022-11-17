@@ -467,6 +467,8 @@ int setup_server(struct server *server)
     wl_signal_add(&server->output_mgr->events.apply, &server->output_mgr_apply);
     wl_signal_add(&server->output_mgr->events.test, &server->output_mgr_test);
 
+    server->tablet_v2 = wlr_tablet_v2_create(server->wl_display);
+
 #ifdef JAPOKWM_HAS_XWAYLAND
     init_xwayland(server->wl_display, seat);
 #endif
