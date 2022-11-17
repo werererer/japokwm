@@ -38,6 +38,8 @@ struct server {
     struct wlr_layer_shell_v1 *layer_shell;
     struct wlr_xdg_decoration_manager_v1 *xdeco_mgr;
 
+    struct wlr_tablet_manager_v2 *tablet_v2;
+
     struct input_manager *input_manager;
 
     struct event_handler *event_handler;

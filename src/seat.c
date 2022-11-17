@@ -12,6 +12,7 @@
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "keyboard.h"
+#include "tablet.h"
 
 static void handle_set_selection(struct wl_listener *listener, void *data)
 {
@@ -214,15 +215,15 @@ static void seat_configure_keyboard(struct seat *seat,
 }
 
 static void seat_configure_tablet_tool(struct seat *seat,
-		struct seat_device *device) {
-	if (!device->tablet) {
-		device->tablet = sway_tablet_create(seat, device);
-	}
-	sway_configure_tablet(device->tablet);
+        struct seat_device *device) {
+    if (!device->tablet) {
+        device->tablet = tablet_create(seat, device);
+    }
+    configure_tablet(device->tablet);
     // TODO we only need this
-	wlr_cursor_attach_input_device(seat->cursor->cursor,
-		device->input_device->wlr_device);
-	// seat_apply_input_config(seat, sway_device);
+    wlr_cursor_attach_input_device(seat->cursor->wlr_cursor,
+        device->input_device->wlr_device);
+    // seat_apply_input_config(seat, sway_device);
 }
 
 
@@ -240,9 +241,9 @@ void seat_configure_device(struct seat *seat,
         case WLR_INPUT_DEVICE_KEYBOARD:
             seat_configure_keyboard(seat, seat_device);
             break;
-		case WLR_INPUT_DEVICE_TABLET_TOOL:
-			seat_configure_tablet_tool(seat, seat_device);
-			break;
+        case WLR_INPUT_DEVICE_TABLET_TOOL:
+            seat_configure_tablet_tool(seat, seat_device);
+            break;
         default:
             break;
     }

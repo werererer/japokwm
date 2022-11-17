@@ -37,6 +37,8 @@ struct cursor {
     struct wl_event_source *hide_source;
 
     struct wlr_xcursor_manager *xcursor_mgr;
+    struct wl_list tablets;
+	struct wl_list tablet_pads;
 
     enum cursor_mode cursor_mode;
     struct wlr_surface *cursor_surface;
