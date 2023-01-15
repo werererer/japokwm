@@ -82,7 +82,7 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     wlr_output_enable(output, true);
 
-    m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
+    wlr_output_layout_get_box(server.output_layout, m->wlr_output, &m->geom);
     m->root = create_root(m, m->geom);
 
     if (is_first_monitor) {
@@ -183,7 +183,7 @@ damage_finish:
 static void handle_output_mode(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, mode);
-    m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
+    wlr_output_layout_get_box(server.output_layout, m->wlr_output, &m->geom);
     arrange_layers(m);
 }
 

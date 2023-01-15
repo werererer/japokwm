@@ -186,7 +186,7 @@ static void handle_new_virtual_pointer(struct wl_listener *listener, void *data)
 
     struct wlr_virtual_pointer_v1_new_pointer_event *event = data;
     struct wlr_virtual_pointer_v1 *pointer = event->new_pointer;
-    struct wlr_input_device *device = &pointer->input_device;
+    struct wlr_input_device *device = &pointer->pointer.base;
 
     struct seat *seat = event->suggested_seat ?
         input_manager_seat_from_wlr_seat(event->suggested_seat) :
@@ -300,4 +300,3 @@ char *input_device_get_identifier(struct wlr_input_device *device)
     free(name);
     return identifier;
 }
-

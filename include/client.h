@@ -3,7 +3,8 @@
 #include <X11/Xlib.h>
 #include <wlr/types/wlr_layer_shell_v1.h>
 #include <wlr/xwayland.h>
-#include <wlr/types/wlr_surface.h>
+#include <wlr/types/wlr_compositor.h>
+#include <wlr/types/wlr_subcompositor.h>
 
 #include "bitset/bitset.h"
 #include "seat.h"

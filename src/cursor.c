@@ -3,6 +3,7 @@
 #include <wlr/xcursor.h>
 #include <wlr/types/wlr_relative_pointer_v1.h>
 #include <wlr/util/region.h>
+#include <wlr/types/wlr_pointer.h>
 
 #include "container.h"
 #include "keybinding.h"
@@ -51,7 +52,7 @@ static void handle_axis_notify(struct wl_listener *listener, void *data)
     struct cursor *cursor = wl_container_of(listener, cursor, axis);
     /* This event is forwarded by the cursor when a pointer emits an axis event,
      * for example when you move the scroll wheel. */
-    struct wlr_event_pointer_axis *event = data;
+    struct wlr_pointer_axis_event *event = data;
     /* Notify the client with pointer focus of the axis event. */
     wlr_seat_pointer_notify_axis(cursor->seat->wlr_seat,
             event->time_msec, event->orientation, event->delta,
@@ -274,27 +275,27 @@ void cursor_handle_activity_from_device(struct cursor *cursor, struct wlr_input_
 void handle_motion_relative(struct wl_listener *listener, void *data)
 {
     struct cursor *cursor = wl_container_of(listener, cursor, motion);
-    struct wlr_event_pointer_motion *event = data;
-    cursor_handle_activity_from_device(cursor, event->device);
+    struct wlr_pointer_motion_event *event = data;
+    cursor_handle_activity_from_device(cursor, &event->pointer->base);
 
-    motion_notify(cursor, event->time_msec, event->device, event->delta_x,
+    motion_notify(cursor, event->time_msec, &event->pointer->base, event->delta_x,
             event->delta_y, event->unaccel_dx, event->unaccel_dy);
 }
 
 void handle_motion_absolute(struct wl_listener *listener, void *data)
 {
     struct cursor *cursor = wl_container_of(listener, cursor, motion_absolute);
-    struct wlr_event_pointer_motion_absolute *event = data;
-    cursor_handle_activity_from_device(cursor, event->device);
+    struct wlr_pointer_motion_absolute_event *event = data;
+    cursor_handle_activity_from_device(cursor, &event->pointer->base);
 
     double lx, ly;
-    wlr_cursor_absolute_to_layout_coords(cursor->wlr_cursor, event->device,
+    wlr_cursor_absolute_to_layout_coords(cursor->wlr_cursor, &event->pointer->base,
             event->x, event->y, &lx, &ly);
 
     double dx = lx - cursor->wlr_cursor->x;
     double dy = ly - cursor->wlr_cursor->y;
 
-    motion_notify(cursor, event->time_msec, event->device, dx, dy, dx, dy);
+    motion_notify(cursor, event->time_msec, &event->pointer->base, dx, dy, dx, dy);
 }
 
 void focus_under_cursor(struct cursor *cursor, uint32_t time)
@@ -399,7 +400,7 @@ void motion_notify(struct cursor *cursor, uint32_t time_msec,
 void handle_cursor_button(struct wl_listener *listener, void *data)
 {
     struct cursor *cursor = wl_container_of(listener, cursor, button);
-    struct wlr_event_pointer_button *event = data;
+    struct wlr_pointer_button_event *event = data;
 
     switch (event->state) {
         case WLR_BUTTON_PRESSED:

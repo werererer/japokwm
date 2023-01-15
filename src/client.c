@@ -87,8 +87,8 @@ static void unfocus_client(struct client *c)
         return;
 
     switch (c->type) {
-        case XDG_SHELL:
-            wlr_xdg_toplevel_set_activated(c->surface.xdg, false);
+            c->surface.xdg;
+            wlr_xdg_toplevel_set_activated(c->surface.xdg->toplevel, false);
             break;
         case X11_MANAGED:
         case X11_UNMANAGED:
@@ -159,7 +159,7 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
     /* Activate the new client */
     switch (c->type) {
         case XDG_SHELL:
-            wlr_xdg_toplevel_set_activated(c->surface.xdg, true);
+            wlr_xdg_toplevel_set_activated(c->surface.xdg->toplevel, true);
             break;
         case X11_MANAGED:
         case X11_UNMANAGED:
@@ -189,7 +189,7 @@ void kill_client(struct client *c)
 
     switch (c->type) {
         case XDG_SHELL:
-            wlr_xdg_toplevel_send_close(c->surface.xdg);
+            wlr_xdg_toplevel_send_close(c->surface.xdg->toplevel);
             break;
         case LAYER_SHELL:
             wlr_layer_surface_v1_destroy(c->surface.layer);

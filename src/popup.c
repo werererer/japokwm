@@ -31,7 +31,7 @@ struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popu
     popup->xdg = xdg_popup;
     popup->toplevel = toplevel;
 
-    struct wlr_box box = popup->xdg->geometry;
+    struct wlr_box box = xdg_popup->current.geometry;
     box.x = 0;
     box.y = 0;
     box.width = m->geom.width;
@@ -39,10 +39,10 @@ struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popu
 
     wlr_xdg_popup_unconstrain_from_box(popup->xdg, &box);
     // the root window may be resized. This must be adjusted
-    popup->geom.x = popup->xdg->geometry.x + parent_geom.x;
-    popup->geom.y = popup->xdg->geometry.y + parent_geom.y;
-    popup->geom.width = popup->xdg->geometry.width;
-    popup->geom.height = popup->xdg->geometry.height;
+    popup->geom.x = xdg_popup->current.geometry.x + parent_geom.x;
+    popup->geom.y = xdg_popup->current.geometry.y + parent_geom.y;
+    popup->geom.width = xdg_popup->current.geometry.width;
+    popup->geom.height = xdg_popup->current.geometry.height;
     popup->m = m;
 
     LISTEN(&popup->xdg->base->events.map, &popup->map, popup_handle_map);

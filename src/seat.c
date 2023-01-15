@@ -205,7 +205,7 @@ static void seat_configure_keyboard(struct seat *seat,
         create_keyboard(seat, seat_device);
     }
     /* sway_keyboard_configure(seat_device->keyboard); */
-    wlr_seat_set_keyboard(seat->wlr_seat, seat_device->input_device->wlr_device);
+    wlr_seat_set_keyboard(seat->wlr_seat, seat_device->keyboard->wlr);
     /* struct sway_node *focus = seat_get_focus(seat); */
     /* if (focus && node_is_view(focus)) { */
     /*     // force notify reenter to pick up the new configuration */

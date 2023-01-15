@@ -199,7 +199,7 @@ static void handle_tablet_pad_attach(struct wl_listener *listener,
 
 static void handle_tablet_pad_ring(struct wl_listener *listener, void *data) {
     struct tablet_pad *pad = wl_container_of(listener, pad, ring);
-    struct wlr_event_tablet_pad_ring *event = data;
+    struct wlr_tablet_pad_ring_event *event = data;
 
     if (!pad->current_surface) {
         return;
@@ -213,7 +213,7 @@ static void handle_tablet_pad_ring(struct wl_listener *listener, void *data) {
 
 static void handle_tablet_pad_strip(struct wl_listener *listener, void *data) {
     struct tablet_pad *pad = wl_container_of(listener, pad, strip);
-    struct wlr_event_tablet_pad_strip *event = data;
+    struct wlr_tablet_pad_strip_event *event = data;
 
     if (!pad->current_surface) {
         return;
@@ -227,7 +227,7 @@ static void handle_tablet_pad_strip(struct wl_listener *listener, void *data) {
 
 static void handle_tablet_pad_button(struct wl_listener *listener, void *data) {
     struct tablet_pad *pad = wl_container_of(listener, pad, button);
-    struct wlr_event_tablet_pad_button *event = data;
+    struct wlr_tablet_pad_button_event *event = data;
 
     if (!pad->current_surface) {
         return;
@@ -249,6 +249,7 @@ struct tablet_pad *tablet_pad_create(struct seat *seat,
         return NULL;
     }
 
+    tablet_pad->wlr = wlr_tablet_pad_from_input_device(device->input_device->wlr_device);
     tablet_pad->seat_device = device;
     wl_list_init(&tablet_pad->attach.link);
     wl_list_init(&tablet_pad->button.link);
@@ -274,20 +275,20 @@ void configure_tablet_pad(struct tablet_pad *tablet_pad) {
 
     wl_list_remove(&tablet_pad->attach.link);
     tablet_pad->attach.notify = handle_tablet_pad_attach;
-    wl_signal_add(&device->tablet_pad->events.attach_tablet,
+    wl_signal_add(&tablet_pad->wlr->events.attach_tablet,
         &tablet_pad->attach);
 
     wl_list_remove(&tablet_pad->button.link);
     tablet_pad->button.notify = handle_tablet_pad_button;
-    wl_signal_add(&device->tablet_pad->events.button, &tablet_pad->button);
+    wl_signal_add(&tablet_pad->wlr->events.button, &tablet_pad->button);
 
     wl_list_remove(&tablet_pad->strip.link);
     tablet_pad->strip.notify = handle_tablet_pad_strip;
-    wl_signal_add(&device->tablet_pad->events.strip, &tablet_pad->strip);
+    wl_signal_add(&tablet_pad->wlr->events.strip, &tablet_pad->strip);
 
     wl_list_remove(&tablet_pad->ring.link);
     tablet_pad->ring.notify = handle_tablet_pad_ring;
-    wl_signal_add(&device->tablet_pad->events.ring, &tablet_pad->ring);
+    wl_signal_add(&tablet_pad->wlr->events.ring, &tablet_pad->ring);
 
     /* Search for a sibling tablet */
     if (!wlr_input_device_is_libinput(device)) {
