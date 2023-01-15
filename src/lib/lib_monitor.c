@@ -20,6 +20,17 @@ static const struct luaL_Reg monitor_static_methods[] =
     {NULL, NULL},
 };
 
+static const  struct luaL_Reg monitor_static_setter[] =
+{
+    {NULL, NULL},
+};
+
+static const struct luaL_Reg monitor_static_getter[] =
+{
+    {"focused", lib_monitor_get_focused},
+    {NULL, NULL},
+};
+
 static const struct luaL_Reg monitor_methods[] =
 {
     {NULL, NULL},
@@ -34,7 +45,6 @@ static const struct luaL_Reg monitor_setter[] =
 
 static const struct luaL_Reg monitor_getter[] =
 {
-    {"focused", lib_monitor_get_focused},
     {"root", lib_monitor_get_root},
     {"tag", lib_monitor_get_tag},
     {NULL, NULL},
@@ -50,8 +60,11 @@ void lua_load_monitor(lua_State *L)
             monitor_getter,
             CONFIG_MONITOR);
 
-    luaL_newlib(L, monitor_static_methods);
-    lua_setglobal(L, "Monitor");
+    create_static_accessor(L,
+            "Monitor",
+            monitor_static_methods,
+            monitor_static_setter,
+            monitor_static_getter);
 }
 
 struct monitor *check_monitor(lua_State *L, int narg) {
@@ -68,6 +81,7 @@ static void create_lua_monitor(lua_State *L, struct monitor *m) {
 }
 
 // static methods
+// static getter
 int lib_monitor_get_focused(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();

@@ -157,7 +157,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
         .height = c->surface.xwayland->height,
     };
 
-    struct wlr_xwayland_surface_size_hints *size_hints = 
+   xcb_size_hints_t *size_hints = 
         c->surface.xwayland->size_hints;
     if (size_hints) {
         if (size_hints->width > MIN_CONTAINER_WIDTH
@@ -175,7 +175,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     if (!wlr_box_intersection(&tmp, &m->geom, &prefered_geom)) {
         struct monitor *xym = xy_to_monitor(prefered_geom.x, prefered_geom.y);
         if (xym) {
-            struct wlr_fbox rel_geom = get_relative_box(prefered_geom, xym->geom);
+            struct wlr_box rel_geom = get_relative_box(prefered_geom, xym->geom);
             prefered_geom = get_absolute_box(rel_geom, m->geom);
         }
     }
@@ -186,7 +186,8 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 con->on_top = false;
                 if (x11_wants_floating(con->client)) {
                     container_set_floating(con, container_fix_position, true);
-                    container_set_floating_geom(con, &prefered_geom);
+                    container_set_floating_geom(con, prefered_geom);
+                    container_update_size(con);
                 }
                 break;
             }
@@ -211,7 +212,8 @@ void maprequestx11(struct wl_listener *listener, void *data)
                 con->has_border = false;
                 lift_container(con);
                 container_set_floating(con, NULL, true);
-                container_set_floating_geom(con, &prefered_geom);
+                container_set_floating_geom(con, prefered_geom);
+                container_update_size(con);
                 break;
             }
         default:
@@ -254,7 +256,7 @@ bool x11_wants_floating(struct client *c)
     }
 #endif
 
-    struct wlr_xwayland_surface_size_hints *size_hints = surface->size_hints;
+    xcb_size_hints_t *size_hints = surface->size_hints;
     if (size_hints != NULL &&
             size_hints->min_width > 0 && size_hints->min_height > 0 &&
             (size_hints->max_width == size_hints->min_width ||

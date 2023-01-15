@@ -63,17 +63,17 @@ local layout_data = {
         {0.0, 0.6, 0.2, 0.4},
     },
 }
-
-local resize_data = {
-    {1},
-    {2},
-    {3, 4},
-    {5},
-    {6, 7, 8, 9},
-}
-
 layout:set(layout_data)
-l.config:set_resize_data(resize_data)
+
+local resize_groups = {}
+resize_groups[1] = {
+        {1},
+        {2},
+        {3, 4},
+        {5},
+        {6, 7, 8, 9},
+    }
+l.config:set_resize_data(resize_groups)
 l.config:set_master_layout_data(
 {{{0, 0, 1, 1}}, {{0, 0, 0.5, 1}, {0.5, 0, 0.5, 1}}}
 )

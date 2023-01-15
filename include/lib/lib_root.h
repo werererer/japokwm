@@ -11,8 +11,8 @@ void lua_load_root(lua_State *L);
 
 // static methods
 // methods
-int lib_root_get_area(lua_State *L);
 // getters
+int lib_root_get_geom(lua_State *L);
 // setters
 
 #endif /* LIB_ROOT_H */

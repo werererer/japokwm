@@ -5,19 +5,13 @@ local Y<const> = 2
 local WIDTH<const> = 3
 local HEIGHT<const> = 4
 
--- val is between 0 and 1 and represents how far
-local function abs_container_to_relative(con, ref_area)
-    con[X] = con[X] / ref_area[WIDTH] - ref_area[X]
-    con[Y] = con[Y] / ref_area[HEIGHT] - ref_area[Y]
-    con[WIDTH] = con[WIDTH] / ref_area[WIDTH]
-    con[HEIGHT] = con[HEIGHT] / ref_area[HEIGHT]
+function round(num, n)
+    local mult = 10^(n or 0)
+    return math.floor(num * mult + 0.5) / mult
 end
 
-local function relative_container_to_abs(con, ref_area)
-    con[X] = con[X] * ref_area[WIDTH] + ref_area[X]
-    con[Y] = con[Y] * ref_area[HEIGHT] + ref_area[Y]
-    con[WIDTH] = con[WIDTH] * ref_area[WIDTH]
-    con[HEIGHT] = con[HEIGHT] * ref_area[HEIGHT]
+function round_2(num)
+    return round(num, 2)
 end
 
 local function create_container(x, y, width, height)
@@ -27,6 +21,30 @@ local function create_container(x, y, width, height)
     con[WIDTH] = width
     con[HEIGHT] = height
     return con
+end
+
+-- val is between 0 and 1 and represents how far
+local function abs_container_to_relative(con, ref_area)
+    local x1 = con[X]
+    local y1 = con[Y]
+    local x2 = con[X] + con[WIDTH]
+    local y2 = con[Y] + con[HEIGHT]
+    local transformed_x1 = round_2(x1 / ref_area[WIDTH]) - ref_area[X]
+    local transformed_y1 = round_2(y1 / ref_area[HEIGHT]) - ref_area[Y]
+    local transformed_x2 = round_2(x2 / ref_area[WIDTH]) - ref_area[X]
+    local transformed_y2 = round_2(y2 / ref_area[HEIGHT]) - ref_area[Y]
+    local new_con = create_container(transformed_x1, transformed_y1, transformed_x2 - transformed_x1, transformed_y2 - transformed_y1)
+    con[X] = new_con[X]
+    con[Y] = new_con[Y]
+    con[WIDTH] = new_con[WIDTH]
+    con[HEIGHT] = new_con[HEIGHT]
+end
+
+local function relative_container_to_abs(con, ref_area)
+    con[X] = con[X] * ref_area[WIDTH] + ref_area[X]
+    con[Y] = con[Y] * ref_area[HEIGHT] + ref_area[Y]
+    con[WIDTH] = con[WIDTH] * ref_area[WIDTH]
+    con[HEIGHT] = con[HEIGHT] * ref_area[HEIGHT]
 end
 
 local function get_area_at_zero(area)
@@ -41,18 +59,18 @@ end
 local function get_area_local_con(con, area)
     local x1 = con[X] - area[X]
     local y1 = con[Y] - area[Y]
-    local x2 = con[X] + con[WIDTH] - area[X]
-    local y2 = con[Y] + con[HEIGHT] - area[Y]
-    local local_con = create_container(x1, y1, x2-x1, y2-y1)
+    local width = con[WIDTH]
+    local height = con[HEIGHT]
+    local local_con = create_container(x1, y1, width, height)
     return local_con
 end
 
 local function get_global_con(con, area)
-    local x1 = con[X] + area[X]
-    local y1 = con[Y] + area[Y]
-    local x2 = con[X] + con[WIDTH] + area[X]
-    local y2 = con[Y] + con[HEIGHT] + area[Y]
-    local local_con = create_container(x1, y1, x2-x1, y2-y1)
+    local x = con[X] + area[X]
+    local y = con[Y] + area[Y]
+    local width = con[WIDTH]
+    local height = con[HEIGHT]
+    local local_con = create_container(x, y, width, height)
     return local_con
 end
 
@@ -75,11 +93,14 @@ local function change_base(con, old_area, new_area)
 end
 
 local function merge_boxes(box1, box2)
+    if (box1 == nil and box2 == nil) then
+        return nil
+    end
     if (box1 == nil) then
-        return Action.deep_copy(box2)
+        return create_container(box2[X], box2[Y], box2[WIDTH], box2[HEIGHT])
     end
     if (box2 == nil) then
-        return Action.deep_copy(box1)
+        return create_container(box1[X], box1[Y], box1[WIDTH], box1[HEIGHT])
     end
     local x1 = math.min(box1[X], box2[X])
     local y1 = math.min(box1[Y], box2[Y])
@@ -103,10 +124,10 @@ local function intersection_of(con1, con2)
     local y2 = math.min(con1[Y] + con1[HEIGHT], con2[Y] + con2[HEIGHT])
     local con = create_container(x1, y1, x2 - x1, y2 - y1)
 
-    if (con[WIDTH] <= 0) then
+    if (con[WIDTH] <= 0.01) then
         return nil
     end
-    if (con[HEIGHT] <= 0) then
+    if (con[HEIGHT] <= 0.01) then
         return nil
     end
     return con
@@ -133,25 +154,28 @@ local function apply_resize(lt_data_el, old_unaffected_area, old_alpha_area, new
             change_base(beta_con, old_beta_area, new_beta_area)
         end
 
-        lt_data_el[i] = join_containers(unaffected_con, alpha_con, beta_con)
+        local new_con = join_containers(unaffected_con, alpha_con, beta_con)
+        if new_con then
+            lt_data_el[i] = new_con
+        end
     end
 end
 
 local function get_cissor_container_left(alpha_area)
-    local x1 = 0
-    local y1 = 0
-    local x2 = alpha_area[X]
-    local y2 = 1
-    local con = create_container(x1, y1, x2-x1, y2-y1)
+    local x = 0
+    local y = 0
+    local width = alpha_area[X]
+    local height = 1
+    local con = create_container(x, y, width, height)
     return con
 end
 
 local function get_cissor_container_top(alpha_area)
-    local x1 = 0
-    local y1 = 0
-    local x2 = 1
-    local y2 = alpha_area[Y]
-    local con = create_container(x1, y1, x2-x1, y2-y1)
+    local x = 0
+    local y = 0
+    local width = 1
+    local height = alpha_area[Y]
+    local con = create_container(x, y, width, height)
     return con
 end
 
@@ -211,20 +235,20 @@ local function get_unaffected_area(old_alpha_area, dir)
 end
 
 local function get_alpha_container_horizontal(con)
-    local x1 = con[X]
-    local y1 = 0
-    local x2 = con[X] + con[WIDTH]
-    local y2 = 1
-    local area = create_container(x1, y1, x2-x1, y2-y1)
+    local x = con[X]
+    local y = 0
+    local width = con[WIDTH]
+    local height = 1
+    local area = create_container(x, y, width, height)
     return area
 end
 
 local function get_alpha_container_vertical(con)
-    local x1 = 0
-    local y1 = con[Y]
-    local x2 = 1
-    local y2 = con[Y] + con[HEIGHT]
-    local area = create_container(x1, y1, x2-x1, y2-y1)
+    local x = 0
+    local y = con[Y]
+    local width = 1
+    local height = con[HEIGHT]
+    local area = create_container(x, y, width, height)
     return area
 end
 
@@ -239,20 +263,91 @@ local function get_alpha_area_from_container(con, dir)
 end
 
 local function is_invalid(con)
-    if con[WIDTH] < 0 then
+    if con == nil then
         return true
     end
-    if con[HEIGHT] < 0 then
+    if con[WIDTH] <= 0.1 then
+        return true
+    end
+    if con[HEIGHT] <= 0.1 then
         return true
     end
     return false
 end
 
+local function is_approx_equal(a, b)
+    return math.abs(a - b) < 0.01
+end
+
+-- return an array of the new directions
+local function get_transform_directions(con, new_geom)
+    local directions = {}
+    -- left
+    if not is_approx_equal(new_geom[X], con[X]) then
+        directions[#directions+1] = Direction.left
+    end
+    -- right
+    if not is_approx_equal(new_geom[X] + new_geom[WIDTH], con[X] + con[WIDTH]) then
+        directions[#directions+1] = Direction.right
+    end
+    -- top
+    if not is_approx_equal(new_geom[Y], con[Y]) then
+        directions[#directions+1] = Direction.top
+    end
+    -- bottom
+    if not is_approx_equal(new_geom[Y] + new_geom[HEIGHT], con[Y] + con[HEIGHT]) then
+        directions[#directions+1] = Direction.bottom
+    end
+    return directions
+end
+
+local function geometry_to_alpha_area(geom, dir)
+    local new_geom = {}
+    if dir == Direction.left or dir == Direction.right then
+        new_geom[X] = geom[X]
+        new_geom[WIDTH] = geom[WIDTH]
+        new_geom[Y] = 0
+        new_geom[HEIGHT] = 1
+    elseif dir == Direction.bottom or dir == Direction.top then
+        new_geom[X] = 0
+        new_geom[WIDTH] = 1
+        new_geom[Y] = geom[Y]
+        new_geom[HEIGHT] = geom[HEIGHT]
+    end
+    return new_geom
+end
+
+local function apply_resize_function_with_geometry(lt_data_el, i, new_geom)
+    if i > #lt_data_el then
+        return
+    end
+    local old_geom = lt_data_el[i]
+    local transform_directions = get_transform_directions(old_geom, new_geom)
+
+    for x = 1,#transform_directions do
+        local dir = transform_directions[x]
+
+        local old_alpha_area = get_alpha_area_from_container(old_geom, dir)
+        local new_alpha_area = geometry_to_alpha_area(new_geom, dir)
+
+        local old_beta_area = get_beta_area(old_alpha_area, dir)
+        local new_beta_area = get_beta_area(new_alpha_area, dir)
+        local old_unaffected_area = get_unaffected_area(old_alpha_area, dir)
+
+        if is_invalid(new_alpha_area) or is_invalid(new_beta_area) then
+            return
+        end
+
+        apply_resize(lt_data_el, old_unaffected_area, old_alpha_area, new_alpha_area, old_beta_area, new_beta_area)
+    end
+end
+
 local function apply_resize_function(lt_data_el, i, n, directions)
+    local old_geom = lt_data_el[i]
     for x = 1,#directions do
         local dir = directions[x]
 
-        local old_alpha_area = get_alpha_area_from_container(lt_data_el[i], dir)
+        local old_alpha_area = get_alpha_area_from_container(old_geom, dir)
         local new_alpha_area = Move_resize(old_alpha_area, 0, n, dir)
 
         local old_beta_area = get_beta_area(old_alpha_area, dir)
@@ -292,15 +387,68 @@ end
 
 -- returns 0 if not found
 local function get_layout_element(layout_data_element_id, resize_data)
-    for j=1,#resize_data do
-        local resize_data_element = resize_data[j]
-        for h=1, #resize_data[j] do
-            if layout_data_element_id == resize_data_element[h] then
-                return j
+    -- iterate for each element of resize_data if the key is an integer
+    for k, v in pairs(resize_data) do
+        if type(k) == "number" then
+            local resize_container_data = resize_data[k]
+            for j=1,#resize_container_data do
+                local resize_data_element = resize_container_data[j]
+                for h=1, #resize_data_element do
+                    if layout_data_element_id == resize_data_element[h] then
+                        return j
+                    end
+                end
             end
         end
     end
     return 0
+end
+
+local function transform_direction_get_directions(transform_direction)
+    local directions = 0
+    if transform_direction[1] ~= 0 then
+        directions = directions + Direction.left
+    end
+    if transform_direction[2] ~= 0 then
+        directions = directions + Direction.right
+    end
+    if transform_direction[3] ~= 0 then
+        directions = directions + Direction.top
+    end
+    if transform_direction[4] ~= 0 then
+        directions = directions + Direction.bottom
+    end
+    return directions
+end
+
+-- i: position of the element inside the layout
+function Resize_container_in_layout(lt, i, new_geom)
+    local layout_data_element_id = get_layout_data_element_id(lt.o_layout_data)
+    local layout_id = get_layout_element(layout_data_element_id, lt.resize_data)
+    if layout_id <= 0 then
+        return lt.layout_data
+    end
+    if i <= 0 then
+        return lt.layout_data
+    end
+    --
+    -- resize_all()
+
+    local new_lua_geom = {}
+    new_lua_geom[X] = new_geom.x
+    new_lua_geom[Y] = new_geom.y
+    new_lua_geom[WIDTH] = new_geom.width
+    new_lua_geom[HEIGHT] = new_geom.height
+
+    local mon_geom_transfered = {}
+    mon_geom_transfered[X] = 0
+    mon_geom_transfered[Y] = 0
+    mon_geom_transfered[WIDTH] = 10000
+    mon_geom_transfered[HEIGHT] = 10000
+    abs_container_to_relative(new_lua_geom, mon_geom_transfered)
+
+    apply_resize_function_with_geometry(lt.layout_data[layout_data_element_id], i, new_lua_geom)
+    return lt.layout_data
 end
 
 function Resize_main_all(lt, n, direction)
@@ -310,7 +458,8 @@ function Resize_main_all(lt, n, direction)
         return lt.layout_data
     end
 
-    local resize_element = lt.resize_data[layout_id]
+    local resize_container_data = lt.resize_data[1]
+    local resize_element = resize_container_data[layout_id]
     for _,id in ipairs(resize_element) do
         if id <= #lt.o_layout_data then
             lt.layout_data[id] = resize_all(lt.layout_data[id], 1, n, direction)

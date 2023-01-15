@@ -82,6 +82,7 @@ struct layout;
 #define CONFIG_EVENT "japokwm.event"
 #define CONFIG_FOCUS_SET "japokwm.focus_set"
 #define CONFIG_GEOMETRY "japokwm.geometry"
+#define CONFIG_GMP "japokwm.gmp"
 #define CONFIG_INFO "japokwm.info"
 #define CONFIG_LAYOUT "japokwm.layout"
 #define CONFIG_LIST "japokwm.list"

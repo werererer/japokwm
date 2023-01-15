@@ -25,6 +25,7 @@ int lib_swap_on_hidden_stack(lua_State *L);
 int lib_toggle_all_bars(lua_State *L);
 int lib_toggle_tags(lua_State *L);
 int lib_toggle_view(lua_State *L);
+int lib_resize_with_cursor(lua_State *L);
 int lib_toggle_tag(lua_State *L);
 int lib_view(lua_State *L);
 int lib_view_or_tag(lua_State *L);

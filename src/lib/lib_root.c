@@ -21,12 +21,12 @@ static const struct luaL_Reg root_methods[] =
 
 static const struct luaL_Reg root_setter[] =
 {
-    {"area", lib_root_get_area},
     {NULL, NULL},
 };
 
 static const struct luaL_Reg root_getter[] =
 {
+    {"geom", lib_root_get_geom},
     {NULL, NULL},
 };
 
@@ -61,11 +61,11 @@ void create_lua_root(lua_State *L, struct root *root)
 // static methods
 // methods
 // getter
-// setter
-int lib_root_get_area(lua_State *L)
+int lib_root_get_geom(lua_State *L)
 {
     struct root *root = check_root(L, 1);
     lua_pop(L, 1);
-    create_lua_geometry(L, &root->geom);
+    create_lua_geometry(L, root->geom);
     return 1;
 }
+// setter

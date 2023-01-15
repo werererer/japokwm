@@ -148,7 +148,7 @@ void tag_add_container_to_containers(struct tag *tag, int i, struct container *c
 void tag_add_container_to_focus_stack(struct tag *tag, int i, struct container *con);
 void remove_container_from_stack(struct tag *tag, struct container *con);
 void add_container_to_stack(struct tag *tag, struct container *con);
-void add_container_to_layer_stack(struct tag *tag, struct container *con);
+void add_container_to_layer_stack(struct container *con);
 
 void list_set_insert_container_to_focus_stack(struct focus_set *focus_set, int position, struct container *con);
 void tag_remove_container_from_containers_locally(struct tag *tag, struct container *con);

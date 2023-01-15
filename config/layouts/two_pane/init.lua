@@ -11,7 +11,17 @@ local layout_data = {
 local function update(layout)
 end
 
+local resize_data = {
+    {
+        {1, 2, 3, 4, 5, 6}
+    },
+    {
+        {1, 2, 3, 4, 5, 6}
+    },
+}
+
 layout:set(layout_data)
+layout:set_resize_data(resize_data)
 event:add_listener("on_update", update)
 layout:set_linked_layouts({"three_columns"})
 layout:set_master_layout_data(

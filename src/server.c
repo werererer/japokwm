@@ -27,6 +27,7 @@
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_output_v1.h>
 #include <wlr/render/allocator.h>
+#include <wlr/render/wlr_renderer.h>
 
 #include "layer_shell.h"
 #include "monitor.h"
@@ -39,9 +40,9 @@
 #include "keybinding.h"
 #include "ring_buffer.h"
 
-struct server server;
+#define XDG_SHELL_VERSION 2
 
-pthread_mutex_t lock_rendering_action = PTHREAD_MUTEX_INITIALIZER;
+struct server server;
 
 static void init_event_handlers(struct server *server);
 static void init_lists(struct server *server);
@@ -76,6 +77,17 @@ static struct tag *handle_too_few_tags(uint32_t tag_id)
     wlr_list_cat(new_tag->focus_set->focus_stack_on_top, tag->focus_set->focus_stack_on_top);
     wlr_list_cat(new_tag->focus_set->focus_stack_normal, tag->focus_set->focus_stack_normal);
     wlr_list_cat(new_tag->focus_set->focus_stack_not_focusable, tag->focus_set->focus_stack_not_focusable);
+
+    wlr_list_cat(new_tag->visible_con_set->tiled_containers, tag->visible_con_set->tiled_containers);
+
+    wlr_list_cat(new_tag->visible_focus_set->focus_stack_layer_background, tag->visible_focus_set->focus_stack_layer_background);
+    wlr_list_cat(new_tag->visible_focus_set->focus_stack_layer_bottom, tag->visible_focus_set->focus_stack_layer_bottom);
+    wlr_list_cat(new_tag->visible_focus_set->focus_stack_layer_top, tag->visible_focus_set->focus_stack_layer_top);
+    wlr_list_cat(new_tag->visible_focus_set->focus_stack_layer_overlay, tag->visible_focus_set->focus_stack_layer_overlay);
+    wlr_list_cat(new_tag->visible_focus_set->focus_stack_on_top, tag->visible_focus_set->focus_stack_on_top);
+    wlr_list_cat(new_tag->visible_focus_set->focus_stack_normal, tag->visible_focus_set->focus_stack_normal);
+    wlr_list_cat(new_tag->visible_focus_set->focus_stack_not_focusable, tag->visible_focus_set->focus_stack_not_focusable);
+
     return new_tag;
 }
 
@@ -161,7 +173,7 @@ static void init_event_handlers(struct server *server)
     server->xdeco_mgr = wlr_xdg_decoration_manager_v1_create(server->wl_display);
     LISTEN(&server->xdeco_mgr->events.new_toplevel_decoration, &server->new_xdeco, createxdeco);
 
-    server->xdg_shell = wlr_xdg_shell_create(server->wl_display);
+    server->xdg_shell = wlr_xdg_shell_create(server->wl_display, XDG_SHELL_VERSION);
     // remove csd(client side decorations) completely from xdg based windows
     wlr_server_decoration_manager_set_default_mode(
             wlr_server_decoration_manager_create(server->wl_display),
@@ -178,11 +190,12 @@ static void init_event_handlers(struct server *server)
     LISTEN(&server->output_mgr->events.apply, &server->output_mgr_apply, handle_output_mgr_apply);
     LISTEN(&server->output_mgr->events.test, &server->output_mgr_test, handle_output_mgr_test);
 
+    server->tablet_mgr = wlr_tablet_v2_create(server->wl_display);
 }
 
 static void finalize_event_handlers(struct server *server)
 {
-    // TODO: write that one
+    destroy_event_handler(server->event_handler);
 }
 
 void init_server()
@@ -224,6 +237,17 @@ void init_server()
     server_reset_layout_ring(server.default_layout_ring);
 
     server.default_layout = create_layout(L);
+
+    load_lua_api(L);
+    if (init_backend(&server) != EXIT_SUCCESS) {
+        return;
+    }
+
+    ipc_init(server.wl_event_loop);
+
+    /* Creates an output layout, which a wlroots utility for working with an
+     * arrangement of screens in a physical layout. */
+    server.output_layout = wlr_output_layout_create();
 }
 
 void finalize_server()
@@ -232,8 +256,14 @@ void finalize_server()
     g_ptr_array_unref(server.named_key_combos);
 
     finalize_lists(&server);
+    finalize_event_handlers(&server);
 
     bitset_destroy(server.previous_bitset);
+
+    // NOTE: these bitsets are created lazily, so they may be NULL but that is
+    // ok since bitset_destroy handles this case.
+    bitset_destroy(server.tmp_bitset);
+    bitset_destroy(server.local_tmp_bitset);
 
     g_ptr_array_unref(server.mons);
     g_ptr_array_unref(server.popups);
@@ -246,9 +276,6 @@ void finalize_server()
     g_ptr_array_unref(server.layout_paths);
 
     g_ptr_array_unref(server.container_stack);
-
-    destroy_event_handler(server.event_handler);
-    pthread_mutex_destroy(&lock_rendering_action);
 }
 
 void server_terminate(struct server *server)
@@ -375,18 +402,11 @@ static void _async_handler_function(struct uv_async_s *arg)
     free(data);
 }
 
-int setup(struct server *server)
+int setup_server(struct server *server)
 {
     server->uv_loop = uv_default_loop();
 
     uv_async_init(uv_default_loop(), &server->async_handler, _async_handler_function);
-
-    load_lua_api(L);
-    if (init_backend(server) != EXIT_SUCCESS) {
-        return EXIT_FAILURE;
-    }
-
-    ipc_init(server->wl_event_loop);
 
     /* If we don't provide a renderer, autocreate makes a GLES2 renderer for us.
      * The renderer is responsible for defining the various pixel formats it
@@ -404,6 +424,9 @@ int setup(struct server *server)
      * the clients cannot set the selection directly without compositor approval,
      * see the setsel() function. */
     server->compositor = wlr_compositor_create(server->wl_display, server->renderer);
+
+    wlr_subcompositor_create(server->wl_display);
+
     wlr_export_dmabuf_manager_v1_create(server->wl_display);
     wlr_screencopy_manager_v1_create(server->wl_display);
     wlr_data_control_manager_v1_create(server->wl_display);
@@ -414,9 +437,6 @@ int setup(struct server *server)
     wlr_idle_create(server->wl_display);
     wlr_idle_inhibit_v1_create(server->wl_display);
 
-    /* Creates an output layout, which a wlroots utility for working with an
-     * arrangement of screens in a physical layout. */
-    server->output_layout = wlr_output_layout_create();
     wlr_xdg_output_manager_v1_create(server->wl_display, server->output_layout);
 
     /* Set up the xdg-shell. The xdg-shell is a
@@ -453,6 +473,8 @@ int setup(struct server *server)
     wl_signal_add(&server->output_mgr->events.apply, &server->output_mgr_apply);
     wl_signal_add(&server->output_mgr->events.test, &server->output_mgr_test);
 
+    server->tablet_v2 = wlr_tablet_v2_create(server->wl_display);
+
 #ifdef JAPOKWM_HAS_XWAYLAND
     init_xwayland(server->wl_display, seat);
 #endif
@@ -462,7 +484,7 @@ int setup(struct server *server)
 
 int start_server(char *startup_cmd)
 {
-    if (setup(&server)) {
+    if (setup_server(&server)) {
         printf("failed to setup japokwm\n");
         return EXIT_FAILURE;
     }
@@ -544,6 +566,37 @@ void server_center_default_cursor_in_monitor(struct monitor *m)
     struct seat *seat = input_manager_get_default_seat();
     struct cursor *cursor = seat->cursor;
     center_cursor_in_monitor(cursor, m);
+}
+
+BitSet *server_bitset_get_tmp()
+{
+    if (!server.tmp_bitset) {
+        server.tmp_bitset = bitset_create();
+    }
+    return server.tmp_bitset;
+}
+
+BitSet *server_bitset_get_tmp_copy(BitSet *bitset)
+{
+    BitSet *tmp = server_bitset_get_tmp();
+    bitset_assign_bitset(&tmp, bitset);
+    return tmp;
+}
+
+BitSet *server_bitset_get_local_tmp()
+{
+    if (!server.local_tmp_bitset) {
+        server.local_tmp_bitset = bitset_create();
+    }
+
+    return server.local_tmp_bitset;
+}
+
+BitSet *server_bitset_get_local_tmp_copy(BitSet *bitset)
+{
+    BitSet *tmp = server_bitset_get_local_tmp();
+    bitset_assign_bitset(&tmp, bitset);
+    return tmp;
 }
 
 struct tag *server_get_selected_tag()

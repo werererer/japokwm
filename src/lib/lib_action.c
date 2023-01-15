@@ -56,6 +56,7 @@ static const struct luaL_Reg action_static_methods[] =
     {"toggle_tag", lib_toggle_tag},
     {"view", lib_view},
     {"view_or_tag", lib_view_or_tag},
+    {"resize_with_cursor", lib_resize_with_cursor},
     {"zoom", lib_zoom},
     {NULL, NULL},
 };
@@ -99,7 +100,7 @@ static void *_call(void *arg)
 {
     struct function_data *data = arg;
 
-    char path[1024] ;
+    char path[1024];
     const char *cmd = data->cmd;
     FILE *fp = popen(cmd, "r");
     if (fp == NULL) {
@@ -314,6 +315,15 @@ int lib_view_or_tag(lua_State *L)
     return 0;
 }
 
+int lib_resize_with_cursor(lua_State *L)
+{
+    printf("resize with cursor\n");
+    struct seat *seat = input_manager_get_default_seat();
+    struct cursor *cursor = seat->cursor;
+    container_resize_with_cursor(cursor);
+    return 0;
+}
+
 int lib_toggle_view(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
@@ -401,8 +411,8 @@ int lib_toggle_tags(lua_State *L)
 {
     struct monitor *m = server_get_selected_monitor();
     struct tag *tag = monitor_get_active_tag(m);
-    BitSet *bitset = bitset_copy(tag->prev_tags);
-    tagset_set_tags(tag, bitset);
+    BitSet *prev_tags_copy = server_bitset_get_tmp_copy(tag->prev_tags);
+    tagset_set_tags(tag, prev_tags_copy);
     return 0;
 }
 
@@ -412,4 +422,3 @@ int lib_toggle_tag(lua_State *L)
     tagset_focus_tag(prev_tag);
     return 0;
 }
-

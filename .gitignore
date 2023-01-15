@@ -4,6 +4,7 @@ build/**
 *-protocol.h
 .ccls-cache
 .vimspector.json
+callgrind.*
 tags
 *.pdf
 vscjlsymserv-*

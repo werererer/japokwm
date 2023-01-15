@@ -119,6 +119,8 @@ local layout_data = {
 }
 
 layout:set(layout_data)
-l.config.set_resize_data({{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}})
-l.config.set_resize_direction(info.direction.all)
-l.config.set_resize_function(Resize_all)
+local resize_groups = {}
+resize_groups[1] = {{2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}}
+layout:set_resize_data(resize_groups)
+opt.resize_direction = Direction.all
+print("works")

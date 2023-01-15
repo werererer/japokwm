@@ -7,6 +7,7 @@
 #include "stringop.h"
 #include "utils/stringUtils.h"
 #include "utils/coreUtils.h"
+#include "server.h"
 
 /****************** INTERFACE ******************/
 
@@ -29,7 +30,7 @@ BitSet *bitset_create_with_data(void *data)
     return bitset;
 }
 
-static void append_bits(void *key_ptr, void *value_ptr, void *user_data)
+static void assign_bits(void *key_ptr, void *value_ptr, void *user_data)
 {
     int key = *(int *)key_ptr;
     bool value = *(bool *)value_ptr;
@@ -45,7 +46,7 @@ BitSet* bitset_copy(BitSet* source)
     BitSet *destination = bitset_create();
 
     destination->bytes = g_hash_table_new_full(g_int_hash, g_int_equal, free, free);
-    g_hash_table_foreach(source->bytes, append_bits, destination);
+    g_hash_table_foreach(source->bytes, assign_bits, destination);
 
     return destination;
 }
@@ -56,19 +57,18 @@ void bitset_assign_bitset(BitSet** dest, BitSet* source)
         return;
     }
     g_hash_table_remove_all((*dest)->bytes);
-    g_hash_table_foreach(source->bytes, append_bits, *dest);
+    g_hash_table_foreach(source->bytes, assign_bits, *dest);
 }
 
 void bitset_reverse(BitSet *bitset, int start, int end)
 {
-    BitSet *bitset_tmp = bitset_copy(bitset);
+    BitSet *bitset_tmp = server_bitset_get_local_tmp_copy(bitset);
     for (int i = start; i < end; i++) {
         int high = end - 1;
         int reverse_i = high - i;
         bool b = bitset_test(bitset_tmp, reverse_i);
         bitset_assign(bitset, i, b);
     }
-    bitset_destroy(bitset_tmp);
 }
 
 int bitset_swap(BitSet* destination, BitSet* source)
@@ -80,7 +80,7 @@ int bitset_swap(BitSet* destination, BitSet* source)
     if (destination == NULL) return BITSET_ERROR;
     if (source == NULL) return BITSET_ERROR;
 
-    BitSet *tmp = bitset_copy(destination);
+    BitSet *tmp = server_bitset_get_local_tmp_copy(destination);
     bitset_assign_bitset(&destination, source);
     bitset_assign_bitset(&source, tmp);
 
@@ -88,6 +88,8 @@ int bitset_swap(BitSet* destination, BitSet* source)
 }
 
 void bitset_destroy(BitSet* bitset) {
+    if (!bitset)
+        return;
     g_hash_table_unref(bitset->bytes);
     free(bitset);
 }

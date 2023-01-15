@@ -17,6 +17,7 @@
 #include <wlr/types/wlr_idle_inhibit_v1.h>
 #include <wlr/types/wlr_input_inhibitor.h>
 #include <wlr/util/log.h>
+#include <signal.h>
 
 #include "keyboard.h"
 #include "layer_shell.h"
@@ -52,6 +53,10 @@ int main(int argc, char *argv[])
 #if DEBUG
     setbuf(stdout, NULL);
 #endif
+
+    /* If nobody is reading the status output, don't terminate */
+    struct sigaction sigint_action = {.sa_handler = SIG_IGN};
+    sigaction(SIGPIPE, &sigint_action, NULL);
 
     init_server();
 

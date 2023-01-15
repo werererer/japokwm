@@ -102,7 +102,7 @@ int lib_container_property_set_floating(lua_State *L)
 
 int lib_container_property_set_geom(lua_State *L)
 {
-    struct wlr_box *geom = check_geometry(L, -1);
+    struct wlr_box geom = check_geometry(L, -1);
     lua_pop(L, 1);
 
     struct container_property *property = check_container_property(L, 1);

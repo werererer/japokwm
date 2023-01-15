@@ -18,7 +18,6 @@
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "utils/gapUtils.h"
-#include "layer_shell.h"
 #include "tag.h"
 #include "tagset.h"
 
@@ -222,58 +221,51 @@ static void scissor_output(struct wlr_output *output, pixman_box32_t *rect)
 }
 
 // TODO refactor the name it doesn't represent what this does perfectly
-static enum wlr_edges get_hidden_edges(struct container *con, struct wlr_box *borders, enum wlr_edges hidden_edges)
+// returns the newly accquired hidden edges
+static enum wlr_edges container_update_hidden_edges(struct container *con, struct wlr_box *borders, enum wlr_edges hidden_edges)
 {
     struct monitor *m = container_get_monitor(con);
 
     enum wlr_edges containers_hidden_edges = WLR_EDGE_NONE;
-    struct wlr_box *con_geom = container_get_current_geom(con);
+    struct wlr_box con_geom = container_get_current_geom(con);
     // int border_width = container_get_border_width(con);
     // hide edges if needed
     if (hidden_edges & WLR_EDGE_LEFT) {
-        if (con_geom->x == m->root->geom.x) {
+        if (con_geom.x == m->root->geom.x) {
             containers_hidden_edges |= WLR_EDGE_LEFT;
         }
     }
     if (hidden_edges & WLR_EDGE_RIGHT) {
-        if (is_approx_equal(con_geom->x + con_geom->width, m->root->geom.x + m->root->geom.width, 3)) {
+        if (is_approx_equal(con_geom.x + con_geom.width, m->root->geom.x + m->root->geom.width, 3)) {
             containers_hidden_edges |= WLR_EDGE_RIGHT;
         }
     }
     if (hidden_edges & WLR_EDGE_TOP) {
-        if (con_geom->y == m->root->geom.y) {
+        if (con_geom.y == m->root->geom.y) {
             containers_hidden_edges |= WLR_EDGE_TOP;
         }
     }
     if (hidden_edges & WLR_EDGE_BOTTOM) {
-        if (is_approx_equal(con_geom->y + con_geom->height, m->root->geom.y + m->root->geom.height, 3)) {
+        if (is_approx_equal(con_geom.y + con_geom.height, m->root->geom.y + m->root->geom.height, 3)) {
             containers_hidden_edges |= WLR_EDGE_BOTTOM;
         }
     }
 
+    container_set_hidden_edges(con, containers_hidden_edges);
     return containers_hidden_edges;
 }
 
 static void render_borders(struct container *con, struct monitor *m, pixman_region32_t *output_damage)
 {
+    // TODO: reimplement me
     if (!con->has_border)
         return;
 
-    double ox, oy;
-    int w, h;
-    struct wlr_box *con_geom = container_get_current_geom(con);
-    int border_width = container_get_border_width(con);
-    ox = con_geom->x - border_width;
-    oy = con_geom->y - border_width;
-    wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
-    w = con_geom->width;
-    h = con_geom->height;
-
     struct wlr_box *borders = (struct wlr_box[4]) {
-        {ox, oy, w + 2 * border_width, border_width},             /* top */
-            {ox, oy + border_width + h, w + 2 * border_width, border_width}, /* bottom */
-            {ox, oy + border_width, border_width, h},                 /* left */
-            {ox + border_width + w, oy + border_width, border_width, h},     /* right */
+        container_get_current_border_geom(con, WLR_EDGE_TOP),
+        container_get_current_border_geom(con, WLR_EDGE_BOTTOM),
+        container_get_current_border_geom(con, WLR_EDGE_LEFT),
+        container_get_current_border_geom(con, WLR_EDGE_RIGHT),
     };
 
     enum wlr_edges hidden_edges = WLR_EDGE_NONE;
@@ -281,10 +273,10 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
     struct layout *lt = tag_get_layout(tag);
     if (lt->options->smart_hidden_edges) {
         if (tag->visible_con_set->tiled_containers->len <= 1) {
-            hidden_edges = get_hidden_edges(con, borders, lt->options->hidden_edges);
+            hidden_edges = container_update_hidden_edges(con, borders, lt->options->hidden_edges);
         }
     } else {
-        hidden_edges = get_hidden_edges(con, borders, lt->options->hidden_edges);
+        hidden_edges = container_update_hidden_edges(con, borders, lt->options->hidden_edges);
     }
 
     /* Draw window borders */
@@ -292,8 +284,18 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
     const struct color color = (con == sel) ? lt->options->focus_color : lt->options->border_color;
     for (int i = 0; i < 4; i++) {
         if ((hidden_edges & (1 << i)) == 0) {
-            scale_box(&borders[i], m->wlr_output->scale);
-            render_rect(m, output_damage, &borders[i], color);
+            struct wlr_box border = borders[i];
+            double ox = border.x;
+            double oy = border.y;
+            wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
+            struct wlr_box obox = {
+                .x = ox,
+                .y = oy,
+                .width = border.width,
+                .height = border.height,
+            };
+            scale_box(&obox, m->wlr_output->scale);
+            render_rect(m, output_damage, &obox, color);
         }
     }
 }
@@ -301,6 +303,7 @@ static void render_borders(struct container *con, struct monitor *m, pixman_regi
 void output_surface_for_each_surface(struct monitor *m,
         struct wlr_surface *surface, struct wlr_box obox,
         surface_iterator_func_t iterator, void *user_data) {
+
     struct surface_iterator_data data = {
         .user_iterator = iterator,
         .user_data = user_data,
@@ -337,8 +340,7 @@ static void render_stack(struct monitor *m, pixman_region32_t *output_damage)
          * xdg_surface's toplevel and popups. */
 
         struct wlr_surface *surface = get_wlrsurface(con->client);
-        struct wlr_box *con_geom = container_get_current_geom(con);
-        struct wlr_box obox = *con_geom;
+        struct wlr_box obox = container_get_current_content_geom(con);
 
         struct render_texture_data render_data;
         render_data.alpha = con->alpha;
@@ -396,7 +398,6 @@ static void clear_frame(
 
 void render_monitor(struct monitor *m, pixman_region32_t *damage)
 {
-    pthread_mutex_lock(&lock_rendering_action);
     /* Begin the renderer (calls glViewport and some other GL sanity checks) */
     wlr_renderer_begin(server.renderer, m->wlr_output->width, m->wlr_output->height);
 
@@ -419,7 +420,6 @@ void render_monitor(struct monitor *m, pixman_region32_t *damage)
     wlr_renderer_end(renderer);
 
     wlr_output_commit(m->wlr_output);
-    pthread_mutex_unlock(&lock_rendering_action);
 }
 
 void scale_box(struct wlr_box *box, float scale)

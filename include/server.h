@@ -10,6 +10,7 @@
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/types/wlr_relative_pointer_v1.h>
 #include <wlr/types/wlr_output_management_v1.h>
+#include <wlr/types/wlr_tablet_v2.h>
 #include <glib.h>
 #include <pthread.h>
 
@@ -37,6 +38,8 @@ struct server {
     struct wlr_layer_shell_v1 *layer_shell;
     struct wlr_xdg_decoration_manager_v1 *xdeco_mgr;
 
+    struct wlr_tablet_manager_v2 *tablet_v2;
+
     struct input_manager *input_manager;
 
     struct event_handler *event_handler;
@@ -47,6 +50,7 @@ struct server {
     struct wlr_input_inhibit_manager *input_inhibitor_mgr;
     struct wlr_pointer_constraints_v1 *pointer_constraints;
     struct wlr_output_manager_v1 *output_mgr;
+    struct wlr_tablet_manager_v2 *tablet_mgr;
 
     struct layout *default_layout;
     struct ring_buffer *default_layout_ring;
@@ -74,6 +78,13 @@ struct server {
 
     int previous_tag;
     BitSet *previous_bitset;
+    // a global bitset to hold temporary values useful to improve performance
+    struct BitSet *tmp_bitset;
+    // this variable ought to be only used by bitset.c everything other is
+    // UB so be careful.
+    // We have this to avoid calling malloc/free too often thus improving
+    // performance.
+    struct BitSet *local_tmp_bitset;
 
     struct monitor *selected_monitor;
 
@@ -109,6 +120,7 @@ struct server {
     bool prohibit_reload_config;
 
     struct container *grab_c;
+    enum wlr_edges grabbed_edges;
 #if JAPOKWM_HAS_XWAYLAND
     struct xwayland xwayland;
     struct wl_listener xwayland_ready;
@@ -125,7 +137,6 @@ struct function_data {
 };
 
 extern struct server server;
-extern pthread_mutex_t lock_rendering_action;
 
 void init_server();
 void finalize_server();
@@ -151,6 +162,16 @@ struct monitor *server_get_selected_monitor();
 void server_set_selected_monitor(struct monitor *m);
 
 void server_center_default_cursor_in_monitor(struct monitor *m);
+
+/* This set of functions can be used everywhere except for bitset.c. If you do
+ * it is UB */
+BitSet *server_bitset_get_tmp();
+BitSet *server_bitset_get_tmp_copy(BitSet *bitset);
+
+/* The functions are only allowed to be called from bitset.c and offer a slight
+ * performance boost */
+BitSet *server_bitset_get_local_tmp();
+BitSet *server_bitset_get_local_tmp_copy(BitSet *bitset);
 
 struct tag *server_get_selected_tag();
 struct layout *server_get_selected_layout();

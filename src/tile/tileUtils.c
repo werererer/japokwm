@@ -44,7 +44,7 @@ void arrange()
         struct monitor *m = server_get_selected_monitor();
         struct tag *tag = monitor_get_active_tag(m);
         struct layout *lt = tag_get_layout(tag);
-        container_set_border_width(con, lt->options->float_border_px);
+        container_set_border_width(con, direction_value_uniform(lt->options->float_border_px));
         container_update_size(con);
         container_set_hidden(con, false);
     }
@@ -115,8 +115,8 @@ static void update_layout_counters(struct tag *tag)
     lt->n_hidden = lt->n_all - lt->n_visible;
 }
 
-static struct wlr_fbox lua_unbox_layout_geom(lua_State *L, int i) {
-    struct wlr_fbox geom;
+static struct wlr_box lua_unbox_layout_geom(lua_State *L, int i) {
+    struct wlr_box geom;
 
     if (luaL_len(L, -1) < i) {
         printf("ERROR: index to high: index %i len %lli", i, luaL_len(L, -1));
@@ -125,16 +125,16 @@ static struct wlr_fbox lua_unbox_layout_geom(lua_State *L, int i) {
     lua_rawgeti(L, -1, i);
 
     lua_rawgeti(L, -1, 1);
-    geom.x = luaL_checknumber(L, -1);
+    geom.x = scale_percent_to_integer(luaL_checknumber(L, -1));
     lua_pop(L, 1);
     lua_rawgeti(L, -1, 2);
-    geom.y = luaL_checknumber(L, -1);
+    geom.y = scale_percent_to_integer(luaL_checknumber(L, -1));
     lua_pop(L, 1);
     lua_rawgeti(L, -1, 3);
-    geom.width = luaL_checknumber(L, -1);
+    geom.width = scale_percent_to_integer(luaL_checknumber(L, -1));
     lua_pop(L, 1);
     lua_rawgeti(L, -1, 4);
-    geom.height = luaL_checknumber(L, -1);
+    geom.height = scale_percent_to_integer(luaL_checknumber(L, -1));
     lua_pop(L, 1);
 
     lua_pop(L, 1);
@@ -154,12 +154,12 @@ static void apply_nmaster_layout(struct wlr_box *box, struct layout *lt, int pos
     g = MAX(MIN(len, g), 1);
     lua_rawgeti(L, -1, g);
     int k = MIN(position, g);
-    struct wlr_fbox geom = lua_unbox_layout_geom(L, k);
+    struct wlr_box geom = lua_unbox_layout_geom(L, k);
     lua_pop(L, 1);
     lua_pop(L, 1);
 
     struct wlr_box obox = get_absolute_box(geom, *box);
-    memcpy(box, &obox, sizeof(struct wlr_box));
+    *box = obox;
 }
 
 static struct wlr_box get_nth_geom_in_layout(lua_State *L, struct layout *lt, 
@@ -169,10 +169,8 @@ static struct wlr_box get_nth_geom_in_layout(lua_State *L, struct layout *lt,
     int n = MAX(0, arrange_position+1 - lt->n_master) + 1;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, lt->lua_layout_ref);
-    struct wlr_fbox rel_geom = lua_unbox_layout_geom(L, n);
+    struct wlr_box box = lua_unbox_layout_geom(L, n);
     lua_pop(L, 1);
-
-    struct wlr_box box = get_absolute_box(rel_geom, root_geom);
 
     // TODO fix this function, hard to read
     apply_nmaster_layout(&box, lt, arrange_position+1);
@@ -222,7 +220,7 @@ int get_container_area_count(struct tag *tag)
 
 void arrange_monitor(struct monitor *m)
 {
-    m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
+    wlr_output_layout_get_box(server.output_layout, m->wlr_output, &m->geom);
     struct wlr_box active_geom = monitor_get_active_geom(m);
 
     struct tag *tag = monitor_get_active_tag(m);
@@ -262,16 +260,6 @@ void arrange_containers(
      * inner_gap. */
     container_surround_gaps(&root_geom, -actual_inner_gap);
 
-    if (lt->options->smart_hidden_edges) {
-        if (tiled_containers->len <= 1) {
-            container_add_gaps(&root_geom, -lt->options->tile_border_px,
-                    lt->options->hidden_edges);
-        }
-    } else {
-        container_add_gaps(&root_geom, -lt->options->tile_border_px,
-                lt->options->hidden_edges);
-    }
-
     // debug_print("tiled containers len: %i\n", tiled_containers->len);
     for (int i = 0; i < tiled_containers->len; i++) {
         struct container *con = g_ptr_array_index(tiled_containers, i);
@@ -297,16 +285,12 @@ static void arrange_container(struct container *con, struct monitor *m,
     container_surround_gaps(&geom, inner_gap);
 
     if (container_is_floating(con)) {
-        container_set_border_width(con, lt->options->float_border_px);
+        container_set_border_width(con, direction_value_uniform(lt->options->float_border_px));
     } else {
-        container_set_border_width(con, lt->options->tile_border_px);
+        container_set_border_width(con, direction_value_uniform(lt->options->tile_border_px));
     }
 
-    // since gaps are halfed we need to multiply it by 2
-    // int border_width = container_get_border_width(con);
-    container_surround_gaps(&geom, 2*lt->options->tile_border_px);
-
-    container_set_tiled_geom(con, &geom);
+    container_set_tiled_geom(con, geom);
     container_update_size(con);
 }
 
@@ -314,17 +298,17 @@ void container_update_size(struct container *con)
 {
     con->client->resized = true;
 
-    struct wlr_box *con_geom = container_get_current_geom(con);
-    if (!con_geom)
-        return;
-    apply_bounds(con, *wlr_output_layout_get_box(server.output_layout, NULL));
+    struct wlr_box con_geom = container_get_current_content_geom(con);
+    struct wlr_box output_geom;
+    wlr_output_layout_get_box(server.output_layout, NULL, &output_geom);
+    con_geom = apply_bounds(con, output_geom);
 
     /* wlroots makes this a no-op if size hasn't changed */
     switch (con->client->type) {
         case XDG_SHELL:
             if (con->client->surface.xdg->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
-                wlr_xdg_toplevel_set_size(con->client->surface.xdg,
-                        con_geom->width, con_geom->height);
+                wlr_xdg_toplevel_set_size(con->client->surface.xdg->toplevel,
+                        con_geom.width, con_geom.height);
             }
             break;
         case LAYER_SHELL:
@@ -344,8 +328,8 @@ void container_update_size(struct container *con)
         case X11_UNMANAGED:
         case X11_MANAGED:
             wlr_xwayland_surface_configure(con->client->surface.xwayland,
-                    con_geom->x, con_geom->y, con_geom->width,
-                    con_geom->height);
+                    con_geom.x, con_geom.y, con_geom.width,
+                    con_geom.height);
     }
 }
 

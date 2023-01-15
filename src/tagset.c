@@ -19,6 +19,7 @@
 #include "list_sets/container_stack_set.h"
 #include "root.h"
 #include "server.h"
+#include "layer_shell.h"
 
 static void tagset_assign_tag(struct tag *sel_tag, struct tag *tag, bool active);
 static void tagset_unset_tag(struct tag *sel_tag, struct tag *tag);
@@ -70,7 +71,7 @@ void tagset_set_tags(struct tag *sel_tag, BitSet *tags)
 {
     // we need to copy to not accidentially destroy the same thing we are
     // working with which can happen through assign_bitset
-    BitSet *tags_copy = bitset_copy(tags);
+    BitSet *tags_copy = server_bitset_get_tmp_copy(tags);
 
     tag_set_prev_tags(sel_tag, sel_tag->tags);
 
@@ -83,7 +84,6 @@ void tagset_set_tags(struct tag *sel_tag, BitSet *tags)
     arrange();
     tag_focus_most_recent_container(sel_tag);
 
-    bitset_destroy(tags_copy);
     ipc_event_tag();
 }
 
@@ -270,16 +270,6 @@ static bool _is_visual_visible_stack(
     return is_visible;
 }
 
-void tagset_move_sticky_containers(struct tag *tag)
-{
-    GPtrArray *list = list_create_filtered_sub_list(tag->con_set->tiled_containers, container_exists);
-    for (int i = 0; i < list->len; i++) {
-        struct container *con = g_ptr_array_index(list, i);
-        container_move_sticky_containers(con, tag->id);
-    }
-    g_ptr_array_unref(list);
-}
-
 static void restore_floating_containers(struct tag *tag)
 {
     GPtrArray *floating_list = tagset_get_floating_list_copy(tag);
@@ -287,7 +277,7 @@ static void restore_floating_containers(struct tag *tag)
         return;
     for (int i = 0; i < floating_list->len; i++) {
         struct container *con = g_ptr_array_index(floating_list, i);
-        struct wlr_box *con_geom = container_get_current_geom(con);
+        struct wlr_box con_geom = container_get_current_geom(con);
         container_set_current_geom(con, con_geom);
     }
 }
@@ -297,8 +287,7 @@ void focus_tagset(struct tag *tag, BitSet *tags)
     if(!tag)
         return;
 
-    BitSet *tags_copy = bitset_copy(tags);
-
+    BitSet *tags_copy = server_bitset_get_tmp_copy(tags);
     tagset_assign_tags(tag, tags_copy);
 
     struct monitor *prev_m = server_get_selected_monitor();
@@ -319,15 +308,12 @@ void focus_tagset(struct tag *tag, BitSet *tags)
     update_reduced_focus_stack(tag);
     ipc_event_tag();
 
-    tagset_move_sticky_containers(tag);
-    arrange();
+    arrange_layers(m);
     tag_focus_most_recent_container(tag);
     root_damage_whole(m->root);
 
     struct seat *seat = input_manager_get_default_seat();
     cursor_rebase(seat->cursor);
-
-    bitset_destroy(tags_copy);
 }
 
 void tag_write_to_tags(struct tag *tag)
@@ -353,18 +339,14 @@ void push_tagset(struct tag *sel_tag, BitSet *tags)
     if (tag != sel_tag) {
         _set_previous_tagset(tag);
     }
-    if (tag == sel_tag) { 
-        tag_set_prev_tags(sel_tag, sel_tag->tags);
-    }
 
     focus_tagset(sel_tag, tags);
 }
 
 void tagset_focus_tag(struct tag *tag)
 {
-    BitSet *tags = bitset_copy(tag->tags);
+    BitSet *tags = server_bitset_get_tmp_copy(tag->tags);
     tagset_focus_tags(tag, tags);
-    bitset_destroy(tags);
 }
 
 void tagset_toggle_add(struct monitor *m, BitSet *bitset)
@@ -372,13 +354,11 @@ void tagset_toggle_add(struct monitor *m, BitSet *bitset)
     if (!m)
         return;
 
-    BitSet *new_bitset = bitset_copy(bitset);
-    bitset_xor(new_bitset, monitor_get_tags(m));
+    BitSet *bitset_copy = server_bitset_get_tmp_copy(bitset);
+    bitset_xor(bitset_copy, monitor_get_tags(m));
 
     struct tag *tag = monitor_get_active_tag(m);
-    tagset_set_tags(tag, new_bitset);
-
-    bitset_destroy(new_bitset);
+    tagset_set_tags(tag, bitset_copy);
 }
 
 void tagset_focus_tags(struct tag *tag, struct BitSet *bitset)
@@ -404,8 +384,8 @@ bool container_intersects_with_monitor(struct container *con, struct monitor *m)
         return false;
 
     struct wlr_box tmp_geom;
-    struct wlr_box *geom = container_get_current_geom(con);
-    return wlr_box_intersection(&tmp_geom, geom, &m->geom);
+    struct wlr_box geom = container_get_current_geom(con);
+    return wlr_box_intersection(&tmp_geom, &geom, &m->geom);
 }
 
 GPtrArray *tagset_get_global_floating_copy(struct tag *tag)
@@ -413,12 +393,10 @@ GPtrArray *tagset_get_global_floating_copy(struct tag *tag)
     struct layout *lt = tag_get_layout(tag);
 
     GPtrArray *conditions = g_ptr_array_new();
-    g_ptr_array_add(conditions, container_is_tiled_and_visible);
-    g_ptr_array_add(conditions, container_is_floating_and_visible);
+    g_ptr_array_add(conditions, container_is_viewable_on_own_monitor);
 
     GPtrArray *visible_global_floating_list_copy = NULL;
     if (lt->options->arrange_by_focus) {
-        // TODO: FIXME
         visible_global_floating_list_copy =
             list_create_filtered_sub_list_with_order(
                 tag->focus_set->focus_stack_normal,
@@ -555,10 +533,9 @@ void tag_id_to_tag(BitSet *dest, int tag_id)
 
 bool tagset_contains_sticky_client(BitSet *tagset_tags, struct client *c)
 {
-    BitSet *bitset = bitset_copy(c->sticky_tags);
-    bitset_and(bitset, tagset_tags);
-    bool contains = bitset_any(bitset);
-    bitset_destroy(bitset);
+    BitSet *tagset_tags_copy = server_bitset_get_tmp_copy(c->sticky_tags);
+    bitset_and(tagset_tags_copy, tagset_tags);
+    bool contains = bitset_any(tagset_tags_copy);
     return contains;
 }
 

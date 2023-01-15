@@ -13,6 +13,7 @@
 struct keyboard {
     struct seat *seat;
     struct seat_device *seat_device;
+    struct wlr_keyboard *wlr;
 
     int32_t repeat_rate;
     int32_t repeat_delay;

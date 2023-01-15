@@ -21,6 +21,7 @@
 #include "tagset.h"
 #include "root.h"
 #include "translationLayer.h"
+#include "layer_shell.h"
 
 static void update_tags_id(GPtrArray *tags)
 {
@@ -113,6 +114,8 @@ void tag_focus_first_container(struct tag *tag)
     struct container *con = g_ptr_array_index(tag->visible_con_set->tiled_containers, 0);
     if (!con)
         return;
+
+    tag_focus_container(tag, con);
 }
 
 void tag_this_focus_most_recent_container()
@@ -129,6 +132,7 @@ void tag_focus_most_recent_container(struct tag *tag)
     struct container *con = tag_get_focused_container(tag);
     if (!con) {
         tag_focus_first_container(tag);
+        return;
     }
 
     tag_focus_container(tag, con);
@@ -300,7 +304,7 @@ struct tag *get_nearest_empty_tag(GList *tags, int tag_id)
         return initial_tag;
     }
 
-    int tag_count = server_get_tag_count();
+    int tag_count = 8;
     struct tag *tag = NULL;
     for (int i = 0, up_counter = tag_id+1, down_counter = tag_id-1;
             i < tag_count;
@@ -647,9 +651,6 @@ void tag_focus_container(struct tag *tag, struct container *con)
         return;
 
     struct monitor *m = tag_get_monitor(tag);
-    if (!container_viewable_on_monitor(m, con))
-        return;
-
     struct container *sel = monitor_get_focused_container(m);
 
     /* Put the new client atop the focus stack */
@@ -685,10 +686,14 @@ void tag_update_name(struct tag *tag)
     int tag_id = tag->id;
 
     const char *default_name;
+    // no number has more than 11 digits when int is 32 bit long
+    char number_tmp[12];
     if (tag_id < lt->options->tag_names->len) {
         default_name = g_ptr_array_index(lt->options->tag_names, tag_id);
     } else {
-        default_name = tag->name;
+        // TODO explain why +1
+        snprintf(number_tmp, 12, "%d:%d", tag_id, c_idx_to_lua_idx(tag_id));
+        default_name = number_tmp;
     }
     struct container *con = tag_get_local_focused_container(tag);
 
@@ -862,27 +867,15 @@ void tag_remove_container_from_visual_stack_layer(struct tag *tag, struct contai
 
 void tag_add_container_to_visual_stack_layer(struct tag *tag, struct container *con)
 {
-    add_container_to_layer_stack(tag, con);
+    add_container_to_layer_stack(con);
 }
 
-void add_container_to_layer_stack(struct tag *tag, struct container *con)
+void add_container_to_layer_stack(struct container *con)
 {
     assert(con->client->type == LAYER_SHELL);
 
-    switch (con->client->surface.layer->current.layer) {
-        case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
-            g_ptr_array_insert(server.layer_visual_stack_background, 0, con);
-            break;
-        case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
-            g_ptr_array_insert(server.layer_visual_stack_bottom, 0, con);
-            break;
-        case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
-            g_ptr_array_insert(server.layer_visual_stack_top, 0, con);
-            break;
-        case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
-            g_ptr_array_insert(server.layer_visual_stack_overlay, 0, con);
-            break;
-    }
+    con->client->layer = con->client->surface.layer->current.layer;
+    g_ptr_array_insert(get_layer_list(con->client->layer), 0, con);
     return;
 }
 

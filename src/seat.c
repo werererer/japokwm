@@ -1,5 +1,3 @@
-#include "seat.h"
-
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
@@ -12,6 +10,7 @@
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "keyboard.h"
+#include "tablet.h"
 
 static void handle_set_selection(struct wl_listener *listener, void *data)
 {
@@ -204,7 +203,7 @@ static void seat_configure_keyboard(struct seat *seat,
         create_keyboard(seat, seat_device);
     }
     /* sway_keyboard_configure(seat_device->keyboard); */
-    wlr_seat_set_keyboard(seat->wlr_seat, seat_device->input_device->wlr_device);
+    wlr_seat_set_keyboard(seat->wlr_seat, seat_device->keyboard->wlr);
     /* struct sway_node *focus = seat_get_focus(seat); */
     /* if (focus && node_is_view(focus)) { */
     /*     // force notify reenter to pick up the new configuration */
@@ -212,6 +211,28 @@ static void seat_configure_keyboard(struct seat *seat,
     /*     seat_keyboard_notify_enter(seat, focus->sway_container->view->surface); */
     /* } */
 }
+
+static void seat_configure_tablet_tool(struct seat *seat,
+        struct seat_device *device) {
+    if (!device->tablet) {
+        device->tablet = tablet_create(seat, device);
+    }
+    configure_tablet(device->tablet);
+    // TODO we only need this
+    printf("attach tablet\n");
+    wlr_cursor_attach_input_device(seat->cursor->wlr_cursor,
+        device->input_device->wlr_device);
+    // seat_apply_input_config(seat, sway_device);
+}
+
+static void seat_configure_tablet_pad(struct seat *seat,
+        struct seat_device *device) {
+    if (!device->tablet_pad) {
+        device->tablet_pad = tablet_pad_create(seat, device);
+    }
+    configure_tablet_pad(device->tablet_pad);
+}
+
 
 void seat_configure_device(struct seat *seat,
         struct input_device *input_device) {
@@ -226,6 +247,12 @@ void seat_configure_device(struct seat *seat,
             break;
         case WLR_INPUT_DEVICE_KEYBOARD:
             seat_configure_keyboard(seat, seat_device);
+            break;
+        case WLR_INPUT_DEVICE_TABLET_TOOL:
+            seat_configure_tablet_tool(seat, seat_device);
+            break;
+        case WLR_INPUT_DEVICE_TABLET_PAD:
+            seat_configure_tablet_pad(seat, seat_device);
             break;
         default:
             break;

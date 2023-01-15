@@ -2,7 +2,8 @@
 #define CURSOR_H
 
 #include <wayland-server-core.h>
-#include <wlr/types/wlr_surface.h>
+#include <wlr/types/wlr_compositor.h>
+#include <wlr/types/wlr_subcompositor.h>
 #include <wlr/types/wlr_seat.h>
 #include <wlr/types/wlr_pointer_constraints_v1.h>
 
@@ -11,7 +12,8 @@ struct seat_device;
 enum cursor_mode {
     CURSOR_NORMAL,
     CURSOR_MOVE,
-    CURSOR_RESIZE
+    CURSOR_RESIZE,
+    CURSOR_RESIZE_IN_LAYOUT
 };
 
 struct cursor {
@@ -36,6 +38,8 @@ struct cursor {
     struct wl_event_source *hide_source;
 
     struct wlr_xcursor_manager *xcursor_mgr;
+    struct wl_list tablets;
+	struct wl_list tablet_pads;
 
     enum cursor_mode cursor_mode;
     struct wlr_surface *cursor_surface;

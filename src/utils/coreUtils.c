@@ -396,10 +396,14 @@ void lua_get_default_resize_data(lua_State *L)
     {
         lua_createtable(L, 1, 0);
         {
-            for (int i = 1; i < 10; i++) {
-                lua_pushinteger(L, i+1);
-                lua_rawseti(L, -2, i);
+            lua_createtable(L, 1, 0);
+            {
+                for (int i = 1; i < 10; i++) {
+                    lua_pushinteger(L, i+1);
+                    lua_rawseti(L, -2, i);
+                }
             }
+            lua_rawseti(L, -2, 1);
         }
         lua_rawseti(L, -2, 1);
     }
@@ -558,4 +562,14 @@ void print_trace()
     }
 
     free (strings);
+}
+
+int scale_percent_to_integer(float percent)
+{
+    return (int)(percent * PERCENT_TO_INTEGER_SCALE);
+}
+
+float scale_integer_to_percent(int integer)
+{
+    return (float)integer / PERCENT_TO_INTEGER_SCALE;
 }

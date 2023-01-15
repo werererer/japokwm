@@ -3,6 +3,7 @@
 #include <wlr/xcursor.h>
 #include <wlr/types/wlr_relative_pointer_v1.h>
 #include <wlr/util/region.h>
+#include <wlr/types/wlr_pointer.h>
 
 #include "container.h"
 #include "keybinding.h"
@@ -51,7 +52,7 @@ static void handle_axis_notify(struct wl_listener *listener, void *data)
     struct cursor *cursor = wl_container_of(listener, cursor, axis);
     /* This event is forwarded by the cursor when a pointer emits an axis event,
      * for example when you move the scroll wheel. */
-    struct wlr_event_pointer_axis *event = data;
+    struct wlr_pointer_axis_event *event = data;
     /* Notify the client with pointer focus of the axis event. */
     wlr_seat_pointer_notify_axis(cursor->seat->wlr_seat,
             event->time_msec, event->orientation, event->delta,
@@ -172,6 +173,8 @@ struct cursor *create_cursor(struct seat *seat)
     LISTEN(&seat->wlr_seat->events.request_set_cursor, &cursor->request_set_cursor, handle_set_cursor);
 
     wl_list_init(&cursor->constraint_commit.link);
+    wl_list_init(&cursor->tablets);
+    wl_list_init(&cursor->tablet_pads);
 
     return cursor;
 }
@@ -255,6 +258,9 @@ static bool handle_move_resize(struct cursor *cursor)
             resize_container(server.grab_c, wlr_cursor, 0, 0);
             return true;
             break;
+        case CURSOR_RESIZE_IN_LAYOUT:
+            container_resize_in_layout(server.grab_c, wlr_cursor, 0, 0, server.grabbed_edges);
+            break;
         default:
             break;
     }
@@ -269,27 +275,27 @@ void cursor_handle_activity_from_device(struct cursor *cursor, struct wlr_input_
 void handle_motion_relative(struct wl_listener *listener, void *data)
 {
     struct cursor *cursor = wl_container_of(listener, cursor, motion);
-    struct wlr_event_pointer_motion *event = data;
-    cursor_handle_activity_from_device(cursor, event->device);
+    struct wlr_pointer_motion_event *event = data;
+    cursor_handle_activity_from_device(cursor, &event->pointer->base);
 
-    motion_notify(cursor, event->time_msec, event->device, event->delta_x,
+    motion_notify(cursor, event->time_msec, &event->pointer->base, event->delta_x,
             event->delta_y, event->unaccel_dx, event->unaccel_dy);
 }
 
 void handle_motion_absolute(struct wl_listener *listener, void *data)
 {
     struct cursor *cursor = wl_container_of(listener, cursor, motion_absolute);
-    struct wlr_event_pointer_motion_absolute *event = data;
-    cursor_handle_activity_from_device(cursor, event->device);
+    struct wlr_pointer_motion_absolute_event *event = data;
+    cursor_handle_activity_from_device(cursor, &event->pointer->base);
 
     double lx, ly;
-    wlr_cursor_absolute_to_layout_coords(cursor->wlr_cursor, event->device,
+    wlr_cursor_absolute_to_layout_coords(cursor->wlr_cursor, &event->pointer->base,
             event->x, event->y, &lx, &ly);
 
     double dx = lx - cursor->wlr_cursor->x;
     double dy = ly - cursor->wlr_cursor->y;
 
-    motion_notify(cursor, event->time_msec, event->device, dx, dy, dx, dy);
+    motion_notify(cursor, event->time_msec, &event->pointer->base, dx, dy, dx, dy);
 }
 
 void focus_under_cursor(struct cursor *cursor, uint32_t time)
@@ -367,12 +373,12 @@ void motion_notify(struct cursor *cursor, uint32_t time_msec,
     // Only apply pointer constraints to real pointer input.
     if (cursor->active_constraint && device->type == WLR_INPUT_DEVICE_POINTER) {
         struct container *con = xy_to_container(cursor->wlr_cursor->x, cursor->wlr_cursor->y);
-        struct wlr_box *con_geom = container_get_current_geom(con);
+        struct wlr_box con_geom = container_get_current_geom(con);
         double sx;
         double sy;
-        if (con && con_geom) {
-            sx = cursor->wlr_cursor->x - con_geom->x;
-            sy = cursor->wlr_cursor->y - con_geom->y;
+        if (con) {
+            sx = cursor->wlr_cursor->x - con_geom.x;
+            sy = cursor->wlr_cursor->y - con_geom.y;
         } else {
             sx = cursor->wlr_cursor->x;
             sy = cursor->wlr_cursor->y;
@@ -394,7 +400,7 @@ void motion_notify(struct cursor *cursor, uint32_t time_msec,
 void handle_cursor_button(struct wl_listener *listener, void *data)
 {
     struct cursor *cursor = wl_container_of(listener, cursor, button);
-    struct wlr_event_pointer_button *event = data;
+    struct wlr_pointer_button_event *event = data;
 
     switch (event->state) {
         case WLR_BUTTON_PRESSED:
@@ -405,6 +411,8 @@ void handle_cursor_button(struct wl_listener *listener, void *data)
                 /* get modifiers */
                 struct seat *seat = input_manager_get_default_seat();
                 struct wlr_keyboard *kb = wlr_seat_get_keyboard(seat->wlr_seat);
+                if (!kb)
+                    return;
                 int mods = wlr_keyboard_get_modifiers(kb);
 
                 char *bind = mod_to_keybinding(mods, sym);
@@ -435,6 +443,9 @@ void handle_cursor_button(struct wl_listener *listener, void *data)
     if (cursor->cursor_mode == CURSOR_MOVE) {
         return;
     }
+    if (cursor->cursor_mode == CURSOR_RESIZE_IN_LAYOUT) {
+        return;
+    }
 
     /* If the event wasn't handled by the compositor, notify the client with
      * pointer focus that a button press has occurred */
@@ -462,7 +473,7 @@ void move_resize(struct cursor *cursor, int ui)
     container_set_floating(server.grab_c, container_fix_position, true);
 
     struct tag *con_tag = container_get_current_tag(server.grab_c);
-    struct wlr_box *grabc_geom = container_get_current_geom_at_tag(server.grab_c, con_tag);
+    struct wlr_box grabc_geom = container_get_current_geom_at_tag(server.grab_c, con_tag);
     struct wlr_cursor *wlr_cursor = cursor->wlr_cursor;
     switch (cursor->cursor_mode = ui) {
         case CURSOR_MOVE:
@@ -474,8 +485,8 @@ void move_resize(struct cursor *cursor, int ui)
             /* Doesn't work for X11 output - the next absolute motion event
              * returns the cursor to where it started */
             wlr_cursor_warp_closest(wlr_cursor, NULL,
-                    grabc_geom->x + grabc_geom->width,
-                    grabc_geom->y + grabc_geom->height);
+                    grabc_geom.x + grabc_geom.width,
+                    grabc_geom.y + grabc_geom.height);
             wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
                     "bottom_right_corner", wlr_cursor);
             break;
@@ -547,9 +558,9 @@ static void warp_to_constraint_cursor_hint(struct cursor *cursor)
 
         struct monitor *m = server_get_selected_monitor();
         struct container *con = monitor_get_focused_container(m);
-        struct wlr_box *con_geom = container_get_current_geom(con);
-        double lx = sx + con_geom->x - m->geom.x;
-        double ly = sy + con_geom->x - m->geom.y;
+        struct wlr_box con_geom = container_get_current_geom(con);
+        double lx = sx + con_geom.x - m->geom.x;
+        double ly = sy + con_geom.x - m->geom.y;
 
         wlr_cursor_warp(cursor->wlr_cursor, NULL, lx, ly);
 
@@ -588,10 +599,10 @@ static void check_constraint_region(struct cursor *cursor) {
     struct container *con = monitor_get_focused_container(m);
     if (cursor->active_confine_requires_warp && con) {
         cursor->active_confine_requires_warp = false;
-        struct wlr_box *con_geom = container_get_current_geom(con);
+        struct wlr_box con_geom = container_get_current_geom(con);
 
-        double sx = cursor->wlr_cursor->x - con_geom->x;
-        double sy = cursor->wlr_cursor->y - con_geom->x;
+        double sx = cursor->wlr_cursor->x - con_geom.x;
+        double sy = cursor->wlr_cursor->y - con_geom.x;
 
         if (!pixman_region32_contains_point(region,
                 floor(sx), floor(sy), NULL)) {
@@ -602,8 +613,8 @@ static void check_constraint_region(struct cursor *cursor) {
                 double sy = (boxes[0].y1 + boxes[0].y2) / 2.;
 
                 wlr_cursor_warp_closest(cursor->wlr_cursor, NULL,
-                    sx + con_geom->x,
-                    sy + con_geom->x);
+                    sx + con_geom.x,
+                    sy + con_geom.x);
 
                 cursor_rebase(cursor);
             }

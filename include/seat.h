@@ -14,6 +14,8 @@ struct seat {
     struct wl_listener request_set_selection;
     struct wl_listener request_set_primary_selection;
 
+    bool allow_set_cursor;
+
     GPtrArray *devices;
 };
 
@@ -21,6 +23,8 @@ struct seat_device {
     struct seat *seat;
     struct input_device *input_device;
     struct keyboard *keyboard;
+    struct tablet *tablet;
+    struct tablet_pad *tablet_pad;
 };
 
 struct pointer_constraint {
