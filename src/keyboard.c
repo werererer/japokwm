@@ -63,6 +63,8 @@ void create_keyboard(struct seat *seat, struct seat_device *seat_device)
     kb->seat_device = seat_device;
     kb->seat = seat;
 
+    seat_device->keyboard = kb;
+
     kb->wlr = wlr_keyboard_from_input_device(wlr_device);
 
     /* Prepare an XKB keymap and assign it to the keyboard. */

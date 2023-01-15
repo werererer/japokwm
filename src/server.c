@@ -424,6 +424,9 @@ int setup_server(struct server *server)
      * the clients cannot set the selection directly without compositor approval,
      * see the setsel() function. */
     server->compositor = wlr_compositor_create(server->wl_display, server->renderer);
+
+    wlr_subcompositor_create(server->wl_display);
+
     wlr_export_dmabuf_manager_v1_create(server->wl_display);
     wlr_screencopy_manager_v1_create(server->wl_display);
     wlr_data_control_manager_v1_create(server->wl_display);
