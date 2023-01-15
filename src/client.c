@@ -87,7 +87,7 @@ static void unfocus_client(struct client *c)
         return;
 
     switch (c->type) {
-            c->surface.xdg;
+        case XDG_SHELL:
             wlr_xdg_toplevel_set_activated(c->surface.xdg->toplevel, false);
             break;
         case X11_MANAGED:

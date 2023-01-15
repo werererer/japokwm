@@ -27,6 +27,7 @@
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_output_v1.h>
 #include <wlr/render/allocator.h>
+#include <wlr/render/wlr_renderer.h>
 
 #include "layer_shell.h"
 #include "monitor.h"
@@ -38,6 +39,8 @@
 #include "render/render.h"
 #include "keybinding.h"
 #include "ring_buffer.h"
+
+#define XDG_SHELL_VERSION 2
 
 struct server server;
 
@@ -170,7 +173,7 @@ static void init_event_handlers(struct server *server)
     server->xdeco_mgr = wlr_xdg_decoration_manager_v1_create(server->wl_display);
     LISTEN(&server->xdeco_mgr->events.new_toplevel_decoration, &server->new_xdeco, createxdeco);
 
-    server->xdg_shell = wlr_xdg_shell_create(server->wl_display);
+    server->xdg_shell = wlr_xdg_shell_create(server->wl_display, XDG_SHELL_VERSION);
     // remove csd(client side decorations) completely from xdg based windows
     wlr_server_decoration_manager_set_default_mode(
             wlr_server_decoration_manager_create(server->wl_display),

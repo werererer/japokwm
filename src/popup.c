@@ -165,7 +165,7 @@ inline void destroy_popups()
     if (!popup)
         return;
 
-    wlr_xdg_popup_destroy(popup->xdg->base);
+    wlr_xdg_popup_destroy(popup->xdg);
 }
 
 inline struct xdg_popup *get_latest_popup()

@@ -50,7 +50,7 @@ void create_notify_xdg(struct wl_listener *listener, void *data)
     struct client *c = xdg_surface->data = create_client(XDG_SHELL, surface);
 
     /* Tell the client not to try anything fancy */
-    wlr_xdg_toplevel_set_tiled(c->surface.xdg, WLR_EDGE_TOP |
+    wlr_xdg_toplevel_set_tiled(c->surface.xdg->toplevel, WLR_EDGE_TOP |
             WLR_EDGE_BOTTOM | WLR_EDGE_LEFT | WLR_EDGE_RIGHT);
 
     /* Listen to the various events it can emit */

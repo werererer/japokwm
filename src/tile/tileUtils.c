@@ -220,7 +220,7 @@ int get_container_area_count(struct tag *tag)
 
 void arrange_monitor(struct monitor *m)
 {
-    m->geom = *wlr_output_layout_get_box(server.output_layout, m->wlr_output);
+    wlr_output_layout_get_box(server.output_layout, m->wlr_output, &m->geom);
     struct wlr_box active_geom = monitor_get_active_geom(m);
 
     struct tag *tag = monitor_get_active_tag(m);
@@ -299,13 +299,15 @@ void container_update_size(struct container *con)
     con->client->resized = true;
 
     struct wlr_box con_geom = container_get_current_content_geom(con);
-    con_geom = apply_bounds(con, *wlr_output_layout_get_box(server.output_layout, NULL));
+    struct wlr_box output_geom;
+    wlr_output_layout_get_box(server.output_layout, NULL, &output_geom);
+    con_geom = apply_bounds(con, output_geom);
 
     /* wlroots makes this a no-op if size hasn't changed */
     switch (con->client->type) {
         case XDG_SHELL:
             if (con->client->surface.xdg->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
-                wlr_xdg_toplevel_set_size(con->client->surface.xdg,
+                wlr_xdg_toplevel_set_size(con->client->surface.xdg->toplevel,
                         con_geom.width, con_geom.height);
             }
             break;
