@@ -26,7 +26,6 @@ static void popup_damage(struct xdg_popup *xdg_popup, bool whole);
 struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popup,
         struct wlr_box parent_geom, struct container* toplevel)
 {
-
     struct xdg_popup *popup = xdg_popup->base->data = calloc(1, sizeof(*popup));
     popup->xdg = xdg_popup;
     popup->toplevel = toplevel;
@@ -38,8 +37,11 @@ struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popu
     box.height = m->geom.height;
 
     wlr_xdg_popup_unconstrain_from_box(popup->xdg, &box);
+    printf("parent_geom.x: %i\n", parent_geom.x);
+    printf("parent_geom.y: %i\n", parent_geom.y);
+    printf("parent_geom.width: %i\n", parent_geom.width);
     // the root window may be resized. This must be adjusted
-    popup->geom.x = xdg_popup->current.geometry.x + parent_geom.x;
+    popup->geom.x = xdg_popup->current.geometry.x + parent_geom.x + 100;
     popup->geom.y = xdg_popup->current.geometry.y + parent_geom.y;
     popup->geom.width = xdg_popup->current.geometry.width;
     popup->geom.height = xdg_popup->current.geometry.height;
