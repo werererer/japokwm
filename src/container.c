@@ -1174,8 +1174,8 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
 
     struct wlr_box geom = container_get_current_geom(con);
 
-    geom.width = absolute_x_to_container_relative(geom, cursor->x - offsetx);
-    geom.height = absolute_y_to_container_relative(geom, cursor->y - offsety);
+    geom.width = absolute_x_to_container_local(geom, cursor->x - offsetx);
+    geom.height = absolute_y_to_container_local(geom, cursor->y - offsety);
 
     if (con->on_scratchpad) {
         remove_container_from_scratchpad(con);
@@ -1283,12 +1283,12 @@ struct monitor *container_get_monitor(struct container *con)
     return m;
 }
 
-inline int absolute_x_to_container_relative(struct wlr_box geom, int x)
+inline int absolute_x_to_container_local(struct wlr_box geom, int x)
 {
     return x - geom.x;
 }
 
-inline int absolute_y_to_container_relative(struct wlr_box geom, int y)
+inline int absolute_y_to_container_local(struct wlr_box geom, int y)
 {
     return y - geom.y;
 }

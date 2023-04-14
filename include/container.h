@@ -168,8 +168,8 @@ void container_resize_with_cursor(struct cursor *cursor);
 
 struct monitor *container_get_monitor(struct container *con);
 
-int absolute_x_to_container_relative(struct wlr_box geom, int x);
-int absolute_y_to_container_relative(struct wlr_box geom, int y);
+int absolute_x_to_container_local(struct wlr_box geom, int x);
+int absolute_y_to_container_local(struct wlr_box geom, int y);
 int get_position_in_container_focus_stack(struct container *con);
 int get_position_in_container_stack(struct container *con);
 

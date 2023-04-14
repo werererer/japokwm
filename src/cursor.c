@@ -318,8 +318,8 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
     struct container *focus_con = xy_to_container(cursorx, cursory);
     if (!is_popup_under_cursor && focus_con) {
         final_focus_surface = wlr_surface_surface_at(get_wlrsurface(focus_con->client),
-                absolute_x_to_container_relative(container_get_current_geom(focus_con), cursorx),
-                absolute_y_to_container_relative(container_get_current_geom(focus_con), cursory),
+                absolute_x_to_container_local(container_get_current_geom(focus_con), cursorx),
+                absolute_y_to_container_local(container_get_current_geom(focus_con), cursory),
                 &sx, &sy);
     }
 
@@ -478,8 +478,8 @@ void move_resize(struct cursor *cursor, int ui)
     switch (cursor->cursor_mode = ui) {
         case CURSOR_MOVE:
             wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr, "fleur", wlr_cursor);
-            offsetx = absolute_x_to_container_relative(grabc_geom, wlr_cursor->x);
-            offsety = absolute_y_to_container_relative(grabc_geom, wlr_cursor->y);
+            offsetx = absolute_x_to_container_local(grabc_geom, wlr_cursor->x);
+            offsety = absolute_y_to_container_local(grabc_geom, wlr_cursor->y);
             break;
         case CURSOR_RESIZE:
             /* Doesn't work for X11 output - the next absolute motion event
