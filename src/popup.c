@@ -30,21 +30,11 @@ struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popu
     popup->xdg = xdg_popup;
     popup->toplevel = toplevel;
 
-    struct wlr_box box = xdg_popup->current.geometry;
-    box.x = 0;
-    box.y = 0;
-    box.width = m->geom.width;
-    box.height = m->geom.height;
+    // TODO: what does this exactly do?
+    // struct wlr_box output_geom = monitor_get_active_geom(m);
+    // wlr_xdg_popup_unconstrain_from_box(xdg_popup, &output_geom);
 
-    wlr_xdg_popup_unconstrain_from_box(popup->xdg, &box);
-    printf("parent_geom.x: %i\n", parent_geom.x);
-    printf("parent_geom.y: %i\n", parent_geom.y);
-    printf("parent_geom.width: %i\n", parent_geom.width);
     // the root window may be resized. This must be adjusted
-    popup->geom.x = xdg_popup->current.geometry.x + parent_geom.x + 100;
-    popup->geom.y = xdg_popup->current.geometry.y + parent_geom.y;
-    popup->geom.width = xdg_popup->current.geometry.width;
-    popup->geom.height = xdg_popup->current.geometry.height;
     popup->m = m;
 
     LISTEN(&popup->xdg->base->events.map, &popup->map, popup_handle_map);
@@ -76,7 +66,27 @@ static void popup_handle_commit(struct wl_listener *listener, void *data)
 static void popup_handle_map(struct wl_listener *listener, void *data)
 {
     struct xdg_popup *popup = wl_container_of(listener, popup, map);
-    popup_damage(popup, true);
+
+    struct wlr_xdg_popup *xdg_popup = popup->xdg;
+
+    double sx, sy;
+    wlr_xdg_popup_get_position(xdg_popup, &sx, &sy);
+    int toplevel_sx, toplevel_sy;
+    wlr_xdg_popup_get_toplevel_coords(xdg_popup, sx, sy, &toplevel_sx, &toplevel_sy);
+
+    struct container *toplevel = popup->toplevel;
+    struct wlr_box toplevel_geom = container_get_current_geom(toplevel);
+
+    // the root window may be resized. This must be adjusted
+    popup_set_x(popup, toplevel_sx + toplevel_geom.x);
+    popup_set_y(popup, toplevel_sy + toplevel_geom.y);
+    popup_set_width(popup, xdg_popup->current.geometry.width);
+    popup_set_height(popup, xdg_popup->current.geometry.height);
+
+    struct monitor *m = server_get_selected_monitor();
+    struct wlr_box output_geom = monitor_get_active_geom(m);
+
+    apply_bounds(&popup->geom, output_geom);
 
     popup->commit.notify = popup_handle_commit;
     wl_signal_add(&popup->xdg->base->surface->events.commit, &popup->commit);
@@ -183,4 +193,24 @@ inline struct xdg_popup *get_latest_popup()
 inline bool popups_exist()
 {
     return server.popups->len > 0;
+}
+
+void popup_set_x(struct xdg_popup *popup, int x)
+{
+    popup->geom.x = x;
+}
+
+void popup_set_y(struct xdg_popup *popup, int y)
+{
+    popup->geom.y = y;
+}
+
+void popup_set_width(struct xdg_popup *popup, int width)
+{
+    popup->geom.width = width;
+}
+
+void popup_set_height(struct xdg_popup *popup, int height)
+{
+    popup->geom.height = height;
 }

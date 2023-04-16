@@ -25,4 +25,9 @@ void destroy_popups();
 struct wlr_surface *get_popup_surface_under_cursor(struct cursor *cursor, double *sx, double *sy);
 struct xdg_popup *get_latest_popup();
 bool popups_exist();
+
+void popup_set_x(struct xdg_popup *popup, int x);
+void popup_set_y(struct xdg_popup *popup, int y);
+void popup_set_width(struct xdg_popup *popup, int width);
+void popup_set_height(struct xdg_popup *popup, int height);
 #endif /* POPUP_H */

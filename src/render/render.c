@@ -72,6 +72,16 @@ static bool intersects_with_output(struct monitor *m,
         return wlr_box_intersection(&intersection, &output_box, surface_box);
 }
 
+/*
+ * output_for_each_surface_iterator is a callback for rendering surfaces on an
+ * output. Called by wlr_surface_for_each_surface in rendering order.
+ *
+ * Params:
+ * - surface: The wlr_surface to be rendered on the output.
+ * - sx: The x-coordinate of the surface relative to the output.
+ * - sy: The y-coordinate of the surface relative to the output.
+ * - user_data: A pointer to user-specific data to be used in the callback.
+ */
 static void output_for_each_surface_iterator(struct wlr_surface *surface, int sx, int sy, void *user_data)
 {
     struct surface_iterator_data *data = user_data;
@@ -109,6 +119,11 @@ finish_damage:
     pixman_region32_fini(&damage);
 }
 
+/*
+ * render_surface_iterator is a callback for rendering surfaces on an output.
+ * It sets up the proper transformations and scales, then calls the render
+ * function. Used by wlr_output_render_software_with_damage.
+ */
 static void render_surface_iterator(struct monitor *m, struct wlr_surface *surface,
         struct wlr_box *box, void *data)
 {
@@ -145,6 +160,12 @@ static void render_surface_iterator(struct monitor *m, struct wlr_surface *surfa
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
     wlr_surface_send_frame_done(surface, &now);
+}
+
+static void render_surface_iterator_tmp(struct monitor *m, struct wlr_surface *surface,
+        struct wlr_box *box, void *data)
+{
+    render_surface_iterator(m, surface, box, data);
 }
 
 static void
@@ -359,9 +380,15 @@ static void render_popups(struct monitor *m, pixman_region32_t *output_damage)
 
         // popups are weird and require to use the dimensions of the surface
         // instead
-        popup->geom.width = surface->current.width;
-        popup->geom.height = surface->current.height;
+        popup_set_width(popup, surface->current.width);
+        popup_set_height(popup, surface->current.height);
+
         struct wlr_box obox = popup->geom;
+        // printf("render popup: %i\n", i);
+        // printf("obox.x: %i\n", obox.x);
+        // printf("obox.y: %i\n", obox.y);
+        // printf("obox.width: %i\n", obox.width);
+        // printf("obox.height: %i\n", obox.height);
 
         struct render_texture_data render_data;
         render_data.alpha = 1.0f;

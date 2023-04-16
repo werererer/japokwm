@@ -402,30 +402,20 @@ struct wlr_fbox lua_togeometry(lua_State *L)
 }
 
 // TODO: look if this function is still needed
-struct wlr_box apply_bounds(struct container *con, struct wlr_box box)
+void apply_bounds(struct wlr_box *geom, struct wlr_box box)
 {
     /* set minimum possible */
-    struct wlr_box con_geom = container_get_current_content_geom(con);
+    geom->width = MAX(MIN_CONTAINER_WIDTH, geom->width);
+    geom->height = MAX(MIN_CONTAINER_HEIGHT, geom->height);
 
-    if (container_is_tiled(con))
-        return con_geom;
-
-    con_geom.width = MAX(MIN_CONTAINER_WIDTH, con_geom.width);
-    con_geom.height = MAX(MIN_CONTAINER_HEIGHT, con_geom.height);
-
-    struct direction_value bw = container_get_border_width(con);
-
-    if (con_geom.x >= box.x + box.width)
-        con_geom.x = box.x + box.width - con_geom.width;
-    if (con_geom.y >= box.y + box.height)
-        con_geom.y = box.y + box.height - con_geom.height;
-    if (con_geom.x + con_geom.width + bw.left + bw.right <= box.x)
-        con_geom.x = box.x;
-    if (con_geom.y + con_geom.height + bw.top + bw.bottom <= box.y)
-        con_geom.y = box.y;
-
-    container_set_current_content_geom(con, con_geom);
-    return con_geom;
+    if (geom->x >= box.x + box.width)
+        geom->x = box.x + box.width - geom->width;
+    if (geom->y >= box.y + box.height)
+        geom->y = box.y + box.height - geom->height;
+    if (geom->x + geom->width <= box.x)
+        geom->x = box.x;
+    if (geom->y + geom->height <= box.y)
+        geom->y = box.y;
 }
 
 void commit_notify(struct wl_listener *listener, void *data)

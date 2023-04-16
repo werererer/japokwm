@@ -83,7 +83,7 @@ struct wlr_box get_monitor_local_box(struct wlr_box box, struct monitor *m);
 struct wlr_fbox lua_togeometry(lua_State *L);
 
 void ack_configure(struct wl_listener *listener, void *data);
-struct wlr_box apply_bounds(struct container *con, struct wlr_box bbox);
+void apply_bounds(struct wlr_box *geom, struct wlr_box box);
 void commit_notify(struct wl_listener *listener, void *data);
 void configure_notify(struct wl_listener *listener, void *data);
 void container_damage_borders_at_monitor(struct container *con, struct monitor *m);
