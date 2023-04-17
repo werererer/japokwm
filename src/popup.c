@@ -100,6 +100,11 @@ static void popup_handle_map(struct wl_listener *listener, void *data)
     popup_set_width(popup, xdg_popup->current.geometry.width);
     popup_set_height(popup, xdg_popup->current.geometry.height);
 
+    // TODO: either use this or use actual xdg constraints
+    struct monitor *m = server_get_selected_monitor();
+    struct wlr_box output_geom = monitor_get_active_geom(m);
+    apply_bounds(&popup->geom, output_geom);
+
     popup->commit.notify = popup_handle_commit;
     wl_signal_add(&popup->xdg->base->surface->events.commit, &popup->commit);
 }
