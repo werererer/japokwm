@@ -131,8 +131,6 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
         if (old_surface != new_surface) {
             cursor_constrain(seat->cursor, NULL);
             unfocus_client(old);
-            struct container *old_con = old->con;
-            container_damage_borders(old_con);
         }
     }
 
@@ -151,10 +149,6 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
 
     /* Update wlroots'c keyboard focus */
     focus_surface(seat, get_wlrsurface(c));
-
-    struct container *con = c->con;
-    struct monitor *m = container_get_monitor(con);
-    container_damage_borders_at_monitor(con, m);
 
     /* Activate the new client */
     switch (c->type) {
@@ -282,6 +276,5 @@ void reset_floating_client_borders(int border_px)
             continue;
         }
         container_set_border_width(con, direction_value_uniform(border_px));
-        container_damage_whole(con);
     }
 }

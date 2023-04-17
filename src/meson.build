@@ -75,7 +75,6 @@ srcs = files(
     'list_sets/container_stack_set.c',
     'list_sets/focus_stack_set.c',
     'list_sets/list_set.c',
-    'render/render.c',
     'rules/mon_rule.c',
     'rules/rule.c',
     'tile/tileUtils.c',

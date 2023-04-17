@@ -110,7 +110,6 @@ void unmap_notify(struct wl_listener *listener, void *data)
     struct client *c = wl_container_of(listener, c, unmap);
 
     struct container *con = c->con;
-    container_damage_whole(c->con);
     remove_container_from_tile(con);
 
     arrange();

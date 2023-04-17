@@ -66,7 +66,6 @@ void unmap_layer_surface_notify(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, unmap);
     unmap_layer_surface(c);
-    container_damage_whole(c->con);
 }
 
 void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
@@ -117,8 +116,6 @@ void commit_layer_surface_notify(struct wl_listener *listener, void *data)
         c->mapped = layer_surface->mapped;
         arrange_layers(c->m);
     }
-
-    container_damage_part(con);
 }
 
 bool layer_shell_is_bar(struct container *con)

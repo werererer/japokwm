@@ -44,10 +44,6 @@ struct client {
     // enum zwlr_layer_surface_v1_layer layer;
     int layer;
 
-    // used to determine what to damage
-    bool resized;
-    bool moved_tag;
-    bool is_independent;
     // this is currently only used for layer_shell surfaces to help determine if
     // arrange_layers should be called
     bool mapped;

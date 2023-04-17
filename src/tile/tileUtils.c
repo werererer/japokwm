@@ -238,7 +238,6 @@ void arrange_monitor(struct monitor *m)
     arrange_containers(tag, active_geom, tiled_containers);
     g_ptr_array_unref(tiled_containers);
 
-    // wlr_output_damage_add_whole(m->damage);
     update_reduced_focus_stack(tag);
     tag_focus_most_recent_container(tag);
 }
@@ -296,8 +295,6 @@ static void arrange_container(struct container *con, struct monitor *m,
 
 void container_update_size(struct container *con)
 {
-    con->client->resized = true;
-
     struct wlr_box con_geom = container_get_current_geom(con);
 
     if (!container_is_tiled(con)) {
@@ -307,6 +304,8 @@ void container_update_size(struct container *con)
         container_set_current_geom(con, con_geom);
     }
 
+    struct scene_surface *surface = get_wlrsurface(con->client)->data;
+    wlr_scene_node_set_position(&surface->scene_surface->buffer->node, con_geom.x, con_geom.y);
     /* wlroots makes this a no-op if size hasn't changed */
     switch (con->client->type) {
         case XDG_SHELL:

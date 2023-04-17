@@ -402,31 +402,35 @@ static void _async_handler_function(struct uv_async_s *arg)
 }
 
 static void surface_handle_commit(struct wl_listener *listener, void *data) {
-	struct scene_surface *surface = wl_container_of(listener, surface, commit);
+    struct scene_surface *surface = wl_container_of(listener, surface, commit);
 }
 
 static void surface_handle_destroy(struct wl_listener *listener, void *data) {
-	struct scene_surface *surface = wl_container_of(listener, surface, destroy);
-	wlr_scene_node_destroy(&surface->scene_surface->buffer->node);
-	wlr_scene_node_destroy(&surface->border->node);
-	wl_list_remove(&surface->destroy.link);
-	free(surface);
+    struct scene_surface *surface = wl_container_of(listener, surface, destroy);
+    wlr_scene_node_destroy(&surface->scene_surface->buffer->node);
+    wlr_scene_node_destroy(&surface->border->node);
+    wl_list_remove(&surface->destroy.link);
+    free(surface);
 }
 
 static void server_handle_new_surface(struct wl_listener *listener, void *data)
 {
-	struct server *server = wl_container_of(listener, server, new_surface);
-	struct wlr_surface *wlr_surface = data;
+    struct server *server = wl_container_of(listener, server, new_surface);
+    struct wlr_surface *wlr_surface = data;
 
-	struct scene_surface *surface = calloc(1, sizeof(struct scene_surface));
-	surface->wlr = wlr_surface;
-	surface->commit.notify = surface_handle_commit;
-	wl_signal_add(&wlr_surface->events.commit, &surface->commit);
-	surface->destroy.notify = surface_handle_destroy;
-	wl_signal_add(&wlr_surface->events.destroy, &surface->destroy);
+    struct scene_surface *surface = calloc(1, sizeof(struct scene_surface));
+    surface->wlr = wlr_surface;
+    surface->commit.notify = surface_handle_commit;
+    wl_signal_add(&wlr_surface->events.commit, &surface->commit);
+    surface->destroy.notify = surface_handle_destroy;
+    wl_signal_add(&wlr_surface->events.destroy, &surface->destroy);
 
-	surface->scene_surface =
-		wlr_scene_surface_create(&server->scene->tree, wlr_surface);
+    surface->scene_surface =
+        wlr_scene_surface_create(&server->scene->tree, wlr_surface);
+
+    wlr_surface->data = surface;
+
+    wlr_scene_node_set_position(&surface->scene_surface->buffer->node, 300, 300);
 }
 
 int setup_server(struct server *server)

@@ -97,8 +97,6 @@ void container_property_set_floating(struct container_property *property, bool f
     }
 
     lift_container(con);
-    con->client->resized = true;
-    container_damage_whole(con);
 
     container_update_size(con);
 }
@@ -181,81 +179,12 @@ void remove_container_from_tile(struct container *con)
     ipc_event_tag();
 }
 
-void container_damage_borders_at_monitor(struct container *con, struct monitor *m)
+void scale_box(struct wlr_box *box, float scale)
 {
-    if (!con)
-        return;
-    if (!m)
-        return;
-
-    struct wlr_box *borders;
-    borders = (struct wlr_box[4]) {
-        container_get_current_border_geom(con, WLR_EDGE_TOP),
-        container_get_current_border_geom(con, WLR_EDGE_LEFT),
-        container_get_current_border_geom(con, WLR_EDGE_RIGHT),
-        container_get_current_border_geom(con, WLR_EDGE_BOTTOM),
-    };
-
-    for (int i = 0; i < 4; i++) {
-        struct wlr_box border = borders[i];
-        double ox = border.x;
-        double oy = border.y;
-        wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
-        struct wlr_box obox = {
-            .x = ox,
-            .y = oy,
-            .width = border.width,
-            .height = border.height,
-        };
-        scale_box(&obox, m->wlr_output->scale);
-        // wlr_output_damage_add_box(m->damage, &obox);
-    }
-}
-
-void container_damage_borders(struct container *con)
-{
-    if (!con)
-        return;
-
-    for (int i = 0; i < server.mons->len; i++) {
-        struct monitor *m = g_ptr_array_index(server.mons, i);
-        container_damage_borders_at_monitor(con, m);
-    }
-}
-
-static void damage_container_area(struct container *con, struct wlr_box geom,
-        bool whole)
-{
-    for (int i = 0; i < server.mons->len; i++) {
-        struct monitor *m = g_ptr_array_index(server.mons, i);
-        output_damage_surface(m, get_wlrsurface(con->client), &geom, whole);
-    }
-    container_damage_borders(con);
-}
-
-static void container_damage(struct container *con, bool whole)
-{
-    for (int i = 0; i < server.mons->len; i++) {
-        struct wlr_box con_geom = container_get_current_content_geom(con);
-        damage_container_area(con, con_geom, whole);
-    }
-
-    struct client *c = con->client;
-    if (c->resized || c->moved_tag) {
-        damage_container_area(con, con->prev_geom, whole);
-        c->resized = false;
-        c->moved_tag = false;
-    }
-}
-
-void container_damage_part(struct container *con)
-{
-    container_damage(con, false);
-}
-
-void container_damage_whole(struct container *con)
-{
-    container_damage(con, true);
+    box->x *= scale;
+    box->y *= scale;
+    box->width *= scale;
+    box->height *= scale;
 }
 
 struct container *monitor_get_focused_container(struct monitor *m)
@@ -426,7 +355,6 @@ void commit_notify(struct wl_listener *listener, void *data)
 
     struct container *con = c->con;
     if (con->is_on_tile) {
-        container_damage_part(c->con);
     }
 }
 
@@ -763,9 +691,6 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
     struct tag *tag = monitor_get_active_tag(m);
     struct layout *lt = tag_get_layout(tag);
     container_set_border_width(con, direction_value_uniform(lt->options->float_border_px));
-
-    con->client->resized = true;
-    container_damage(con, true);
 }
 
 struct container_property *container_get_property(struct container *con)
@@ -1174,7 +1099,6 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
         arrange();
     }
 
-    container_damage_borders(con);
 
     container_set_floating_geom(con, geom);
     struct tag *tag = container_get_current_tag(con);
@@ -1404,8 +1328,6 @@ void move_container_to_tag(struct container *con, struct tag *tag)
         return;
 
     container_set_tag(con, tag);
-    con->client->moved_tag = true;
-    container_damage_whole(con);
 
     struct tag *old_tag = container_get_current_tag(con);
 

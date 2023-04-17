@@ -129,7 +129,6 @@ void unmap_notifyx11(struct wl_listener *listener, void *data)
     wl_list_remove(&c->commit.link);
 
     struct container *con = c->con;
-    container_damage_whole(c->con);
     remove_container_from_tile(con);
 
     arrange();
@@ -195,7 +194,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
         case X11_UNMANAGED:
             {
                 con->is_unmanaged = true;
-                c->is_independent = true;
 
                 debug_print("is unmanaged\n");
                 struct tag *tag = monitor_get_active_tag(m);

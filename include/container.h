@@ -86,10 +86,6 @@ void ack_configure(struct wl_listener *listener, void *data);
 void apply_bounds(struct wlr_box *geom, struct wlr_box box);
 void commit_notify(struct wl_listener *listener, void *data);
 void configure_notify(struct wl_listener *listener, void *data);
-void container_damage_borders_at_monitor(struct container *con, struct monitor *m);
-void container_damage_borders(struct container *con);
-void container_damage_part(struct container *con);
-void container_damage_whole(struct container *con);
 void container_fix_position_to_begin(struct container *con);
 void container_fix_position(struct container *con);
 void focus_on_hidden_stack(struct monitor *m, int i);
@@ -107,6 +103,7 @@ void set_container_monitor(struct container *con, struct monitor *m);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void resize_container_in_layout(struct container *con, struct wlr_box geom);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
+void scale_box(struct wlr_box *box, float scale);
 
 struct container_property *container_get_property(struct container *con);
 struct container_property *container_get_property_at_tag(
