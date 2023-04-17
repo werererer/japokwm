@@ -46,7 +46,7 @@ void create_notifyx11(struct wl_listener *listener, void *data)
 
     union surface_t surface;
     surface.xwayland = xwayland_surface;
-    struct client *c = xwayland_surface->surface->data = create_client(X11_MANAGED, surface);
+    struct client *c = xwayland_surface->data = create_client(X11_MANAGED, surface);
     // set default value will be overriden on maprequest
 
     /* Listen to the various events it can emit */
@@ -143,6 +143,9 @@ void maprequestx11(struct wl_listener *listener, void *data)
     struct monitor *m = server_get_selected_monitor();
 
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
+
+    c->scene_surface = xwayland_surface->surface->data;
+    xwayland_surface->surface->data = c;
 
     struct container *con = c->con;
     con->tag_id = m->tag_id;

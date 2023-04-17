@@ -34,6 +34,8 @@ struct client {
     struct wl_listener new_popup;
     struct wl_listener new_subsurface;
 
+    struct scene_surface *scene_surface;
+
     enum shell type;
     const char *title;
     const char *app_id;

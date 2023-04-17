@@ -26,7 +26,7 @@
 struct scene_surface {
     struct wlr_surface *wlr;
     struct wlr_scene_surface *scene_surface;
-    struct wlr_scene_rect *border;
+    struct wlr_scene_rect *borders[4];
     struct wl_list link;
 
     struct wl_listener commit;
@@ -149,6 +149,8 @@ struct function_data {
     char *cmd;
     char *output;
 };
+
+#define BORDER_COUNT 4
 
 extern struct server server;
 

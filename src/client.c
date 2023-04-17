@@ -27,6 +27,21 @@ struct client *create_client(enum shell shell_type, union surface_t surface)
     c->type = shell_type;
     c->surface = surface;
 
+    // TODO: this is a hack. first wlr_surface->data is filled with the surface
+    // then we will fill it with the corro
+    switch (shell_type) {
+        case XDG_SHELL:
+            c->scene_surface = surface.xdg->surface->data;
+            break;
+        case LAYER_SHELL:
+            c->scene_surface = surface.layer->surface->data;
+            break;
+        case X11_MANAGED:
+        case X11_UNMANAGED:
+            c->scene_surface = surface.xwayland->data;
+            break;
+    }
+
     return c;
 }
 

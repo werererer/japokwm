@@ -304,7 +304,7 @@ void container_update_size(struct container *con)
         container_set_current_geom(con, con_geom);
     }
 
-    struct scene_surface *surface = get_wlrsurface(con->client)->data;
+    struct scene_surface *surface = con->client->scene_surface;
     wlr_scene_node_set_position(&surface->scene_surface->buffer->node, con_geom.x, con_geom.y);
     /* wlroots makes this a no-op if size hasn't changed */
     switch (con->client->type) {
