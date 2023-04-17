@@ -22,16 +22,7 @@
 #include "input_manager.h"
 #include "utils/coreUtils.h"
 #include "bitset/bitset.h"
-
-struct scene_surface {
-    struct wlr_surface *wlr;
-    struct wlr_scene_surface *scene_surface;
-    struct wlr_scene_rect *borders[4];
-    struct wl_list link;
-
-    struct wl_listener commit;
-    struct wl_listener destroy;
-};
+#include "render.h"
 
 struct server {
     bool is_running;
@@ -150,8 +141,6 @@ struct function_data {
     char *output;
 };
 
-#define BORDER_COUNT 4
-
 extern struct server server;
 
 void init_server();
@@ -191,7 +180,4 @@ BitSet *server_bitset_get_local_tmp_copy(BitSet *bitset);
 
 struct tag *server_get_selected_tag();
 struct layout *server_get_selected_layout();
-
-struct client *wlr_surface_get_client(struct wlr_surface *wlr_surface);
-struct container *wlr_surface_get_container(struct wlr_surface *wlr_surface);
 #endif /* SERVER_H */
