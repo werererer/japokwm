@@ -64,6 +64,8 @@ static void surface_handle_commit(struct wl_listener *listener, void *data) {
     struct client *c = wlr_surface_get_client(surface->wlr);
     struct container *con = c->con;
 
+    wlr_scene_node_set_enabled(&surface->scene_surface->node, true);
+
     if (!con->has_border) {
         for (int i = 0; i < BORDER_COUNT; i++) {
             struct wlr_scene_rect *border = surface->borders[i];
@@ -117,48 +119,6 @@ static void surface_handle_commit(struct wl_listener *listener, void *data) {
     }
 }
 
-
-// static void render_borders(struct container *con, struct monitor *m,
-// pixman_region32_t *output_damage)
-// {
-//     // TODO: reimplement me
-//     if (!con->has_border)
-//         return;
-//
-//     enum wlr_edges hidden_edges = WLR_EDGE_NONE;
-//     struct tag *tag = monitor_get_active_tag(m);
-//     struct layout *lt = tag_get_layout(tag);
-//     if (lt->options->smart_hidden_edges) {
-//         if (tag->visible_con_set->tiled_containers->len <= 1) {
-//             hidden_edges = container_update_hidden_edges(con, borders,
-//             lt->options->hidden_edges);
-//         }
-//     } else {
-//         hidden_edges = container_update_hidden_edges(con, borders,
-//         lt->options->hidden_edges);
-//     }
-//
-//     /* Draw window borders */
-//     struct container *sel = monitor_get_focused_container(m);
-//     const struct color color = (con == sel) ? lt->options->focus_color :
-//     lt->options->border_color;
-//     for (int i = 0; i < 4; i++) {
-//         if ((hidden_edges & (1 << i)) == 0) {
-//             struct wlr_box border = borders[i];
-//             double ox = border.x;
-//             double oy = border.y;
-//             wlr_output_layout_output_coords(server.output_layout,
-//             m->wlr_output, &ox, &oy); struct wlr_box obox = {
-//                 .x = ox,
-//                 .y = oy,
-//                 .width = border.width,
-//                 .height = border.height,
-//             };
-//             scale_box(&obox, m->wlr_output->scale);
-//             render_rect(m, output_damage, &obox, color);
-//         }
-//     }
-// }
 
 void server_handle_new_surface(struct wl_listener *listener, void *data)
 {
