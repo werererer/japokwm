@@ -10,6 +10,7 @@ struct xdg_popup {
     struct container *toplevel;
     struct wlr_box geom;
     struct monitor *m;
+    void *parent;
 
     struct wl_listener map;
     struct wl_listener unmap;
@@ -19,7 +20,7 @@ struct xdg_popup {
 };
 
 struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popup,
-        struct wlr_box parent_geom, struct container* toplevel);
+        void *parent, struct container* toplevel);
 void popup_handle_destroy(struct wl_listener *listener, void *data);
 void destroy_popups();
 struct wlr_surface *get_popup_surface_under_cursor(struct cursor *cursor, double *sx, double *sy);

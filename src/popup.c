@@ -24,11 +24,12 @@ static void popup_handle_unmap(struct wl_listener *listener, void *data);
 static void popup_damage(struct xdg_popup *xdg_popup, bool whole);
 
 struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popup,
-        struct wlr_box parent_geom, struct container* toplevel)
+        void *parent, struct container* toplevel)
 {
     struct xdg_popup *popup = xdg_popup->base->data = calloc(1, sizeof(*popup));
     popup->xdg = xdg_popup;
     popup->toplevel = toplevel;
+    popup->parent = parent;
 
     // TODO: what does this exactly do?
     // struct wlr_box output_geom = monitor_get_active_geom(m);
@@ -71,15 +72,31 @@ static void popup_handle_map(struct wl_listener *listener, void *data)
 
     double sx, sy;
     wlr_xdg_popup_get_position(xdg_popup, &sx, &sy);
-    int toplevel_sx, toplevel_sy;
-    wlr_xdg_popup_get_toplevel_coords(xdg_popup, sx, sy, &toplevel_sx, &toplevel_sy);
 
+    printf("new position: %f:%f\n", sx, sy);
+
+    int offset_x = 0;
+    int offset_y = 0;
+
+    for (struct xdg_popup *curr_popup = popup;
+            curr_popup->parent != popup->toplevel;
+            curr_popup = popup->parent) {
+        struct xdg_popup *parent_popup = curr_popup->parent;
+        double sx, sy;
+        wlr_xdg_popup_get_position(parent_popup->xdg, &sx, &sy);
+        offset_x += sx;
+        offset_y += sy;
+    }
     struct container *toplevel = popup->toplevel;
-    struct wlr_box toplevel_geom = container_get_current_geom(toplevel);
+    struct wlr_box toplevel_geom = container_get_current_content_geom(toplevel);
+
+    offset_x += toplevel_geom.x;
+    offset_y += toplevel_geom.y;
+
 
     // the root window may be resized. This must be adjusted
-    popup_set_x(popup, toplevel_sx + toplevel_geom.x);
-    popup_set_y(popup, toplevel_sy + toplevel_geom.y);
+    popup_set_x(popup, offset_x + sx);
+    popup_set_y(popup, offset_y + sy);
     popup_set_width(popup, xdg_popup->current.geometry.width);
     popup_set_height(popup, xdg_popup->current.geometry.height);
 
@@ -118,7 +135,7 @@ static void popup_handle_new_popup(struct wl_listener *listener, void *data)
     struct wlr_xdg_popup *xdg_popup = data;
 
     create_popup(parent_popup->m, xdg_popup,
-            parent_popup->geom, parent_popup->toplevel);
+            parent_popup, parent_popup->toplevel);
 }
 
 void popup_handle_destroy(struct wl_listener *listener, void *data)

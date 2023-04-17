@@ -208,7 +208,7 @@ void client_handle_new_popup(struct wl_listener *listener, void *data)
 
     struct container *con = client->con;
     struct monitor *m = container_get_monitor(con);
-    create_popup(m, xdg_popup, container_get_current_geom(con), con);
+    create_popup(m, xdg_popup, con, con);
 }
 
 void client_handle_set_title(struct wl_listener *listener, void *data)
