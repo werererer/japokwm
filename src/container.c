@@ -28,6 +28,7 @@
 #include "lib/lib_container.h"
 #include "lib/lib_layout.h"
 #include "lib/lib_geom.h"
+#include "root.h"
 
 static void add_container_to_tag(struct container *con, struct tag *tag);
 
@@ -955,44 +956,21 @@ struct wlr_box container_get_current_content_geom(struct container *con)
 struct wlr_box container_get_current_border_geom(struct container *con, enum wlr_edges dir)
 {
     struct wlr_box geom = container_get_current_geom(con);
-    enum wlr_edges hidden_edges = container_get_hidden_edges(con);
+    struct direction_value d = container_get_border_width(con);
     switch (dir) {
         case WLR_EDGE_TOP:
-            {
-                if (!(hidden_edges & WLR_EDGE_TOP)) {
-                    struct direction_value d = container_get_border_width(con);
-                    geom.height = d.top;
-                }
-                break;
-            }
+            geom.height = d.top;
+            break;
         case WLR_EDGE_BOTTOM:
-            {
-                if (!(hidden_edges & WLR_EDGE_BOTTOM)) {
-                    struct direction_value d = container_get_border_width(con);
-                    geom.y += geom.height - d.bottom;
-                    geom.height = d.bottom;
-                }
-                break;
-            }
+            geom.y += geom.height - d.bottom;
+            geom.height = d.bottom;
             break;
         case WLR_EDGE_LEFT:
-            {
-                if (!(hidden_edges & WLR_EDGE_LEFT)) {
-                    struct direction_value d = container_get_border_width(con);
-                    geom.width = d.left;
-                }
-                break;
-            }
+            geom.width = d.left;
             break;
         case WLR_EDGE_RIGHT:
-            {
-                if (!(hidden_edges & WLR_EDGE_RIGHT)) {
-                    struct direction_value d = container_get_border_width(con);
-                    geom.x += geom.width - d.right;
-                    geom.width = d.right;
-                }
-                break;
-            }
+            geom.x += geom.width - d.right;
+            geom.width = d.right;
             break;
         default:
             break;
@@ -1079,6 +1057,136 @@ struct direction_value container_get_border_width(struct container *con)
     if (lt && lt->options->arrange_by_focus)
         return direction_value_uniform(0);
     return property->border_width;
+}
+
+// TODO refactor the name it doesn't represent what this does perfectly
+// returns the newly accquired hidden edges
+static enum wlr_edges container_update_hidden_edges(struct container *con, struct wlr_box *borders, enum wlr_edges hidden_edges)
+{
+    struct monitor *m = container_get_monitor(con);
+
+    enum wlr_edges containers_hidden_edges = WLR_EDGE_NONE;
+    struct wlr_box con_geom = container_get_current_geom(con);
+    // int border_width = container_get_border_width(con);
+    // hide edges if needed
+    if (hidden_edges & WLR_EDGE_LEFT) {
+        if (con_geom.x == m->root->geom.x) {
+            containers_hidden_edges |= WLR_EDGE_LEFT;
+        }
+    }
+    if (hidden_edges & WLR_EDGE_RIGHT) {
+        if (is_approx_equal(con_geom.x + con_geom.width, m->root->geom.x + m->root->geom.width, 3)) {
+            containers_hidden_edges |= WLR_EDGE_RIGHT;
+        }
+    }
+    if (hidden_edges & WLR_EDGE_TOP) {
+        if (con_geom.y == m->root->geom.y) {
+            containers_hidden_edges |= WLR_EDGE_TOP;
+        }
+    }
+    if (hidden_edges & WLR_EDGE_BOTTOM) {
+        if (is_approx_equal(con_geom.y + con_geom.height, m->root->geom.y + m->root->geom.height, 3)) {
+            containers_hidden_edges |= WLR_EDGE_BOTTOM;
+        }
+    }
+
+    container_set_hidden_edges(con, containers_hidden_edges);
+    return containers_hidden_edges;
+}
+void container_update_border(struct container *con)
+{
+    // optimization to not update the border if it's not needed
+    container_update_border_geometry(con);
+    container_update_border_color(con);
+}
+
+void container_update_border_geometry(struct container *con)
+{
+    container_update_border_visibility(con);
+    // the visibility always has to be updated because has_border might have changed
+    if (!con->has_border)
+        return;
+
+    struct scene_surface *surface = con->client->scene_surface;
+
+    struct wlr_box *borders = (struct wlr_box[4]) {
+        container_get_current_border_geom(con, WLR_EDGE_TOP),
+        container_get_current_border_geom(con, WLR_EDGE_BOTTOM),
+        container_get_current_border_geom(con, WLR_EDGE_LEFT),
+        container_get_current_border_geom(con, WLR_EDGE_RIGHT),
+    };
+
+    for (int i = 0; i < BORDER_COUNT; i++) {
+        struct wlr_scene_rect *border = surface->borders[i];
+        struct wlr_box geom = borders[i];
+        wlr_scene_node_set_position(&border->node, geom.x, geom.y);
+        wlr_scene_rect_set_size(border, geom.width, geom.height);
+    }
+}
+
+void container_update_border_color(struct container *con)
+{
+    if (!con->has_border)
+        return;
+    struct scene_surface *surface = con->client->scene_surface;
+
+    struct monitor *m = container_get_monitor(con);
+    struct tag *tag = monitor_get_active_tag(m);
+    struct layout *lt = tag_get_layout(tag);
+
+    struct container *sel = monitor_get_focused_container(m);
+    const struct color color = (con == sel) ? lt->options->focus_color :
+    lt->options->border_color;
+
+    for (int i = 0; i < BORDER_COUNT; i++) {
+        struct wlr_scene_rect *border = surface->borders[i];
+        float border_color[4];
+        color_to_wlr_color(border_color, color);
+        wlr_scene_rect_set_color(border, border_color);
+    }
+}
+
+void container_update_border_visibility(struct container *con)
+{
+    struct scene_surface *surface = con->client->scene_surface;
+
+    if (!con->has_border) {
+        for (int i = 0; i < BORDER_COUNT; i++) {
+            struct wlr_scene_rect *border = surface->borders[i];
+            wlr_scene_node_set_enabled(&border->node, false);
+        }
+        return;
+    }
+
+    struct monitor *m = container_get_monitor(con);
+    struct tag *tag = monitor_get_active_tag(m);
+    struct layout *lt = tag_get_layout(tag);
+
+    struct wlr_box *borders = (struct wlr_box[4]) {
+        container_get_current_border_geom(con, WLR_EDGE_TOP),
+        container_get_current_border_geom(con, WLR_EDGE_BOTTOM),
+        container_get_current_border_geom(con, WLR_EDGE_LEFT),
+        container_get_current_border_geom(con, WLR_EDGE_RIGHT),
+    };
+
+    enum wlr_edges hidden_edges = WLR_EDGE_NONE;
+    if (lt->options->smart_hidden_edges) {
+        if (tag->visible_con_set->tiled_containers->len <= 1) {
+            hidden_edges = container_update_hidden_edges(con, borders,
+            lt->options->hidden_edges);
+        }
+    } else {
+        hidden_edges = container_update_hidden_edges(con, borders,
+        lt->options->hidden_edges);
+    }
+
+    for (int i = 0; i < BORDER_COUNT; i++) {
+        struct wlr_scene_rect *border = surface->borders[i];
+
+        bool is_hidden = hidden_edges & (1 << i);
+        // hide or show the border
+        wlr_scene_node_set_enabled(&border->node, !is_hidden);
+    }
 }
 
 void resize_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety)

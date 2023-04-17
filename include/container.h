@@ -100,6 +100,10 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
 void container_set_hidden(struct container *con, bool b);
 void container_set_hidden_at_tag(struct container *con, bool b, struct tag *tag);
 void set_container_monitor(struct container *con, struct monitor *m);
+void container_update_border(struct container *con);
+void container_update_border_geometry(struct container *con);
+void container_update_border_color(struct container *con);
+void container_update_border_visibility(struct container *con);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void resize_container_in_layout(struct container *con, struct wlr_box geom);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);

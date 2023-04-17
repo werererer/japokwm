@@ -119,6 +119,7 @@ static void unfocus_client(struct client *c)
         default:
             break;
     }
+    container_update_border_color(c->con);
 }
 
 void focus_surface(struct seat *seat, struct wlr_surface *surface)

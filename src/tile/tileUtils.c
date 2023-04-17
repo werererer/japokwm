@@ -240,6 +240,17 @@ void arrange_monitor(struct monitor *m)
 
     update_reduced_focus_stack(tag);
     tag_focus_most_recent_container(tag);
+
+    // update container visibility
+    GPtrArray *stack_list = tag_get_complete_stack_copy(tag);
+    for (int i = stack_list->len-1; i >= 0; i--) {
+        struct container *con = g_ptr_array_index(stack_list, i);
+        bool viewable = container_viewable_on_monitor(m, con);
+        struct scene_surface *scene_surface = con->client->scene_surface;
+        struct wlr_scene_node *node = &scene_surface->surface_tree->node;
+        wlr_scene_node_set_enabled(node, viewable);
+    }
+    g_ptr_array_unref(stack_list);
 }
 
 void arrange_containers(
@@ -334,6 +345,7 @@ void container_update_size(struct container *con)
                     con_geom.x, con_geom.y, con_geom.width,
                     con_geom.height);
     }
+    container_update_border_geometry(con);
 }
 
 void update_hidden_status_of_containers(struct monitor *m, GPtrArray *tiled_containers)
