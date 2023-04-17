@@ -76,6 +76,7 @@ void destroy_notifyx11(struct wl_listener *listener, void *data)
     wl_list_remove(&c->destroy.link);
     wl_list_remove(&c->set_title.link);
     wl_list_remove(&c->set_app_id.link);
+    wl_list_remove(&c->activate.link);
 
     destroy_client(c);
 }
