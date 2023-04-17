@@ -53,9 +53,10 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     /* damage tracking must be initialized before setting the tag because
      * it to damage a region */
-    m->damage = wlr_output_damage_create(m->wlr_output);
-    m->damage_frame.notify = handle_output_damage_frame;
-    wl_signal_add(&m->damage->events.frame, &m->damage_frame);
+    // TODO: do we need it for sceengraph?
+    // m->damage = wlr_output_damage_create(m->wlr_output);
+    // m->damage_frame.notify = handle_output_damage_frame;
+    // wl_signal_add(&m->damage->events.frame, &m->damage_frame);
 
     m->frame.notify = handle_output_frame;
     wl_signal_add(&m->wlr_output->events.frame, &m->frame);
@@ -81,6 +82,8 @@ void create_monitor(struct wl_listener *listener, void *data)
     wlr_output_layout_add_auto(server.output_layout, output);
 
     wlr_output_enable(output, true);
+
+    m->scene_output = wlr_scene_output_create(server.scene, output);
 
     wlr_output_layout_get_box(server.output_layout, m->wlr_output, &m->geom);
     m->root = create_root(m, m->geom);
@@ -144,11 +147,17 @@ void create_output(struct wlr_backend *backend, void *data)
 /* #endif */
 }
 
-int i = 0;
 static void handle_output_frame(struct wl_listener *listener, void *data)
 {
-    struct monitor *m = wl_container_of(listener, m, damage_frame);
+    struct monitor *m = wl_container_of(listener, m, frame);
 
+	if (!wlr_scene_output_commit(m->scene_output)) {
+		return;
+	}
+
+	struct timespec now;
+	clock_gettime(CLOCK_MONOTONIC, &now);
+	wlr_scene_output_send_frame_done(m->scene_output, &now);
     /* NOOP */
 }
 

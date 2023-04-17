@@ -37,6 +37,7 @@ static void getxdecomode(struct wl_listener *listener, void *data)
 
 void create_notify_xdg(struct wl_listener *listener, void *data)
 {
+    printf("create notify xdg\n");
     /* This event is raised when wlr_xdg_shell receives a new xdg surface from a
      * client, either a toplevel (application window) or popup. */
     struct wlr_xdg_surface *xdg_surface = data;

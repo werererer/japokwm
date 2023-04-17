@@ -238,7 +238,7 @@ void arrange_monitor(struct monitor *m)
     arrange_containers(tag, active_geom, tiled_containers);
     g_ptr_array_unref(tiled_containers);
 
-    wlr_output_damage_add_whole(m->damage);
+    // wlr_output_damage_add_whole(m->damage);
     update_reduced_focus_stack(tag);
     tag_focus_most_recent_container(tag);
 }

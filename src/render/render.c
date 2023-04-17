@@ -172,30 +172,30 @@ static void
 damage_surface_iterator(struct monitor *m, struct wlr_surface *surface,
         struct wlr_box *box, void *user_data)
 {
-    struct wlr_output *wlr_output = m->wlr_output;
-    bool whole = *(bool *) user_data;
-    struct wlr_box geom = *box;
-
-    scale_box(&geom, wlr_output->scale);
-
-    if (whole) {
-        wlr_output_damage_add_box(m->damage, &geom);
-    } else if (pixman_region32_not_empty(&surface->buffer_damage)) {
-        pixman_region32_t damage;
-        pixman_region32_init(&damage);
-        wlr_surface_get_effective_damage(surface, &damage);
-
-        wlr_region_scale(&damage, &damage, wlr_output->scale);
-        if (ceil(wlr_output->scale) > surface->current.scale) {
-            /* When scaling up a surface it'll become
-               blurry, so we need to expand the damage
-               region. */
-            wlr_region_expand(&damage, &damage, ceil(wlr_output->scale) - surface->current.scale);
-        }
-        pixman_region32_translate(&damage, geom.x, geom.y);
-        wlr_output_damage_add(m->damage, &damage);
-        pixman_region32_fini(&damage);
-    }
+    // struct wlr_output *wlr_output = m->wlr_output;
+    // bool whole = *(bool *) user_data;
+    // struct wlr_box geom = *box;
+    //
+    // scale_box(&geom, wlr_output->scale);
+    //
+    // if (whole) {
+    //     wlr_output_damage_add_box(m->damage, &geom);
+    // } else if (pixman_region32_not_empty(&surface->buffer_damage)) {
+    //     pixman_region32_t damage;
+    //     pixman_region32_init(&damage);
+    //     wlr_surface_get_effective_damage(surface, &damage);
+    //
+    //     wlr_region_scale(&damage, &damage, wlr_output->scale);
+    //     if (ceil(wlr_output->scale) > surface->current.scale) {
+    //         /* When scaling up a surface it'll become
+    //            blurry, so we need to expand the damage
+    //            region. */
+    //         wlr_region_expand(&damage, &damage, ceil(wlr_output->scale) - surface->current.scale);
+    //     }
+    //     pixman_region32_translate(&damage, geom.x, geom.y);
+    //     // wlr_output_damage_add(m->damage, &damage);
+    //     pixman_region32_fini(&damage);
+    // }
 }
 
 void output_damage_surface(struct monitor *m, struct wlr_surface *surface, struct wlr_box *geom, bool whole)

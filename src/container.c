@@ -209,7 +209,7 @@ void container_damage_borders_at_monitor(struct container *con, struct monitor *
             .height = border.height,
         };
         scale_box(&obox, m->wlr_output->scale);
-        wlr_output_damage_add_box(m->damage, &obox);
+        // wlr_output_damage_add_box(m->damage, &obox);
     }
 }
 

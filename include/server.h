@@ -13,6 +13,7 @@
 #include <wlr/types/wlr_tablet_v2.h>
 #include <glib.h>
 #include <pthread.h>
+#include <wlr/types/wlr_scene.h>
 
 #include "cursor.h"
 #include "layout.h"
@@ -21,6 +22,16 @@
 #include "input_manager.h"
 #include "utils/coreUtils.h"
 #include "bitset/bitset.h"
+
+struct scene_surface {
+    struct wlr_surface *wlr;
+    struct wlr_scene_surface *scene_surface;
+    struct wlr_scene_rect *border;
+    struct wl_list link;
+
+    struct wl_listener commit;
+    struct wl_listener destroy;
+};
 
 struct server {
     bool is_running;
@@ -43,6 +54,9 @@ struct server {
     struct input_manager *input_manager;
 
     struct event_handler *event_handler;
+
+    struct wlr_scene *scene;
+    struct wl_listener new_surface;
 
     struct wlr_virtual_pointer_manager_v1 *virtual_pointer_mgr;
     struct wlr_virtual_keyboard_manager_v1 *virtual_keyboard_mgr;
