@@ -16,6 +16,7 @@ struct scene_surface {
 
     struct wl_listener commit;
     struct wl_listener destroy;
+    struct wl_listener new_subsurface;
 };
 
 void scene_create(struct wlr_scene **scene);

@@ -15,7 +15,6 @@
 #include "xdg-shell-protocol.h"
 
 static void popup_handle_new_popup(struct wl_listener *listener, void *data);
-static void popup_handle_new_subpopup(struct wl_listener *listener, void *data);
 static void destroy_popup(struct xdg_popup *xdg_popup);
 static void popup_handle_commit(struct wl_listener *listener, void *data);
 static void popup_handle_map(struct wl_listener *listener, void *data);
@@ -70,6 +69,9 @@ static void popup_handle_map(struct wl_listener *listener, void *data)
     double sx, sy;
     wlr_xdg_popup_get_position(xdg_popup, &sx, &sy);
 
+    popup->scene_surface = xdg_popup->base->surface->data;
+    struct wlr_scene_surface *scene_surface = popup->scene_surface;
+
     int offset_x = 0;
     int offset_y = 0;
 
@@ -94,6 +96,9 @@ static void popup_handle_map(struct wl_listener *listener, void *data)
     popup_set_y(popup, offset_y + sy);
     popup_set_width(popup, xdg_popup->current.geometry.width);
     popup_set_height(popup, xdg_popup->current.geometry.height);
+    pupup_update_position(popup);
+
+    wlr_scene_node_set_position(&scene_surface->buffer->node, sx, sy);
 
     // TODO: either use this or use actual xdg constraints
     struct monitor *m = server_get_selected_monitor();
@@ -116,6 +121,9 @@ static void popup_handle_new_popup(struct wl_listener *listener, void *data)
         wl_container_of(listener, parent_popup, new_popup);
     struct wlr_xdg_popup *xdg_popup = data;
 
+    struct wlr_scene_surface *scene_surface = xdg_popup->base->surface->data;
+    struct wlr_scene_node *node = &scene_surface->buffer->node;
+    wlr_scene_node_set_position(node, 0, 0);
     create_popup(parent_popup->m, xdg_popup,
             parent_popup, parent_popup->toplevel);
 }
@@ -212,4 +220,12 @@ void popup_set_width(struct xdg_popup *popup, int width)
 void popup_set_height(struct xdg_popup *popup, int height)
 {
     popup->geom.height = height;
+}
+
+void pupup_update_position(struct xdg_popup *popup)
+{
+    struct wlr_scene_surface *scene_surface = popup->scene_surface;
+    struct wlr_box geom = popup->geom;
+    printf("set x: %i y: %i\n", geom.x, geom.y);
+    wlr_scene_node_set_position(&scene_surface->buffer->node, 0, 0);
 }

@@ -298,7 +298,6 @@ void ipc_event_tag() {
         struct monitor *m = server_get_selected_monitor();
         bool viewable = container_viewable_on_monitor(m, con);
         struct wlr_scene_node *node = container_get_scene_node(con);
-        printf("i: %i enable: %i\n", i, viewable);
         wlr_scene_node_set_enabled(node, viewable);
     }
 }

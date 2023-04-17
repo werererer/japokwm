@@ -50,6 +50,7 @@ struct server {
     struct wlr_scene_tree *scene_background;
     struct wlr_scene_tree *scene_tiled;
     struct wlr_scene_tree *scene_floating;
+    struct wlr_scene_tree *scene_popups;
     struct wlr_scene_tree *scene_overlay;
 
 

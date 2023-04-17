@@ -496,6 +496,7 @@ int setup_server(struct server *server)
   server->scene_background = wlr_scene_tree_create(&server_scene->tree);
   server->scene_tiled = wlr_scene_tree_create(&server_scene->tree);
   server->scene_floating = wlr_scene_tree_create(&server_scene->tree);
+  server->scene_popups = wlr_scene_tree_create(&server_scene->tree);
   server->scene_overlay = wlr_scene_tree_create(&server_scene->tree);
 
   server->new_surface.notify = server_handle_new_surface;
