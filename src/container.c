@@ -622,6 +622,13 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
     if (fix_position)
         fix_position(con);
 
+    struct wlr_scene_node *node = container_get_scene_node(con);
+    if (floating) {
+        wlr_scene_node_reparent(node, server.scene_floating);
+    } else {
+        wlr_scene_node_reparent(node, server.scene_tiled);
+    }
+
     container_property_set_floating(property, floating);
 }
 
@@ -692,6 +699,8 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
     struct tag *tag = monitor_get_active_tag(m);
     struct layout *lt = tag_get_layout(tag);
     container_set_border_width(con, direction_value_uniform(lt->options->float_border_px));
+
+    container_update_size(con);
 }
 
 struct container_property *container_get_property(struct container *con)
@@ -1714,4 +1723,11 @@ const char *container_get_app_id(struct container *con)
         name = con->client->app_id;
     }
     return name;
+}
+
+struct wlr_scene_node *container_get_scene_node(struct container *con)
+{
+    struct client *c = con->client;
+    struct scene_surface *surface = c->scene_surface;
+    return &surface->surface_tree->node;
 }

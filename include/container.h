@@ -197,5 +197,7 @@ bool container_is_managed(struct container *con);
 bool container_is_tiled_and_managed(struct container *con);
 bool container_is_on_scratchpad(struct container *con);
 
+struct wlr_scene_node *container_get_scene_node(struct container *con);
+
 const char *container_get_app_id(struct container *con);
 #endif /* CONTAINER_H */

@@ -47,7 +47,7 @@ void server_handle_new_surface(struct wl_listener *listener, void *data)
     surface->destroy.notify = surface_handle_destroy;
     wl_signal_add(&wlr_surface->events.destroy, &surface->destroy);
 
-    surface->surface_tree = wlr_scene_tree_create(server->pending);
+    surface->surface_tree = wlr_scene_tree_create(server->scene_tiled);
 
     surface->scene_surface =
         wlr_scene_surface_create(surface->surface_tree, wlr_surface);

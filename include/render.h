@@ -3,6 +3,8 @@
 
 #include <wlr/types/wlr_scene.h>
 
+#include "container.h"
+
 #define BORDER_COUNT 4
 
 struct scene_surface {

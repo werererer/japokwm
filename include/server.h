@@ -47,10 +47,10 @@ struct server {
     struct event_handler *event_handler;
 
     struct wlr_scene *scene;
-    struct wlr_scene_tree *pending;
-    struct wlr_scene_tree *background;
-    struct wlr_scene_tree *foreground;
-    struct wlr_scene_tree *floating;
+    struct wlr_scene_tree *scene_background;
+    struct wlr_scene_tree *scene_tiled;
+    struct wlr_scene_tree *scene_floating;
+    struct wlr_scene_tree *scene_top;
 
 
     struct wl_listener new_surface;
