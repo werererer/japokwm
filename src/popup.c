@@ -73,14 +73,12 @@ static void popup_handle_map(struct wl_listener *listener, void *data)
     double sx, sy;
     wlr_xdg_popup_get_position(xdg_popup, &sx, &sy);
 
-    printf("new position: %f:%f\n", sx, sy);
-
     int offset_x = 0;
     int offset_y = 0;
 
     for (struct xdg_popup *curr_popup = popup;
-            curr_popup->parent != popup->toplevel;
-            curr_popup = popup->parent) {
+            curr_popup->parent != curr_popup->toplevel;
+            curr_popup = curr_popup->parent) {
         struct xdg_popup *parent_popup = curr_popup->parent;
         double sx, sy;
         wlr_xdg_popup_get_position(parent_popup->xdg, &sx, &sy);
