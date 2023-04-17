@@ -298,7 +298,7 @@ void container_update_size(struct container *con)
 {
     con->client->resized = true;
 
-    struct wlr_box con_geom = container_get_current_content_geom(con);
+    struct wlr_box con_geom = container_get_current_geom(con);
 
     if (!container_is_tiled(con)) {
         struct monitor *m = server_get_selected_monitor();
