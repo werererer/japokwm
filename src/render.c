@@ -38,7 +38,6 @@ void server_handle_new_surface(struct wl_listener *listener, void *data)
     printf("create notify new surface\n");
     struct server *server = wl_container_of(listener, server, new_surface);
     struct wlr_surface *wlr_surface = data;
-    // wlr_surface->role_data
 
     struct scene_surface *surface = calloc(1, sizeof(struct scene_surface));
     surface->wlr = wlr_surface;

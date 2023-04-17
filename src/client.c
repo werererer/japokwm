@@ -27,8 +27,8 @@ struct client *create_client(enum shell shell_type, union surface_t surface)
     c->type = shell_type;
     c->surface = surface;
 
-    // TODO: this is a hack. first wlr_surface->data is filled with the surface
-    // then we will fill it with the corro
+    // HACK: this is a hack. first wlr_surface->data is filled with the surface
+    // then we will override it with the client afterwards
     switch (shell_type) {
         case XDG_SHELL:
             c->scene_surface = surface.xdg->surface->data;

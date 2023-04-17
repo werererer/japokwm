@@ -246,8 +246,8 @@ void arrange_monitor(struct monitor *m)
     for (int i = stack_list->len-1; i >= 0; i--) {
         struct container *con = g_ptr_array_index(stack_list, i);
         bool viewable = container_viewable_on_monitor(m, con);
-        struct scene_surface *scene_surface = con->client->scene_surface;
-        struct wlr_scene_node *node = &scene_surface->surface_tree->node;
+        struct wlr_scene_node *node = container_get_scene_node(con);
+        printf("i: %i enable: %i\n", i, viewable);
         wlr_scene_node_set_enabled(node, viewable);
     }
     g_ptr_array_unref(stack_list);

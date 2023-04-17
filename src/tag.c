@@ -876,6 +876,22 @@ void add_container_to_layer_stack(struct container *con)
 
     con->client->layer = con->client->surface.layer->current.layer;
     g_ptr_array_insert(get_layer_list(con->client->layer), 0, con);
+
+    struct wlr_scene_node *node = container_get_scene_node(con);
+    switch(con->client->layer) {
+        case ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND:
+            wlr_scene_node_reparent(node, server.scene_background);
+            break;
+        case ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM:
+            wlr_scene_node_reparent(node, server.scene_tiled);
+            break;
+        case ZWLR_LAYER_SHELL_V1_LAYER_TOP:
+            wlr_scene_node_reparent(node, server.scene_floating);
+            break;
+        case ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY:
+            wlr_scene_node_reparent(node, server.scene_overlay);
+            break;
+    }
     return;
 }
 
