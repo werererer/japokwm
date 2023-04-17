@@ -6,7 +6,6 @@
 #include <wlr/util/box.h>
 
 #include "utils/stringUtils.h"
-#include "render/render.h"
 
 int write_to_file(int fd, const char *content);
 void write_container_to_file(int fd, struct wlr_fbox box);

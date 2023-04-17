@@ -36,7 +36,6 @@
 #include "xdg_shell.h"
 #include "translationLayer.h"
 #include "ipc-server.h"
-#include "render/render.h"
 #include "keybinding.h"
 #include "ring_buffer.h"
 

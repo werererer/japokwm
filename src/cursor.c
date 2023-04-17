@@ -9,7 +9,6 @@
 #include "keybinding.h"
 #include "monitor.h"
 #include "popup.h"
-#include "render/render.h"
 #include "seat.h"
 #include "server.h"
 #include "tile/tileUtils.h"

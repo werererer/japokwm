@@ -10,7 +10,6 @@
 #include <wlr/backend/x11.h>
 
 #include "ipc-server.h"
-#include "render/render.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "tag.h"
@@ -23,7 +22,6 @@
 #include "client.h"
 #include "container.h"
 
-static void handle_output_damage_frame(struct wl_listener *listener, void *data);
 static void handle_output_frame(struct wl_listener *listener, void *data);
 static void handle_output_mode(struct wl_listener *listener, void *data);
 static void monitor_get_initial_tag(struct monitor *m, GList *tags);
@@ -53,10 +51,6 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     /* damage tracking must be initialized before setting the tag because
      * it to damage a region */
-    // TODO: do we need it for sceengraph?
-    // m->damage = wlr_output_damage_create(m->wlr_output);
-    // m->damage_frame.notify = handle_output_damage_frame;
-    // wl_signal_add(&m->damage->events.frame, &m->damage_frame);
 
     m->frame.notify = handle_output_frame;
     wl_signal_add(&m->wlr_output->events.frame, &m->frame);
@@ -159,34 +153,6 @@ static void handle_output_frame(struct wl_listener *listener, void *data)
 	clock_gettime(CLOCK_MONOTONIC, &now);
 	wlr_scene_output_send_frame_done(m->scene_output, &now);
     /* NOOP */
-}
-
-int j = 0;
-static void handle_output_damage_frame(struct wl_listener *listener, void *data)
-{
-    struct monitor *m = wl_container_of(listener, m, damage_frame);
-
-    if (!m->wlr_output->enabled) {
-        return;
-    }
-
-    /* Check if we can scan-out the primary view. */
-    pixman_region32_t frame_damage;
-    pixman_region32_init(&frame_damage);
-    bool needs_frame;
-    if (!wlr_output_damage_attach_render(m->damage, &needs_frame, &frame_damage)) {
-        goto damage_finish;
-    }
-
-    if (!needs_frame) {
-        wlr_output_rollback(m->wlr_output);
-        goto damage_finish;
-    }
-
-    render_monitor(m, &frame_damage);
-
-damage_finish:
-    pixman_region32_fini(&frame_damage);
 }
 
 static void handle_output_mode(struct wl_listener *listener, void *data)

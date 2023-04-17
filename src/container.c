@@ -15,7 +15,6 @@
 #include "server.h"
 #include "monitor.h"
 #include "tile/tileUtils.h"
-#include "render/render.h"
 #include "options.h"
 #include "utils/parseConfigUtils.h"
 #include "scratchpad.h"
