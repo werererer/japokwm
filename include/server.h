@@ -47,6 +47,12 @@ struct server {
     struct event_handler *event_handler;
 
     struct wlr_scene *scene;
+    struct wlr_scene_tree *pending;
+    struct wlr_scene_tree *background;
+    struct wlr_scene_tree *foreground;
+    struct wlr_scene_tree *floating;
+
+
     struct wl_listener new_surface;
 
     struct wlr_virtual_pointer_manager_v1 *virtual_pointer_mgr;

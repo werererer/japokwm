@@ -492,6 +492,12 @@ int setup_server(struct server *server)
   server->tablet_v2 = wlr_tablet_v2_create(server->wl_display);
 
   server->scene = wlr_scene_create();
+  struct wlr_scene *server_scene = server->scene;
+  server->background = wlr_scene_tree_create(&server_scene->tree);
+  server->foreground = wlr_scene_tree_create(&server_scene->tree);
+  server->floating = wlr_scene_tree_create(&server_scene->tree);
+  server->pending = wlr_scene_tree_create(&server_scene->tree);
+
   server->new_surface.notify = server_handle_new_surface;
   wl_signal_add(&server->compositor->events.new_surface, &server->new_surface);
 

@@ -10,15 +10,16 @@
 #include "layout.h"
 #include "list_sets/container_stack_set.h"
 #include "root.h"
+#include "tagset.h"
 
 static void surface_handle_destroy(struct wl_listener *listener, void *data)
 {
     struct scene_surface *surface = wl_container_of(listener, surface, destroy);
-    wlr_scene_node_destroy(&surface->scene_surface->buffer->node);
     for (int i = 0; i < BORDER_COUNT; i++) {
         struct wlr_scene_rect *border = surface->borders[i];
         wlr_scene_node_destroy(&border->node);
     }
+    wlr_scene_node_destroy(&surface->scene_surface->buffer->node);
     wl_list_remove(&surface->destroy.link);
     free(surface);
 }
@@ -64,10 +65,6 @@ static void surface_handle_commit(struct wl_listener *listener, void *data) {
     struct client *c = wlr_surface_get_client(surface->wlr);
     struct container *con = c->con;
     struct monitor *m = container_get_monitor(con);
-
-    if (!container_viewable_on_monitor(m, con))
-        continue;
-    wlr_scene_node_set_enabled(&surface->scene_surface->node, true);
 
     if (!con->has_border) {
         for (int i = 0; i < BORDER_COUNT; i++) {
@@ -121,7 +118,6 @@ static void surface_handle_commit(struct wl_listener *listener, void *data) {
     }
 }
 
-
 void server_handle_new_surface(struct wl_listener *listener, void *data)
 {
     printf("create notify new surface\n");
@@ -136,12 +132,14 @@ void server_handle_new_surface(struct wl_listener *listener, void *data)
     surface->destroy.notify = surface_handle_destroy;
     wl_signal_add(&wlr_surface->events.destroy, &surface->destroy);
 
+    surface->surface_tree = wlr_scene_tree_create(server->pending);
+
     surface->scene_surface =
-        wlr_scene_surface_create(&server->scene->tree, wlr_surface);
+        wlr_scene_surface_create(surface->surface_tree, wlr_surface);
 
     for (int i = 0; i < BORDER_COUNT; i++) {
         surface->borders[i] =
-            wlr_scene_rect_create(&server->scene->tree,
+            wlr_scene_rect_create(surface->surface_tree,
                     0, 0, (float[4]){ 1.0f, 0.0f, 0.0f, 1 });
     }
 
