@@ -63,7 +63,10 @@ static void surface_handle_commit(struct wl_listener *listener, void *data) {
 
     struct client *c = wlr_surface_get_client(surface->wlr);
     struct container *con = c->con;
+    struct monitor *m = container_get_monitor(con);
 
+    if (!container_viewable_on_monitor(m, con))
+        continue;
     wlr_scene_node_set_enabled(&surface->scene_surface->node, true);
 
     if (!con->has_border) {
@@ -82,7 +85,6 @@ static void surface_handle_commit(struct wl_listener *listener, void *data) {
     };
 
     enum wlr_edges hidden_edges = WLR_EDGE_NONE;
-    struct monitor *m = container_get_monitor(con);
     struct tag *tag = monitor_get_active_tag(m);
     struct layout *lt = tag_get_layout(tag);
     if (lt->options->smart_hidden_edges) {
