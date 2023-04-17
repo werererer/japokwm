@@ -189,4 +189,7 @@ BitSet *server_bitset_get_local_tmp_copy(BitSet *bitset);
 
 struct tag *server_get_selected_tag();
 struct layout *server_get_selected_layout();
+
+struct client *wlr_surface_get_client(struct wlr_surface *wlr_surface);
+struct container *wlr_surface_get_container(struct wlr_surface *wlr_surface);
 #endif /* SERVER_H */
