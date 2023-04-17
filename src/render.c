@@ -37,7 +37,6 @@ static void surface_handle_new_subsurface(struct wl_listener *listener, void *da
 {
 }
 
-int i = 0;
 void server_handle_new_surface(struct wl_listener *listener, void *data)
 {
     printf("create notify new surface\n");
@@ -59,8 +58,9 @@ void server_handle_new_surface(struct wl_listener *listener, void *data)
 
     surface->scene_surface =
         wlr_scene_surface_create(surface->surface_tree, wlr_surface);
-    wlr_scene_node_set_position(&surface->scene_surface->buffer->node, 100, 100);
-    wlr_scene_node_set_position(&surface->scene_surface->buffer->node, 200, 200);
+    // TODO: this doesn't work for popups
+    // wlr_scene_node_set_position(&surface->scene_surface->buffer->node, 100, 100);
+    // wlr_scene_node_set_position(&surface->scene_surface->buffer->node, 200, 200);
 
     for (int i = 0; i < BORDER_COUNT; i++) {
         surface->borders[i] =
