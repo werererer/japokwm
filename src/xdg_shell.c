@@ -6,13 +6,11 @@
 
 #include "client.h"
 #include "monitor.h"
-#include "popup.h"
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "container.h"
 #include "tile/tileUtils.h"
 #include "tag.h"
-#include "rules/rule.h"
 #include "subsurface.h"
 
 static void destroyxdeco(struct wl_listener *listener, void *data);
@@ -56,11 +54,11 @@ void create_notify_xdg(struct wl_listener *listener, void *data)
             WLR_EDGE_BOTTOM | WLR_EDGE_LEFT | WLR_EDGE_RIGHT);
 
     /* Listen to the various events it can emit */
-    LISTEN(&xdg_surface->events.map, &c->map, map_request);
+    LISTEN(&xdg_surface->surface->events.map, &c->associate, map_request);
     LISTEN(&xdg_surface->surface->events.commit, &c->commit, commit_notify);
     LISTEN(&xdg_surface->events.configure, &c->configure, configure_notify);
     LISTEN(&xdg_surface->events.ack_configure, &c->ack_configure, ack_configure);
-    LISTEN(&xdg_surface->events.unmap, &c->unmap, unmap_notify);
+    LISTEN(&xdg_surface->surface->events.unmap, &c->dissociate, unmap_notify);
     LISTEN(&xdg_surface->events.destroy, &c->destroy, destroy_notify);
     LISTEN(&xdg_surface->surface->events.new_subsurface, &c->new_subsurface, handle_new_subsurface);
 
@@ -74,29 +72,30 @@ void create_notify_xdg(struct wl_listener *listener, void *data)
 
 void destroy_notify(struct wl_listener *listener, void *data)
 {
-    struct client *c = wl_container_of(listener, c, destroy);
-
-    wl_list_remove(&c->map.link);
-    wl_list_remove(&c->commit.link);
-    wl_list_remove(&c->configure.link);
-    wl_list_remove(&c->ack_configure.link);
-    wl_list_remove(&c->unmap.link);
-    wl_list_remove(&c->destroy.link);
-    wl_list_remove(&c->new_subsurface.link);
-
-    wl_list_remove(&c->set_title.link);
-    wl_list_remove(&c->set_app_id.link);
-
-    wl_list_remove(&c->new_popup.link);
-
-    destroy_container(c->con);
-    destroy_client(c);
+    // printf("DESTROY\n");
+    // struct client *c = wl_container_of(listener, c, destroy);
+    //
+    // wl_list_remove(&c->map.link);
+    // wl_list_remove(&c->commit.link);
+    // wl_list_remove(&c->configure.link);
+    // wl_list_remove(&c->ack_configure.link);
+    // wl_list_remove(&c->unmap.link);
+    // wl_list_remove(&c->destroy.link);
+    // wl_list_remove(&c->new_subsurface.link);
+    //
+    // wl_list_remove(&c->set_title.link);
+    // wl_list_remove(&c->set_app_id.link);
+    //
+    // wl_list_remove(&c->new_popup.link);
+    //
+    // destroy_container(c->con);
+    // destroy_client(c);
 }
 
 void map_request(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is mapped, or ready to display on-screen. */
-    struct client *c = wl_container_of(listener, c, map);
+    struct client *c = wl_container_of(listener, c, associate);
     struct container *con = c->con;
     struct tag *tag = get_tag(con->tag_id);
 
@@ -107,8 +106,9 @@ void map_request(struct wl_listener *listener, void *data)
 
 void unmap_notify(struct wl_listener *listener, void *data)
 {
+    printf("Unmap\n");
     /* Called when the surface is unmapped, and should no longer be shown. */
-    struct client *c = wl_container_of(listener, c, unmap);
+    struct client *c = wl_container_of(listener, c, dissociate);
 
     struct container *con = c->con;
     remove_container_from_tile(con);

@@ -9,7 +9,6 @@
 #include "client.h"
 #include "container.h"
 #include "monitor.h"
-#include "root.h"
 #include "server.h"
 #include "utils/coreUtils.h"
 #include "xdg-shell-protocol.h"
@@ -17,8 +16,7 @@
 static void popup_handle_new_popup(struct wl_listener *listener, void *data);
 static void destroy_popup(struct xdg_popup *xdg_popup);
 static void popup_handle_commit(struct wl_listener *listener, void *data);
-static void popup_handle_map(struct wl_listener *listener, void *data);
-static void popup_handle_unmap(struct wl_listener *listener, void *data);
+static void popup_handle_map(struct xdg_popup *popup);
 
 struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popup,
         void *parent, struct container* toplevel)
@@ -35,8 +33,6 @@ struct xdg_popup *create_popup(struct monitor *m, struct wlr_xdg_popup *xdg_popu
     // the root window may be resized. This must be adjusted
     popup->m = m;
 
-    LISTEN(&popup->xdg->base->events.map, &popup->map, popup_handle_map);
-    LISTEN(&popup->xdg->base->events.unmap, &popup->unmap, popup_handle_unmap);
     LISTEN(&popup->xdg->base->events.new_popup, &popup->new_popup, popup_handle_new_popup);
     LISTEN(&popup->xdg->base->events.destroy, &popup->destroy, popup_handle_destroy);
 
@@ -60,10 +56,8 @@ static void popup_handle_commit(struct wl_listener *listener, void *data)
     struct xdg_popup *popup = wl_container_of(listener, popup, commit);
 }
 
-static void popup_handle_map(struct wl_listener *listener, void *data)
+static void popup_handle_map(struct xdg_popup *popup)
 {
-    struct xdg_popup *popup = wl_container_of(listener, popup, map);
-
     struct wlr_xdg_popup *xdg_popup = popup->xdg;
 
     double sx, sy;
@@ -109,17 +103,13 @@ static void popup_handle_map(struct wl_listener *listener, void *data)
     wl_signal_add(&popup->xdg->base->surface->events.commit, &popup->commit);
 }
 
-static void popup_handle_unmap(struct wl_listener *listener, void *data)
-{
-    struct xdg_popup *popup = wl_container_of(listener, popup, unmap);
-    wl_list_remove(&popup->commit.link);
-}
-
 static void popup_handle_new_popup(struct wl_listener *listener, void *data)
 {
     struct xdg_popup *parent_popup =
         wl_container_of(listener, parent_popup, new_popup);
     struct wlr_xdg_popup *xdg_popup = data;
+
+    popup_handle_map(parent_popup);
 
     struct wlr_scene_surface *scene_surface = xdg_popup->base->surface->data;
     struct wlr_scene_node *node = &scene_surface->buffer->node;
@@ -131,6 +121,9 @@ static void popup_handle_new_popup(struct wl_listener *listener, void *data)
 void popup_handle_destroy(struct wl_listener *listener, void *data)
 {
     struct xdg_popup *popup = wl_container_of(listener, popup, destroy);
+
+    wl_list_remove(&popup->commit.link);
+
     list_remove(server.popups, cmp_ptr, popup);
 
     destroy_popup(popup);

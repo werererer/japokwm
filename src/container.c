@@ -11,7 +11,6 @@
 #include "cursor.h"
 #include "list_sets/container_stack_set.h"
 #include "list_sets/list_set.h"
-#include "popup.h"
 #include "server.h"
 #include "monitor.h"
 #include "tile/tileUtils.h"
@@ -22,7 +21,6 @@
 #include "ipc-server.h"
 #include "layer_shell.h"
 #include "tag.h"
-#include "rules/rule.h"
 #include "list_sets/focus_stack_set.h"
 #include "options.h"
 #include "lib/lib_container.h"
@@ -1561,22 +1559,22 @@ void container_resize_with_cursor(struct cursor *cursor)
     switch (edge) {
         case WLR_EDGE_LEFT:
             printf("left\n");
-            wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
-                    "left_side", wlr_cursor);
+            wlr_cursor_set_xcursor(wlr_cursor,
+                    cursor->xcursor_mgr, "left_side");
             break;
         case WLR_EDGE_RIGHT:
             printf("right\n");
-            wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
-                    "right_side", wlr_cursor);
+            wlr_cursor_set_xcursor(wlr_cursor,
+                    cursor->xcursor_mgr, "right_side");
             break;
         case WLR_EDGE_TOP:
             printf("top\n");
-            wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
-                    "top_side", wlr_cursor);
+            wlr_cursor_set_xcursor(wlr_cursor,
+                    cursor->xcursor_mgr, "top_side");
             break;
         case WLR_EDGE_BOTTOM:
-            wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
-                    "bottom_side", wlr_cursor);
+            wlr_cursor_set_xcursor(wlr_cursor,
+                    cursor->xcursor_mgr, "bottom_side");
             break;
         default:
             break;

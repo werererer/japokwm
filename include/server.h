@@ -31,6 +31,7 @@ struct server {
 
     struct wl_display *wl_display;
     struct wl_event_loop *wl_event_loop;
+    struct wlr_session *wlr_session;
     struct wlr_backend *backend;
     struct wlr_compositor *compositor;
     struct wlr_renderer *renderer;

@@ -4,6 +4,7 @@
 #include "server.h"
 #include "keybinding.h"
 #include "utils/coreUtils.h"
+#include <wlr/backend/session.h>
 
 static bool handle_VT_keys(struct keyboard *kb, uint32_t keycode)
 {
@@ -18,8 +19,7 @@ static bool handle_VT_keys(struct keyboard *kb, uint32_t keycode)
             break;
 
         /* if required switch to different virtual terminal */
-        struct wlr_session *session =
-            wlr_backend_get_session(server.backend);
+        struct wlr_session *session = server.wlr_session;
         if (!session)
             break;
 

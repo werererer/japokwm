@@ -18,7 +18,6 @@
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_export_dmabuf_v1.h>
 #include <wlr/types/wlr_gamma_control_v1.h>
-#include <wlr/types/wlr_idle.h>
 #include <wlr/types/wlr_idle_inhibit_v1.h>
 #include <wlr/types/wlr_input_inhibitor.h>
 #include <wlr/types/wlr_primary_selection_v1.h>
@@ -170,7 +169,7 @@ static int init_backend(struct server *server) {
    * backend based on the current environment, such as opening an X11 window
    * if an X11 server is running. The NULL argument here optionally allows you
    * to pass in a custom renderer if wlr_renderer doesnt). */
-  if (!(server->backend = wlr_backend_autocreate(server->wl_display))) {
+  if (!(server->backend = wlr_backend_autocreate(server->wl_display, &server->wlr_session))) {
     printf("couldn't create backend\n");
     return EXIT_FAILURE;
   }
@@ -194,7 +193,7 @@ static void init_event_handlers(struct server *server) {
   LISTEN(&server->xdg_shell->events.new_surface, &server->new_xdg_surface,
          create_notify_xdg);
 
-  server->layer_shell = wlr_layer_shell_v1_create(server->wl_display);
+  server->layer_shell = wlr_layer_shell_v1_create(server->wl_display, LAYER_SHELL_VERSION);
   LISTEN(&server->layer_shell->events.new_surface,
          &server->new_layer_shell_surface, create_notify_layer_shell);
 
@@ -359,8 +358,8 @@ static void run(char *startup_cmd) {
    * monitor when displayed here */
   wlr_cursor_warp_closest(seat->cursor->wlr_cursor, NULL, cursor->wlr_cursor->x,
                           cursor->wlr_cursor->y);
-  wlr_xcursor_manager_set_cursor_image(seat->cursor->xcursor_mgr, "left_ptr",
-                                       cursor->wlr_cursor);
+  wlr_cursor_set_xcursor(cursor->wlr_cursor, seat->cursor->xcursor_mgr,
+                                       "left_ptr");
 
   if (startup_cmd) {
     startup_pid = fork();
@@ -433,8 +432,9 @@ int setup_server(struct server *server)
    * to dig your fingers in and play with their behavior if you want. Note that
    * the clients cannot set the selection directly without compositor approval,
    * see the setsel() function. */
+  
   server->compositor =
-      wlr_compositor_create(server->wl_display, server->renderer);
+      wlr_compositor_create(server->wl_display, WL_COMPOSITOR_VERSION, server->renderer);
 
   wlr_subcompositor_create(server->wl_display);
 
@@ -445,7 +445,8 @@ int setup_server(struct server *server)
   wlr_gamma_control_manager_v1_create(server->wl_display);
   wlr_primary_selection_v1_device_manager_create(server->wl_display);
   wlr_viewporter_create(server->wl_display);
-  wlr_idle_create(server->wl_display);
+  // TODO: do we still need that?
+  // wlr_idle_create(server->wl_display);
   wlr_idle_inhibit_v1_create(server->wl_display);
 
   wlr_xdg_output_manager_v1_create(server->wl_display, server->output_layout);

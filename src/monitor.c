@@ -2,14 +2,12 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <wlr/types/wlr_output.h>
-#include <wlr/types/wlr_output_damage.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/util/log.h>
 #include <wlr/backend/wayland.h>
 #include <wlr/backend/headless.h>
 #include <wlr/backend/x11.h>
 
-#include "ipc-server.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "tag.h"
@@ -58,8 +56,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     /* Set up event listeners */
     m->destroy.notify = handle_destroy_monitor;
     wl_signal_add(&output->events.destroy, &m->destroy);
-    m->mode.notify = handle_output_mode;
-    wl_signal_add(&output->events.mode, &m->mode);
 
     bool is_first_monitor = server.mons->len == 0;
     g_ptr_array_add(server.mons, m);
@@ -145,7 +141,7 @@ static void handle_output_frame(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, frame);
 
-	if (!wlr_scene_output_commit(m->scene_output)) {
+	if (!wlr_scene_output_commit(m->scene_output, NULL)) {
 		return;
 	}
 
@@ -153,13 +149,6 @@ static void handle_output_frame(struct wl_listener *listener, void *data)
 	clock_gettime(CLOCK_MONOTONIC, &now);
 	wlr_scene_output_send_frame_done(m->scene_output, &now);
     /* NOOP */
-}
-
-static void handle_output_mode(struct wl_listener *listener, void *data)
-{
-    struct monitor *m = wl_container_of(listener, m, mode);
-    wlr_output_layout_get_box(server.output_layout, m->wlr_output, &m->geom);
-    arrange_layers(m);
 }
 
 static void monitor_get_initial_tag(struct monitor *m, GList *tags)
@@ -488,7 +477,7 @@ static void prepare_output(
                     config_head->state.custom_mode.height,
                     config_head->state.custom_mode.refresh);
 
-        wlr_output_layout_move(server.output_layout, wlr_output,
+        wlr_output_layout_add(server.output_layout, wlr_output,
                 config_head->state.x, config_head->state.y);
         wlr_output_set_transform(wlr_output, config_head->state.transform);
         wlr_output_set_scale(wlr_output, config_head->state.scale);

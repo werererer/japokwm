@@ -13,19 +13,12 @@
 #include <wlr/types/wlr_viewporter.h>
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_output_v1.h>
-#include <wlr/types/wlr_idle.h>
 #include <wlr/types/wlr_idle_inhibit_v1.h>
 #include <wlr/types/wlr_input_inhibitor.h>
 #include <wlr/util/log.h>
 #include <signal.h>
 
-#include "keyboard.h"
-#include "layer_shell.h"
-#include "scratchpad.h"
 #include "server.h"
-#include "translationLayer.h"
-#include "utils/parseConfigUtils.h"
-#include "xdg_shell.h"
 #include "stringop.h"
 
 void print_help()

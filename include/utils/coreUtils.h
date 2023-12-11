@@ -42,6 +42,10 @@ typedef GPtrArray GPtrArray2D;
 #define MIN_CONTAINER_HEIGHT 30
 #define LISTEN(E, L, H)         wl_signal_add((E), ((L)->notify = (H), (L)))
 
+// version management
+#define WL_COMPOSITOR_VERSION 6
+#define LAYER_SHELL_VERSION 4
+
 #define foreach(item, array)\
     for(int keep = 1, count = 0, size = LENGTH(array); keep && count < size; keep = 1, count++)\
         for(item = array[count]; keep; keep = 0)\

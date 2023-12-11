@@ -163,7 +163,7 @@ deps = [\
     wayland_client,
     wayland_protos,
     dependency('pixman-1'),
-    dependency('wlroots', version: ['>=0.15' ,'<0.17']),
+    dependency('wlroots', version: ['>=0.15' ,'<0.18']),
     dependency('x11'),
     dependency('json-c'),
     dependency('libnotify'),

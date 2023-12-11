@@ -2,7 +2,6 @@
 #define MONITOR_H
 #include <wayland-server.h>
 #include <wlr/util/box.h>
-#include <wlr/types/wlr_output_damage.h>
 #include <wlr/types/wlr_scene.h>
 
 #include "server.h"

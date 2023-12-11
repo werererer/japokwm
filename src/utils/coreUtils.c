@@ -1,6 +1,5 @@
 #include "utils/coreUtils.h"
 
-#include <assert.h>
 #include <string.h>
 #include <unistd.h>
 #include <wlr/util/log.h>
@@ -9,11 +8,9 @@
 #include <execinfo.h>
 #include <math.h>
 #include <dirent.h>
-#include <errno.h>
 #include <sys/stat.h>
 #include <wait.h>
 
-#include "utils/parseConfigUtils.h"
 #include "ring_buffer.h"
 
 struct lua_State *L;
