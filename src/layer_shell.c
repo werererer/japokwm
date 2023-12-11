@@ -27,6 +27,8 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     struct client *client = create_client(LAYER_SHELL, surface);
 
     LISTEN(&wlr_layer_surface->surface->events.commit, &client->commit, commit_layer_surface_notify);
+    LISTEN(&wlr_layer_surface->surface->events.map, &client->map, map_layer_surface_notify);
+    LISTEN(&wlr_layer_surface->surface->events.unmap, &client->unmap, unmap_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.destroy, &client->destroy, destroy_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.new_popup, &client->new_popup, client_handle_new_popup);
     LISTEN(&wlr_layer_surface->surface->events.new_subsurface, &client->new_subsurface, handle_new_subsurface);
@@ -44,11 +46,16 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     wlr_layer_surface->current = old_state;
 }
 
+void map_layer_surface_notify(struct wl_listener *listener, void *data)
+{
+}
+
 void unmap_layer_surface(struct client *c)
 {
     struct container *con = c->con;
     struct tag *tag = server_get_selected_tag();
     struct container *sel_con = tag_get_focused_container(tag);
+    c->surface.layer->surface->mapped = 0;
     if (con == sel_con) {
         tag_this_focus_container(sel_con);
     }
@@ -56,19 +63,23 @@ void unmap_layer_surface(struct client *c)
 
 void unmap_layer_surface_notify(struct wl_listener *listener, void *data)
 {
+    struct client *c = wl_container_of(listener, c, unmap);
+    unmap_layer_surface(c);
 }
 
 void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, destroy);
 
+    if (c->surface.layer->surface->mapped)
+        unmap_layer_surface(c);
     remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, c->con);
 
     arrange_layers(c->m);
 
     wl_list_remove(&c->destroy.link);
-    wl_list_remove(&c->associate.link);
-    wl_list_remove(&c->dissociate.link);
+    wl_list_remove(&c->map.link);
+    wl_list_remove(&c->unmap.link);
     wl_list_remove(&c->new_popup.link);
     wl_list_remove(&c->commit.link);
 
@@ -80,8 +91,6 @@ void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
 
     destroy_container(c->con);
     destroy_client(c);
-
-    unmap_layer_surface(c);
 }
 
 void commit_layer_surface_notify(struct wl_listener *listener, void *data)
@@ -96,12 +105,14 @@ void commit_layer_surface_notify(struct wl_listener *listener, void *data)
     struct container *con = c->con;
     struct wlr_layer_surface_v1 *layer_surface = c->surface.layer;
     bool layer_changed = false;
-    if (layer_surface->current.committed != 0) {
+    if (layer_surface->current.committed != 0 ||
+            c->mapped != layer_surface->surface->mapped) {
         layer_changed = c->layer != layer_surface->current.layer;
         if (layer_changed) {
             remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
             add_container_to_layer_stack(con);
         }
+        c->mapped = layer_surface->surface->mapped;
         arrange_layers(c->m);
     }
 }
@@ -176,7 +187,7 @@ void arrange_layers(struct monitor *m)
             struct container *con = g_ptr_array_index(layer_list, j);
             struct client *c = con->client;
             struct wlr_layer_surface_v1 *layer_surface = c->surface.layer;
-            if (layer_surface->current.keyboard_interactive) {
+            if (layer_surface->current.keyboard_interactive && layer_surface->surface->mapped) {
                 // Deactivate the focused client.
                 // TODO fix this NULL is not supported in focus_container
                 tag_this_focus_container(con);
