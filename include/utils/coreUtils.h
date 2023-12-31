@@ -21,9 +21,6 @@ typedef GPtrArray GPtrArray2D;
 /* macros */
 //NOLINTNEXTLINE
 #define LENGTH(X)               (sizeof X / sizeof X[0])
-#define END(A)                  ((A) + LENGTH(A))
-/* number of chars a string should contain */
-#define ARR_STRING_LENGTH(X) strlen(X) + 2*(strlen("[]") + NUM_DIGITS)
 
 // those constants are arbitrary and are bound to change
 #define MAXLEN 15
