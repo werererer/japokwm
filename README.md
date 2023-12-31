@@ -27,6 +27,18 @@ Japokwm is a dynamic tiling Wayland compositor that makes it a breeze to create 
 
 --- Join the official subreddit www.reddit.com/r/japokwm or the [Discord channel](https://discord.gg/WpGjAU393M). ---
 
+### Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+  - [Building Japokwm](#building-japokwm)
+  - [Getting Ready](#getting-ready)
+  - [Launching Japokwm](#launching-japokwm)
+- [Distribution Packages](#distribution-packages)
+- [Challenges and Improvements](#challenges-and-improvements)
+- [TODO List](#todo-list)
+- [Acknowledgements](#acknowledgements)
+
 ## ✨ Features:
 - Gaps! ✨
 - Damage Tracking 🛠️
