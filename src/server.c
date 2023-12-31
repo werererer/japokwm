@@ -38,8 +38,6 @@
 #include "xdg_shell.h"
 #include "container.h"
 
-#define XDG_SHELL_VERSION 2
-
 struct server server;
 
 static void setup_event_handlers(struct server *server);

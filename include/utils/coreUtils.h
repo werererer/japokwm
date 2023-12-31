@@ -45,6 +45,7 @@ typedef GPtrArray GPtrArray2D;
 // version management
 #define WL_COMPOSITOR_VERSION 6
 #define LAYER_SHELL_VERSION 4
+#define XDG_SHELL_VERSION 2
 
 #define foreach(item, array)\
     for(int keep = 1, count = 0, size = LENGTH(array); keep && count < size; keep = 1, count++)\
