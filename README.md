@@ -27,16 +27,15 @@ Japokwm is a dynamic tiling Wayland compositor that makes it a breeze to create 
 
 --- Join the official subreddit www.reddit.com/r/japokwm or the [Discord channel](https://discord.gg/WpGjAU393M). ---
 
-### Table of Contents
+# Table of contents
 
-- [Features](#features)
-- [Installation](#installation)
-- [Distribution Packages](#distribution-packages)
-- [Challenges and Improvements](#challenges-and-improvements)
-- [TODO List](#todo-list)
-- [Acknowledgements](#acknowledgements)
+- [✨ Features:](#-features)
+- [Distribution Packages 📦](#distribution-packages-)
+- [Known Challenges and Opportunities for Improvement](#known-challenges-and-opportunities-for-improvement)
+- [🚀 TODO](#-todo)
+- [🙌 Acknowledgements](#-acknowledgements)
 
-## ✨ Features:
+# ✨ Features:
 - Gaps! ✨
 - Damage Tracking 🛠️
 - Layout specific configs 📝
@@ -71,14 +70,14 @@ Follow these simple steps to supercharge your desktop with the amazing Japokw, w
 
 And there you have it! 🎉 JapokWM will take your desktop experience to the next level with its powerful features and sleek design. Enjoy a whole new world of productivity and aesthetics! 🌟🖥️💯
 
-## Distribution Packages 📦
+# Distribution Packages 📦
 [AUR](https://aur.archlinux.org/packages/japokwm-git) (May be out of Date, Git is better maintained 🔄)
 
-## Known Challenges and Opportunities for Improvement
+# Known Challenges and Opportunities for Improvement
 Since version 0.3, this project has entered its beta stage 🐞, where the primary focus is on bug fixes 🛠️. While some bugs may still emerge, they are far less common than in the alpha stage. If you come across any issues, please report them here, and together we'll make Japokwm even better! 🚀
 
-## 🚀 TODO
+# 🚀 TODO
 Polish program and syntax for configuring 💎
 
-## 🙌 Acknowledgements
+# 🙌 Acknowledgements
 Japokwm forked dwl and uses wlroots and parts of sway to do the heavy lifting 🪶
