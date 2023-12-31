@@ -538,12 +538,16 @@ int setup_server(struct server *server)
 }
 
 int start_server(char *startup_cmd) {
-    if (setup_server(&server)) {
-        printf("failed to setup japokwm\n");
+    // Attempt to set up the server. If this fails, report the error and exit.
+    if (setup_server(&server) != 0) {
+        fprintf(stderr, "Failed to set up japokwm\n");
         return EXIT_FAILURE;
     }
 
+    // Run the server with the provided startup command.
+    // This function contains the main event loop and will block until the server exits.
     run(startup_cmd);
+
     return EXIT_SUCCESS;
 }
 
