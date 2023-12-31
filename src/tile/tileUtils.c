@@ -238,9 +238,18 @@ void arrange_monitor(struct monitor *m)
     arrange_containers(tag, active_geom, tiled_containers);
     g_ptr_array_unref(tiled_containers);
 
-    wlr_output_damage_add_whole(m->damage);
     update_reduced_focus_stack(tag);
     tag_focus_most_recent_container(tag);
+
+    // update container visibility
+    GPtrArray *stack_list = tag_get_complete_stack_copy(tag);
+    for (int i = stack_list->len-1; i >= 0; i--) {
+        struct container *con = g_ptr_array_index(stack_list, i);
+        bool viewable = container_viewable_on_monitor(m, con);
+        struct wlr_scene_node *node = container_get_scene_node(con);
+        wlr_scene_node_set_enabled(node, viewable);
+    }
+    g_ptr_array_unref(stack_list);
 }
 
 void arrange_containers(
@@ -296,13 +305,17 @@ static void arrange_container(struct container *con, struct monitor *m,
 
 void container_update_size(struct container *con)
 {
-    con->client->resized = true;
+    struct wlr_box con_geom = container_get_current_geom(con);
 
-    struct wlr_box con_geom = container_get_current_content_geom(con);
-    struct wlr_box output_geom;
-    wlr_output_layout_get_box(server.output_layout, NULL, &output_geom);
-    con_geom = apply_bounds(con, output_geom);
+    if (!container_is_tiled(con)) {
+        struct monitor *m = server_get_selected_monitor();
+        struct wlr_box output_geom = monitor_get_active_geom(m);
+        apply_bounds(&con_geom, output_geom);
+        container_set_current_geom(con, con_geom);
+    }
 
+    struct scene_surface *surface = con->client->scene_surface;
+    wlr_scene_node_set_position(&surface->scene_surface->buffer->node, con_geom.x, con_geom.y);
     /* wlroots makes this a no-op if size hasn't changed */
     switch (con->client->type) {
         case XDG_SHELL:
@@ -331,6 +344,7 @@ void container_update_size(struct container *con)
                     con_geom.x, con_geom.y, con_geom.width,
                     con_geom.height);
     }
+    container_update_border_geometry(con);
 }
 
 void update_hidden_status_of_containers(struct monitor *m, GPtrArray *tiled_containers)

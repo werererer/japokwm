@@ -2,7 +2,7 @@
 #define MONITOR_H
 #include <wayland-server.h>
 #include <wlr/util/box.h>
-#include <wlr/types/wlr_output_damage.h>
+#include <wlr/types/wlr_scene.h>
 
 #include "server.h"
 #include "bitset/bitset.h"
@@ -13,7 +13,6 @@ struct monitor {
     struct wlr_output *wlr_output;
     struct wlr_output_damage *damage;
 
-    struct wl_listener mode;
     struct wl_listener frame;
     struct wl_listener damage_frame;
     struct wl_listener destroy;
@@ -21,6 +20,8 @@ struct monitor {
     struct wlr_box geom;
     struct root *root;
     float scale;
+
+    struct wlr_scene_output *scene_output;
 
     int tag_id;
 };

@@ -30,9 +30,13 @@ struct client {
     struct wl_listener set_app_id;
     struct wl_listener map;
     struct wl_listener unmap;
+    struct wl_listener associate;
+    struct wl_listener dissociate;
     struct wl_listener destroy;
     struct wl_listener new_popup;
     struct wl_listener new_subsurface;
+
+    struct scene_surface *scene_surface;
 
     enum shell type;
     const char *title;
@@ -44,10 +48,6 @@ struct client {
     // enum zwlr_layer_surface_v1_layer layer;
     int layer;
 
-    // used to determine what to damage
-    bool resized;
-    bool moved_tag;
-    bool is_independent;
     // this is currently only used for layer_shell surfaces to help determine if
     // arrange_layers should be called
     bool mapped;

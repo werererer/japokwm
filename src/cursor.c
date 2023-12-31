@@ -9,7 +9,6 @@
 #include "keybinding.h"
 #include "monitor.h"
 #include "popup.h"
-#include "render/render.h"
 #include "seat.h"
 #include "server.h"
 #include "tile/tileUtils.h"
@@ -99,7 +98,7 @@ static void handle_image_surface_destroy(struct wl_listener *listener,
 }
 
 static void cursor_hide(struct cursor *cursor) {
-    wlr_cursor_set_image(cursor->wlr_cursor, NULL, 0, 0, 0, 0, 0, 0);
+    wlr_cursor_set_buffer(cursor->wlr_cursor, NULL, 0, 0, 0);
     cursor->hidden = true;
     wlr_seat_pointer_notify_clear_focus(cursor->seat->wlr_seat);
 }
@@ -216,10 +215,10 @@ void cursor_set_image(struct cursor *cursor, const char *image, struct wl_client
     }
 
     if (!image) {
-        wlr_cursor_set_image(cursor->wlr_cursor, NULL, 0, 0, 0, 0, 0, 0);
+        wlr_cursor_set_buffer(cursor->wlr_cursor, NULL, 0, 0, 0);
     } else if (!current_image || strcmp(current_image, image) != 0) {
-        wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr, image,
-                cursor->wlr_cursor);
+        wlr_cursor_set_xcursor(cursor->wlr_cursor, cursor->xcursor_mgr,
+                image);
     }
 }
 
@@ -318,8 +317,8 @@ void focus_under_cursor(struct cursor *cursor, uint32_t time)
     struct container *focus_con = xy_to_container(cursorx, cursory);
     if (!is_popup_under_cursor && focus_con) {
         final_focus_surface = wlr_surface_surface_at(get_wlrsurface(focus_con->client),
-                absolute_x_to_container_relative(container_get_current_geom(focus_con), cursorx),
-                absolute_y_to_container_relative(container_get_current_geom(focus_con), cursory),
+                absolute_x_to_container_local(container_get_current_geom(focus_con), cursorx),
+                absolute_y_to_container_local(container_get_current_geom(focus_con), cursory),
                 &sx, &sy);
     }
 
@@ -425,8 +424,8 @@ void handle_cursor_button(struct wl_listener *listener, void *data)
              * mode. */
             /* XXX should reset to the pointer focus's current setcursor */
             if (cursor->cursor_mode != CURSOR_NORMAL) {
-                wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
-                        "left_ptr", cursor->wlr_cursor);
+                wlr_cursor_set_xcursor(cursor->wlr_cursor,
+                        cursor->xcursor_mgr, "left_ptr");
                 cursor->cursor_mode = CURSOR_NORMAL;
                 /* Drop the window off on its new monitor */
                 struct monitor *m = xy_to_monitor(cursor->wlr_cursor->x,
@@ -477,9 +476,9 @@ void move_resize(struct cursor *cursor, int ui)
     struct wlr_cursor *wlr_cursor = cursor->wlr_cursor;
     switch (cursor->cursor_mode = ui) {
         case CURSOR_MOVE:
-            wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr, "fleur", wlr_cursor);
-            offsetx = absolute_x_to_container_relative(grabc_geom, wlr_cursor->x);
-            offsety = absolute_y_to_container_relative(grabc_geom, wlr_cursor->y);
+            wlr_cursor_set_xcursor(wlr_cursor, cursor->xcursor_mgr, "fleur");
+            offsetx = absolute_x_to_container_local(grabc_geom, wlr_cursor->x);
+            offsety = absolute_y_to_container_local(grabc_geom, wlr_cursor->y);
             break;
         case CURSOR_RESIZE:
             /* Doesn't work for X11 output - the next absolute motion event
@@ -487,8 +486,8 @@ void move_resize(struct cursor *cursor, int ui)
             wlr_cursor_warp_closest(wlr_cursor, NULL,
                     grabc_geom.x + grabc_geom.width,
                     grabc_geom.y + grabc_geom.height);
-            wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
-                    "bottom_right_corner", wlr_cursor);
+            wlr_cursor_set_xcursor(wlr_cursor,
+                    cursor->xcursor_mgr, "bottom_right_corner");
             break;
         default:
             break;
@@ -714,8 +713,8 @@ static void update_cursor(struct cursor *cursor)
         return;
 
     if (!xy_to_container(cursor->wlr_cursor->x, cursor->wlr_cursor->y)) {
-        wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
-            "left_ptr", cursor->wlr_cursor);
+        wlr_cursor_set_xcursor(cursor->wlr_cursor,
+            cursor->xcursor_mgr, "left_ptr");
         return;
     }
 

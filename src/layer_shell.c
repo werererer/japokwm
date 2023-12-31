@@ -5,11 +5,9 @@
 #include <assert.h>
 
 #include "monitor.h"
-#include "popup.h"
 #include "server.h"
 #include "container.h"
 #include "tile/tileUtils.h"
-#include "render/render.h"
 #include "input_manager.h"
 #include "root.h"
 #include "tagset.h"
@@ -19,6 +17,10 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
 {
     struct wlr_layer_surface_v1 *wlr_layer_surface = data;
 
+    printf("create layershell\n");
+    printf("create layershell\n");
+    printf("create layershell\n");
+    printf("create layershell\n");
     if (!wlr_layer_surface->output) {
         struct monitor *m = server_get_selected_monitor();
         wlr_layer_surface->output = m->wlr_output;
@@ -29,8 +31,8 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
     struct client *client = create_client(LAYER_SHELL, surface);
 
     LISTEN(&wlr_layer_surface->surface->events.commit, &client->commit, commit_layer_surface_notify);
-    LISTEN(&wlr_layer_surface->events.map, &client->map, map_layer_surface_notify);
-    LISTEN(&wlr_layer_surface->events.unmap, &client->unmap, unmap_layer_surface_notify);
+    LISTEN(&wlr_layer_surface->surface->events.map, &client->map, map_layer_surface_notify);
+    LISTEN(&wlr_layer_surface->surface->events.unmap, &client->unmap, unmap_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.destroy, &client->destroy, destroy_layer_surface_notify);
     LISTEN(&wlr_layer_surface->events.new_popup, &client->new_popup, client_handle_new_popup);
     LISTEN(&wlr_layer_surface->surface->events.new_subsurface, &client->new_subsurface, handle_new_subsurface);
@@ -57,7 +59,7 @@ void unmap_layer_surface(struct client *c)
     struct container *con = c->con;
     struct tag *tag = server_get_selected_tag();
     struct container *sel_con = tag_get_focused_container(tag);
-    c->surface.layer->mapped = 0;
+    c->surface.layer->surface->mapped = 0;
     if (con == sel_con) {
         tag_this_focus_container(sel_con);
     }
@@ -67,14 +69,13 @@ void unmap_layer_surface_notify(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, unmap);
     unmap_layer_surface(c);
-    container_damage_whole(c->con);
 }
 
 void destroy_layer_surface_notify(struct wl_listener *listener, void *data)
 {
     struct client *c = wl_container_of(listener, c, destroy);
 
-    if (c->surface.layer->mapped)
+    if (c->surface.layer->surface->mapped)
         unmap_layer_surface(c);
     remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, c->con);
 
@@ -109,17 +110,15 @@ void commit_layer_surface_notify(struct wl_listener *listener, void *data)
     struct wlr_layer_surface_v1 *layer_surface = c->surface.layer;
     bool layer_changed = false;
     if (layer_surface->current.committed != 0 ||
-            c->mapped != layer_surface->mapped) {
+            c->mapped != layer_surface->surface->mapped) {
         layer_changed = c->layer != layer_surface->current.layer;
         if (layer_changed) {
             remove_in_composed_list(server.layer_visual_stack_lists, cmp_ptr, con);
             add_container_to_layer_stack(con);
         }
-        c->mapped = layer_surface->mapped;
+        c->mapped = layer_surface->surface->mapped;
         arrange_layers(c->m);
     }
-
-    container_damage_part(con);
 }
 
 bool layer_shell_is_bar(struct container *con)
@@ -192,7 +191,7 @@ void arrange_layers(struct monitor *m)
             struct container *con = g_ptr_array_index(layer_list, j);
             struct client *c = con->client;
             struct wlr_layer_surface_v1 *layer_surface = c->surface.layer;
-            if (layer_surface->current.keyboard_interactive && layer_surface->mapped) {
+            if (layer_surface->current.keyboard_interactive && layer_surface->surface->mapped) {
                 // Deactivate the focused client.
                 // TODO fix this NULL is not supported in focus_container
                 tag_this_focus_container(con);

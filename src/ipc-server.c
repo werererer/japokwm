@@ -25,7 +25,6 @@
 #include "client.h"
 #include "command.h"
 #include "monitor.h"
-#include "root.h"
 
 static int ipc_socket = -1;
 static struct sockaddr_un *ipc_sockaddr = NULL;
@@ -289,6 +288,17 @@ static void ipc_send_event(const char *json_string, enum ipc_command_type event)
 
 void ipc_event_tag() {
     ipc_send_event("", IPC_EVENT_TAG);
+
+    // TODO: this doesn't belong here
+    // HACK: just for the time being
+    // update container visibility
+    for (int i = server.container_stack->len-1; i >= 0; i--) {
+        struct container *con = g_ptr_array_index(server.container_stack, i);
+        struct monitor *m = server_get_selected_monitor();
+        bool viewable = container_viewable_on_monitor(m, con);
+        struct wlr_scene_node *node = container_get_scene_node(con);
+        wlr_scene_node_set_enabled(node, viewable);
+    }
 }
 
 int ipc_client_handle_writable(int client_fd, uint32_t mask, void *data) {

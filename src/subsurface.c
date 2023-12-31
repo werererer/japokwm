@@ -22,13 +22,11 @@ static void handle_subsurface_commit(struct wl_listener *listener, void *data)
     // TODO: We should damage the subsurface directly and render the damage
     // directly instead of leaving this job to the parent surface. This should
     // save us cpu cycles
-    container_damage_part(xdg_subsurface->parent);
 }
 
 static void handle_subsurface_destroy(struct wl_listener *listener, void *data)
 {
     struct subsurface *subsurface = wl_container_of(listener, subsurface, destroy);
-    container_damage_whole(subsurface->parent);
     destroy_subsurface(subsurface);
 }
 

@@ -83,13 +83,9 @@ struct wlr_box get_monitor_local_box(struct wlr_box box, struct monitor *m);
 struct wlr_fbox lua_togeometry(lua_State *L);
 
 void ack_configure(struct wl_listener *listener, void *data);
-struct wlr_box apply_bounds(struct container *con, struct wlr_box bbox);
+void apply_bounds(struct wlr_box *geom, struct wlr_box box);
 void commit_notify(struct wl_listener *listener, void *data);
 void configure_notify(struct wl_listener *listener, void *data);
-void container_damage_borders_at_monitor(struct container *con, struct monitor *m);
-void container_damage_borders(struct container *con);
-void container_damage_part(struct container *con);
-void container_damage_whole(struct container *con);
 void container_fix_position_to_begin(struct container *con);
 void container_fix_position(struct container *con);
 void focus_on_hidden_stack(struct monitor *m, int i);
@@ -104,9 +100,14 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
 void container_set_hidden(struct container *con, bool b);
 void container_set_hidden_at_tag(struct container *con, bool b, struct tag *tag);
 void set_container_monitor(struct container *con, struct monitor *m);
+void container_update_border(struct container *con);
+void container_update_border_geometry(struct container *con);
+void container_update_border_color(struct container *con);
+void container_update_border_visibility(struct container *con);
 void resize_container(struct container *con, struct wlr_cursor *cursor, int dx, int dy);
 void resize_container_in_layout(struct container *con, struct wlr_box geom);
 void move_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety);
+void scale_box(struct wlr_box *box, float scale);
 
 struct container_property *container_get_property(struct container *con);
 struct container_property *container_get_property_at_tag(
@@ -168,8 +169,8 @@ void container_resize_with_cursor(struct cursor *cursor);
 
 struct monitor *container_get_monitor(struct container *con);
 
-int absolute_x_to_container_relative(struct wlr_box geom, int x);
-int absolute_y_to_container_relative(struct wlr_box geom, int y);
+int absolute_x_to_container_local(struct wlr_box geom, int x);
+int absolute_y_to_container_local(struct wlr_box geom, int y);
 int get_position_in_container_focus_stack(struct container *con);
 int get_position_in_container_stack(struct container *con);
 
@@ -195,6 +196,8 @@ bool container_is_unmanaged(struct container *con);
 bool container_is_managed(struct container *con);
 bool container_is_tiled_and_managed(struct container *con);
 bool container_is_on_scratchpad(struct container *con);
+
+struct wlr_scene_node *container_get_scene_node(struct container *con);
 
 const char *container_get_app_id(struct container *con);
 #endif /* CONTAINER_H */

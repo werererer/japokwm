@@ -21,9 +21,6 @@ typedef GPtrArray GPtrArray2D;
 /* macros */
 //NOLINTNEXTLINE
 #define LENGTH(X)               (sizeof X / sizeof X[0])
-#define END(A)                  ((A) + LENGTH(A))
-/* number of chars a string should contain */
-#define ARR_STRING_LENGTH(X) strlen(X) + 2*(strlen("[]") + NUM_DIGITS)
 
 // those constants are arbitrary and are bound to change
 #define MAXLEN 15
@@ -42,9 +39,10 @@ typedef GPtrArray GPtrArray2D;
 #define MIN_CONTAINER_HEIGHT 30
 #define LISTEN(E, L, H)         wl_signal_add((E), ((L)->notify = (H), (L)))
 
-#define foreach(item, array)\
-    for(int keep = 1, count = 0, size = LENGTH(array); keep && count < size; keep = 1, count++)\
-        for(item = array[count]; keep; keep = 0)\
+// version management
+#define WL_COMPOSITOR_VERSION 6
+#define LAYER_SHELL_VERSION 4
+#define XDG_SHELL_VERSION 2
 
 extern struct lua_State *L;
 
@@ -147,7 +145,9 @@ void *get_relative_item_in_composed_list(GPtrArray *arrays, int i, int j);
 int exec(const char *cmd);
 bool is_approx_equal(double a, double b, double error_range);
 
+// Converts a Lua table index (1-based) to a C array index (0-based).
 int lua_idx_to_c_idx(int lua_idx);
+// Converts a C array index (0-based) to a Lua table index (1-based).
 int c_idx_to_lua_idx(int c_idx);
 
 int scale_percent_to_integer(float percent);

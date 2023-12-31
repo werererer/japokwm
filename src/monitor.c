@@ -2,15 +2,12 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <wlr/types/wlr_output.h>
-#include <wlr/types/wlr_output_damage.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 #include <wlr/util/log.h>
 #include <wlr/backend/wayland.h>
 #include <wlr/backend/headless.h>
 #include <wlr/backend/x11.h>
 
-#include "ipc-server.h"
-#include "render/render.h"
 #include "server.h"
 #include "tile/tileUtils.h"
 #include "tag.h"
@@ -23,7 +20,6 @@
 #include "client.h"
 #include "container.h"
 
-static void handle_output_damage_frame(struct wl_listener *listener, void *data);
 static void handle_output_frame(struct wl_listener *listener, void *data);
 static void handle_output_mode(struct wl_listener *listener, void *data);
 static void monitor_get_initial_tag(struct monitor *m, GList *tags);
@@ -53,9 +49,6 @@ void create_monitor(struct wl_listener *listener, void *data)
 
     /* damage tracking must be initialized before setting the tag because
      * it to damage a region */
-    m->damage = wlr_output_damage_create(m->wlr_output);
-    m->damage_frame.notify = handle_output_damage_frame;
-    wl_signal_add(&m->damage->events.frame, &m->damage_frame);
 
     m->frame.notify = handle_output_frame;
     wl_signal_add(&m->wlr_output->events.frame, &m->frame);
@@ -63,8 +56,6 @@ void create_monitor(struct wl_listener *listener, void *data)
     /* Set up event listeners */
     m->destroy.notify = handle_destroy_monitor;
     wl_signal_add(&output->events.destroy, &m->destroy);
-    m->mode.notify = handle_output_mode;
-    wl_signal_add(&output->events.mode, &m->mode);
 
     bool is_first_monitor = server.mons->len == 0;
     g_ptr_array_add(server.mons, m);
@@ -81,6 +72,8 @@ void create_monitor(struct wl_listener *listener, void *data)
     wlr_output_layout_add_auto(server.output_layout, output);
 
     wlr_output_enable(output, true);
+
+    m->scene_output = wlr_scene_output_create(server.scene, output);
 
     wlr_output_layout_get_box(server.output_layout, m->wlr_output, &m->geom);
     m->root = create_root(m, m->geom);
@@ -144,47 +137,18 @@ void create_output(struct wlr_backend *backend, void *data)
 /* #endif */
 }
 
-int i = 0;
 static void handle_output_frame(struct wl_listener *listener, void *data)
 {
-    struct monitor *m = wl_container_of(listener, m, damage_frame);
+    struct monitor *m = wl_container_of(listener, m, frame);
 
+	if (!wlr_scene_output_commit(m->scene_output, NULL)) {
+		return;
+	}
+
+	struct timespec now;
+	clock_gettime(CLOCK_MONOTONIC, &now);
+	wlr_scene_output_send_frame_done(m->scene_output, &now);
     /* NOOP */
-}
-
-int j = 0;
-static void handle_output_damage_frame(struct wl_listener *listener, void *data)
-{
-    struct monitor *m = wl_container_of(listener, m, damage_frame);
-
-    if (!m->wlr_output->enabled) {
-        return;
-    }
-
-    /* Check if we can scan-out the primary view. */
-    pixman_region32_t frame_damage;
-    pixman_region32_init(&frame_damage);
-    bool needs_frame;
-    if (!wlr_output_damage_attach_render(m->damage, &needs_frame, &frame_damage)) {
-        goto damage_finish;
-    }
-
-    if (!needs_frame) {
-        wlr_output_rollback(m->wlr_output);
-        goto damage_finish;
-    }
-
-    render_monitor(m, &frame_damage);
-
-damage_finish:
-    pixman_region32_fini(&frame_damage);
-}
-
-static void handle_output_mode(struct wl_listener *listener, void *data)
-{
-    struct monitor *m = wl_container_of(listener, m, mode);
-    wlr_output_layout_get_box(server.output_layout, m->wlr_output, &m->geom);
-    arrange_layers(m);
 }
 
 static void monitor_get_initial_tag(struct monitor *m, GList *tags)
@@ -205,7 +169,6 @@ void handle_destroy_monitor(struct wl_listener *listener, void *data)
 {
     struct monitor *m = wl_container_of(listener, m, destroy);
 
-    wl_list_remove(&m->mode.link);
     wl_list_remove(&m->frame.link);
     wl_list_remove(&m->destroy.link);
 
@@ -513,7 +476,7 @@ static void prepare_output(
                     config_head->state.custom_mode.height,
                     config_head->state.custom_mode.refresh);
 
-        wlr_output_layout_move(server.output_layout, wlr_output,
+        wlr_output_layout_add(server.output_layout, wlr_output,
                 config_head->state.x, config_head->state.y);
         wlr_output_set_transform(wlr_output, config_head->state.transform);
         wlr_output_set_scale(wlr_output, config_head->state.scale);

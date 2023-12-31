@@ -27,6 +27,21 @@ struct client *create_client(enum shell shell_type, union surface_t surface)
     c->type = shell_type;
     c->surface = surface;
 
+    // HACK: this is a hack. first wlr_surface->data is filled with the surface
+    // then we will override it with the client afterwards
+    switch (shell_type) {
+        case XDG_SHELL:
+            c->scene_surface = surface.xdg->surface->data;
+            break;
+        case LAYER_SHELL:
+            c->scene_surface = surface.layer->surface->data;
+            break;
+        case X11_MANAGED:
+        case X11_UNMANAGED:
+            c->scene_surface = surface.xwayland->data;
+            break;
+    }
+
     return c;
 }
 
@@ -104,6 +119,7 @@ static void unfocus_client(struct client *c)
         default:
             break;
     }
+    container_update_border_color(c->con);
 }
 
 void focus_surface(struct seat *seat, struct wlr_surface *surface)
@@ -131,8 +147,6 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
         if (old_surface != new_surface) {
             cursor_constrain(seat->cursor, NULL);
             unfocus_client(old);
-            struct container *old_con = old->con;
-            container_damage_borders(old_con);
         }
     }
 
@@ -151,10 +165,6 @@ void focus_client(struct seat *seat, struct client *old, struct client *c)
 
     /* Update wlroots'c keyboard focus */
     focus_surface(seat, get_wlrsurface(c));
-
-    struct container *con = c->con;
-    struct monitor *m = container_get_monitor(con);
-    container_damage_borders_at_monitor(con, m);
 
     /* Activate the new client */
     switch (c->type) {
@@ -208,7 +218,7 @@ void client_handle_new_popup(struct wl_listener *listener, void *data)
 
     struct container *con = client->con;
     struct monitor *m = container_get_monitor(con);
-    create_popup(m, xdg_popup, container_get_current_geom(con), con);
+    create_popup(m, xdg_popup, con, con);
 }
 
 void client_handle_set_title(struct wl_listener *listener, void *data)
@@ -282,6 +292,5 @@ void reset_floating_client_borders(int border_px)
             continue;
         }
         container_set_border_width(con, direction_value_uniform(border_px));
-        container_damage_whole(con);
     }
 }

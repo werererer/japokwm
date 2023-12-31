@@ -50,8 +50,8 @@ void create_notifyx11(struct wl_listener *listener, void *data)
     // set default value will be overriden on maprequest
 
     /* Listen to the various events it can emit */
-    LISTEN(&xwayland_surface->events.map, &c->map, maprequestx11);
-    LISTEN(&xwayland_surface->events.unmap, &c->unmap, unmap_notifyx11);
+    LISTEN(&xwayland_surface->events.associate, &c->associate, maprequestx11);
+    LISTEN(&xwayland_surface->events.dissociate, &c->dissociate, unmap_notifyx11);
     LISTEN(&xwayland_surface->events.destroy, &c->destroy, destroy_notifyx11);
     LISTEN(&xwayland_surface->events.set_title, &c->set_title, client_handle_set_title);
     LISTEN(&xwayland_surface->events.set_class, &c->set_app_id, client_handle_set_app_id);
@@ -71,11 +71,12 @@ void destroy_notifyx11(struct wl_listener *listener, void *data)
     }
     destroy_container(c->con);
 
-    wl_list_remove(&c->map.link);
-    wl_list_remove(&c->unmap.link);
+    wl_list_remove(&c->associate.link);
+    wl_list_remove(&c->dissociate.link);
     wl_list_remove(&c->destroy.link);
     wl_list_remove(&c->set_title.link);
     wl_list_remove(&c->set_app_id.link);
+    wl_list_remove(&c->activate.link);
 
     destroy_client(c);
 }
@@ -123,12 +124,11 @@ void handle_xwayland_ready(struct wl_listener *listener, void *data)
 void unmap_notifyx11(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is unmapped, and should no longer be shown. */
-    struct client *c = wl_container_of(listener, c, unmap);
+    struct client *c = wl_container_of(listener, c, dissociate);
 
     wl_list_remove(&c->commit.link);
 
     struct container *con = c->con;
-    container_damage_whole(c->con);
     remove_container_from_tile(con);
 
     arrange();
@@ -138,11 +138,14 @@ void unmap_notifyx11(struct wl_listener *listener, void *data)
 void maprequestx11(struct wl_listener *listener, void *data)
 {
     /* Called when the surface is mapped, or ready to display on-screen. */
-    struct client *c = wl_container_of(listener, c, map);
+    struct client *c = wl_container_of(listener, c, associate);
     struct wlr_xwayland_surface *xwayland_surface = c->surface.xwayland;
     struct monitor *m = server_get_selected_monitor();
 
     c->type = xwayland_surface->override_redirect ? X11_UNMANAGED : X11_MANAGED;
+
+    c->scene_surface = xwayland_surface->surface->data;
+    xwayland_surface->surface->data = c;
 
     struct container *con = c->con;
     con->tag_id = m->tag_id;
@@ -194,7 +197,6 @@ void maprequestx11(struct wl_listener *listener, void *data)
         case X11_UNMANAGED:
             {
                 con->is_unmanaged = true;
-                c->is_independent = true;
 
                 debug_print("is unmanaged\n");
                 struct tag *tag = monitor_get_active_tag(m);
@@ -224,8 +226,7 @@ void maprequestx11(struct wl_listener *listener, void *data)
     struct container *sel = monitor_get_focused_container(m);
     tag_this_focus_container(sel);
     struct seat *seat = input_manager_get_default_seat();
-    wlr_xcursor_manager_set_cursor_image(seat->cursor->xcursor_mgr,
-            "left_ptr", seat->cursor->wlr_cursor);
+    wlr_cursor_set_xcursor(seat->cursor->wlr_cursor, seat->cursor->xcursor_mgr, "left_ptr");
 }
 
 bool xwayland_popups_exist()

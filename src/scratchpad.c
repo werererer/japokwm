@@ -34,7 +34,6 @@ void move_to_scratchpad(struct container *con, int position)
     struct tag *tag = monitor_get_active_tag(m);
     tagset_reload(tag);
 
-    container_damage_whole(con);
     arrange();
     tag_focus_most_recent_container(tag);
 }

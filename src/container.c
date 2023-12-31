@@ -11,11 +11,9 @@
 #include "cursor.h"
 #include "list_sets/container_stack_set.h"
 #include "list_sets/list_set.h"
-#include "popup.h"
 #include "server.h"
 #include "monitor.h"
 #include "tile/tileUtils.h"
-#include "render/render.h"
 #include "options.h"
 #include "utils/parseConfigUtils.h"
 #include "scratchpad.h"
@@ -23,12 +21,12 @@
 #include "ipc-server.h"
 #include "layer_shell.h"
 #include "tag.h"
-#include "rules/rule.h"
 #include "list_sets/focus_stack_set.h"
 #include "options.h"
 #include "lib/lib_container.h"
 #include "lib/lib_layout.h"
 #include "lib/lib_geom.h"
+#include "root.h"
 
 static void add_container_to_tag(struct container *con, struct tag *tag);
 
@@ -98,8 +96,6 @@ void container_property_set_floating(struct container_property *property, bool f
     }
 
     lift_container(con);
-    con->client->resized = true;
-    container_damage_whole(con);
 
     container_update_size(con);
 }
@@ -182,81 +178,12 @@ void remove_container_from_tile(struct container *con)
     ipc_event_tag();
 }
 
-void container_damage_borders_at_monitor(struct container *con, struct monitor *m)
+void scale_box(struct wlr_box *box, float scale)
 {
-    if (!con)
-        return;
-    if (!m)
-        return;
-
-    struct wlr_box *borders;
-    borders = (struct wlr_box[4]) {
-        container_get_current_border_geom(con, WLR_EDGE_TOP),
-        container_get_current_border_geom(con, WLR_EDGE_LEFT),
-        container_get_current_border_geom(con, WLR_EDGE_RIGHT),
-        container_get_current_border_geom(con, WLR_EDGE_BOTTOM),
-    };
-
-    for (int i = 0; i < 4; i++) {
-        struct wlr_box border = borders[i];
-        double ox = border.x;
-        double oy = border.y;
-        wlr_output_layout_output_coords(server.output_layout, m->wlr_output, &ox, &oy);
-        struct wlr_box obox = {
-            .x = ox,
-            .y = oy,
-            .width = border.width,
-            .height = border.height,
-        };
-        scale_box(&obox, m->wlr_output->scale);
-        wlr_output_damage_add_box(m->damage, &obox);
-    }
-}
-
-void container_damage_borders(struct container *con)
-{
-    if (!con)
-        return;
-
-    for (int i = 0; i < server.mons->len; i++) {
-        struct monitor *m = g_ptr_array_index(server.mons, i);
-        container_damage_borders_at_monitor(con, m);
-    }
-}
-
-static void damage_container_area(struct container *con, struct wlr_box geom,
-        bool whole)
-{
-    for (int i = 0; i < server.mons->len; i++) {
-        struct monitor *m = g_ptr_array_index(server.mons, i);
-        output_damage_surface(m, get_wlrsurface(con->client), &geom, whole);
-    }
-    container_damage_borders(con);
-}
-
-static void container_damage(struct container *con, bool whole)
-{
-    for (int i = 0; i < server.mons->len; i++) {
-        struct wlr_box con_geom = container_get_current_content_geom(con);
-        damage_container_area(con, con_geom, whole);
-    }
-
-    struct client *c = con->client;
-    if (c->resized || c->moved_tag) {
-        damage_container_area(con, con->prev_geom, whole);
-        c->resized = false;
-        c->moved_tag = false;
-    }
-}
-
-void container_damage_part(struct container *con)
-{
-    container_damage(con, false);
-}
-
-void container_damage_whole(struct container *con)
-{
-    container_damage(con, true);
+    box->x *= scale;
+    box->y *= scale;
+    box->width *= scale;
+    box->height *= scale;
 }
 
 struct container *monitor_get_focused_container(struct monitor *m)
@@ -402,30 +329,20 @@ struct wlr_fbox lua_togeometry(lua_State *L)
 }
 
 // TODO: look if this function is still needed
-struct wlr_box apply_bounds(struct container *con, struct wlr_box box)
+void apply_bounds(struct wlr_box *geom, struct wlr_box box)
 {
     /* set minimum possible */
-    struct wlr_box con_geom = container_get_current_content_geom(con);
+    geom->width = MAX(MIN_CONTAINER_WIDTH, geom->width);
+    geom->height = MAX(MIN_CONTAINER_HEIGHT, geom->height);
 
-    if (container_is_tiled(con))
-        return con_geom;
-
-    con_geom.width = MAX(MIN_CONTAINER_WIDTH, con_geom.width);
-    con_geom.height = MAX(MIN_CONTAINER_HEIGHT, con_geom.height);
-
-    struct direction_value bw = container_get_border_width(con);
-
-    if (con_geom.x >= box.x + box.width)
-        con_geom.x = box.x + box.width - con_geom.width;
-    if (con_geom.y >= box.y + box.height)
-        con_geom.y = box.y + box.height - con_geom.height;
-    if (con_geom.x + con_geom.width + bw.left + bw.right <= box.x)
-        con_geom.x = box.x;
-    if (con_geom.y + con_geom.height + bw.top + bw.bottom <= box.y)
-        con_geom.y = box.y;
-
-    container_set_current_content_geom(con, con_geom);
-    return con_geom;
+    if (geom->x >= box.x + box.width)
+        geom->x = box.x + box.width - geom->width;
+    if (geom->y >= box.y + box.height)
+        geom->y = box.y + box.height - geom->height;
+    if (geom->x + geom->width <= box.x)
+        geom->x = box.x;
+    if (geom->y + geom->height <= box.y)
+        geom->y = box.y;
 }
 
 void commit_notify(struct wl_listener *listener, void *data)
@@ -437,7 +354,6 @@ void commit_notify(struct wl_listener *listener, void *data)
 
     struct container *con = c->con;
     if (con->is_on_tile) {
-        container_damage_part(c->con);
     }
 }
 
@@ -704,6 +620,13 @@ void container_set_floating(struct container *con, void (*fix_position)(struct c
     if (fix_position)
         fix_position(con);
 
+    struct wlr_scene_node *node = container_get_scene_node(con);
+    if (floating) {
+        wlr_scene_node_reparent(node, server.scene_floating);
+    } else {
+        wlr_scene_node_reparent(node, server.scene_tiled);
+    }
+
     container_property_set_floating(property, floating);
 }
 
@@ -775,8 +698,7 @@ void move_container(struct container *con, struct wlr_cursor *cursor, int offset
     struct layout *lt = tag_get_layout(tag);
     container_set_border_width(con, direction_value_uniform(lt->options->float_border_px));
 
-    con->client->resized = true;
-    container_damage(con, true);
+    container_update_size(con);
 }
 
 struct container_property *container_get_property(struct container *con)
@@ -1041,44 +963,21 @@ struct wlr_box container_get_current_content_geom(struct container *con)
 struct wlr_box container_get_current_border_geom(struct container *con, enum wlr_edges dir)
 {
     struct wlr_box geom = container_get_current_geom(con);
-    enum wlr_edges hidden_edges = container_get_hidden_edges(con);
+    struct direction_value d = container_get_border_width(con);
     switch (dir) {
         case WLR_EDGE_TOP:
-            {
-                if (!(hidden_edges & WLR_EDGE_TOP)) {
-                    struct direction_value d = container_get_border_width(con);
-                    geom.height = d.top;
-                }
-                break;
-            }
+            geom.height = d.top;
+            break;
         case WLR_EDGE_BOTTOM:
-            {
-                if (!(hidden_edges & WLR_EDGE_BOTTOM)) {
-                    struct direction_value d = container_get_border_width(con);
-                    geom.y += geom.height - d.bottom;
-                    geom.height = d.bottom;
-                }
-                break;
-            }
+            geom.y += geom.height - d.bottom;
+            geom.height = d.bottom;
             break;
         case WLR_EDGE_LEFT:
-            {
-                if (!(hidden_edges & WLR_EDGE_LEFT)) {
-                    struct direction_value d = container_get_border_width(con);
-                    geom.width = d.left;
-                }
-                break;
-            }
+            geom.width = d.left;
             break;
         case WLR_EDGE_RIGHT:
-            {
-                if (!(hidden_edges & WLR_EDGE_RIGHT)) {
-                    struct direction_value d = container_get_border_width(con);
-                    geom.x += geom.width - d.right;
-                    geom.width = d.right;
-                }
-                break;
-            }
+            geom.x += geom.width - d.right;
+            geom.width = d.right;
             break;
         default:
             break;
@@ -1167,6 +1066,136 @@ struct direction_value container_get_border_width(struct container *con)
     return property->border_width;
 }
 
+// TODO refactor the name it doesn't represent what this does perfectly
+// returns the newly accquired hidden edges
+static enum wlr_edges container_update_hidden_edges(struct container *con, struct wlr_box *borders, enum wlr_edges hidden_edges)
+{
+    struct monitor *m = container_get_monitor(con);
+
+    enum wlr_edges containers_hidden_edges = WLR_EDGE_NONE;
+    struct wlr_box con_geom = container_get_current_geom(con);
+    // int border_width = container_get_border_width(con);
+    // hide edges if needed
+    if (hidden_edges & WLR_EDGE_LEFT) {
+        if (con_geom.x == m->root->geom.x) {
+            containers_hidden_edges |= WLR_EDGE_LEFT;
+        }
+    }
+    if (hidden_edges & WLR_EDGE_RIGHT) {
+        if (is_approx_equal(con_geom.x + con_geom.width, m->root->geom.x + m->root->geom.width, 3)) {
+            containers_hidden_edges |= WLR_EDGE_RIGHT;
+        }
+    }
+    if (hidden_edges & WLR_EDGE_TOP) {
+        if (con_geom.y == m->root->geom.y) {
+            containers_hidden_edges |= WLR_EDGE_TOP;
+        }
+    }
+    if (hidden_edges & WLR_EDGE_BOTTOM) {
+        if (is_approx_equal(con_geom.y + con_geom.height, m->root->geom.y + m->root->geom.height, 3)) {
+            containers_hidden_edges |= WLR_EDGE_BOTTOM;
+        }
+    }
+
+    container_set_hidden_edges(con, containers_hidden_edges);
+    return containers_hidden_edges;
+}
+void container_update_border(struct container *con)
+{
+    // optimization to not update the border if it's not needed
+    container_update_border_geometry(con);
+    container_update_border_color(con);
+}
+
+void container_update_border_geometry(struct container *con)
+{
+    container_update_border_visibility(con);
+    // the visibility always has to be updated because has_border might have changed
+    if (!con->has_border)
+        return;
+
+    struct scene_surface *surface = con->client->scene_surface;
+
+    struct wlr_box *borders = (struct wlr_box[4]) {
+        container_get_current_border_geom(con, WLR_EDGE_TOP),
+        container_get_current_border_geom(con, WLR_EDGE_BOTTOM),
+        container_get_current_border_geom(con, WLR_EDGE_LEFT),
+        container_get_current_border_geom(con, WLR_EDGE_RIGHT),
+    };
+
+    for (int i = 0; i < BORDER_COUNT; i++) {
+        struct wlr_scene_rect *border = surface->borders[i];
+        struct wlr_box geom = borders[i];
+        wlr_scene_node_set_position(&border->node, geom.x, geom.y);
+        wlr_scene_rect_set_size(border, geom.width, geom.height);
+    }
+}
+
+void container_update_border_color(struct container *con)
+{
+    if (!con->has_border)
+        return;
+    struct scene_surface *surface = con->client->scene_surface;
+
+    struct monitor *m = container_get_monitor(con);
+    struct tag *tag = monitor_get_active_tag(m);
+    struct layout *lt = tag_get_layout(tag);
+
+    struct container *sel = monitor_get_focused_container(m);
+    const struct color color = (con == sel) ? lt->options->focus_color :
+    lt->options->border_color;
+
+    for (int i = 0; i < BORDER_COUNT; i++) {
+        struct wlr_scene_rect *border = surface->borders[i];
+        float border_color[4];
+        color_to_wlr_color(border_color, color);
+        wlr_scene_rect_set_color(border, border_color);
+    }
+}
+
+void container_update_border_visibility(struct container *con)
+{
+    struct scene_surface *surface = con->client->scene_surface;
+
+    if (!con->has_border) {
+        for (int i = 0; i < BORDER_COUNT; i++) {
+            struct wlr_scene_rect *border = surface->borders[i];
+            wlr_scene_node_set_enabled(&border->node, false);
+        }
+        return;
+    }
+
+    struct monitor *m = container_get_monitor(con);
+    struct tag *tag = monitor_get_active_tag(m);
+    struct layout *lt = tag_get_layout(tag);
+
+    struct wlr_box *borders = (struct wlr_box[4]) {
+        container_get_current_border_geom(con, WLR_EDGE_TOP),
+        container_get_current_border_geom(con, WLR_EDGE_BOTTOM),
+        container_get_current_border_geom(con, WLR_EDGE_LEFT),
+        container_get_current_border_geom(con, WLR_EDGE_RIGHT),
+    };
+
+    enum wlr_edges hidden_edges = WLR_EDGE_NONE;
+    if (lt->options->smart_hidden_edges) {
+        if (tag->visible_con_set->tiled_containers->len <= 1) {
+            hidden_edges = container_update_hidden_edges(con, borders,
+            lt->options->hidden_edges);
+        }
+    } else {
+        hidden_edges = container_update_hidden_edges(con, borders,
+        lt->options->hidden_edges);
+    }
+
+    for (int i = 0; i < BORDER_COUNT; i++) {
+        struct wlr_scene_rect *border = surface->borders[i];
+
+        bool is_hidden = hidden_edges & (1 << i);
+        // hide or show the border
+        wlr_scene_node_set_enabled(&border->node, !is_hidden);
+    }
+}
+
 void resize_container(struct container *con, struct wlr_cursor *cursor, int offsetx, int offsety)
 {
     if (!con)
@@ -1174,8 +1203,8 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
 
     struct wlr_box geom = container_get_current_geom(con);
 
-    geom.width = absolute_x_to_container_relative(geom, cursor->x - offsetx);
-    geom.height = absolute_y_to_container_relative(geom, cursor->y - offsety);
+    geom.width = absolute_x_to_container_local(geom, cursor->x - offsetx);
+    geom.height = absolute_y_to_container_local(geom, cursor->y - offsety);
 
     if (con->on_scratchpad) {
         remove_container_from_scratchpad(con);
@@ -1185,7 +1214,6 @@ void resize_container(struct container *con, struct wlr_cursor *cursor, int offs
         arrange();
     }
 
-    container_damage_borders(con);
 
     container_set_floating_geom(con, geom);
     struct tag *tag = container_get_current_tag(con);
@@ -1283,12 +1311,12 @@ struct monitor *container_get_monitor(struct container *con)
     return m;
 }
 
-inline int absolute_x_to_container_relative(struct wlr_box geom, int x)
+inline int absolute_x_to_container_local(struct wlr_box geom, int x)
 {
     return x - geom.x;
 }
 
-inline int absolute_y_to_container_relative(struct wlr_box geom, int y)
+inline int absolute_y_to_container_local(struct wlr_box geom, int y)
 {
     return y - geom.y;
 }
@@ -1415,8 +1443,6 @@ void move_container_to_tag(struct container *con, struct tag *tag)
         return;
 
     container_set_tag(con, tag);
-    con->client->moved_tag = true;
-    container_damage_whole(con);
 
     struct tag *old_tag = container_get_current_tag(con);
 
@@ -1533,22 +1559,22 @@ void container_resize_with_cursor(struct cursor *cursor)
     switch (edge) {
         case WLR_EDGE_LEFT:
             printf("left\n");
-            wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
-                    "left_side", wlr_cursor);
+            wlr_cursor_set_xcursor(wlr_cursor,
+                    cursor->xcursor_mgr, "left_side");
             break;
         case WLR_EDGE_RIGHT:
             printf("right\n");
-            wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
-                    "right_side", wlr_cursor);
+            wlr_cursor_set_xcursor(wlr_cursor,
+                    cursor->xcursor_mgr, "right_side");
             break;
         case WLR_EDGE_TOP:
             printf("top\n");
-            wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
-                    "top_side", wlr_cursor);
+            wlr_cursor_set_xcursor(wlr_cursor,
+                    cursor->xcursor_mgr, "top_side");
             break;
         case WLR_EDGE_BOTTOM:
-            wlr_xcursor_manager_set_cursor_image(cursor->xcursor_mgr,
-                    "bottom_side", wlr_cursor);
+            wlr_cursor_set_xcursor(wlr_cursor,
+                    cursor->xcursor_mgr, "bottom_side");
             break;
         default:
             break;
@@ -1695,4 +1721,11 @@ const char *container_get_app_id(struct container *con)
         name = con->client->app_id;
     }
     return name;
+}
+
+struct wlr_scene_node *container_get_scene_node(struct container *con)
+{
+    struct client *c = con->client;
+    struct scene_surface *surface = c->scene_surface;
+    return &surface->surface_tree->node;
 }
