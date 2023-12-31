@@ -42,7 +42,7 @@
 
 struct server server;
 
-static void init_event_handlers(struct server *server);
+static void setup_event_handlers(struct server *server);
 static void init_lists(struct server *server);
 static void init_timers(struct server *server);
 static void init_lua_api(struct server *server);
@@ -219,7 +219,7 @@ static void init_tablet_v2(struct server *server) {
     server->tablet_v2 = wlr_tablet_v2_create(server->wl_display);
 }
 
-static void init_event_handlers(struct server *server)
+static void setup_event_handlers(struct server *server)
 {
     init_output_management(server);
 
@@ -436,35 +436,17 @@ static void _async_handler_function(struct uv_async_s *arg) {
     free(data);
 }
 
-int setup_server(struct server *server)
-{
-    server->uv_loop = uv_default_loop();
-
-    uv_async_init(uv_default_loop(), &server->async_handler,
-            _async_handler_function);
-
-    /* If we don't provide a renderer, autocreate makes a GLES2 renderer for us.
-     * The renderer is responsible for defining the various pixel formats it
-     * supports for shared memory, this configures that for clients. */
-    server->renderer = wlr_renderer_autocreate(server->backend);
-
-    wlr_renderer_init_wl_display(server->renderer, server->wl_display);
-
-    server->allocator =
-        wlr_allocator_autocreate(server->backend, server->renderer);
-
-    /* This creates some hands-off wlroots interfaces. The compositor is
-     * necessary for clients to allocate surfaces and the data device manager
-     * handles the clipboard. Each of these wlroots interfaces has room for you
-     * to dig your fingers in and play with their behavior if you want. Note that
-     * the clients cannot set the selection directly without compositor approval,
-     * see the setsel() function. */
-
+/* This creates some hands-off wlroots interfaces. The compositor is
+ * necessary for clients to allocate surfaces and the data device manager
+ * handles the clipboard. Each of these wlroots interfaces has room for you
+ * to dig your fingers in and play with their behavior if you want. Note that
+ * the clients cannot set the selection directly without compositor approval,
+ * see the setsel() function. */
+static void setup_wayland_interfaces(struct server *server) {
     server->compositor =
         wlr_compositor_create(server->wl_display, WL_COMPOSITOR_VERSION, server->renderer);
 
     wlr_subcompositor_create(server->wl_display);
-
     wlr_export_dmabuf_manager_v1_create(server->wl_display);
     wlr_screencopy_manager_v1_create(server->wl_display);
     wlr_data_control_manager_v1_create(server->wl_display);
@@ -472,53 +454,11 @@ int setup_server(struct server *server)
     wlr_gamma_control_manager_v1_create(server->wl_display);
     wlr_primary_selection_v1_device_manager_create(server->wl_display);
     wlr_viewporter_create(server->wl_display);
-    // TODO: do we still need that?
-    // wlr_idle_create(server->wl_display);
     wlr_idle_inhibit_v1_create(server->wl_display);
-
     wlr_xdg_output_manager_v1_create(server->wl_display, server->output_layout);
+}
 
-    /* Set up the xdg-shell. The xdg-shell is a
-     * Wayland protocol which is used for application windows. For more
-     * detail on shells, refer to the article:
-     *
-     * https://drewdevault.com/2018/07/29/Wayland-shells.html
-     */
-
-    server->input_inhibitor_mgr =
-        wlr_input_inhibit_manager_create(server->wl_display);
-
-    /* setup virtual pointer manager*/
-    server->virtual_pointer_mgr =
-        wlr_virtual_pointer_manager_v1_create(server->wl_display);
-
-    /* setup virtual keyboard manager */
-    server->virtual_keyboard_mgr =
-        wlr_virtual_keyboard_manager_v1_create(server->wl_display);
-
-    /* setup relative pointer manager */
-    server->relative_pointer_mgr =
-        wlr_relative_pointer_manager_v1_create(server->wl_display);
-    /* wl_signal_add(&server.virtual_keyboard_mgr->events.new_virtual_keyboard,
-     * &new_virtual_keyboard); */
-    init_event_handlers(server);
-
-    /*
-     * Configures a seat, which is a single "seat" at which a user sits and
-     * operates the computer. This conceptually includes up to one keyboard,
-     * pointer, touch, and drawing tablet device. We also rig up a listener to
-     * let us know when new input devices are available on the backend.
-     */
-    server->input_manager = create_input_manager();
-    struct seat *seat = create_seat("seat0");
-    g_ptr_array_add(server->input_manager->seats, seat);
-
-    server->output_mgr = wlr_output_manager_v1_create(server->wl_display);
-    wl_signal_add(&server->output_mgr->events.apply, &server->output_mgr_apply);
-    wl_signal_add(&server->output_mgr->events.test, &server->output_mgr_test);
-
-    server->tablet_v2 = wlr_tablet_v2_create(server->wl_display);
-
+static void setup_scene_graph(struct server *server) {
     server->scene = wlr_scene_create();
     struct wlr_scene *server_scene = server->scene;
     server->scene_background = wlr_scene_tree_create(&server_scene->tree);
@@ -526,16 +466,62 @@ int setup_server(struct server *server)
     server->scene_floating = wlr_scene_tree_create(&server_scene->tree);
     server->scene_popups = wlr_scene_tree_create(&server_scene->tree);
     server->scene_overlay = wlr_scene_tree_create(&server_scene->tree);
+}
 
-    server->new_surface.notify = server_handle_new_surface;
-    wl_signal_add(&server->compositor->events.new_surface, &server->new_surface);
+static void setup_input_managers(struct server *server) {
+    server->input_inhibitor_mgr = wlr_input_inhibit_manager_create(server->wl_display);
+    server->virtual_pointer_mgr = wlr_virtual_pointer_manager_v1_create(server->wl_display);
+    server->virtual_keyboard_mgr = wlr_virtual_keyboard_manager_v1_create(server->wl_display);
+    server->relative_pointer_mgr = wlr_relative_pointer_manager_v1_create(server->wl_display);
+    // Uncomment and implement if necessary:
+    // wl_signal_add(&server->virtual_keyboard_mgr->events.new_virtual_keyboard, &new_virtual_keyboard);
 
+    server->tablet_v2 = wlr_tablet_v2_create(server->wl_display);
+}
+
+static void setup_output_management(struct server *server) {
+    server->output_mgr = wlr_output_manager_v1_create(server->wl_display);
+    wl_signal_add(&server->output_mgr->events.apply, &server->output_mgr_apply);
+    wl_signal_add(&server->output_mgr->events.test, &server->output_mgr_test);
+}
+
+
+static void initialize_renderer_and_allocator(struct server *server) {
+    server->renderer = wlr_renderer_autocreate(server->backend);
+    wlr_renderer_init_wl_display(server->renderer, server->wl_display);
+    server->allocator = wlr_allocator_autocreate(server->backend, server->renderer);
+}
+
+static void setup_seat(struct server *server) {
+    server->input_manager = create_input_manager();
+    struct seat *seat = create_seat("seat0");
+    g_ptr_array_add(server->input_manager->seats, seat);
 #ifdef JAPOKWM_HAS_XWAYLAND
     init_xwayland(server->wl_display, seat);
 #endif
+}
+
+static void setup_compositor_events(struct server *server) {
+    server->new_surface.notify = server_handle_new_surface;
+    wl_signal_add(&server->compositor->events.new_surface, &server->new_surface);
+}
+
+int setup_server(struct server *server) {
+    server->uv_loop = uv_default_loop();
+    uv_async_init(uv_default_loop(), &server->async_handler, _async_handler_function);
+
+    initialize_renderer_and_allocator(server);
+    setup_wayland_interfaces(server);
+    setup_input_managers(server);
+    setup_event_handlers(server);
+    setup_seat(server);
+    setup_output_management(server);
+    setup_scene_graph(server);
+    setup_compositor_events(server);
 
     return 0;
 }
+
 
 int start_server(char *startup_cmd) {
     // Attempt to set up the server. If this fails, report the error and exit.
