@@ -36,18 +36,31 @@ Japokwm is a dynamic tiling Wayland compositor that makes it a breeze to create 
 - Create any layout you want with a 3-dimensional Array:
   ![Edit Layout](edit_layout.gif)
 
-## Building
-Run:
-```
-meson build
-cd build
-meson compile
-meson install
-```
-now you can execute japokwm:
-```
-japokwm
-```
+🚀 **Get Ready to Elevate Your Desktop Experience!** 🚀
+
+Follow these simple steps to supercharge your desktop with the amazing Japokw, window manager:
+
+1. 🏗️ **Building JapokWM** 🏗️
+   - First, unleash the power of Japokwm by building it. Execute the following commands:
+   
+     ```sh
+     meson build
+     cd build
+     meson compile
+     meson install
+     ```
+   
+2. ✨ **Get Ready for the Magic!** ✨
+   - Now that Japokwm is all set up, get ready for an incredible desktop transformation!
+
+3. 🪄 **Unleash Japokwm** 🪄
+   - The moment you've been waiting for! Simply type:
+   
+     ```sh
+     japokwm
+     ```
+
+And there you have it! 🎉 JapokWM will take your desktop experience to the next level with its powerful features and sleek design. Enjoy a whole new world of productivity and aesthetics! 🌟🖥️💯
 
 ## Distribution Packages 📦
 [AUR](https://aur.archlinux.org/packages/japokwm-git) (May be out of Date, Git is better maintained 🔄)
