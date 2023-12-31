@@ -47,10 +47,6 @@ typedef GPtrArray GPtrArray2D;
 #define LAYER_SHELL_VERSION 4
 #define XDG_SHELL_VERSION 2
 
-#define foreach(item, array)\
-    for(int keep = 1, count = 0, size = LENGTH(array); keep && count < size; keep = 1, count++)\
-        for(item = array[count]; keep; keep = 0)\
-
 extern struct lua_State *L;
 
 bool dir_exists(const char *path);
