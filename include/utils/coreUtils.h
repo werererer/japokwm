@@ -148,7 +148,9 @@ void *get_relative_item_in_composed_list(GPtrArray *arrays, int i, int j);
 int exec(const char *cmd);
 bool is_approx_equal(double a, double b, double error_range);
 
+// Converts a Lua table index (1-based) to a C array index (0-based).
 int lua_idx_to_c_idx(int lua_idx);
+// Converts a C array index (0-based) to a Lua table index (1-based).
 int c_idx_to_lua_idx(int c_idx);
 
 int scale_percent_to_integer(float percent);
