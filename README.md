@@ -31,9 +31,6 @@ Japokwm is a dynamic tiling Wayland compositor that makes it a breeze to create 
 
 - [Features](#features)
 - [Installation](#installation)
-  - [Building Japokwm](#building-japokwm)
-  - [Getting Ready](#getting-ready)
-  - [Launching Japokwm](#launching-japokwm)
 - [Distribution Packages](#distribution-packages)
 - [Challenges and Improvements](#challenges-and-improvements)
 - [TODO List](#todo-list)
