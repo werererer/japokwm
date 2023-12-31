@@ -1,4 +1,4 @@
-# japokwm <img src="japokwm_logo.png" width="50" height="50">
+# Japokwm <img src="japokwm_logo.png" width="50" height="50">
 [![CircleCI](https://github.com/werererer/japokwm/actions/workflows/Test.yml/badge.svg)](https://github.com/werererer/japokwm/actions/workflows/Test.yml)
 
 😃 Ready to show your window manager who's in charge?
