@@ -49,13 +49,11 @@ now you can execute japokwm:
 japokwm
 ```
 
+## Distribution Packages 📦
+[AUR](https://aur.archlinux.org/packages/japokwm-git) (May be out of Date, Git is better maintained 🔄)
 
-## Distribution Packages
-  [AUR](https://aur.archlinux.org/packages/japokwm-git) (May be out of Date, Git is better maintained
-
-## Known limitations and issues
-With version 0.3 I consider this project to be in it's beta stage that means the focus is now on fixing bugs and less about adding new features. In this stage bugs still may occur but way less than in the alpha stage (If you find them please report them here)
-
+## Known Challenges and Opportunities for Improvement
+Since version 0.3, this project has entered its beta stage 🐞, where the primary focus is on bug fixes 🛠️. While some bugs may still emerge, they are far less common than in the alpha stage. If you come across any issues, please report them here, and together we'll make Japokwm even better! 🚀
 ## TODO
 polish program and syntax for configuring
 
