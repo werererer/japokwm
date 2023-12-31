@@ -177,50 +177,75 @@ static int init_backend(struct server *server) {
 }
 
 static void init_xdg_shell(struct server *server) {
-    server->xdg_shell = wlr_xdg_shell_create(server->wl_display, XDG_SHELL_VERSION);
+    /* Use xdg_decoration protocol to negotiate server-side decorations */
+    server->xdeco_mgr = wlr_xdg_decoration_manager_v1_create(server->wl_display);
+    LISTEN(&server->xdeco_mgr->events.new_toplevel_decoration, &server->new_xdeco,
+            createxdeco);
+
+    server->xdg_shell =
+        wlr_xdg_shell_create(server->wl_display, XDG_SHELL_VERSION);
+    // remove csd(client side decorations) completely from xdg based windows
     wlr_server_decoration_manager_set_default_mode(
-        wlr_server_decoration_manager_create(server->wl_display),
-        WLR_SERVER_DECORATION_MANAGER_MODE_SERVER);
+            wlr_server_decoration_manager_create(server->wl_display),
+            WLR_SERVER_DECORATION_MANAGER_MODE_SERVER);
     LISTEN(&server->xdg_shell->events.new_surface, &server->new_xdg_surface,
-           create_notify_xdg);
+            create_notify_xdg);
 }
 
 static void init_layer_shell(struct server *server) {
     server->layer_shell = wlr_layer_shell_v1_create(server->wl_display, LAYER_SHELL_VERSION);
     LISTEN(&server->layer_shell->events.new_surface,
-           &server->new_layer_shell_surface, create_notify_layer_shell);
+            &server->new_layer_shell_surface, create_notify_layer_shell);
 }
 
 static void init_output_management(struct server *server) {
     LISTEN(&server->backend->events.new_output, &server->new_output,
-           create_monitor);
+            create_monitor);
     server->output_mgr = wlr_output_manager_v1_create(server->wl_display);
     LISTEN(&server->output_mgr->events.apply, &server->output_mgr_apply,
-           handle_output_mgr_apply);
+            handle_output_mgr_apply);
     LISTEN(&server->output_mgr->events.test, &server->output_mgr_test,
-           handle_output_mgr_test);
+            handle_output_mgr_test);
 }
 
 static void init_pointer_constraints(struct server *server) {
-    server->pointer_constraints = wlr_pointer_constraints_v1_create(server->wl_display);
+    server->pointer_constraints =
+        wlr_pointer_constraints_v1_create(server->wl_display);
     LISTEN(&server->pointer_constraints->events.new_constraint,
-           &server->new_pointer_constraint, handle_new_pointer_constraint);
+            &server->new_pointer_constraint, handle_new_pointer_constraint);
 }
 
-static void init_event_handlers(struct server *server) {
-    // Initialize XDG Shell and related decorations
-    init_xdg_shell(server);
+// static void init_event_handlers(struct server *server) {
+//     // Initialize XDG Shell and related decorations
+//     init_xdg_shell(server);
+//
+//     // Initialize Layer Shell for creating layers
+//     init_layer_shell(server);
+//
+//     // Setup output management
+//     init_output_management(server);
+//
+//     // Setup pointer constraints
+//     init_pointer_constraints(server);
+//
+//     // Initialize other protocols as needed...
+// }
+//
 
-    // Initialize Layer Shell for creating layers
-    init_layer_shell(server);
+static void init_tablet_v2(struct server *server) {
+    server->tablet_v2 = wlr_tablet_v2_create(server->wl_display);
+}
 
-    // Setup output management
+static void init_event_handlers(struct server *server)
+{
     init_output_management(server);
 
-    // Setup pointer constraints
-    init_pointer_constraints(server);
+    init_xdg_shell(server);
+    init_layer_shell(server);
 
-    // Initialize other protocols as needed...
+    // input methods
+    init_pointer_constraints(server);
+    init_tablet_v2(server);
 }
 
 static void finalize_event_handlers(struct server *server) {
