@@ -40,7 +40,7 @@ Japokwm is a dynamic tiling Wayland compositor that makes it a breeze to create 
 
 Follow these simple steps to supercharge your desktop with the amazing Japokw, window manager:
 
-1. 🏗️ **Building JapokWM** 🏗️
+1. 🏗️ **Building Japokwm** 🏗️
    - First, unleash the power of Japokwm by building it. Execute the following commands:
    
      ```sh
