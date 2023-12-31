@@ -1,5 +1,25 @@
-# Japokwm <img src="japokwm_logo.png" width="50" height="50">
-[![CircleCI](https://github.com/werererer/japokwm/actions/workflows/Test.yml/badge.svg)](https://github.com/werererer/japokwm/actions/workflows/Test.yml)
+<div align="center">
+  <h1>Japokwm</h1>
+  <p>
+    <a href="https://github.com/werererer/japokwm/actions?query=workflow%3ATest+branch%3Amaster">
+      <img alt="Build Status" src="https://github.com/werererer/japokwm/actions/workflows/Test.yml/badge.svg" />
+    </a>
+  </p>
+</div>
+
+<div align="center">
+  <p>
+    <img src="japokwm_logo.png" align="center" alt="Logo" width="100" height="100" />
+  </p>
+  <p>
+    Japokwm is a dynamic tiling Wayland compositor that empowers you to create stunning layouts with ease.
+  </p>
+  <p>
+    <i>
+      Logo designed by <a href="https://github.com/werererer">@werererer</a>
+    </i>
+  </p>
+</div>
 
 😃 Ready to show your window manager who's in charge?
 
