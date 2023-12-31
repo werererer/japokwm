@@ -25,7 +25,6 @@
 #include "client.h"
 #include "command.h"
 #include "monitor.h"
-#include "root.h"
 
 static int ipc_socket = -1;
 static struct sockaddr_un *ipc_sockaddr = NULL;

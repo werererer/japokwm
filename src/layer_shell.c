@@ -17,6 +17,10 @@ void create_notify_layer_shell(struct wl_listener *listener, void *data)
 {
     struct wlr_layer_surface_v1 *wlr_layer_surface = data;
 
+    printf("create layershell\n");
+    printf("create layershell\n");
+    printf("create layershell\n");
+    printf("create layershell\n");
     if (!wlr_layer_surface->output) {
         struct monitor *m = server_get_selected_monitor();
         wlr_layer_surface->output = m->wlr_output;
