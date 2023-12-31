@@ -215,23 +215,6 @@ static void init_pointer_constraints(struct server *server) {
             &server->new_pointer_constraint, handle_new_pointer_constraint);
 }
 
-// static void init_event_handlers(struct server *server) {
-//     // Initialize XDG Shell and related decorations
-//     init_xdg_shell(server);
-//
-//     // Initialize Layer Shell for creating layers
-//     init_layer_shell(server);
-//
-//     // Setup output management
-//     init_output_management(server);
-//
-//     // Setup pointer constraints
-//     init_pointer_constraints(server);
-//
-//     // Initialize other protocols as needed...
-// }
-//
-
 static void init_tablet_v2(struct server *server) {
     server->tablet_v2 = wlr_tablet_v2_create(server->wl_display);
 }
