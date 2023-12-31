@@ -25,7 +25,8 @@
 
 Japokwm is a dynamic tiling Wayland compositor that makes it a breeze to create custom layouts with a simple configuration. 🚀 You determine where the windows should go, and Japokwm handles the rest, allowing you to sit back, relax, and enjoy the view. 🌟
 
---- Join the official subreddit www.reddit.com/r/japokwm or the [Discord channel](https://discord.gg/WpGjAU393M). ---
+✨ **Join the japokwm Community!**  
+🌐 [Subreddit](https://www.reddit.com/r/japokwm) | 💬 [Discord](https://discord.gg/WpGjAU393M)
 
 # Table of contents
 
