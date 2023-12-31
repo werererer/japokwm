@@ -342,50 +342,57 @@ static void run_event_loop() {
     }
 }
 
-static void run(char *startup_cmd) {
-    pid_t startup_pid = -1;
-
-    /* Add a Unix socket to the Wayland display. */
-    const char *socket = wl_display_add_socket_auto(server.wl_display);
-
-    if (!socket)
-        printf("startup: display_add_socket_auto\n");
-
-    /* Set the WAYLAND_DISPLAY environment variable to our socket and run the
-     * startup command if requested. */
-    setenv("WAYLAND_DISPLAY", socket, 1);
-
-    /* Start the backend. This will enumerate outputs and inputs, become the DRM
-     * master, etc */
-    if (!wlr_backend_start(server.backend)) {
-        printf("Failed to start backend");
-        wlr_backend_destroy(server.backend);
-        return;
+static void initialize_wayland_display(struct server *server) {
+    const char *socket = wl_display_add_socket_auto(server->wl_display);
+    if (!socket) {
+        fprintf(stderr, "startup: display_add_socket_auto failed\n");
+        exit(EXIT_FAILURE);
     }
+    setenv("WAYLAND_DISPLAY", socket, 1);
+}
 
-    /* Now that outputs are initialized, choose initial selMon based on
-     * cursor position, and set default cursor image */
-    update_monitor_geometries();
+static void start_backend(struct server *server) {
+    if (!wlr_backend_start(server->backend)) {
+        fprintf(stderr, "Failed to start backend\n");
+        wlr_backend_destroy(server->backend);
+        exit(EXIT_FAILURE);
+    }
+}
+
+static void initialize_cursor(struct server *server) {
     struct seat *seat = input_manager_get_default_seat();
     struct cursor *cursor = seat->cursor;
-    struct monitor *m =
-        xy_to_monitor(cursor->wlr_cursor->x, cursor->wlr_cursor->y);
+    struct monitor *m = xy_to_monitor(cursor->wlr_cursor->x, cursor->wlr_cursor->y);
     focus_monitor(m);
 
     /* XXX hack to get cursor to display in its initial location (100, 100)
      * instead of (0, 0) and then jumping.  still may not be fully
      * initialized, as the image/coordinates are not transformed for the
      * monitor when displayed here */
-    wlr_cursor_warp_closest(seat->cursor->wlr_cursor, NULL, cursor->wlr_cursor->x,
-            cursor->wlr_cursor->y);
-    wlr_cursor_set_xcursor(cursor->wlr_cursor, seat->cursor->xcursor_mgr,
-            "left_ptr");
+    wlr_cursor_warp_closest(seat->cursor->wlr_cursor, NULL, cursor->wlr_cursor->x, cursor->wlr_cursor->y);
+    wlr_cursor_set_xcursor(cursor->wlr_cursor, seat->cursor->xcursor_mgr, "left_ptr");
+}
+
+static pid_t execute_startup_command(const char *startup_cmd) {
+    pid_t pid = fork();
+    if (pid == 0) { // Child process
+        execl("/bin/sh", "/bin/sh", "-c", startup_cmd, (void *)NULL);
+        fprintf(stderr, "Failed to execute startup command\n");
+        exit(EXIT_FAILURE);
+    }
+    return pid;
+}
+
+static void run(char *startup_cmd) {
+    pid_t startup_pid = -1;
+
+    initialize_wayland_display(&server);
+    start_backend(&server);
+    update_monitor_geometries();
+    initialize_cursor(&server);
 
     if (startup_cmd) {
-        startup_pid = fork();
-        if (startup_pid == 0) {
-            execl("/bin/sh", "/bin/sh", "-c", startup_cmd, (void *)NULL);
-        }
+        startup_pid = execute_startup_command(startup_cmd);
     }
 
     run_event_loop();
