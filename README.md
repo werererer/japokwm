@@ -1,7 +1,11 @@
 # japokwm <img src="japokwm_logo.png" width="50" height="50">
 [![CircleCI](https://github.com/werererer/japokwm/actions/workflows/Test.yml/badge.svg)](https://github.com/werererer/japokwm/actions/workflows/Test.yml)
 
-Japokwm is a dynamic tiling wayland compositor where you are able to create new layouts without the hassle of editing the source code. You just give it information about where windows go and it will handle stuff such as resizing all by itself --- Join the official subreddit www.reddit.com/r/japokwm or the [Discord channel](https://discord.gg/WpGjAU393M).
+"😫 Tired of your window manager playing boss with your windows?
+
+Japokwm is a dynamic tiling Wayland compositor that makes it a breeze to create custom layouts with a simple configuration. 🪄 You define where windows should be, and Japokwm handles the rest, so you can sit back and relax. 😌"
+
+--- Join the official subreddit www.reddit.com/r/japokwm or the [Discord channel](https://discord.gg/WpGjAU393M). ---
 ## Features:
 - Gaps!
 - Damage Tracking
