@@ -210,20 +210,31 @@ static int check_socket_errors(uint32_t mask, struct ipc_client *client) {
     return 0; // Return 0 to indicate no error
 }
 
+
+static int has_socket_errors(uint32_t mask, struct ipc_client *client) {
+    return check_socket_errors(mask, client) ? 1 : 0;
+}
+
+static int read_client_data(int client_fd, struct ipc_client *client) {
+    return get_available_read_data(client_fd, client) ? 1 : 0;
+}
+
+static int process_client_request(int client_fd, struct ipc_client *client) {
+    return (client->pending_length > 0) ? handle_client_payload(client) : read_client_header(client_fd, client);
+}
+
 int ipc_client_handle_readable(int client_fd, uint32_t mask, void *data) {
     struct ipc_client *client = data;
 
-    if (check_socket_errors(mask, client)) {
+    if (has_socket_errors(mask, client)) {
         return 0;
     }
 
-    if (get_available_read_data(client_fd, client)) {
+    if (read_client_data(client_fd, client)) {
         return 0;
     }
 
-    return (client->pending_length > 0) ? 
-            handle_client_payload(client) : 
-            read_client_header(client_fd, client);
+    return process_client_request(client_fd, client);
 }
 
 void ipc_send_event(const char *json_string, enum ipc_command_type event) {
