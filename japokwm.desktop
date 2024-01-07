@@ -2,4 +2,9 @@
 Name=Japokwm
 Comment=A Wayland compositor based on wlroots and dwl
 Exec=japokwm
+Icon=./japokwm_logo.png
 Type=Application
+Categories=Utility;System;
+Keywords=wayland;compositor;wlroots;dwl;
+
+Version=1.1
