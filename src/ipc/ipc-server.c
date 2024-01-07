@@ -18,8 +18,8 @@
 #include <wayland-server-core.h>
 #include <wlr/util/log.h>
 
-#include "ipc-json.h"
-#include "ipc-server.h"
+#include "ipc/ipc-json.h"
+#include "ipc/ipc-server.h"
 #include "server.h"
 #include "tag.h"
 #include "client.h"
@@ -30,52 +30,14 @@ static int ipc_socket = -1;
 static struct sockaddr_un *ipc_sockaddr = NULL;
 static GPtrArray *ipc_client_list;
 
-static const char ipc_magic[] = {'i', '3', '-', 'i', 'p', 'c'};
-
-#define IPC_HEADER_SIZE (sizeof(ipc_magic) + 8)
-
-#define event_mask(ev) (1 << (ev & 0x7F))
-
-enum ipc_command_type {
-    IPC_COMMAND = 0,
-    IPC_GET_TAGS = 1,
-    IPC_SUBSCRIBE = 2,
-    IPC_GET_TREE = 4,
-    IPC_GET_BAR_CONFIG = 6,
-
-    // Event Types
-    IPC_EVENT_TAG = ((1<<31) | 0),
-    IPC_EVENT_MODE = ((1<<31) | 2),
-    IPC_EVENT_WINDOW = ((1<<31) | 3),
-    IPC_EVENT_BARCONFIG_UPDATE = ((1<<31) | 4),
-    IPC_EVENT_BINDING = ((1<<31) | 5),
-    IPC_EVENT_SHUTDOWN = ((1<<31) | 6),
-    IPC_EVENT_TICK = ((1<<31) | 7),
-};
-;
-
-struct ipc_client {
-    struct wl_event_source *event_source;
-    struct wl_event_source *writable_event_source;
-    int fd;
-    enum ipc_command_type subscribed_events;
-    size_t write_buffer_len;
-    size_t write_buffer_size;
-    char *write_buffer;
-    // The following are for storing data between event_loop calls
-    uint32_t pending_length;
-    enum ipc_command_type pending_type;
-};
+// Macro to generate a bitmask for an event. 
+// It shifts 1 to the left by the lower 7 bits of the event value.
 
 struct sockaddr_un *ipc_user_sockaddr(void);
 int ipc_handle_connection(int fd, uint32_t mask, void *data);
-int ipc_client_handle_readable(int client_fd, uint32_t mask, void *data);
 int ipc_client_handle_writable(int client_fd, uint32_t mask, void *data);
 void ipc_client_disconnect(struct ipc_client *client);
-void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_length,
-    enum ipc_command_type payload_type);
-bool ipc_send_reply(struct ipc_client *client, enum ipc_command_type payload_type,
-    const char *payload, uint32_t payload_length);
+void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_length, enum ipc_command_type payload_type);
 
 void ipc_init(struct wl_event_loop *wl_event_loop) {
     ipc_socket = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -181,36 +143,8 @@ int ipc_handle_connection(int fd, uint32_t mask, void *data) {
 
 // Forward declaration of helper functions
 static int read_client_header(int client_fd, struct ipc_client *client);
-static int handle_client_payload(struct ipc_client *client);
-static int check_socket_errors(uint32_t mask, struct ipc_client *client);
 static int get_available_read_data(int client_fd, struct ipc_client *client);
 
-
-int ipc_client_handle_readable(int client_fd, uint32_t mask, void *data) {
-    struct ipc_client *client = data;
-
-    if (check_socket_errors(mask, client)) {
-        return 0;
-    }
-
-    if (get_available_read_data(client_fd, client)) {
-        return 0;
-    }
-
-    return (client->pending_length > 0) ? 
-            handle_client_payload(client) : 
-            read_client_header(client_fd, client);
-}
-
-static int check_socket_errors(uint32_t mask, struct ipc_client *client) {
-    if (mask & (WL_EVENT_ERROR | WL_EVENT_HANGUP)) {
-        printf("Client %d disconnected%s\n", client->fd, 
-               (mask & WL_EVENT_ERROR) ? " with error" : "");
-        ipc_client_disconnect(client);
-        return 1; // Return 1 to indicate an error occurred
-    }
-    return 0; // Return 0 to indicate no error
-}
 
 static int get_available_read_data(int client_fd, struct ipc_client *client) {
     int read_available;
@@ -246,7 +180,7 @@ static int read_client_header(int client_fd, struct ipc_client *client) {
     return handle_client_payload(client);
 }
 
-static int handle_client_payload(struct ipc_client *client) {
+int handle_client_payload(struct ipc_client *client) {
     if (client->pending_length <= 0) {
         return 0;
     }
@@ -258,24 +192,6 @@ static int handle_client_payload(struct ipc_client *client) {
     ipc_client_handle_command(client, pending_length, pending_type);
 
     return 0;
-}
-
-static void ipc_send_event(const char *json_string, enum ipc_command_type event) {
-    struct ipc_client *client;
-    for (size_t i = 0; i < ipc_client_list->len; i++) {
-        client = g_ptr_array_index(ipc_client_list, i);
-        if ((client->subscribed_events & event_mask(event)) == 0) {
-            continue;
-        }
-        if (!ipc_send_reply(client, event, json_string,
-                (uint32_t)strlen(json_string))) {
-            printf("Unable to send reply to IPC client\n");
-            /* ipc_send_reply destroys client on error, which also
-             * removes it from the list, so we need to process
-             * current index again */
-            i--;
-        }
-    }
 }
 
 void ipc_event_tag() {
@@ -406,19 +322,19 @@ void handle_ipc_subscribe(struct ipc_client *client, char *buf, enum ipc_command
     for (size_t i = 0; i < json_object_array_length(request); i++) {
         const char *event_type = json_object_get_string(json_object_array_get_idx(request, i));
         if (strcmp(event_type, "workspace") == 0) {
-            client->subscribed_events |= event_mask(IPC_EVENT_TAG);
+            client->subscribed_events |= CREATE_EVENT_BITMASK(IPC_EVENT_TAG);
         } else if (strcmp(event_type, "barconfig_update") == 0) {
-            client->subscribed_events |= event_mask(IPC_EVENT_BARCONFIG_UPDATE);
+            client->subscribed_events |= CREATE_EVENT_BITMASK(IPC_EVENT_BARCONFIG_UPDATE);
         } else if (strcmp(event_type, "mode") == 0) {
-            client->subscribed_events |= event_mask(IPC_EVENT_MODE);
+            client->subscribed_events |= CREATE_EVENT_BITMASK(IPC_EVENT_MODE);
         } else if (strcmp(event_type, "shutdown") == 0) {
-            client->subscribed_events |= event_mask(IPC_EVENT_SHUTDOWN);
+            client->subscribed_events |= CREATE_EVENT_BITMASK(IPC_EVENT_SHUTDOWN);
         } else if (strcmp(event_type, "window") == 0) {
-            client->subscribed_events |= event_mask(IPC_EVENT_WINDOW);
+            client->subscribed_events |= CREATE_EVENT_BITMASK(IPC_EVENT_WINDOW);
         } else if (strcmp(event_type, "binding") == 0) {
-            client->subscribed_events |= event_mask(IPC_EVENT_BINDING);
+            client->subscribed_events |= CREATE_EVENT_BITMASK(IPC_EVENT_BINDING);
         } else if (strcmp(event_type, "tick") == 0) {
-            client->subscribed_events |= event_mask(IPC_EVENT_TICK);
+            client->subscribed_events |= CREATE_EVENT_BITMASK(IPC_EVENT_TICK);
             is_tick = true;
         } else {
             const char msg[] = "{\"success\": false}";
@@ -523,59 +439,21 @@ static void dispatch_ipc_command(struct ipc_client *client, char *buf,
     }
 }
 
-// Refactored ipc_client_handle_command function
-void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_length, enum ipc_command_type payload_type) {
+static char* receive_and_verify_payload(struct ipc_client *client, uint32_t payload_length) {
     char *buf = receive_payload(client, payload_length);
     if (buf == NULL) {
+        printf("Payload reception failed\n");
         ipc_client_disconnect(client);
-        return;
+    }
+    return buf;
+}
+
+void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_length, enum ipc_command_type payload_type) {
+    char *buf = receive_and_verify_payload(client, payload_length);
+    if (buf == NULL) {
+        return; // The error is already handled in receive_and_verify_payload
     }
 
     dispatch_ipc_command(client, buf, payload_length, payload_type);
     free(buf);
-}
-
-
-bool ipc_send_reply(struct ipc_client *client, enum ipc_command_type payload_type,
-        const char *payload, uint32_t payload_length) {
-    assert(payload);
-
-    char data[IPC_HEADER_SIZE];
-
-    memcpy(data, ipc_magic, sizeof(ipc_magic));
-    memcpy(data + sizeof(ipc_magic), &payload_length, sizeof(payload_length));
-    memcpy(data + sizeof(ipc_magic) + sizeof(payload_length), &payload_type, sizeof(payload_type));
-
-    while (client->write_buffer_len + IPC_HEADER_SIZE + payload_length >=
-                 client->write_buffer_size) {
-        client->write_buffer_size *= 2;
-    }
-
-    if (client->write_buffer_size > 4e6) { // 4 MB
-        printf("Client write buffer too big (%zu), disconnecting client\n",
-                client->write_buffer_size);
-        ipc_client_disconnect(client);
-        return false;
-    }
-
-    char *new_buffer = realloc(client->write_buffer, client->write_buffer_size);
-    if (!new_buffer) {
-        printf("Unable to reallocate ipc client write buffer\n");
-        ipc_client_disconnect(client);
-        return false;
-    }
-    client->write_buffer = new_buffer;
-
-    memcpy(client->write_buffer + client->write_buffer_len, data, IPC_HEADER_SIZE);
-    client->write_buffer_len += IPC_HEADER_SIZE;
-    memcpy(client->write_buffer + client->write_buffer_len, payload, payload_length);
-    client->write_buffer_len += payload_length;
-
-    if (!client->writable_event_source) {
-        client->writable_event_source = wl_event_loop_add_fd(
-                server.wl_event_loop, client->fd, WL_EVENT_WRITABLE,
-                ipc_client_handle_writable, client);
-    }
-
-    return true;
 }

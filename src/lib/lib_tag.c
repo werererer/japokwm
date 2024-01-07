@@ -19,7 +19,7 @@
 #include "lib/lib_bitset.h"
 #include "lib/lib_focus_set.h"
 #include "lib/lib_direction.h"
-#include "ipc-server.h"
+#include "ipc/ipc-server.h"
 #include "root.h"
 
 static const struct luaL_Reg tag_meta[] =

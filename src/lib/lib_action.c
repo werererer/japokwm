@@ -10,7 +10,7 @@
 #include <wlr/backend/multi.h>
 
 #include "container.h"
-#include "ipc-server.h"
+#include "ipc/ipc-server.h"
 #include "list_sets/container_stack_set.h"
 #include "monitor.h"
 #include "popup.h"

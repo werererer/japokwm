@@ -1,7 +1,7 @@
 #include "lib/lib_options.h"
 
 #include "color.h"
-#include "ipc-server.h"
+#include "ipc/ipc-server.h"
 #include "keybinding.h"
 #include "lib/lib_color.h"
 #include "monitor.h"

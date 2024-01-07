@@ -27,7 +27,7 @@
 #include <wlr/types/wlr_xdg_decoration_v1.h>
 #include <wlr/types/wlr_xdg_output_v1.h>
 
-#include "ipc-server.h"
+#include "ipc/ipc-server.h"
 #include "keybinding.h"
 #include "layer_shell.h"
 #include "monitor.h"
@@ -276,6 +276,7 @@ void init_server() {
         return;
     }
 
+    server.ipc_socket = IPC_SOCKET_DISCONNECTED;
     ipc_init(server.wl_event_loop);
 
     /* Creates an output layout, which a wlroots utility for working with an

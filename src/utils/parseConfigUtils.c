@@ -23,7 +23,7 @@
 #include "tag.h"
 #include "rules/rule.h"
 #include "translationLayer.h"
-#include "ipc-server.h"
+#include "ipc/ipc-server.h"
 #include "tagset.h"
 
 static const char *plugin_relative_paths[] = {

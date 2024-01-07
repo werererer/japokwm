@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "server.h"
-#include "ipc-json.h"
+#include "ipc/ipc-json.h"
 
 void test_ipc_json_describe_tagsets()
 {

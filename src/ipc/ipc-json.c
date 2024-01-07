@@ -9,7 +9,7 @@
 #include <string.h>
 #include "json_object.h"
 #include "wlr-layer-shell-unstable-v1-protocol.h"
-#include "ipc-json.h"
+#include "ipc/ipc-json.h"
 #include "server.h"
 #include "container.h"
 #include "client.h"

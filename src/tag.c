@@ -7,7 +7,7 @@
 #include <wlr/types/wlr_cursor.h>
 
 #include "client.h"
-#include "ipc-server.h"
+#include "ipc/ipc-server.h"
 #include "list_sets/container_stack_set.h"
 #include "monitor.h"
 #include "server.h"

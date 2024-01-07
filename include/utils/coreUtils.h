@@ -44,6 +44,9 @@ typedef GPtrArray GPtrArray2D;
 #define LAYER_SHELL_VERSION 4
 #define XDG_SHELL_VERSION 2
 
+// IPC
+#define IPC_SOCKET_DISCONNECTED -1
+
 extern struct lua_State *L;
 
 bool dir_exists(const char *path);

@@ -2,7 +2,7 @@
 
 #include <assert.h>
 
-#include "ipc-server.h"
+#include "ipc/ipc-server.h"
 #include "list_sets/container_stack_set.h"
 #include "server.h"
 #include "utils/coreUtils.h"

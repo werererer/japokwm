@@ -22,8 +22,6 @@ srcs = files(
     'cursor.c',
     'event_handler.c',
     'input_manager.c',
-    'ipc-json.c',
-    'ipc-server.c',
     'keybinding.c',
     'keyboard.c',
     'tablet.c',
@@ -85,6 +83,9 @@ srcs = files(
     'utils/stringUtils.c',
     'utils/writeFile.c',
     'ipc/ipc_server_sway_adapter.c',
+    'ipc/ipc-json.c',
+    'ipc/ipc-server.c',
+    'ipc/ipc.c',
   )
 
 libName = 'japokwm_lib'

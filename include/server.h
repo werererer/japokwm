@@ -15,6 +15,7 @@
 #include <pthread.h>
 #include <wlr/types/wlr_scene.h>
 
+#include "render.h"
 #include "cursor.h"
 #include "layout.h"
 #include "options.h"
@@ -22,7 +23,6 @@
 #include "input_manager.h"
 #include "utils/coreUtils.h"
 #include "bitset/bitset.h"
-#include "render.h"
 
 struct server {
     bool is_running;
@@ -131,6 +131,8 @@ struct server {
 
     // this breaks the reload_config load_config loop
     bool prohibit_reload_config;
+
+    int ipc_socket;
 
     struct container *grab_c;
     enum wlr_edges grabbed_edges;

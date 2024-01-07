@@ -11,7 +11,7 @@
 #include "tile/tileUtils.h"
 #include "utils/coreUtils.h"
 #include "utils/parseConfigUtils.h"
-#include "ipc-server.h"
+#include "ipc/ipc-server.h"
 #include "tag.h"
 #include "scratchpad.h"
 #include "monitor.h"
