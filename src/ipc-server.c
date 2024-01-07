@@ -107,12 +107,6 @@ void ipc_init(struct wl_event_loop *wl_event_loop) {
 
     ipc_sockaddr = ipc_user_sockaddr();
 
-    /* // We want to use socket name set by user, not existing socket from another sway instance. */
-    /* if (getenv("SWAYSOCK") != NULL && access(getenv("SWAYSOCK"), F_OK) == -1) { */
-    /*  strncpy(ipc_sockaddr->sun_path, getenv("SWAYSOCK"), sizeof(ipc_sockaddr->sun_path) - 1); */
-    /*  ipc_sockaddr->sun_path[sizeof(ipc_sockaddr->sun_path) - 1] = 0; */
-    /* } */
-
     unlink(ipc_sockaddr->sun_path);
     if (bind(ipc_socket, (struct sockaddr *)ipc_sockaddr, sizeof(*ipc_sockaddr)) == -1) {
         printf("Unable to bind IPC socket\n");
@@ -201,21 +195,21 @@ int ipc_handle_connection(int fd, uint32_t mask, void *data) {
     return 0;
 }
 
+// Forward declaration of helper functions
+static int read_client_header(int client_fd, struct ipc_client *client);
+static int handle_client_payload(struct ipc_client *client);
+
 int ipc_client_handle_readable(int client_fd, uint32_t mask, void *data) {
     struct ipc_client *client = data;
 
-    if (mask & WL_EVENT_ERROR) {
-        printf("IPC Client socket error, removing client\n");
+    // Check for any errors or hang-ups
+    if ((mask & WL_EVENT_ERROR) || (mask & WL_EVENT_HANGUP)) {
+        printf("Client %d disconnected with error\n", client->fd);
         ipc_client_disconnect(client);
         return 0;
     }
 
-    if (mask & WL_EVENT_HANGUP) {
-        printf("Client %d hung up\n", client->fd);
-        ipc_client_disconnect(client);
-        return 0;
-    }
-
+    // Check if there's data to read
     int read_available;
     if (ioctl(client_fd, FIONREAD, &read_available) == -1) {
         printf("Unable to read IPC socket buffer size\n");
@@ -223,24 +217,17 @@ int ipc_client_handle_readable(int client_fd, uint32_t mask, void *data) {
         return 0;
     }
 
-    // Wait for the rest of the command payload in case the header has already been read
+    // Handle the case where a command is partially read
     if (client->pending_length > 0) {
-        if ((uint32_t)read_available >= client->pending_length) {
-            // Reset pending values.
-            uint32_t pending_length = client->pending_length;
-            enum ipc_command_type pending_type = client->pending_type;
-            client->pending_length = 0;
-            ipc_client_handle_command(client, pending_length, pending_type);
-        }
-        return 0;
+        return handle_client_payload(client);
     }
 
-    if (read_available < (int) IPC_HEADER_SIZE) {
-        return 0;
-    }
+    // Read and process the header
+    return read_client_header(client_fd, client);
+}
 
+static int read_client_header(int client_fd, struct ipc_client *client) {
     uint8_t buf[IPC_HEADER_SIZE];
-    // Should be fully available, because read_available >= IPC_HEADER_SIZE
     ssize_t received = recv(client_fd, buf, IPC_HEADER_SIZE, 0);
     if (received == -1) {
         printf("Unable to receive header from IPC client\n");
@@ -248,22 +235,30 @@ int ipc_client_handle_readable(int client_fd, uint32_t mask, void *data) {
         return 0;
     }
 
+    // Validate the IPC header
     if (memcmp(buf, ipc_magic, sizeof(ipc_magic)) != 0) {
         printf("IPC header check failed\n");
         ipc_client_disconnect(client);
         return 0;
     }
 
+    // Extract and store header information
     memcpy(&client->pending_length, buf + sizeof(ipc_magic), sizeof(uint32_t));
     memcpy(&client->pending_type, buf + sizeof(ipc_magic) + sizeof(uint32_t), sizeof(uint32_t));
 
-    if (read_available - received >= (long)client->pending_length) {
-        // Reset pending values.
-        uint32_t pending_length = client->pending_length;
-        enum ipc_command_type pending_type = client->pending_type;
-        client->pending_length = 0;
-        ipc_client_handle_command(client, pending_length, pending_type);
+    return handle_client_payload(client);
+}
+
+static int handle_client_payload(struct ipc_client *client) {
+    if (client->pending_length <= 0) {
+        return 0;
     }
+
+    // Process the pending command
+    uint32_t pending_length = client->pending_length;
+    enum ipc_command_type pending_type = client->pending_type;
+    client->pending_length = 0;
+    ipc_client_handle_command(client, pending_length, pending_type);
 
     return 0;
 }
