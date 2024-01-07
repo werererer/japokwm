@@ -470,28 +470,36 @@ void handle_ipc_get_bar_config(struct ipc_client *client, char *buf, enum ipc_co
     }
 }
 
-void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_length, enum ipc_command_type payload_type) {
-    if (client == NULL) {
-        return;
+// Function to receive payload
+static char* receive_payload(struct ipc_client *client, uint32_t payload_length) {
+    if (client == NULL || payload_length == 0) {
+        return NULL;
     }
 
     char *buf = malloc(payload_length + 1);
     if (!buf) {
         printf("Unable to allocate IPC payload\n");
-        ipc_client_disconnect(client);
-        return;
+        return NULL;
     }
 
-    if (payload_length > 0) {
-        ssize_t received = recv(client->fd, buf, payload_length, 0);
-        if (received == -1) {
-            printf("Unable to receive payload from IPC client\n");
-            ipc_client_disconnect(client);
-            free(buf);
-            return;
-        }
+    ssize_t received = recv(client->fd, buf, payload_length, 0);
+    if (received == -1) {
+        printf("Unable to receive payload from IPC client\n");
+        free(buf);
+        return NULL;
     }
+
     buf[payload_length] = '\0';
+    return buf;
+}
+
+// Dispatcher function
+static void dispatch_ipc_command(struct ipc_client *client, char *buf,
+                                 uint32_t payload_length,
+                                 enum ipc_command_type payload_type) {
+    if (buf == NULL) {
+        return;
+    }
 
     switch (payload_type) {
         case IPC_COMMAND:
@@ -513,9 +521,20 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
             printf("Unknown IPC command type %x\n", payload_type);
             break;
     }
+}
 
+// Refactored ipc_client_handle_command function
+void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_length, enum ipc_command_type payload_type) {
+    char *buf = receive_payload(client, payload_length);
+    if (buf == NULL) {
+        ipc_client_disconnect(client);
+        return;
+    }
+
+    dispatch_ipc_command(client, buf, payload_length, payload_type);
     free(buf);
 }
+
 
 bool ipc_send_reply(struct ipc_client *client, enum ipc_command_type payload_type,
         const char *payload, uint32_t payload_length) {
