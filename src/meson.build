@@ -84,6 +84,7 @@ srcs = files(
     'utils/parseConfigUtils.c',
     'utils/stringUtils.c',
     'utils/writeFile.c',
+    'ipc/ipc_server_sway_adapter.c',
   )
 
 libName = 'japokwm_lib'
