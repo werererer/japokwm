@@ -294,25 +294,46 @@ static int get_available_read_data(int client_fd, struct ipc_client *client) {
     return 0; // Return 0 to indicate success
 }
 
-static int read_client_header(int client_fd, struct ipc_client *client) {
-    uint8_t buf[IPC_HEADER_SIZE];
-    ssize_t received = recv(client_fd, buf, IPC_HEADER_SIZE, 0);
-    if (received == -1) {
-        printf("Unable to receive header from IPC client\n");
-        ipc_client_disconnect(client);
-        return 0;
+static int receive_header(int client_fd, uint8_t *buf, ssize_t *received) {
+    *received = recv(client_fd, buf, IPC_HEADER_SIZE, 0);
+    if (*received == -1) {
+        perror("Error receiving header from IPC client");
+        return -1;
     }
+    if (*received != IPC_HEADER_SIZE) {
+        fprintf(stderr, "Incomplete header received from IPC client\n");
+        return -1;
+    }
+    return 0;
+}
 
-    // Validate the IPC header
+static int validate_header(const uint8_t *buf) {
     if (memcmp(buf, ipc_magic, sizeof(ipc_magic)) != 0) {
-        printf("IPC header check failed\n");
-        ipc_client_disconnect(client);
-        return 0;
+        fprintf(stderr, "Invalid IPC header\n");
+        return -1;
     }
+    return 0;
+}
 
-    // Extract and store header information
+static void extract_header_info(struct ipc_client *client, const uint8_t *buf) {
     memcpy(&client->pending_length, buf + sizeof(ipc_magic), sizeof(uint32_t));
     memcpy(&client->pending_type, buf + sizeof(ipc_magic) + sizeof(uint32_t), sizeof(uint32_t));
+}
 
+static int read_client_header(int client_fd, struct ipc_client *client) {
+    uint8_t buf[IPC_HEADER_SIZE];
+    ssize_t received;
+
+    if (receive_header(client_fd, buf, &received) == -1) {
+        ipc_client_disconnect(client);
+        return -1;
+    }
+
+    if (validate_header(buf) == -1) {
+        ipc_client_disconnect(client);
+        return -1;
+    }
+
+    extract_header_info(client, buf);
     return handle_client_payload(client);
 }
