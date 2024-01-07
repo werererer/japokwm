@@ -198,33 +198,46 @@ int ipc_handle_connection(int fd, uint32_t mask, void *data) {
 // Forward declaration of helper functions
 static int read_client_header(int client_fd, struct ipc_client *client);
 static int handle_client_payload(struct ipc_client *client);
+static int check_socket_errors(uint32_t mask, struct ipc_client *client);
+static int get_available_read_data(int client_fd, struct ipc_client *client);
+
 
 int ipc_client_handle_readable(int client_fd, uint32_t mask, void *data) {
     struct ipc_client *client = data;
 
-    // Check for any errors or hang-ups
-    if ((mask & WL_EVENT_ERROR) || (mask & WL_EVENT_HANGUP)) {
-        printf("Client %d disconnected with error\n", client->fd);
-        ipc_client_disconnect(client);
+    if (check_socket_errors(mask, client)) {
         return 0;
     }
 
-    // Check if there's data to read
+    if (get_available_read_data(client_fd, client)) {
+        return 0;
+    }
+
+    return (client->pending_length > 0) ? 
+            handle_client_payload(client) : 
+            read_client_header(client_fd, client);
+}
+
+static int check_socket_errors(uint32_t mask, struct ipc_client *client) {
+    if (mask & (WL_EVENT_ERROR | WL_EVENT_HANGUP)) {
+        printf("Client %d disconnected%s\n", client->fd, 
+               (mask & WL_EVENT_ERROR) ? " with error" : "");
+        ipc_client_disconnect(client);
+        return 1; // Return 1 to indicate an error occurred
+    }
+    return 0; // Return 0 to indicate no error
+}
+
+static int get_available_read_data(int client_fd, struct ipc_client *client) {
     int read_available;
     if (ioctl(client_fd, FIONREAD, &read_available) == -1) {
         printf("Unable to read IPC socket buffer size\n");
         ipc_client_disconnect(client);
-        return 0;
+        return 1; // Return 1 to indicate an error occurred
     }
-
-    // Handle the case where a command is partially read
-    if (client->pending_length > 0) {
-        return handle_client_payload(client);
-    }
-
-    // Read and process the header
-    return read_client_header(client_fd, client);
+    return 0; // Return 0 to indicate success
 }
+
 
 static int read_client_header(int client_fd, struct ipc_client *client) {
     uint8_t buf[IPC_HEADER_SIZE];
