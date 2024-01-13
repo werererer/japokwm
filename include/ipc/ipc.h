@@ -43,12 +43,17 @@ struct ipc_client {
     enum ipc_command_type pending_type;
 };
 
-
+void ipc_init(struct wl_event_loop *wl_event_loop);
 int ipc_client_handle_readable(int client_fd, uint32_t mask, void *data);
 int ipc_client_handle_writable(int client_fd, uint32_t mask, void *data);
 bool ipc_send_reply(struct ipc_client *client,
                     enum ipc_command_type payload_type, const char *payload,
                     uint32_t payload_length);
 void ipc_send_event(const char *json_string, enum ipc_command_type event);
+int ipc_handle_connection(int fd, uint32_t mask, void *data);
+void ipc_client_disconnect(struct ipc_client *client);
+
+struct sockaddr_un *ipc_user_sockaddr(void);
+
 
 #endif // IPC_H

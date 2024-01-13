@@ -21,13 +21,8 @@ static struct sockaddr_un *ipc_sockaddr = NULL;
 static GPtrArray *ipc_client_list;
 
 static int read_client_header(int client_fd, struct ipc_client *client);
-static void ipc_client_disconnect(struct ipc_client *client);
 static int check_socket_errors(uint32_t mask, struct ipc_client *client);
 static int get_available_read_data(int client_fd, struct ipc_client *client);
-
-struct sockaddr_un *ipc_user_sockaddr(void);
-
-int ipc_handle_connection(int fd, uint32_t mask, void *data);
 
 void ipc_init(struct wl_event_loop *wl_event_loop) {
     int ipc_socket = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -63,7 +58,8 @@ void ipc_init(struct wl_event_loop *wl_event_loop) {
             WL_EVENT_READABLE, ipc_handle_connection, wl_event_loop);
 }
 
-int ipc_handle_connection(int fd, uint32_t mask, void *data) {
+int ipc_handle_connection(int fd, uint32_t mask, void *data)
+{
     struct wl_event_loop *wl_event_loop = data;
     (void) fd;
     int ipc_socket = server.ipc_socket;
@@ -134,7 +130,7 @@ struct sockaddr_un *ipc_user_sockaddr(void) {
     return ipc_sockaddr;
 }
 
-static void ipc_client_disconnect(struct ipc_client *client) {
+void ipc_client_disconnect(struct ipc_client *client) {
     if (!(client != NULL)) {
         return;
     }

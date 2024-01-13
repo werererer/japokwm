@@ -1,3 +1,5 @@
+#include "ipc/ipc_server_sway_adapter.h"
+
 // See https://i3wm.org/docs/ipc.html for protocol information
 // TODO: properly implement the adapter[:w
 // #include "json_object.h"
