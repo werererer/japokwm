@@ -25,6 +25,7 @@
 #include "client.h"
 #include "command.h"
 #include "monitor.h"
+#include "error_handling.h"
 
 // Macro to generate a bitmask for an event. 
 // It shifts 1 to the left by the lower 7 bits of the event value.
@@ -39,7 +40,7 @@ static int get_available_read_data(int client_fd, struct ipc_client *client);
 static int get_available_read_data(int client_fd, struct ipc_client *client) {
     int read_available;
     if (ioctl(client_fd, FIONREAD, &read_available) == -1) {
-        printf("Unable to read IPC socket buffer size\n");
+        log_error("Unable to read IPC socket buffer size");
         ipc_client_disconnect(client);
         return 1; // Return 1 to indicate an error occurred
     }
@@ -51,14 +52,14 @@ static int read_client_header(int client_fd, struct ipc_client *client) {
     uint8_t buf[IPC_HEADER_SIZE];
     ssize_t received = recv(client_fd, buf, IPC_HEADER_SIZE, 0);
     if (received == -1) {
-        printf("Unable to receive header from IPC client\n");
+        log_error("Unable to receive header from IPC client");
         ipc_client_disconnect(client);
         return 0;
     }
 
     // Validate the IPC header
     if (memcmp(buf, ipc_magic, sizeof(ipc_magic)) != 0) {
-        printf("IPC header check failed\n");
+        log_error("IPC header check failed");
         ipc_client_disconnect(client);
         return 0;
     }
@@ -169,7 +170,7 @@ void handle_ipc_subscribe(struct ipc_client *client, char *buf, enum ipc_command
             const char msg[] = "{\"success\": false}";
             ipc_send_reply(client, payload_type, msg, strlen(msg));
             json_object_put(request);
-            printf("Unsupported event type in subscribe request\n");
+            log_error("Unsupported event type in subscribe request");
         }
     }
 
@@ -223,13 +224,13 @@ static char* receive_payload(struct ipc_client *client, uint32_t payload_length)
 
     char *buf = malloc(payload_length + 1);
     if (!buf) {
-        printf("Unable to allocate IPC payload\n");
+        log_error("Unable to allocate IPC payload");
         return NULL;
     }
 
     ssize_t received = recv(client->fd, buf, payload_length, 0);
     if (received == -1) {
-        printf("Unable to receive payload from IPC client\n");
+        log_error("Unable to receive payload from IPC client");
         free(buf);
         return NULL;
     }
@@ -263,7 +264,7 @@ static void dispatch_ipc_command(struct ipc_client *client, char *buf,
             handle_ipc_get_bar_config(client, buf, payload_type);
             break;
         default:
-            printf("Unknown IPC command type %x\n", payload_type);
+            log_error("Unknown IPC command type %x", payload_type);
             break;
     }
 }
@@ -271,7 +272,7 @@ static void dispatch_ipc_command(struct ipc_client *client, char *buf,
 static char* receive_and_verify_payload(struct ipc_client *client, uint32_t payload_length) {
     char *buf = receive_payload(client, payload_length);
     if (buf == NULL) {
-        printf("Payload reception failed\n");
+        log_error("Payload reception failed");
         ipc_client_disconnect(client);
     }
     return buf;
